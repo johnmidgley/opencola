@@ -30,10 +30,10 @@ dependencies {
     implementation("org.apache.tika:tika-parsers-standard-package:2.1.0")
 
     // Logging: https://www.kotlinresources.com/library/kotlin-logging/
-    implementation("io.github.microutils:kotlin-logging:2.0.8")
-    implementation("org.slf4j:slf4j-api:1.7.26")
-    implementation("ch.qos.logback:logback-classic:1.2.3")
-    implementation("ch.qos.logback:logback-core:1.2.3")
+    implementation("io.github.microutils:kotlin-logging:2.1.16")
+    implementation("org.slf4j:slf4j-api:1.7.32")
+    implementation("ch.qos.logback:logback-classic:1.2.9")
+    implementation("ch.qos.logback:logback-core:1.2.9")
     implementation("com.lordcodes.turtle:turtle:0.6.0")
     implementation("org.apache.james:apache-mime4j-core:0.8.5")
     implementation("org.apache.james:apache-mime4j-dom:0.8.5")
