@@ -1,0 +1,5 @@
+/build
+.gradle
+/network/var-solr/data/*.opencola
+/network/var-solr/data/opencola/data/
+/network/var-solr/logs/

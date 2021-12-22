@@ -1,0 +1,9 @@
+plugins {
+Binary file ./.gradle/7.1/executionHistory/executionHistory.bin matches
+import opencola.server.plugins.configureRouting
+import opencola.server.plugins.configureContentNegotiation
+import opencola.server.plugins.configureHTTP
+import opencola.server.plugins.configureRouting
+package opencola.server.plugins
+package opencola.server.plugins
+package opencola.server.plugins
