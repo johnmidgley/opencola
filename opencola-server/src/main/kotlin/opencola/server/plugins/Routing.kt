@@ -54,7 +54,6 @@ fun Application.configureRouting() {
             println("Action: $action Bytes: ${mhtml?.size}")
             val result = parseMhtml((mhtml as ByteArray).inputStream())
             println(result?.messageId)
-
         }
     }
 }

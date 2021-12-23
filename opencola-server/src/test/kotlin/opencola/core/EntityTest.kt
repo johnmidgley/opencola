@@ -1,4 +1,4 @@
-import opencola.core.datastore.EntityStore
+import opencola.core.storage.EntityStore
 import opencola.core.security.generateKeyPair
 import opencola.core.model.Id
 import opencola.core.model.ActorEntity

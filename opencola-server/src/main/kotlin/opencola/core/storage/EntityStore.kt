@@ -1,4 +1,4 @@
-package opencola.core.datastore
+package opencola.core.storage
 
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream

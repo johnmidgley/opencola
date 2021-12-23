@@ -1,4 +1,4 @@
-import opencola.core.datastore.EntityStore
+import opencola.core.storage.EntityStore
 import kotlin.io.path.createTempFile
 import kotlin.test.Test
 import kotlin.test.assertEquals
