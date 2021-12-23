@@ -10,6 +10,7 @@ data class AttributeSpec(val name: String, val uri: URI, val encoder: ByteArrayC
 // TODO: Remove enum - not needed. Just have specs that you can look up by name or URI
 // TODO: Create dynamic attribute list for extensibility
 // TODO: Comment attribute?
+// TODO: DataId attribute
 enum class Attributes(val spec: AttributeSpec) {
     Type(AttributeSpec(URI("opencola://attributes/type"), StringAttributeDelegate, false)),
     Uri(AttributeSpec(URI("opencola://attributes/uri"), UriAttributeDelegate,false)),
