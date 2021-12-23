@@ -19,7 +19,7 @@ changeColor.addEventListener("click", async () => {
             {tabId: tab.id}, function (mhtmlData) {
                 // Good resrouce: https://javascript.info/blob
                 let xhr = new XMLHttpRequest(), formData = new FormData();
-                formData.append("action", "action");
+                formData.append("action", "the_action");
                 formData.append("mhtml", mhtmlData);
                 xhr.open("POST", "http://localhost:5795/action");
                 // xhr.setRequestHeader('Authorization', 'Token token=<redacted>');

@@ -1,5 +1,6 @@
 package opencola.core.content
 
+import org.apache.james.mime4j.dom.Message
 import org.apache.james.mime4j.message.DefaultMessageBuilder
 import org.apache.james.mime4j.stream.MimeConfig
 import java.io.InputStream
@@ -11,10 +12,6 @@ import java.io.InputStream
 //  Java Mail APIs
 //  https://pretagteam.com/question/how-to-read-or-parse-mhtml-mht-files-in-java
 //  which uses https://javaee.github.io/javamail/
-fun parseMht(inputStream: InputStream) {
-    val defaultMessageBuilder = DefaultMessageBuilder()
-    defaultMessageBuilder.setMimeEntityConfig(MimeConfig.PERMISSIVE)
-//    val file = File(System.getProperty("user.dir") + "/sample-docs/" + "log4jVulnerability.mht")
-//    val fis = FileInputStream(file)
-    val message = defaultMessageBuilder.parseMessage(inputStream)
+fun parseMhtml(inputStream: InputStream): Message? {
+    return parseMime(inputStream)
 }
