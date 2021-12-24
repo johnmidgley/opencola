@@ -23,6 +23,7 @@ import java.security.PublicKey
 class Id {
     private val value: ByteArray
 
+    // TODO: Put these constructors in companion object. This class should be minimal
     private constructor(decoder: Decoder){
         value = decoder.decodeString().hexStringToByteArray()
     }
