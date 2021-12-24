@@ -6,7 +6,7 @@ import io.ktor.application.*
 import io.ktor.http.content.*
 import io.ktor.response.*
 import io.ktor.request.*
-import opencola.core.content.parseMhtml
+import opencola.server.handleAction
 import java.lang.IllegalArgumentException
 
 fun Application.configureRouting() {
@@ -21,6 +21,15 @@ fun Application.configureRouting() {
                 this.javaClass.classLoader.getResource("index.html")!!.readText(),
                 ContentType.Text.Html
             )
+        }
+
+        get("/search"){
+            TODO("Implement search handler")
+        }
+
+        get("/entity"){
+            // Handler that returns info on entity by URL
+            TODO("Implement entity handler")
         }
 
         post("/action"){
@@ -52,8 +61,7 @@ fun Application.configureRouting() {
             }
 
             println("Action: $action Bytes: ${mhtml?.size}")
-            val result = parseMhtml((mhtml as ByteArray).inputStream())
-            println(result?.messageId)
+            handleAction(action as String, null, mhtml as ByteArray)
         }
     }
 }
