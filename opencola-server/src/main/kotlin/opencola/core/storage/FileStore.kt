@@ -2,7 +2,6 @@ package opencola.core.storage
 
 import opencola.core.model.Id
 import java.io.InputStream
-import java.io.OutputStream
 
 
 interface FileStore {
@@ -13,4 +12,6 @@ interface FileStore {
 
     fun write(bytes: ByteArray) : Id
     fun write(inputStream: InputStream) : Id
+
+    // TODO: getMerkleTree and getPart(s)
 }

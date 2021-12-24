@@ -62,16 +62,10 @@ class EntityStore(trustedActors: Set<ActorEntity>) {
     private fun isValidTransaction(signedTransaction: SignedTransaction): Boolean {
         // TODO: Move what can be moved to transaction
         val transactionId = signedTransaction.transaction.id
-        val facts = signedTransaction.transaction.facts
-        val authorities = facts.map { it.authorityId }.distinctBy { it.toString() }
+        val facts = signedTransaction.transaction.getFacts()
 
-        if (authorities.size != 1) {
-            logger.error { "Ignoring transaction $transactionId with multiple authorities: ${authorities.joinToString()}" }
-            return false
-        }
-
-        val authority = authorities.first()
-        val actorEntity = trustedActors.firstOrNull { it.entityId == authority }
+        val authority = signedTransaction.transaction.authorityId
+        val actorEntity = trustedActors.firstOrNull { it.entityId == signedTransaction.transaction.authorityId }
 
         if (actorEntity == null) {
             // TODO: Load all public keys from the store first, in order to verify transactions?
@@ -90,7 +84,7 @@ class EntityStore(trustedActors: Set<ActorEntity>) {
         this.path = path
         facts = transactions(path)
             .filter { isValidTransaction(it) }
-            .flatMap { it.transaction.facts }
+            .flatMap { it.transaction.getFacts() }
             .toList()
     }
 
@@ -147,8 +141,9 @@ class EntityStore(trustedActors: Set<ActorEntity>) {
             return entity
         }
 
+        // TODO: Binary serialization?
         Json.encodeToStream(
-            authority.signTransaction(Transaction(getNextTransactionId(authority), uncommittedFacts)),
+            authority.signTransaction(Transaction(authority.entityId, uncommittedFacts, getNextTransactionId(authority))),
             outputStream
         )
 
