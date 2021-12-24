@@ -19,7 +19,9 @@ val keyPair = KeyPair(authorityPublicKey, authorityPrivateKey)
 val authority = Authority(keyPair, name = "Authority")
 val entityStore = EntityStore(listOf(authority).toSet())
 
+
 fun main() {
+    // entityStore.load()
     embeddedServer(Netty, port = 5795, host = "0.0.0.0") {
         configureHTTP()
         configureContentNegotiation()

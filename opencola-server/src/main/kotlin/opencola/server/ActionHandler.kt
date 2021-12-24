@@ -18,6 +18,9 @@ fun handleSaveAction(page: Mhtml?){
 
     println("here")
     // TODO: Make resource entity constructor for MHTML page?
-    val entity = ResourceEntity(authority.entityId, page.getUri(), name = page.getTitle())
-
+    // TODO: Save mhtml
+    // TODO: Add data id to resource entity - when indexing, index body from the dataEntity
+    // TODO: Parse description
+    // TODO: Load entity store in application.kt
+    //entityStore.updateEntity(authority, ResourceEntity(authority.entityId, page.getUri(), name = page.getTitle()))
 }
