@@ -9,6 +9,8 @@ import kotlin.io.path.*
 
 class LocalFileStore(private val root: Path) : FileStore {
     private val directoryPrefixLength = 2
+
+    // TODO: This creates a directory structure when just checking for existence. Consider breaking up
     private fun getPath(dataId: Id): Path {
         // Organize datafiles like git
         val dataIdString = dataId.toString()
@@ -48,7 +50,7 @@ class LocalFileStore(private val root: Path) : FileStore {
             it.write(bytes)
         }
 
-        return Id(bytes)
+        return dataId
     }
 
     override fun write(inputStream: InputStream): Id {
