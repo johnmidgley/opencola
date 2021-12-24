@@ -35,4 +35,14 @@ data class Fact(val authorityId: Id, val entityId: Id, val attribute: String, va
 
         return true
     }
+
+    override fun hashCode(): Int {
+        var result = authorityId.hashCode()
+        result = 31 * result + entityId.hashCode()
+        result = 31 * result + attribute.hashCode()
+        result = 31 * result + (value?.contentHashCode() ?: 0)
+        result = 31 * result + add.hashCode()
+        result = 31 * result + transactionId.hashCode()
+        return result
+    }
 }
