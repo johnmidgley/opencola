@@ -133,7 +133,7 @@ class EntityStore(trustedActors: Set<ActorEntity>) {
 
     fun updateEntity(authority: Authority, entity: Entity): Entity {
         val outputStream = path?.outputStream(StandardOpenOption.APPEND)
-            ?: throw IllegalStateException("Attempt to commit and EntityStore without specifying a path")
+            ?: throw IllegalStateException("Attempt to commit an EntityStore without specifying a path")
 
         val uncommittedFacts = getFactsToCommit(authority, entity)
         if (uncommittedFacts.isEmpty()) {
