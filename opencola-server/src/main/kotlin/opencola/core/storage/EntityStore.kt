@@ -3,12 +3,13 @@ package opencola.core.storage
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
-import opencola.core.model.*
 import mu.KotlinLogging
+import opencola.core.model.*
 import java.io.InputStream
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.security.PublicKey
+import kotlin.io.path.exists
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 
@@ -82,10 +83,15 @@ class EntityStore(trustedActors: Set<ActorEntity>) {
 
     fun load(path: Path) {
         this.path = path
-        facts = transactions(path)
-            .filter { isValidTransaction(it) }
-            .flatMap { it.transaction.getFacts() }
-            .toList()
+
+        if(!path.exists()){
+            logger.warn { "No entity store found at $path. Will get created on update" }
+        } else {
+            facts = transactions(path)
+                .filter { isValidTransaction(it) }
+                .flatMap { it.transaction.getFacts() }
+                .toList()
+        }
     }
 
     // TODO - make entity method?
@@ -131,26 +137,38 @@ class EntityStore(trustedActors: Set<ActorEntity>) {
         return facts.filter { it.authorityId == authority.entityId }.map { it.transactionId }.maxOrNull()?.inc() ?: 0
     }
 
-    fun updateEntity(authority: Authority, entity: Entity): Entity {
-        val outputStream = path?.outputStream(StandardOpenOption.APPEND)
-            ?: throw IllegalStateException("Attempt to commit an EntityStore without specifying a path")
+    private fun saveTransaction(authority: Authority, uncommittedFacts: List<Fact>, path: Path) {
+        // val openOption = if (path.exists()) StandardOpenOption.APPEND else StandardOpenOption.CREATE
+        val outputStream = path.outputStream(StandardOpenOption.APPEND, StandardOpenOption.CREATE)
 
+        // TODO: Binary serialization?
+        Json.encodeToStream(
+            authority.signTransaction(
+                Transaction(
+                    authority.entityId,
+                    uncommittedFacts,
+                    getNextTransactionId(authority)
+                )
+            ),
+            outputStream
+        )
+    }
+
+    fun updateEntity(authority: Authority, entity: Entity): Entity {
         val uncommittedFacts = getFactsToCommit(authority, entity)
         if (uncommittedFacts.isEmpty()) {
             logger.info { "Ignoring update to entity:{${entity.entityId}}with no novel facts" }
             return entity
         }
 
-        // TODO: Binary serialization?
-        Json.encodeToStream(
-            authority.signTransaction(Transaction(authority.entityId, uncommittedFacts, getNextTransactionId(authority))),
-            outputStream
-        )
+        val path = this.path
+        if (path != null) {
+            saveTransaction(authority, uncommittedFacts, path)
+        }
 
         // TODO: Synchronized
         facts = facts + uncommittedFacts
 
-        // TODO: Throw exception if null
         return getEntity(authority, entity.entityId)
             ?: throw RuntimeException("Unable to find updated entity:{${entity.entityId}} in store")
     }

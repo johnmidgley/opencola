@@ -22,6 +22,6 @@ fun handleSaveAction(mhtmlPage: MhtmlPage?){
     // writer.writeMessage(page.message, File("/Users/johnmidgley/tmp/ex.mht").outputStream())
     // TODO: Add data id to resource entity - when indexing, index body from the dataEntity
     // TODO: Parse description
-    // TODO: Load entity store in application.kt
+    // TODO - lookup entity first!!
     entityStore.updateEntity(authority, ResourceEntity(authority.entityId, mhtmlPage.uri, name = mhtmlPage.title))
 }
