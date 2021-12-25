@@ -27,7 +27,6 @@ fun handleSaveAction(mhtmlPage: MhtmlPage?){
         writer.writeMessage(mhtmlPage.message, bufferedOutputStream)
 
         // TODO("Boundary ids change per instance. Need to content check!!")
-        // TODO("Seems that save is not working. Run and then re-run will case a bad read of transactions")
 
         val dataId = fileStore.write(bufferedOutputStream.toByteArray())
         val resourceId = Id(mhtmlPage.uri)
