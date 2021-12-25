@@ -14,6 +14,7 @@ data class AttributeSpec(val name: String, val uri: URI, val encoder: ByteArrayC
 enum class Attributes(val spec: AttributeSpec) {
     Type(AttributeSpec(URI("opencola://attributes/type"), StringAttributeDelegate, false)),
     Uri(AttributeSpec(URI("opencola://attributes/uri"), UriAttributeDelegate,false)),
+    DataId(AttributeSpec(URI("opencola://attributes/dataId"), IdAttributeDelegate,false)),
     ImageUri(AttributeSpec(URI("opencola://attributes/imageUri"), UriAttributeDelegate,false)),
     PublicKey(AttributeSpec(URI("opencola://attributes/publicKey"), PublicKeyAttributeDelegate ,false)),
     Name(AttributeSpec(URI("opencola://attributes/name"), StringAttributeDelegate ,true)),

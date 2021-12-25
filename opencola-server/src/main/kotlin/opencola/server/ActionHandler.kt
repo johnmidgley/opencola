@@ -25,10 +25,15 @@ fun handleSaveAction(mhtmlPage: MhtmlPage?){
     val writer = DefaultMessageWriter()
     val bufferedOutputStream = ByteArrayOutputStream()
     writer.writeMessage(mhtmlPage.message, bufferedOutputStream)
+
+    TODO("Boundary ids change per instance. Need to content check!!")
+    TODO("Seems that save is not working. Run and then re-run will case a bad read of transactions")
+
     val dataId = fileStore.write(bufferedOutputStream.toByteArray())
     val resourceId = Id(mhtmlPage.uri)
     val entity = (entityStore.getEntity(authority, resourceId) ?: ResourceEntity(authority.entityId, mhtmlPage.uri)) as ResourceEntity
 
+    entity.dataId = dataId
     entity.name = mhtmlPage.title
     entityStore.updateEntity(authority, entity)
 }

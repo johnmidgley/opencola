@@ -20,6 +20,11 @@ data class Fact(val authorityId: Id, val entityId: Id, val attribute: String, va
         return "{ authorityId: $authorityId entityId: $entityId attribute: $attribute value: $decodedValue add: $add transactionId: $transactionId"
     }
 
+    fun updateTransactionId(transactionId: Long): Fact {
+        return Fact(authorityId, entityId, attribute, value, add, transactionId)
+    }
+
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

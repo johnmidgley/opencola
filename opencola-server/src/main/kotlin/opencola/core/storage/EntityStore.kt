@@ -74,6 +74,11 @@ class EntityStore(trustedActors: Set<ActorEntity>) {
             return false
         }
 
+        if(signedTransaction.transaction.getFacts().any { it.transactionId == UNCOMMITTED}){
+            // TODO: Throw or ignore?
+            logAndThrow(IllegalStateException("Transaction has uncommitted id" ))
+        }
+
         if (!signedTransaction.isValidTransaction(actorEntity.publicKey as PublicKey)) {
             logger.error { "Ignoring transaction with invalid signature $transactionId" }
         }
@@ -137,8 +142,8 @@ class EntityStore(trustedActors: Set<ActorEntity>) {
         return facts.filter { it.authorityId == authority.entityId }.map { it.transactionId }.maxOrNull()?.inc() ?: 0
     }
 
-    private fun saveTransaction(authority: Authority, uncommittedFacts: List<Fact>, path: Path) {
-        // val openOption = if (path.exists()) StandardOpenOption.APPEND else StandardOpenOption.CREATE
+    private fun saveTransaction(authority: Authority, uncommittedFacts: List<Fact>, path: Path) : List<Fact> {
+        val transactionId = getNextTransactionId(authority)
         val outputStream = path.outputStream(StandardOpenOption.APPEND, StandardOpenOption.CREATE)
 
         // TODO: Binary serialization?
@@ -147,27 +152,33 @@ class EntityStore(trustedActors: Set<ActorEntity>) {
                 Transaction(
                     authority.entityId,
                     uncommittedFacts,
-                    getNextTransactionId(authority)
+                    transactionId
                 )
             ),
             outputStream
         )
+
+        return uncommittedFacts.map { it.updateTransactionId(transactionId) }
     }
 
     fun updateEntity(authority: Authority, entity: Entity): Entity {
         val uncommittedFacts = getFactsToCommit(authority, entity)
+        var commitedFacts = uncommittedFacts
+
         if (uncommittedFacts.isEmpty()) {
             logger.info { "Ignoring update to entity:{${entity.entityId}} with no novel facts" }
             return entity
         }
 
+        var transactionId = UNCOMMITTED
+
         val path = this.path
         if (path != null) {
-            saveTransaction(authority, uncommittedFacts, path)
+            commitedFacts = saveTransaction(authority, uncommittedFacts, path)
         }
 
         // TODO: Synchronized
-        facts = facts + uncommittedFacts
+        facts = facts + commitedFacts
 
         return getEntity(authority, entity.entityId)
             ?: throw RuntimeException("Unable to find updated entity:{${entity.entityId}} in store")

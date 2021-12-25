@@ -70,6 +70,24 @@ object StringAttributeDelegate : ByteArrayCodec {
     }
 }
 
+object IdAttributeDelegate : ByteArrayCodec {
+    operator fun getValue(thisRef: Entity, property: KProperty<*>): Id? {
+        return decode(thisRef.getValue(property.name))
+    }
+
+    operator fun setValue(thisRef: Entity, property: KProperty<*>, value: Id?) {
+        thisRef.setValue(property.name, encode(value))
+    }
+
+    override fun encode(value: Any?): ByteArray {
+        return (value as Id).toString().toByteArray()
+    }
+
+    override fun decode(value: ByteArray?): Id? {
+        return value.nullOrElse { Id(String(it)) }
+    }
+}
+
 object UriAttributeDelegate : ByteArrayCodec {
     operator fun getValue(thisRef: Entity, property: KProperty<*>): URI? {
         return decode(thisRef.getValue(property.name))

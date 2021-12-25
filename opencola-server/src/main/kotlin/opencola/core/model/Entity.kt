@@ -175,6 +175,7 @@ class Authority : ActorEntity {
 
 open class ResourceEntity : Entity {
     var uri by UriAttributeDelegate
+    var dataId by IdAttributeDelegate
     var imageUri by UriAttributeDelegate
     var name by StringAttributeDelegate
     var description by StringAttributeDelegate
