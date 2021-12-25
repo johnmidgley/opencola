@@ -7,6 +7,8 @@ import opencola.core.model.Authority
 import opencola.core.security.privateKeyFromBytes
 import opencola.core.security.publicKeyFromBytes
 import opencola.core.storage.EntityStore
+import opencola.core.storage.FileStore
+import opencola.core.storage.LocalFileStore
 import opencola.server.plugins.configureContentNegotiation
 import opencola.server.plugins.configureHTTP
 import opencola.server.plugins.configureRouting
@@ -22,6 +24,8 @@ val authority = Authority(keyPair, name = "Authority")
 val entityStore = EntityStore(listOf(authority).toSet())
 val storagePath = Path("/Users/johnmidgley/dev/opencola/storage")
 val entityStorePath: Path = storagePath.resolve("transactions.json")
+val fileStorePath: Path = storagePath.resolve("filestore/")
+val fileStore = LocalFileStore(fileStorePath)
 
 
 fun main() {

@@ -10,6 +10,12 @@ import kotlin.io.path.*
 class LocalFileStore(private val root: Path) : FileStore {
     private val directoryPrefixLength = 2
 
+    init {
+        if(!root.exists()){
+            root.createDirectory()
+        }
+    }
+
     // TODO: This creates a directory structure when just checking for existence. Consider breaking up
     private fun getPath(dataId: Id): Path {
         // Organize datafiles like git
