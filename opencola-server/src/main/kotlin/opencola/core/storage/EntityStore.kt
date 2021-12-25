@@ -157,7 +157,7 @@ class EntityStore(trustedActors: Set<ActorEntity>) {
     fun updateEntity(authority: Authority, entity: Entity): Entity {
         val uncommittedFacts = getFactsToCommit(authority, entity)
         if (uncommittedFacts.isEmpty()) {
-            logger.info { "Ignoring update to entity:{${entity.entityId}}with no novel facts" }
+            logger.info { "Ignoring update to entity:{${entity.entityId}} with no novel facts" }
             return entity
         }
 
