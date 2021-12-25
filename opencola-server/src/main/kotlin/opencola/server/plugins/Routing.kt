@@ -38,17 +38,17 @@ fun Application.configureRouting() {
             var action: String? = null
             var mhtml: ByteArray? = null
 
-            multipart.forEachPart {
-                when(it){
+            multipart.forEachPart { part ->
+                when(part){
                     is PartData.FormItem -> {
-                        if(it.name != "action") throw IllegalArgumentException("Unknown FormItem in action request: ${it.name}")
-                        action = it.value
+                        if(part.name != "action") throw IllegalArgumentException("Unknown FormItem in action request: ${part.name}")
+                        action = part.value
                     }
                     is PartData.FileItem -> {
-                        if(it.name != "mhtml") throw IllegalArgumentException("Unknown FileItem in action request: ${it.name}")
-                        mhtml = it.streamProvider().readAllBytes()
+                        if(part.name != "mhtml") throw IllegalArgumentException("Unknown FileItem in action request: ${part.name}")
+                        mhtml = part.streamProvider().use { it.readAllBytes() }
                     }
-                    else -> throw IllegalArgumentException("Unknown part in request: ${it.name}")
+                    else -> throw IllegalArgumentException("Unknown part in request: ${part.name}")
                 }
             }
 

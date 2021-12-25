@@ -1,17 +1,16 @@
 package opencola.core.storage
 
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import mu.KotlinLogging
 import opencola.core.model.*
-import java.io.InputStream
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.security.PublicKey
 import kotlin.io.path.exists
-import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
+import kotlin.io.path.readLines
 
 class EntityStore(trustedActors: Set<ActorEntity>) {
     private val logger = KotlinLogging.logger {}
@@ -41,21 +40,17 @@ class EntityStore(trustedActors: Set<ActorEntity>) {
         this.trustedActors = this.trustedActors + partitionedActors.second
     }
 
-    // This could probably be abstracted to executeifNotEof(stream, lambda: stream -> value)
-    private fun decodeSignedTransactionFromStream(stream: InputStream): SignedTransaction? {
-        return if (stream.available() > 0) Json.decodeFromStream<SignedTransaction?>(stream) else null
-    }
 
     private fun transactions(path: Path): Sequence<SignedTransaction> {
-        val inStream = path.inputStream(StandardOpenOption.READ)
-
+        // TODO: Only works for JSON
         return sequence<SignedTransaction> {
-            // TODO: Is there a way to do this using standard iterators?
-
-            var transaction = decodeSignedTransactionFromStream(inStream)
-            while (transaction != null) {
-                yield(transaction)
-                transaction = decodeSignedTransactionFromStream(inStream)
+            path.readLines().forEach { line ->
+                if(line.isNotEmpty()){
+                    val transaction = Json.decodeFromString<SignedTransaction>(line)
+                    if (transaction != null){
+                        yield(transaction)
+                    }
+                }
             }
         }
     }
@@ -144,19 +139,20 @@ class EntityStore(trustedActors: Set<ActorEntity>) {
 
     private fun saveTransaction(authority: Authority, uncommittedFacts: List<Fact>, path: Path) : List<Fact> {
         val transactionId = getNextTransactionId(authority)
-        val outputStream = path.outputStream(StandardOpenOption.APPEND, StandardOpenOption.CREATE)
-
-        // TODO: Binary serialization?
-        Json.encodeToStream(
-            authority.signTransaction(
-                Transaction(
-                    authority.entityId,
-                    uncommittedFacts,
-                    transactionId
-                )
-            ),
-            outputStream
-        )
+        path.outputStream(StandardOpenOption.APPEND, StandardOpenOption.CREATE).use { outputStream ->
+            // TODO: Binary serialization?
+            Json.encodeToStream(
+                authority.signTransaction(
+                    Transaction(
+                        authority.entityId,
+                        uncommittedFacts,
+                        transactionId
+                    )
+                ),
+                outputStream
+            )
+            outputStream.write("\n".toByteArray())
+        }
 
         return uncommittedFacts.map { it.updateTransactionId(transactionId) }
     }

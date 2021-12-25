@@ -41,18 +41,18 @@ class LocalFileStoreTest{
         val testString = "Test file data"
         val data = testString.toByteArray()
 
-        val id = localFileStore.write(data.inputStream())
+        val id = data.inputStream().use{ localFileStore.write(it) }
         assertEquals(id, Id(data))
 
         val data1 = localFileStore.read(id)
         assert(data.contentEquals(data1))
 
         // Write again - this should be idempotent
-        val id2 = localFileStore.write(data.inputStream())
+        val id2 = data.inputStream().use { localFileStore.write(it) }
         assertEquals(id2, id)
 
         // This time, read from input stream
-        val data2 = localFileStore.getInputStream(id).readAllBytes()
+        val data2 = localFileStore.getInputStream(id).use { it.readAllBytes() }
         assert(data.contentEquals(data2))
     }
 

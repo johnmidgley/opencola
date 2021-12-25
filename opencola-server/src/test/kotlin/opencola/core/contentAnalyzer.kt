@@ -5,8 +5,7 @@ import kotlin.io.path.Path
 fun testCopntentAnalyzer() {
     val contentAnalyzer = TextExtractor()
     val path = System.getProperty("user.dir") + "/sample-docs/" + "Image_Super-Resolution_via_Iterative_Refinement.pdf"
-    val fis = FileInputStream(path)
-    val fileType = contentAnalyzer.getType(fis)
+    val fileType = FileInputStream(path).use { contentAnalyzer.getType(it) }
     println(fileType)
 }
 

@@ -22,17 +22,17 @@ class TextExtractor {
     }
 
     fun getBody(path: Path): String? {
-        // TODO: Does this stream need to be closed?
-        val stream = TikaInputStream.get(path)
-        val handler = BodyContentHandler()
-        val metadata = Metadata()
-        val parser = AutoDetectParser()
-        val context = ParseContext()
+        TikaInputStream.get(path).use { stream ->
+            val handler = BodyContentHandler()
+            val metadata = Metadata()
+            val parser = AutoDetectParser()
+            val context = ParseContext()
 
-        parser.parse(stream, handler, metadata, context)
+            parser.parse(stream, handler, metadata, context)
 
-        // TODO: Metadata may not include title. Fall back to normalized name from path
-        return handler.toString()
+            // TODO: Metadata may not include title. Fall back to normalized name from path
+            return handler.toString()
+        }
     }
 }
 
