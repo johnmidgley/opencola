@@ -59,6 +59,7 @@ fun TextBody.contentEquals(other: Any?) : Boolean {
     }
 
     // TODO: This is super Chrome dependent. Think about how to make this more robust
+    // It would probably be better to canonicalize the the document than compare this way, so that hash matches content properly, independent of who savea it
     val canonicalContent = cidRegex.replace(thisContent, "")
     val canonicalOtherContent = cidRegex.replace(otherContent, "")
 
