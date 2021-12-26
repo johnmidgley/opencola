@@ -2,11 +2,12 @@ package opencola.core.content
 
 import opencola.core.extensions.nullOrElse
 import org.apache.james.mime4j.dom.*
-import java.io.ByteArrayOutputStream
+import org.apache.james.mime4j.message.*
 import java.io.InputStream
 import java.net.URI
 
 
+// TODO: Mhtml -> Mht
 class MhtmlPage {
     val message: Message
     val uri: URI
@@ -16,9 +17,7 @@ class MhtmlPage {
     constructor(message: Message){
         // Strip unneeded headers (location not relevant and messes up content hash)
         // TODO: Strip location from body parts - messes up data id (i.e. same content from different places looks different)
-        this.message = Message.Builder.of()
-            .addField(message.header.getField("Content-Type"))
-            .setBody(message.body).build()
+        this.message = duplicateMessage(message)
 
         val header = message.header
         uri = header.getField("Snapshot-Content-Location")?.body.nullOrElse { URI(it) } ?: throw RuntimeException("No URI specified in MHTML message")
@@ -28,77 +27,62 @@ class MhtmlPage {
     private fun getHeaderField(message: Message, name: String) : String? {
         return message.header.getField(name)?.body
     }
+}
 
-    fun contentEquals(other: MhtmlPage): Boolean {
-        val body = this.message.body as Multipart
-        val otherBody = other.message.body as Multipart
-        if(body.bodyParts.size != otherBody.bodyParts.size) return false
+fun duplicateMessage(message: Message): Message {
+    val newMessage = Message.Builder.of()
+        .addField(message.header.getField("Content-Type"))
+        .setBody(duplicateBody(message.body)).build()
 
-        return body.bodyParts.zip(otherBody.bodyParts).all {
-            it.first.contentEquals(it.second)
+    return newMessage
+}
+
+fun duplicateBody(body: Body) : Body {
+    return when (body) {
+        is Multipart -> {
+            val bodyBuilder = MultipartBuilder.create()
+            body.bodyParts.forEach {
+                bodyBuilder.addBodyPart(duplicateEntity(it))
+            }
+            return bodyBuilder.build()
+        }
+        is TextBody -> {
+            return duplicateStringBody(body)
+        }
+        is BinaryBody -> {
+            return duplicatedBinaryBody(body)
+        }
+        else -> {
+            // To be robust, just copy through anything that is unexpected
+            // TODO: Log warning
+            body
         }
     }
 }
 
+fun duplicateEntity(entity: Entity) : Entity {
+    val builder = BodyPartBuilder()
+    entity.header.fields.forEach{ builder.addField(it) }
+    builder.setBody(duplicateBody(entity.body))
+    val newBodyPart = builder.build()
+    return newBodyPart
+}
+
+fun duplicateStringBody(body: TextBody) : TextBody {
+    val text = body.reader.use{ it.readText() }
+    val newBody = BasicBodyFactory.INSTANCE.textBody(text)
+    return newBody
+}
+
+fun duplicatedBinaryBody(body: BinaryBody) : BinaryBody {
+    return body.inputStream.use { BasicBodyFactory.INSTANCE.binaryBody(it) }
+}
+
 private val cidRegex = "cid:css-[0-9a-z]{8}(-[0-9a-z]{4}){3}-[0-9a-z]{12}@mhtml.blink".toRegex()
 
-fun TextBody.contentEquals(other: Any?) : Boolean {
-    if (this === other) return true
-    if (javaClass != other?.javaClass) return false
-    val otherTextBody = other as TextBody
-    if(mimeCharset != otherTextBody.mimeCharset) return false
-
-    val thisContent = ByteArrayOutputStream().use {
-        this.writeTo(it)
-        it.toString()
-    }
-
-    val otherContent = ByteArrayOutputStream().use {
-        otherTextBody.writeTo(it)
-        it.toString()
-    }
-
-    // TODO: This is super Chrome dependent. Think about how to make this more robust
-    // It would probably be better to canonicalize the the document than compare this way, so that hash matches content properly, independent of who savea it
-    val canonicalContent = cidRegex.replace(thisContent, "")
-    val canonicalOtherContent = cidRegex.replace(otherContent, "")
-
-    return canonicalContent == canonicalOtherContent
-}
-
-fun BinaryBody.contentEquals(other: Any?) : Boolean {
-    if (this === other) return true
-    if (javaClass != other?.javaClass) return false
-    val otherBinaryBody = other as BinaryBody
-
-    val thisContent = ByteArrayOutputStream().use {
-        this.writeTo(it)
-        it.toByteArray()
-    }
-
-    val otherContent = ByteArrayOutputStream().use {
-        otherBinaryBody.writeTo(it)
-        it.toByteArray()
-    }
-
-    return thisContent.contentEquals(otherContent)
-}
 
 
-fun Entity.contentEquals(other: Any?) : Boolean {
-    if (this === other) return true
-    if (javaClass != other?.javaClass) return false
 
-    val otherBody = (other as Entity).body
-    if(this.body.javaClass != otherBody.javaClass) return false
-
-    when(body){
-        is TextBody -> return (body as TextBody).contentEquals(otherBody)
-        is BinaryBody -> return (body as BinaryBody).contentEquals(otherBody)
-        else ->
-            throw NotImplementedError("Entity.contentEquals can't handle $body.javaClass")
-    }
-}
 
 
 // TODO: Store indexed pages as mht archives.
