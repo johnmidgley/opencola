@@ -1,8 +1,12 @@
 package opencola.core.content
 
 import opencola.core.extensions.nullOrElse
+import opencola.core.model.Id
 import org.apache.james.mime4j.dom.*
+import org.apache.james.mime4j.field.ContentLocationFieldLenientImpl
 import org.apache.james.mime4j.message.*
+import org.apache.james.mime4j.stream.Field
+import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.net.URI
 
@@ -14,76 +18,97 @@ class MhtmlPage {
     val title: String?
 
     // TODO: Make work on stream?
-    constructor(message: Message){
-        // Strip unneeded headers (location not relevant and messes up content hash)
-        // TODO: Strip location from body parts - messes up data id (i.e. same content from different places looks different)
-        this.message = duplicateMessage(message)
-
-        val header = message.header
-        uri = header.getField("Snapshot-Content-Location")?.body.nullOrElse { URI(it) } ?: throw RuntimeException("No URI specified in MHTML message")
-        title = header.getField("Subject")?.body
+    constructor(message: Message) {
+        // TODO: This is likely specific to Chrome saving. Should probably detect creator and dispatch to correct canonicalizer
+        this.message = canonicalizeMessage(message)
+        uri = message.header.getField("Snapshot-Content-Location")?.body.nullOrElse { URI(it) } ?: throw RuntimeException(
+                "No URI specified in MHTML message"
+            )
+        title = message.header.getField("Subject")?.body
     }
 
-    private fun getHeaderField(message: Message, name: String) : String? {
-        return message.header.getField(name)?.body
+    fun getDataId() : Id {
+        val stream = ByteArrayOutputStream()
+        stream.use{ DefaultMessageWriter().writeMessage(message, it) }
+        return Id(stream.toByteArray())
     }
-}
 
-fun duplicateMessage(message: Message): Message {
-    val newMessage = Message.Builder.of()
-        .addField(message.header.getField("Content-Type"))
-        .setBody(duplicateBody(message.body)).build()
+    private fun canonicalizeMessage(message: Message): Message {
+        return Message.Builder.of()
+            .addField(canonicalizeContentType(message.header.getField("Content-Type")))
+            .setBody(canonicalizeBody(message.body)).build()
+    }
 
-    return newMessage
-}
+    private val boundaryRegex = Regex("boundary=\".*\"")
+    private val opencolaBoudary = "boundary=\"----MultipartBoundary--opencola--1516051403151201--562D739589761-----\""
 
-fun duplicateBody(body: Body) : Body {
-    return when (body) {
-        is Multipart -> {
-            val bodyBuilder = MultipartBuilder.create()
-            body.bodyParts.forEach {
-                bodyBuilder.addBodyPart(duplicateEntity(it))
+    private fun canonicalizeContentType(field: Field): Field {
+        // Not super elegant, but no obvious way to construct the field (ContentTypeField is an interface and ContentTypeFieldImpl is private)
+        val raw = String(field.raw.toByteArray())
+        val message = raw.replace(boundaryRegex, opencolaBoudary).byteInputStream().use { parseMime(it) }
+
+        if (message == null) {
+            // TODO: Log warning / error
+            println("Couldn't canonicalize Content-Type {$raw}. Using original")
+            return field
+        }
+
+        return message.header.getField(field.name)
+    }
+
+    private fun canonicalizeBody(body: Body): Body {
+        return when (body) {
+            is Multipart -> canonicalizeMultipart(body)
+            is TextBody -> canonicalizeStringBody(body)
+            is BinaryBody -> canonicalizeBinaryBody(body)
+            else -> {
+                // To be robust, just copy through anything that is unexpected
+                // TODO: Log warning
+                body
             }
-            return bodyBuilder.build()
-        }
-        is TextBody -> {
-            return duplicateStringBody(body)
-        }
-        is BinaryBody -> {
-            return duplicatedBinaryBody(body)
-        }
-        else -> {
-            // To be robust, just copy through anything that is unexpected
-            // TODO: Log warning
-            body
         }
     }
+
+    private fun canonicalizeHeaderField(field: Field): Field? {
+        return when (field.name) {
+            "Content-ID" -> null
+            "Content-Location" -> {
+                // TODO: Investigate
+                // This is odd. Not sure how stripping cids still works, especially when it doesn't work for http locations.
+                // Likely styles are just loaded, so name doesn't matter. Probably cleaner to replace cid GUIDs with
+                // deterministic ids
+                if ((field as ContentLocationFieldLenientImpl).location.startsWith("cid")) null else field
+            }
+            else -> field
+        }
+    }
+
+    private fun canonicalizeMultipart(multipart: Multipart): Multipart {
+        val builder = MultipartBuilder.create()
+        multipart.bodyParts.forEach {
+            builder.addBodyPart(canonicalizeEntity(it))
+        }
+        return builder.build()
+    }
+
+    private fun canonicalizeEntity(entity: Entity): Entity {
+        val builder = BodyPartBuilder()
+        entity.header.fields.mapNotNull { canonicalizeHeaderField(it) }.forEach { builder.addField(it) }
+        builder.body = canonicalizeBody(entity.body)
+        return builder.build()
+    }
+
+    // TODO: This is overly specific. Match anything cid:css to "
+    private val cidRegex = "cid:css-[0-9a-z]{8}(-[0-9a-z]{4}){3}-[0-9a-z]{12}@mhtml.blink".toRegex()
+
+    private fun canonicalizeStringBody(body: TextBody): TextBody {
+        return BasicBodyFactory.INSTANCE.textBody(body.reader.use { it.readText() }.replace(cidRegex, ""))
+    }
+
+    private fun canonicalizeBinaryBody(body: BinaryBody): BinaryBody {
+        return body.inputStream.use { BasicBodyFactory.INSTANCE.binaryBody(it) }
+    }
 }
-
-fun duplicateEntity(entity: Entity) : Entity {
-    val builder = BodyPartBuilder()
-    entity.header.fields.forEach{ builder.addField(it) }
-    builder.setBody(duplicateBody(entity.body))
-    val newBodyPart = builder.build()
-    return newBodyPart
-}
-
-fun duplicateStringBody(body: TextBody) : TextBody {
-    val text = body.reader.use{ it.readText() }
-    val newBody = BasicBodyFactory.INSTANCE.textBody(text)
-    return newBody
-}
-
-fun duplicatedBinaryBody(body: BinaryBody) : BinaryBody {
-    return body.inputStream.use { BasicBodyFactory.INSTANCE.binaryBody(it) }
-}
-
-private val cidRegex = "cid:css-[0-9a-z]{8}(-[0-9a-z]{4}){3}-[0-9a-z]{12}@mhtml.blink".toRegex()
-
-
-
-
-
 
 // TODO: Store indexed pages as mht archives.
 //  Analysis can be done with https://github.com/apache/james-mime4j
