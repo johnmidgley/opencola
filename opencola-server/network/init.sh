@@ -1,9 +1,26 @@
 # Init Solr (From https://github.com/docker-solr/docker-solr)
 mkdir solrdata
-sudo chown -R 8983:8983 solrdata  # necessary on Linux, not Mac.
-# TODO: Find way to allow access for only testing account. Looks like groups is the way:
-# https://askubuntu.com/questions/982123/multiple-owner-of-same-folder
-sudo chmod o+w solrdata # Needed in order to run tests that delete indexes
+
+# Groups and chown necessary on Linux, not Mac.
+sudo useradd -u 8983 opencola-solr
+sudo groupadd -g 8983 opencola-solr #Grpup probably not needed
+sudo chown -R 8983:8983 solrdata
+
+# Set password to 'solr'
+sudo passwd opencola-solr <<!
+solr
+solr
+!
+
+# Execute a command as opencola-solr user
+su opencola-solr <<!
+solr
+ls
+!
+
+# To Delete
+sudo userdel opencola-solr
+sudo groupdel opencola-solr
 
 # Start opencola from docker-compose.yml (http://localhost:8983/)
 docker-compose up -d
