@@ -1,26 +1,8 @@
 # Init Solr (From https://github.com/docker-solr/docker-solr)
-mkdir solrdata
+mkdir var-solr
 
-# Groups and chown necessary on Linux, not Mac.
-sudo useradd -u 8983 opencola-solr
-sudo groupadd -g 8983 opencola-solr #Grpup probably not needed
-sudo chown -R 8983:8983 solrdata
-
-# Set password to 'solr'
-sudo passwd opencola-solr <<!
-solr
-solr
-!
-
-# Execute a command as opencola-solr user
-su opencola-solr <<!
-solr
-ls
-!
-
-# To Delete
-sudo userdel opencola-solr
-sudo groupdel opencola-solr
+# Chown necessary on Linux, not Mac.
+sudo chown -R 8983:8983 var-solr
 
 # Start opencola from docker-compose.yml (http://localhost:8983/)
 docker-compose up -d
