@@ -39,10 +39,11 @@ class MhtmlPage {
             .setBody(canonicalizeBody(message.body)).build()
     }
 
-    private val boundaryRegex = Regex("boundary=\".*\"")
+    private val boundaryRegex = "boundary=\".*\"".toRegex()
     private val opencolaBoudary = "boundary=\"----MultipartBoundary--opencola--1516051403151201--562D739589761-----\""
 
     private fun canonicalizeContentType(field: Field): Field {
+        // TODO: Test only assert that field.name = "Content-Type"?
         // Not super elegant, but no obvious way to construct the field (ContentTypeField is an interface and ContentTypeFieldImpl is private)
         val raw = String(field.raw.toByteArray())
         val message = raw.replace(boundaryRegex, opencolaBoudary).byteInputStream().use { parseMime(it) }
