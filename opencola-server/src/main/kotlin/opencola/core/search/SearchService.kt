@@ -87,8 +87,12 @@ class SearchService(val authority: Authority) {
 
     fun deleteIndex(){
         CoreAdminRequest.unloadCore(solrCollectionName, solrClient)
+//        var result = shellRun(networkPath){
+//            command("rm", listOf("-rf", "var-solr/data/$solrCollectionName"))
+//        }
+
         var result = shellRun(networkPath){
-            command("rm", listOf("-rf", "var-solr/data/$solrCollectionName"))
+            command("docker-compose", listOf("exec", "solr", "rm", "-rf", "/var/solr/data/$solrCollectionName"))
         }
     }
 
