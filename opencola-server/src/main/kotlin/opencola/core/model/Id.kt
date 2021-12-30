@@ -5,6 +5,8 @@ import opencola.core.security.sha256
 import opencola.core.extensions.hexStringToByteArray
 import opencola.core.extensions.nullOrElse
 import opencola.core.extensions.toHexString
+import java.io.InputStream
+import java.io.OutputStream
 import java.net.URI
 import java.security.PublicKey
 
@@ -15,10 +17,12 @@ import java.security.PublicKey
 // TODO: This is really just a typed value with specialized constructors. Why can't they share serialization code when they have the same properties and one derives from the other?
 // Maybe aggregate rather than derive?
 // TODO: Make data class
+private const val valueSize = 32 // 32 bytes for a sha256 hash
+
 @Serializable
-data class Id private constructor(private val value: ByteArray) {
+data class Id(private val value: ByteArray) {
     init{
-        assert(value.size == 32) { "Invalid id - size = ${value.size} but should be 32" }
+        assert(value.size == valueSize) { "Invalid id - size = ${value.size} but should be $valueSize" }
     }
 
     override fun toString(): String {
@@ -36,7 +40,7 @@ data class Id private constructor(private val value: ByteArray) {
             false
     }
 
-    companion object Factory : ByteArrayCodec {
+    companion object Factory : ByteArrayCodec, ByteArrayStreamCodec<Id> {
         // Construct id from a serialized string value
         // TODO: Should this be here?
         fun fromHexString(idAsHexString: String) : Id {
@@ -63,6 +67,15 @@ data class Id private constructor(private val value: ByteArray) {
 
         override fun decode(value: ByteArray?): Any? {
              return value.nullOrElse { Id(it) }
+        }
+
+        override fun encode(stream: OutputStream, id: Id): OutputStream {
+            stream.write(id.value)
+            return stream
+        }
+
+        override fun decode(stream: InputStream): Id {
+            return Id(stream.readNBytes(valueSize))
         }
     }
 }
