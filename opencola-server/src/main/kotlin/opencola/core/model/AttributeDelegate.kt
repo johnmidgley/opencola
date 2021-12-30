@@ -80,11 +80,11 @@ object IdAttributeDelegate : ByteArrayCodec {
     }
 
     override fun encode(value: Any?): ByteArray {
-        return (value as Id).toString().toByteArray()
+        return Id.encode(value)
     }
 
     override fun decode(value: ByteArray?): Id? {
-        return value.nullOrElse { Id(String(it)) }
+        return Id.decode(value) as Id?
     }
 }
 

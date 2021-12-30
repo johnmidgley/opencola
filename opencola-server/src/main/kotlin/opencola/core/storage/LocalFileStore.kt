@@ -2,7 +2,6 @@ package opencola.core.storage
 
 import opencola.core.model.Id
 import java.io.InputStream
-import java.io.OutputStream
 import java.nio.file.Path
 import kotlin.io.path.*
 
@@ -45,7 +44,7 @@ class LocalFileStore(private val root: Path) : FileStore {
     }
 
     override fun write(bytes: ByteArray) : Id {
-        val dataId = Id(bytes)
+        val dataId = Id.ofData(bytes)
 
         if(exists(dataId)){
             return dataId

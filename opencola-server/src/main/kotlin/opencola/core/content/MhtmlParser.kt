@@ -28,9 +28,11 @@ class MhtmlPage {
     }
 
     fun getDataId() : Id {
-        val stream = ByteArrayOutputStream()
-        stream.use{ DefaultMessageWriter().writeMessage(message, it) }
-        return Id(stream.toByteArray())
+        // TODO - is there a better way to do this?
+        ByteArrayOutputStream().use{
+            DefaultMessageWriter().writeMessage(message, it)
+            return Id.ofData(it.toByteArray())
+        }
     }
 
     private fun canonicalizeMessage(message: Message): Message {

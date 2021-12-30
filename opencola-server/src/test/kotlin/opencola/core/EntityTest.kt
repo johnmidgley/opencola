@@ -22,7 +22,7 @@ class EntityTest {
         val tags = listOf("this", "that").toSet()
         val rating = .37F
 
-        val entity = ActorEntity(Id(publicKey), publicKey)
+        val entity = ActorEntity(Id.ofPublicKey(publicKey), publicKey)
         entity.uri = uri
         assertEquals(uri, entity.uri)
 
@@ -55,7 +55,7 @@ class EntityTest {
     @Test
     fun testSettingSameValue(){
         val uri = URI("opencola://test-resource")
-        val entity = ResourceEntity(Id(uri), uri)
+        val entity = ResourceEntity(Id.ofUri(uri), uri)
         entity.uri = uri
 
         assertEquals(1, entity.getFacts().filter{ it.attribute == Attributes.Uri.spec.uri.toString()}.size)

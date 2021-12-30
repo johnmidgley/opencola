@@ -113,7 +113,7 @@ class SearchService(val authority: Authority) {
 
         return queryResponse.results.map{
             SearchResult(
-                Id(it.getFieldValue("id").toString()),
+                Id.fromHexString(it.getFieldValue("id").toString()),
                 it.getFieldValue(Attributes.Name.spec.name)?.toString(),
                 it.getFieldValue(Attributes.Description.spec.name)?.toString(),
             )

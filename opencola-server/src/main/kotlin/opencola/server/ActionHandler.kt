@@ -29,7 +29,7 @@ fun handleSaveAction(mhtmlPage: MhtmlPage?){
         // TODO("Boundary ids change per instance. Need to content check!!")
 
         val dataId = fileStore.write(bufferedOutputStream.toByteArray())
-        val resourceId = Id(mhtmlPage.uri)
+        val resourceId = Id.ofUri(mhtmlPage.uri)
         val entity = (entityStore.getEntity(authority, resourceId) ?: ResourceEntity(
             authority.entityId,
             mhtmlPage.uri

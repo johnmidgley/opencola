@@ -17,7 +17,7 @@ class LocalFileStoreTest{
     fun testExists(){
         val testString = "Test file data"
         val data = testString.toByteArray()
-        val id = Id(data)
+        val id = Id.ofData(data)
 
         assertFalse(localFileStore.exists(id))
         localFileStore.write(data)
@@ -30,7 +30,7 @@ class LocalFileStoreTest{
         val data = testString.toByteArray()
         val id = localFileStore.write(data)
 
-        assertEquals(id, Id(data))
+        assertEquals(id, Id.ofData(data))
 
         val data1 = localFileStore.read(id)
         assert(data.contentEquals(data1))
@@ -42,7 +42,7 @@ class LocalFileStoreTest{
         val data = testString.toByteArray()
 
         val id = data.inputStream().use{ localFileStore.write(it) }
-        assertEquals(id, Id(data))
+        assertEquals(id, Id.ofData(data))
 
         val data1 = localFileStore.read(id)
         assert(data.contentEquals(data1))

@@ -1,14 +1,9 @@
 package opencola.core.model
 
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 import opencola.core.security.sha256
 import opencola.core.extensions.hexStringToByteArray
+import opencola.core.extensions.nullOrElse
 import opencola.core.extensions.toHexString
 import java.net.URI
 import java.security.PublicKey
@@ -19,33 +14,11 @@ import java.security.PublicKey
 
 // TODO: This is really just a typed value with specialized constructors. Why can't they share serialization code when they have the same properties and one derives from the other?
 // Maybe aggregate rather than derive?
-@Serializable(with = Id.IdAsStringSerializer::class)
-class Id {
-    private val value: ByteArray
-
-    // TODO: Put these constructors in companion object. This class should be minimal
-    private constructor(decoder: Decoder){
-        value = decoder.decodeString().hexStringToByteArray()
-    }
-
-    constructor(publicKey: PublicKey){
-        value = sha256(publicKey.encoded)
-    }
-
-    constructor(uri: URI){
-        value = sha256(uri.toString())
-    }
-
-    // TODO: Add constructor that takes stream so whole file doesn't need to be loaded
-    // TODO: Think about a data object rather than ByteArray
-    constructor(data: ByteArray) {
-        value = sha256(data)
-    }
-
-    // Construct id from a serialized string value
-    // TODO: This seems a bit wrong, as all other constructors hash the input
-    constructor(id: String){
-        value = id.hexStringToByteArray()
+// TODO: Make data class
+@Serializable
+data class Id private constructor(private val value: ByteArray) {
+    init{
+        assert(value.size == 32) { "Invalid id - size = ${value.size} but should be 32" }
     }
 
     override fun toString(): String {
@@ -63,16 +36,33 @@ class Id {
             false
     }
 
-    // TODO: See if this can be pulled out and shared with Value
-    object IdAsStringSerializer : KSerializer<Id> {
-        override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("Value", PrimitiveKind.STRING)
-
-        override fun serialize(encoder: Encoder, value: Id) {
-            encoder.encodeString(value.toString())
+    companion object Factory : ByteArrayCodec {
+        // Construct id from a serialized string value
+        // TODO: Should this be here?
+        fun fromHexString(idAsHexString: String) : Id {
+            return Id(idAsHexString.hexStringToByteArray())
         }
 
-        override fun deserialize(decoder: Decoder): Id {
-            return Id(decoder)
+        fun ofPublicKey(publicKey: PublicKey) : Id {
+            return Id(sha256(publicKey.encoded))
+        }
+
+        fun ofUri(uri: URI) : Id {
+             return Id(sha256(uri.toString().toByteArray()))
+        }
+
+        // TODO: Add constructor that takes stream so whole file doesn't need to be loaded
+        // TODO: Think about a data object rather than ByteArray
+        fun ofData(data: ByteArray) : Id {
+            return Id(sha256(data))
+        }
+
+        override fun encode(id: Any?): ByteArray {
+             return (id as Id).value
+        }
+
+        override fun decode(value: ByteArray?): Any? {
+             return value.nullOrElse { Id(it) }
         }
     }
 }

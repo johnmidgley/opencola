@@ -134,7 +134,7 @@ open class ActorEntity : Entity {
                 tags: Set<String>? = null,
                 like: Boolean? = null,
                 rating: Float? = null,
-    ) : super(authorityId, Id(publicKey)){
+    ) : super(authorityId, Id.ofPublicKey(publicKey)){
         // Null checks are more efficient, but more importantly, don't result in retracting facts
         if(uri != null) this.uri = uri
         if(imageUri != null) this.imageUri = imageUri
@@ -163,7 +163,7 @@ class Authority : ActorEntity {
                 tags: Set<String>? = null,
                 like: Boolean? = null,
                 rating: Float? = null,
-    ) : super(Id(keyPair.public), keyPair.public, uri, imageUri, name, description, trust, tags, like, rating){
+    ) : super(Id.ofPublicKey(keyPair.public), keyPair.public, uri, imageUri, name, description, trust, tags, like, rating){
         privateKey = keyPair.private
     }
 
@@ -193,7 +193,7 @@ open class ResourceEntity : Entity {
                 tags: Set<String>? = null,
                 like: Boolean? = null,
                 rating: Float? = null,
-    ) : super(authorityId, Id(uri)){
+    ) : super(authorityId, Id.ofUri(uri)){
         // Null checks are more efficient, but more importantly, don't result in retracting facts
         this.uri = uri
         if(imageUri != null) this.imageUri = imageUri
@@ -214,7 +214,7 @@ open class ResourceEntity : Entity {
 // parent - id of parent (container or website)
 // name, desc, tags, trust, like, rating
 open class DataEntity : Entity {
-    constructor(authorityId: Id, uri: URI, data: ByteArray) : super(authorityId, Id(data)){
+    constructor(authorityId: Id, uri: URI, data: ByteArray) : super(authorityId, Id.ofData(data)){
         this.uri = uri
     }
     constructor(facts: List<Fact>) : super(facts)
