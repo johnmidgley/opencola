@@ -5,7 +5,7 @@ import java.net.URI
 // NOTE: In order to be properly searchable, attributes should be added to the search schema.
 // TODO: Remove enum - not needed. Just have specs that you can look up by name or URI
 // TODO: Create dynamic attribute list for extensibility
-enum class Attributes(val spec: Attribute) {
+enum class CoreAttribute(val spec: Attribute) {
     Type(Attribute(URI("opencola://attributes/type"), StringAttributeDelegate, false)),
     Uri(Attribute(URI("opencola://attributes/uri"), UriAttributeDelegate,false)),
     DataId(Attribute(URI("opencola://attributes/dataId"), IdAttributeDelegate,false)),
@@ -19,7 +19,7 @@ enum class Attributes(val spec: Attribute) {
     Rating(Attribute(URI("opencola://attributes/rating"), FloatAttributeDelegate,true))
 }
 
-private val attributesByName = Attributes.values().associateBy { it.spec.name }
+private val attributesByName = CoreAttribute.values().associateBy { it.spec.name }
 
 fun getAttributeByName(name: String) : Attribute? {
     return attributesByName[name]?.spec

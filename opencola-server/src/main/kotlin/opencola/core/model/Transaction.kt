@@ -4,7 +4,6 @@ import opencola.core.security.sign
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import mu.KotlinLogging
 import opencola.core.security.isValidSignature
 import java.security.PrivateKey
 import java.security.PublicKey
@@ -17,7 +16,7 @@ class Transaction{
     val id: Long
     private val transactionFacts: List<TransactionFact>
     fun getFacts(): List<Fact> {
-        return transactionFacts.map { Fact(authorityId, it.entityId, it.attribute, it.value, it.op, id) }
+        return transactionFacts.map { Fact(authorityId, it.entityId, it.attribute, it.value, it.operation, id) }
     }
 
     constructor(authorityId: Id, facts: List<Fact>, id: Long){
@@ -49,10 +48,10 @@ class Transaction{
 
     @Serializable
     // TODO: Consider making value a Value with a clean string serializer (signature too). Maybe doesn't matter with protobuf, but nice for json
-    data class TransactionFact(val entityId: Id, val attribute: Attribute, val value: Value?, val op: Boolean) {
+    data class TransactionFact(val entityId: Id, val attribute: Attribute, val value: Value?, val operation: Operation) {
          companion object Factory {
             fun fromFact(fact: Fact): TransactionFact {
-                return TransactionFact(fact.entityId, fact.attribute, fact.value, fact.add)
+                return TransactionFact(fact.entityId, fact.attribute, fact.value, fact.operation)
             }
         }
     }

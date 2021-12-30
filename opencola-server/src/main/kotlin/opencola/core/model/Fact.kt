@@ -3,7 +3,6 @@ package opencola.core.model
 import kotlinx.serialization.Serializable
 import java.io.InputStream
 import java.io.OutputStream
-import java.net.URI
 
 // TODO - Make MAXLONG?
 const val UNCOMMITTED = -1L
@@ -16,15 +15,15 @@ const val UNCOMMITTED = -1L
 // TODO: Change add to operation enum
 // TODO: Make ids ByteArray's at this level to be consistent
 @Serializable
-data class Fact(val authorityId: Id, val entityId: Id, val attribute: Attribute, val value: Value?, val add: Boolean, val transactionId: Long = UNCOMMITTED){
+data class Fact(val authorityId: Id, val entityId: Id, val attribute: Attribute, val value: Value?, val operation: Operation, val transactionId: Long = UNCOMMITTED){
 
     override fun toString(): String {
         val decodedValue = attribute.codec.decode(value?.value)
-        return "{ authorityId: $authorityId entityId: $entityId attribute: $attribute value: $decodedValue add: $add transactionId: $transactionId"
+        return "{ authorityId: $authorityId entityId: $entityId attribute: $attribute value: $decodedValue operation: $operation transactionId: $transactionId"
     }
 
     fun updateTransactionId(transactionId: Long): Fact {
-        return Fact(authorityId, entityId, attribute, value, add, transactionId)
+        return Fact(authorityId, entityId, attribute, value, operation, transactionId)
     }
 
     companion object Factory : ByteArrayStreamCodec<Fact> {

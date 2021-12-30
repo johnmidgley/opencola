@@ -29,10 +29,10 @@ abstract class Entity(private val authorityId: Id, val entityId: Id){
 
             // TODO: Validate that all subjects and entities are equal
             // TODO: Should type be mutable? Probably no
-            val typeFact = facts.lastOrNull(){ it.attribute == Attributes.Type.spec }
+            val typeFact = facts.lastOrNull(){ it.attribute == CoreAttribute.Type.spec }
                 ?: throw IllegalStateException("Entity has no type")
 
-            return when(Attributes.Type.spec.codec.decode(typeFact.value?.value).toString()){
+            return when(CoreAttribute.Type.spec.codec.decode(typeFact.value?.value).toString()){
                 // TODO: Use fully qualified names
                 ActorEntity::class.simpleName -> ActorEntity(facts)
                 // Authority::class.simpleName -> Authority(facts)
@@ -104,7 +104,7 @@ abstract class Entity(private val authorityId: Id, val entityId: Id){
             }
         }
 
-        val newFact = Fact(authorityId, entityId, attribute, value, value != null)
+        val newFact = Fact(authorityId, entityId, attribute, value, if (value != null) Operation.Add else Operation.Retract)
         facts = facts + newFact
         return newFact
     }

@@ -2,7 +2,7 @@ package opencola.core.search
 
 
 import com.lordcodes.turtle.shellRun
-import opencola.core.model.Attributes
+import opencola.core.model.CoreAttribute
 import opencola.core.model.Id
 import opencola.core.model.Authority
 import opencola.core.model.Entity
@@ -114,8 +114,8 @@ class SearchService(val authority: Authority) {
         return queryResponse.results.map{
             SearchResult(
                 Id.fromHexString(it.getFieldValue("id").toString()),
-                it.getFieldValue(Attributes.Name.spec.name)?.toString(),
-                it.getFieldValue(Attributes.Description.spec.name)?.toString(),
+                it.getFieldValue(CoreAttribute.Name.spec.name)?.toString(),
+                it.getFieldValue(CoreAttribute.Description.spec.name)?.toString(),
             )
         }.toList()
     }
@@ -129,7 +129,7 @@ class SearchService(val authority: Authority) {
         doc.addField("id", entity.entityId.toString())
 
         // TODO: Probably need to manage multivalued fields (like tags) differently
-        Attributes.values()
+        CoreAttribute.values()
             .map{ it.spec }
             .filter { it.isIndexable }
             .map { Pair(it.name, it.codec.decode(entity.getValue(it.name)?.value)) }

@@ -2,7 +2,7 @@ import opencola.core.storage.EntityStore
 import opencola.core.security.generateKeyPair
 import opencola.core.model.Id
 import opencola.core.model.ActorEntity
-import opencola.core.model.Attributes
+import opencola.core.model.CoreAttribute
 import opencola.core.model.ResourceEntity
 import java.net.URI
 import kotlin.test.Test
@@ -58,7 +58,7 @@ class EntityTest {
         val entity = ResourceEntity(Id.ofUri(uri), uri)
         entity.uri = uri
 
-        assertEquals(1, entity.getFacts().filter{ it.attribute == Attributes.Uri.spec}.size)
+        assertEquals(1, entity.getFacts().filter{ it.attribute == CoreAttribute.Uri.spec}.size)
         assertFails { entity.uri = URI("opencola://different-uri") }
 
         val authority = getAuthority()

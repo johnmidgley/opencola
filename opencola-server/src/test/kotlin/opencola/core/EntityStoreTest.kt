@@ -4,7 +4,6 @@ import opencola.core.storage.EntityStore
 import java.nio.file.Path
 import kotlin.io.path.createTempFile
 import kotlin.test.Test
-import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
 class EntityStoreTest {
@@ -31,7 +30,7 @@ class EntityStoreTest {
             assertEquals(it.first.entityId, it.second.entityId)
             assertEquals(it.first.attribute, it.second.attribute)
             assertEquals(it.first.value, it.second.value)
-            assertEquals(it.first.add, it.second.add)
+            assertEquals(it.first.operation, it.second.operation)
             // Transaction id changes on commit, so we don't expect them to be the same
             assertEquals(UNCOMMITTED, it.first.transactionId)
             assertEquals(0, it.second.transactionId)

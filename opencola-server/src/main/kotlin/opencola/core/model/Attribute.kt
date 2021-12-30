@@ -17,7 +17,7 @@ data class Attribute(val name: String, val uri: URI, val codec: ByteArrayCodec, 
 
     companion object Factory : ByteArrayStreamCodec<Attribute>{
         override fun encode(stream: OutputStream, value: Attribute): OutputStream {
-            val ordinal = Attributes.values().firstOrNull{ it.spec == value }?.ordinal
+            val ordinal = CoreAttribute.values().firstOrNull{ it.spec == value }?.ordinal
                 ?: throw NotImplementedError("Attempt to encode Attribute not in Attributes enum: ${value.uri}")
             stream.write(ordinal)
             return stream
@@ -25,7 +25,7 @@ data class Attribute(val name: String, val uri: URI, val codec: ByteArrayCodec, 
 
         override fun decode(stream: InputStream): Attribute {
             val ordinal = stream.read()
-            return Attributes.values().firstOrNull { it.ordinal == ordinal }?.spec
+            return CoreAttribute.values().firstOrNull { it.ordinal == ordinal }?.spec
                 ?: throw RuntimeException("Attempt to decode attribute with invalid ordinal: $ordinal")
         }
     }
@@ -40,7 +40,7 @@ data class Attribute(val name: String, val uri: URI, val codec: ByteArrayCodec, 
         override fun deserialize(decoder: Decoder): Attribute {
             val uri = URI(decoder.decodeString())
             // TODO: Won't work with dynamic attributes (i.e. outside of Attributes enum)
-            return Attributes.values().firstOrNull { it.spec.uri == uri }?.spec
+            return CoreAttribute.values().firstOrNull { it.spec.uri == uri }?.spec
                 ?: throw RuntimeException("Attempt to decode unknown attribute: $uri")
         }
     }
