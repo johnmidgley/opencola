@@ -22,11 +22,13 @@ object BooleanAttributeDelegate : ByteArrayCodec {
         thisRef.setValue(property.name, encode(value))
     }
 
+    // TODO: Can these be bytes instead?
     private const val FALSE = 0
     private const val TRUE = 1
 
     override fun encode(value: Any?): ByteArray {
-        return ByteBuffer.allocate(4).putInt(if (value as Boolean) TRUE else FALSE).array()
+
+        return ByteBuffer.allocate(Int.SIZE_BYTES).putInt(if (value as Boolean) TRUE else FALSE).array()
     }
 
     override fun decode(value: ByteArray?): Boolean? {
@@ -44,7 +46,7 @@ object FloatAttributeDelegate : ByteArrayCodec {
     }
 
     override fun encode(value: Any?): ByteArray {
-        return ByteBuffer.allocate(4).putFloat(value as Float).array()
+        return ByteBuffer.allocate(Float.SIZE_BYTES).putFloat(value as Float).array()
     }
 
     override fun decode(value: ByteArray?): Float? {
