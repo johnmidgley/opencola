@@ -1,8 +1,11 @@
 package opencola.core.model
 
 import kotlinx.serialization.Serializable
+import java.io.InputStream
+import java.io.OutputStream
 import java.net.URI
 
+// TODO - Make MAXLONG?
 const val UNCOMMITTED = -1L
 
 // TODO: Use protobuf
@@ -49,5 +52,21 @@ data class Fact(val authorityId: Id, val entityId: Id, val attribute: String, va
         result = 31 * result + add.hashCode()
         result = 31 * result + transactionId.hashCode()
         return result
+    }
+
+    companion object Factory : ByteArrayStreamCodec<Fact> {
+        override fun encode(stream: OutputStream, value: Fact): OutputStream {
+            Id.encode(stream, value.authorityId)
+            Id.encode(stream, value.entityId)
+            TODO("Implement attribute encode")
+            TODO("Implement value encode")
+            TODO("Implement Operation enum and encode")
+            stream.write(LongByteArrayCodec.encode(value.transactionId))
+        }
+
+        override fun decode(stream: InputStream): Fact {
+            TODO("Not yet implemented")
+        }
+
     }
 }
