@@ -29,7 +29,7 @@ abstract class Entity(private val authorityId: Id, val entityId: Id){
 
             // TODO: Validate that all subjects and entities are equal
             // TODO: Should type be mutable? Probably no
-            val typeFact = facts.lastOrNull(){ it.attribute == Attributes.Type.spec.uri.toString() }
+            val typeFact = facts.lastOrNull(){ it.attribute == Attributes.Type.spec }
                 ?: throw IllegalStateException("Entity has no type")
 
             return when(Attributes.Type.spec.codec.decode(typeFact.value?.value).toString()){
@@ -79,9 +79,9 @@ abstract class Entity(private val authorityId: Id, val entityId: Id){
         return true
     }
 
-    private fun getFact(propertyName: String) : Pair<Attributes, Fact?> {
+    private fun getFact(propertyName: String) : Pair<Attribute, Fact?> {
         val attribute = getAttributeByName(propertyName) ?: throw IllegalArgumentException("Attempt to access unknown property $propertyName")
-        val fact =  facts.lastOrNull{ it.attribute == attribute.spec.uri.toString() }
+        val fact =  facts.lastOrNull{ it.attribute == attribute }
         return Pair(attribute, fact)
     }
 
@@ -104,7 +104,7 @@ abstract class Entity(private val authorityId: Id, val entityId: Id){
             }
         }
 
-        val newFact = Fact(authorityId, entityId, attribute.spec.uri.toString(), value, value != null)
+        val newFact = Fact(authorityId, entityId, attribute, value, value != null)
         facts = facts + newFact
         return newFact
     }

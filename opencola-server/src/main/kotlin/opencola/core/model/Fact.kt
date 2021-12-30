@@ -16,10 +16,10 @@ const val UNCOMMITTED = -1L
 // TODO: Change add to operation enum
 // TODO: Make ids ByteArray's at this level to be consistent
 @Serializable
-data class Fact(val authorityId: Id, val entityId: Id, val attribute: String, val value: Value?, val add: Boolean, val transactionId: Long = UNCOMMITTED){
+data class Fact(val authorityId: Id, val entityId: Id, val attribute: Attribute, val value: Value?, val add: Boolean, val transactionId: Long = UNCOMMITTED){
 
     override fun toString(): String {
-        val decodedValue = Attributes.values().first { it.spec.uri == URI(attribute) }.spec.codec.decode(value?.value)
+        val decodedValue = attribute.codec.decode(value?.value)
         return "{ authorityId: $authorityId entityId: $entityId attribute: $attribute value: $decodedValue add: $add transactionId: $transactionId"
     }
 

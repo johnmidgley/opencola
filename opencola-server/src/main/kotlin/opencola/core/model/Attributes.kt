@@ -21,8 +21,8 @@ enum class Attributes(val spec: Attribute) {
 
 private val attributesByName = Attributes.values().associateBy { it.spec.name }
 
-fun getAttributeByName(name: String) : Attributes? {
-    return attributesByName[name]
+fun getAttributeByName(name: String) : Attribute? {
+    return attributesByName[name]?.spec
 }
 
 

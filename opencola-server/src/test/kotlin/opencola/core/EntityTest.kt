@@ -58,7 +58,7 @@ class EntityTest {
         val entity = ResourceEntity(Id.ofUri(uri), uri)
         entity.uri = uri
 
-        assertEquals(1, entity.getFacts().filter{ it.attribute == Attributes.Uri.spec.uri.toString()}.size)
+        assertEquals(1, entity.getFacts().filter{ it.attribute == Attributes.Uri.spec}.size)
         assertFails { entity.uri = URI("opencola://different-uri") }
 
         val authority = getAuthority()

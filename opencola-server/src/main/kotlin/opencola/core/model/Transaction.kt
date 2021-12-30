@@ -49,7 +49,7 @@ class Transaction{
 
     @Serializable
     // TODO: Consider making value a Value with a clean string serializer (signature too). Maybe doesn't matter with protobuf, but nice for json
-    data class TransactionFact(val entityId: Id, val attribute: String, val value: Value?, val op: Boolean) {
+    data class TransactionFact(val entityId: Id, val attribute: Attribute, val value: Value?, val op: Boolean) {
          companion object Factory {
             fun fromFact(fact: Fact): TransactionFact {
                 return TransactionFact(fact.entityId, fact.attribute, fact.value, fact.add)
