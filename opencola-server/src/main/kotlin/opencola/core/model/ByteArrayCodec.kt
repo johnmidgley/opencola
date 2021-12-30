@@ -4,6 +4,7 @@ import opencola.core.extensions.nullOrElse
 import java.nio.ByteBuffer
 
 // TODO: Can this be generified?
+// TODO: Should this be ValueCodec?
 interface ByteArrayCodec {
     fun encode(value: Any?): ByteArray
     fun decode(value: ByteArray?): Any?

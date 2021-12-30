@@ -2,8 +2,8 @@ package opencola.core.model
 
 import java.net.URI
 
-data class AttributeSpec(val name: String, val uri: URI, val encoder: ByteArrayCodec, val isIndexable: Boolean){
-    constructor(uri: URI, encoder: ByteArrayCodec, index: Boolean) : this(uri.path.split("/").last(), uri, encoder, index)
+data class AttributeSpec(val name: String, val uri: URI, val codec: ByteArrayCodec, val isIndexable: Boolean){
+    constructor(uri: URI, codec: ByteArrayCodec, index: Boolean) : this(uri.path.split("/").last(), uri, codec, index)
 }
 
 // NOTE: In order to be properly searchable, attributes should be added to the search schema.

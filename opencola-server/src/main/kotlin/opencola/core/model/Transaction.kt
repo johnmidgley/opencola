@@ -49,33 +49,8 @@ class Transaction{
 
     @Serializable
     // TODO: Consider making value a Value with a clean string serializer (signature too). Maybe doesn't matter with protobuf, but nice for json
-    data class TransactionFact(val entityId: Id, val attribute: String, val value: ByteArray?, val op: Boolean) {
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (javaClass != other?.javaClass) return false
-
-            other as TransactionFact
-
-            if (entityId != other.entityId) return false
-            if (attribute != other.attribute) return false
-            if (value != null) {
-                if (other.value == null) return false
-                if (!value.contentEquals(other.value)) return false
-            } else if (other.value != null) return false
-            if (op != other.op) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            var result = entityId.hashCode()
-            result = 31 * result + attribute.hashCode()
-            result = 31 * result + (value?.contentHashCode() ?: 0)
-            result = 31 * result + op.hashCode()
-            return result
-        }
-
-        companion object Factory {
+    data class TransactionFact(val entityId: Id, val attribute: String, val value: Value?, val op: Boolean) {
+         companion object Factory {
             fun fromFact(fact: Fact): TransactionFact {
                 return TransactionFact(fact.entityId, fact.attribute, fact.value, fact.add)
             }

@@ -30,7 +30,7 @@ class EntityStoreTest {
             assertEquals(it.first.authorityId, it.second.authorityId)
             assertEquals(it.first.entityId, it.second.entityId)
             assertEquals(it.first.attribute, it.second.attribute)
-            assertContentEquals(it.first.value, it.second.value)
+            assertEquals(it.first.value, it.second.value)
             assertEquals(it.first.add, it.second.add)
             // Transaction id changes on commit, so we don't expect them to be the same
             assertEquals(UNCOMMITTED, it.first.transactionId)

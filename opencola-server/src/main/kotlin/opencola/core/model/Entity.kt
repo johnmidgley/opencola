@@ -32,7 +32,7 @@ abstract class Entity(private val authorityId: Id, val entityId: Id){
             val typeFact = facts.lastOrNull(){ it.attribute == Attributes.Type.spec.uri.toString() }
                 ?: throw IllegalStateException("Entity has no type")
 
-            return when(Attributes.Type.spec.encoder.decode(typeFact.value).toString()){
+            return when(Attributes.Type.spec.codec.decode(typeFact.value?.value).toString()){
                 // TODO: Use fully qualified names
                 ActorEntity::class.simpleName -> ActorEntity(facts)
                 // Authority::class.simpleName -> Authority(facts)
@@ -85,16 +85,16 @@ abstract class Entity(private val authorityId: Id, val entityId: Id){
         return Pair(attribute, fact)
     }
 
-    internal fun getValue(propertyName: String) : ByteArray? {
+    internal fun getValue(propertyName: String) : Value? {
         val (_, fact) = getFact(propertyName)
         return fact?.value
     }
 
-    internal fun setValue(propertyName: String, value: ByteArray?) : Fact {
+    internal fun setValue(propertyName: String, value: Value?) : Fact {
         val (attribute, currentFact) = getFact(propertyName)
 
         if(currentFact != null){
-            if(currentFact.value.contentEquals(value)) {
+            if(currentFact.value == value) {
                 // Fact has not changed, so no need to create a new one
                 return currentFact
             }

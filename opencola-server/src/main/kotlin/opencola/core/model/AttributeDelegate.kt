@@ -15,11 +15,11 @@ import kotlin.reflect.KProperty
 // TODO - Only allow update if value has changed - otherwise ignore (i.e. get before setting)
 object BooleanAttributeDelegate : ByteArrayCodec {
     operator fun getValue(thisRef: Entity, property: KProperty<*>): Boolean? {
-        return decode(thisRef.getValue(property.name))
+        return decode(thisRef.getValue(property.name)?.value)
     }
 
     operator fun setValue(thisRef: Entity, property: KProperty<*>, value: Boolean?) {
-        thisRef.setValue(property.name, encode(value))
+        thisRef.setValue(property.name, Value(encode(value)))
     }
 
     // TODO: Can these be bytes instead?
@@ -38,11 +38,11 @@ object BooleanAttributeDelegate : ByteArrayCodec {
 
 object FloatAttributeDelegate : ByteArrayCodec {
     operator fun getValue(thisRef: Entity, property: KProperty<*>): Float? {
-        return decode(thisRef.getValue(property.name))
+        return decode(thisRef.getValue(property.name)?.value)
     }
 
     operator fun setValue(thisRef: Entity, property: KProperty<*>, value: Float?) {
-        thisRef.setValue(property.name, encode(value))
+        thisRef.setValue(property.name, Value(encode(value)))
     }
 
     override fun encode(value: Any?): ByteArray {
@@ -56,11 +56,11 @@ object FloatAttributeDelegate : ByteArrayCodec {
 
 object StringAttributeDelegate : ByteArrayCodec {
     operator fun getValue(thisRef: Entity, property: KProperty<*>): String? {
-        return decode(thisRef.getValue(property.name))
+        return decode(thisRef.getValue(property.name)?.value)
     }
 
     operator fun setValue(thisRef: Entity, property: KProperty<*>, value: String?) {
-        thisRef.setValue(property.name, encode(value))
+        thisRef.setValue(property.name, Value(encode(value)))
     }
 
     override fun encode(value: Any?): ByteArray {
@@ -74,11 +74,11 @@ object StringAttributeDelegate : ByteArrayCodec {
 
 object IdAttributeDelegate : ByteArrayCodec {
     operator fun getValue(thisRef: Entity, property: KProperty<*>): Id? {
-        return decode(thisRef.getValue(property.name))
+        return decode(thisRef.getValue(property.name)?.value)
     }
 
     operator fun setValue(thisRef: Entity, property: KProperty<*>, value: Id?) {
-        thisRef.setValue(property.name, encode(value))
+        thisRef.setValue(property.name, Value(encode(value)))
     }
 
     override fun encode(value: Any?): ByteArray {
@@ -92,11 +92,11 @@ object IdAttributeDelegate : ByteArrayCodec {
 
 object UriAttributeDelegate : ByteArrayCodec {
     operator fun getValue(thisRef: Entity, property: KProperty<*>): URI? {
-        return decode(thisRef.getValue(property.name))
+        return decode(thisRef.getValue(property.name)?.value)
     }
 
     operator fun setValue(thisRef: Entity, property: KProperty<*>, value: URI?) {
-        thisRef.setValue(property.name, encode(value))
+        thisRef.setValue(property.name, Value(encode(value)))
     }
 
     override fun encode(value: Any?): ByteArray {
@@ -111,11 +111,11 @@ object UriAttributeDelegate : ByteArrayCodec {
 object SetOfStringAttributeDelegate : ByteArrayCodec {
     operator fun getValue(thisRef: Entity, property: KProperty<*>): Set<String>? {
         // TODO: Is there anything that can be done here, given Type erasure? Probably make tags class...
-        return decode(thisRef.getValue(property.name))
+        return decode(thisRef.getValue(property.name)?.value)
     }
 
     operator fun setValue(thisRef: Entity, property: KProperty<*>, value: Set<String>?) {
-        thisRef.setValue(property.name, encode(value))
+        thisRef.setValue(property.name, Value(encode(value)))
     }
 
     override fun encode(value: Any?): ByteArray {
@@ -130,11 +130,11 @@ object SetOfStringAttributeDelegate : ByteArrayCodec {
 
 object PublicKeyAttributeDelegate : ByteArrayCodec {
     operator fun getValue(thisRef: Entity, property: KProperty<*>): PublicKey? {
-        return decode(thisRef.getValue(property.name))
+        return decode(thisRef.getValue(property.name)?.value)
     }
 
     operator fun setValue(thisRef: Entity, property: KProperty<*>, value: PublicKey?) {
-        thisRef.setValue(property.name, encode(value))
+        thisRef.setValue(property.name, Value(encode(value)))
     }
 
     override fun encode(value: Any?): ByteArray {
