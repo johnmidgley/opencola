@@ -3,6 +3,7 @@ package opencola.core.model
 import java.io.InputStream
 import java.io.OutputStream
 
+
 enum class Operation {
     Add,
     Retract;

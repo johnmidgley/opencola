@@ -21,6 +21,7 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf-jvm:1.3.2")
 
     // Search: https://solr.apache.org/guide/8_11/using-solrj.html
     implementation("org.apache.solr:solr-solrj:8.11.0")

@@ -4,6 +4,7 @@ import opencola.core.security.sign
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.protobuf.ProtoBuf
 import opencola.core.security.isValidSignature
 import java.security.PrivateKey
 import java.security.PublicKey
@@ -43,6 +44,7 @@ class Transaction{
         // This is probably not the right way to serialize. Likely should create a serializer / provider that can be
         // configured to serialize in an appropriate format.
         // TODO: Validate transaction
+        // TODO: Switch to efficient serialization
         return SignedTransaction(this, sign(privateKey, this.toString().toByteArray()))
     }
 
