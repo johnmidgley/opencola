@@ -32,11 +32,11 @@ data class Fact(val authorityId: Id, val entityId: Id, val attribute: Attribute,
             Attribute.encode(stream, value.attribute)
             Value.encode(stream, value.value)
             Operation.encode(stream, value.operation)
-            stream.write(LongByteArrayCodec.encode(value.transactionId))
+            writeLong(stream, value.transactionId)
         }
 
         override fun decode(stream: InputStream): Fact {
-            TODO("Not yet implemented")
+            return Fact(Id.decode(stream), Id.decode(stream), Attribute.decode(stream), Value.decode(stream), Operation.decode(stream), readLong(stream))
         }
 
     }
