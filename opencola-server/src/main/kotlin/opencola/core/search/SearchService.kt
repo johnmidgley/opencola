@@ -7,12 +7,13 @@ import opencola.core.model.Id
 import opencola.core.model.Authority
 import opencola.core.model.Entity
 import mu.KotlinLogging
+import opencola.core.extensions.logErrorAndThrow
 import opencola.core.extensions.nullOrElse
 import org.apache.solr.client.solrj.impl.HttpSolrClient
 import org.apache.solr.client.solrj.request.CoreAdminRequest
-import org.apache.solr.client.solrj.response.UpdateResponse
 import org.apache.solr.common.SolrInputDocument
 import org.apache.solr.common.params.MapSolrParams
+import org.apache.solr.common.util.NamedList
 import java.io.File
 
 
@@ -42,18 +43,18 @@ class SearchService(val authority: Authority) {
         createIndex()
     }
 
-    fun isCoreReady() : Boolean {
-        try {
-            return CoreAdminRequest.getStatus(
+    private fun isCoreReady() : Boolean {
+        return try {
+            CoreAdminRequest.getStatus(
                 solrCollectionName,
                 solrClient
             ).coreStatus[solrCollectionName].get("dataDir") != null
         }catch(e: Exception){
-            return false
+            false
         }
     }
 
-    fun waitUntilCoreReady(pollIntervalInMilliseconds: Long, maxRetries: Int) : Boolean {
+    private fun waitUntilCoreReady(pollIntervalInMilliseconds: Long = 300, maxRetries: Int = 20) : Boolean {
         var attempt = 0
 
         // Probably a nicer functional way to do this by creating a sequence of retries
@@ -68,31 +69,35 @@ class SearchService(val authority: Authority) {
         return false
     }
     fun createIndex() : Boolean{
+        logger.info { "Creating Index: $solrCollectionName" }
         // Shell docs at: https://github.com/lordcodes/turtle
         // TODO - error checking
         // TODO - Check that solr exists and that authorities directory exists (create if not)
-
-        var status = CoreAdminRequest.getStatus(solrCollectionName, solrClient)
 
         if(!isCoreReady()) {
             val createRequest = CoreAdminRequest.Create()
             createRequest.setCoreName(solrCollectionName)
             createRequest.configSet = configSet
-            val res = solrClient.request(createRequest)
+            // TODO: Fix this warning - https://stackoverflow.com/questions/36569421/kotlin-how-to-work-with-list-casts-unchecked-cast-kotlin-collections-listkot
+            val status = (solrClient.request(createRequest)["responseHeader"] as NamedList<Int>).get("status")
 
-            return waitUntilCoreReady(300, 20)
+            if(status != 0){
+                logger.logErrorAndThrow("Index creation failed with status $status")
+            }
+
+            return waitUntilCoreReady()
         }
 
         return true
     }
 
     fun deleteIndex(){
-        CoreAdminRequest.unloadCore(solrCollectionName, solrClient)
-//        var result = shellRun(networkPath){
-//            command("rm", listOf("-rf", "var-solr/data/$solrCollectionName"))
-//        }
+        logger.info { "Deleting Index: $solrCollectionName" }
 
-        var result = shellRun(networkPath){
+        CoreAdminRequest.unloadCore(solrCollectionName, solrClient)
+
+        // TODO: Check result
+        shellRun(networkPath){
             command("docker-compose", listOf("exec", "solr", "rm", "-rf", "/var/solr/data/$solrCollectionName"))
         }
     }
@@ -101,9 +106,11 @@ class SearchService(val authority: Authority) {
     // Should use Dismax parser: https://solr.apache.org/guide/8_10/the-dismax-query-parser.html
     // Highlighting: https://solr.apache.org/guide/8_10/highlighting.html
     // Spell checking: https://solr.apache.org/guide/8_10/spell-checking.html
-    // Sugester: https://solr.apache.org/guide/8_10/suggester.html
+    // Suggester: https://solr.apache.org/guide/8_10/suggester.html
     // More like this: https://solr.apache.org/guide/8_10/morelikethis.html (Likely better with phrase vector matching)
     fun search(query: String): List<SearchResult> {
+        logger.info { "Searching: $query" }
+
         // Can do with without mutating using "to" operator
 
         // TODO: - Return Local search results, not solr objects
@@ -126,6 +133,8 @@ class SearchService(val authority: Authority) {
     // Also think about adding "from" multi field, so peer ids can be stored too.
     // Consider external fields for personalized ranks: https://solr.apache.org/guide/8_10/working-with-external-files-and-processes.html
     fun index(entity: Entity){
+        logger.info { "Indexing: ${entity.entityId}" }
+
         val doc = SolrInputDocument()
         doc.addField("id", entity.entityId.toString())
 
@@ -136,12 +145,12 @@ class SearchService(val authority: Authority) {
             .map { Pair(it.name, entity.getValue(it.name).nullOrElse { v -> it.codec.decode(v.bytes) } ) }
             .filter { it.second != null }
             .forEach {
-                var (name, value) = it
+                val (name, value) = it
                 doc.addField(name, value)
             }
 
         // TODO - check status of update, commit and log errors
-        val updateResponse: UpdateResponse = solrClient.add(solrCollectionName, doc)
+        solrClient.add(solrCollectionName, doc)
         solrClient.commit(solrCollectionName)
     }
 }
