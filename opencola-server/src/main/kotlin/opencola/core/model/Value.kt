@@ -22,14 +22,18 @@ data class Value(val bytes: ByteArray) {
         return bytes.contentHashCode()
     }
 
-    companion object Factory : ByteArrayStreamCodec<ByteArray> {
-        override fun encode(stream: OutputStream, value: ByteArray): OutputStream {
-            TODO("Not yet implemented")
+    companion object Factory : ByteArrayStreamCodec<Value?> {
+        private val emptyValue = Value("".toByteArray())
+
+        override fun encode(stream: OutputStream, value: Value?) {
+            writeByteArray(stream, (value ?: emptyValue).bytes)
         }
 
-        override fun decode(stream: InputStream): ByteArray {
-            TODO("Not yet implemented")
+        override fun decode(stream: InputStream): Value? {
+            val bytes = readByteArray(stream)
+            return if(bytes.isEmpty()) emptyValue else Value(bytes)
         }
+
 
     }
 }

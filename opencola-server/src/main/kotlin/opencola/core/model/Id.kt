@@ -3,7 +3,6 @@ package opencola.core.model
 import kotlinx.serialization.Serializable
 import opencola.core.security.sha256
 import opencola.core.extensions.hexStringToByteArray
-import opencola.core.extensions.nullOrElse
 import opencola.core.extensions.toHexString
 import java.io.InputStream
 import java.io.OutputStream
@@ -17,25 +16,25 @@ import java.security.PublicKey
 // TODO: This is really just a typed value with specialized constructors. Why can't they share serialization code when they have the same properties and one derives from the other?
 // Maybe aggregate rather than derive?
 // TODO: Make data class
-private const val valueSize = 32 // 32 bytes for a sha256 hash
+private const val bytesSize = 32 // 32 bytes for a sha256 hash
 
 @Serializable
-data class Id(private val value: ByteArray) {
+data class Id(private val bytes: ByteArray) {
     init{
-        assert(value.size == valueSize) { "Invalid id - size = ${value.size} but should be $valueSize" }
+        assert(bytes.size == bytesSize) { "Invalid id - size = ${bytes.size} but should be $bytesSize" }
     }
 
     override fun toString(): String {
-        return value.toHexString()
+        return bytes.toHexString()
     }
 
     override fun hashCode(): Int {
-        return value.hashCode()
+        return bytes.hashCode()
     }
 
     override fun equals(other: Any?): Boolean {
         return if(other is Id)
-            return value.contentEquals(other.value)
+            return bytes.contentEquals(other.bytes)
         else
             false
     }
@@ -61,21 +60,20 @@ data class Id(private val value: ByteArray) {
             return Id(sha256(data))
         }
 
-        override fun encode(id: Id): ByteArray {
-             return id.value
+        override fun encode(value: Id): ByteArray {
+             return value.bytes
         }
 
         override fun decode(value: ByteArray): Id {
              return Id(value)
         }
 
-        override fun encode(stream: OutputStream, id: Id): OutputStream {
-            stream.write(id.value)
-            return stream
+        override fun encode(stream: OutputStream, value: Id) {
+            stream.write(value.bytes)
         }
 
         override fun decode(stream: InputStream): Id {
-            return Id(stream.readNBytes(valueSize))
+            return Id(stream.readNBytes(bytesSize))
         }
     }
 }

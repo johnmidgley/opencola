@@ -11,10 +11,8 @@ const val UNCOMMITTED = -1L
 // TODO: Use protobuf
 // TODO: Intern ids and attributes
 // TODO: Think about making this only usable from inside the entity store, so that transaction ids can be controlled
-// TODO: Make Datifact - pure data with all fields, Fact,
 //  SubjectiveFact (add subject), and TransactionFact (add transaction id / epoch) - just one? Transaction fact? Subjective fact with epoch?
-// TODO: Change add to operation enum
-// TODO: Make ids ByteArray's at this level to be consistent
+// TODO: Should Value be nullable? or should an empty value be considered null?
 @Serializable
 data class Fact(val authorityId: Id, val entityId: Id, val attribute: Attribute, val value: Value?, val operation: Operation, val transactionId: Long = UNCOMMITTED){
 
@@ -28,12 +26,12 @@ data class Fact(val authorityId: Id, val entityId: Id, val attribute: Attribute,
     }
 
     companion object Factory : ByteArrayStreamCodec<Fact> {
-        override fun encode(stream: OutputStream, value: Fact): OutputStream {
+        override fun encode(stream: OutputStream, value: Fact) {
             Id.encode(stream, value.authorityId)
             Id.encode(stream, value.entityId)
-            TODO("Implement attribute encode")
-            TODO("Implement value encode")
-            TODO("Implement Operation enum and encode")
+            Attribute.encode(stream, value.attribute)
+            Value.encode(stream, value.value)
+            Operation.encode(stream, value.operation)
             stream.write(LongByteArrayCodec.encode(value.transactionId))
         }
 

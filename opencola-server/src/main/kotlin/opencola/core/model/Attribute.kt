@@ -16,11 +16,10 @@ data class Attribute(val name: String, val uri: URI, val codec: ByteArrayCodec<A
     constructor(uri: URI, codec: ByteArrayCodec<Any>, isIndexable: Boolean) : this(uri.path.split("/").last(), uri, codec, isIndexable)
 
     companion object Factory : ByteArrayStreamCodec<Attribute>{
-        override fun encode(stream: OutputStream, value: Attribute): OutputStream {
+        override fun encode(stream: OutputStream, value: Attribute){
             val ordinal = CoreAttribute.values().firstOrNull{ it.spec == value }?.ordinal
                 ?: throw NotImplementedError("Attempt to encode Attribute not in Attributes enum: ${value.uri}")
             stream.write(ordinal)
-            return stream
         }
 
         override fun decode(stream: InputStream): Attribute {

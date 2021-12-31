@@ -40,7 +40,16 @@ object FloatByteArrayCodec : ByteArrayCodec<Float> {
     }
 }
 
-// TODO - Move codecs from delegates here and add codec property to delegates that point to objects here
+object IntByteArrayCodec : ByteArrayCodec<Int> {
+    override fun encode(value: Int): ByteArray {
+        return ByteBuffer.allocate(Int.SIZE_BYTES).putInt(value).array()
+    }
+
+    override fun decode(value: ByteArray): Int {
+        return ByteBuffer.wrap(value).int
+    }
+}
+
 object LongByteArrayCodec : ByteArrayCodec<Long> {
     override fun encode(value: Long): ByteArray {
         return ByteBuffer.allocate(Long.SIZE_BYTES).putLong(value).array()
