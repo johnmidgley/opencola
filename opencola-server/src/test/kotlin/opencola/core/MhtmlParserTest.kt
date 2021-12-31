@@ -10,7 +10,7 @@ import kotlin.test.assertEquals
 class MhtmlParserTest {
     @Test
     fun testContentEquals(){
-        val rootPath = Path(System.getProperty("user.dir"),"sample-docs").toString()
+        val rootPath = Path(System.getProperty("user.dir"),"..", "sample-docs").toString()
 
         val path1 = Path(rootPath, "Conway's Game of Life - Wikipedia.mht")
         val message1 = path1.inputStream().use { parseMime(it) } ?: throw RuntimeException("Unable to parse $path1")
