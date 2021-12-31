@@ -1,6 +1,7 @@
 package opencola.core.model
 
 import opencola.core.extensions.nullOrElse
+import opencola.core.serialization.*
 import java.net.URI
 import java.security.PublicKey
 import kotlin.reflect.KProperty

@@ -7,6 +7,8 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import opencola.core.serialization.ByteArrayCodec
+import opencola.core.serialization.ByteArrayStreamCodec
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI
@@ -15,7 +17,7 @@ import java.net.URI
 data class Attribute(val name: String, val uri: URI, val codec: ByteArrayCodec<Any>, val isIndexable: Boolean){
     constructor(uri: URI, codec: ByteArrayCodec<Any>, isIndexable: Boolean) : this(uri.path.split("/").last(), uri, codec, isIndexable)
 
-    companion object Factory : ByteArrayStreamCodec<Attribute>{
+    companion object Factory : ByteArrayStreamCodec<Attribute> {
         override fun encode(stream: OutputStream, value: Attribute){
             val ordinal = CoreAttribute.values().firstOrNull{ it.spec == value }?.ordinal
                 ?: throw NotImplementedError("Attempt to encode Attribute not in Attributes enum: ${value.uri}")

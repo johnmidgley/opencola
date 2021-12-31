@@ -1,5 +1,6 @@
 package opencola.core.model
 
+import opencola.core.serialization.*
 import java.net.URI
 
 // NOTE: In order to be properly searchable, attributes should be added to the search schema.

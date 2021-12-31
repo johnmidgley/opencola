@@ -4,6 +4,8 @@ import kotlinx.serialization.Serializable
 import opencola.core.security.sha256
 import opencola.core.extensions.hexStringToByteArray
 import opencola.core.extensions.toHexString
+import opencola.core.serialization.ByteArrayCodec
+import opencola.core.serialization.ByteArrayStreamCodec
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI

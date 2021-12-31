@@ -1,4 +1,4 @@
-package opencola.core.model
+package opencola.core.serialization
 
 import java.io.InputStream
 import java.io.OutputStream

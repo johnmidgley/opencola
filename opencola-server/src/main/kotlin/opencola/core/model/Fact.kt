@@ -2,6 +2,7 @@ package opencola.core.model
 
 import kotlinx.serialization.Serializable
 import opencola.core.extensions.nullOrElse
+import opencola.core.serialization.ByteArrayStreamCodec
 import java.io.InputStream
 import java.io.OutputStream
 

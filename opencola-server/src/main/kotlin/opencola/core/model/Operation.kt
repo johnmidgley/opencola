@@ -1,5 +1,7 @@
 package opencola.core.model
 
+import opencola.core.serialization.ByteArrayStreamCodec
+import opencola.core.serialization.IntByteArrayCodec
 import java.io.InputStream
 import java.io.OutputStream
 
@@ -8,7 +10,7 @@ enum class Operation {
     Add,
     Retract;
 
-    companion object Factory : ByteArrayStreamCodec<Operation>{
+    companion object Factory : ByteArrayStreamCodec<Operation> {
         override fun encode(stream: OutputStream, value: Operation) {
             stream.write(IntByteArrayCodec.encode(value.ordinal))
         }

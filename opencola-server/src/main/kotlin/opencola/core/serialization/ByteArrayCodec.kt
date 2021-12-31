@@ -1,9 +1,8 @@
-package opencola.core.model
+package opencola.core.serialization
 
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import opencola.core.extensions.nullOrElse
 import opencola.core.security.publicKeyFromBytes
 import java.net.URI
 import java.nio.ByteBuffer
@@ -83,7 +82,7 @@ object UriByteArrayCodec : ByteArrayCodec<URI> {
 object SetOfStringByteArrayCodec : ByteArrayCodec<Set<String>> {
     override fun encode(value: Set<String>): ByteArray {
         // TODO: Get rid of json encoder.
-        return Json.encodeToString(value as Set<String>).toByteArray()
+        return Json.encodeToString(value).toByteArray()
     }
 
     override fun decode(value: ByteArray): Set<String> {
