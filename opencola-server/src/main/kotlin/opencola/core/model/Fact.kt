@@ -1,6 +1,7 @@
 package opencola.core.model
 
 import kotlinx.serialization.Serializable
+import opencola.core.extensions.nullOrElse
 import java.io.InputStream
 import java.io.OutputStream
 
@@ -18,7 +19,7 @@ const val UNCOMMITTED = -1L
 data class Fact(val authorityId: Id, val entityId: Id, val attribute: Attribute, val value: Value?, val operation: Operation, val transactionId: Long = UNCOMMITTED){
 
     override fun toString(): String {
-        val decodedValue = attribute.codec.decode(value?.value)
+        val decodedValue = value.nullOrElse { attribute.codec.decode(it.value) }
         return "{ authorityId: $authorityId entityId: $entityId attribute: $attribute value: $decodedValue operation: $operation transactionId: $transactionId"
     }
 

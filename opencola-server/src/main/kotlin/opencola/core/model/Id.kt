@@ -40,7 +40,7 @@ data class Id(private val value: ByteArray) {
             false
     }
 
-    companion object Factory : ByteArrayCodec, ByteArrayStreamCodec<Id> {
+    companion object Factory : ByteArrayCodec<Id>, ByteArrayStreamCodec<Id> {
         // Construct id from a serialized string value
         // TODO: Should this be here?
         fun fromHexString(idAsHexString: String) : Id {
@@ -61,12 +61,12 @@ data class Id(private val value: ByteArray) {
             return Id(sha256(data))
         }
 
-        override fun encode(id: Any?): ByteArray {
-             return (id as Id).value
+        override fun encode(id: Id): ByteArray {
+             return id.value
         }
 
-        override fun decode(value: ByteArray?): Any? {
-             return value.nullOrElse { Id(it) }
+        override fun decode(value: ByteArray): Id {
+             return Id(value)
         }
 
         override fun encode(stream: OutputStream, id: Id): OutputStream {

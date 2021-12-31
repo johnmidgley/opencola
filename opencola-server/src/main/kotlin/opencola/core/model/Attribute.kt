@@ -12,8 +12,8 @@ import java.io.OutputStream
 import java.net.URI
 
 @Serializable(with = Attribute.AttributeAsStringSerializer::class)
-data class Attribute(val name: String, val uri: URI, val codec: ByteArrayCodec, val isIndexable: Boolean){
-    constructor(uri: URI, codec: ByteArrayCodec, isIndexable: Boolean) : this(uri.path.split("/").last(), uri, codec, isIndexable)
+data class Attribute(val name: String, val uri: URI, val codec: ByteArrayCodec<Any>, val isIndexable: Boolean){
+    constructor(uri: URI, codec: ByteArrayCodec<Any>, isIndexable: Boolean) : this(uri.path.split("/").last(), uri, codec, isIndexable)
 
     companion object Factory : ByteArrayStreamCodec<Attribute>{
         override fun encode(stream: OutputStream, value: Attribute): OutputStream {

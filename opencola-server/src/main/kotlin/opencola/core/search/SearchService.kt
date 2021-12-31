@@ -7,6 +7,7 @@ import opencola.core.model.Id
 import opencola.core.model.Authority
 import opencola.core.model.Entity
 import mu.KotlinLogging
+import opencola.core.extensions.nullOrElse
 import org.apache.solr.client.solrj.impl.HttpSolrClient
 import org.apache.solr.client.solrj.request.CoreAdminRequest
 import org.apache.solr.client.solrj.response.UpdateResponse
@@ -132,7 +133,7 @@ class SearchService(val authority: Authority) {
         CoreAttribute.values()
             .map{ it.spec }
             .filter { it.isIndexable }
-            .map { Pair(it.name, it.codec.decode(entity.getValue(it.name)?.value)) }
+            .map { Pair(it.name, entity.getValue(it.name).nullOrElse { v -> it.codec.decode(v.value) } ) }
             .filter { it.second != null }
             .forEach {
                 var (name, value) = it
