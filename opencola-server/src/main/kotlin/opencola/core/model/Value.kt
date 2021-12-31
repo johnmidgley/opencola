@@ -23,16 +23,16 @@ data class Value(val bytes: ByteArray) {
         return bytes.contentHashCode()
     }
 
-    companion object Factory : ByteArrayStreamCodec<Value?> {
-        private val emptyValue = Value("".toByteArray())
+    companion object Factory : ByteArrayStreamCodec<Value> {
+        val emptyValue = Value("".toByteArray())
 
-        override fun encode(stream: OutputStream, value: Value?) {
-            writeByteArray(stream, (value ?: emptyValue).bytes)
+        override fun encode(stream: OutputStream, value: Value) {
+            writeByteArray(stream, value.bytes)
         }
 
-        override fun decode(stream: InputStream): Value? {
+        override fun decode(stream: InputStream): Value {
             val bytes = readByteArray(stream)
-            return if(bytes.isEmpty()) null else Value(bytes)
+            return if(bytes.isEmpty()) emptyValue else Value(bytes)
         }
     }
 }

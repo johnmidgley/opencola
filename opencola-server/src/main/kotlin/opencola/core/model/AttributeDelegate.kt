@@ -1,5 +1,6 @@
 package opencola.core.model
 
+import opencola.core.extensions.ifNotNullOrElse
 import opencola.core.extensions.nullOrElse
 import opencola.core.serialization.*
 import java.net.URI
@@ -18,7 +19,7 @@ object BooleanAttributeDelegate {
     }
 
     operator fun setValue(thisRef: Entity, property: KProperty<*>, value: Boolean?) {
-        thisRef.setValue(property.name, value.nullOrElse { Value(BooleanByteArrayCodec.encode(value as Boolean)) })
+        thisRef.setValue(property.name, value.ifNotNullOrElse( { Value(BooleanByteArrayCodec.encode(value as Boolean)) }, { Value.emptyValue }))
     }
 }
 
@@ -29,7 +30,7 @@ object FloatAttributeDelegate {
     }
 
     operator fun setValue(thisRef: Entity, property: KProperty<*>, value: Float?) {
-        thisRef.setValue(property.name, value.nullOrElse { Value(FloatByteArrayCodec.encode(value as Float)) })
+        thisRef.setValue(property.name, value.ifNotNullOrElse( { Value(FloatByteArrayCodec.encode(value as Float)) }, { Value.emptyValue }))
     }
 }
 
@@ -40,7 +41,7 @@ object StringAttributeDelegate {
     }
 
     operator fun setValue(thisRef: Entity, property: KProperty<*>, value: String?) {
-        thisRef.setValue(property.name, value.nullOrElse { Value(StringByteArrayCodec.encode(value as String)) })
+        thisRef.setValue(property.name, value.ifNotNullOrElse( { Value(StringByteArrayCodec.encode(value as String)) }, { Value.emptyValue }))
     }
 }
 
@@ -51,7 +52,7 @@ object IdAttributeDelegate {
     }
 
     operator fun setValue(thisRef: Entity, property: KProperty<*>, value: Id?) {
-        thisRef.setValue(property.name, value.nullOrElse { Value(Id.encode(value as Id)) })
+        thisRef.setValue(property.name, value.ifNotNullOrElse( { Value(Id.encode(value as Id)) }, { Value.emptyValue }))
     }
 }
 
@@ -62,7 +63,7 @@ object UriAttributeDelegate {
     }
 
     operator fun setValue(thisRef: Entity, property: KProperty<*>, value: URI?) {
-        thisRef.setValue(property.name, value.nullOrElse { Value(UriByteArrayCodec.encode(value as URI)) })
+        thisRef.setValue(property.name, value.ifNotNullOrElse( { Value(UriByteArrayCodec.encode(value as URI)) }, { Value.emptyValue }))
     }
 }
 
@@ -74,7 +75,7 @@ object SetOfStringAttributeDelegate {
     }
 
     operator fun setValue(thisRef: Entity, property: KProperty<*>, value: Set<String>?) {
-        thisRef.setValue(property.name, value.nullOrElse { Value(SetOfStringByteArrayCodec.encode(value as Set<String>)) })
+        thisRef.setValue(property.name, value.ifNotNullOrElse( { Value(SetOfStringByteArrayCodec.encode(value as Set<String>)) }, { Value.emptyValue }))
     }
 }
 
@@ -85,6 +86,6 @@ object PublicKeyAttributeDelegate {
     }
 
     operator fun setValue(thisRef: Entity, property: KProperty<*>, value: PublicKey?) {
-        thisRef.setValue(property.name, value.nullOrElse { Value(PublicKeyByteArrayCodec.encode(value as PublicKey)) })
+        thisRef.setValue(property.name, value.ifNotNullOrElse( { Value(PublicKeyByteArrayCodec.encode(value as PublicKey)) }, { Value.emptyValue }))
     }
 }

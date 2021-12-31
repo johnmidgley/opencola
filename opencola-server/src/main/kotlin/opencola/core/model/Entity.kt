@@ -29,17 +29,16 @@ abstract class Entity(private val authorityId: Id, val entityId: Id){
 
             // TODO: Validate that all subjects and entities are equal
             // TODO: Should type be mutable? Probably no
-            val typeFact = facts.lastOrNull(){ it.attribute == CoreAttribute.Type.spec }
+            val typeFact = facts.lastOrNull { it.attribute == CoreAttribute.Type.spec }
                 ?: throw IllegalStateException("Entity has no type")
 
-            val typeFactValue = typeFact.value?.bytes ?: throw IllegalStateException("Entity has null type")
-
-            return when(CoreAttribute.Type.spec.codec.decode(typeFactValue).toString()){
+            return when(CoreAttribute.Type.spec.codec.decode(typeFact.value.bytes).toString()){
                 // TODO: Use fully qualified names
                 ActorEntity::class.simpleName -> ActorEntity(facts)
                 // Authority::class.simpleName -> Authority(facts)
                 ResourceEntity::class.simpleName -> ResourceEntity(facts)
                 DataEntity::class.simpleName -> DataEntity(facts)
+                // TODO: Throw if not type?
                 else -> null
             }
         }
@@ -81,6 +80,13 @@ abstract class Entity(private val authorityId: Id, val entityId: Id){
         return true
     }
 
+    override fun hashCode(): Int {
+        var result = authorityId.hashCode()
+        result = 31 * result + entityId.hashCode()
+        result = 31 * result + facts.hashCode()
+        return result
+    }
+
     private fun getFact(propertyName: String) : Pair<Attribute, Fact?> {
         val attribute = getAttributeByName(propertyName) ?: throw IllegalArgumentException("Attempt to access unknown property $propertyName")
         val fact =  facts.lastOrNull{ it.attribute == attribute }
@@ -92,7 +98,7 @@ abstract class Entity(private val authorityId: Id, val entityId: Id){
         return fact?.value
     }
 
-    internal fun setValue(propertyName: String, value: Value?) : Fact {
+    internal fun setValue(propertyName: String, value: Value) : Fact {
         val (attribute, currentFact) = getFact(propertyName)
 
         if(currentFact != null){
@@ -106,7 +112,7 @@ abstract class Entity(private val authorityId: Id, val entityId: Id){
             }
         }
 
-        val newFact = Fact(authorityId, entityId, attribute, value, if (value != null) Operation.Add else Operation.Retract)
+        val newFact = Fact(authorityId, entityId, attribute, value, if (value.bytes.isNotEmpty()) Operation.Add else Operation.Retract)
         facts = facts + newFact
         return newFact
     }
@@ -114,7 +120,7 @@ abstract class Entity(private val authorityId: Id, val entityId: Id){
 
 // Person or website (organization), identified by hash of public key
 //  TODO: Figure out how to properly initialize and store publicKey attribute
-// Could probably clean this up with delagted properties
+// Could probably clean this up with delegated properties
 open class ActorEntity : Entity {
     var uri by UriAttributeDelegate
     var imageUri by UriAttributeDelegate
@@ -152,20 +158,13 @@ open class ActorEntity : Entity {
     constructor(facts: List<Fact>) : super(facts)
 }
 
-class Authority : ActorEntity {
+class Authority(keyPair: KeyPair, uri: URI? = null, imageUri: URI? = null, name: String? = null, description: String? = null,
+                trust: Float? = null, tags: Set<String>? = null,  like: Boolean? = null, rating: Float? = null)
+        : ActorEntity(Id.ofPublicKey(keyPair.public), keyPair.public, uri, imageUri, name, description, trust, tags, like, rating) {
     // TODO: Private key probably shouldn't be here
     private val privateKey : PrivateKey
 
-    constructor(keyPair: KeyPair,
-                uri: URI? = null,
-                imageUri: URI? = null,
-                name: String? = null,
-                description: String? = null,
-                trust: Float? = null,
-                tags: Set<String>? = null,
-                like: Boolean? = null,
-                rating: Float? = null,
-    ) : super(Id.ofPublicKey(keyPair.public), keyPair.public, uri, imageUri, name, description, trust, tags, like, rating){
+    init {
         privateKey = keyPair.private
     }
 
