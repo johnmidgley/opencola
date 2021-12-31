@@ -19,7 +19,7 @@ const val UNCOMMITTED = -1L
 data class Fact(val authorityId: Id, val entityId: Id, val attribute: Attribute, val value: Value?, val operation: Operation, val transactionId: Long = UNCOMMITTED){
 
     override fun toString(): String {
-        val decodedValue = value.nullOrElse { attribute.codec.decode(it.value) }
+        val decodedValue = value.nullOrElse { attribute.codec.decode(it.bytes) }
         return "{ authorityId: $authorityId entityId: $entityId attribute: $attribute value: $decodedValue operation: $operation transactionId: $transactionId"
     }
 

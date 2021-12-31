@@ -5,22 +5,21 @@ import java.io.InputStream
 import java.io.OutputStream
 
 @Serializable
-// TODO: Change value to bytes
 // TODO: Can codec be put here?
-data class Value(val value: ByteArray) {
+data class Value(val bytes: ByteArray) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
         other as Value
 
-        if (!value.contentEquals(other.value)) return false
+        if (!bytes.contentEquals(other.bytes)) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        return value.contentHashCode()
+        return bytes.contentHashCode()
     }
 
     companion object Factory : ByteArrayStreamCodec<ByteArray> {

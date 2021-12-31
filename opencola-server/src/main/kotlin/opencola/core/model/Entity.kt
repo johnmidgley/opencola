@@ -32,7 +32,7 @@ abstract class Entity(private val authorityId: Id, val entityId: Id){
             val typeFact = facts.lastOrNull(){ it.attribute == CoreAttribute.Type.spec }
                 ?: throw IllegalStateException("Entity has no type")
 
-            val typeFactValue = typeFact.value?.value ?: throw IllegalStateException("Entity has null type")
+            val typeFactValue = typeFact.value?.bytes ?: throw IllegalStateException("Entity has null type")
 
             return when(CoreAttribute.Type.spec.codec.decode(typeFactValue).toString()){
                 // TODO: Use fully qualified names

@@ -133,7 +133,7 @@ class SearchService(val authority: Authority) {
         CoreAttribute.values()
             .map{ it.spec }
             .filter { it.isIndexable }
-            .map { Pair(it.name, entity.getValue(it.name).nullOrElse { v -> it.codec.decode(v.value) } ) }
+            .map { Pair(it.name, entity.getValue(it.name).nullOrElse { v -> it.codec.decode(v.bytes) } ) }
             .filter { it.second != null }
             .forEach {
                 var (name, value) = it
