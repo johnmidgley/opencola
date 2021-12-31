@@ -32,9 +32,7 @@ data class Value(val bytes: ByteArray) {
 
         override fun decode(stream: InputStream): Value? {
             val bytes = readByteArray(stream)
-            return if(bytes.isEmpty()) emptyValue else Value(bytes)
+            return if(bytes.isEmpty()) null else Value(bytes)
         }
-
-
     }
 }
