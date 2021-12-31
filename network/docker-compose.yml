@@ -5,4 +5,4 @@ services:
     ports:
      - "8983:8983"
     volumes:
-      - ./var-solr:/var/solr
+      - ../storage/var-solr:/var/solr

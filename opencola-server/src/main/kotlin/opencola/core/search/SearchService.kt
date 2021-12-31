@@ -33,7 +33,7 @@ class SearchService(val authority: Authority) {
         .withSocketTimeout(solrSocketTimeoutMillis)
         .build()
 
-    private val networkPath = File(System.getProperties()["user.dir"].toString(), "network")
+    private val networkPath = File(System.getProperties()["user.dir"].toString(), "../network")
     private val configSet = "opencola"
     private val solrCollectionName = authority.entityId.toString() + "." + configSet
 

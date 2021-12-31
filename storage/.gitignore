@@ -1,0 +1,4 @@
+/filestore
+/var-solr/data/*.opencola
+/var-solr/data/opencola/data/
+/var-solr/logs/
