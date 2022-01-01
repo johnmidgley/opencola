@@ -26,7 +26,7 @@ fun stopNetwork(){
 
 fun isNetworkAvailable() : Boolean {
     try {
-        // Throws an exception when the docker deamon isn't running
+        // Throws an exception when the docker daemon isn't running
         shellRun(networkPath) { command("docker", listOf("version")) }
     }catch(e: Exception){
         return false
