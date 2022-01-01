@@ -8,6 +8,7 @@ import java.net.URI
 @Suppress("UNCHECKED_CAST")
 enum class CoreAttribute(val spec: Attribute) {
     Type(Attribute(URI("opencola://attributes/type"), StringByteArrayCodec as ByteArrayCodec<Any>, false)),
+    MimeType(Attribute(URI("opencola://attributes/mimeType"), StringByteArrayCodec as ByteArrayCodec<Any>, false)),
     Uri(Attribute(URI("opencola://attributes/uri"), UriByteArrayCodec as ByteArrayCodec<Any> ,false)),
     DataId(Attribute(URI("opencola://attributes/dataId"), Id.Factory as ByteArrayCodec<Any>,false)),
     PublicKey(Attribute(URI("opencola://attributes/publicKey"), PublicKeyByteArrayCodec as ByteArrayCodec<Any> ,false)),

@@ -218,11 +218,11 @@ open class ResourceEntity : Entity {
 // parent - id of parent (container or website)
 // name, desc, tags, trust, like, rating
 open class DataEntity : Entity {
-    constructor(authorityId: Id, uri: URI, data: ByteArray) : super(authorityId, Id.ofData(data)){
-        this.uri = uri
+    constructor(authorityId: Id, mimeType: String, data: ByteArray) : super(authorityId, Id.ofData(data)){
+        this.mimeType = mimeType
     }
     constructor(facts: List<Fact>) : super(facts)
 
     // URI where data was originally fetched
-    var uri by UriAttributeDelegate
+    var mimeType by StringAttributeDelegate
 }
