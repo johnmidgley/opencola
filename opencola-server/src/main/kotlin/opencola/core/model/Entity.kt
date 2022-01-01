@@ -218,7 +218,7 @@ open class ResourceEntity : Entity {
 // parent - id of parent (container or website)
 // name, desc, tags, trust, like, rating
 open class DataEntity : Entity {
-    constructor(authorityId: Id, mimeType: String, data: ByteArray) : super(authorityId, Id.ofData(data)){
+    constructor(authorityId: Id, dataId: Id, mimeType: String) : super(authorityId, dataId){
         this.mimeType = mimeType
     }
     constructor(facts: List<Fact>) : super(facts)

@@ -3,6 +3,7 @@ package opencola.server
 import opencola.core.content.MhtmlPage
 import opencola.core.content.parseMhtml
 import opencola.core.extensions.nullOrElse
+import opencola.core.model.DataEntity
 import opencola.core.model.Id
 import opencola.core.model.ResourceEntity
 import org.apache.james.mime4j.message.DefaultMessageWriter
@@ -24,10 +25,11 @@ fun handleSaveAction(mhtmlPage: MhtmlPage?){
     // TODO: Parse description
     // TODO - EntityStore should detect if a duplicate entity is added. Just merge it?
     val writer = DefaultMessageWriter()
-    ByteArrayOutputStream().use { bufferedOutputStream ->
-        writer.writeMessage(mhtmlPage.message, bufferedOutputStream)
-        val pageBytes = bufferedOutputStream.toByteArray()
+    ByteArrayOutputStream().use { outputStream ->
+        writer.writeMessage(mhtmlPage.message, outputStream)
+        val pageBytes = outputStream.toByteArray()
         val dataId = fileStore.write(pageBytes)
+        val mimeType = textExtractor.getType(pageBytes)
         val resourceId = Id.ofUri(mhtmlPage.uri)
         val entity = (entityStore.getEntity(authority, resourceId) ?: ResourceEntity(
             authority.entityId,
@@ -39,7 +41,12 @@ fun handleSaveAction(mhtmlPage: MhtmlPage?){
         entity.name = mhtmlPage.title
         entity.text = mhtmlPage.htmlText.nullOrElse { textExtractor.getBody(it.toByteArray()) }
 
+        val dataEntity = (entityStore.getEntity(authority, dataId) ?: DataEntity(authority.entityId, dataId, mimeType))
+
+        // TODO: Remove authority from update calls - authority id is in entity
+        // TODO: Make update entity take vargs of entities so only single transaction needed
         entityStore.updateEntity(authority, entity)
+        entityStore.updateEntity(authority, dataEntity)
         searchService.index(entity)
     }
 }

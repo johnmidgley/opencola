@@ -19,8 +19,13 @@ import java.nio.file.Path
 class TextExtractor {
     private val tika = Tika()
 
-    fun getType(inStream: FileInputStream): String? {
-        return tika.detect(inStream)
+    fun getType(inStream: InputStream): String {
+        // TODO: Is application/octet-stream the best choice for arbitrary binary data
+        return tika.detect(inStream) ?: "application/octet-stream"
+    }
+
+    fun getType(bytes: ByteArray) : String {
+        ByteArrayInputStream(bytes).use { return getType(it)}
     }
 
     fun getBody(stream: InputStream) : String {
