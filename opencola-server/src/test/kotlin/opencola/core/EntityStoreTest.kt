@@ -1,3 +1,7 @@
+package opencola.core
+
+import getActorEntity
+import getAuthority
 import opencola.core.model.ActorEntity
 import opencola.core.model.UNCOMMITTED
 import opencola.core.storage.EntityStore
@@ -7,7 +11,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class EntityStoreTest {
-    fun createTempTransactionFile(): Path {
+    private fun createTempTransactionFile(): Path {
         return createTempFile("entity-store", ".fct")
     }
     @Test
