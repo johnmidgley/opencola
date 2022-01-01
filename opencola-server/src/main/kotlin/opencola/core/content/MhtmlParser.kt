@@ -20,7 +20,7 @@ class MhtmlPage {
 
     // TODO: Make work on stream?
     constructor(message: Message) {
-        // TODO: This is likely specific to Chrome saving. Should probably detect creator and dispatch to correct canonicalizer
+        // TODO: This is likely specific to Chrome saving. Should probably detect creator and dispatch to correct handler to canonicalize
         this.message = canonicalizeMessage(message)
         uri = message.header.getField("Snapshot-Content-Location")?.body.nullOrElse { URI(it) } ?: throw RuntimeException(
                 "No URI specified in MHTML message"
@@ -32,8 +32,8 @@ class MhtmlPage {
     private fun parseHtmlText() : String? {
         // TODO: Clean up!
         val multipart = message.body as Multipart
-        val bodyPart = multipart.bodyParts.firstOrNull { it.header.getField("Content-Type").body == "text/html" }
-        return (bodyPart?.body as TextBody).reader.readText()
+        val bodyPart = multipart.bodyParts.firstOrNull { it.header.getField("Content-Type").body == "text/html" } ?: return null
+        return (bodyPart.body as TextBody).reader.readText()
     }
 
     // TODO: Should this be private and/or called on construction? Only used in tests.
@@ -52,13 +52,13 @@ class MhtmlPage {
     }
 
     private val boundaryRegex = "boundary=\".*\"".toRegex()
-    private val opencolaBoudary = "boundary=\"----MultipartBoundary--opencola--1516051403151201--562D739589761-----\""
+    private val opencolaBoundary = "boundary=\"----MultipartBoundary--opencola--1516051403151201--562D739589761-----\""
 
     private fun canonicalizeContentType(field: Field): Field {
         // TODO: Test only assert that field.name = "Content-Type"?
         // Not super elegant, but no obvious way to construct the field (ContentTypeField is an interface and ContentTypeFieldImpl is private)
         val raw = String(field.raw.toByteArray())
-        val message = raw.replace(boundaryRegex, opencolaBoudary).byteInputStream().use { parseMime(it) }
+        val message = raw.replace(boundaryRegex, opencolaBoundary).byteInputStream().use { parseMime(it) }
 
         if (message == null) {
             // TODO: Log warning / error
@@ -87,7 +87,7 @@ class MhtmlPage {
             "Content-ID" -> null
             "Content-Location" -> {
                 // TODO: Investigate
-                // This is odd. Not sure how stripping cids still works, especially when it doesn't work for http locations.
+                // This is odd. Not sure how stripping 'cid's still works, especially when it doesn't work for http locations.
                 // Likely styles are just loaded, so name doesn't matter. Probably cleaner to replace cid GUIDs with
                 // deterministic ids
                 if ((field as ContentLocationFieldLenientImpl).location.startsWith("cid")) null else field
