@@ -177,9 +177,10 @@ class Authority(keyPair: KeyPair, uri: URI? = null, imageUri: URI? = null, name:
 open class ResourceEntity : Entity {
     var uri by UriAttributeDelegate
     var dataId by IdAttributeDelegate
-    var imageUri by UriAttributeDelegate
     var name by StringAttributeDelegate
     var description by StringAttributeDelegate
+    var text by StringAttributeDelegate
+    var imageUri by UriAttributeDelegate
     var trust by FloatAttributeDelegate
     var tags by SetOfStringAttributeDelegate
     var like by BooleanAttributeDelegate
@@ -187,9 +188,10 @@ open class ResourceEntity : Entity {
 
     constructor(authorityId: Id,
                 uri: URI,
-                imageUri: URI? = null,
                 name: String? = null,
                 description: String? = null,
+                text: String? = null,
+                imageUri: URI? = null,
                 trust: Float? = null,
                 tags: Set<String>? = null,
                 like: Boolean? = null,
@@ -197,9 +199,10 @@ open class ResourceEntity : Entity {
     ) : super(authorityId, Id.ofUri(uri)){
         // Null checks are more efficient, but more importantly, don't result in retracting facts
         this.uri = uri
-        if(imageUri != null) this.imageUri = imageUri
         if(name != null) this.name = name
         if(description != null) this.description = description
+        if(text != null) this.text = text
+        if(imageUri != null) this.imageUri = imageUri
         if(trust != null) this.trust = trust
         if(tags != null) this.tags = tags
         if(like != null) this.like = like
