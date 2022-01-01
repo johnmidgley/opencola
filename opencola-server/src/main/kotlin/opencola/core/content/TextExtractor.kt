@@ -40,7 +40,7 @@ class TextExtractor {
     }
 
     // TODO: Remove or make call other getBody based on stream
-    fun getBody(path: Path): String? {
+    fun getBody(path: Path): String {
         TikaInputStream.get(path).use { stream ->
             val handler = BodyContentHandler()
             val metadata = Metadata()
