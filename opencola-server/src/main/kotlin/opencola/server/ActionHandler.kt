@@ -2,6 +2,7 @@ package opencola.server
 
 import opencola.core.content.MhtmlPage
 import opencola.core.content.parseMhtml
+import opencola.core.extensions.nullOrElse
 import opencola.core.model.Id
 import opencola.core.model.ResourceEntity
 import org.apache.james.mime4j.message.DefaultMessageWriter
@@ -25,18 +26,20 @@ fun handleSaveAction(mhtmlPage: MhtmlPage?){
     val writer = DefaultMessageWriter()
     ByteArrayOutputStream().use { bufferedOutputStream ->
         writer.writeMessage(mhtmlPage.message, bufferedOutputStream)
-
-        // TODO("Boundary ids change per instance. Need to content check!!")
-
-        val dataId = fileStore.write(bufferedOutputStream.toByteArray())
+        val pageBytes = bufferedOutputStream.toByteArray()
+        val dataId = fileStore.write(pageBytes)
         val resourceId = Id.ofUri(mhtmlPage.uri)
         val entity = (entityStore.getEntity(authority, resourceId) ?: ResourceEntity(
             authority.entityId,
             mhtmlPage.uri
         )) as ResourceEntity
 
+        // Add / update fields
         entity.dataId = dataId
         entity.name = mhtmlPage.title
+        entity.text = mhtmlPage.htmlText.nullOrElse { textExtractor.getBody(it.toByteArray()) }
+
         entityStore.updateEntity(authority, entity)
+        searchService.index(entity)
     }
 }

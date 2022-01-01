@@ -16,6 +16,7 @@ class MhtmlPage {
     val message: Message
     val uri: URI
     val title: String?
+    val htmlText : String?
 
     // TODO: Make work on stream?
     constructor(message: Message) {
@@ -25,8 +26,17 @@ class MhtmlPage {
                 "No URI specified in MHTML message"
             )
         title = message.header.getField("Subject")?.body
+        htmlText = parseHtmlText()
     }
 
+    private fun parseHtmlText() : String? {
+        // TODO: Clean up!
+        val multipart = message.body as Multipart
+        val bodyPart = multipart.bodyParts.firstOrNull { it.header.getField("Content-Type").body == "text/html" }
+        return (bodyPart?.body as TextBody).reader.readText()
+    }
+
+    // TODO: Should this be private and/or called on construction? Only used in tests.
     fun getDataId() : Id {
         // TODO - is there a better way to do this?
         ByteArrayOutputStream().use{

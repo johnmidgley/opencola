@@ -2,8 +2,10 @@ package opencola.server
 
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import opencola.core.content.TextExtractor
 import opencola.core.extensions.hexStringToByteArray
 import opencola.core.model.Authority
+import opencola.core.search.SearchService
 import opencola.core.security.privateKeyFromBytes
 import opencola.core.security.publicKeyFromBytes
 import opencola.core.storage.EntityStore
@@ -26,7 +28,8 @@ val storagePath = Path("/Users/johnmidgley/dev/opencola/storage")
 val entityStorePath: Path = storagePath.resolve("transactions.json")
 val fileStorePath: Path = storagePath.resolve("filestore/")
 val fileStore = LocalFileStore(fileStorePath)
-
+val searchService = SearchService(authority)
+val textExtractor = TextExtractor()
 
 fun main() {
     entityStore.load(entityStorePath)
