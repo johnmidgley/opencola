@@ -1,0 +1,17 @@
+#!/bin/sh
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
+if [ "$1" != "-f" ];
+then
+  echo "${RED}This script will delete any existing transactions, stores, indexes, etc.${NC}"
+  echo "If this is your intention, use a -f flag"
+  exit
+fi
+
+rm -f transactions.*
+rm -rf filestore
+rm -rf var-solr/logs
+rm -rf var-solr/data/*.opencola
+
+echo "Data files cleaned"
