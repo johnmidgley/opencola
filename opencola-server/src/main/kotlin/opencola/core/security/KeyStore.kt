@@ -5,10 +5,8 @@ import java.io.FileOutputStream
 import java.security.KeyStore.*
 
 // TODO: Move to config
-val keyStoreName = "keyStore"
-val privateKeyAlias = "opencolaPrivateKey"
-val keySize = 2048
-val algorithm = "EC"
+const val keyStoreName = "keyStore"
+const val privateKeyAlias = "opencolaPrivateKey"
 
 // TODO: Add logging
 // TODO: Think about an appropriate HSM
@@ -19,8 +17,8 @@ fun getKeyStore(path: String, password: String){
 
     FileInputStream(keyStoreName).use { fis -> keyStore.load(fis, passwordCharArray) }
 
-    val protParam: ProtectionParameter = PasswordProtection(passwordCharArray)
-    val privateKey = (keyStore.getEntry(privateKeyAlias, protParam) as PrivateKeyEntry).privateKey
+    val protectionParameter: ProtectionParameter = PasswordProtection(passwordCharArray)
+    val privateKey = (keyStore.getEntry(privateKeyAlias, protectionParameter) as PrivateKeyEntry).privateKey
 
     if(privateKey == null){
         val keyPair = generateKeyPair()
