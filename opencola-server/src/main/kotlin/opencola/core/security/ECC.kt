@@ -9,9 +9,9 @@ import java.util.*
 
 // https://metamug.com/article/security/sign-verify-digital-signature-ecdsa-java.html
 
-val SPEC = "secp256r1" // "secp256k1"
-val SIGNATTURE_ALGO = "SHA3-256withECDSA" // "SHA256withECDSA"
-val KEY_ALGO = "EC"
+const val SPEC = "secp256r1" // "secp256k1"
+const val SIGNATURE_ALGO = "SHA3-256withECDSA" // "SHA256withECDSA"
+const val KEY_ALGO = "EC"
 
 fun generateKeyPair() : KeyPair {
     val ecSpec = ECGenParameterSpec(SPEC)
@@ -21,14 +21,14 @@ fun generateKeyPair() : KeyPair {
 }
 
 fun sign(privateKey: PrivateKey, data: ByteArray): ByteArray {
-    val ecdsaSign = Signature.getInstance(SIGNATTURE_ALGO)
+    val ecdsaSign = Signature.getInstance(SIGNATURE_ALGO)
     ecdsaSign.initSign(privateKey)
     ecdsaSign.update(data)
     return ecdsaSign.sign()
 }
 
 fun isValidSignature(publicKey: PublicKey, data: ByteArray, signature: ByteArray): Boolean {
-    val ecdsaVerify = Signature.getInstance(SIGNATTURE_ALGO)
+    val ecdsaVerify = Signature.getInstance(SIGNATURE_ALGO)
     ecdsaVerify.initVerify(publicKey)
     ecdsaVerify.update(data)
     return ecdsaVerify.verify(signature)
