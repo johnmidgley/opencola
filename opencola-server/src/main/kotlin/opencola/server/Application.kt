@@ -9,7 +9,6 @@ import opencola.core.search.SearchService
 import opencola.core.security.privateKeyFromBytes
 import opencola.core.security.publicKeyFromBytes
 import opencola.core.storage.EntityStore
-import opencola.core.storage.FileStore
 import opencola.core.storage.LocalFileStore
 import opencola.server.plugins.configureContentNegotiation
 import opencola.server.plugins.configureHTTP
