@@ -43,7 +43,7 @@ class EntityStore(trustedActors: Set<ActorEntity>) {
 
     private fun transactions(path: Path): Sequence<SignedTransaction> {
         // TODO: Only works for JSON
-        return sequence<SignedTransaction> {
+        return sequence {
             path.readLines().forEach { line ->
                 if(line.isNotEmpty()){
                     val transaction = Json.decodeFromString<SignedTransaction>(line)
@@ -157,9 +157,10 @@ class EntityStore(trustedActors: Set<ActorEntity>) {
         return uncommittedFacts.map { it.updateTransactionId(transactionId) }
     }
 
+    // TODO: Make entity varargs so that multiple entities can be updated in a single transaction
     fun updateEntity(authority: Authority, entity: Entity): Entity {
         val uncommittedFacts = getFactsToCommit(authority, entity)
-        var commitedFacts = uncommittedFacts
+        var committedFacts = uncommittedFacts
 
         if (uncommittedFacts.isEmpty()) {
             logger.info { "Ignoring update to entity:{${entity.entityId}} with no novel facts" }
@@ -170,11 +171,11 @@ class EntityStore(trustedActors: Set<ActorEntity>) {
 
         val path = this.path
         if (path != null) {
-            commitedFacts = saveTransaction(authority, uncommittedFacts, path)
+            committedFacts = saveTransaction(authority, uncommittedFacts, path)
         }
 
         // TODO: Synchronized
-        facts = facts + commitedFacts
+        facts = facts + committedFacts
 
         return getEntity(authority, entity.entityId)
             ?: throw RuntimeException("Unable to find updated entity:{${entity.entityId}} in store")
