@@ -3,10 +3,19 @@ package opencola.core.serialization
 import java.io.InputStream
 import java.io.OutputStream
 
-interface ByteArrayStreamCodec<T> {
+// TODO: Is there a way to do this with just Serializable objects?
+interface StreamSerializer<T> {
     // TODO: Should these just call the byte array codecs and wrap them with size markers?
     fun encode(stream: OutputStream, value: T)
     fun decode(stream: InputStream): T
+
+    fun writeInt(stream: OutputStream, value: Int){
+        stream.write(IntByteArrayCodec.encode(value))
+    }
+
+    fun readInt(stream: InputStream) : Int {
+        return IntByteArrayCodec.decode(stream.readNBytes(Int.SIZE_BYTES))
+    }
 
     fun writeLong(stream: OutputStream, value: Long){
         stream.write(LongByteArrayCodec.encode(value))

@@ -2,7 +2,7 @@ package opencola.core.model
 
 import kotlinx.serialization.Serializable
 import opencola.core.extensions.nullOrElse
-import opencola.core.serialization.ByteArrayStreamCodec
+import opencola.core.serialization.StreamSerializer
 import java.io.InputStream
 import java.io.OutputStream
 
@@ -25,7 +25,7 @@ data class Fact(val authorityId: Id, val entityId: Id, val attribute: Attribute,
         return Fact(authorityId, entityId, attribute, value, operation, transactionId)
     }
 
-    companion object Factory : ByteArrayStreamCodec<Fact> {
+    companion object Factory : StreamSerializer<Fact> {
         override fun encode(stream: OutputStream, value: Fact) {
             Id.encode(stream, value.authorityId)
             Id.encode(stream, value.entityId)

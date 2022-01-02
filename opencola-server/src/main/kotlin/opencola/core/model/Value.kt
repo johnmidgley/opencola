@@ -1,7 +1,7 @@
 package opencola.core.model
 
 import kotlinx.serialization.Serializable
-import opencola.core.serialization.ByteArrayStreamCodec
+import opencola.core.serialization.StreamSerializer
 import java.io.InputStream
 import java.io.OutputStream
 
@@ -23,7 +23,7 @@ data class Value(val bytes: ByteArray) {
         return bytes.contentHashCode()
     }
 
-    companion object Factory : ByteArrayStreamCodec<Value> {
+    companion object Factory : StreamSerializer<Value> {
         val emptyValue = Value("".toByteArray())
 
         override fun encode(stream: OutputStream, value: Value) {

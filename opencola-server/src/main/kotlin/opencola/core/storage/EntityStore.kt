@@ -129,11 +129,7 @@ class EntityStore(trustedActors: Set<ActorEntity>) {
             // TODO: Binary serialization?
             Json.encodeToStream(
                 authority.signTransaction(
-                    Transaction(
-                        authority.entityId,
-                        uncommittedFacts,
-                        transactionId
-                    )
+                    Transaction.fromFacts(transactionId, uncommittedFacts)
                 ),
                 outputStream
             )

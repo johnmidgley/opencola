@@ -5,7 +5,7 @@ import opencola.core.security.sha256
 import opencola.core.extensions.hexStringToByteArray
 import opencola.core.extensions.toHexString
 import opencola.core.serialization.ByteArrayCodec
-import opencola.core.serialization.ByteArrayStreamCodec
+import opencola.core.serialization.StreamSerializer
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI
@@ -41,7 +41,7 @@ data class Id(private val bytes: ByteArray) {
             false
     }
 
-    companion object Factory : ByteArrayCodec<Id>, ByteArrayStreamCodec<Id> {
+    companion object Factory : ByteArrayCodec<Id>, StreamSerializer<Id> {
         // Construct id from a serialized string value
         // TODO: Should this be here?
         fun fromHexString(idAsHexString: String) : Id {
