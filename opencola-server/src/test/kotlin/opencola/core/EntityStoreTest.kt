@@ -22,7 +22,7 @@ class EntityStoreTest {
         val store = EntityStore(listOf(authority).toSet())
         store.load(transactionFile)
         val entity = getActorEntity(authority.entityId)
-        store.updateEntity(authority, entity)
+        store.commitChanges(entity)
 
         val store2 = EntityStore(listOf(authority).toSet())
         store2.load(transactionFile)
@@ -49,13 +49,13 @@ class EntityStoreTest {
         val store = EntityStore(listOf(authority).toSet())
         store.load(transactionFile)
         val entity = getActorEntity(authority.entityId)
-        store.updateEntity(authority, entity)
+        store.commitChanges(entity)
 
         val store1 = EntityStore(listOf(authority).toSet())
         store1.load(transactionFile)
         val entity1 = store.getEntity(authority, entity.entityId) as ActorEntity
         entity1.name = "new name"
-        store.updateEntity(authority, entity1)
+        store.commitChanges(entity1)
 
         val store2 = EntityStore(listOf(authority).toSet())
         store2.load(transactionFile)

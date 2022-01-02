@@ -45,8 +45,7 @@ fun handleSaveAction(mhtmlPage: MhtmlPage?){
 
         // TODO: Remove authority from update calls - authority id is in entity
         // TODO: Make update entity take vargs of entities so only single transaction needed
-        entityStore.updateEntity(authority, entity)
-        entityStore.updateEntity(authority, dataEntity)
+        entityStore.commitChanges(entity, dataEntity)
         searchService.index(entity)
     }
 }

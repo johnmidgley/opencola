@@ -46,10 +46,7 @@ class EntityStore(trustedActors: Set<ActorEntity>) {
         return sequence {
             path.readLines().forEach { line ->
                 if(line.isNotEmpty()){
-                    val transaction = Json.decodeFromString<SignedTransaction>(line)
-                    if (transaction != null){
-                        yield(transaction)
-                    }
+                    yield(Json.decodeFromString(line))
                 }
             }
         }
@@ -95,51 +92,40 @@ class EntityStore(trustedActors: Set<ActorEntity>) {
     }
 
     // TODO - make entity method?
-    private fun isEntityValid(authority: Authority, entity: Entity): Boolean {
-        val invalidAuthorityIds = entity.getFacts().filter { it.authorityId != authority.entityId }.map { it.authorityId }
-        if (invalidAuthorityIds.isNotEmpty()) {
-            logger.error("Entity{${entity.entityId}} contains facts not matching authority{$authority.id}: $invalidAuthorityIds")
-            return false
+    private fun validateEntity(entity: Entity) {
+        val authorityIds = entity.getFacts().map { it.authorityId }.distinct()
+
+        if(authorityIds.size != 1){
+            logAndThrow(RuntimeException("Entity{${entity.entityId}} contains facts from multiple authorities $authorityIds }"))
+        }
+
+        val authorityId = authorityIds.single()
+        if(entity.authorityId != authorityId){
+            logAndThrow(RuntimeException("Entity{${entity.entityId}} with authority ${entity.authorityId} contains facts from wrong authority $authorityId }"))
         }
 
         val invalidEntityIds = entity.getFacts().filter { it.entityId != entity.entityId }.map { it.entityId }
         if (invalidEntityIds.isNotEmpty()) {
-            logger.error("Entity Id:{${entity.entityId}} contains facts not matching its id: $invalidEntityIds")
+            logAndThrow(RuntimeException("Entity Id:{${entity.entityId}} contains facts not matching its id: $invalidEntityIds"))
+        }
+
+        if(entity.getFacts().distinct().size < entity.getFacts().size){
+            logAndThrow(RuntimeException("Entity Id:{${entity.entityId}} contains non-distinct facts"))
         }
 
         // TODO: Check that all transaction ids exist (0 to current) and don't surpass the current transaction id
         // TODO: Check that subsequent facts (by transactionId) for the same property are not equal
         // TODO: Check for duplicate facts (and add unit tests)
-
-        return false
-    }
-
-    private fun getFactsToCommit(authority: Authority, entity: Entity): List<Fact> {
-        // TODO: Check for duplicate facts (and add unit tests)
-        val uncommittedFacts = entity.getFacts().filter { it.transactionId == UNCOMMITTED }
-
-        val invalidAuthorityIds = uncommittedFacts.filter { it.authorityId != authority.entityId }.map { it.authorityId }
-        if (invalidAuthorityIds.isNotEmpty()) {
-            logAndThrow(IllegalArgumentException("Entity{${entity.entityId}} contains facts not matching authority{$authority.id}: $invalidAuthorityIds"))
-        }
-
-        val invalidEntityIds = uncommittedFacts.filter { it.entityId != entity.entityId }.map { it.entityId }
-        if (invalidEntityIds.isNotEmpty()) {
-            logAndThrow(IllegalArgumentException("Entity Id:{${entity.entityId}} contains facts not matching its id: $invalidEntityIds"))
-        }
-
-        // TODO: Make idempotent - i.e. ignore facts that are identical to most recent one
-
-        return uncommittedFacts.distinct()
     }
 
     private fun getNextTransactionId(authority: Authority): Long {
         return facts.filter { it.authorityId == authority.entityId }.map { it.transactionId }.maxOrNull()?.inc() ?: 0
     }
 
-    private fun saveTransaction(authority: Authority, uncommittedFacts: List<Fact>, path: Path) : List<Fact> {
+    private fun commitTransaction(authority: Authority, uncommittedFacts: List<Fact>) : List<Fact> {
         val transactionId = getNextTransactionId(authority)
-        path.outputStream(StandardOpenOption.APPEND, StandardOpenOption.CREATE).use { outputStream ->
+
+        this.path?.outputStream(StandardOpenOption.APPEND, StandardOpenOption.CREATE)?.use { outputStream ->
             // TODO: Binary serialization?
             Json.encodeToStream(
                 authority.signTransaction(
@@ -157,28 +143,30 @@ class EntityStore(trustedActors: Set<ActorEntity>) {
         return uncommittedFacts.map { it.updateTransactionId(transactionId) }
     }
 
-    // TODO: Make entity varargs so that multiple entities can be updated in a single transaction
-    fun updateEntity(authority: Authority, entity: Entity): Entity {
-        val uncommittedFacts = getFactsToCommit(authority, entity)
-        var committedFacts = uncommittedFacts
+    private fun getAuthority(id: Id) : Authority {
+        return trustedActors.firstOrNull { it.authorityId == id && it is Authority } as Authority?
+            ?: throw RuntimeException("No authority with id $id")
+    }
 
-        if (uncommittedFacts.isEmpty()) {
-            logger.info { "Ignoring update to entity:{${entity.entityId}} with no novel facts" }
-            return entity
+    // TODO: Make entity varargs so that multiple entities can be updated in a single transaction
+    fun commitChanges(vararg entities: Entity)// : List<Entity>
+    {
+        entities.forEach { validateEntity(it) }
+
+        if(entities.map{ it.authorityId }.distinct().size > 1){
+            logAndThrow(RuntimeException("Attempt to update multiple entities with multiple authorities. Must make separate calls"))
         }
 
-        var transactionId = UNCOMMITTED
+        val uncommittedFacts = entities.flatMap { it.getFacts() }.filter{ it.transactionId == UNCOMMITTED }
+        val authority = getAuthority(entities.first().authorityId)
 
-        val path = this.path
-        if (path != null) {
-            committedFacts = saveTransaction(authority, uncommittedFacts, path)
+        if (uncommittedFacts.isEmpty()) {
+            logger.info { "Ignoring update with no novel facts" }
+            return
         }
 
         // TODO: Synchronized
-        facts = facts + committedFacts
-
-        return getEntity(authority, entity.entityId)
-            ?: throw RuntimeException("Unable to find updated entity:{${entity.entityId}} in store")
+        facts = facts + commitTransaction(authority, uncommittedFacts)
     }
 
     fun getEntity(authority: Authority, entityId: Id): Entity? {

@@ -22,7 +22,7 @@ import java.security.PublicKey
 // Actors vs. object - artifacts cannot take action on anything, they just exist.
 // Artifacts can be data or external (products, etc.)
 
-abstract class Entity(private val authorityId: Id, val entityId: Id){
+abstract class Entity(val authorityId: Id, val entityId: Id){
     companion object Factory {
         fun getInstance(facts: List<Fact>) : Entity? {
             if(facts.isEmpty()) return null
