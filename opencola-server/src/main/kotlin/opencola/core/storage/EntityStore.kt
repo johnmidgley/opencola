@@ -9,8 +9,8 @@ import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.security.PublicKey
 import kotlin.io.path.exists
+import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
-import kotlin.io.path.readLines
 
 class EntityStore(trustedActors: Set<ActorEntity>) {
     private val logger = KotlinLogging.logger {}
@@ -42,11 +42,15 @@ class EntityStore(trustedActors: Set<ActorEntity>) {
 
 
     private fun transactions(path: Path): Sequence<SignedTransaction> {
-        // TODO: Only works for JSON
         return sequence {
-            path.readLines().forEach { line ->
-                if(line.isNotEmpty()){
-                    yield(Json.decodeFromString(line))
+            path.inputStream().use{
+                // TODO: Make sure available works properly. From the docs, it seems like it can return 0 when no buffered data left.
+                // Can't find the idomatic way to check for end of file. May need to read until exception??
+                while(it.available() > 0)
+                    yield(SignedTransaction.decode(it))
+
+                if(it.read() != -1){
+                    logAndThrow(RuntimeException("While reading transactions, encountered available() == 0 but read() != -1"))
                 }
             }
         }
@@ -125,15 +129,8 @@ class EntityStore(trustedActors: Set<ActorEntity>) {
     private fun commitTransaction(authority: Authority, uncommittedFacts: List<Fact>) : List<Fact> {
         val transactionId = getNextTransactionId(authority)
 
-        this.path?.outputStream(StandardOpenOption.APPEND, StandardOpenOption.CREATE)?.use { outputStream ->
-            // TODO: Binary serialization?
-            Json.encodeToStream(
-                authority.signTransaction(
-                    Transaction.fromFacts(transactionId, uncommittedFacts)
-                ),
-                outputStream
-            )
-            outputStream.write("\n".toByteArray())
+        this.path?.outputStream(StandardOpenOption.APPEND, StandardOpenOption.CREATE)?.use { stream ->
+            SignedTransaction.encode(stream, authority.signTransaction(Transaction.fromFacts(transactionId, uncommittedFacts)))
         }
 
         return uncommittedFacts.map { it.updateTransactionId(transactionId) }

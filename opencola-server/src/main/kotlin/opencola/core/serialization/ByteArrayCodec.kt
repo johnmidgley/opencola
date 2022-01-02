@@ -8,8 +8,8 @@ import java.net.URI
 import java.nio.ByteBuffer
 import java.security.PublicKey
 
-// TODO: Can this be generified?
 // TODO: Should this be ValueCodec?
+// TODO - change to ByteArraySerializer?
 interface ByteArrayCodec<T> {
     fun encode(value: T): ByteArray
     fun decode(value: ByteArray): T
