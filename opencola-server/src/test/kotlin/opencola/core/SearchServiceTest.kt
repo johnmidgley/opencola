@@ -1,7 +1,13 @@
+import opencola.core.content.MhtmlPage
+import opencola.core.content.TextExtractor
+import opencola.core.content.parseMime
+import opencola.core.extensions.nullOrElse
 import opencola.core.model.ResourceEntity
 import opencola.core.search.SearchService
 import org.junit.Test
 import java.net.URI
+import kotlin.io.path.Path
+import kotlin.io.path.inputStream
 import kotlin.test.assertEquals
 
 class SearchServiceTest {
@@ -39,5 +45,20 @@ class SearchServiceTest {
         val results = searchService.search(keyword)
         assertEquals(1, results.size)
         assertEquals(resourceEntity.description, results[0].description)
+    }
+
+    @Test
+    fun testIndexResourceWithMhtml(){
+        val rootPath = Path(System.getProperty("user.dir"),"..", "sample-docs").toString()
+
+        val path = Path(rootPath, "Conway's Game of Life - Wikipedia.mht")
+        val message = path.inputStream().use { parseMime(it) } ?: throw RuntimeException("Unable to parse $path")
+        val mhtmlPage = MhtmlPage(message)
+
+        val textExtractor = TextExtractor()
+        val text = mhtmlPage.htmlText.nullOrElse { textExtractor.getBody(it.toByteArray()) }
+        val resourceEntity = ResourceEntity(authority.entityId, mhtmlPage.uri, mhtmlPage.title, text = text)
+
+        searchService.index(resourceEntity)
     }
 }
