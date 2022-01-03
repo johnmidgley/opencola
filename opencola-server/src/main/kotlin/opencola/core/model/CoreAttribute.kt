@@ -14,6 +14,7 @@ enum class CoreAttribute(val spec: Attribute) {
     PublicKey(Attribute(URI("opencola://attributes/publicKey"), PublicKeyByteArrayCodec as ByteArrayCodec<Any> ,false)),
     Name(Attribute(URI("opencola://attributes/name"), StringByteArrayCodec as ByteArrayCodec<Any>,true)),
     Description(Attribute(URI("opencola://attributes/description"), StringByteArrayCodec as ByteArrayCodec<Any>, true)),
+    // TODO: Should text be here, or just retrievable / parseable from the datastore?
     Text(Attribute(URI("opencola://attributes/text"), StringByteArrayCodec as ByteArrayCodec<Any>, true)),
     ImageUri(Attribute(URI("opencola://attributes/imageUri"), UriByteArrayCodec as ByteArrayCodec<Any>,false)),
     Tags(Attribute(URI("opencola://attributes/tags"), SetOfStringByteArrayCodec as ByteArrayCodec<Any>,true)),
