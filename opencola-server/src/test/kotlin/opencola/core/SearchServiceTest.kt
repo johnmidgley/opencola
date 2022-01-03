@@ -60,5 +60,8 @@ class SearchServiceTest {
         val resourceEntity = ResourceEntity(authority.entityId, mhtmlPage.uri, mhtmlPage.title, text = text)
 
         searchService.index(resourceEntity)
+        val results = searchService.search("game of life")
+        assertEquals(1, results.size)
+        assertEquals(resourceEntity.description, results[0].description)
     }
 }

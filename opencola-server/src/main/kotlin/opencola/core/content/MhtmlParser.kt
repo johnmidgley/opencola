@@ -17,14 +17,15 @@ class MhtmlPage {
     val uri: URI
     val title: String?
     val htmlText : String?
+    private val contentLocationMap: Map<String,String>
 
     // TODO: Make work on stream?
     constructor(message: Message) {
         // TODO: This is likely specific to Chrome saving. Should probably detect creator and dispatch to correct handler to canonicalize
+        contentLocationMap = getContentLocationMap(message)
         this.message = canonicalizeMessage(message)
-        uri = message.header.getField("Snapshot-Content-Location")?.body.nullOrElse { URI(it) } ?: throw RuntimeException(
-                "No URI specified in MHTML message"
-            )
+        uri = message.header.getField("Snapshot-Content-Location")?.body.nullOrElse { URI(it) }
+            ?: throw RuntimeException("No URI specified in MHTML message")
         title = message.header.getField("Subject")?.body
         htmlText = parseHtmlText()
     }
@@ -45,6 +46,22 @@ class MhtmlPage {
         }
     }
 
+    private fun getContentLocationMap(message: Message): Map<String, String> {
+        if(message.body !is Multipart){
+            // Log warning
+            return mapOf()
+        }
+
+        return (message.body as Multipart)
+            .bodyParts.asSequence()
+            .mapNotNull { it.header.getField("Content-Location") }
+            .map{ it.body }
+            .filter { it.startsWith("cid:css") }
+            .distinct()
+            .mapIndexed { i, s -> Pair(s, "cid:css-${i.toString().padStart(5,'0')}@mhtml.opencola") }
+            .toMap()
+    }
+
     private fun canonicalizeMessage(message: Message): Message {
         return Message.Builder.of()
             .addField(canonicalizeContentType(message.header.getField("Content-Type")))
@@ -59,6 +76,22 @@ class MhtmlPage {
         // Not super elegant, but no obvious way to construct the field (ContentTypeField is an interface and ContentTypeFieldImpl is private)
         val raw = String(field.raw.toByteArray())
         val message = raw.replace(boundaryRegex, opencolaBoundary).byteInputStream().use { parseMime(it) }
+
+        if (message == null) {
+            // TODO: Log warning / error
+            println("Couldn't canonicalize Content-Type {$raw}. Using original")
+            return field
+        }
+
+        return message.header.getField(field.name)
+    }
+
+    // TODO - This and canonicalizeContentType can be abstracted. Only difference is the raw.replace statement
+    private fun canonicalizeContentLocation(field: Field): Field {
+        // TODO: Test only assert that field.name = "Content-Type"?
+        // Not super elegant, but no obvious way to construct the field (ContentTypeField is an interface and ContentTypeFieldImpl is private)
+        val raw = String(field.raw.toByteArray())
+        val message = raw.replace(field.body, contentLocationMap.getOrDefault(field.body, field.body)).byteInputStream().use { parseMime(it) }
 
         if (message == null) {
             // TODO: Log warning / error
@@ -90,7 +123,8 @@ class MhtmlPage {
                 // This is odd. Not sure how stripping 'cid's still works, especially when it doesn't work for http locations.
                 // Likely styles are just loaded, so name doesn't matter. Probably cleaner to replace cid GUIDs with
                 // deterministic ids
-                if ((field as ContentLocationFieldLenientImpl).location.startsWith("cid")) null else field
+                val location = (field as ContentLocationFieldLenientImpl).location
+                if (location.startsWith("cid")) canonicalizeContentLocation(field) else field
             }
             else -> field
         }
@@ -115,10 +149,12 @@ class MhtmlPage {
     private val cidRegex = "cid:css-[0-9a-z]{8}(-[0-9a-z]{4}){3}-[0-9a-z]{12}@mhtml.blink".toRegex()
 
     private fun canonicalizeStringBody(body: TextBody): TextBody {
-        return BasicBodyFactory.INSTANCE.textBody(body.reader.use { it.readText() }.replace(cidRegex, ""))
+        val text = body.reader.use { it.readText() }
+        return BasicBodyFactory.INSTANCE.textBody(contentLocationMap.entries.fold(text) { text, (k, v) -> text.replace(k, v) } )
     }
 
     private fun canonicalizeBinaryBody(body: BinaryBody): BinaryBody {
+        // Copy here so that nobody can mutate unexpectedly
         return body.inputStream.use { BasicBodyFactory.INSTANCE.binaryBody(it) }
     }
 }
