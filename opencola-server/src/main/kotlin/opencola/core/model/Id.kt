@@ -31,7 +31,7 @@ data class Id(private val bytes: ByteArray) {
     }
 
     override fun hashCode(): Int {
-        return bytes.hashCode()
+        return bytes.contentHashCode()
     }
 
     override fun equals(other: Any?): Boolean {

@@ -3,7 +3,6 @@ package opencola.core.content
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.Id
 import org.apache.james.mime4j.dom.*
-import org.apache.james.mime4j.field.ContentLocationFieldLenientImpl
 import org.apache.james.mime4j.message.*
 import org.apache.james.mime4j.stream.Field
 import java.io.ByteArrayOutputStream
@@ -64,38 +63,22 @@ class MhtmlPage {
 
     private fun canonicalizeMessage(message: Message): Message {
         return Message.Builder.of()
-            .addField(canonicalizeContentType(message.header.getField("Content-Type")))
+            .addField(transformField(message.header.getField("Content-Type")){ it.replace(boundaryRegex, opencolaBoundary) })
+            .addField(message.header.getField("Snapshot-Content-Location"))
             .setBody(canonicalizeBody(message.body)).build()
     }
 
     private val boundaryRegex = "boundary=\".*\"".toRegex()
     private val opencolaBoundary = "boundary=\"----MultipartBoundary--opencola--1516051403151201--562D739589761-----\""
 
-    private fun canonicalizeContentType(field: Field): Field {
-        // TODO: Test only assert that field.name = "Content-Type"?
+    private fun transformField(field: Field, transform: (raw: String) -> String) : Field {
         // Not super elegant, but no obvious way to construct the field (ContentTypeField is an interface and ContentTypeFieldImpl is private)
         val raw = String(field.raw.toByteArray())
-        val message = raw.replace(boundaryRegex, opencolaBoundary).byteInputStream().use { parseMime(it) }
+        val message = transform(raw).byteInputStream().use { parseMime(it) }
 
         if (message == null) {
             // TODO: Log warning / error
-            println("Couldn't canonicalize Content-Type {$raw}. Using original")
-            return field
-        }
-
-        return message.header.getField(field.name)
-    }
-
-    // TODO - This and canonicalizeContentType can be abstracted. Only difference is the raw.replace statement
-    private fun canonicalizeContentLocation(field: Field): Field {
-        // TODO: Test only assert that field.name = "Content-Type"?
-        // Not super elegant, but no obvious way to construct the field (ContentTypeField is an interface and ContentTypeFieldImpl is private)
-        val raw = String(field.raw.toByteArray())
-        val message = raw.replace(field.body, contentLocationMap.getOrDefault(field.body, field.body)).byteInputStream().use { parseMime(it) }
-
-        if (message == null) {
-            // TODO: Log warning / error
-            println("Couldn't canonicalize Content-Type {$raw}. Using original")
+            println("Couldn't transform field {$raw}. Using original")
             return field
         }
 
@@ -118,14 +101,7 @@ class MhtmlPage {
     private fun canonicalizeHeaderField(field: Field): Field? {
         return when (field.name) {
             "Content-ID" -> null
-            "Content-Location" -> {
-                // TODO: Investigate
-                // This is odd. Not sure how stripping 'cid's still works, especially when it doesn't work for http locations.
-                // Likely styles are just loaded, so name doesn't matter. Probably cleaner to replace cid GUIDs with
-                // deterministic ids
-                val location = (field as ContentLocationFieldLenientImpl).location
-                if (location.startsWith("cid")) canonicalizeContentLocation(field) else field
-            }
+            "Content-Location" -> transformField(field) { it.replace(field.body, contentLocationMap.getOrDefault(field.body, field.body)) }
             else -> field
         }
     }

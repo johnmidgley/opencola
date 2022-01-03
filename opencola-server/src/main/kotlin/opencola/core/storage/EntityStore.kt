@@ -146,7 +146,7 @@ class EntityStore(trustedActors: Set<ActorEntity>) {
     {
         entities.forEach { validateEntity(it) }
 
-        if(entities.map{ it.authorityId }.distinct().size > 1){
+        if(entities.distinctBy { it.authorityId }.size > 1){
             logAndThrow(RuntimeException("Attempt to update multiple entities with multiple authorities. Must make separate calls"))
         }
 
