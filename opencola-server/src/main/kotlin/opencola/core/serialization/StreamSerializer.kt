@@ -3,7 +3,8 @@ package opencola.core.serialization
 import java.io.InputStream
 import java.io.OutputStream
 
-// TODO: Is there a way to do this with just Serializable objects?
+//TODO: When serialization is stable, migrate to custom format serialization
+// https://github.com/Kotlin/kotlinx.serialization/blob/master/docs/formats.md#custom-formats-experimental
 interface StreamSerializer<T> {
     // TODO: Should these just call the byte array codecs and wrap them with size markers?
     fun encode(stream: OutputStream, value: T)

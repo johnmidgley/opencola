@@ -30,6 +30,7 @@ data class Id(private val bytes: ByteArray) {
         return bytes.toHexString()
     }
 
+    // Add tests for hashcode and equals for all domain objects
     override fun hashCode(): Int {
         return bytes.contentHashCode()
     }
@@ -42,8 +43,6 @@ data class Id(private val bytes: ByteArray) {
     }
 
     companion object Factory : ByteArrayCodec<Id>, StreamSerializer<Id> {
-        // Construct id from a serialized string value
-        // TODO: Should this be here?
         fun fromHexString(idAsHexString: String) : Id {
             return Id(idAsHexString.hexStringToByteArray())
         }
