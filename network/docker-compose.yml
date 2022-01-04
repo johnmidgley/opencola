@@ -8,10 +8,12 @@ services:
       - ../storage/var-solr:/var/solr
 
   db:
-    image: postgres
+    image: postgres:14.1
     restart: always
     environment:
       POSTGRES_PASSWORD: example
+    volumes:
+      - ../storage/var-postgres:/var/lib/postgresql/data
 
   adminer:
     image: adminer
