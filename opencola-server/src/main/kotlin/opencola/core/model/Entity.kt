@@ -24,6 +24,7 @@ import java.security.PublicKey
 
 abstract class Entity(val authorityId: Id, val entityId: Id){
     companion object Factory {
+        // TODO: Iterable<Fact> instead of List<Fact> for any parameters
         fun getInstance(facts: List<Fact>) : Entity? {
             if(facts.isEmpty()) return null
 

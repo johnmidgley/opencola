@@ -62,7 +62,7 @@ class EntityTest {
         assertFails { entity.uri = URI("opencola://different-uri") }
 
         val authority = getAuthority()
-        val store = EntityStore(listOf(authority).toSet())
+        // val store = EntityStore(authority)
         //TODO: Fix entity store so adding an entity returns a new Entity, and commit occurs at the same time
         // then test here that setting a new value results in a new fact
     }

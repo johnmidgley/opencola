@@ -1,102 +1,61 @@
 package opencola.core.storage
 
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.encodeToStream
 import mu.KotlinLogging
 import opencola.core.model.*
-import java.nio.file.Path
-import java.nio.file.StandardOpenOption
 import java.security.PublicKey
-import kotlin.io.path.exists
-import kotlin.io.path.inputStream
-import kotlin.io.path.outputStream
 
-class EntityStore(trustedActors: Set<ActorEntity>) {
+private const val INVALID_EPOCH: Long = -1
+
+abstract class EntityStore(val authority: Authority) {
+    // TODO: Make logger class?
     private val logger = KotlinLogging.logger {}
     private fun logAndThrow(exception: Exception) {
         logger.error { exception.message }
         throw exception
     }
-
-    private var trustedActors = emptySet<ActorEntity>()
-    private var path: Path? = null
-
-
-    // TODO: Make a class that synchronizes updates to facts
-    private var facts = emptyList<Fact>()
-
-    init {
-        addTrustedActors(trustedActors)
+    private fun logAndThrow(message: String){
+        logAndThrow(RuntimeException(message))
     }
 
-    private fun addTrustedActors(actors: Set<ActorEntity>) {
-        val partitionedActors = actors.partition { it.publicKey == null }
+    private var epoch: Long = INVALID_EPOCH
 
-        if (partitionedActors.first.isNotEmpty()) {
-            logger.error { "Ignoring trusted actors with no public key: ${partitionedActors.first.joinToString()}" }
+    @Synchronized
+    protected fun setEpoch(epoch: Long){
+        if(this.epoch != INVALID_EPOCH){
+            logAndThrow("Attempt to setEpoch that has already been set")
         }
 
-        this.trustedActors = this.trustedActors + partitionedActors.second
+        this.epoch = epoch
     }
 
+    abstract fun getEntity(authority: Authority, entityId: Id): Entity?
+    abstract fun persistTransaction(signedTransaction: SignedTransaction)
 
-    private fun transactions(path: Path): Sequence<SignedTransaction> {
-        return sequence {
-            path.inputStream().use{
-                // TODO: Make sure available works properly. From the docs, it seems like it can return 0 when no buffered data left.
-                // Can't find the idomatic way to check for end of file. May need to read until exception??
-                while(it.available() > 0)
-                    yield(SignedTransaction.decode(it))
-
-                if(it.read() != -1){
-                    logAndThrow(RuntimeException("While reading transactions, encountered available() == 0 but read() != -1"))
-                }
-            }
-        }
-    }
-
-    private fun isValidTransaction(signedTransaction: SignedTransaction): Boolean {
+    protected fun isValidTransaction(signedTransaction: SignedTransaction): Boolean {
         // TODO: Move what can be moved to transaction
         val transactionId = signedTransaction.transaction.id
         val facts = signedTransaction.transaction.getFacts()
 
-        val authority = signedTransaction.transaction.authorityId
-        val actorEntity = trustedActors.firstOrNull { it.entityId == signedTransaction.transaction.authorityId }
 
-        if (actorEntity == null) {
-            // TODO: Load all public keys from the store first, in order to verify transactions?
+        if (signedTransaction.transaction.authorityId != authority.entityId) {
             logger.warn { "Ignoring transaction $transactionId with unverifiable authority: $authority" }
             return false
         }
 
-        if(signedTransaction.transaction.getFacts().any { it.transactionId == UNCOMMITTED}){
+        if(signedTransaction.transaction.getFacts().any { it.transactionId == UNCOMMITTED }){
             // TODO: Throw or ignore?
             logAndThrow(IllegalStateException("Transaction has uncommitted id" ))
         }
 
-        if (!signedTransaction.isValidTransaction(actorEntity.publicKey as PublicKey)) {
+        if (!signedTransaction.isValidTransaction(authority.publicKey as PublicKey)) {
             logger.error { "Ignoring transaction with invalid signature $transactionId" }
         }
 
         return true
     }
 
-    fun load(path: Path) {
-        this.path = path
-
-        if(!path.exists()){
-            logger.warn { "No entity store found at $path. Will get created on update" }
-        } else {
-            facts = transactions(path)
-                .filter { isValidTransaction(it) }
-                .flatMap { it.transaction.getFacts() }
-                .toList()
-        }
-    }
-
     // TODO - make entity method?
-    private fun validateEntity(entity: Entity) {
+    protected fun validateEntity(entity: Entity) : Entity {
         val authorityIds = entity.getFacts().map { it.authorityId }.distinct()
 
         if(authorityIds.size != 1){
@@ -120,49 +79,36 @@ class EntityStore(trustedActors: Set<ActorEntity>) {
         // TODO: Check that all transaction ids exist (0 to current) and don't surpass the current transaction id
         // TODO: Check that subsequent facts (by transactionId) for the same property are not equal
         // TODO: Check for duplicate facts (and add unit tests)
+        return entity
     }
 
-    private fun getNextTransactionId(authority: Authority): Long {
-        return facts.filter { it.authorityId == authority.entityId }.map { it.transactionId }.maxOrNull()?.inc() ?: 0
-    }
-
-    private fun commitTransaction(authority: Authority, uncommittedFacts: List<Fact>) : List<Fact> {
-        val transactionId = getNextTransactionId(authority)
-
-        this.path?.outputStream(StandardOpenOption.APPEND, StandardOpenOption.CREATE)?.use { stream ->
-            SignedTransaction.encode(stream, authority.signTransaction(Transaction.fromFacts(transactionId, uncommittedFacts)))
-        }
-
-        return uncommittedFacts.map { it.updateTransactionId(transactionId) }
-    }
-
-    private fun getAuthority(id: Id) : Authority {
-        return trustedActors.firstOrNull { it.authorityId == id && it is Authority } as Authority?
-            ?: throw RuntimeException("No authority with id $id")
-    }
-
-    // TODO: Make entity varargs so that multiple entities can be updated in a single transaction
-    fun commitChanges(vararg entities: Entity)// : List<Entity>
+    @Synchronized
+    fun commitChanges(vararg entities: Entity)
     {
         entities.forEach { validateEntity(it) }
 
-        if(entities.distinctBy { it.authorityId }.size > 1){
-            logAndThrow(RuntimeException("Attempt to update multiple entities with multiple authorities. Must make separate calls"))
+        if(entities.distinctBy { it.entityId }.size != entities.size){
+            logAndThrow(RuntimeException("Attempt to commit changes to multiple entities with the same id."))
+        }
+
+        if(entities.any { it.authorityId != authority.authorityId }){
+            logAndThrow(RuntimeException("Attempt to commit changes not controlled by authority"))
         }
 
         val uncommittedFacts = entities.flatMap { it.getFacts() }.filter{ it.transactionId == UNCOMMITTED }
-        val authority = getAuthority(entities.first().authorityId)
-
         if (uncommittedFacts.isEmpty()) {
             logger.info { "Ignoring update with no novel facts" }
             return
         }
 
-        // TODO: Synchronized
-        facts = facts + commitTransaction(authority, uncommittedFacts)
-    }
+        // TODO: Cleanup - very messy. Probably lock around epoch
+        val epoch = this.epoch
+        if(epoch == INVALID_EPOCH) {
+            logAndThrow("Attempt to commit transaction without setting epoch")
+        }
 
-    fun getEntity(authority: Authority, entityId: Id): Entity? {
-        return Entity.getInstance(facts.filter { it.authorityId == authority.entityId && it.entityId == entityId }.toList())
+        val nextEpoch = epoch.inc()
+        persistTransaction(authority.signTransaction(Transaction.fromFacts(nextEpoch, uncommittedFacts)))
+        this.epoch = nextEpoch
     }
 }

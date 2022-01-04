@@ -96,6 +96,12 @@ class SignedTransaction(val transaction: Transaction, val signature: ByteArray){
         return isValidSignature(publicKey, transaction.toString().toByteArray(), signature)
     }
 
+    fun expandFacts() : Iterable<Fact> {
+        return transaction.transactionFacts.map {
+            Fact(transaction.authorityId, it.entityId, it.attribute, it.value, it.operation, transaction.id)
+        }
+    }
+
     companion object Factory : StreamSerializer<SignedTransaction> {
         override fun encode(stream: OutputStream, value: SignedTransaction) {
             Transaction.encode(stream, value.transaction)

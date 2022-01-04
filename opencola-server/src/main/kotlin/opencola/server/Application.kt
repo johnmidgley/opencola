@@ -8,8 +8,8 @@ import opencola.core.model.Authority
 import opencola.core.search.SearchService
 import opencola.core.security.privateKeyFromBytes
 import opencola.core.security.publicKeyFromBytes
-import opencola.core.storage.EntityStore
 import opencola.core.storage.LocalFileStore
+import opencola.core.storage.SimpleEntityStore
 import opencola.server.plugins.configureContentNegotiation
 import opencola.server.plugins.configureHTTP
 import opencola.server.plugins.configureRouting
@@ -22,17 +22,15 @@ val authorityPublicKey = publicKeyFromBytes("3059301306072a8648ce3d020106082a864
 val authorityPrivateKey = privateKeyFromBytes("3041020100301306072a8648ce3d020106082a8648ce3d0301070427302502010104204158f0d52ed288ae60a84f8dc250b77d0c7263b336fd403b084618269285b172".hexStringToByteArray())
 val keyPair = KeyPair(authorityPublicKey, authorityPrivateKey)
 val authority = Authority(keyPair, name = "Authority")
-val entityStore = EntityStore(listOf(authority).toSet())
 val storagePath = Path("/Users/johnmidgley/dev/opencola/storage")
 val entityStorePath: Path = storagePath.resolve("transactions.bin")
+val entityStore = SimpleEntityStore(authority, entityStorePath)
 val fileStorePath: Path = storagePath.resolve("filestore/")
 val fileStore = LocalFileStore(fileStorePath)
 val searchService = SearchService(authority)
 val textExtractor = TextExtractor()
 
 fun main() {
-    entityStore.load(entityStorePath)
-
     embeddedServer(Netty, port = 5795, host = "0.0.0.0") {
         configureHTTP()
         configureContentNegotiation()

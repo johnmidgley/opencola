@@ -4,7 +4,7 @@ import getActorEntity
 import getAuthority
 import opencola.core.model.ActorEntity
 import opencola.core.model.UNCOMMITTED
-import opencola.core.storage.EntityStore
+import opencola.core.storage.SimpleEntityStore
 import java.nio.file.Path
 import kotlin.io.path.createTempFile
 import kotlin.test.Test
@@ -19,13 +19,11 @@ class EntityStoreTest {
         val authority = getAuthority()
         val transactionFile = createTempTransactionFile()
 
-        val store = EntityStore(listOf(authority).toSet())
-        store.load(transactionFile)
+        val store = SimpleEntityStore(authority, transactionFile)
         val entity = getActorEntity(authority.entityId)
         store.commitChanges(entity)
 
-        val store2 = EntityStore(listOf(authority).toSet())
-        store2.load(transactionFile)
+        val store2 = SimpleEntityStore(authority, transactionFile)
         val entity2 = store2.getEntity(authority, entity.entityId)
             ?: throw RuntimeException("Entity could not be reloaded from store")
 
@@ -37,7 +35,7 @@ class EntityStoreTest {
             assertEquals(it.first.operation, it.second.operation)
             // Transaction id changes on commit, so we don't expect them to be the same
             assertEquals(UNCOMMITTED, it.first.transactionId)
-            assertEquals(0, it.second.transactionId)
+            assertEquals(1, it.second.transactionId)
         }
     }
 
@@ -46,20 +44,17 @@ class EntityStoreTest {
         val authority = getAuthority()
         val transactionFile = createTempTransactionFile()
 
-        val store = EntityStore(listOf(authority).toSet())
-        store.load(transactionFile)
+        val store = SimpleEntityStore(authority, transactionFile)
         val entity = getActorEntity(authority.entityId)
         store.commitChanges(entity)
 
-        val store1 = EntityStore(listOf(authority).toSet())
-        store1.load(transactionFile)
-        val entity1 = store.getEntity(authority, entity.entityId) as ActorEntity
+        val store1 = SimpleEntityStore(authority, transactionFile)
+        val entity1 = store1.getEntity(authority, entity.entityId) as ActorEntity
         entity1.name = "new name"
         store.commitChanges(entity1)
 
-        val store2 = EntityStore(listOf(authority).toSet())
-        store2.load(transactionFile)
-        val entity2 = store.getEntity(authority, entity.entityId) as ActorEntity
+        val store2 = SimpleEntityStore(authority, transactionFile)
+        val entity2 = store2.getEntity(authority, entity.entityId) as ActorEntity
         assertEquals(entity2.name, "new name")
     }
 }
