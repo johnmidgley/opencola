@@ -20,6 +20,11 @@ repositories {
 }
 
 dependencies {
+    implementation("org.jetbrains.exposed", "exposed-core", "0.37.3")
+    implementation("org.jetbrains.exposed", "exposed-dao", "0.37.3")
+    implementation("org.jetbrains.exposed", "exposed-jdbc", "0.37.3")
+    implementation("org.postgresql:postgresql:42.2.2")
+
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf-jvm:1.3.2")
 
