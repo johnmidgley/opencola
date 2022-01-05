@@ -7,17 +7,9 @@ import mu.KotlinLogging
 import opencola.core.model.*
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
-import kotlin.io.path.exists
-import kotlin.io.path.inputStream
-import kotlin.io.path.outputStream
+import kotlin.io.path.*
 
 class SimpleEntityStore(authority: Authority, private val path: Path) : EntityStore(authority) {
-    private val logger = KotlinLogging.logger {}
-    private fun logAndThrow(exception: Exception) {
-        logger.error { exception.message }
-        throw exception
-    }
-
     // TODO: Synchronize access
     private var facts = emptyList<Fact>()
 
@@ -57,5 +49,10 @@ class SimpleEntityStore(authority: Authority, private val path: Path) : EntitySt
     override fun persistTransaction(signedTransaction: SignedTransaction) {
         this.path.outputStream(StandardOpenOption.APPEND, StandardOpenOption.CREATE).use { SignedTransaction.encode(it, signedTransaction) }
         facts = facts + signedTransaction.expandFacts()
+    }
+
+    override fun resetStore() : SimpleEntityStore {
+        this.path.deleteIfExists()
+        return SimpleEntityStore(authority, path)
     }
 }

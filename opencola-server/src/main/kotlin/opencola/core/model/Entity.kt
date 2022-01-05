@@ -1,5 +1,6 @@
 package opencola.core.model
 
+import mu.KotlinLogging
 import java.lang.IllegalArgumentException
 import java.net.URI
 import java.security.KeyPair
@@ -24,6 +25,8 @@ import java.security.PublicKey
 
 abstract class Entity(val authorityId: Id, val entityId: Id){
     companion object Factory {
+        private val logger = KotlinLogging.logger {}
+
         // TODO: Iterable<Fact> instead of List<Fact> for any parameters
         fun getInstance(facts: List<Fact>) : Entity? {
             if(facts.isEmpty()) return null
@@ -33,14 +36,17 @@ abstract class Entity(val authorityId: Id, val entityId: Id){
             val typeFact = facts.lastOrNull { it.attribute == CoreAttribute.Type.spec }
                 ?: throw IllegalStateException("Entity has no type")
 
-            return when(CoreAttribute.Type.spec.codec.decode(typeFact.value.bytes).toString()){
+            return when(val type = CoreAttribute.Type.spec.codec.decode(typeFact.value.bytes).toString()){
                 // TODO: Use fully qualified names
                 ActorEntity::class.simpleName -> ActorEntity(facts)
                 // Authority::class.simpleName -> Authority(facts)
                 ResourceEntity::class.simpleName -> ResourceEntity(facts)
                 DataEntity::class.simpleName -> DataEntity(facts)
                 // TODO: Throw if not type?
-                else -> null
+                else -> {
+                    logger.error { "Found unknown type: $type" }
+                    null
+                }
             }
         }
     }

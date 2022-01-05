@@ -8,12 +8,12 @@ private const val INVALID_EPOCH: Long = -1
 
 abstract class EntityStore(val authority: Authority) {
     // TODO: Make logger class?
-    private val logger = KotlinLogging.logger {}
-    private fun logAndThrow(exception: Exception) {
+    protected val logger = KotlinLogging.logger {}
+    protected fun logAndThrow(exception: Exception) {
         logger.error { exception.message }
         throw exception
     }
-    private fun logAndThrow(message: String){
+    protected fun logAndThrow(message: String){
         logAndThrow(RuntimeException(message))
     }
 
@@ -30,6 +30,9 @@ abstract class EntityStore(val authority: Authority) {
 
     abstract fun getEntity(authority: Authority, entityId: Id): Entity?
     abstract fun persistTransaction(signedTransaction: SignedTransaction)
+
+    // SHOULD ONLY BE USED FOR TESTING OR IF YOU REALLY MEAN IT
+    abstract fun resetStore() : EntityStore
 
     protected fun isValidTransaction(signedTransaction: SignedTransaction): Boolean {
         // TODO: Move what can be moved to transaction
