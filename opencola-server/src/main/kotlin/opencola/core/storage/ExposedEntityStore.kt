@@ -8,6 +8,9 @@ import org.jetbrains.exposed.sql.transactions.transaction
 //  active database and it's implicit (i.e. storing database here doesn't do anything)
 
 class ExposedEntityStore(authority: Authority, private val database: Database) : EntityStore(authority) {
+    // NOTE: Some databases may truncate the table name. This is an issue to the degree that it increases the
+    // chances of collisions. Given the number of ids stored in a single DB, the chances of issue are exceedingly low.
+    // This would likely be an issue only when storing data for large sets of users (millions to billions?)
     private class Facts(authorityId: Id) : Table("fct-${authorityId.toString()}"){
         val authorityId = binary("authorityId", 32)
         val entityId = binary("entityId", 32)
