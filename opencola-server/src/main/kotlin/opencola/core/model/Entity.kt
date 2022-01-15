@@ -39,7 +39,6 @@ abstract class Entity(val authorityId: Id, val entityId: Id){
             return when(val type = CoreAttribute.Type.spec.codec.decode(typeFact.value.bytes).toString()){
                 // TODO: Use fully qualified names
                 ActorEntity::class.simpleName -> ActorEntity(facts)
-                // Authority::class.simpleName -> Authority(facts)
                 ResourceEntity::class.simpleName -> ResourceEntity(facts)
                 DataEntity::class.simpleName -> DataEntity(facts)
                 // TODO: Throw if not type?
