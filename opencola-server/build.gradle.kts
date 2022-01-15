@@ -48,6 +48,7 @@ dependencies {
     implementation("io.ktor:ktor-server-netty:$ktor_version")
     implementation("ch.qos.logback:logback-classic:$logback_version")
     implementation("io.ktor:ktor-serialization:$ktor_version")
+    implementation("org.bouncycastle:bcprov-jdk15on:1.69")
     testImplementation("io.ktor:ktor-server-tests:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
 }
