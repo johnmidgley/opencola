@@ -23,23 +23,23 @@ dependencies {
     implementation("org.jetbrains.exposed", "exposed-core", "0.37.3")
     implementation("org.jetbrains.exposed", "exposed-dao", "0.37.3")
     implementation("org.jetbrains.exposed", "exposed-jdbc", "0.37.3")
-    implementation("org.postgresql:postgresql:42.2.2")
+    implementation("org.postgresql:postgresql:42.3.1")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf-jvm:1.3.2")
 
     // Search: https://solr.apache.org/guide/8_11/using-solrj.html
-    implementation("org.apache.solr:solr-solrj:8.11.0")
+    implementation("org.apache.solr:solr-solrj:8.11.1")
 
     // Content Analysis: https://tika.apache.org/2.1.0/gettingstarted.html
     implementation("org.apache.tika:tika-core:2.1.0")
     implementation("org.apache.tika:tika-parsers-standard-package:2.1.0")
 
     // Logging: https://www.kotlinresources.com/library/kotlin-logging/
-    implementation("io.github.microutils:kotlin-logging:2.1.16")
+    implementation("io.github.microutils:kotlin-logging:2.1.21")
     implementation("org.slf4j:slf4j-api:1.7.32")
-    implementation("ch.qos.logback:logback-classic:1.2.9")
-    implementation("ch.qos.logback:logback-core:1.2.9")
+    implementation("ch.qos.logback:logback-classic:1.2.10")
+    implementation("ch.qos.logback:logback-core:1.2.10")
     implementation("com.lordcodes.turtle:turtle:0.6.0")
     implementation("org.apache.james:apache-mime4j-core:0.8.5")
     implementation("org.apache.james:apache-mime4j-dom:0.8.5")
