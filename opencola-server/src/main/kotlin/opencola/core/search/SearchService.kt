@@ -96,9 +96,10 @@ class SearchService(val authority: Authority) {
 
         CoreAdminRequest.unloadCore(solrCollectionName, solrClient)
 
-        // TODO: Check result
+        // TODO: Check result. Create a command function that logs the command
         shellRun(networkPath){
-            command("docker-compose", listOf("exec", "solr", "rm", "-rf", "/var/solr/data/$solrCollectionName"))
+            // The -T flag is needed, otherwise you could get the error "the input device is not a TTY"
+            command("docker-compose", listOf("exec", "-T", "solr", "rm", "-rf", "/var/solr/data/$solrCollectionName"))
         }
     }
 
