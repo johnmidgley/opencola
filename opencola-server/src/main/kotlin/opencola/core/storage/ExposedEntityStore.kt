@@ -7,6 +7,8 @@ import org.jetbrains.exposed.sql.transactions.transaction
 // TODO: Investigate: This is odd. To get a database, you must connect, but it seems that then there can only be one
 //  active database and it's implicit (i.e. storing database here doesn't do anything)
 
+// TODO: Think about using SQLite - super simple and maybe better fit for local use.
+
 class ExposedEntityStore(authority: Authority, private val database: Database) : EntityStore(authority) {
     // NOTE: Some databases may truncate the table name. This is an issue to the degree that it increases the
     // chances of collisions. Given the number of ids stored in a single DB, the chances of issue are exceedingly low.
