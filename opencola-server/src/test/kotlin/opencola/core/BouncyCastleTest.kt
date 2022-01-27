@@ -5,6 +5,7 @@ import java.security.Security
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 import kotlin.test.Test
+import kotlin.test.assertNotNull
 
 
 class BouncyCastleTest {
@@ -27,7 +28,6 @@ class BouncyCastleTest {
     fun testProviders(){
         Security.addProvider(BouncyCastleProvider())
         val bcProvider = Security.getProvider("BC")
-
-        bcProvider.keys.map { it as String }.filter { it.contains("EC") }.forEach{ println(it)}
+        assertNotNull(bcProvider)
     }
 }

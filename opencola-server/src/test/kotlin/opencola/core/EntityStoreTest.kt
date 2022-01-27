@@ -66,7 +66,7 @@ class EntityStoreTest {
     }
 
     @Test
-    fun testUpdateAfterReloadPostGres(){
+    fun testUpdateAfterReloadSQLite(){
         testUpdateAfterReload(authority, getSQLiteEntityStore)
     }
 
