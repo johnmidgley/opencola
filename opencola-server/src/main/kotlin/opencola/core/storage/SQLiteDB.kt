@@ -1,6 +1,5 @@
 package opencola.core.storage
 
-import opencola.core.config.Config
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import java.nio.file.Path
