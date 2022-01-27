@@ -4,15 +4,8 @@ import getActorEntity
 import getAuthority
 import opencola.core.model.ActorEntity
 import opencola.core.model.Authority
-import opencola.core.model.Entity
 import opencola.core.model.UNCOMMITTED
-import opencola.core.storage.EntityStore
-import opencola.core.storage.ExposedEntityStore
-import opencola.core.storage.PostgresDb
-import opencola.core.storage.SimpleEntityStore
-import opencola.server.storagePath
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.transactions.transaction
+import opencola.core.storage.*
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.createTempFile
@@ -21,18 +14,19 @@ import kotlin.test.assertEquals
 
 class EntityStoreTest {
     private val authority = getAuthority()
-    private val storagePath = Path(System.getProperty("user.dir"), "..", "storage")
-    private val entityStorePath: Path = storagePath.resolve("${authority.authorityId}.test.txs")
-    private val getSimpleEntityStore = { SimpleEntityStore(authority, entityStorePath) }
-    private val getPostgresEntityStore = { ExposedEntityStore(authority, PostgresDb.db) }
+    private val storagePath = Path(System.getProperty("user.dir"), "..", "storage/entitystore")
+    private val simpleEntityStorePath: Path = storagePath.resolve("${authority.authorityId}.test.txs")
+    private val getSimpleEntityStore = { SimpleEntityStore(authority, simpleEntityStorePath) }
+    private val sqLiteEntityStorePath: Path = storagePath.resolve("opencola.test.db")
+    private val getSQLiteEntityStore = { ExposedEntityStore(authority, SQLiteDB(sqLiteEntityStorePath).db) }
 
     private fun createTempTransactionFile(): Path {
         return createTempFile("entity-store", ".fct")
     }
 
     init{
-        getPostgresEntityStore().resetStore()
         getSimpleEntityStore().resetStore()
+        getSQLiteEntityStore().resetStore()
     }
 
     @Test
@@ -41,8 +35,8 @@ class EntityStoreTest {
     }
 
     @Test
-    fun testEntityStorePostgres(){
-        testEntityStore(authority, getPostgresEntityStore)
+    fun testEntityStoreSQLite(){
+        testEntityStore(authority, getSQLiteEntityStore)
     }
 
     private fun testEntityStore(authority: Authority, getEntityStore: ()-> EntityStore) {
@@ -73,7 +67,7 @@ class EntityStoreTest {
 
     @Test
     fun testUpdateAfterReloadPostGres(){
-        testUpdateAfterReload(authority, getPostgresEntityStore)
+        testUpdateAfterReload(authority, getSQLiteEntityStore)
     }
 
     private fun testUpdateAfterReload(authority: Authority, getEntityStore: ()-> EntityStore){
