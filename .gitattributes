@@ -2,4 +2,5 @@
 * text=auto
 
 # MHT archives require crlfs to function properly, so make sure they don't get stripped
+# See: https://docs.github.com/en/get-started/getting-started-with-git/configuring-git-to-handle-line-endings
 *.mht text eol=crlf
