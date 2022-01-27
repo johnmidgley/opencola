@@ -3,10 +3,6 @@ package opencola.core.storage
 import opencola.core.model.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
-
-// TODO: Investigate: This is odd. To get a database, you must connect, but it seems that then there can only be one
-//  active database and it's implicit (i.e. storing database here doesn't do anything)
-
 // TODO: Think about using SQLite - super simple and maybe better fit for local use.
 
 class ExposedEntityStore(authority: Authority, private val database: Database) : EntityStore(authority) {
@@ -37,7 +33,7 @@ class ExposedEntityStore(authority: Authority, private val database: Database) :
         facts = Facts(authority.authorityId)
         transactions = Transactions(authority.authorityId)
 
-        transaction {
+        transaction(database) {
             SchemaUtils.create(facts)
             SchemaUtils.create(transactions)
 
@@ -53,7 +49,7 @@ class ExposedEntityStore(authority: Authority, private val database: Database) :
 
 
     override fun resetStore(): EntityStore {
-        transaction{
+        transaction(database){
             SchemaUtils.drop(facts, transactions)
         }
 
@@ -61,7 +57,7 @@ class ExposedEntityStore(authority: Authority, private val database: Database) :
     }
 
     override fun getEntity(authority: Authority, entityId: Id): Entity? {
-        return transaction{
+        return transaction(database){
             val facts = facts.select{
                 (facts.authorityId eq Id.encode(authority.authorityId) and (facts.entityId eq Id.encode(entityId)))
             }.map {
@@ -80,7 +76,7 @@ class ExposedEntityStore(authority: Authority, private val database: Database) :
     override fun persistTransaction(signedTransaction: SignedTransaction) {
         // val facts = signedTransaction.expandFacts()
 
-        transaction{
+        transaction(database){
             signedTransaction.expandFacts().forEach{ fact ->
                 facts.insert {
                     it[authorityId] = Id.encode(fact.authorityId)
