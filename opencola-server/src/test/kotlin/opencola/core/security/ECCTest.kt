@@ -1,4 +1,5 @@
-import opencola.core.security.*
+package opencola.core.security
+
 import opencola.core.extensions.hexStringToByteArray
 import opencola.core.extensions.toHexString
 import kotlin.test.Test

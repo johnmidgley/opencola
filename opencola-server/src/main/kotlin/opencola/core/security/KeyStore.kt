@@ -1,31 +1,37 @@
 package opencola.core.security
 
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.security.KeyStore.*
-
-// TODO: Move to config
-const val keyStoreName = "keyStore"
-const val privateKeyAlias = "opencolaPrivateKey"
+import opencola.core.extensions.nullOrElse
+import opencola.core.extensions.toHexString
+import opencola.core.model.Id
+import java.nio.file.Path
+import java.security.*
+import java.security.KeyStore
+import kotlin.io.path.exists
+import kotlin.io.path.inputStream
+import kotlin.io.path.outputStream
 
 // TODO: Add logging
 // TODO: Think about an appropriate HSM
+// TODO: Investigate secure strings
+class KeyStore(val path: Path, password: String) : SecurityProviderDependent() {
+    // TODO: Move parameters to config
+    var store: KeyStore = KeyStore.getInstance("PKCS12","BC")
+    private var passwordHash = sha256(password).toHexString().toCharArray()
 
-fun getKeyStore(path: String, password: String){
-    val keyStore = getInstance(getDefaultType())
-    val passwordCharArray = password.toCharArray()
+    init{
+        store.load(if(path.exists()) path.inputStream() else null, passwordHash)
+    }
 
-    FileInputStream(keyStoreName).use { fis -> keyStore.load(fis, passwordCharArray) }
+    fun addKey(id: Id, keyPair: KeyPair){
+        store.setKeyEntry(id.toString(), keyPair.private, null, arrayOf(createCertificate(id, keyPair)))
+        store.store(path.outputStream(), passwordHash)
+    }
 
-    val protectionParameter: ProtectionParameter = PasswordProtection(passwordCharArray)
-    val privateKey = (keyStore.getEntry(privateKeyAlias, protectionParameter) as PrivateKeyEntry).privateKey
+    fun getPrivateKey(id: Id): PrivateKey? {
+        return store.getKey(id.toString(), passwordHash)?.encoded.nullOrElse { privateKeyFromBytes(it) }
+    }
 
-    if(privateKey == null){
-        val keyPair = generateKeyPair()
-        val privateKeyEntry = PrivateKeyEntry(keyPair.private, null)
-
-        // keyStore.setEntry(privateKeyAlias, privateKey)
-        FileOutputStream(keyStoreName).use { fos -> keyStore.store(fos, passwordCharArray) }
-
+    fun getPublicKey(id: Id): PublicKey? {
+        return store.getCertificate(id.toString()).publicKey
     }
 }

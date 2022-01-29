@@ -18,6 +18,7 @@ import java.security.PublicKey
 // TODO: This is really just a typed value with specialized constructors. Why can't they share serialization code when they have the same properties and one derives from the other?
 // Maybe aggregate rather than derive?
 // TODO: Make data class
+// TODO: Is 16 bytes sufficient?
 private const val bytesSize = 32 // 32 bytes for a sha256 hash
 
 @Serializable

@@ -1,4 +1,4 @@
-package opencola.core
+package opencola.core.security
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.security.Security
@@ -8,13 +8,9 @@ import kotlin.test.Test
 import kotlin.test.assertNotNull
 
 
-class BouncyCastleTest {
-
-
+class BouncyCastleTest : SecurityProviderDependent() {
     @Test
     fun testUnrestrictedPolicy(){
-        Security.addProvider(BouncyCastleProvider())
-
         val cipher = Cipher.getInstance("Blowfish/ECB/NoPadding", "BC")
         cipher.init(
             Cipher.ENCRYPT_MODE,
@@ -26,7 +22,6 @@ class BouncyCastleTest {
 
     @Test
     fun testProviders(){
-        Security.addProvider(BouncyCastleProvider())
         val bcProvider = Security.getProvider("BC")
         assertNotNull(bcProvider)
     }
