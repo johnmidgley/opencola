@@ -1,15 +1,13 @@
 package opencola.core.model
 
-import opencola.core.security.sign
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import opencola.core.security.Signator
 import opencola.core.security.isValidSignature
 import opencola.core.serialization.StreamSerializer
-import opencola.server.authority
 import java.io.InputStream
 import java.io.OutputStream
-import java.security.PrivateKey
 import java.security.PublicKey
 
 @Serializable
@@ -29,12 +27,12 @@ class Transaction(val authorityId: Id, val id: Long, val transactionFacts: List<
         return Json.encodeToString(this)
     }
 
-    fun sign(privateKey: PrivateKey) : SignedTransaction {
+    fun sign(signator: Signator) : SignedTransaction {
         // This is probably not the right way to serialize. Likely should create a serializer / provider that can be
         // configured to serialize in an appropriate format.
         // TODO: Validate transaction
         // TODO: Switch to efficient serialization
-        return SignedTransaction(this, sign(privateKey, this.toString().toByteArray()))
+        return SignedTransaction(this, signator.signBytes(authorityId, this.toString().toByteArray()))
     }
 
     @Serializable

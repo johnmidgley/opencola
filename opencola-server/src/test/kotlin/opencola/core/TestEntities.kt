@@ -26,7 +26,10 @@ fun getActorEntity(subjectId: Id) : ActorEntity {
     )
 }
 
+fun getAuthorityKeyPair(): KeyPair {
+    return KeyPair(authorityPublicKey, authorityPrivateKey)
+}
+
 fun getAuthority() : Authority {
-    val keyPair = KeyPair(authorityPublicKey, authorityPrivateKey)
-    return Authority(KeyPair(authorityPublicKey, authorityPrivateKey))
+    return Authority(authorityPublicKey)
 }

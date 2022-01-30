@@ -1,10 +1,12 @@
 package opencola.core.security
 
-import java.security.KeyStore
+import opencola.core.model.Id
 
-// Take Keystore as parameter. Sign bytes.
-class Signator(val keystore: KeyStore) {
-    fun signBytes(bytes: ByteArray){
+class Signator(private val keystore: KeyStore) {
+    fun signBytes(authorityId: Id, bytes: ByteArray): ByteArray {
+        val privateKey = keystore.getPrivateKey(authorityId)
+            ?: throw RuntimeException("Unable to find private key for Authority: $authorityId")
 
+        return sign(privateKey, bytes)
     }
 }

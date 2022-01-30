@@ -2,11 +2,12 @@ package opencola.core.storage
 
 import mu.KotlinLogging
 import opencola.core.model.*
+import opencola.core.security.Signator
 import java.security.PublicKey
 
 private const val INVALID_EPOCH: Long = -1
 
-abstract class EntityStore(val authority: Authority) {
+abstract class EntityStore(val authority: Authority, protected val signator: Signator) {
     // TODO: Make logger class?
     protected val logger = KotlinLogging.logger {}
     protected fun logAndThrow(exception: Exception) {
@@ -111,7 +112,7 @@ abstract class EntityStore(val authority: Authority) {
         }
 
         val nextEpoch = epoch.inc()
-        persistTransaction(authority.signTransaction(Transaction.fromFacts(nextEpoch, uncommittedFacts)))
+        persistTransaction(Transaction.fromFacts(nextEpoch, uncommittedFacts).sign(signator))
         this.epoch = nextEpoch
     }
 }

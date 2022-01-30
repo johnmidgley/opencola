@@ -2,29 +2,36 @@ package opencola.core
 
 import getActorEntity
 import getAuthority
+import getAuthorityKeyPair
 import opencola.core.model.ActorEntity
 import opencola.core.model.Authority
 import opencola.core.model.UNCOMMITTED
+import opencola.core.security.KeyStore
+import opencola.core.security.Signator
 import opencola.core.storage.*
 import java.nio.file.Path
-import kotlin.io.path.Path
+import kotlin.io.path.createTempDirectory
 import kotlin.io.path.createTempFile
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class EntityStoreTest {
     private val authority = getAuthority()
-    private val storagePath = Path(System.getProperty("user.dir"), "..", "storage/entitystore")
+    private val storagePath = createTempDirectory("entitystore")
+    private val keyStorePath = storagePath.resolve("keystore.pks")
+    private val keyStore = KeyStore(keyStorePath, "password")
+    private val signator = Signator(keyStore)
     private val simpleEntityStorePath: Path = storagePath.resolve("${authority.authorityId}.test.txs")
-    private val getSimpleEntityStore = { SimpleEntityStore(authority, simpleEntityStorePath) }
+    private val getSimpleEntityStore = { SimpleEntityStore(authority, signator, simpleEntityStorePath) }
     private val sqLiteEntityStorePath: Path = storagePath.resolve("opencola.test.db")
-    private val getSQLiteEntityStore = { ExposedEntityStore(authority, SQLiteDB(sqLiteEntityStorePath).db) }
+    private val getSQLiteEntityStore = { ExposedEntityStore(authority, signator, SQLiteDB(sqLiteEntityStorePath).db) }
 
     private fun createTempTransactionFile(): Path {
         return createTempFile("entity-store", ".fct")
     }
 
     init{
+        keyStore.addKey(authority.authorityId, getAuthorityKeyPair())
         getSimpleEntityStore().resetStore()
         getSQLiteEntityStore().resetStore()
     }

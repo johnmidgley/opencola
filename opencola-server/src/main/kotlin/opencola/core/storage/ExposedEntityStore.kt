@@ -1,12 +1,13 @@
 package opencola.core.storage
 
 import opencola.core.model.*
+import opencola.core.security.Signator
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.statements.api.ExposedBlob
 import org.jetbrains.exposed.sql.transactions.transaction
 // TODO: Think about using SQLite - super simple and maybe better fit for local use.
 
-class ExposedEntityStore(authority: Authority, private val database: Database) : EntityStore(authority) {
+class ExposedEntityStore(authority: Authority, signator: Signator, private val database: Database) : EntityStore(authority, signator) {
     // NOTE: Some databases may truncate the table name. This is an issue to the degree that it increases the
     // chances of collisions. Given the number of ids stored in a single DB, the chances of issue are exceedingly low.
     // This would likely be an issue only when storing data for large sets of users (millions to billions?)
@@ -55,7 +56,7 @@ class ExposedEntityStore(authority: Authority, private val database: Database) :
             SchemaUtils.drop(facts, transactions)
         }
 
-        return ExposedEntityStore(authority, database)
+        return ExposedEntityStore(authority, signator, database)
     }
 
     override fun getEntity(authority: Authority, entityId: Id): Entity? {

@@ -1,15 +1,12 @@
 package opencola.core.storage
 
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.encodeToStream
-import mu.KotlinLogging
 import opencola.core.model.*
+import opencola.core.security.Signator
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import kotlin.io.path.*
 
-class SimpleEntityStore(authority: Authority, private val path: Path) : EntityStore(authority) {
+class SimpleEntityStore(authority: Authority, signator: Signator, private val path: Path) : EntityStore(authority, signator) {
     // TODO: Synchronize access
     private var facts = emptyList<Fact>()
 
@@ -53,6 +50,6 @@ class SimpleEntityStore(authority: Authority, private val path: Path) : EntitySt
 
     override fun resetStore() : SimpleEntityStore {
         this.path.deleteIfExists()
-        return SimpleEntityStore(authority, path)
+        return SimpleEntityStore(authority, signator, path)
     }
 }

@@ -13,7 +13,7 @@ class KeyStoreTest {
 
         val keyStore = KeyStore(keyStorePath, password)
         val keyPair = generateKeyPair()
-        val authority = Authority(keyPair)
+        val authority = Authority(keyPair.public)
         keyStore.addKey(authority.authorityId, keyPair)
 
         val keyStore1 = KeyStore(keyStorePath, password)
