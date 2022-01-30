@@ -7,6 +7,7 @@ fun initProvider(){
     Security.addProvider(BouncyCastleProvider())
 }
 
+// Deriving from this will automatically init the provider
 abstract class SecurityProviderDependent {
     companion object Initializer {
         init{

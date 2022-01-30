@@ -17,6 +17,7 @@ class KeyStore(val path: Path, password: String) : SecurityProviderDependent() {
     // TODO: Move parameters to config
     var store: KeyStore = KeyStore.getInstance("PKCS12","BC")
     private var passwordHash = sha256(password).toHexString().toCharArray()
+    private var protectionParameter = KeyStore.PasswordProtection(passwordHash)
 
     init{
         store.load(if(path.exists()) path.inputStream() else null, passwordHash)
@@ -27,11 +28,16 @@ class KeyStore(val path: Path, password: String) : SecurityProviderDependent() {
         store.store(path.outputStream(), passwordHash)
     }
 
+    private fun getEntry(id: Id): KeyStore.PrivateKeyEntry {
+        // TODO: Log failure of lookup or cast
+        return store.getEntry(id.toString(), protectionParameter) as KeyStore.PrivateKeyEntry
+    }
+
     fun getPrivateKey(id: Id): PrivateKey? {
-        return store.getKey(id.toString(), passwordHash)?.encoded.nullOrElse { privateKeyFromBytes(it) }
+        return getEntry(id).privateKey
     }
 
     fun getPublicKey(id: Id): PublicKey? {
-        return store.getCertificate(id.toString()).publicKey
+        return getEntry(id).certificate.publicKey
     }
 }
