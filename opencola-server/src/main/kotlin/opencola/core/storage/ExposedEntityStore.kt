@@ -14,7 +14,7 @@ class ExposedEntityStore(authority: Authority, signator: Signator, private val d
     // TODO: Magic numbers (32, 128) should come from config
     private class Facts(authorityId: Id) : Table("fct-${authorityId.toString()}"){
         val authorityId = binary("authorityId", 32)
-        val entityId = binary("entityId", 32)
+        val entityId = binary("entityId", 32).index()
         val attribute = text("attribute")
         val value = blob("value")
         val operation = enumeration("operation", Operation::class)
