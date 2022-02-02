@@ -1,6 +1,7 @@
 package opencola.core.model
 
 import kotlinx.serialization.Serializable
+import opencola.core.config.App
 import opencola.core.security.sha256
 import opencola.core.extensions.hexStringToByteArray
 import opencola.core.extensions.toHexString
@@ -19,12 +20,12 @@ import java.security.PublicKey
 // Maybe aggregate rather than derive?
 // TODO: Make data class
 // TODO: Is 16 bytes sufficient?
-private const val bytesSize = 32 // 32 bytes for a sha256 hash
+private val idLengthInBytes = App.config.model.idLengthInBytes
 
 @Serializable
 data class Id(private val bytes: ByteArray) {
     init{
-        assert(bytes.size == bytesSize) { "Invalid id - size = ${bytes.size} but should be $bytesSize" }
+        assert(bytes.size == idLengthInBytes) { "Invalid id - size = ${bytes.size} but should be $idLengthInBytes" }
     }
 
     override fun toString(): String {
@@ -75,7 +76,7 @@ data class Id(private val bytes: ByteArray) {
         }
 
         override fun decode(stream: InputStream): Id {
-            return Id(stream.readNBytes(bytesSize))
+            return Id(stream.readNBytes(idLengthInBytes))
         }
     }
 }
