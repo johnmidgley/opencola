@@ -1,5 +1,6 @@
 package opencola.server
 
+import opencola.server.config.App
 import opencola.core.content.MhtmlPage
 import opencola.core.content.parseMhtml
 import opencola.core.extensions.nullOrElse
@@ -28,24 +29,24 @@ fun handleSaveAction(mhtmlPage: MhtmlPage?){
     ByteArrayOutputStream().use { outputStream ->
         writer.writeMessage(mhtmlPage.message, outputStream)
         val pageBytes = outputStream.toByteArray()
-        val dataId = fileStore.write(pageBytes)
-        val mimeType = textExtractor.getType(pageBytes)
+        val dataId = App.fileStore.write(pageBytes)
+        val mimeType = App.textExtractor.getType(pageBytes)
         val resourceId = Id.ofUri(mhtmlPage.uri)
-        val entity = (entityStore.getEntity(authority, resourceId) ?: ResourceEntity(
-            authority.entityId,
+        val entity = (App.entityStore.getEntity(App.authority, resourceId) ?: ResourceEntity(
+            App.authority.entityId,
             mhtmlPage.uri
         )) as ResourceEntity
 
         // Add / update fields
         entity.dataId = dataId
         entity.name = mhtmlPage.title
-        entity.text = mhtmlPage.htmlText.nullOrElse { textExtractor.getBody(it.toByteArray()) }
+        entity.text = mhtmlPage.htmlText.nullOrElse { App.textExtractor.getBody(it.toByteArray()) }
 
-        val dataEntity = (entityStore.getEntity(authority, dataId) ?: DataEntity(authority.entityId, dataId, mimeType))
+        val dataEntity = (App.entityStore.getEntity(App.authority, dataId) ?: DataEntity(App.authority.entityId, dataId, mimeType))
 
         // TODO: Remove authority from update calls - authority id is in entity
         // TODO: Make update entity take vargs of entities so only single transaction needed
-        entityStore.commitChanges(entity, dataEntity)
-        searchService.index(entity)
+        App.entityStore.commitChanges(entity, dataEntity)
+        App.searchService.index(entity)
     }
 }

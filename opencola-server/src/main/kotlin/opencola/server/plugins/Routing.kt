@@ -6,6 +6,7 @@ import io.ktor.application.*
 import io.ktor.http.content.*
 import io.ktor.response.*
 import io.ktor.request.*
+import opencola.server.SearchHandler
 import opencola.server.handleAction
 import java.lang.IllegalArgumentException
 
@@ -24,7 +25,7 @@ fun Application.configureRouting() {
         }
 
         get("/search"){
-            TODO("Implement search handler")
+            SearchHandler(call).respond()
         }
 
         get("/entity"){

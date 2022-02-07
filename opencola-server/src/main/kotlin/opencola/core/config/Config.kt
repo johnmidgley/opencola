@@ -12,6 +12,8 @@ class Config() {
         val fileStorePath: Path = storagePath.resolve("filestore/")
     }
 
+    //TODO: Check out https://github.com/lightbend/config
+
     val model = Model()
     class Model() {
         // TODO - This should really depend on the length of the hash
