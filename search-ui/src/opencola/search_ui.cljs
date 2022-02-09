@@ -47,8 +47,8 @@
    (search-box)])
 
 (defn search-result [result]
-  [:div#search-result.search-result 
-   (:name result)])
+  ^{:key (:id result)} [:div#search-result.search-result 
+       (:name result)])
 
 (defn search-results []
   [:div#search-results.search-results 
