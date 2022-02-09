@@ -2,7 +2,9 @@
   (:require
    [goog.dom :as gdom]
    [reagent.core :as reagent :refer [atom]]
-   [reagent.dom :as rdom]))
+   [reagent.dom :as rdom]
+   [ajax.core :refer [GET POST]] ; https://github.com/JulianBirch/cljs-ajax
+   ))
 
 (println "Loaded.")
 
@@ -14,17 +16,45 @@
 (defn get-app-element []
   (gdom/getElement "app"))
 
+(defn results-handler [response]
+  (.log js/console (str response))
+  (print response)
+  (print (type response))
+  (swap! app-state assoc :results response))
+
+(defn error-handler [{:keys [status status-text]}]
+  (.log js/console (str "something bad happened: " status " " status-text)))
+
+
+(defn search [query]
+  (GET "http://localhost:5795/search" {:params {:q query}
+                                       :handler results-handler
+                                       :response-format :json
+                                       :keywords? true
+                                       :error-handler error-handler}))
+
+
+
 (defn search-box []
-  [:div#opencola.search-box 
-   [:input {:type "text"
-            :value (:query @app-state)
-            :on-change #(swap! app-state assoc :query (-> % .-target .-value))}]])
+  [:div#opencola.search-box>input
+   {:type "text"
+    :value (:query @app-state)
+    :on-change #(swap! app-state assoc :query (-> % .-target .-value))}])
+
 
 (defn search-header []
   [:div#opencola.search-header "Search Header"
    (search-box)])
 
-(defn search-results [])
+(defn search-result [result]
+  [:div#search-result.search-result 
+   (:name result)])
+
+(defn search-results []
+  [:div#search-results.search-results 
+   (when-let [results (:results @app-state)]
+     (for [result (:matches results)]
+       (search-result result)))])
 
 (defn search-page []
   [:div#opencola.search-page
