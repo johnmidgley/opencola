@@ -1,2 +1,8 @@
 /* some style */
-
+#header1 {
+    position: relative;
+    width: 480px;
+    height: 640px;
+    margin:0px auto;
+    /* background: url(../img/pull-tab.png) no-repeat left bottom; */
+}

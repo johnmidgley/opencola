@@ -6,6 +6,8 @@
    [ajax.core :refer [GET POST]] ; https://github.com/JulianBirch/cljs-ajax
    ))
 
+; Good resourcde with secure POST examples
+; https://medium.com/pragmatic-programmers/build-the-ui-with-reagent-a2f3757a9176
 (println "Loaded.")
 
 (defn multiply [a b] (* a b))
@@ -17,9 +19,7 @@
   (gdom/getElement "app"))
 
 (defn results-handler [response]
-  (.log js/console (str response))
-  (print response)
-  (print (type response))
+  (.log js/console (str "Search Response: " response))
   (swap! app-state assoc :results response))
 
 (defn error-handler [{:keys [status status-text]}]
@@ -27,7 +27,6 @@
 
 
 (defn search [query]
-  ()
   (GET "http://localhost:5795/search" {:params {:q query}
                                        :handler results-handler
                                        :response-format :json
@@ -46,7 +45,9 @@
 
 
 (defn search-header []
-  [:div#opencola.search-header "Search Header"
+  [:div#header.search-header 
+   [:img {:src "../img/pull-tab.png" :width 50 :height 50}]
+   "openCola"
    (search-box)])
 
 (defn search-result [result]
