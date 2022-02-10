@@ -27,6 +27,7 @@
 
 
 (defn search [query]
+  ()
   (GET "http://localhost:5795/search" {:params {:q query}
                                        :handler results-handler
                                        :response-format :json
@@ -39,7 +40,9 @@
   [:div#opencola.search-box>input
    {:type "text"
     :value (:query @app-state)
-    :on-change #(swap! app-state assoc :query (-> % .-target .-value))}])
+    :on-change #(swap! app-state assoc :query (-> % .-target .-value))
+    :on-keyUp #(if (= (.-key %) "Enter")
+                 (search (:query @app-state)))}])
 
 
 (defn search-header []
