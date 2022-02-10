@@ -9,6 +9,8 @@ import opencola.core.model.Entity
 import mu.KotlinLogging
 import opencola.core.extensions.logErrorAndThrow
 import opencola.core.extensions.nullOrElse
+import opencola.core.serialization.ByteArrayCodec
+import opencola.core.serialization.StringByteArrayCodec
 import org.apache.solr.client.solrj.impl.HttpSolrClient
 import org.apache.solr.client.solrj.request.CoreAdminRequest
 import org.apache.solr.common.SolrInputDocument
@@ -112,12 +114,17 @@ class SearchService(val authority: Authority) {
     fun search(query: String): List<SearchResult> {
         logger.info { "Searching: $query" }
 
-        // Can do with without mutating using "to" operator
+        // TODO:
+        val q = CoreAttribute.values()
+            .map { it.spec }
+            // TODO: Fix this hack that identifies text search fields
+            .filter { it.isIndexable && it.codec == StringByteArrayCodec as ByteArrayCodec<Any> }
+            .map { "${it.name}:\"$query\"" }
+            .joinToString(" ")
 
-        // TODO: - Return Local search results, not solr objects
         val queryResponse = solrClient.query(
             solrCollectionName,
-            MapSolrParams(mapOf("q" to "name:\"$query\" description:\"$query\"", "fl" to "id, name, description"))
+            MapSolrParams(mapOf("q" to q, "fl" to "id, name, description"))
         )
 
         return queryResponse.results.map{
