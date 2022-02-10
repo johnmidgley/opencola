@@ -33,6 +33,11 @@ fun Application.configureRouting() {
             TODO("Implement entity handler")
         }
 
+        get("/data"){
+            // Handler that returns data from datastore
+            TODO("Implement data handler")
+        }
+
         post("/action"){
             val multipart = call.receiveMultipart()
 
