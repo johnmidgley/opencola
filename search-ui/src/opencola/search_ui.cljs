@@ -13,7 +13,7 @@
 (defn multiply [a b] (* a b))
 
 ;; define your app data so that it doesn't get over-written on reload
-(defonce app-state (atom {:query "query"}))
+(defonce app-state (atom {}))
 
 (defn get-app-element []
   (gdom/getElement "app"))
