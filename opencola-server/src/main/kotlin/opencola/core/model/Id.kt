@@ -20,7 +20,8 @@ import java.security.PublicKey
 // Maybe aggregate rather than derive?
 // TODO: Make data class
 // TODO: Is 16 bytes sufficient?
-private val idLengthInBytes = App.config.model.idLengthInBytes
+// TODO: length should come from MessageDigest provider
+private val idLengthInBytes = sha256("").size
 
 @Serializable
 data class Id(private val bytes: ByteArray) {

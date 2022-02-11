@@ -1,0 +1,4 @@
+env: test
+
+storage:
+  path: "../storage"

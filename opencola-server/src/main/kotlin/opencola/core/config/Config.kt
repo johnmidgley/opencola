@@ -1,22 +1,18 @@
 package opencola.core.config
 
+import com.sksamuel.hoplite.ConfigLoader
 import java.nio.file.Path
 
-// TODO: Use https://github.com/Kotlin/kotlinx.collections.immutable
 // TODO: Add config layers, that allow for override. Use push / pop
+data class Storage(val path: Path)
+data class Config(val env: String, val storage: Storage)
 
-class Config() {
-    class Storage(){
-        val storagePath = App.path.resolve("../storage")
-        val entityStorePath: Path = storagePath.resolve("transactions.bin")
-        val fileStorePath: Path = storagePath.resolve("filestore/")
-    }
+object ConfigRoot {
+    // TODO: This should be injected
+    var config: Config? = null
 
-    //TODO: Check out https://github.com/lightbend/config
-
-    val model = Model()
-    class Model() {
-        // TODO - This should really depend on the length of the hash
-        val idLengthInBytes = 32 // 32 bytes for a sha256 hash
+    fun load(path: Path) {
+        config = ConfigLoader().loadConfigOrThrow(path)
     }
 }
+
