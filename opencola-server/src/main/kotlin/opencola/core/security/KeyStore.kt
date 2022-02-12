@@ -29,8 +29,8 @@ class KeyStore(val path: Path, password: String) : SecurityProviderDependent() {
     }
 
     private fun getEntry(id: Id): KeyStore.PrivateKeyEntry {
-        // TODO: Log failure of lookup or cast
-        return store.getEntry(id.toString(), protectionParameter) as KeyStore.PrivateKeyEntry
+        val entry = store.getEntry(id.toString(), protectionParameter) ?: throw RuntimeException("No private key found for $id")
+        return entry as KeyStore.PrivateKeyEntry
     }
 
     fun getPrivateKey(id: Id): PrivateKey? {
