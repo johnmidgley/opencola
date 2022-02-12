@@ -3,12 +3,14 @@ package opencola.core
 import getActorEntity
 import getAuthority
 import getAuthorityKeyPair
+import opencola.core.config.Application
 import opencola.core.model.ActorEntity
 import opencola.core.model.Authority
 import opencola.core.model.UNCOMMITTED
 import opencola.core.security.KeyStore
 import opencola.core.security.Signator
 import opencola.core.storage.*
+import org.kodein.di.instance
 import java.nio.file.Path
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.createTempFile
@@ -16,14 +18,12 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class EntityStoreTest {
-    private val authority = getAuthority()
-    private val storagePath = createTempDirectory("entitystore")
-    private val keyStorePath = storagePath.resolve("keystore.pks")
-    private val keyStore = KeyStore(keyStorePath, "password")
-    private val signator = Signator(keyStore)
-    private val simpleEntityStorePath: Path = storagePath.resolve("${authority.authorityId}.test.txs")
-    private val getSimpleEntityStore = { SimpleEntityStore(authority, signator, simpleEntityStorePath) }
-    private val sqLiteEntityStorePath: Path = storagePath.resolve("opencola.test.db")
+    private val app = TestApplication.init()
+    private val authority by app.injector.instance<Authority>()
+    private val keyStore by app.injector.instance<KeyStore>()
+    private val signator by app.injector.instance<Signator>()
+    private val getSimpleEntityStore = { SimpleEntityStore(authority, signator) }
+    private val sqLiteEntityStorePath: Path = app.storagePath.resolve("opencola.test.db")
     private val getSQLiteEntityStore = { ExposedEntityStore(authority, signator, SQLiteDB(sqLiteEntityStorePath).db) }
 
     private fun createTempTransactionFile(): Path {
@@ -31,6 +31,7 @@ class EntityStoreTest {
     }
 
     init{
+        // TODO: Must be better way to initialize the app - once per test run
         keyStore.addKey(authority.authorityId, getAuthorityKeyPair())
         getSimpleEntityStore().resetStore()
         getSQLiteEntityStore().resetStore()

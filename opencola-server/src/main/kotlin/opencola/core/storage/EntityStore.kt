@@ -7,6 +7,7 @@ import java.security.PublicKey
 
 private const val INVALID_EPOCH: Long = -1
 
+// TODO: Should support multiple authorities
 abstract class EntityStore(val authority: Authority, protected val signator: Signator) {
     // TODO: Make logger class?
     protected val logger = KotlinLogging.logger {}

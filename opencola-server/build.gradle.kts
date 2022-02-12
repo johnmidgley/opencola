@@ -51,6 +51,10 @@ dependencies {
     implementation("org.bouncycastle:bcprov-jdk15on:1.69")
     implementation("com.sksamuel.hoplite:hoplite-core:1.4.16")
     implementation("com.sksamuel.hoplite:hoplite-yaml:1.4.16")
+    implementation("org.kodein.di:kodein-di:7.10.0")
+    implementation("org.kodein.di:kodein-di-framework-ktor-server-jvm:7.10.0")
+
+
     testImplementation("io.ktor:ktor-server-tests:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
 }

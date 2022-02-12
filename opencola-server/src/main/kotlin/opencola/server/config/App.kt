@@ -26,7 +26,7 @@ object App {
     val keyStorePassword = "password"
     val keyStore = KeyStore(keyStorePath, keyStorePassword)
     val signator = Signator(keyStore)
-    val entityStore = SimpleEntityStore(authority, signator, entityStorePath)
+    val entityStore = SimpleEntityStore(authority, signator)
     val fileStorePath: Path = storagePath.resolve("filestore/")
     val fileStore = LocalFileStore(fileStorePath)
     val searchService = SearchService(authority)

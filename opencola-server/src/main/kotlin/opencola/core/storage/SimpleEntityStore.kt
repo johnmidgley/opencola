@@ -1,16 +1,19 @@
 package opencola.core.storage
 
+import opencola.core.config.Application
 import opencola.core.model.*
 import opencola.core.security.Signator
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import kotlin.io.path.*
 
-class SimpleEntityStore(authority: Authority, signator: Signator, private val path: Path) : EntityStore(authority, signator) {
+class SimpleEntityStore(authority: Authority, signator: Signator) : EntityStore(authority, signator) {
     // TODO: Synchronize access
     private var facts = emptyList<Fact>()
-
+    private val path: Path
     init {
+        path = Application.instance.storagePath.resolve("${authority.authorityId}.txs")
+
         if(!path.exists()){
             logger.warn { "No entity store found at $path. Will get created on update" }
         } else {
@@ -50,6 +53,6 @@ class SimpleEntityStore(authority: Authority, signator: Signator, private val pa
 
     override fun resetStore() : SimpleEntityStore {
         this.path.deleteIfExists()
-        return SimpleEntityStore(authority, signator, path)
+        return SimpleEntityStore(authority, signator)
     }
 }

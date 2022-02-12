@@ -1,7 +1,6 @@
 package opencola.core.model
 
 import kotlinx.serialization.Serializable
-import opencola.core.config.App
 import opencola.core.security.sha256
 import opencola.core.extensions.hexStringToByteArray
 import opencola.core.extensions.toHexString
