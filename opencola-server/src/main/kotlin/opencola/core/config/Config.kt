@@ -12,12 +12,4 @@ data class Config(val env: String,
                   val storage: Storage,
                   val security: Security)
 
-object ConfigRoot {
-    // TODO: This should be injected
-    var config: Config? = null
-
-    fun load(path: Path) {
-        config = ConfigLoader().loadConfigOrThrow(path)
-    }
-}
 

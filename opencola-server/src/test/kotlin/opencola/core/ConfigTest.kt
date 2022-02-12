@@ -1,7 +1,6 @@
 package opencola.core
 
 import opencola.core.config.Application
-import opencola.core.config.ConfigRoot
 import org.junit.Test
 import kotlin.test.assertEquals
 
