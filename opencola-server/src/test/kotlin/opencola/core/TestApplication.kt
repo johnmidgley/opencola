@@ -13,20 +13,20 @@ import kotlin.io.path.Path
 
 object TestApplication {
     init {
-        val rootPath = Path(System.getProperty("user.dir"))
-        val config: Config = ConfigLoader().loadConfigOrThrow(rootPath.resolve("opencola-test.yaml"))
+        val path = Path(System.getProperty("user.dir"))
+        val config: Config = ConfigLoader().loadConfigOrThrow(path.resolve("opencola-test.yaml"))
 
-        val di = DI {
+        val injector = DI {
             bindSingleton { getAuthority() }
             bindSingleton {
                 KeyStore(
-                    rootPath.resolve(config.storage.path).resolve(config.security.keystore.name),
+                    path.resolve(config.storage.path).resolve(config.security.keystore.name),
                     config.security.keystore.password
                 )}
             bindSingleton { Signator(instance()) }
         }
 
-        Application.instance = Application(rootPath, config, di)
+        Application.instance = Application(path, config, injector)
     }
 
     fun init(): Application {
