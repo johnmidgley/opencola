@@ -52,7 +52,7 @@
 
 (defn search-result [result]
   ^{:key (:id result)} [:div#search-result.search-result 
-       (:name result)])
+                        [:a {:href (str "http://localhost:5795/data/" (:id result))} (:name result)]])
 
 (defn search-results []
   [:div#search-results.search-results 

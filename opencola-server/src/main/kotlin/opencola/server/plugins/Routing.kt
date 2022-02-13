@@ -3,14 +3,27 @@ package opencola.server.plugins
 import io.ktor.routing.*
 import io.ktor.http.*
 import io.ktor.application.*
+import io.ktor.http.cio.*
 import io.ktor.http.content.*
 import io.ktor.response.*
 import io.ktor.request.*
+import opencola.core.extensions.ifNotNullOrElse
+import opencola.core.extensions.nullOrElse
+import opencola.core.model.Authority
+import opencola.core.model.DataEntity
+import opencola.core.model.Id
+import opencola.core.model.ResourceEntity
+import opencola.core.storage.EntityStore
+import opencola.core.storage.FileStore
 import opencola.server.SearchHandler
 import opencola.server.handleAction
-import java.lang.IllegalArgumentException
+import org.kodein.di.instance
+import java.io.File
+import kotlin.IllegalArgumentException
 
 fun Application.configureRouting() {
+    val injector = opencola.core.config.Application.instance.injector
+
     routing {
         get("/") {
             call.respondText("Hello World!")
@@ -33,9 +46,28 @@ fun Application.configureRouting() {
             TODO("Implement entity handler")
         }
 
-        get("/data"){
-            // Handler that returns data from datastore
-            TODO("Implement data handler")
+        get("/data/{id}"){
+             // Handler that returns data from datastore
+            val stringId = call.parameters["id"]    ?: throw IllegalArgumentException("No id set")
+            println("Data id: $stringId")
+            val id = Id.fromHexString(stringId)
+            val entityStore by injector.instance<EntityStore>()
+            val authority by injector.instance<Authority>()
+            val entity = entityStore.getEntity(authority, id)
+
+            val dataEntity = when (entity) {
+                is ResourceEntity -> entity.dataId.nullOrElse { entityStore.getEntity(authority, it) }
+                is DataEntity -> entity
+                else -> null
+            } as DataEntity
+
+            if(dataEntity == null){
+                call.respondText { "No data for id: $id" }
+            } else {
+                val fileStore by injector.instance<FileStore>()
+                val bytes = fileStore.read(dataEntity.entityId)
+                call.respondBytes{ bytes }
+            }
         }
 
         post("/action"){
