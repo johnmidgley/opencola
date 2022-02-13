@@ -2,8 +2,9 @@ package opencola.server
 
 import io.ktor.application.*
 import io.ktor.response.*
+import kotlinx.serialization.descriptors.serialDescriptor
 import opencola.core.config.Application
-import opencola.core.search.SearchService
+import opencola.service.search.SearchService
 import org.kodein.di.instance
 
 class SearchHandler(private val call: ApplicationCall) {
@@ -12,7 +13,6 @@ class SearchHandler(private val call: ApplicationCall) {
 
     suspend fun respond(){
         val query = call.request.queryParameters["q"] ?: throw IllegalArgumentException("No query (q) specified in parameters")
-        val results = searchService.search(query).map { SearchResult(it.entityId.toString(), it.name, it.description) }
-        call.respond(SearchResults(query, results))
+        call.respond(searchService.search(query))
     }
 }

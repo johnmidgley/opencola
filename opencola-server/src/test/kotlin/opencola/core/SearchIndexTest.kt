@@ -3,46 +3,46 @@ import opencola.core.content.TextExtractor
 import opencola.core.content.parseMime
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.ResourceEntity
-import opencola.core.search.SearchService
+import opencola.core.search.SearchIndex
 import org.junit.Test
 import java.net.URI
 import kotlin.io.path.Path
 import kotlin.io.path.inputStream
 import kotlin.test.assertEquals
 
-class SearchServiceTest {
+class SearchIndexTest {
     private val authority = getAuthority()
-    private val searchService = SearchService(authority)
+    private val searchIndex = SearchIndex(authority)
 
     init {
         // Make sure we have a fresh index
-        searchService.deleteIndex()
+        searchIndex.delete()
         // This is horrible, but there's no way to know when solr is ready to create the index again other than trying to create the index
         // TODO: Likely a race condition here between deleting the old index and creating a new one
         // TODO: Think about overriding index name, so that fresh index can be used. Or just generate new authority for each version of this test.
         Thread.sleep(1000)
-        searchService.createIndex()
+        searchIndex.create()
 
     }
     // @Test
     fun testCreateIndex(){
-        val searchService = SearchService(getAuthority())
-        searchService.createIndex()
+        val searchService = SearchIndex(getAuthority())
+        searchService.create()
     }
 
     // @Test
     fun testDeleteIndex(){
-        val searchService = SearchService(getAuthority())
-        searchService.deleteIndex()
+        val searchService = SearchIndex(getAuthority())
+        searchService.delete()
     }
 
     @Test
     fun testIndex(){
         val keyword = "keyword"
         val resourceEntity = ResourceEntity(authority.entityId, URI("http://www.site.com/page"), description = "Test description with $keyword")
-        searchService.index(resourceEntity)
+        searchIndex.index(resourceEntity)
 
-        val results = searchService.search(keyword)
+        val results = searchIndex.search(keyword)
         assertEquals(1, results.size)
         assertEquals(resourceEntity.description, results[0].description)
     }
@@ -59,8 +59,8 @@ class SearchServiceTest {
         val text = mhtmlPage.htmlText.nullOrElse { textExtractor.getBody(it.toByteArray()) }
         val resourceEntity = ResourceEntity(authority.entityId, mhtmlPage.uri, mhtmlPage.title, text = text)
 
-        searchService.index(resourceEntity)
-        val results = searchService.search("game of life")
+        searchIndex.index(resourceEntity)
+        val results = searchIndex.search("game of life")
         assertEquals(1, results.size)
         assertEquals(resourceEntity.description, results[0].description)
     }

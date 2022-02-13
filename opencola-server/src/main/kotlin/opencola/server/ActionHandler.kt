@@ -1,6 +1,5 @@
 package opencola.server
 
-import io.ktor.utils.io.*
 import opencola.core.config.Application
 import opencola.core.content.MhtmlPage
 import opencola.core.content.TextExtractor
@@ -10,7 +9,7 @@ import opencola.core.model.Authority
 import opencola.core.model.DataEntity
 import opencola.core.model.Id
 import opencola.core.model.ResourceEntity
-import opencola.core.search.SearchService
+import opencola.core.search.SearchIndex
 import opencola.core.storage.EntityStore
 import opencola.core.storage.FileStore
 import org.apache.james.mime4j.message.DefaultMessageWriter
@@ -34,7 +33,7 @@ fun handleSaveAction(mhtmlPage: MhtmlPage?){
     val fileStore by Application.instance.injector.instance<FileStore>()
     val textExtractor by Application.instance.injector.instance<TextExtractor>()
     val entityStore by Application.instance.injector.instance<EntityStore>()
-    val searchService by Application.instance.injector.instance<SearchService>()
+    val searchService by Application.instance.injector.instance<SearchIndex>()
 
     // TODO: Add data id to resource entity - when indexing, index body from the dataEntity
     // TODO: Parse description

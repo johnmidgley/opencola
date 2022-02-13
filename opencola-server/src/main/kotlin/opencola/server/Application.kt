@@ -8,7 +8,7 @@ import opencola.core.config.Config
 import opencola.core.content.TextExtractor
 import opencola.core.extensions.hexStringToByteArray
 import opencola.core.model.Authority
-import opencola.core.search.SearchService
+import opencola.core.search.SearchIndex
 import opencola.core.security.KeyStore
 import opencola.core.security.Signator
 import opencola.core.security.privateKeyFromBytes
@@ -18,6 +18,7 @@ import opencola.core.storage.SimpleEntityStore
 import opencola.server.plugins.configureContentNegotiation
 import opencola.server.plugins.configureHTTP
 import opencola.server.plugins.configureRouting
+import opencola.service.search.SearchService
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
 import org.kodein.di.instance
@@ -35,8 +36,6 @@ fun getAuthority(): Authority {
     val keyPair = getAuthorityKeyPair()
     return Authority(keyPair.public, name = "Authority")
 }
-
-
 
 fun main() {
     val path = Path(System.getProperty("user.dir"))
@@ -56,7 +55,8 @@ fun main() {
         bindSingleton { Signator(instance()) }
         bindSingleton { SimpleEntityStore(instance(), instance())  }
         bindSingleton { LocalFileStore(path.resolve(config.storage.path).resolve("filestore")) }
-        bindSingleton { SearchService(instance())}
+        bindSingleton { SearchIndex(instance())}
+        bindSingleton { SearchService(instance(), instance()) }
         bindSingleton { TextExtractor() }
     }
 

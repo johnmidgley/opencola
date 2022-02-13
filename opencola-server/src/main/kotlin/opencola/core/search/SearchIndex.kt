@@ -28,7 +28,7 @@ private const val solrSocketTimeoutMillis = 60000
 // TODO: Create local objects for search results (see https://solr.apache.org/guide/8_10/using-solrj.html#java-object-binding)
 
 // TODO: Probably just id is better. Nothing needs to be signed, and no other properties are used
-class SearchService(val authority: Authority) {
+class SearchIndex(val authority: Authority) {
     private val logger = KotlinLogging.logger {}
 
     private val solrClient: HttpSolrClient = HttpSolrClient.Builder(solrBaseUrl)
@@ -42,7 +42,7 @@ class SearchService(val authority: Authority) {
 
     // This needs to come after networkPath has been initialized
     init{
-        createIndex()
+        create()
     }
 
     private fun isCoreReady() : Boolean {
@@ -70,7 +70,7 @@ class SearchService(val authority: Authority) {
 
         return false
     }
-    fun createIndex() : Boolean{
+    fun create() : Boolean{
         logger.info { "Creating Index: $solrCollectionName" }
         // Shell docs at: https://github.com/lordcodes/turtle
         // TODO - error checking
@@ -93,7 +93,7 @@ class SearchService(val authority: Authority) {
         return true
     }
 
-    fun deleteIndex(){
+    fun delete(){
         logger.info { "Deleting Index: $solrCollectionName" }
 
         CoreAdminRequest.unloadCore(solrCollectionName, solrClient)
