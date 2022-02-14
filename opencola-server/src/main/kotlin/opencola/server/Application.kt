@@ -56,13 +56,14 @@ fun main() {
         bindSingleton { SimpleEntityStore(instance(), instance())  }
         bindSingleton { LocalFileStore(path.resolve(config.storage.path).resolve("filestore")) }
         bindSingleton { SearchIndex(instance())}
-        bindSingleton { SearchService(instance(), instance()) }
+        bindSingleton { SearchService(instance(), instance(), instance()) }
         bindSingleton { TextExtractor() }
     }
 
     Application.instance = Application(path, config, injector)
+    val serverConfig = config.server ?: throw RuntimeException("Server config not specified")
 
-    embeddedServer(Netty, port = 5795, host = "0.0.0.0") {
+    embeddedServer(Netty, port = serverConfig.port, host = serverConfig.host) {
         configureHTTP()
         configureContentNegotiation()
         configureRouting()

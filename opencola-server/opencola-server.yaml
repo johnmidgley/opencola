@@ -1,5 +1,9 @@
 env: server
 
+server:
+  host: "0.0.0.0"
+  port: 5795
+
 storage:
   path: "../storage/"
 

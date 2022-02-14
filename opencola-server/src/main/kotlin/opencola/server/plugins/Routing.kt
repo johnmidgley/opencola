@@ -59,7 +59,7 @@ fun Application.configureRouting() {
                 is ResourceEntity -> entity.dataId.nullOrElse { entityStore.getEntity(authority, it) }
                 is DataEntity -> entity
                 else -> null
-            } as DataEntity
+            } as DataEntity?
 
             if(dataEntity == null){
                 call.respondText { "No data for id: $id" }
