@@ -18,22 +18,34 @@
 (defn get-app-element []
   (gdom/getElement "app"))
 
-(defn results-handler [response]
-  (.log js/console (str "Search Response: " response))
-  (swap! app-state assoc :results response))
-
 (defn error-handler [{:keys [status status-text]}]
   (.log js/console (str "something bad happened: " status " " status-text)))
 
 
+(defn config-handler [response]
+  (.log js/console (str "Config Response: " response))
+  (swap! app-state assoc :config response))
+
+(defn get-config []
+  (GET "config.json" {:handler config-handler
+                      :response-format :json
+                      :keywords? true
+                      :error-handler error-handler}))
+
+(defn results-handler [response]
+  (.log js/console (str "Search Response: " response))
+  (swap! app-state assoc :results response))
+
+(defn resolve-service-url [path]
+  (str (-> @app-state :config :service-url) path))
+
+
 (defn search [query]
-  (GET "http://localhost:5795/search" {:params {:q query}
+  (GET (resolve-service-url "search") {:params {:q query}
                                        :handler results-handler
                                        :response-format :json
                                        :keywords? true
                                        :error-handler error-handler}))
-
-
 
 (defn search-box []
   [:div#opencola.search-box>input
@@ -52,13 +64,18 @@
 
 (defn search-result [result]
   ^{:key (:id result)} [:div#search-result.search-result 
-                        [:a {:href (str "http://localhost:5795/data/" (:id result))} (:name result)]])
+                        [:a {:href (:uri result) :target "_blank"} (:name result)]
+                        " "
+                        [:a {:href (resolve-service-url (str "data/" (:id result)))
+                             :target "blank_"} 
+                         "data"]])
 
 (defn search-results []
   [:div#search-results.search-results 
-   (when-let [results (:results @app-state)]
-     (for [result (:matches results)]
-       (search-result result)))])
+   (doall 
+    (when-let [results (:results @app-state)]
+      (for [result (:matches results)]
+        (search-result result))))])
 
 (defn search-page []
   [:div#opencola.search-page
@@ -83,3 +100,5 @@
   ;; your application
   ;; (swap! app-state update-in [:__figwheel_counter] inc)
 )
+
+(get-config)
