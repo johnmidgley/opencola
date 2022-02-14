@@ -4,3 +4,5 @@
 /var-solr/data/opencola/data/
 /var-solr/logs/
 /var-postgres
+*.txs
+*.pks
