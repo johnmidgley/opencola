@@ -7,7 +7,7 @@ import kotlin.io.path.createDirectory
 import kotlin.io.path.exists
 
 class Application(val path: Path, val config: Config, val injector: DI) {
-    val storagePath get() = path.resolve(config.storage.path)
+    val storagePath: Path get() = path.resolve(config.storage.path)
 
     init{
         if(!storagePath.exists())

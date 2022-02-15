@@ -9,8 +9,6 @@ import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.net.URI
 
-
-// TODO: Mhtml -> Mht
 class MhtmlPage {
     val message: Message
     val uri: URI
@@ -135,13 +133,6 @@ class MhtmlPage {
     }
 }
 
-// TODO: Store indexed pages as mht archives.
-//  Analysis can be done with https://github.com/apache/james-mime4j
-//  https://github.com/apache/james-mime4j/blob/master/examples/src/main/java/org/apache/james/mime4j/samples/dom/ParsingMessage.java
-//  OR
-//  Java Mail APIs
-//  https://pretagteam.com/question/how-to-read-or-parse-mhtml-mht-files-in-java
-//  which uses https://javaee.github.io/javamail/
 fun parseMhtml(inputStream: InputStream): MhtmlPage? {
     val message = parseMime(inputStream)
     return if (message != null) MhtmlPage(message) else null
