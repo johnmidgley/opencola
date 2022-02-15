@@ -20,6 +20,6 @@ class SplitMhtTest {
         }
 
         assert(parts.isNotEmpty())
-        assertEquals(parts[0].first, "Conway's Game of Life - Wikipedia.html" )
+        assertEquals("Conway's Game of Life - Wikipedia.html", parts[0].first)
     }
 }

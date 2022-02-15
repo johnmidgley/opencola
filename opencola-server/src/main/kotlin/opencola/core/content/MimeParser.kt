@@ -14,7 +14,7 @@ fun parseMime(inputStream: InputStream): Message? {
 
 fun transformTextContent(body: Body, textTransform: (String) -> String): ByteArray {
     return when (body) {
-        is TextBody -> textTransform(body.reader.use { it.readText() }).toByteArray()
+        is TextBody -> textTransform(String(body.inputStream.readAllBytes())).toByteArray()
         is BinaryBody -> body.inputStream.use { it.readBytes() }
         else -> throw RuntimeException("Unhandled body type")
     }
@@ -34,15 +34,16 @@ fun splitMht(message: Message): List<Pair<String, ByteArray>> {
     val subject = message.header.unstructuredField("Subject").value
 
     val locationMap = multipart.bodyParts.mapIndexed { index, part ->
-        val basename = "${if (index == 0) subject else "$index"}"
-        val extension = normalizeExtension("${part.header.contentType().subType}")
+        val basename = if (index == 0) subject else "$index"
+        val extension = normalizeExtension(part.header.contentType().subType)
         Pair(part.header.contentLocation().location, "$basename.$extension")
     }.toMap()
 
     val parts = multipart.bodyParts.map {
-        val location = locationMap[it.header.contentLocation().location] ?: throw RuntimeException("This shouldn't be possible :)")
+        val location = locationMap[it.header.contentLocation().location] as String
         val content = transformTextContent(it.body) { location ->
-            locationMap.entries.fold(location) { acc, entry ->
+            // Drop 1 so that we don't replace the root url anywhere
+            locationMap.entries.drop(1).fold(location) { acc, entry ->
                 acc.replace(entry.key, entry.value)
             }
         }
