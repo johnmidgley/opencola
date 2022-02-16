@@ -66,9 +66,13 @@
   ^{:key (:id result)} [:div#search-result.search-result 
                         [:a {:href (:uri result) :target "_blank"} (:name result)]
                         " "
+                        [:a {:href (resolve-service-url (str "data/" (:id result) "/0.html"))
+                             :target "blank_"} 
+                         "archive"]
+                        " "
                         [:a {:href (resolve-service-url (str "data/" (:id result)))
                              :target "blank_"} 
-                         "data"]])
+                         "download"]])
 
 (defn search-results []
   [:div#search-results.search-results 

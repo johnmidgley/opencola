@@ -26,15 +26,35 @@ fun normalizeExtension(extension: String): String {
     return extensionMap[extension] ?: extension
 }
 
+data class Part(val name: String, val mimeType: String, val bytes: ByteArray) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Part
+
+        if (name != other.name) return false
+        if (mimeType != other.mimeType) return false
+        if (!bytes.contentEquals(other.bytes)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = name.hashCode()
+        result = 31 * result + mimeType.hashCode()
+        result = 31 * result + bytes.contentHashCode()
+        return result
+    }
+}
+
 // TODO: Validate that the Mime message is Mht, as expected
-fun splitMht(message: Message): List<Pair<String, ByteArray>> {
+fun splitMht(message: Message): List<Part> {
     val multipart = message.body as? Multipart ?: throw RuntimeException("Attempt to split a message that is not Multipart")
 
-    // Subject is that name of the original html file, so use it rather than 0.html
-    val subject = message.header.unstructuredField("Subject").value
-
     val locationMap = multipart.bodyParts.mapIndexed { index, part ->
-        val basename = if (index == 0) subject else "$index"
+        val basename = "$index"
+        // TODO: Necessary to normalize?
         val extension = normalizeExtension(part.header.contentType().subType)
         Pair(part.header.contentLocation().location, "$basename.$extension")
     }.toMap()
@@ -42,12 +62,13 @@ fun splitMht(message: Message): List<Pair<String, ByteArray>> {
     val parts = multipart.bodyParts.map {
         val location = locationMap[it.header.contentLocation().location] as String
         val content = transformTextContent(it.body) { location ->
-            // Drop 1 so that we don't replace the root url anywhere
+            // Drop first part (root html) so that we don't replace the root url anywhere
             locationMap.entries.drop(1).fold(location) { acc, entry ->
                 acc.replace(entry.key, entry.value)
             }
         }
-        Pair(location, content)
+
+        Part(location, it.header.contentType().mimeType, content)
     }
 
     return parts

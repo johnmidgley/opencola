@@ -1,6 +1,8 @@
 package opencola.server
 
 import com.sksamuel.hoplite.ConfigLoader
+import io.ktor.application.*
+import io.ktor.features.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import opencola.core.config.Application
@@ -32,11 +34,6 @@ fun getAuthorityKeyPair(): KeyPair {
     return KeyPair(authorityPublicKey, authorityPrivateKey)
 }
 
-fun getAuthority(): Authority {
-    val keyPair = getAuthorityKeyPair()
-    return Authority(keyPair.public, name = "Authority")
-}
-
 fun main() {
     val path = Path(System.getProperty("user.dir"))
     val config: Config = ConfigLoader().loadConfigOrThrow(path.resolve("opencola-server.yaml"))
@@ -58,12 +55,14 @@ fun main() {
         bindSingleton { SearchIndex(instance())}
         bindSingleton { SearchService(instance(), instance(), instance()) }
         bindSingleton { TextExtractor() }
+        bindSingleton { DataHandler(instance(), instance(), instance()) }
     }
 
     Application.instance = Application(path, config, injector)
     val serverConfig = config.server ?: throw RuntimeException("Server config not specified")
 
     embeddedServer(Netty, port = serverConfig.port, host = serverConfig.host) {
+        install(CallLogging)
         configureHTTP()
         configureContentNegotiation()
         configureRouting()

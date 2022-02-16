@@ -13,13 +13,12 @@ class SplitMhtTest {
         val parts = splitMht(mimeMessage)
 
         parts.forEach{
-            val (filename, content) = it
-            Path(directory.pathString, filename).outputStream().use{ os ->
-                os.write(content)
+            Path(directory.pathString, it.name).outputStream().use{ os ->
+                os.write(it.bytes)
             }
         }
 
         assert(parts.isNotEmpty())
-        assertEquals("Conway's Game of Life - Wikipedia.html", parts[0].first)
+        assertEquals("0.html", parts[0].name)
     }
 }

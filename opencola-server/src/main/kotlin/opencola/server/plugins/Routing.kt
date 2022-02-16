@@ -7,18 +7,11 @@ import io.ktor.http.cio.*
 import io.ktor.http.content.*
 import io.ktor.response.*
 import io.ktor.request.*
-import opencola.core.extensions.ifNotNullOrElse
-import opencola.core.extensions.nullOrElse
-import opencola.core.model.Authority
-import opencola.core.model.DataEntity
 import opencola.core.model.Id
-import opencola.core.model.ResourceEntity
-import opencola.core.storage.EntityStore
-import opencola.core.storage.FileStore
+import opencola.server.DataHandler
 import opencola.server.SearchHandler
 import opencola.server.handleAction
 import org.kodein.di.instance
-import java.io.File
 import kotlin.IllegalArgumentException
 
 fun Application.configureRouting() {
@@ -46,27 +39,32 @@ fun Application.configureRouting() {
             TODO("Implement entity handler")
         }
 
+
+        get("/data/{id}/{partName}"){
+            // TODO: Add a parameters extension that gets the parameter value or throws an exception
+            val dataHandler by injector.instance<DataHandler>()
+            val stringId = call.parameters["id"] ?: throw IllegalArgumentException("No id set")
+            val partName = call.parameters["partName"] ?: throw IllegalArgumentException("No partName set")
+
+            val bytes = dataHandler.getDataPart(Id.fromHexString(stringId), partName)
+            if(bytes != null){
+                call.respondBytes(bytes)
+            }
+        }
+
         get("/data/{id}"){
              // Handler that returns data from datastore
-            val stringId = call.parameters["id"]    ?: throw IllegalArgumentException("No id set")
+            val stringId = call.parameters["id"] ?: throw IllegalArgumentException("No id set")
             println("Data id: $stringId")
             val id = Id.fromHexString(stringId)
-            val entityStore by injector.instance<EntityStore>()
-            val authority by injector.instance<Authority>()
-            val entity = entityStore.getEntity(authority, id)
+            val dataHandler by injector.instance<DataHandler>()
 
-            val dataEntity = when (entity) {
-                is ResourceEntity -> entity.dataId.nullOrElse { entityStore.getEntity(authority, it) }
-                is DataEntity -> entity
-                else -> null
-            } as DataEntity?
+            val data = dataHandler.getData(id)
 
-            if(dataEntity == null){
-                call.respondText { "No data for id: $id" }
+            if(data == null){
+                call.respondText(status = HttpStatusCode.NoContent) { "No data for id: $id" }
             } else {
-                val fileStore by injector.instance<FileStore>()
-                val bytes = fileStore.read(dataEntity.entityId)
-                call.respondBytes{ bytes }
+                call.respondBytes{ data }
             }
         }
 
