@@ -61,8 +61,10 @@ fun splitMht(message: Message): List<Part> {
         throw RuntimeException("First body part of Mht message must be of type 'html'")
     }
 
-    // TODO: Log parts that don't have location. What can they be?
-    val partsWithLocation = bodyParts.filter { it.header.contentLocation() != null }
+    // TODO: Investigate: It makes no sense, but some docs have parts with no content location or duplicate locations
+    val partsWithLocation = bodyParts
+        .filter { it.header.contentLocation() != null }
+        .distinctBy { it.header.contentLocation()!!.location }
 
     val locationMap = partsWithLocation.mapIndexed { index, part ->
         val filename = "$index${normalizeExtension(part.header.contentType()?.subType)}"
