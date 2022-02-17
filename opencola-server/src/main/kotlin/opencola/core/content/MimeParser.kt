@@ -20,10 +20,14 @@ fun transformTextContent(body: Body, textTransform: (String) -> String): ByteArr
     }
 }
 
-fun normalizeExtension(extension: String): String {
-    // TODO: Read from config
-    val extensionMap = mapOf("svg+xml" to "svg")
-    return extensionMap[extension] ?: extension
+// TODO: Read from config. Should error on types not found in ContentType
+private val extensionMap = mapOf("svg+xml" to "svg")
+
+fun normalizeExtension(extension: String?): String {
+    return when (extension) {
+        null -> ""
+        else -> ".${extensionMap[extension] ?: extension}"
+    }
 }
 
 data class Part(val name: String, val mimeType: String, val bytes: ByteArray) {
@@ -51,24 +55,30 @@ data class Part(val name: String, val mimeType: String, val bytes: ByteArray) {
 // TODO: Validate that the Mime message is Mht, as expected
 fun splitMht(message: Message): List<Part> {
     val multipart = message.body as? Multipart ?: throw RuntimeException("Attempt to split a message that is not Multipart")
+    val bodyParts = multipart.bodyParts
 
-    val locationMap = multipart.bodyParts.mapIndexed { index, part ->
-        val basename = "$index"
-        // TODO: Necessary to normalize?
-        val extension = normalizeExtension(part.header.contentType().subType)
-        Pair(part.header.contentLocation().location, "$basename.$extension")
+    if(bodyParts.isEmpty() || bodyParts.first().header.contentType()?.subType != "html"){
+        throw RuntimeException("First body part of Mht message must be of type 'html'")
+    }
+
+    // TODO: Log parts that don't have location. What can they be?
+    val partsWithLocation = bodyParts.filter { it.header.contentLocation() != null }
+
+    val locationMap = partsWithLocation.mapIndexed { index, part ->
+        val filename = "$index${normalizeExtension(part.header.contentType()?.subType)}"
+        val location = part.header.contentLocation()!!.location
+        Pair(location, filename)
     }.toMap()
 
-    val parts = multipart.bodyParts.map {
-        val location = locationMap[it.header.contentLocation().location] as String
+    val parts = partsWithLocation.map {
+        val location = locationMap[it.header.contentLocation()!!.location] as String
         val content = transformTextContent(it.body) { location ->
             // Drop first part (root html) so that we don't replace the root url anywhere
             locationMap.entries.drop(1).fold(location) { acc, entry ->
                 acc.replace(entry.key, entry.value)
             }
         }
-
-        Part(location, it.header.contentType().mimeType, content)
+        Part(location, it.header.contentType()?.mimeType ?: "application/octet-stream", content)
     }
 
     return parts

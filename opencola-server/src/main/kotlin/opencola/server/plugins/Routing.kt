@@ -48,7 +48,8 @@ fun Application.configureRouting() {
 
             val bytes = dataHandler.getDataPart(Id.fromHexString(stringId), partName)
             if(bytes != null){
-                call.respondBytes(bytes)
+                val contentType = ContentType.fromFilePath(partName).firstOrNull()
+                call.respondBytes(bytes, contentType = contentType)
             }
         }
 
@@ -64,7 +65,7 @@ fun Application.configureRouting() {
             if(data == null){
                 call.respondText(status = HttpStatusCode.NoContent) { "No data for id: $id" }
             } else {
-                call.respondBytes{ data }
+                call.respondBytes(data, ContentType.Application.OctetStream)
             }
         }
 
