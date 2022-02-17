@@ -1,5 +1,6 @@
 package opencola.server
 
+import mu.KotlinLogging
 import opencola.core.content.parseMime
 import opencola.core.content.splitMht
 import opencola.core.extensions.nullOrElse
@@ -18,6 +19,8 @@ import opencola.core.config.Application.Global.instance as app
 // TODO - Move to DataService.
 // TODO- Factor out MhtCache
 class DataHandler(private val authority: Authority, private val entityStore: EntityStore, private val fileStore: FileStore) {
+    private val logger = KotlinLogging.logger {}
+
     // TODO: Add cache to config
     private val mhtCachePath = app.storagePath.resolve("mht-cache")
 
@@ -51,7 +54,14 @@ class DataHandler(private val authority: Authority, private val entityStore: Ent
     }
 
     private fun cacheMhtParts(id: Id){
-        val message = parseMime(ByteArrayInputStream(getData(id)))
+        val data = getData(id)
+
+        if(data == null){
+            logger.warn { "No data available to cache for id: $id" }
+            return
+        }
+
+        val message = parseMime(ByteArrayInputStream(data))
         createDataDirectory(id)
 
         if(message != null) {
