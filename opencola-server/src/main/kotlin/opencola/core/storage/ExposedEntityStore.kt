@@ -12,6 +12,7 @@ class ExposedEntityStore(authority: Authority, signator: Signator, private val d
     // chances of collisions. Given the number of ids stored in a single DB, the chances of issue are exceedingly low.
     // This would likely be an issue only when storing data for large sets of users (millions to billions?)
     // TODO: Magic numbers (32, 128) should come from config
+    // TODO: Normalize attribute
     private class Facts(authorityId: Id) : Table("fct-${authorityId.toString()}"){
         val authorityId = binary("authorityId", 32)
         val entityId = binary("entityId", 32).index()
@@ -21,6 +22,9 @@ class ExposedEntityStore(authority: Authority, signator: Signator, private val d
         val epoch = long("epoch")
     }
 
+
+
+    // TODO: Add timestamp
     private class Transactions(authorityId: Id) : Table("txs-${authorityId.toString()}") {
         val authorityId = binary("authorityId", 32)
         val signature = binary("signature", 128) // TODO: Add signature length?
