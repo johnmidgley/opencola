@@ -1,8 +1,8 @@
 // Initialize button with user's preferred color
-let changeColor = document.getElementById("changeColor");
+let changeColor = document.getElementById("keep");
 
 chrome.storage.sync.get("color", ({ color }) => {
-    changeColor.style.backgroundColor = color;
+    // changeColor.style.backgroundColor = color;
 });
 
 
