@@ -57,8 +57,9 @@ fun splitMht(message: Message): List<Part> {
     val multipart = message.body as? Multipart ?: throw RuntimeException("Attempt to split a message that is not Multipart")
     val bodyParts = multipart.bodyParts
 
-    if(bodyParts.isEmpty() || bodyParts.first().header.contentType()?.subType != "html"){
-        throw RuntimeException("First body part of Mht message must be of type 'html'")
+    val header = bodyParts.first().header
+    if(bodyParts.isEmpty() || header.contentType()?.subType != "html" || header.contentLocation() == null){
+        throw RuntimeException("First body part of Mht message must be of type 'html' and have a location")
     }
 
     // TODO: Investigate: It makes no sense, but some docs have parts with no content location or duplicate locations
