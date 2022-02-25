@@ -17,6 +17,7 @@ import java.security.PublicKey
 // TODO: Make Factory that maps facts -> transaction facts
 // TODO: Should id be a long? Would int suffice?
 // TODO: Change List<T>s to Iterable<T>s
+// TODO: Include Timestamp
 class Transaction(val authorityId: Id, val id: Long, val transactionFacts: List<TransactionFact>){
     fun getFacts(): List<Fact> {
         return transactionFacts.map { Fact(authorityId, it.entityId, it.attribute, it.value, it.operation, id) }
@@ -87,6 +88,7 @@ class Transaction(val authorityId: Id, val id: Long, val transactionFacts: List<
 }
 
 // TODO: data class?
+// TODO: Include signature alg
 @Serializable
 class SignedTransaction(val transaction: Transaction, val signature: ByteArray){
     // TODO: Fix signature serialization - right now json array vs. an encoded hex string

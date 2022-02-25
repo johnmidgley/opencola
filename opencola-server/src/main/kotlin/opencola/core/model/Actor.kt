@@ -5,7 +5,6 @@ import java.security.PublicKey
 
 // Person or website (organization), identified by hash of public key
 //  TODO: Figure out how to properly initialize and store publicKey attribute
-// Could probably clean this up with delegated properties
 open class ActorEntity : Entity {
     var uri by UriAttributeDelegate
     var imageUri by UriAttributeDelegate

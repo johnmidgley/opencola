@@ -6,7 +6,6 @@ import org.apache.james.mime4j.dom.field.ContentTypeField
 import org.apache.james.mime4j.dom.field.UnstructuredField
 
 fun Header.contentLocation(): ContentLocationField? {
-    // TODO: Is "US-ASCII" always right?
     return getField("Content-Location") as ContentLocationField?
 }
 

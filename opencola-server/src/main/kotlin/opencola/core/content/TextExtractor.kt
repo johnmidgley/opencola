@@ -20,7 +20,6 @@ class TextExtractor {
     private val tika = Tika()
 
     fun getType(inStream: InputStream): String {
-        // TODO: Is application/octet-stream the best choice for arbitrary binary data
         return tika.detect(inStream) ?: "application/octet-stream"
     }
 
