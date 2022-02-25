@@ -6,6 +6,7 @@ plugins {
     application
     kotlin("jvm") version "1.6.10"
     kotlin("plugin.serialization") version "1.6.0"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 group = "opencola"
@@ -37,7 +38,7 @@ dependencies {
 
     // Logging: https://www.kotlinresources.com/library/kotlin-logging/
     implementation("io.github.microutils:kotlin-logging:2.1.21")
-    implementation("org.slf4j:slf4j-api:1.7.32")
+    implementation("org.slf4j:slf4j-api:1.7.36")
     implementation("ch.qos.logback:logback-classic:1.2.10")
     implementation("ch.qos.logback:logback-core:1.2.10")
     implementation("com.lordcodes.turtle:turtle:0.6.0")
