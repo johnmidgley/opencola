@@ -20,6 +20,13 @@ repositories {
     mavenCentral()
 }
 
+// https://thelyfsoshort.io/kotlin-reflection-shadow-jars-minimize-9bd74964c74
+tasks.shadowJar {
+    minimize {
+        exclude(dependency("org.jetbrains.kotlin:.*"))
+    }
+}
+
 dependencies {
     implementation("org.jetbrains.exposed", "exposed-core", "0.37.3")
     implementation("org.jetbrains.exposed", "exposed-dao", "0.37.3")
