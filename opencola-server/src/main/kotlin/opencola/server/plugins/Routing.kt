@@ -73,13 +73,17 @@ fun Application.configureRouting() {
             val multipart = call.receiveMultipart()
 
             var action: String? = null
+            var value: String? = null
             var mhtml: ByteArray? = null
 
             multipart.forEachPart { part ->
                 when(part){
                     is PartData.FormItem -> {
-                        if(part.name != "action") throw IllegalArgumentException("Unknown FormItem in action request: ${part.name}")
-                        action = part.value
+                        when(part.name){
+                            "action" -> action = part.value
+                            "value" -> value = part.value
+                            else -> throw IllegalArgumentException("Unknown FormItem in action request: ${part.name}")
+                        }
                     }
                     is PartData.FileItem -> {
                         if(part.name != "mhtml") throw IllegalArgumentException("Unknown FileItem in action request: ${part.name}")
@@ -93,12 +97,17 @@ fun Application.configureRouting() {
                 throw IllegalArgumentException("No action specified for request")
             }
 
+            if(value == null){
+                throw IllegalArgumentException("No value specified for request")
+            }
+
             if(mhtml == null){
                 throw IllegalArgumentException("No mhtml specified for request")
             }
 
             println("Action: $action Bytes: ${mhtml?.size}")
-            handleAction(action as String, null, mhtml as ByteArray)
+            handleAction(action as String, value, mhtml as ByteArray)
+            call.respond(HttpStatusCode.Accepted)
         }
     }
 }
