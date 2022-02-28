@@ -1,18 +1,18 @@
-// Initialize button with user's preferred color
-let keepButton = document.getElementById("keep");
-
 chrome.storage.sync.get("color", ({ color }) => {
     // changeColor.style.backgroundColor = color;
 });
 
+let keepButton = document.getElementById("keep");
 
 // When the button is clicked, inject setPageBackgroundColor into current page
 keepButton.addEventListener("click", async () => {
+    // TODO: For some reason, can't move this call inside send action.
     let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    sendAction(tab, "save", true)
+
+    await sendAction(tab, "save", true)
 });
 
-function sendAction(tab, action, value){
+async function sendAction(tab, action, value){
     // TODO: Check this out https://stackoverflow.com/questions/32194397/why-isnt-chrome-pagecapture-saveasmhtml-working-in-my-google-chrome-extension
     // TODO: Why doesn't console logging work here?
 
@@ -42,7 +42,7 @@ let like = document.getElementById("like");
 like.addEventListener("click", async () => {
     let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-    alert("like: " + tab.url)
+    await sendAction(tab, "like", true)
 });
 
 let rate = document.getElementById("rate");
@@ -51,7 +51,7 @@ let rate = document.getElementById("rate");
 rate.addEventListener("click", async () => {
     let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-    alert("rate: " + tab.url)
+    await sendAction(tab, "rate", 1.0)
 });
 
 
