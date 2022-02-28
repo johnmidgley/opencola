@@ -3,3 +3,4 @@
 /network/var-solr/data/*.opencola
 /network/var-solr/data/opencola/data/
 /network/var-solr/logs/
+/storage/var-solr/data/configsets/opencola/conf/managed-schema
