@@ -2,7 +2,7 @@
 /entitystore/*.test.*
 /var-solr/data/*.opencola
 /var-solr/data/opencola/data/
-/var-solr/data/configsets/opencola/conf/managed-schema
+var-solr/data/configsets/opencola/conf/managed-schema
 /var-solr/logs/
 /var-postgres
 *.txs
