@@ -3,7 +3,6 @@ package opencola.server.plugins
 import io.ktor.routing.*
 import io.ktor.http.*
 import io.ktor.application.*
-import io.ktor.http.cio.*
 import io.ktor.http.content.*
 import io.ktor.response.*
 import io.ktor.request.*
@@ -18,18 +17,6 @@ fun Application.configureRouting() {
     val injector = opencola.core.config.Application.instance.injector
 
     routing {
-        get("/") {
-            call.respondText("Hello World!")
-        }
-
-        // Example of serving static html. Useful to serve base react response
-        get("/index.html"){
-            call.respondText(
-                this.javaClass.classLoader.getResource("index.html")!!.readText(),
-                ContentType.Text.Html
-            )
-        }
-
         get("/search"){
             SearchHandler(call).respond()
         }
@@ -38,7 +25,6 @@ fun Application.configureRouting() {
             // Handler that returns info on entity by URL
             TODO("Implement entity handler")
         }
-
 
         get("/data/{id}/{partName}"){
             // TODO: Add a parameters extension that gets the parameter value or throws an exception
@@ -108,6 +94,12 @@ fun Application.configureRouting() {
             println("Action: $action Bytes: ${mhtml?.size}")
             handleAction(action as String, value, mhtml as ByteArray)
             call.respond(HttpStatusCode.Accepted)
+        }
+
+        static(""){
+            log.info("Initializing static resources from ${opencola.core.config.Application.instance.path} ")
+            file("/", "resources/index.html")
+            files("resources")
         }
     }
 }
