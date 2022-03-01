@@ -1,0 +1,34 @@
+#!/bin/bash
+echo "Removing old dist"
+rm -rf dist
+
+echo "Running gradle installDist"
+cd ../opencola-server
+gradlew installDist
+
+echo "Copying distribution"
+cd ../install
+mkdir dist
+cp -r ../opencola-server/build/install/opencola-server/* dist
+
+echo "Copying config"
+cp ../opencola-server/opencola-server.yaml dist
+cp ../network/docker-compose.yml dist
+
+echo "Copying resources"
+mkdir dist/resources
+cp -r ../opencola-server/resources/ dist/resources/
+
+
+if [ -d "storage" ]; 
+then
+echo "Storage already exists" 
+else
+echo "Creating storage"
+mkdir -p storage/var-solr/data
+cp ../storage/var-solr/log4j2.xml storage/var-solr/
+cp -r ../storage/var-solr/data/configsets/ storage/var-solr/data/configsets
+cp ../storage/var-solr/data/solr.xml storage/var-solr/data/
+cp ../storage/var-solr/data/zoo.cfg storage/var-solr/data/
+fi
+

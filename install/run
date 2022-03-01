@@ -1,0 +1,4 @@
+#!/bin/bash
+cd dist
+docker-compose up -d
+bin/opencola-server
