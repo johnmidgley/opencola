@@ -6,19 +6,3 @@ services:
      - "8983:8983"
     volumes:
       - ../storage/var-solr:/var/solr
-
-  db:
-    image: postgres:14.1
-    restart: always
-    ports: # TODO: Needed?
-     - 5432:5432
-    environment:
-      POSTGRES_PASSWORD: example
-    volumes:
-      - ../storage/var-postgres:/var/lib/postgresql/data
-
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - 8080:8080
