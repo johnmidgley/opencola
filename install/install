@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "Removing old dist"
-rm -rf opencola
+rm -rf opencola opencola.tgz
 mkdir opencola
 
 echo "Running gradle installDist"
@@ -37,4 +37,9 @@ cp -r ../../storage/var-solr/data/configsets/ storage/var-solr/data/configsets
 cp ../../storage/var-solr/data/solr.xml storage/var-solr/data/
 cp ../../storage/var-solr/data/zoo.cfg storage/var-solr/data/
 fi
+echo "Creating tarball"
+cd ..
+tar -czf opencola.tgz opencola
+echo "Done."
+
 
