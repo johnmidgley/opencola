@@ -1,4 +1,5 @@
 #!/bin/bash
-cd dist
+cd oc-network
 docker-compose up -d
+cd ../server
 bin/opencola-server

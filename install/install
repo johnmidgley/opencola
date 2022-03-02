@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "Removing old dist"
-rm -rf dist
+rm -rf server chrome oc-network
 
 echo "Running gradle installDist"
 cd ../opencola-server
@@ -8,17 +8,20 @@ gradlew installDist
 
 echo "Copying distribution"
 cd ../install
-mkdir dist
-cp -r ../opencola-server/build/install/opencola-server/* dist
+mkdir server
+cp -r ../opencola-server/build/install/opencola-server/* server
 
 echo "Copying config"
-cp ../opencola-server/opencola-server.yaml dist
-cp ../network/docker-compose.yml dist
+cp ../opencola-server/opencola-server.yaml server
+mkdir oc-network
+cp ../network/docker-compose.yml oc-network
 
 echo "Copying resources"
-mkdir dist/resources
-cp -r ../opencola-server/resources/ dist/resources/
+mkdir server/resources
+cp -r ../opencola-server/resources/ server/resources/
 
+echo "Copying Chrome extension"
+cp -r  ../extension/chrome .
 
 if [ -d "storage" ]; 
 then
