@@ -1,11 +1,26 @@
-Pre-run steps
+# Pre-run steps
 
-- Install Java 16
-- Install Docker 
+# Install Java 16
+# https://sdkman.io/
 
-Notes:
+curl -s "https://get.sdkman.io" | bash
+bash
+source sdkman-init.sh
+sdk list java
+sdk install java 16.0.2-zulu
 
-Files in the Scripts folder are copied to the install directory automatically during install. 
-They are not meant to be run outside of the install directory and and won't work here.
+
+# Install Docker 
+
+https://www.docker.com/get-started
+
+# Install extension
+
+- In a Chrome based browser (maybe works on Firefox?), got to extensions (e.g. brave://extensions/)
+- Select "Developer Mode"
+- Click "Load unpacked"
+- Select the 'chrome' directory in this folder (opencola)
+- Pin the extension to the toolbar
+
 
 
