@@ -10,4 +10,5 @@ storage:
 security:
   keystore:
     name: "keystore.pks"
-    password: "password"
+    password: "password" # This should be typed in by user and removed from here
+
