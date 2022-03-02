@@ -1,4 +1,5 @@
 /filestore
+*.pub
 /entitystore/*.test.*
 /var-solr/data/*.opencola
 /var-solr/data/opencola/data/
