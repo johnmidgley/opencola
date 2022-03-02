@@ -1,0 +1,4 @@
+#!/bin/bash
+cd oc-network
+docker-compose down
+

@@ -1,5 +1,0 @@
-#!/bin/bash
-cd oc-network
-docker-compose up -d
-cd ../server
-bin/opencola-server

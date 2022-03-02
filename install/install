@@ -9,7 +9,7 @@ gradlew installDist
 
 echo "Copying distribution"
 cd ../install/opencola
-cp ../run .
+cp ../scripts/* .
 mkdir server
 cp -r ../../opencola-server/build/install/opencola-server/* server
 
