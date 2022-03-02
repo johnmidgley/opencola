@@ -9,6 +9,7 @@ source sdkman-init.sh
 sdk list java
 sdk install java 16.0.2-zulu
 
+- Set JAVE_HOME to the install (i.e. ~/.sdkman/candidates/java/16.0.2-zulu)
 
 # Install Docker 
 
