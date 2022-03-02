@@ -9,14 +9,13 @@ import opencola.core.config.Application
 import opencola.core.config.Config
 import opencola.core.content.TextExtractor
 import opencola.core.extensions.hexStringToByteArray
+import opencola.core.extensions.toHexString
 import opencola.core.model.Authority
 import opencola.core.search.SearchIndex
-import opencola.core.security.KeyStore
-import opencola.core.security.Signator
-import opencola.core.security.privateKeyFromBytes
-import opencola.core.security.publicKeyFromBytes
+import opencola.core.security.*
+import opencola.core.storage.ExposedEntityStore
 import opencola.core.storage.LocalFileStore
-import opencola.core.storage.SimpleEntityStore
+import opencola.core.storage.SQLiteDB
 import opencola.server.plugins.configureContentNegotiation
 import opencola.server.plugins.configureHTTP
 import opencola.server.plugins.configureRouting
@@ -24,8 +23,12 @@ import opencola.service.search.SearchService
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
 import org.kodein.di.instance
+import java.nio.file.Path
 import java.security.KeyPair
 import kotlin.io.path.Path
+import kotlin.io.path.exists
+import kotlin.io.path.readText
+import kotlin.io.path.writeText
 
 fun getAuthorityKeyPair(): KeyPair {
     // TODO: Need to be able to generate a new authority. Should be triggered in chrome extension settings
@@ -34,23 +37,45 @@ fun getAuthorityKeyPair(): KeyPair {
     return KeyPair(authorityPublicKey, authorityPrivateKey)
 }
 
+// TODO: This shouldn't be here. It should be core functionality
+fun getAuthority(path: Path, config: Config): Authority {
+    val authorityPubPath = path.resolve(config.storage.path).resolve("authority.pub")
+
+    if(!authorityPubPath.exists()) {
+        //TODO: Move to identity service
+        val keyPair = generateKeyPair()
+        val authority = Authority(keyPair.public)
+
+        val keyStore = KeyStore(
+            path.resolve(config.storage.path).resolve(config.security.keystore.name),
+            config.security.keystore.password
+        )
+
+        keyStore.addKey(authority.authorityId, keyPair)
+        authorityPubPath.writeText(keyPair.public.encoded.toHexString())
+    }
+
+    val authority = Authority(publicKeyFromBytes(authorityPubPath.readText().hexStringToByteArray()))
+
+    return authority
+
+}
+
 fun main() {
     val path = Path(System.getProperty("user.dir"))
     val config: Config = ConfigLoader().loadConfigOrThrow(path.resolve("opencola-server.yaml"))
-
-    val keyPair = getAuthorityKeyPair()
-    val authority = Authority(keyPair.public)
+    val authority = getAuthority(path, config)
     val keyStore = KeyStore(
         path.resolve(config.storage.path).resolve(config.security.keystore.name),
         config.security.keystore.password
     )
-    keyStore.addKey(authority.authorityId, keyPair)
+    val sqLiteDB = SQLiteDB(path.resolve(config.storage.path).resolve("${authority.authorityId}.db")).db
 
     val injector = DI {
         bindSingleton { authority }
         bindSingleton { keyStore }
         bindSingleton { Signator(instance()) }
-        bindSingleton { SimpleEntityStore(instance(), instance())  }
+        bindSingleton { ExposedEntityStore(instance(), instance(), sqLiteDB) }
         bindSingleton { LocalFileStore(path.resolve(config.storage.path).resolve("filestore")) }
         bindSingleton { SearchIndex(instance())}
         bindSingleton { SearchService(instance(), instance(), instance()) }
@@ -66,5 +91,6 @@ fun main() {
         configureHTTP()
         configureContentNegotiation()
         configureRouting()
+        log.info("Application authority: ${authority.authorityId}")
     }.start(wait = true)
 }
