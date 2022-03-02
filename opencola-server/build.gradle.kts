@@ -21,11 +21,13 @@ repositories {
 }
 
 // https://thelyfsoshort.io/kotlin-reflection-shadow-jars-minimize-9bd74964c74
-tasks.shadowJar {
-    minimize {
-        exclude(dependency("org.jetbrains.kotlin:.*"))
-    }
-}
+// NOTE: This does not work, likely due to some reflection magic that is invisible
+// to the minimizer
+//tasks.shadowJar {
+//    minimize {
+//        // exclude(dependency("org.jetbrains.kotlin:.*"))
+//    }
+//}
 
 dependencies {
     implementation("org.jetbrains.exposed", "exposed-core", "0.37.3")
