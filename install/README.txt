@@ -15,6 +15,10 @@ sdk install java 16.0.2-zulu
 
 https://www.docker.com/get-started
 
+# IF YOU'RE ON LINUX, you need to let docker have write access to the solr indexes / files
+cd storage
+sudo chown -R 8983:8983 var-solr
+
 # Install extension
 
 - In a Chrome based browser (maybe works on Firefox?), got to extensions (e.g. brave://extensions/)

@@ -1,4 +1,4 @@
-package opencola.core
+package opencola.core.serialization
 
 import getAuthority
 import kotlinx.serialization.protobuf.ProtoBuf

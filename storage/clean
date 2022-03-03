@@ -9,8 +9,9 @@ then
   exit
 fi
 
-rm -f transactions.*
+rm -f *.db
 rm -rf filestore
+rm -rf mht-store
 rm -rf var-solr/logs
 rm -rf var-solr/data/*.opencola
 rm -rf test

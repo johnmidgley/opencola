@@ -1,9 +1,7 @@
-import opencola.core.storage.EntityStore
+package opencola.core.model
+
+import getAuthority
 import opencola.core.security.generateKeyPair
-import opencola.core.model.Id
-import opencola.core.model.ActorEntity
-import opencola.core.model.CoreAttribute
-import opencola.core.model.ResourceEntity
 import java.net.URI
 import kotlin.test.Test
 import kotlin.test.assertEquals

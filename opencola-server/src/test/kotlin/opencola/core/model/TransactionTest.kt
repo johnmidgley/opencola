@@ -1,8 +1,7 @@
-package opencola.model
+package opencola.core.model
 
 import opencola.core.TestApplication
 import opencola.core.extensions.toHexString
-import opencola.core.model.*
 import opencola.core.security.Signator
 import opencola.core.security.sha256
 import org.junit.Test

@@ -1,6 +1,6 @@
-package opencola.core
+package opencola.core.config
 
-import opencola.core.config.Application
+import opencola.core.TestApplication
 import opencola.core.model.Authority
 import org.junit.Test
 import org.kodein.di.instance

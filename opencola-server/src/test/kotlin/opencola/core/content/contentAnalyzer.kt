@@ -1,4 +1,5 @@
-import opencola.core.content.TextExtractor
+package opencola.core.content
+
 import java.io.FileInputStream
 import kotlin.io.path.Path
 

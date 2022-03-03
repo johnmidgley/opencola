@@ -1,19 +1,16 @@
-package opencola.core
+package opencola.core.storage
 
 import getActorEntity
 import getAuthority
 import getAuthorityKeyPair
-import opencola.core.config.Application
+import opencola.core.TestApplication
 import opencola.core.model.ActorEntity
 import opencola.core.model.Authority
 import opencola.core.model.UNCOMMITTED
 import opencola.core.security.KeyStore
 import opencola.core.security.Signator
-import opencola.core.storage.*
 import org.kodein.di.instance
 import java.nio.file.Path
-import kotlin.io.path.createTempDirectory
-import kotlin.io.path.createTempFile
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

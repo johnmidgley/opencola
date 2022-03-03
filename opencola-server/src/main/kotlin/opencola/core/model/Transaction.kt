@@ -31,11 +31,7 @@ data class Transaction(val id: Long, val authorityId: Id, val transactionFacts: 
         // This is probably not the right way to serialize. Likely should create a serializer / provider that can be
         // configured to serialize in an appropriate format.
         // TODO: Validate transaction
-        val encoded = ByteArrayOutputStream().use {
-            encode(it, this)
-            it.toByteArray()
-        }
-        return SignedTransaction(this, signator.signBytes(authorityId, encoded))
+        return SignedTransaction(this, signator.signBytes(authorityId, Transaction.encode(this)))
     }
 
     @Serializable

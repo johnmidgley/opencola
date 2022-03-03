@@ -1,9 +1,11 @@
+package opencola.core.search
+
+import getAuthority
 import opencola.core.content.MhtmlPage
 import opencola.core.content.TextExtractor
 import opencola.core.content.parseMime
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.ResourceEntity
-import opencola.core.search.SearchIndex
 import org.junit.Test
 import java.net.URI
 import kotlin.io.path.Path
