@@ -15,7 +15,7 @@ import java.security.PublicKey
 // TODO: Add timestamp
 // TODO: Should id be a long? Would int suffice?
 // TODO: Change List<T>s to Iterable<T>s
-class Transaction(val authorityId: Id, val epoch: Long, val transactionFacts: List<TransactionFact>){
+data class Transaction(val authorityId: Id, val epoch: Long, val transactionFacts: List<TransactionFact>){
     fun getFacts(): List<Fact> {
         return transactionFacts.map { Fact(authorityId, it.entityId, it.attribute, it.value, it.operation, epoch) }
     }
@@ -87,7 +87,7 @@ class Transaction(val authorityId: Id, val epoch: Long, val transactionFacts: Li
 // TODO: data class?
 // TODO: Include signature alg
 @Serializable
-class SignedTransaction(val transaction: Transaction, val signature: ByteArray){
+data class SignedTransaction(val transaction: Transaction, val signature: ByteArray) {
     // TODO: Fix signature serialization - right now json array vs. an encoded hex string
     fun isValidTransaction(publicKey: PublicKey): Boolean {
         return isValidSignature(publicKey, transaction.toString().toByteArray(), signature)
@@ -97,6 +97,24 @@ class SignedTransaction(val transaction: Transaction, val signature: ByteArray){
         return transaction.transactionFacts.map {
             Fact(transaction.authorityId, it.entityId, it.attribute, it.value, it.operation, transaction.epoch)
         }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as SignedTransaction
+
+        if (transaction != other.transaction) return false
+        if (!signature.contentEquals(other.signature)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = transaction.hashCode()
+        result = 31 * result + signature.contentHashCode()
+        return result
     }
 
     companion object Factory : StreamSerializer<SignedTransaction> {
