@@ -1,3 +1,9 @@
+CHECK THIS OUT: 
+
+https://github.com/gildas-lormeau/SingleFile
+https://github.com/gildas-lormeau/SingleFileZ
+
+
 Creating an extension
 
 -- Looks like background script is good for general interface
