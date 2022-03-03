@@ -11,16 +11,13 @@ import java.io.OutputStream
 import java.security.PublicKey
 
 @Serializable
-// TODO: data class?
 // TODO: Change id to epoch
 // TODO: Add timestamp
-// TODO: Make Factory that maps facts -> transaction facts
 // TODO: Should id be a long? Would int suffice?
 // TODO: Change List<T>s to Iterable<T>s
-// TODO: Include Timestamp
-class Transaction(val authorityId: Id, val id: Long, val transactionFacts: List<TransactionFact>){
+class Transaction(val authorityId: Id, val epoch: Long, val transactionFacts: List<TransactionFact>){
     fun getFacts(): List<Fact> {
-        return transactionFacts.map { Fact(authorityId, it.entityId, it.attribute, it.value, it.operation, id) }
+        return transactionFacts.map { Fact(authorityId, it.entityId, it.attribute, it.value, it.operation, epoch) }
     }
 
     // TODO: This is common to a number of classes. Figure out how to make properly generic
@@ -74,7 +71,7 @@ class Transaction(val authorityId: Id, val id: Long, val transactionFacts: List<
 
         override fun encode(stream: OutputStream, value: Transaction) {
             Id.encode(stream, value.authorityId)
-            writeLong(stream, value.id)
+            writeLong(stream, value.epoch)
             writeInt(stream, value.transactionFacts.size)
             for(fact in value.transactionFacts){
                 TransactionFact.encode(stream, fact)
@@ -98,7 +95,7 @@ class SignedTransaction(val transaction: Transaction, val signature: ByteArray){
 
     fun expandFacts() : Iterable<Fact> {
         return transaction.transactionFacts.map {
-            Fact(transaction.authorityId, it.entityId, it.attribute, it.value, it.operation, transaction.id)
+            Fact(transaction.authorityId, it.entityId, it.attribute, it.value, it.operation, transaction.epoch)
         }
     }
 

@@ -98,7 +98,7 @@ class ExposedEntityStore(authority: Authority, signator: Signator, private val d
             transactions.insert {
                 it[authorityId] = Id.encode(signedTransaction.transaction.authorityId)
                 it[signature] = signedTransaction.signature
-                it[epoch] = signedTransaction.transaction.id
+                it[epoch] = signedTransaction.transaction.epoch
             }
         }
     }

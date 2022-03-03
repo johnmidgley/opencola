@@ -38,7 +38,7 @@ abstract class EntityStore(val authority: Authority, protected val signator: Sig
 
     protected fun isValidTransaction(signedTransaction: SignedTransaction): Boolean {
         // TODO: Move what can be moved to transaction
-        val transactionId = signedTransaction.transaction.id
+        val transactionId = signedTransaction.transaction.epoch
         val facts = signedTransaction.transaction.getFacts()
 
 
