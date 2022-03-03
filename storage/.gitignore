@@ -9,4 +9,5 @@
 /var-postgres
 *.txs
 *.pks
+*.db
 /mht-cache
