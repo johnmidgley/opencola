@@ -1,12 +1,12 @@
 package opencola.server
 
-import com.sksamuel.hoplite.ConfigLoader
 import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import opencola.core.config.Application
 import opencola.core.config.Config
+import opencola.core.config.loadConfig
 import opencola.core.content.TextExtractor
 import opencola.core.extensions.hexStringToByteArray
 import opencola.core.extensions.toHexString
@@ -62,28 +62,28 @@ fun getAuthority(path: Path, config: Config): Authority {
 }
 
 fun main() {
-    val path = Path(System.getProperty("user.dir"))
-    val config: Config = ConfigLoader().loadConfigOrThrow(path.resolve("opencola-server.yaml"))
-    val authority = getAuthority(path, config)
+    val applicationPath = Path(System.getProperty("user.dir"))
+    val config = loadConfig(applicationPath.resolve( "opencola-server.yaml"))
+    val authority = getAuthority(applicationPath, config)
     val keyStore = KeyStore(
-        path.resolve(config.storage.path).resolve(config.security.keystore.name),
+        applicationPath.resolve(config.storage.path).resolve(config.security.keystore.name),
         config.security.keystore.password
     )
-    val sqLiteDB = SQLiteDB(path.resolve(config.storage.path).resolve("${authority.authorityId}.db")).db
+    val sqLiteDB = SQLiteDB(applicationPath.resolve(config.storage.path).resolve("${authority.authorityId}.db")).db
 
     val injector = DI {
         bindSingleton { authority }
         bindSingleton { keyStore }
         bindSingleton { Signator(instance()) }
         bindSingleton { ExposedEntityStore(instance(), instance(), sqLiteDB) }
-        bindSingleton { LocalFileStore(path.resolve(config.storage.path).resolve("filestore")) }
+        bindSingleton { LocalFileStore(applicationPath.resolve(config.storage.path).resolve("filestore")) }
         bindSingleton { SearchIndex(instance())}
         bindSingleton { SearchService(instance(), instance(), instance()) }
         bindSingleton { TextExtractor() }
         bindSingleton { DataHandler(instance(), instance(), instance()) }
     }
 
-    Application.instance = Application(path, config, injector)
+    Application.instance = Application(applicationPath, config, injector)
     val serverConfig = config.server ?: throw RuntimeException("Server config not specified")
 
     embeddedServer(Netty, port = serverConfig.port, host = serverConfig.host) {
