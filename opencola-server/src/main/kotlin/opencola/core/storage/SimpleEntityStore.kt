@@ -7,13 +7,11 @@ import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import kotlin.io.path.*
 
-class SimpleEntityStore(authority: Authority, signator: Signator) : EntityStore(authority, signator) {
+class SimpleEntityStore(val path: Path, authority: Authority, signator: Signator) : EntityStore(authority, signator) {
     // TODO: Synchronize access
     private var facts = emptyList<Fact>()
-    private val path: Path
-    init {
-        path = Application.instance.storagePath.resolve("${authority.authorityId}.txs")
 
+    init {
         if(!path.exists()){
             logger.warn { "No entity store found at $path. Will get created on update" }
         } else {
@@ -23,7 +21,7 @@ class SimpleEntityStore(authority: Authority, signator: Signator) : EntityStore(
                 .toList()
         }
 
-        setEpoch(facts.filter { it.authorityId == authority.entityId }.map { it.transactionId }.maxOrNull()?.inc() ?: 0)
+        setTransactiondId(facts.filter { it.authorityId == authority.entityId }.map { it.transactionId }.maxOrNull()?.inc() ?: 0)
     }
 
     private fun transactions(path: Path): Sequence<SignedTransaction> {
@@ -47,12 +45,12 @@ class SimpleEntityStore(authority: Authority, signator: Signator) : EntityStore(
     }
 
     override fun persistTransaction(signedTransaction: SignedTransaction) {
-        this.path.outputStream(StandardOpenOption.APPEND, StandardOpenOption.CREATE).use { SignedTransaction.encode(it, signedTransaction) }
+        path.outputStream(StandardOpenOption.APPEND, StandardOpenOption.CREATE).use { SignedTransaction.encode(it, signedTransaction) }
         facts = facts + signedTransaction.expandFacts()
     }
 
     override fun resetStore() : SimpleEntityStore {
-        this.path.deleteIfExists()
-        return SimpleEntityStore(authority, signator)
+        path.deleteIfExists()
+        return SimpleEntityStore(path, authority, signator)
     }
 }

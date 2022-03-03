@@ -19,16 +19,15 @@ class ExposedEntityStore(authority: Authority, signator: Signator, private val d
         val attribute = text("attribute")
         val value = blob("value")
         val operation = enumeration("operation", Operation::class)
-        val epoch = long("epoch")
+        val transactionId = long("transactionId")
     }
 
-
-
-    // TODO: Add timestamp
     private class Transactions(authorityId: Id) : Table("txs-${authorityId.toString()}") {
+        // TODO - Make id unique
+        val id = long("id")
         val authorityId = binary("authorityId", 32)
         val signature = binary("signature", 128) // TODO: Add signature length?
-        val epoch = long("epoch")
+        val epochSecond = long("epochSecond")
     }
 
     private val facts: Facts
@@ -44,11 +43,11 @@ class ExposedEntityStore(authority: Authority, signator: Signator, private val d
             SchemaUtils.create(facts)
             SchemaUtils.create(transactions)
 
-            setEpoch(
+            setTransactiondId(
                 transactions.selectAll()
-                    .orderBy(transactions.epoch to SortOrder.DESC)
+                    .orderBy(transactions.id to SortOrder.DESC)
                     .limit(1).firstOrNull()
-                    ?.getOrNull(transactions.epoch)
+                    ?.getOrNull(transactions.id)
                     ?: 0
             )
         }
@@ -73,7 +72,7 @@ class ExposedEntityStore(authority: Authority, signator: Signator, private val d
                     CoreAttribute.values().single { a -> a.spec.uri.toString() == it[facts.attribute]}.spec,
                     Value(it[facts.value].bytes),
                     it[facts.operation],
-                    it[facts.epoch])
+                    it[facts.transactionId])
             }
 
             if(facts.isNotEmpty()) Entity.getInstance(facts) else null
@@ -91,14 +90,15 @@ class ExposedEntityStore(authority: Authority, signator: Signator, private val d
                     it[attribute] = fact.attribute.uri.toString()
                     it[value] = ExposedBlob(fact.value.bytes)
                     it[operation] = fact.operation
-                    it[epoch] = fact.transactionId
+                    it[transactionId] = fact.transactionId
                 }
             }
 
             transactions.insert {
+                it[id] = signedTransaction.transaction.id
                 it[authorityId] = Id.encode(signedTransaction.transaction.authorityId)
                 it[signature] = signedTransaction.signature
-                it[epoch] = signedTransaction.transaction.epoch
+                it[epochSecond] = signedTransaction.transaction.epochSecond
             }
         }
     }

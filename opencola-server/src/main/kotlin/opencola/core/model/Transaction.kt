@@ -6,18 +6,20 @@ import kotlinx.serialization.json.Json
 import opencola.core.security.Signator
 import opencola.core.security.isValidSignature
 import opencola.core.serialization.StreamSerializer
+import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
 import java.security.PublicKey
+import java.time.Instant
 
 @Serializable
 // TODO: Change id to epoch
 // TODO: Add timestamp
 // TODO: Should id be a long? Would int suffice?
 // TODO: Change List<T>s to Iterable<T>s
-data class Transaction(val authorityId: Id, val epoch: Long, val transactionFacts: List<TransactionFact>){
+data class Transaction(val id: Long, val authorityId: Id, val transactionFacts: List<TransactionFact>, val epochSecond: Long = Instant.EPOCH.epochSecond){
     fun getFacts(): List<Fact> {
-        return transactionFacts.map { Fact(authorityId, it.entityId, it.attribute, it.value, it.operation, epoch) }
+        return transactionFacts.map { Fact(authorityId, it.entityId, it.attribute, it.value, it.operation, id) }
     }
 
     // TODO: This is common to a number of classes. Figure out how to make properly generic
@@ -29,8 +31,11 @@ data class Transaction(val authorityId: Id, val epoch: Long, val transactionFact
         // This is probably not the right way to serialize. Likely should create a serializer / provider that can be
         // configured to serialize in an appropriate format.
         // TODO: Validate transaction
-        // TODO: Switch to efficient serialization
-        return SignedTransaction(this, signator.signBytes(authorityId, this.toString().toByteArray()))
+        val encoded = ByteArrayOutputStream().use {
+            encode(it, this)
+            it.toByteArray()
+        }
+        return SignedTransaction(this, signator.signBytes(authorityId, encoded))
     }
 
     @Serializable
@@ -56,7 +61,7 @@ data class Transaction(val authorityId: Id, val epoch: Long, val transactionFact
 
     companion object Factory : StreamSerializer<Transaction> {
         fun fromFacts(id: Long, facts: List<Fact>) : Transaction {
-            return Transaction(facts.first().authorityId, id, validateFacts(facts).map{ TransactionFact.fromFact(it) })
+            return Transaction(id, facts.first().authorityId, validateFacts(facts).map{ TransactionFact.fromFact(it) })
         }
 
         private fun validateFacts(facts: List<Fact>) : List<Fact> {
@@ -70,16 +75,17 @@ data class Transaction(val authorityId: Id, val epoch: Long, val transactionFact
         }
 
         override fun encode(stream: OutputStream, value: Transaction) {
+            writeLong(stream, value.id)
             Id.encode(stream, value.authorityId)
-            writeLong(stream, value.epoch)
             writeInt(stream, value.transactionFacts.size)
             for(fact in value.transactionFacts){
                 TransactionFact.encode(stream, fact)
             }
+            writeLong(stream, value.epochSecond)
         }
 
         override fun decode(stream: InputStream): Transaction {
-            return Transaction(Id.decode(stream), readLong(stream), readInt(stream).downTo(1).map { TransactionFact.decode(stream) })
+            return Transaction(readLong(stream), Id.decode(stream), readInt(stream).downTo(1).map { TransactionFact.decode(stream) }, readLong(stream))
         }
     }
 }
@@ -95,7 +101,7 @@ data class SignedTransaction(val transaction: Transaction, val signature: ByteAr
 
     fun expandFacts() : Iterable<Fact> {
         return transaction.transactionFacts.map {
-            Fact(transaction.authorityId, it.entityId, it.attribute, it.value, it.operation, transaction.epoch)
+            Fact(transaction.authorityId, it.entityId, it.attribute, it.value, it.operation, transaction.id)
         }
     }
 

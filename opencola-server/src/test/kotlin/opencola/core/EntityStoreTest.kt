@@ -22,13 +22,10 @@ class EntityStoreTest {
     private val authority by app.injector.instance<Authority>()
     private val keyStore by app.injector.instance<KeyStore>()
     private val signator by app.injector.instance<Signator>()
-    private val getSimpleEntityStore = { SimpleEntityStore(authority, signator) }
-    private val sqLiteEntityStorePath: Path = app.storagePath.resolve("opencola.test.db")
+    private val simpleEntityStorePath = app.storagePath.resolve("${TestApplication.runUUID}.txs")
+    private val getSimpleEntityStore = { SimpleEntityStore(simpleEntityStorePath, authority, signator) }
+    private val sqLiteEntityStorePath: Path = app.storagePath.resolve("${TestApplication.runUUID}.db")
     private val getSQLiteEntityStore = { ExposedEntityStore(authority, signator, SQLiteDB(sqLiteEntityStorePath).db) }
-
-    private fun createTempTransactionFile(): Path {
-        return createTempFile("entity-store", ".fct")
-    }
 
     init{
         // TODO: Must be better way to initialize the app - once per test run

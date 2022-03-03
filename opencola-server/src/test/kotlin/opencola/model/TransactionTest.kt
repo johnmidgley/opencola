@@ -18,10 +18,10 @@ class TransactionTest {
 
     @Test
     fun testTransactionStructure(){
-        val stableStructureHash = "5c5d57fd1c5b6aa722b061ad31c88c5d1260e01eb8c57290edbb3a63b83f72d0"
+        val stableStructureHash = "e55ebeffb35589fa168db5fed98e3dc02f065ffdf1f5206422a71d055a9f1cd1"
         val id = Id.ofData("".toByteArray())
         val transactionFact = Transaction.TransactionFact(id, CoreAttribute.Type.spec, Value.emptyValue, Operation.Add)
-        val transaction = Transaction(id, 0, listOf(transactionFact))
+        val transaction = Transaction(0, id, listOf(transactionFact))
         val signedTransaction = SignedTransaction(transaction, "".toByteArray())
 
         val hash = ByteArrayOutputStream().use {
@@ -38,7 +38,7 @@ class TransactionTest {
         val entityId = Id.ofData("entityId".toByteArray())
         val value = Value("value".toByteArray())
         val fact = Fact(authorityId, entityId, CoreAttribute.Name.spec, value, Operation.Add)
-        val transaction = Transaction(authorityId, 0, listOf(Transaction.TransactionFact.fromFact(fact)))
+        val transaction = Transaction(0, authorityId, listOf(Transaction.TransactionFact.fromFact(fact)))
         val signedTransaction = transaction.sign(signator)
 
         val encodedTransaction = ByteArrayOutputStream().use {

@@ -9,9 +9,12 @@ import opencola.core.security.Signator
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
 import org.kodein.di.instance
+import java.util.*
 import kotlin.io.path.Path
 
 object TestApplication {
+    val runUUID = UUID.randomUUID()
+
     init {
         val path = Path(System.getProperty("user.dir"))
         val config: Config = ConfigLoader().loadConfigOrThrow(path.resolve("opencola-test.yaml"))
@@ -20,7 +23,7 @@ object TestApplication {
             bindSingleton { getAuthority() }
             bindSingleton {
                 KeyStore(
-                    path.resolve(config.storage.path).resolve(config.security.keystore.name),
+                    path.resolve(config.storage.path).resolve("${TestApplication.runUUID}.${config.security.keystore.name}"),
                     config.security.keystore.password
                 )}
             bindSingleton { Signator(instance()) }

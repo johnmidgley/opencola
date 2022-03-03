@@ -5,7 +5,7 @@ import opencola.core.model.*
 import opencola.core.security.Signator
 import java.security.PublicKey
 
-private const val INVALID_EPOCH: Long = -1
+private const val INVALID_TRANSACTION_ID: Long = -1
 
 // TODO: Should support multiple authorities
 abstract class EntityStore(val authority: Authority, protected val signator: Signator) {
@@ -19,15 +19,15 @@ abstract class EntityStore(val authority: Authority, protected val signator: Sig
         logAndThrow(RuntimeException(message))
     }
 
-    private var epoch: Long = INVALID_EPOCH
+    private var transactionId: Long = INVALID_TRANSACTION_ID
 
     @Synchronized
-    protected fun setEpoch(epoch: Long){
-        if(this.epoch != INVALID_EPOCH){
-            logAndThrow("Attempt to setEpoch that has already been set")
+    protected fun setTransactiondId(transactiondId: Long){
+        if(this.transactionId != INVALID_TRANSACTION_ID){
+            logAndThrow("Attempt to transaction id that has already been set")
         }
 
-        this.epoch = epoch
+        this.transactionId = transactiondId
     }
 
     abstract fun getEntity(authority: Authority, entityId: Id): Entity?
@@ -38,7 +38,7 @@ abstract class EntityStore(val authority: Authority, protected val signator: Sig
 
     protected fun isValidTransaction(signedTransaction: SignedTransaction): Boolean {
         // TODO: Move what can be moved to transaction
-        val transactionId = signedTransaction.transaction.epoch
+        val transactionId = signedTransaction.transaction.id
         val facts = signedTransaction.transaction.getFacts()
 
 
@@ -107,13 +107,13 @@ abstract class EntityStore(val authority: Authority, protected val signator: Sig
         }
 
         // TODO: Cleanup - very messy. Probably lock around epoch
-        val epoch = this.epoch
-        if(epoch == INVALID_EPOCH) {
-            logAndThrow("Attempt to commit transaction without setting epoch")
+        val transactionId = this.transactionId
+        if(transactionId == INVALID_TRANSACTION_ID) {
+            logAndThrow("Attempt to commit transaction without setting transaction id")
         }
 
-        val nextEpoch = epoch.inc()
-        persistTransaction(Transaction.fromFacts(nextEpoch, uncommittedFacts).sign(signator))
-        this.epoch = nextEpoch
+        val nextTransactionId = transactionId.inc()
+        persistTransaction(Transaction.fromFacts(nextTransactionId, uncommittedFacts).sign(signator))
+        this.transactionId = nextTransactionId
     }
 }

@@ -6,9 +6,9 @@ import java.nio.file.Path
 import java.sql.Connection
 
 // https://sqlitebrowser.org/dl/#macos
-class SQLiteDB(val storagePath: Path) {
+class SQLiteDB(val dbPath: Path) {
     private fun getDB(): Database {
-        val db = Database.connect("jdbc:sqlite:$storagePath", "org.sqlite.JDBC")
+        val db = Database.connect("jdbc:sqlite:$dbPath", "org.sqlite.JDBC")
         TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
         return db
     }
