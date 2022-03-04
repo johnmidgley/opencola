@@ -2,12 +2,14 @@ package opencola.core.content
 
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.Id
+import org.apache.james.mime4j.codec.DecoderUtil
 import org.apache.james.mime4j.dom.*
 import org.apache.james.mime4j.message.*
 import org.apache.james.mime4j.stream.Field
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.net.URI
+import java.nio.charset.Charset
 
 class MhtmlPage {
     val message: Message
@@ -23,7 +25,7 @@ class MhtmlPage {
         this.message = canonicalizeMessage(message)
         uri = message.header.getField("Snapshot-Content-Location")?.body.nullOrElse { URI(it) }
             ?: throw RuntimeException("No URI specified in MHTML message")
-        title = message.header.getField("Subject")?.body
+        title = DecoderUtil.decodeEncodedWords(message.header.getField("Subject")?.body, Charset.defaultCharset())
         htmlText = parseHtmlText()
     }
 
@@ -123,8 +125,8 @@ class MhtmlPage {
     private val cidRegex = "cid:css-[0-9a-z]{8}(-[0-9a-z]{4}){3}-[0-9a-z]{12}@mhtml.blink".toRegex()
 
     private fun canonicalizeStringBody(body: TextBody): TextBody {
-        val text = body.reader.use { it.readText() }
-        return BasicBodyFactory.INSTANCE.textBody(contentLocationMap.entries.fold(text) { text, (k, v) -> text.replace(k, v) } )
+        val body = body.reader.use { it.readText() }
+        return BasicBodyFactory.INSTANCE.textBody(contentLocationMap.entries.fold(body) { text, (k, v) -> text.replace(k, v) } )
     }
 
     private fun canonicalizeBinaryBody(body: BinaryBody): BinaryBody {
