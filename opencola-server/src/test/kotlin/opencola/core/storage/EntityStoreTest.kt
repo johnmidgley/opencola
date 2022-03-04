@@ -19,6 +19,7 @@ class EntityStoreTest {
     private val authority by app.injector.instance<Authority>()
     private val keyStore by app.injector.instance<KeyStore>()
     private val signator by app.injector.instance<Signator>()
+    // TODO: Make .txs and .db use the test run folder - currently save directly in the test folder
     private val simpleEntityStorePath = app.storagePath.resolve("${TestApplication.testRunName}.txs")
     private val getSimpleEntityStore = { SimpleEntityStore(simpleEntityStorePath, authority, signator) }
     private val sqLiteEntityStorePath: Path = app.storagePath.resolve("${TestApplication.testRunName}.db")
