@@ -1,10 +1,7 @@
 package opencola.core.config
 
-import opencola.core.network.stopNetwork
 import org.kodein.di.DI
 import java.nio.file.Path
-import kotlin.io.path.createDirectory
-import kotlin.io.path.exists
 
 class Application(val path: Path, val config: Config, val injector: DI) {
     val storagePath: Path get() = path.resolve(config.storage.path)
