@@ -1,22 +1,21 @@
 package opencola.core.serialization
 
-import getAuthority
+import kotlinx.serialization.*
 import kotlinx.serialization.protobuf.ProtoBuf
-import kotlinx.serialization.encodeToByteArray
-import kotlinx.serialization.decodeFromByteArray
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import opencola.core.TestApplication
 import opencola.core.model.*
 import org.junit.Test
+import org.kodein.di.instance
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import kotlin.test.assertEquals
 
 class SerializationTest {
+    @OptIn(ExperimentalSerializationApi::class)
     @Test
     fun testProtoBufSerialization(){
-        val authority = getAuthority()
+        val authority by TestApplication.instance.injector.instance<Authority>()
         val fact = Fact(authority.entityId, authority.entityId, CoreAttribute.Description.spec, Value("Test value".toByteArray()), Operation.Add, 1)
 
         val protoEncoded = ProtoBuf.encodeToByteArray(fact)

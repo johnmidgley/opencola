@@ -1,19 +1,21 @@
 package opencola.core.search
 
-import getAuthority
+import opencola.core.TestApplication
 import opencola.core.content.MhtmlPage
 import opencola.core.content.TextExtractor
 import opencola.core.content.parseMime
 import opencola.core.extensions.nullOrElse
+import opencola.core.model.Authority
 import opencola.core.model.ResourceEntity
 import org.junit.Test
+import org.kodein.di.instance
 import java.net.URI
 import kotlin.io.path.Path
 import kotlin.io.path.inputStream
 import kotlin.test.assertEquals
 
 class SearchIndexTest {
-    private val authority = getAuthority()
+    private val authority by TestApplication.instance.injector.instance<Authority>()
     private val searchIndex = SearchIndex(authority)
 
     init {
@@ -28,13 +30,13 @@ class SearchIndexTest {
     }
     // @Test
     fun testCreateIndex(){
-        val searchService = SearchIndex(getAuthority())
+        val searchService = SearchIndex(authority)
         searchService.create()
     }
 
     // @Test
     fun testDeleteIndex(){
-        val searchService = SearchIndex(getAuthority())
+        val searchService = SearchIndex(authority)
         searchService.delete()
     }
 

@@ -1,8 +1,6 @@
 package opencola.core.storage
 
-import getActorEntity
-import getAuthority
-import getAuthorityKeyPair
+import opencola.core.getActorEntity
 import opencola.core.TestApplication
 import opencola.core.model.ActorEntity
 import opencola.core.model.Authority
@@ -26,15 +24,13 @@ class EntityStoreTest {
     private val getSQLiteEntityStore = { ExposedEntityStore(authority, signator, SQLiteDB(sqLiteEntityStorePath).db) }
 
     init{
-        // TODO: Must be better way to initialize the app - once per test run
-        keyStore.addKey(authority.authorityId, getAuthorityKeyPair())
         getSimpleEntityStore().resetStore()
         getSQLiteEntityStore().resetStore()
     }
 
     @Test
     fun testEntityStoreSimple(){
-        testEntityStore(getAuthority(), getSimpleEntityStore)
+        testEntityStore(authority, getSimpleEntityStore)
     }
 
     @Test
@@ -65,7 +61,7 @@ class EntityStoreTest {
 
     @Test
     fun testUpdateAfterReloadSimple(){
-        testUpdateAfterReload(getAuthority(), getSimpleEntityStore)
+        testUpdateAfterReload(authority, getSimpleEntityStore)
     }
 
     @Test

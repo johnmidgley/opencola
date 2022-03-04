@@ -1,7 +1,8 @@
 package opencola.core.model
 
-import getAuthority
+import opencola.core.TestApplication
 import opencola.core.security.generateKeyPair
+import org.kodein.di.instance
 import java.net.URI
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -59,7 +60,7 @@ class EntityTest {
         assertEquals(1, entity.getFacts().filter{ it.attribute == CoreAttribute.Uri.spec}.size)
         assertFails { entity.uri = URI("opencola://different-uri") }
 
-        val authority = getAuthority()
+        val authority = TestApplication.instance.injector.instance<Authority>()
         // val store = EntityStore(authority)
         //TODO: Fix entity store so adding an entity returns a new Entity, and commit occurs at the same time
         // then test here that setting a new value results in a new fact
