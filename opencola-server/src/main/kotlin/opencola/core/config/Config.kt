@@ -9,10 +9,13 @@ import kotlin.io.path.exists
 // https://github.com/sksamuel/hoplite
 data class Server(val host: String, val port: Int)
 
-data class Storage(val path: Path){
+data class Filestore(val name: String = "filestore")
+
+data class Storage(val path: Path, val filestore: Filestore = Filestore()){
     init{
-        if(!path.exists()){
-            path.createDirectory()
+        listOf(path, path.resolve(filestore.name)).forEach{
+            if(!it.exists())
+                it.createDirectory()
         }
     }
 }

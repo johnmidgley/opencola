@@ -19,9 +19,9 @@ class EntityStoreTest {
     private val authority by app.injector.instance<Authority>()
     private val keyStore by app.injector.instance<KeyStore>()
     private val signator by app.injector.instance<Signator>()
-    private val simpleEntityStorePath = app.storagePath.resolve("${TestApplication.runUUID}.txs")
+    private val simpleEntityStorePath = app.storagePath.resolve("${TestApplication.testRunName}.txs")
     private val getSimpleEntityStore = { SimpleEntityStore(simpleEntityStorePath, authority, signator) }
-    private val sqLiteEntityStorePath: Path = app.storagePath.resolve("${TestApplication.runUUID}.db")
+    private val sqLiteEntityStorePath: Path = app.storagePath.resolve("${TestApplication.testRunName}.db")
     private val getSQLiteEntityStore = { ExposedEntityStore(authority, signator, SQLiteDB(sqLiteEntityStorePath).db) }
 
     init{
