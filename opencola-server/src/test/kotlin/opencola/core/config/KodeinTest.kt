@@ -9,8 +9,7 @@ import kotlin.test.assertNotNull
 class KodeinTest {
     @Test
     fun testKodein(){
-        TestApplication.init()
-        val authority by Application.instance.injector.instance<Authority>()
+        val authority by TestApplication.instance.injector.instance<Authority>()
         assertNotNull(authority.authorityId)
     }
 }

@@ -11,7 +11,7 @@ import java.io.ByteArrayOutputStream
 import kotlin.test.assertEquals
 
 class TransactionTest {
-    private val app = TestApplication.init()
+    private val app = TestApplication.instance
     private val authority by app.injector.instance<Authority>()
     private val signator by app.injector.instance<Signator>()
 

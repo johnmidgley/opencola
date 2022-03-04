@@ -15,7 +15,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class EntityStoreTest {
-    private val app = TestApplication.init()
+    private val app = TestApplication.instance
     private val authority by app.injector.instance<Authority>()
     private val keyStore by app.injector.instance<KeyStore>()
     private val signator by app.injector.instance<Signator>()

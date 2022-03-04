@@ -22,10 +22,14 @@ import kotlin.io.path.createDirectory
 object TestApplication {
     val testRunName = Instant.now().epochSecond.toString()
 
+    val instance by lazy {
+        Application.instance
+    }
+
     init {
         val applicationPath = Path(System.getProperty("user.dir"))
         val config = loadConfig(applicationPath.resolve("opencola-test.yaml"))
-        val storagePath = applicationPath.resolve(config.storage.path).resolve(testRunName.toString())
+        val storagePath = applicationPath.resolve(config.storage.path).resolve(testRunName)
 
         storagePath.createDirectory()
 
@@ -54,9 +58,5 @@ object TestApplication {
         index.create()
 
         Application.instance = Application(applicationPath, config, injector)
-    }
-
-    fun init(): Application {
-        return Application.instance
     }
 }

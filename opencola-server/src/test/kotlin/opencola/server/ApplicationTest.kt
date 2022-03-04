@@ -15,10 +15,6 @@ import java.io.File
 import kotlinx.serialization.decodeFromString
 
 class ApplicationTest {
-    init{
-        TestApplication.init()
-    }
-
     @Test
     fun testRoot() {
         withTestApplication({ configureRouting() }) {
@@ -31,7 +27,7 @@ class ApplicationTest {
     @Test
     // TODO: Break this up!
     fun testSavePage(){
-        val mhtPath = Application.instance.path.resolve("../sample-docs/Conway's Game of Life - Wikipedia.mht")
+        val mhtPath = TestApplication.instance.path.resolve("../sample-docs/Conway's Game of Life - Wikipedia.mht")
 
         withTestApplication({ configureRouting(); configureContentNegotiation() }) {
             with(handleRequest(HttpMethod.Post, "/action"){
