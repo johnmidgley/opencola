@@ -38,7 +38,7 @@ object TestApplication {
         loadConfig(applicationPath.resolve("opencola-test.yaml"))
     }
 
-    val storagePath: Path by lazy {
+    val testRunStoragePath: Path by lazy {
         val path = applicationPath.resolve(config.storage.path).resolve(testRunName)
         path.createDirectory()
         path
@@ -47,12 +47,12 @@ object TestApplication {
     init {
         val authority = Authority(authorityPublicKey)
         val keyStore = KeyStore(
-            storagePath.resolve(config.security.keystore.name),
+            testRunStoragePath.resolve(config.security.keystore.name),
             config.security.keystore.password
         )
         keyStore.addKey(authority.authorityId, KeyPair(authorityPublicKey, authorityPrivateKey))
-        val fileStore = LocalFileStore(storagePath.resolve(config.storage.filestore.name))
-        val sqLiteDB = SQLiteDB(storagePath.resolve("${authority.authorityId}.db")).db
+        val fileStore = LocalFileStore(testRunStoragePath.resolve(config.storage.filestore.name))
+        val sqLiteDB = SQLiteDB(testRunStoragePath.resolve("${authority.authorityId}.db")).db
 
         val injector = DI {
             bindSingleton { authority }

@@ -11,15 +11,16 @@ data class Server(val host: String, val port: Int)
 
 data class Filestore(val name: String = "filestore")
 
-data class Storage(val path: Path, val filestore: Filestore = Filestore()){
-    init{
-        //TODO: Don't create filestore here - make Filestore do this when needed.
-        listOf(path, path.resolve(filestore.name)).forEach{
-            if(!it.exists())
-                it.createDirectory()
-        }
+data class Storage(val path: Path, val filestore: Filestore = Filestore()) {
+    //TODO: This shouldn't really be here - it should be in the application. It's
+    //here for convenience, since some tests use config and don't want to initialize the whole
+    //app. Lazy initializing the app (i.e. DI) would be better.
+    init {
+        if (!path.exists())
+            path.createDirectory()
     }
 }
+
 data class Keystore(val name: String, val password: String)
 
 data class Security(val keystore: Keystore)
