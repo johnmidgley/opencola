@@ -12,9 +12,11 @@ fun parseMime(inputStream: InputStream): Message? {
     return defaultMessageBuilder.parseMessage(inputStream)
 }
 
+
+
 fun transformTextContent(body: Body, textTransform: (String) -> String): ByteArray {
     return when (body) {
-        is TextBody -> textTransform(String(body.inputStream.readAllBytes())).toByteArray()
+        is TextBody -> textTransform(String(body.inputStream.readAllBytes(), Charsets.UTF_8)).toByteArray()
         is BinaryBody -> body.inputStream.use { it.readBytes() }
         else -> throw RuntimeException("Unhandled body type")
     }

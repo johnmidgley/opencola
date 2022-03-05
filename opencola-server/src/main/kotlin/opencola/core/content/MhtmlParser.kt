@@ -1,5 +1,6 @@
 package opencola.core.content
 
+import io.ktor.utils.io.charsets.Charset
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.Id
 import org.apache.james.mime4j.codec.DecoderUtil
@@ -9,7 +10,6 @@ import org.apache.james.mime4j.stream.Field
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.net.URI
-import java.nio.charset.Charset
 
 class MhtmlPage {
     val message: Message
@@ -125,8 +125,8 @@ class MhtmlPage {
     private val cidRegex = "cid:css-[0-9a-z]{8}(-[0-9a-z]{4}){3}-[0-9a-z]{12}@mhtml.blink".toRegex()
 
     private fun canonicalizeStringBody(body: TextBody): TextBody {
-        val body = body.reader.use { it.readText() }
-        return BasicBodyFactory.INSTANCE.textBody(contentLocationMap.entries.fold(body) { text, (k, v) -> text.replace(k, v) } )
+        val utf8Body = String(body.inputStream.readAllBytes(), Charsets.UTF_8)
+        return BasicBodyFactory.INSTANCE.textBody(contentLocationMap.entries.fold(utf8Body) { text, (k, v) -> text.replace(k, v) }, Charsets.UTF_8)
     }
 
     private fun canonicalizeBinaryBody(body: BinaryBody): BinaryBody {
