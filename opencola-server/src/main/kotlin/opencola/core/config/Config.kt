@@ -13,6 +13,7 @@ data class Filestore(val name: String = "filestore")
 
 data class Storage(val path: Path, val filestore: Filestore = Filestore()){
     init{
+        //TODO: Don't create filestore here - make Filestore do this when needed.
         listOf(path, path.resolve(filestore.name)).forEach{
             if(!it.exists())
                 it.createDirectory()
