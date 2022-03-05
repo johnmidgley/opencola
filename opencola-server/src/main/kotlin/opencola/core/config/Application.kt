@@ -2,9 +2,16 @@ package opencola.core.config
 
 import org.kodein.di.DI
 import java.nio.file.Path
+import kotlin.io.path.createDirectory
+import kotlin.io.path.exists
 
 class Application(val path: Path, val config: Config, val injector: DI) {
     val storagePath: Path get() = path.resolve(config.storage.path)
+
+    init {
+        if (!storagePath.exists())
+            storagePath.createDirectory()
+    }
 
     companion object Global {
         private var application: Application? = null

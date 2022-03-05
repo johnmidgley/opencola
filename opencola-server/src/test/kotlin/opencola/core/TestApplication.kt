@@ -31,20 +31,6 @@ object TestApplication {
     val testRunName = Instant.now().epochSecond.toString()
 
     val instance by lazy {
-        Application.instance
-    }
-
-    val config by lazy {
-        loadConfig(applicationPath.resolve("opencola-test.yaml"))
-    }
-
-    val testRunStoragePath: Path by lazy {
-        val path = applicationPath.resolve(config.storage.path).resolve(testRunName)
-        path.createDirectory()
-        path
-    }
-
-    init {
         val authority = Authority(authorityPublicKey)
         val keyStore = KeyStore(
             testRunStoragePath.resolve(config.security.keystore.name),
@@ -72,5 +58,16 @@ object TestApplication {
         index.create()
 
         Application.instance = Application(applicationPath, config, injector)
+        Application.instance
+    }
+
+    val config by lazy {
+        loadConfig(applicationPath.resolve("opencola-test.yaml"))
+    }
+
+    val testRunStoragePath: Path by lazy {
+        val path = applicationPath.resolve(config.storage.path).resolve(testRunName)
+        path.createDirectory()
+        path
     }
 }
