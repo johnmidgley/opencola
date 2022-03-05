@@ -28,5 +28,17 @@ sudo chown -R 8983:8983 var-solr
 - Pin the extension to the toolbar
 - IF YOU'RE NOT RUNNING ON LOCALHOST - edit chrome/popup.js and replace localhost:7595 with yourhost:5795
 
+# You should now be ready to run. On Unix, just run
+start
+
+# If you're on Windows, 
+server/bin/opencola-server.bat
+
+# To kill the docker network (on unix)
+stop
+
+
+
+
 
 
