@@ -6,7 +6,10 @@ import io.ktor.application.*
 import io.ktor.http.content.*
 import io.ktor.response.*
 import io.ktor.request.*
+import opencola.core.model.Authority
 import opencola.core.model.Id
+import opencola.core.storage.EntityStore
+import opencola.server.ActionsHandler
 import opencola.server.DataHandler
 import opencola.server.SearchHandler
 import opencola.server.handleAction
@@ -21,9 +24,18 @@ fun Application.configureRouting() {
             SearchHandler(call).respond()
         }
 
-        get("/entity"){
+        get("/entity/{id}"){
             // Handler that returns info on entity by URL
-            TODO("Implement entity handler")
+            // TODO: Authority should be passed (and authenticated) in header
+            val stringId = call.parameters["id"] ?: throw IllegalArgumentException("No id set")
+            val authority by injector.instance<Authority>()
+            val entityStore by injector.instance<EntityStore>()
+
+            val entity = entityStore.getEntity(authority, Id.fromHexString(stringId))
+
+            if(entity != null){
+                call.respond(entity.getFacts())
+            }
         }
 
         get("/data/{id}/{partName}"){
@@ -94,6 +106,10 @@ fun Application.configureRouting() {
             println("Action: $action Bytes: ${mhtml?.size}")
             handleAction(action as String, value, mhtml as ByteArray)
             call.respond(HttpStatusCode.Accepted)
+        }
+
+        get("/actions/{uri}"){
+            ActionsHandler(call).respond()
         }
 
         static(""){

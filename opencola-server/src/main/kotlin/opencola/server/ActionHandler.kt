@@ -16,7 +16,7 @@ import org.apache.james.mime4j.message.DefaultMessageWriter
 import org.kodein.di.instance
 import java.io.ByteArrayOutputStream
 
-fun handleAction(action: String, value: String?, mhtml: ByteArray){
+fun handleAction(action: String, value: String?, mhtml: ByteArray) {
     val page = mhtml.inputStream().use { parseMhtml(it) }
 
     when(action){

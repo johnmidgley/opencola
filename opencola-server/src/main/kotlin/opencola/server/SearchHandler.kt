@@ -2,7 +2,6 @@ package opencola.server
 
 import io.ktor.application.*
 import io.ktor.response.*
-import kotlinx.serialization.descriptors.serialDescriptor
 import opencola.core.config.Application
 import opencola.service.search.SearchService
 import org.kodein.di.instance
