@@ -26,6 +26,7 @@ sudo chown -R 8983:8983 var-solr
 - Click "Load unpacked"
 - Select the 'chrome' directory in this folder (opencola)
 - Pin the extension to the toolbar
+- IF YOU'RE NOT RUNNING ON LOCALHOST - edit chrome/popup.js and replace localhost:7595 with yourhost:5795
 
 
 
