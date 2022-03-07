@@ -77,9 +77,12 @@
 (defn search-results []
   [:div#search-results.search-results 
    (doall 
-    (when-let [results (:results @app-state)]
-      (for [result (:matches results)]
-        (search-result result))))])
+    (if-let [results (:results @app-state)]
+      (let [matches (:matches results)]
+        (if (empty? matches) 
+          (apply str "No results for query: " (:query results))
+          (for [result matches]
+            (search-result result))))))])
 
 (defn search-page []
   [:div#opencola.search-page
