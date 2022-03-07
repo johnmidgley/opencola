@@ -6,6 +6,8 @@ import opencola.core.security.Signator
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.statements.api.ExposedBlob
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.io.ByteArrayInputStream
+
 // TODO: Think about using SQLite - super simple and maybe better fit for local use.
 
 class ExposedEntityStore(authority: Authority, signator: Signator, private val database: Database) : EntityStore(authority, signator) {
@@ -64,10 +66,10 @@ class ExposedEntityStore(authority: Authority, signator: Signator, private val d
         return ExposedEntityStore(authority, signator, database)
     }
 
-    override fun getEntity(authority: Authority, entityId: Id): Entity? {
+    override fun getEntity(authorityId: Id, entityId: Id): Entity? {
         return transaction(database){
             val facts = facts.select{
-                (facts.authorityId eq Id.encode(authority.authorityId) and (facts.entityId eq Id.encode(entityId)))
+                (facts.authorityId eq Id.encode(authorityId) and (facts.entityId eq Id.encode(entityId)))
             }.map {
                 Fact(Id.decode(it[facts.authorityId]),
                     Id.decode(it[facts.entityId]),
@@ -104,5 +106,18 @@ class ExposedEntityStore(authority: Authority, signator: Signator, private val d
                 it[epochSecond] = signedTransaction.transaction.epochSecond
             }
         }
+    }
+
+    override fun getTransaction(authorityId: Id, transactionId: Long): SignedTransaction? {
+        return transaction(database){
+            transactions.select{
+                (transactions.authorityId eq Id.encode(authority.authorityId) and (transactions.id eq transactionId))
+            }.map { row ->
+                ByteArrayInputStream(row[transactions.encoded].bytes).use {
+                    SignedTransaction.decode(it)
+                }
+            }.firstOrNull()
+        }
+
     }
 }

@@ -44,7 +44,7 @@ class EntityStoreTest {
         store.commitChanges(entity)
 
         val store2 = getEntityStore()
-        val entity2 = store2.getEntity(authority, entity.entityId)
+        val entity2 = store2.getEntity(authority.authorityId, entity.entityId)
             ?: throw RuntimeException("Entity could not be reloaded from store")
 
         entity.getFacts().zip(entity2.getFacts()).forEach {
@@ -75,12 +75,12 @@ class EntityStoreTest {
         store.commitChanges(entity)
 
         val store1 = getEntityStore()
-        val entity1 = store1.getEntity(authority, entity.entityId) as ActorEntity
+        val entity1 = store1.getEntity(authority.authorityId, entity.entityId) as ActorEntity
         entity1.name = "new name"
         store.commitChanges(entity1)
 
         val store2 = getEntityStore()
-        val entity2 = store2.getEntity(authority, entity.entityId) as ActorEntity
+        val entity2 = store2.getEntity(authority.authorityId, entity.entityId) as ActorEntity
         assertEquals(entity2.name, "new name")
     }
 }

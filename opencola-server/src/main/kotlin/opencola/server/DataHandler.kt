@@ -29,10 +29,10 @@ class DataHandler(private val authority: Authority, private val entityStore: Ent
     }
 
     private fun getDataEntity(id: Id): DataEntity? {
-        val entity = entityStore.getEntity(authority, id)
+        val entity = entityStore.getEntity(authority.authorityId, id)
 
        return when (entity) {
-            is ResourceEntity -> entity.dataId.nullOrElse { entityStore.getEntity(authority, it) }
+            is ResourceEntity -> entity.dataId.nullOrElse { entityStore.getEntity(authority.authorityId, it) }
             is DataEntity -> entity
             else -> null
         } as DataEntity?

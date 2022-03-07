@@ -45,7 +45,7 @@ fun handleSaveAction(mhtmlPage: MhtmlPage?){
         val dataId = fileStore.write(pageBytes)
         val mimeType = textExtractor.getType(pageBytes)
         val resourceId = Id.ofUri(mhtmlPage.uri)
-        val entity = (entityStore.getEntity(authority, resourceId) ?: ResourceEntity(
+        val entity = (entityStore.getEntity(authority.authorityId, resourceId) ?: ResourceEntity(
             authority.entityId,
             mhtmlPage.uri
         )) as ResourceEntity
@@ -55,7 +55,7 @@ fun handleSaveAction(mhtmlPage: MhtmlPage?){
         entity.name = mhtmlPage.title
         entity.text = mhtmlPage.htmlText.nullOrElse { textExtractor.getBody(it.toByteArray()) }
 
-        val dataEntity = (entityStore.getEntity(authority, dataId) ?: DataEntity(authority.entityId, dataId, mimeType))
+        val dataEntity = (entityStore.getEntity(authority.authorityId, dataId) ?: DataEntity(authority.entityId, dataId, mimeType))
 
         // TODO: Remove authority from update calls - authority id is in entity
         // TODO: Make update entity take vargs of entities so only single transaction needed

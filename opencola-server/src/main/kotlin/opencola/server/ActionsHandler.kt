@@ -23,7 +23,7 @@ class ActionsHandler(private val call: ApplicationCall) {
     suspend fun respond() {
         val stringUri = call.parameters["uri"] ?: throw IllegalArgumentException("No uri set")
         val entityId = Id.ofUri(URI(stringUri))
-        val entity = entityStore.getEntity(authority, entityId) as? ResourceEntity
+        val entity = entityStore.getEntity(authority.authorityId, entityId) as? ResourceEntity
 
         if(entity != null){
             call.respond(Actions(entity.trust, entity.like, entity.rating))

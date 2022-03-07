@@ -30,8 +30,13 @@ abstract class EntityStore(val authority: Authority, protected val signator: Sig
         this.transactionId = transactiondId
     }
 
-    abstract fun getEntity(authority: Authority, entityId: Id): Entity?
+    fun getTransactionId(): Long {
+        return transactionId
+    }
+
+    abstract fun getEntity(authorityId: Id, entityId: Id): Entity?
     abstract fun persistTransaction(signedTransaction: SignedTransaction)
+    abstract fun getTransaction(authorityId: Id, transactionId: Long) : SignedTransaction?
 
     // SHOULD ONLY BE USED FOR TESTING OR IF YOU REALLY MEAN IT
     abstract fun resetStore() : EntityStore

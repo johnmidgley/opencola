@@ -9,7 +9,7 @@ import opencola.core.storage.EntityStore
 class SearchService(val authority: Authority, val entityStore: EntityStore, private val searchIndex: SearchIndex) {
     fun search(query: String): SearchResults {
         val results = searchIndex.search(query).map {
-            when (val entity = entityStore.getEntity(authority, it.entityId)){
+            when (val entity = entityStore.getEntity(authority.authorityId, it.entityId)){
                 is ResourceEntity -> SearchResult(it.entityId.toString(), it.name, entity.uri.toString(), it.description)
                 else -> SearchResult(it.entityId.toString(), it.name, "/entity/${it.entityId}", it.description)
             }
