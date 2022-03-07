@@ -29,9 +29,8 @@ class ExposedEntityStore(authority: Authority, signator: Signator, private val d
         // TODO - Make id unique
         val id = long("id")
         val authorityId = binary("authorityId", 32)
-        val encoded = blob("encoded")
-        val signature = binary("signature", 128) // TODO: Add signature length?
         val epochSecond = long("epochSecond")
+        val encoded = blob("encoded")
     }
 
     private val facts: Facts
@@ -101,9 +100,8 @@ class ExposedEntityStore(authority: Authority, signator: Signator, private val d
             transactions.insert {
                 it[id] = signedTransaction.transaction.id
                 it[authorityId] = Id.encode(signedTransaction.transaction.authorityId)
-                it[encoded] = ExposedBlob(Transaction.encode(signedTransaction.transaction))
-                it[signature] = signedTransaction.signature
                 it[epochSecond] = signedTransaction.transaction.epochSecond
+                it[encoded] = ExposedBlob(SignedTransaction.encode(signedTransaction))
             }
         }
     }

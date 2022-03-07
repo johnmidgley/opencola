@@ -4,28 +4,37 @@ import opencola.core.getActorEntity
 import opencola.core.TestApplication
 import opencola.core.model.ActorEntity
 import opencola.core.model.Authority
+import opencola.core.model.ResourceEntity
 import opencola.core.model.UNCOMMITTED
-import opencola.core.security.KeyStore
 import opencola.core.security.Signator
 import org.kodein.di.instance
-import java.nio.file.Path
+import java.net.URI
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class EntityStoreTest {
     private val app = TestApplication.instance
     private val authority by app.injector.instance<Authority>()
-    private val keyStore by app.injector.instance<KeyStore>()
     private val signator by app.injector.instance<Signator>()
     // TODO: Make .txs and .db use the test run folder - currently save directly in the test folder
     private val simpleEntityStorePath = TestApplication.testRunStoragePath.resolve("${TestApplication.testRunName}.txs")
     private val getSimpleEntityStore = { SimpleEntityStore(simpleEntityStorePath, authority, signator) }
-    private val sqLiteEntityStorePath: Path = TestApplication.testRunStoragePath.resolve("${TestApplication.testRunName}.db")
+    private val sqLiteEntityStorePath = TestApplication.testRunStoragePath.resolve("${TestApplication.testRunName}.db")
     private val getSQLiteEntityStore = { ExposedEntityStore(authority, signator, SQLiteDB(sqLiteEntityStorePath).db) }
 
+    // TODO: Remove these and switch to functions below
     init{
         getSimpleEntityStore().resetStore()
         getSQLiteEntityStore().resetStore()
+    }
+
+    fun getFreshSimpleEntityStore(): SimpleEntityStore {
+        return SimpleEntityStore(TestApplication.getTmpFilePath(".txs"), authority, signator)
+    }
+
+    fun getFreshExposeEntityStore(): ExposedEntityStore {
+        return ExposedEntityStore(authority, signator, SQLiteDB(TestApplication.getTmpFilePath(".db")).db)
     }
 
     @Test
@@ -82,5 +91,23 @@ class EntityStoreTest {
         val store2 = getEntityStore()
         val entity2 = store2.getEntity(authority.authorityId, entity.entityId) as ActorEntity
         assertEquals(entity2.name, "new name")
+    }
+
+    @Test
+    fun testGetTransactionSimple(){
+        testGetTransaction(getFreshSimpleEntityStore())
+    }
+
+    @Test
+    fun testGetTransactionExposed() {
+        testGetTransaction(getFreshExposeEntityStore())
+    }
+
+    fun testGetTransaction(entityStore: EntityStore){
+        val entity = ResourceEntity(authority.authorityId, URI("http://opencola.org"))
+        entityStore.commitChanges(entity)
+        val transaction = entityStore.getTransaction(authority.authorityId, 1)
+
+        assertNotNull(transaction)
     }
 }

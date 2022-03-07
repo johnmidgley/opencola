@@ -16,6 +16,7 @@ import opencola.server.handleAction
 import org.kodein.di.instance
 import kotlin.IllegalArgumentException
 
+// TODO: All routes should authenticate caller and authorize activity. Right now everything is open
 fun Application.configureRouting() {
     val injector = opencola.core.config.Application.instance.injector
 
@@ -31,11 +32,22 @@ fun Application.configureRouting() {
             val authority by injector.instance<Authority>()
             val entityStore by injector.instance<EntityStore>()
 
-            val entity = entityStore.getEntity(authority, Id.fromHexString(stringId))
+            val entity = entityStore.getEntity(authority.authorityId, Id.fromHexString(stringId))
 
-            if(entity != null){
+            if(entity != null)
                 call.respond(entity.getFacts())
-            }
+
+        }
+
+        get("/transactions/{authorityId}/{transactionId}"){
+            val authorityId = Id.fromHexString(call.parameters["authorityId"] ?: throw IllegalArgumentException("No authorityId set"))
+            val transactionId = call.parameters["transactionId"]?.toLong() ?: throw IllegalArgumentException("No transactionId set")
+            val entityStore by injector.instance<EntityStore>()
+
+            val transaction = entityStore.getTransaction(authorityId, transactionId)
+
+            if(transaction != null)
+                call.respond(transaction)
         }
 
         get("/data/{id}/{partName}"){

@@ -20,6 +20,7 @@ import org.kodein.di.instance
 import java.nio.file.Path
 import java.security.KeyPair
 import java.time.Instant
+import java.util.*
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectory
 
@@ -69,5 +70,9 @@ object TestApplication {
         val path = applicationPath.resolve(config.storage.path).resolve(testRunName)
         path.createDirectory()
         path
+    }
+
+    fun getTmpFilePath(suffix: String): Path {
+        return testRunStoragePath.resolve("${UUID.randomUUID()}$suffix")
     }
 }
