@@ -21,8 +21,45 @@ fun handleAction(action: String, value: String?, mhtml: ByteArray) {
 
     when(action){
         "save" -> handleSaveAction(page)
+        "like" -> handleLikeAction(page!!, value!!)
+        "trust" -> handleTrustAction(page!!, value!!)
         else -> throw NotImplementedError("No handler for $action")
     }
+}
+
+// TODO: Refactor these. There's a ton of overlap between actions. Really it's just an entity update for a specific field
+fun handleLikeAction(mhtmlPage: MhtmlPage, value: String){
+    val authority by Application.instance.injector.instance<Authority>()
+    val entityStore by Application.instance.injector.instance<EntityStore>()
+    val resourceId = Id.ofUri(mhtmlPage.uri)
+    val like = value.toBooleanStrict()
+
+    Application.instance.logger.info { "Like: ${mhtmlPage.uri} Value: $like" }
+
+    val entity = (entityStore.getEntity(authority.authorityId, resourceId) ?: ResourceEntity(
+        authority.entityId,
+        mhtmlPage.uri
+    )) as ResourceEntity
+
+    entity.like = like
+    entityStore.commitChanges(entity)
+}
+
+fun handleTrustAction(mhtmlPage: MhtmlPage, value: String){
+    val authority by Application.instance.injector.instance<Authority>()
+    val entityStore by Application.instance.injector.instance<EntityStore>()
+    val resourceId = Id.ofUri(mhtmlPage.uri)
+    val trust = value.toFloat()
+
+    Application.instance.logger.info { "Trust: ${mhtmlPage.uri} Value: $trust" }
+
+    val entity = (entityStore.getEntity(authority.authorityId, resourceId) ?: ResourceEntity(
+        authority.entityId,
+        mhtmlPage.uri
+    )) as ResourceEntity
+
+    entity.trust = trust
+    entityStore.commitChanges(entity)
 }
 
 fun handleSaveAction(mhtmlPage: MhtmlPage?){

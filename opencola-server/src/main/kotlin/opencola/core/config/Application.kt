@@ -1,12 +1,14 @@
 package opencola.core.config
 
+import mu.KotlinLogging
 import org.kodein.di.DI
 import java.nio.file.Path
 import kotlin.io.path.createDirectory
 import kotlin.io.path.exists
 
-class Application(val path: Path, val config: Config, val injector: DI) {
+class Application(val name: String, val path: Path, val config: Config, val injector: DI) {
     val storagePath: Path get() = path.resolve(config.storage.path)
+    val logger = KotlinLogging.logger(name)
 
     init {
         if (!storagePath.exists())

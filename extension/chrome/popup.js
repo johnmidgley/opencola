@@ -2,6 +2,7 @@ chrome.storage.sync.get("color", ({ color }) => {
     // changeColor.style.backgroundColor = color;
 });
 
+let baseServiceUrl = "http://0.0.0.0:5795"
 let statusImg = document.getElementById("status")
 
 function setStatus(status){
@@ -16,17 +17,6 @@ function setStatus(status){
             return false
     }
 }
-
-let keepButton = document.getElementById("keep");
-
-// When the button is clicked, inject setPageBackgroundColor into current page
-keepButton.addEventListener("click", async () => {
-    // TODO: For some reason, can't move this call inside send action.
-    let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
-    await sendAction(tab, "save", true)
-});
-
 
 
 async function sendAction(tab, action, value){
@@ -44,7 +34,7 @@ async function sendAction(tab, action, value){
                 formData.append("action", action);
                 formData.append("value", value)
                 formData.append("mhtml", mhtmlData);
-                xhr.open("POST", "http://localhost:5795/action");
+                xhr.open("POST", baseServiceUrl + "/action");
                 xhr.onreadystatechange = function () {
                     // In local files, status is 0 upon success in Mozilla Firefox
                     if(xhr.readyState === XMLHttpRequest.DONE) {
@@ -68,22 +58,27 @@ async function sendAction(tab, action, value){
 }
 
 
-let like = document.getElementById("like");
-
-// When the button is clicked, inject setPageBackgroundColor into current page
-like.addEventListener("click", async () => {
-    let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
-    await sendAction(tab, "like", true)
+document.getElementById("save").addEventListener("click", async () => {
+    // TODO: For some reason, can't move this call inside send action.
+  let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  await sendAction(tab, "save", true)
 });
 
-let rate = document.getElementById("rate");
 
-// When the button is clicked, inject setPageBackgroundColor into current page
-rate.addEventListener("click", async () => {
-    let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
-    await sendAction(tab, "rate", 1.0)
+document.getElementById("like").addEventListener("click", async () => {
+  let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  await sendAction(tab, "like", true)
 });
+
+
+document.getElementById("trust").addEventListener("click", async () => {
+  let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  await sendAction(tab, "trust", 1.0)
+});
+
+document.getElementById("search").addEventListener("click", async () => {
+  window.open(baseServiceUrl, "_blank");
+});
+
 
 
