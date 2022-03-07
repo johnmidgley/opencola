@@ -80,7 +80,7 @@
     (if-let [results (:results @app-state)]
       (let [matches (:matches results)]
         (if (empty? matches) 
-          (apply str "No results for query: " (:query results))
+          (apply str "No results for '" (:query results) "'")
           (for [result matches]
             (search-result result))))))])
 
