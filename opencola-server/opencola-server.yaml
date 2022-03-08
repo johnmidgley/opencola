@@ -1,4 +1,4 @@
-env: server
+env: server # Should this be the logger name?
 
 server:
   host: "0.0.0.0"
@@ -11,4 +11,8 @@ security:
   keystore:
     name: "keystore.pks"
     password: "password" # This should be typed in by user and removed from here
+
+network:
+  peers:
+    - 0.0.0.0:5796
 

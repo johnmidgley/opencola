@@ -6,9 +6,9 @@ import java.nio.file.Path
 import kotlin.io.path.createDirectory
 import kotlin.io.path.exists
 
-class Application(val name: String, val path: Path, val config: Config, val injector: DI) {
+class Application(val path: Path, val config: Config, val injector: DI) {
     val storagePath: Path get() = path.resolve(config.storage.path)
-    val logger = KotlinLogging.logger(name)
+    val logger = KotlinLogging.logger("opencola.${config.env}")
 
     init {
         if (!storagePath.exists())

@@ -61,7 +61,7 @@ object TestApplication {
         index.delete()
         index.create()
 
-        Application.instance = Application("opencola.test", applicationPath, config, injector)
+        Application.instance = Application(applicationPath, config, injector)
         Application.instance
     }
 

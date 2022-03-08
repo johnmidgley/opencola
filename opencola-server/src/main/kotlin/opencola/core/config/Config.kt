@@ -17,10 +17,13 @@ data class Keystore(val name: String, val password: String)
 
 data class Security(val keystore: Keystore)
 
+data class Network(val peers: List<String>)
+
 data class Config(val env: String,
                   val server: Server?,
                   val storage: Storage,
-                  val security: Security)
+                  val security: Security,
+                  val network: Network)
 
 fun loadConfig(path: Path) : Config {
     return ConfigLoader().loadConfigOrThrow(path)

@@ -85,7 +85,7 @@ fun main() {
         bindSingleton { DataHandler(instance(), instance(), instance()) }
     }
 
-    Application.instance = Application("opencola.server", applicationPath, config, injector)
+    Application.instance = Application(applicationPath, config, injector)
     val serverConfig = config.server ?: throw RuntimeException("Server config not specified")
 
     embeddedServer(Netty, port = serverConfig.port, host = serverConfig.host) {
