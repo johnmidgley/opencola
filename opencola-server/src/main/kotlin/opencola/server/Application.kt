@@ -69,8 +69,8 @@ fun main() {
         applicationPath.resolve(config.storage.path).resolve(config.security.keystore.name),
         config.security.keystore.password
     )
-    val privateSQLiteDB = SQLiteDB(applicationPath.resolve(config.storage.path).resolve("${authority.authorityId}.db")).db
-    val sharedSQLiteDB = SQLiteDB(applicationPath.resolve(config.storage.path).resolve("${authority.authorityId}.db")).db
+    val privateSQLiteDB = SQLiteDB(applicationPath.resolve(config.storage.path).resolve("${authority.authorityId}.private.db")).db
+    val sharedSQLiteDB = SQLiteDB(applicationPath.resolve(config.storage.path).resolve("${authority.authorityId}.shared.db")).db
 
     val injector = DI {
         bindSingleton { authority }
