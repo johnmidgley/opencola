@@ -22,6 +22,11 @@ import java.net.URI
 import java.net.URLEncoder
 
 class ApplicationTest {
+    init{
+        // Ensure test application is initialized.
+        TestApplication.instance
+    }
+
     @Test
     fun testRoot() {
         withTestApplication({ configureRouting() }) {
@@ -60,7 +65,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun testGetActions(){
+    fun testStatusActions(){
         val injector = TestApplication.instance.injector
         val authority by injector.instance<Authority>()
         val entityStore by injector.instance<EntityStore>()
@@ -70,10 +75,10 @@ class ApplicationTest {
         entityStore.commitChanges(entity)
 
         withTestApplication({ configureRouting(); configureContentNegotiation() }) {
-            handleRequest(HttpMethod.Get, "/actions/${URLEncoder.encode(uri.toString(), "utf-8")}").apply {
+            handleRequest(HttpMethod.Get, "/status/${URLEncoder.encode(uri.toString(), "utf-8")}").apply {
                 assertEquals(HttpStatusCode.OK, response.status())
                 assertNotNull(response.content)
-                val actions = Json.decodeFromString<ActionsHandler.Actions>(response.content!!)
+                val actions = Json.decodeFromString<StatusHandler.Actions>(response.content!!)
 
                 assertEquals(entity.trust, actions.trust)
                 assertEquals(entity.like, actions.like)

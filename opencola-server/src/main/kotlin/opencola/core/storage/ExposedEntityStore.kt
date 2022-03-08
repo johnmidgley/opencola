@@ -106,16 +106,22 @@ class ExposedEntityStore(authority: Authority, signator: Signator, private val d
         }
     }
 
+    // TODO: Remover getTransaction, or move to abstract entityStore
     override fun getTransaction(authorityId: Id, transactionId: Long): SignedTransaction? {
+        return getTransactions(authorityId, transactionId, transactionId).firstOrNull()
+    }
+
+    override fun getTransactions(authorityId: Id, startTransactionId: Long, endTransactionId: Long): Iterable<SignedTransaction> {
         return transaction(database){
             transactions.select{
-                (transactions.authorityId eq Id.encode(authority.authorityId) and (transactions.id eq transactionId))
+                (transactions.authorityId eq Id.encode(authority.authorityId)
+                        and (transactions.id greaterEq startTransactionId)
+                        and (transactions.id lessEq endTransactionId))
             }.map { row ->
                 ByteArrayInputStream(row[transactions.encoded].bytes).use {
                     SignedTransaction.decode(it)
                 }
-            }.firstOrNull()
+            }.toList()
         }
-
     }
 }

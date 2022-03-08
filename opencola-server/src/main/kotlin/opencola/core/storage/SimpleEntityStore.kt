@@ -66,6 +66,13 @@ class SimpleEntityStore(val path: Path, authority: Authority, signator: Signator
             .firstOrNull()
     }
 
+    override fun getTransactions(authorityId: Id, startTransactionId: Long, endTransactionId: Long): Iterable<SignedTransaction> {
+        return transactions
+            .filter { it.transaction.authorityId == authorityId
+                    && it.transaction.id >= startTransactionId
+                    && it.transaction.id <= endTransactionId }
+    }
+
     override fun resetStore(): SimpleEntityStore {
         path.deleteIfExists()
         return SimpleEntityStore(path, authority, signator)

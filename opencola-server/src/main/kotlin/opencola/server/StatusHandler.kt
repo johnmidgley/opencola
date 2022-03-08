@@ -12,7 +12,7 @@ import org.kodein.di.instance
 import java.net.URI
 
 // TODO: Abstract out Handler with ApplicationCall, injector, logger, respond, etc.
-class ActionsHandler(private val call: ApplicationCall) {
+class StatusHandler(private val call: ApplicationCall) {
     val injector = Application.instance.injector
     val authority by injector.instance<Authority>()
     val entityStore by injector.instance<EntityStore>()

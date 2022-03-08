@@ -15,7 +15,7 @@ abstract class EntityStore(val authority: Authority, protected val signator: Sig
         logger.error { exception.message }
         throw exception
     }
-    protected fun logAndThrow(message: String){
+    private fun logAndThrow(message: String){
         logAndThrow(RuntimeException(message))
     }
 
@@ -37,6 +37,7 @@ abstract class EntityStore(val authority: Authority, protected val signator: Sig
     abstract fun getEntity(authorityId: Id, entityId: Id): Entity?
     abstract fun persistTransaction(signedTransaction: SignedTransaction)
     abstract fun getTransaction(authorityId: Id, transactionId: Long) : SignedTransaction?
+    abstract fun getTransactions(authorityId: Id, startTransactionId: Long, endTransactionId: Long = Long.MAX_VALUE) : Iterable<SignedTransaction>
 
     // SHOULD ONLY BE USED FOR TESTING OR IF YOU REALLY MEAN IT
     abstract fun resetStore() : EntityStore

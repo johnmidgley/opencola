@@ -9,10 +9,7 @@ import io.ktor.request.*
 import opencola.core.model.Authority
 import opencola.core.model.Id
 import opencola.core.storage.EntityStore
-import opencola.server.ActionsHandler
-import opencola.server.DataHandler
-import opencola.server.SearchHandler
-import opencola.server.handleAction
+import opencola.server.*
 import org.kodein.di.instance
 import kotlin.IllegalArgumentException
 
@@ -39,15 +36,12 @@ fun Application.configureRouting() {
 
         }
 
+        get("/transactions/{authorityId}"){
+            TransactionsHandler(call).respond()
+        }
+
         get("/transactions/{authorityId}/{transactionId}"){
-            val authorityId = Id.fromHexString(call.parameters["authorityId"] ?: throw IllegalArgumentException("No authorityId set"))
-            val transactionId = call.parameters["transactionId"]?.toLong() ?: throw IllegalArgumentException("No transactionId set")
-            val entityStore by injector.instance<EntityStore>()
-
-            val transaction = entityStore.getTransaction(authorityId, transactionId)
-
-            if(transaction != null)
-                call.respond(transaction)
+            TransactionsHandler(call).respond()
         }
 
         get("/data/{id}/{partName}"){
@@ -120,8 +114,8 @@ fun Application.configureRouting() {
             call.respond(HttpStatusCode.Accepted)
         }
 
-        get("/actions/{uri}"){
-            ActionsHandler(call).respond()
+        get("/status/{uri}"){
+            StatusHandler(call).respond()
         }
 
         static(""){
