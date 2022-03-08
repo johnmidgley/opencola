@@ -69,16 +69,18 @@ fun main() {
         applicationPath.resolve(config.storage.path).resolve(config.security.keystore.name),
         config.security.keystore.password
     )
-    val sqLiteDB = SQLiteDB(applicationPath.resolve(config.storage.path).resolve("${authority.authorityId}.db")).db
+    val privateSQLiteDB = SQLiteDB(applicationPath.resolve(config.storage.path).resolve("${authority.authorityId}.db")).db
+    val sharedSQLiteDB = SQLiteDB(applicationPath.resolve(config.storage.path).resolve("${authority.authorityId}.db")).db
 
     val injector = DI {
         bindSingleton { authority }
         bindSingleton { keyStore }
         bindSingleton { Signator(instance()) }
-        bindSingleton { ExposedEntityStore(instance(), instance(), sqLiteDB) }
+        bindSingleton(tag = "Private") { ExposedEntityStore(instance(), instance(), privateSQLiteDB) }
+        bindSingleton(tag = "Shared") { ExposedEntityStore(instance(), instance(), sharedSQLiteDB) }
         bindSingleton { LocalFileStore(applicationPath.resolve(config.storage.path).resolve("filestore")) }
         bindSingleton { SearchIndex(instance())}
-        bindSingleton { SearchService(instance(), instance(), instance()) }
+        bindSingleton { SearchService(instance(), instance("Shared"), instance()) }
         bindSingleton { TextExtractor() }
         bindSingleton { DataHandler(instance(), instance(), instance()) }
     }

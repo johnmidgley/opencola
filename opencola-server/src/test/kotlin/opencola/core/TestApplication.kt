@@ -39,7 +39,9 @@ object TestApplication {
         )
         keyStore.addKey(authority.authorityId, KeyPair(authorityPublicKey, authorityPrivateKey))
         val fileStore = LocalFileStore(testRunStoragePath.resolve(config.storage.filestore.name))
-        val sqLiteDB = SQLiteDB(testRunStoragePath.resolve("${authority.authorityId}.db")).db
+
+        val privateSQLiteDB = SQLiteDB(applicationPath.resolve(config.storage.path).resolve("${authority.authorityId}.private.db")).db
+        val sharedSQLiteDB = SQLiteDB(applicationPath.resolve(config.storage.path).resolve("${authority.authorityId}.shared.db")).db
 
         val injector = DI {
             bindSingleton { authority }
@@ -48,8 +50,9 @@ object TestApplication {
             bindSingleton { TextExtractor() }
             bindSingleton { Signator(instance()) }
             bindSingleton { SearchIndex(instance()) }
-            bindSingleton { ExposedEntityStore(instance(), instance(), sqLiteDB) }
-            bindSingleton { SearchService(instance(), instance(), instance()) }
+            bindSingleton(tag = "Private") { ExposedEntityStore(instance(), instance(), privateSQLiteDB) }
+            bindSingleton(tag = "Shared") { ExposedEntityStore(instance(), instance(), sharedSQLiteDB) }
+            bindSingleton { SearchService(instance(), instance("Shared"), instance()) }
         }
 
         val index by injector.instance<SearchIndex>()

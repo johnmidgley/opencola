@@ -15,7 +15,7 @@ import java.net.URI
 class StatusHandler(private val call: ApplicationCall) {
     val injector = Application.instance.injector
     val authority by injector.instance<Authority>()
-    val entityStore by injector.instance<EntityStore>()
+    val entityStore by injector.instance<EntityStore>("Shared")
 
     @Serializable
     data class Actions(val trust: Float?, val like: Boolean?, val rating: Float?)

@@ -27,7 +27,7 @@ fun Application.configureRouting() {
             // TODO: Authority should be passed (and authenticated) in header
             val stringId = call.parameters["id"] ?: throw IllegalArgumentException("No id set")
             val authority by injector.instance<Authority>()
-            val entityStore by injector.instance<EntityStore>()
+            val entityStore by injector.instance<EntityStore>("Shared")
 
             val entity = entityStore.getEntity(authority.authorityId, Id.fromHexString(stringId))
 

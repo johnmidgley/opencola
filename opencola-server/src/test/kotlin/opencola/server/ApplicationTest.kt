@@ -40,7 +40,7 @@ class ApplicationTest {
     fun testGetEntity(){
         val injector = TestApplication.instance.injector
         val authority by injector.instance<Authority>()
-        val entityStore by injector.instance<EntityStore>()
+        val entityStore by injector.instance<EntityStore>("Shared")
         val entity = ResourceEntity(authority.authorityId, URI("http://opencola.org"), trust = 1.0F, like = true, rating = 1.0F)
 
         entityStore.commitChanges(entity)
@@ -68,7 +68,7 @@ class ApplicationTest {
     fun testStatusActions(){
         val injector = TestApplication.instance.injector
         val authority by injector.instance<Authority>()
-        val entityStore by injector.instance<EntityStore>()
+        val entityStore by injector.instance<EntityStore>("Shared")
         val uri = URI("https://opencola.org")
         val entity = ResourceEntity(authority.authorityId, uri, trust = 1.0F, like = true, rating = 1.0F)
 

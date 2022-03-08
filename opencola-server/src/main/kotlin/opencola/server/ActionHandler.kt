@@ -69,7 +69,7 @@ fun handleSaveAction(mhtmlPage: MhtmlPage?){
     val authority by Application.instance.injector.instance<Authority>()
     val fileStore by Application.instance.injector.instance<FileStore>()
     val textExtractor by Application.instance.injector.instance<TextExtractor>()
-    val entityStore by Application.instance.injector.instance<EntityStore>()
+    val entityStore by Application.instance.injector.instance<EntityStore>("Shared")
     val searchService by Application.instance.injector.instance<SearchIndex>()
 
     // TODO: Add data id to resource entity - when indexing, index body from the dataEntity
