@@ -1,6 +1,7 @@
 package opencola.server
 
-import io.ktor.application.ApplicationCall
+import io.ktor.application.*
+import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import kotlinx.serialization.Serializable
@@ -58,6 +59,7 @@ suspend fun handlePostTransactions(app: Application, call: ApplicationCall){
                     searchIndex.index(entity)
                 }
             }
-
     }
+
+    call.respond(HttpStatusCode.OK)
 }

@@ -54,9 +54,9 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
             return storagePath
         }
 
-        fun getOrCreateRootPublicKey(applicationPath: Path, config: Config): PublicKey {
+        // TODO: pub key should come from private store, not authority.pub, and multiple authorities (personas) should be allowed
+        fun getOrCreateRootPublicKey(storagePath: Path, config: Config): PublicKey {
             val publicKeyFile = "authority.pub" // TODO: Config?
-            val storagePath = applicationPath.resolve(config.storage.path)
             val authorityPubPath = storagePath.resolve(publicKeyFile)
             val keyStore = KeyStore(storagePath.resolve(config.security.keystore.name), config.security.keystore.password)
             val publicKey =  if (authorityPubPath.exists()) {

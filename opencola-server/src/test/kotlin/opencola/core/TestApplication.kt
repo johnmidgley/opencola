@@ -26,29 +26,11 @@ object TestApplication {
 
     val instance by lazy {
         val authority = Authority(authorityPublicKey)
-
         val keyStore = KeyStore(
             testRunStoragePath.resolve(config.security.keystore.name),
             config.security.keystore.password
         )
         keyStore.addKey(authority.authorityId, KeyPair(authorityPublicKey, authorityPrivateKey))
-//        val fileStore = LocalFileStore(testRunStoragePath.resolve(config.storage.filestore.name))
-//
-//        val privateSQLiteDB = SQLiteDB(applicationPath.resolve(config.storage.path).resolve("${authority.authorityId}.private.db")).db
-//        val sharedSQLiteDB = SQLiteDB(applicationPath.resolve(config.storage.path).resolve("${authority.authorityId}.shared.db")).db
-//
-//        val injector = DI {
-//            bindSingleton { authority }
-//            bindSingleton { keyStore }
-//            bindSingleton { fileStore }
-//            bindSingleton { TextExtractor() }
-//            bindSingleton { Signator(instance()) }
-//            bindSingleton { SearchIndex(instance()) }
-//            bindSingleton(tag = "Private") { ExposedEntityStore(instance(), instance(), privateSQLiteDB) }
-//            bindSingleton(tag = "Shared") { ExposedEntityStore(instance(), instance(), sharedSQLiteDB) }
-//            bindSingleton { SearchService(instance(), instance("Shared"), instance()) }
-//        }
-
         Application.instance = Application.instance(testRunStoragePath, config, authorityPublicKey)
         val index by Application.instance.injector.instance<SearchIndex>()
 
