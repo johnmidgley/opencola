@@ -11,7 +11,7 @@ data class Storage(val path: Path, val filestore: Filestore = Filestore())
 data class Keystore(val name: String, val password: String)
 data class Security(val keystore: Keystore)
 data class Peer(val id: String, val name: String, val ip: String)
-data class Network(val peers: List<Peer>)
+data class Network(val peers: List<Peer> = emptyList())
 data class Config(val env: String,
                   val server: Server?,
                   val storage: Storage,

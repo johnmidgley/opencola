@@ -9,4 +9,3 @@ security:
     password: "password"
 
 network:
-  peers:
