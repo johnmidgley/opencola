@@ -30,7 +30,7 @@ fun handleAction(action: String, value: String?, mhtml: ByteArray) {
 // TODO: Refactor these. There's a ton of overlap between actions. Really it's just an entity update for a specific field
 fun handleLikeAction(mhtmlPage: MhtmlPage, value: String){
     val authority by Application.instance.injector.instance<Authority>()
-    val entityStore by Application.instance.injector.instance<EntityStore>()
+    val entityStore by Application.instance.injector.instance<EntityStore>("Shared")
     val resourceId = Id.ofUri(mhtmlPage.uri)
     val like = value.toBooleanStrict()
 
@@ -47,7 +47,7 @@ fun handleLikeAction(mhtmlPage: MhtmlPage, value: String){
 
 fun handleTrustAction(mhtmlPage: MhtmlPage, value: String){
     val authority by Application.instance.injector.instance<Authority>()
-    val entityStore by Application.instance.injector.instance<EntityStore>()
+    val entityStore by Application.instance.injector.instance<EntityStore>("Shared")
     val resourceId = Id.ofUri(mhtmlPage.uri)
     val trust = value.toFloat()
 

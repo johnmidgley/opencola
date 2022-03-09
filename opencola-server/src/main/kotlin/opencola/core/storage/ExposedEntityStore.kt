@@ -9,7 +9,7 @@ import java.io.ByteArrayInputStream
 
 // TODO: Think about using SQLite - super simple and maybe better fit for local use.
 
-class ExposedEntityStore(authority: Authority, signator: Signator, private val database: Database) : EntityStore(authority, signator) {
+class ExposedEntityStore(authority: Authority, signator: Signator, private val database: Database) : AbstractEntityStore(authority, signator) {
     // NOTE: Some databases may truncate the table name. This is an issue to the degree that it increases the
     // chances of collisions. Given the number of ids stored in a single DB, the chances of issue are exceedingly low.
     // This would likely be an issue only when storing data for large sets of users (millions to billions?)

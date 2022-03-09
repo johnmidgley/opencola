@@ -12,7 +12,7 @@ import kotlin.io.path.exists
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 
-class SimpleEntityStore(val path: Path, authority: Authority, signator: Signator) : EntityStore(authority, signator) {
+class SimpleEntityStore(val path: Path, authority: Authority, signator: Signator) : AbstractEntityStore(authority, signator) {
     // TODO: Synchronize access
     private var transactions =
         if (!path.exists()) {

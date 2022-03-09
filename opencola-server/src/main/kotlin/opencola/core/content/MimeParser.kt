@@ -76,13 +76,13 @@ fun splitMht(message: Message): List<Part> {
     }.toMap()
 
     val parts = partsWithLocation.map {
-        val location = locationMap[it.header.contentLocation()!!.location] as String
         val content = transformTextContent(it.body) { location ->
             // Drop first part (root html) so that we don't replace the root url anywhere
             locationMap.entries.drop(1).fold(location) { acc, entry ->
                 acc.replace(entry.key, entry.value)
             }
         }
+        val location = locationMap[it.header.contentLocation()!!.location] as String
         Part(location, it.header.contentType()?.mimeType ?: "application/octet-stream", content)
     }
 
