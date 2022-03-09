@@ -16,16 +16,14 @@ import opencola.core.model.Authority
 import opencola.core.model.Entity
 import opencola.core.model.Fact
 import opencola.core.model.ResourceEntity
+import opencola.core.security.generateKeyPair
 import opencola.core.storage.EntityStore
 import org.kodein.di.instance
 import java.net.URI
 import java.net.URLEncoder
 
 class ApplicationTest {
-    init{
-        // Ensure test application is initialized.
-        TestApplication.instance
-    }
+    val app = TestApplication.instance
 
     @Test
     fun testRoot() {
@@ -90,7 +88,7 @@ class ApplicationTest {
     @Test
     // TODO: Break this up!
     fun testSavePageThenSearch(){
-        val mhtPath = TestApplication.instance.path.resolve("../sample-docs/Conway's Game of Life - Wikipedia.mht")
+        val mhtPath = TestApplication.applicationPath.resolve("../sample-docs/Conway's Game of Life - Wikipedia.mht")
 
         withTestApplication({ configureRouting(); configureContentNegotiation() }) {
             with(handleRequest(HttpMethod.Post, "/action"){
@@ -130,4 +128,16 @@ class ApplicationTest {
             }
         }
     }
+
+    @Test
+    fun testPostTransactions(){
+        val keyPair = generateKeyPair()
+
+        // val authority = Authority(keyPair.public)
+        // val resource = ResourceEntity(authority.authorityId, URI("http://opencola.org"), text = "Test text 12345")
+        // val entityStore = SimpleEntityStore(TestApplication.getTmpFilePath(".txs"), authority, )
+
+
+    }
+
 }

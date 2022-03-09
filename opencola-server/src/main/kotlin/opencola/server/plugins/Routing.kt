@@ -2,7 +2,8 @@ package opencola.server.plugins
 
 import io.ktor.routing.*
 import io.ktor.http.*
-import io.ktor.application.*
+import io.ktor.application.Application
+import io.ktor.application.call
 import io.ktor.http.content.*
 import io.ktor.response.*
 import io.ktor.request.*
@@ -12,10 +13,13 @@ import opencola.core.storage.EntityStore
 import opencola.server.*
 import org.kodein.di.instance
 import kotlin.IllegalArgumentException
+import kotlin.io.path.Path
+import opencola.core.config.Application as app
 
 // TODO: All routes should authenticate caller and authorize activity. Right now everything is open
 fun Application.configureRouting() {
     val injector = opencola.core.config.Application.instance.injector
+    val logger = app.instance.logger
 
     routing {
         get("/search"){
@@ -42,6 +46,10 @@ fun Application.configureRouting() {
 
         get("/transactions/{authorityId}/{transactionId}"){
             TransactionsHandler(call).respond()
+        }
+
+        post("/transactions"){
+            handlePostTransactions(app.instance, call)
         }
 
         get("/data/{id}/{partName}"){
@@ -119,7 +127,7 @@ fun Application.configureRouting() {
         }
 
         static(""){
-            log.info("Initializing static resources from ${opencola.core.config.Application.instance.path} ")
+            logger.info("Initializing static resources from ${Path(System.getProperty("user.dir"))} ")
             file("/", "resources/index.html")
             files("resources")
         }

@@ -1,6 +1,7 @@
 package opencola.server
 
 import mu.KotlinLogging
+import opencola.core.config.Application
 import opencola.core.content.parseMime
 import opencola.core.content.splitMht
 import opencola.core.extensions.nullOrElse
@@ -14,7 +15,6 @@ import java.io.ByteArrayInputStream
 import java.nio.file.Path
 import kotlin.io.path.*
 
-import opencola.core.config.Application.Global.instance as app
 
 // TODO - Move to DataService.
 // TODO- Factor out MhtCache
@@ -22,7 +22,7 @@ class DataHandler(private val authority: Authority, private val entityStore: Ent
     private val logger = KotlinLogging.logger {}
 
     // TODO: Add cache to config
-    private val mhtCachePath = app.storagePath.resolve("mht-cache")
+    private val mhtCachePath = Application.instance.storagePath.resolve("mht-cache")
 
     init{
         if(!mhtCachePath.exists()) mhtCachePath.createDirectory()

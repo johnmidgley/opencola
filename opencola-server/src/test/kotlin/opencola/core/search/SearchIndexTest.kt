@@ -30,14 +30,14 @@ class SearchIndexTest {
     }
     // @Test
     fun testCreateIndex(){
-        val searchService = SearchIndex(authority)
-        searchService.create()
+        val searchIndex = SearchIndex(authority)
+        searchIndex.create()
     }
 
     // @Test
     fun testDeleteIndex(){
-        val searchService = SearchIndex(authority)
-        searchService.delete()
+        val searchIndex = SearchIndex(authority)
+        searchIndex.delete()
     }
 
     @Test

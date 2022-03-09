@@ -1,7 +1,6 @@
 package opencola.core.storage
 
 import opencola.core.model.*
-import opencola.core.model.Transaction
 import opencola.core.security.Signator
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.statements.api.ExposedBlob
@@ -83,8 +82,6 @@ class ExposedEntityStore(authority: Authority, signator: Signator, private val d
     }
 
     override fun persistTransaction(signedTransaction: SignedTransaction) {
-        // val facts = signedTransaction.expandFacts()
-
         transaction(database){
             signedTransaction.expandFacts().forEach{ fact ->
                 facts.insert {
