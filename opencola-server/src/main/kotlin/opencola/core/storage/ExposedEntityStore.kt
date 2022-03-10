@@ -45,16 +45,21 @@ class ExposedEntityStore(authority: Authority, signator: Signator, private val d
             SchemaUtils.create(facts)
             SchemaUtils.create(transactions)
 
-            setTransactiondId(
-                transactions.selectAll()
-                    .orderBy(transactions.id to SortOrder.DESC)
-                    .limit(1).firstOrNull()
-                    ?.getOrNull(transactions.id)
-                    ?: 0
-            )
+            transactionId = getTransactionId(authority.authorityId)
         }
     }
 
+    override fun getTransactionId(authorityId: Id) : Long{
+        return if(authorityId == authority.authorityId && transactionId != INVALID_TRANSACTION_ID)
+            transactionId
+        else
+            transactions.select{
+            (transactions.authorityId eq Id.encode(authorityId)) }
+            .orderBy(transactions.id to SortOrder.DESC)
+            .limit(1).firstOrNull()
+            ?.getOrNull(transactions.id)
+            ?: 0
+    }
 
     override fun resetStore(): EntityStore {
         transaction(database){

@@ -122,8 +122,13 @@ fun Application.configureRouting() {
             call.respond(HttpStatusCode.Accepted)
         }
 
-        get("/status/{uri}"){
-            StatusHandler(call).respond()
+        get("/actions/{uri}"){
+            ActionsHandler(call).respond()
+        }
+
+        post("/peer-status"){
+
+
         }
 
         static(""){

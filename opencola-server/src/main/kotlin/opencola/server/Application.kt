@@ -5,18 +5,15 @@ import io.ktor.features.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import opencola.core.config.Application
-import opencola.core.config.Server
+import opencola.core.config.ServerConfig
 import opencola.core.config.loadConfig
-import opencola.core.extensions.hexStringToByteArray
 import opencola.core.model.Id
-import opencola.core.security.*
 import opencola.server.plugins.configureContentNegotiation
 import opencola.server.plugins.configureHTTP
 import opencola.server.plugins.configureRouting
-import java.security.KeyPair
 import kotlin.io.path.Path
 
-fun getServer(serverConfig: Server): NettyApplicationEngine {
+fun getServer(serverConfig: ServerConfig): NettyApplicationEngine {
     return embeddedServer(Netty, port = serverConfig.port, host = serverConfig.host) {
         install(CallLogging)
         configureHTTP()

@@ -25,7 +25,7 @@ class TransactionsHandler(call: ApplicationCall) : Handler(call){
 
     override suspend fun respond() {
         val entityStore by injector.instance<EntityStore>()
-        val currentTransactionId = entityStore.getTransactionId()
+        val currentTransactionId = entityStore.getTransactionId(authorityId)
         val transactions = if (transactionId != null) entityStore.getTransactions(authorityId, transactionId) else emptyList()
 
         call.respond(TransactionsResponse(transactionId, currentTransactionId, transactions.toList()))

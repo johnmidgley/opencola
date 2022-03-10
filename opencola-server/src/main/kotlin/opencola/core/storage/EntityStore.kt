@@ -10,7 +10,7 @@ interface EntityStore {
     fun persistTransaction(signedTransaction: SignedTransaction)
     fun getTransaction(authorityId: Id, transactionId: Long) : SignedTransaction?
     fun getTransactions(authorityId: Id, startTransactionId: Long, endTransactionId: Long = Long.MAX_VALUE) : Iterable<SignedTransaction>
-    fun getTransactionId(): Long
+    fun getTransactionId(authorityId: Id): Long
 
     // SHOULD ONLY BE USED FOR TESTING OR IF YOU REALLY MEAN IT
     fun resetStore() : EntityStore

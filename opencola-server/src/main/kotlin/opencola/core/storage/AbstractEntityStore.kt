@@ -5,7 +5,7 @@ import opencola.core.model.*
 import opencola.core.security.Signator
 import java.security.PublicKey
 
-private const val INVALID_TRANSACTION_ID: Long = -1
+const val INVALID_TRANSACTION_ID: Long = -1
 
 // TODO: Should support multiple authorities
 abstract class AbstractEntityStore(val authority: Authority, protected val signator: Signator) : EntityStore {
@@ -19,20 +19,9 @@ abstract class AbstractEntityStore(val authority: Authority, protected val signa
         logAndThrow(RuntimeException(message))
     }
 
-    private var transactionId: Long = INVALID_TRANSACTION_ID
-
-    @Synchronized
-    protected fun setTransactiondId(transactiondId: Long){
-        if(this.transactionId != INVALID_TRANSACTION_ID){
-            logAndThrow("Attempt to transaction id that has already been set")
-        }
-
-        this.transactionId = transactiondId
-    }
-
-    override fun getTransactionId(): Long {
-        return transactionId
-    }
+    protected var transactionId: Long = INVALID_TRANSACTION_ID
+        @Synchronized
+        set(id: Long){ field = id}
 
     protected fun isValidTransaction(signedTransaction: SignedTransaction): Boolean {
         // TODO: Move what can be moved to transaction
@@ -85,6 +74,7 @@ abstract class AbstractEntityStore(val authority: Authority, protected val signa
         return entity
     }
 
+    // TODO: This is messed up. Untangle the transaction id usage.
     @Synchronized
     override fun commitChanges(vararg entities: Entity): SignedTransaction? {
         entities.forEach { validateEntity(it) }

@@ -9,14 +9,14 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.*
 import opencola.core.config.Application
-import opencola.core.config.Network
+import opencola.core.config.NetworkConfig
 import opencola.core.model.Entity
 import opencola.core.model.Id
 import opencola.core.model.SignedTransaction
 
 
 
-class NetworkedEntityStore(private val entityStore: EntityStore, private val networkConfig: Network) : EntityStore {
+class NetworkedEntityStore(private val entityStore: EntityStore, private val networkConfig: NetworkConfig) : EntityStore {
     val logger = Application.instance.logger
     val httpClient = HttpClient(CIO) {
         install(JsonFeature){
@@ -24,24 +24,19 @@ class NetworkedEntityStore(private val entityStore: EntityStore, private val net
         }
     }
 
-
-    init{
-        // TODO: Request any new transactions from peers (in the background)
-    }
-
-
     override fun getEntity(authorityId: Id, entityId: Id): Entity? {
         return entityStore.getEntity(authorityId, entityId)
     }
 
+    // TODO: Move to PeerService
     private suspend fun broadcastTransaction(signedTransaction: SignedTransaction?) : SignedTransaction?{
         if(signedTransaction != null) {
             networkConfig.peers.forEach {
-                logger.info { "Sending transaction {${signedTransaction.transaction.id}} to ${it.name}@${it.ip}" }
+                logger.info { "Sending transaction {${signedTransaction.transaction.id}} to ${it.name}@${it.host}" }
                 // https://github.com/ktorio/ktor-documentation/blob/main/codeSnippets/snippets/client-json-kotlinx/src/main/kotlin/com/example/Application.kt
 
                 try {
-                    val response = httpClient.post<HttpStatement>("http://${it.ip}/transactions") {
+                    val response = httpClient.post<HttpStatement>("http://${it.host}/transactions") {
                         contentType(ContentType.Application.Json)
                         body = listOf(signedTransaction)
                     }.execute()
@@ -83,8 +78,8 @@ class NetworkedEntityStore(private val entityStore: EntityStore, private val net
         return entityStore.getTransactions(authorityId, startTransactionId, endTransactionId)
     }
 
-    override fun getTransactionId(): Long {
-        return entityStore.getTransactionId()
+    override fun getTransactionId(authorityId: Id): Long {
+        return entityStore.getTransactionId(authorityId)
     }
 
     override fun resetStore(): EntityStore {

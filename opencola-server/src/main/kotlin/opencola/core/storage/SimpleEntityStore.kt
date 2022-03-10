@@ -29,7 +29,16 @@ class SimpleEntityStore(val path: Path, authority: Authority, signator: Signator
             .toList()
 
     init {
-        setTransactiondId(transactions.lastOrNull()?.transaction?.id ?: 0)
+        transactionId = getTransactionId(authority.authorityId)
+    }
+
+    override fun getTransactionId(authorityId: Id) : Long {
+        return if(authorityId == authority.authorityId && transactionId != INVALID_TRANSACTION_ID)
+            transactionId
+        else
+            transactions
+                .filter{ it.transaction.authorityId == authorityId }
+                .maxOfOrNull { it.transaction.id } ?: 0
     }
 
     private fun transactionsFromPath(path: Path): Sequence<SignedTransaction> {

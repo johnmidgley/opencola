@@ -2,9 +2,9 @@ package opencola.server
 
 import opencola.core.TestApplication
 import opencola.core.config.Application
-import opencola.core.config.Network
-import opencola.core.config.Peer
-import opencola.core.config.Server
+import opencola.core.config.NetworkConfig
+import opencola.core.config.PeerConfig
+import opencola.core.config.ServerConfig
 import opencola.core.model.Authority
 import opencola.core.model.ResourceEntity
 import opencola.core.security.KeyStore
@@ -25,7 +25,7 @@ class PeerTest {
     @Test
     fun testTransactionBroadcast(){
         // Start "local" server
-        val server = getServer(Server("0.0.0.0", 5795))
+        val server = getServer(ServerConfig("0.0.0.0", 5795))
         val engine = server.start()
 
         // Create peer networked entity store
@@ -35,7 +35,7 @@ class PeerTest {
         val keyStore = KeyStore(storagePath.resolve(config.security.keystore.name), config.security.keystore.password)
         val signator = Signator(keyStore)
         val entityStore = SimpleEntityStore(TestApplication.getTmpFilePath(".txs"), authority, signator)
-        val networkedEntityStore = NetworkedEntityStore(entityStore, Network(listOf(Peer("test-id", "test-peer", "0.0.0.0:5795"))))
+        val networkedEntityStore = NetworkedEntityStore(entityStore, NetworkConfig(listOf(PeerConfig("test-id", "test-peer", "0.0.0.0:5795"))))
 
         // Add entity to the peer store
         val resourceName = "Opencola stuff"
