@@ -126,11 +126,6 @@ fun Application.configureRouting() {
             ActionsHandler(call).respond()
         }
 
-        post("/peer-status"){
-
-
-        }
-
         static(""){
             logger.info("Initializing static resources from ${Path(System.getProperty("user.dir"))} ")
             file("/", "resources/index.html")

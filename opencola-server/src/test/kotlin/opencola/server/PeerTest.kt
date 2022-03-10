@@ -6,11 +6,13 @@ import opencola.core.config.NetworkConfig
 import opencola.core.config.PeerConfig
 import opencola.core.config.ServerConfig
 import opencola.core.model.Authority
+import opencola.core.model.Id
 import opencola.core.model.ResourceEntity
 import opencola.core.security.KeyStore
 import opencola.core.security.Signator
 import opencola.core.storage.NetworkedEntityStore
 import opencola.core.storage.SimpleEntityStore
+import opencola.service.PeerService
 import opencola.service.search.SearchService
 import org.junit.Test
 import org.kodein.di.instance
@@ -35,7 +37,9 @@ class PeerTest {
         val keyStore = KeyStore(storagePath.resolve(config.security.keystore.name), config.security.keystore.password)
         val signator = Signator(keyStore)
         val entityStore = SimpleEntityStore(TestApplication.getTmpFilePath(".txs"), authority, signator)
-        val networkedEntityStore = NetworkedEntityStore(entityStore, NetworkConfig(listOf(PeerConfig("test-id", "test-peer", "0.0.0.0:5795"))))
+        val testId = Id.ofData("test-id".toByteArray())
+        val peerService = PeerService(NetworkConfig(listOf(PeerConfig(testId.toString(), "test-peer", "0.0.0.0:5795"))), entityStore)
+        val networkedEntityStore = NetworkedEntityStore(entityStore, peerService)
 
         // Add entity to the peer store
         val resourceName = "Opencola stuff"
