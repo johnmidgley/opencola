@@ -13,6 +13,7 @@ import opencola.core.security.generateKeyPair
 import opencola.core.security.publicKeyFromBytes
 import opencola.core.storage.ExposedEntityStore
 import opencola.core.storage.LocalFileStore
+import opencola.core.storage.NetworkedEntityStore
 import opencola.core.storage.SQLiteDB
 import opencola.server.DataHandler
 import opencola.service.search.SearchService
@@ -80,8 +81,7 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
             val authority = Authority(authorityPublicKey)
             val keyStore = KeyStore(storagePath.resolve(config.security.keystore.name), config.security.keystore.password)
             val fileStore = LocalFileStore(storagePath.resolve(config.storage.filestore.name))
-            val privateSQLiteDB = SQLiteDB(storagePath.resolve("${authority.authorityId}.private.db")).db
-            val sharedSQLiteDB = SQLiteDB(storagePath.resolve("${authority.authorityId}.shared.db")).db
+            val sqLiteDB = SQLiteDB(storagePath.resolve("${authority.authorityId}.db")).db
 
             val injector = DI {
                 bindSingleton { authority }
@@ -90,11 +90,10 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
                 bindSingleton { TextExtractor() }
                 bindSingleton { Signator(instance()) }
                 bindSingleton { SearchIndex(instance()) }
-                bindSingleton(tag = "Private") { ExposedEntityStore(instance(), instance(), privateSQLiteDB) }
-                bindSingleton(tag = "Shared") { ExposedEntityStore(instance(), instance(), sharedSQLiteDB) }
-                bindSingleton { SearchService(instance(), instance("Shared"), instance()) }
-                // TODO: Add unit test for data handler - shared tag was missed, but tests passed
-                bindSingleton { DataHandler(instance(), instance("Shared"), instance()) }
+                bindSingleton { NetworkedEntityStore(ExposedEntityStore(instance(), instance(), sqLiteDB), config.network) }
+                bindSingleton { SearchService(instance(), instance(), instance()) }
+                // TODO: Add unit test for data handler
+                bindSingleton { DataHandler(instance(), instance(), instance()) }
             }
 
             return Application(storagePath, config, injector)

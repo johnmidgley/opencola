@@ -35,7 +35,7 @@ class TransactionsHandler(call: ApplicationCall) : Handler(call){
 //TODO: Pick a stance on handler functions vs. classes. Leaning towards functions, but currently inconsistent
 // Pass OCApplicationCall around, if convenience methods needed
 suspend fun handlePostTransactions(app: Application, call: ApplicationCall){
-    val entityStore by app.injector.instance<EntityStore>("Shared")
+    val entityStore by app.injector.instance<EntityStore>()
     val searchIndex by app.injector.instance<SearchIndex>()
     val transactions = call.receive<List<SignedTransaction>>()
 

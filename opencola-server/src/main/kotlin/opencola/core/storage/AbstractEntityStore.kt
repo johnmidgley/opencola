@@ -86,8 +86,7 @@ abstract class AbstractEntityStore(val authority: Authority, protected val signa
     }
 
     @Synchronized
-    override fun commitChanges(vararg entities: Entity)
-    {
+    override fun commitChanges(vararg entities: Entity): SignedTransaction? {
         entities.forEach { validateEntity(it) }
 
         if(entities.distinctBy { it.entityId }.size != entities.size){
@@ -101,7 +100,7 @@ abstract class AbstractEntityStore(val authority: Authority, protected val signa
         val uncommittedFacts = entities.flatMap { it.getFacts() }.filter{ it.transactionId == UNCOMMITTED }
         if (uncommittedFacts.isEmpty()) {
             logger.info { "Ignoring update with no novel facts" }
-            return
+            return null
         }
 
         // TODO: Cleanup - very messy. Probably lock around epoch
@@ -111,7 +110,10 @@ abstract class AbstractEntityStore(val authority: Authority, protected val signa
         }
 
         val nextTransactionId = transactionId.inc()
-        persistTransaction(Transaction.fromFacts(nextTransactionId, uncommittedFacts).sign(signator))
+        val signedTransaction = Transaction.fromFacts(nextTransactionId, uncommittedFacts).sign(signator)
+        persistTransaction(signedTransaction)
         this.transactionId = nextTransactionId
+
+        return signedTransaction
     }
 }

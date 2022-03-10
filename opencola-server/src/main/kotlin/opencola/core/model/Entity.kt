@@ -61,7 +61,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id){
 
     constructor(facts: List<Fact>) : this(facts.first().authorityId, facts.first().entityId) {
         if(facts.any{ it.authorityId != authorityId}){
-            throw IllegalArgumentException("Attempt to construct Entity with facts from multiple subjects")
+            throw IllegalArgumentException("Attempt to construct Entity with facts from multiple authorities")
         }
 
         if(facts.any{ it.entityId != entityId }){

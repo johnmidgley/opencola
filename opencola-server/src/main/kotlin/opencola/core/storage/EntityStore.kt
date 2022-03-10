@@ -6,7 +6,7 @@ import opencola.core.model.SignedTransaction
 
 interface EntityStore {
     fun getEntity(authorityId: Id, entityId: Id): Entity?
-    fun commitChanges(vararg entities: Entity)
+    fun commitChanges(vararg entities: Entity) : SignedTransaction?
     fun persistTransaction(signedTransaction: SignedTransaction)
     fun getTransaction(authorityId: Id, transactionId: Long) : SignedTransaction?
     fun getTransactions(authorityId: Id, startTransactionId: Long, endTransactionId: Long = Long.MAX_VALUE) : Iterable<SignedTransaction>

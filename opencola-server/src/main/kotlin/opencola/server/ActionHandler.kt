@@ -30,7 +30,7 @@ fun handleAction(action: String, value: String?, mhtml: ByteArray) {
 // TODO: Refactor these. There's a ton of overlap between actions. Really it's just an entity update for a specific field
 fun handleLikeAction(mhtmlPage: MhtmlPage, value: String){
     val authority by Application.instance.injector.instance<Authority>()
-    val entityStore by Application.instance.injector.instance<EntityStore>("Shared")
+    val entityStore by Application.instance.injector.instance<EntityStore>()
     val resourceId = Id.ofUri(mhtmlPage.uri)
     val like = value.toBooleanStrict()
 
@@ -47,7 +47,7 @@ fun handleLikeAction(mhtmlPage: MhtmlPage, value: String){
 
 fun handleTrustAction(mhtmlPage: MhtmlPage, value: String){
     val authority by Application.instance.injector.instance<Authority>()
-    val entityStore by Application.instance.injector.instance<EntityStore>("Shared")
+    val entityStore by Application.instance.injector.instance<EntityStore>()
     val resourceId = Id.ofUri(mhtmlPage.uri)
     val trust = value.toFloat()
 
@@ -69,7 +69,7 @@ fun handleSaveAction(mhtmlPage: MhtmlPage?){
     val authority by Application.instance.injector.instance<Authority>()
     val fileStore by Application.instance.injector.instance<FileStore>()
     val textExtractor by Application.instance.injector.instance<TextExtractor>()
-    val entityStore by Application.instance.injector.instance<EntityStore>("Shared")
+    val entityStore by Application.instance.injector.instance<EntityStore>()
     val searchService by Application.instance.injector.instance<SearchIndex>()
 
     // TODO: Add data id to resource entity - when indexing, index body from the dataEntity
@@ -94,8 +94,6 @@ fun handleSaveAction(mhtmlPage: MhtmlPage?){
 
         val dataEntity = (entityStore.getEntity(authority.authorityId, dataId) ?: DataEntity(authority.entityId, dataId, mimeType))
 
-        // TODO: Remove authority from update calls - authority id is in entity
-        // TODO: Make update entity take vargs of entities so only single transaction needed
         entityStore.commitChanges(entity, dataEntity)
         searchService.index(entity)
     }
