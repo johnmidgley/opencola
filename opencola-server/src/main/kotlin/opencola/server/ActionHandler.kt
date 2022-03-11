@@ -1,100 +1,21 @@
 package opencola.server
 
 import opencola.core.config.Application
-import opencola.core.content.MhtmlPage
-import opencola.core.content.TextExtractor
 import opencola.core.content.parseMhtml
-import opencola.core.extensions.nullOrElse
-import opencola.core.model.Authority
-import opencola.core.model.DataEntity
-import opencola.core.model.Id
-import opencola.core.model.ResourceEntity
-import opencola.core.search.SearchIndex
-import opencola.core.storage.EntityStore
-import opencola.core.storage.FileStore
-import org.apache.james.mime4j.message.DefaultMessageWriter
+import opencola.core.model.*
+import opencola.service.EntityService
 import org.kodein.di.instance
-import java.io.ByteArrayOutputStream
 
 fun handleAction(action: String, value: String?, mhtml: ByteArray) {
-    val page = mhtml.inputStream().use { parseMhtml(it) }
+    val entityService by Application.instance.injector.instance<EntityService>()
+    val mhtmlPage = mhtml.inputStream().use { parseMhtml(it) ?: throw RuntimeException("Unable to parse mhtml") }
 
-    when(action){
-        "save" -> handleSaveAction(page)
-        "like" -> handleLikeAction(page!!, value!!)
-        "trust" -> handleTrustAction(page!!, value!!)
+    val actions = when(action){
+        "save" -> Actions()
+        "like" -> Actions(like = value?.toBooleanStrict() ?: throw RuntimeException("No value specified for like"))
+        "trust" -> Actions(trust = value?.toFloat() ?: throw RuntimeException("No value specified for trust"))
         else -> throw NotImplementedError("No handler for $action")
     }
-}
 
-// TODO: Refactor these. There's a ton of overlap between actions. Really it's just an entity update for a specific field
-fun handleLikeAction(mhtmlPage: MhtmlPage, value: String){
-    val authority by Application.instance.injector.instance<Authority>()
-    val entityStore by Application.instance.injector.instance<EntityStore>()
-    val resourceId = Id.ofUri(mhtmlPage.uri)
-    val like = value.toBooleanStrict()
-
-    Application.instance.logger.info { "Like: ${mhtmlPage.uri} Value: $like" }
-
-    val entity = (entityStore.getEntity(authority.authorityId, resourceId) ?: ResourceEntity(
-        authority.entityId,
-        mhtmlPage.uri
-    )) as ResourceEntity
-
-    entity.like = like
-    entityStore.commitChanges(entity)
-}
-
-fun handleTrustAction(mhtmlPage: MhtmlPage, value: String){
-    val authority by Application.instance.injector.instance<Authority>()
-    val entityStore by Application.instance.injector.instance<EntityStore>()
-    val resourceId = Id.ofUri(mhtmlPage.uri)
-    val trust = value.toFloat()
-
-    Application.instance.logger.info { "Trust: ${mhtmlPage.uri} Value: $trust" }
-
-    val entity = (entityStore.getEntity(authority.authorityId, resourceId) ?: ResourceEntity(
-        authority.entityId,
-        mhtmlPage.uri
-    )) as ResourceEntity
-
-    entity.trust = trust
-    entityStore.commitChanges(entity)
-}
-
-fun handleSaveAction(mhtmlPage: MhtmlPage?){
-    if(mhtmlPage == null) throw RuntimeException("Unable to save page without body")
-
-    // TODO - Inject the properly as class parameters
-    val authority by Application.instance.injector.instance<Authority>()
-    val fileStore by Application.instance.injector.instance<FileStore>()
-    val textExtractor by Application.instance.injector.instance<TextExtractor>()
-    val entityStore by Application.instance.injector.instance<EntityStore>()
-    val searchService by Application.instance.injector.instance<SearchIndex>()
-
-    // TODO: Add data id to resource entity - when indexing, index body from the dataEntity
-    // TODO: Parse description
-    // TODO - EntityStore should detect if a duplicate entity is added. Just merge it?
-    val writer = DefaultMessageWriter()
-    ByteArrayOutputStream().use { outputStream ->
-        writer.writeMessage(mhtmlPage.message, outputStream)
-        val pageBytes = outputStream.toByteArray()
-        val dataId = fileStore.write(pageBytes)
-        val mimeType = textExtractor.getType(pageBytes)
-        val resourceId = Id.ofUri(mhtmlPage.uri)
-        val entity = (entityStore.getEntity(authority.authorityId, resourceId) ?: ResourceEntity(
-            authority.entityId,
-            mhtmlPage.uri
-        )) as ResourceEntity
-
-        // Add / update fields
-        entity.dataId = dataId
-        entity.name = mhtmlPage.title
-        entity.text = mhtmlPage.htmlText.nullOrElse { textExtractor.getBody(it.toByteArray()) }
-
-        val dataEntity = (entityStore.getEntity(authority.authorityId, dataId) ?: DataEntity(authority.entityId, dataId, mimeType))
-
-        entityStore.commitChanges(entity, dataEntity)
-        searchService.index(entity)
-    }
+    entityService.updateResource(mhtmlPage, actions)
 }

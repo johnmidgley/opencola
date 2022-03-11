@@ -9,6 +9,7 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import opencola.core.config.NetworkConfig
 import opencola.core.model.Id
@@ -19,9 +20,11 @@ class PeerService(private val networkConfig: NetworkConfig) {
     private val idToPeerMap = peersFromNetworkConfig(networkConfig)
     val peers: List<Peer> get() { return idToPeerMap.values.toList() }
 
-    enum class Event{
+    enum class Event {
         NewTransactions
     }
+
+    @Serializable
     data class Notification(val authorityId: Id, val event: Event)
 
     private val httpClient = HttpClient(CIO) {
@@ -31,11 +34,11 @@ class PeerService(private val networkConfig: NetworkConfig) {
     }
 
     // TODO: Peers should eventually come from a private part of the entity store
-    private fun peersFromNetworkConfig(networkConfig: NetworkConfig): Map<Id, Peer> {
-        return networkConfig.peers.map{
+    private fun peersFromNetworkConfig(networkConfig: NetworkConfig): MutableMap<Id, Peer> {
+        return networkConfig.peers.associate {
             val peerId = Id.fromHexString(it.id)
             Pair(peerId, Peer(Id.fromHexString(it.id), it.name, it.host, Peer.Status.Offline))
-        }.toMap()
+        }.toMutableMap()
     }
 
     fun broadcastMessage(path: String, message: Any){
@@ -45,6 +48,13 @@ class PeerService(private val networkConfig: NetworkConfig) {
                 async { sendMessage(it, path, message) }
             }
         }
+    }
+
+    fun updateStatus(peer: Peer, status: Peer.Status){
+        val peer = idToPeerMap[peer.id] ?: throw IllegalArgumentException("Attempt to update status for unknown peer: ${peer.id}")
+
+        // UGGhhh. No persistent data structures...
+        idToPeerMap[peer.id] = peer.setStatus(status)
     }
 
     private suspend fun sendMessage(peer: Peer, path: String, message: Any){
@@ -64,55 +74,4 @@ class PeerService(private val networkConfig: NetworkConfig) {
             // peer.status = Peer.Status.Offline
         }
     }
-
-//    private suspend fun sendNotification(peer: Peer, notification: Notification){
-//        val urlString = "http://${peer.host}/notifications"
-//        logger.info { "Sending notification $notification to $urlString" }
-//
-//        try {
-//            val response = httpClient.post<HttpStatement>(urlString) {
-//                contentType(ContentType.Application.Json)
-//                body = notification // TODO: If body accepts any serializable object, could make this method generic, with extra path parameter
-//            }.execute()
-//
-//            logger.info { "Response: ${response.status}" }
-//                // peer.status = Peer.Status.Online
-//        } catch (e: Exception){
-//            logger.error { e.message }
-//            // peer.status = Peer.Status.Offline
-//        }
-//    }
-
-
-//    private suspend fun requestTransactions(peer: Peer){
-//        // TODO: Update getTransaction to take authorityId
-//        var currentTransactionId = entityStore.getTransactionId(peer.id)
-//
-//        try {
-//            // TODO - Config match batches
-//            for(batch in 1..10) {
-//                val urlString = "http://${peer.host}/transactions/${peer.id}/$currentTransactionId"
-//                logger.info { "Requesting transactions - Batch $batch - $urlString" }
-//
-//                val transactionsResponse: TransactionsHandler.TransactionsResponse =
-//                    httpClient.get(urlString)
-//
-//                peer.status = Peer.Status.Online
-//
-//                transactionsResponse.transactions.forEach {
-//                    entityStore.persistTransaction(it)
-//                }
-//
-//                currentTransactionId = transactionsResponse.transactions.maxOf { it.transaction.id }
-//
-//                if(currentTransactionId == transactionsResponse.currentTransactionId)
-//                    break
-//            }
-//        } catch (e: Exception){
-//            logger.error { e.message }
-//            // TODO: This should depend on the error
-//            peer.status = Peer.Status.Offline
-//        }
-//    }
-
 }

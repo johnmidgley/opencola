@@ -75,7 +75,7 @@ class ApplicationTest {
             handleRequest(HttpMethod.Get, "/actions/${URLEncoder.encode(uri.toString(), "utf-8")}").apply {
                 assertEquals(HttpStatusCode.OK, response.status())
                 assertNotNull(response.content)
-                val actions = Json.decodeFromString<ActionsHandler.Actions>(response.content!!)
+                val actions = Json.decodeFromString<Actions>(response.content!!)
 
                 assertEquals(entity.trust, actions.trust)
                 assertEquals(entity.like, actions.like)
@@ -130,36 +130,4 @@ class ApplicationTest {
             }
         }
     }
-
-    @Test
-    fun testPostTransactions(){
-        val peerStoragePath = TestApplication.testRunStoragePath.resolve("peer").createDirectories()
-        val publicKey = Application.getOrCreateRootPublicKey(peerStoragePath, TestApplication.config)
-        val peerInstance = Application.instance(peerStoragePath, TestApplication.config, publicKey)
-        val injector = peerInstance.injector
-
-        val authority by injector.instance<Authority>()
-        val peerEntityStore by injector.instance<EntityStore>()
-
-        val resource = ResourceEntity(authority.authorityId, URI("http://opencola.org"), name = "Test Document", text = "Test text 12345")
-        peerEntityStore.commitChanges(resource)
-        val transactions = peerEntityStore.getTransactions(authority.authorityId, 0)
-
-        withTestApplication({ configureRouting(); configureContentNegotiation() }) {
-            with(handleRequest(HttpMethod.Post, "/transactions"){
-                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                setBody(Json.encodeToString(transactions.toList()))
-            }) {
-                assertEquals(HttpStatusCode.OK, response.status())
-            }
-
-            handleRequest(HttpMethod.Get, "/search?q=12345").apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-                val searchResults = Json.decodeFromString<SearchResults>(response.content!!)
-                assertEquals("Test Document", searchResults.matches.first().name)
-            }
-        }
-
-    }
-
 }

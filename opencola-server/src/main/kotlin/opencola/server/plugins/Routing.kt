@@ -48,10 +48,6 @@ fun Application.configureRouting() {
             TransactionsHandler(call).respond()
         }
 
-        post("/transactions"){
-            handlePostTransactions(app.instance, call)
-        }
-
         get("/data/{id}/{partName}"){
             // TODO: Add a parameters extension that gets the parameter value or throws an exception
             val dataHandler by injector.instance<DataHandler>()

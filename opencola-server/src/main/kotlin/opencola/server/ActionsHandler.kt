@@ -4,6 +4,7 @@ import io.ktor.application.*
 import io.ktor.response.*
 import kotlinx.serialization.Serializable
 import opencola.core.config.Application
+import opencola.core.model.Actions
 import opencola.core.model.Authority
 import opencola.core.model.Id
 import opencola.core.model.ResourceEntity
@@ -16,9 +17,6 @@ class ActionsHandler(private val call: ApplicationCall) {
     val injector = Application.instance.injector
     val authority by injector.instance<Authority>()
     val entityStore by injector.instance<EntityStore>()
-
-    @Serializable
-    data class Actions(val trust: Float?, val like: Boolean?, val rating: Float?)
 
     suspend fun respond() {
         val stringUri = call.parameters["uri"] ?: throw IllegalArgumentException("No uri set")

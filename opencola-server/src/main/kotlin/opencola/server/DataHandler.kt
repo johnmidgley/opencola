@@ -18,6 +18,7 @@ import kotlin.io.path.*
 
 // TODO - Move to DataService.
 // TODO- Factor out MhtCache
+// TODD - Rename to DataService?
 class DataHandler(private val authority: Authority, private val entityStore: EntityStore, private val fileStore: FileStore) {
     private val logger = KotlinLogging.logger {}
 

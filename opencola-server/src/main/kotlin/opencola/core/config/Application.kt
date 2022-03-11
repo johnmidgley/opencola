@@ -13,9 +13,9 @@ import opencola.core.security.generateKeyPair
 import opencola.core.security.publicKeyFromBytes
 import opencola.core.storage.ExposedEntityStore
 import opencola.core.storage.LocalFileStore
-import opencola.core.storage.NetworkedEntityStore
 import opencola.core.storage.SQLiteDB
 import opencola.server.DataHandler
+import opencola.service.EntityService
 import opencola.service.PeerService
 import opencola.service.search.SearchService
 import org.kodein.di.DI
@@ -91,10 +91,10 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
                 bindSingleton { TextExtractor() }
                 bindSingleton { Signator(instance()) }
                 bindSingleton { SearchIndex(instance()) }
-                bindSingleton("base") { ExposedEntityStore(instance(), instance(), sqLiteDB) }
+                bindSingleton { ExposedEntityStore(instance(), instance(), sqLiteDB) }
                 bindSingleton { PeerService(config.network) }
-                bindSingleton { NetworkedEntityStore(instance("base"), instance()) }
                 bindSingleton { SearchService(instance(), instance(), instance()) }
+                bindSingleton { EntityService(instance(), instance(), instance(), instance(), instance(), instance()) }
                 // TODO: Add unit test for data handler
                 bindSingleton { DataHandler(instance(), instance(), instance()) }
             }
