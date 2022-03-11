@@ -53,12 +53,15 @@ class ExposedEntityStore(authority: Authority, signator: Signator, private val d
         return if(authorityId == authority.authorityId && transactionId != INVALID_TRANSACTION_ID)
             transactionId
         else
-            transactions.select{
-            (transactions.authorityId eq Id.encode(authorityId)) }
-            .orderBy(transactions.id to SortOrder.DESC)
-            .limit(1).firstOrNull()
-            ?.getOrNull(transactions.id)
-            ?: 0
+            transaction(database) {
+                transactions.select {
+                    (transactions.authorityId eq Id.encode(authorityId))
+                }
+                    .orderBy(transactions.id to SortOrder.DESC)
+                    .limit(1).firstOrNull()
+                    ?.getOrNull(transactions.id)
+                    ?: 0
+            }
     }
 
     override fun resetStore(): EntityStore {
