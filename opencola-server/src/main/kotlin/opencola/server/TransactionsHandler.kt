@@ -28,6 +28,7 @@ class TransactionsHandler(call: ApplicationCall) : Handler(call){
         val currentTransactionId = entityStore.getTransactionId(authorityId)
         val transactions = if (transactionId != null) entityStore.getTransactions(authorityId, transactionId) else emptyList()
 
+        // TODO: Getting a request is a sign the the remote host is up - update the peer status in the PeerService
         call.respond(TransactionsResponse(transactionId, currentTransactionId, transactions.toList()))
     }
 }
@@ -38,6 +39,8 @@ suspend fun handlePostTransactions(app: Application, call: ApplicationCall){
     val entityStore by app.injector.instance<EntityStore>()
     val searchIndex by app.injector.instance<SearchIndex>()
     val transactions = call.receive<List<SignedTransaction>>()
+
+    // TODO: Getting this request is a sign the the remote host is up - update the peer status in the PeerService
 
     // TODO: All of this should be done in the background off a durable queue
     transactions.forEach{ st ->
