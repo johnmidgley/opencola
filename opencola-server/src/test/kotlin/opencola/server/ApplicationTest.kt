@@ -12,14 +12,13 @@ import opencola.server.plugins.configureRouting
 import opencola.service.search.SearchResults
 import java.io.File
 import kotlinx.serialization.decodeFromString
-import opencola.core.config.Application
 import opencola.core.model.*
 import opencola.core.storage.EntityStore
 import org.kodein.di.instance
 import java.net.URI
 import java.net.URLEncoder
-import kotlin.io.path.createDirectories
 import kotlinx.serialization.encodeToString
+import opencola.core.network.PeerRouter
 
 class ApplicationTest {
     val app = TestApplication.instance
@@ -127,6 +126,21 @@ class ApplicationTest {
                 assertEquals(HttpStatusCode.OK, response.status())
                 val searchResults = Json.decodeFromString<SearchResults>(response.content!!)
                 assertEquals("Conway's Game of Life - Wikipedia", searchResults.matches.first().name)
+            }
+        }
+    }
+
+    @Test
+    fun testPostNotification(){
+        val peerId = Id.fromHexString(TestApplication.config.network.peers.first().id)
+        val notification = PeerRouter.Notification(peerId, PeerRouter.Event.NewTransactions)
+
+        withTestApplication({ configureRouting(); configureContentNegotiation() }) {
+            with(handleRequest(HttpMethod.Post, "/notifications"){
+                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                setBody(Json.encodeToString(notification))
+            }) {
+                assertEquals(HttpStatusCode.OK, response.status())
             }
         }
     }

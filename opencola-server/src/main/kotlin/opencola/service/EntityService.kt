@@ -14,12 +14,13 @@ import opencola.core.extensions.nullOrElse
 import opencola.core.model.*
 import opencola.core.network.Peer
 import opencola.core.network.Peer.Status
+import opencola.core.network.PeerRouter
+import opencola.core.network.PeerRouter.Event
+import opencola.core.network.PeerRouter.Notification
 import opencola.core.search.SearchIndex
 import opencola.core.storage.EntityStore
 import opencola.core.storage.FileStore
 import opencola.server.TransactionsHandler
-import opencola.service.PeerService.Event
-import opencola.service.PeerService.Notification
 import org.apache.james.mime4j.message.DefaultMessageWriter
 import java.io.ByteArrayOutputStream
 
@@ -27,7 +28,7 @@ class EntityService(private val authority: Authority,
                     private val entityStore: EntityStore,
                     private val searchIndex: SearchIndex,
                     private val fileStore: FileStore,
-                    private val peerService: PeerService,
+                    private val peerRouter: PeerRouter,
                     private val textExtractor: TextExtractor) {
     private val logger = KotlinLogging.logger{}
     private val httpClient = HttpClient(CIO) {
@@ -36,26 +37,35 @@ class EntityService(private val authority: Authority,
         }
     }
 
-    init{
+    init {
         updatePeerTransactions()
     }
 
     private fun updatePeerTransactions() {
         runBlocking {
-            peerService.peers.forEach {
+            peerRouter.peers.forEach {
                 async { requestTransactions(it) }
             }
         }
     }
 
+    fun requestTransactions(peerId: Id){
+        val peer = peerRouter.getPeer(peerId)
+            ?: throw IllegalArgumentException("Attempt to request transactions for unknown peer: $peerId ")
+
+        runBlocking {
+            async { requestTransactions(peer) }
+        }
+    }
+
     private suspend fun requestTransactions(peer: Peer){
         // TODO: Update getTransaction to take authorityId
-        var currentTransactionId = entityStore.getTransactionId(peer.id)
+        var nextTransactionId = entityStore.getTransactionId(peer.id) + 1
 
         try {
             // TODO - Config max batches
             for(batch in 1..10) {
-                val urlString = "http://${peer.host}/transactions/${peer.id}/$currentTransactionId"
+                val urlString = "http://${peer.host}/transactions/${peer.id}/$nextTransactionId"
                 logger.info { "Requesting transactions - Batch $batch - $urlString" }
 
                 //TODO - see implment PeerService.get(peer, path) to get rid of httpClient here
@@ -63,22 +73,22 @@ class EntityService(private val authority: Authority,
                 val transactionsResponse: TransactionsHandler.TransactionsResponse =
                     httpClient.get(urlString)
 
-                peerService.updateStatus(peer, Status.Online)
+                peerRouter.updateStatus(peer.id, Status.Online)
 
                 transactionsResponse.transactions.forEach {
                     entityStore.persistTransaction(it)
-                    // TODO: Search Indexing should happen here!
+                    indexTransaction(it)
                 }
 
-                currentTransactionId = transactionsResponse.transactions.maxOf { it.transaction.id }
+                nextTransactionId = transactionsResponse.transactions.maxOf { it.transaction.id }
 
-                if(currentTransactionId == transactionsResponse.currentTransactionId)
+                if(nextTransactionId >= transactionsResponse.currentTransactionId)
                     break
             }
         } catch (e: Exception){
             logger.error { e.message }
             // TODO: This should depend on the error
-            peerService.updateStatus(peer, Status.Offline)
+            peerRouter.updateStatus(peer.id, Status.Offline)
         }
     }
 
@@ -86,7 +96,7 @@ class EntityService(private val authority: Authority,
         val signedTransaction = entityStore.commitChanges(*entities)
 
         if (signedTransaction != null) {
-            peerService.broadcastMessage(
+            peerRouter.broadcastMessage(
                 "notifications",
                 Notification(signedTransaction.transaction.authorityId, Event.NewTransactions)
             )
@@ -147,10 +157,9 @@ class EntityService(private val authority: Authority,
 
                 if (entity == null)
                     logger.error { "Can't get entity after persisting entity facts: $authorityId:$eid" }
-                else {
+                else if (entity !is DataEntity){ // TODO: Should data entities be indexed?
                     //TODO: Archive will not be available - figure out what to do
                     // Call peer for data?
-                    logger.info { "Indexing $authorityId:$eid" }
                     searchIndex.index(entity)
                 }
             }

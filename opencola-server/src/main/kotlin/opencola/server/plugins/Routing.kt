@@ -9,8 +9,10 @@ import io.ktor.response.*
 import io.ktor.request.*
 import opencola.core.model.Authority
 import opencola.core.model.Id
+import opencola.core.network.PeerRouter
 import opencola.core.storage.EntityStore
 import opencola.server.*
+import opencola.service.EntityService
 import org.kodein.di.instance
 import kotlin.IllegalArgumentException
 import kotlin.io.path.Path
@@ -120,6 +122,12 @@ fun Application.configureRouting() {
 
         get("/actions/{uri}"){
             ActionsHandler(call).respond()
+        }
+
+        post("/notifications"){
+            val entityService by injector.instance<EntityService>()
+            val peerRouter by injector.instance<PeerRouter>()
+            handlePostNotifications(call, entityService, peerRouter)
         }
 
         static(""){

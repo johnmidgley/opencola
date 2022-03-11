@@ -9,3 +9,7 @@ security:
     password: "password"
 
 network:
+  peers:
+  - id: c747e86f8f884a279b18530affde6b41ca10d931669f0cbfd6891613303d25c
+    name: TestPeer
+    host: 0.0.0.0:5796

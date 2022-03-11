@@ -1,19 +1,14 @@
 package opencola.server
 
-import io.ktor.application.*
-import io.ktor.features.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import opencola.core.config.Application
 import opencola.core.config.ServerConfig
 import opencola.core.config.loadConfig
 import opencola.core.model.Id
-import opencola.core.storage.EntityStore
 import opencola.server.plugins.configureContentNegotiation
 import opencola.server.plugins.configureHTTP
 import opencola.server.plugins.configureRouting
-import opencola.service.EntityService
-import org.kodein.di.instance
 import kotlin.io.path.Path
 
 fun getServer(serverConfig: ServerConfig): NettyApplicationEngine {

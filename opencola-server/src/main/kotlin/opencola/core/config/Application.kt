@@ -16,7 +16,7 @@ import opencola.core.storage.LocalFileStore
 import opencola.core.storage.SQLiteDB
 import opencola.server.DataHandler
 import opencola.service.EntityService
-import opencola.service.PeerService
+import opencola.core.network.PeerRouter
 import opencola.service.search.SearchService
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
@@ -92,7 +92,7 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
                 bindSingleton { Signator(instance()) }
                 bindSingleton { SearchIndex(instance()) }
                 bindSingleton { ExposedEntityStore(instance(), instance(), sqLiteDB) }
-                bindSingleton { PeerService(config.network) }
+                bindSingleton { PeerRouter(config.network) }
                 bindSingleton { SearchService(instance(), instance(), instance()) }
                 bindSingleton { EntityService(instance(), instance(), instance(), instance(), instance(), instance()) }
                 // TODO: Add unit test for data handler

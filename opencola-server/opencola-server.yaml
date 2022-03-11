@@ -14,8 +14,8 @@ security:
 
 network:
   peers:
-    - id: c747e86f8f884a279b18530affde6b41ca10d931669f0cbfd6891613303d25c
-      name: Henson
+    - id: d6c0a8f99df3b3e8857cb47d4e147a9935584253f4a5db2b67f6d5897cc1dcee
+      name: Peer
       host: 0.0.0.0:5796
 
 
