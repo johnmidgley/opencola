@@ -92,7 +92,7 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
                 bindSingleton { Signator(instance()) }
                 bindSingleton { SearchIndex(instance()) }
                 bindSingleton("base") { ExposedEntityStore(instance(), instance(), sqLiteDB) }
-                bindSingleton { PeerService(config.network, instance("base")) }
+                bindSingleton { PeerService(config.network) }
                 bindSingleton { NetworkedEntityStore(instance("base"), instance()) }
                 bindSingleton { SearchService(instance(), instance(), instance()) }
                 // TODO: Add unit test for data handler
