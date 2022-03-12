@@ -6,8 +6,7 @@ import opencola.core.model.*
 import opencola.service.EntityService
 import org.kodein.di.instance
 
-fun handleAction(action: String, value: String?, mhtml: ByteArray) {
-    val entityService by Application.instance.injector.instance<EntityService>()
+fun handleActionCall(action: String, value: String?, entityService: EntityService, mhtml: ByteArray) {
     val mhtmlPage = mhtml.inputStream().use { parseMhtml(it) ?: throw RuntimeException("Unable to parse mhtml") }
 
     val actions = when(action){

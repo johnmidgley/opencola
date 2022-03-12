@@ -20,7 +20,7 @@ import opencola.core.network.PeerRouter.Notification
 import opencola.core.search.SearchIndex
 import opencola.core.storage.EntityStore
 import opencola.core.storage.FileStore
-import opencola.server.TransactionsHandler
+import opencola.server.TransactionsResponse
 import org.apache.james.mime4j.message.DefaultMessageWriter
 import java.io.ByteArrayOutputStream
 
@@ -70,7 +70,7 @@ class EntityService(private val authority: Authority,
 
                 //TODO - see implment PeerService.get(peer, path) to get rid of httpClient here
                 // plus no need to update peer status here
-                val transactionsResponse: TransactionsHandler.TransactionsResponse =
+                val transactionsResponse: TransactionsResponse =
                     httpClient.get(urlString)
 
                 peerRouter.updateStatus(peer.id, Status.Online)

@@ -21,11 +21,11 @@ import kotlinx.serialization.encodeToString
 import opencola.core.network.PeerRouter
 
 class ApplicationTest {
-    val app = TestApplication.instance
+    private val application = TestApplication.instance
 
     @Test
     fun testRoot() {
-        withTestApplication({ configureRouting() }) {
+        withTestApplication({ configureRouting(application) }) {
             handleRequest(HttpMethod.Get, "/").apply {
                 assertEquals(HttpStatusCode.OK, response.status())
             }
@@ -41,7 +41,7 @@ class ApplicationTest {
 
         entityStore.commitChanges(entity)
 
-        withTestApplication({ configureRouting(); configureContentNegotiation() }) {
+        withTestApplication({ configureRouting(application); configureContentNegotiation() }) {
             handleRequest(HttpMethod.Get, "/entity/${entity.entityId}").apply {
                 assertEquals(HttpStatusCode.OK, response.status())
                 assertNotNull(response.content)
@@ -70,7 +70,7 @@ class ApplicationTest {
 
         entityStore.commitChanges(entity)
 
-        withTestApplication({ configureRouting(); configureContentNegotiation() }) {
+        withTestApplication({ configureRouting(application); configureContentNegotiation() }) {
             handleRequest(HttpMethod.Get, "/actions/${URLEncoder.encode(uri.toString(), "utf-8")}").apply {
                 assertEquals(HttpStatusCode.OK, response.status())
                 assertNotNull(response.content)
@@ -91,7 +91,7 @@ class ApplicationTest {
     fun testSavePageThenSearch(){
         val mhtPath = TestApplication.applicationPath.resolve("../sample-docs/Conway's Game of Life - Wikipedia.mht")
 
-        withTestApplication({ configureRouting(); configureContentNegotiation() }) {
+        withTestApplication({ configureRouting(application); configureContentNegotiation() }) {
             with(handleRequest(HttpMethod.Post, "/action"){
                 val boundary = "WebAppBoundary"
                 val fileBytes = File(mhtPath.toString()).readBytes()
@@ -135,7 +135,7 @@ class ApplicationTest {
         val peerId = Id.fromHexString(TestApplication.config.network.peers.first().id)
         val notification = PeerRouter.Notification(peerId, PeerRouter.Event.NewTransactions)
 
-        withTestApplication({ configureRouting(); configureContentNegotiation() }) {
+        withTestApplication({ configureRouting(application); configureContentNegotiation() }) {
             with(handleRequest(HttpMethod.Post, "/notifications"){
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                 setBody(Json.encodeToString(notification))

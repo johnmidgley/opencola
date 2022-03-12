@@ -13,41 +13,38 @@ import opencola.core.network.PeerRouter
 import opencola.core.storage.EntityStore
 import opencola.server.*
 import opencola.service.EntityService
+import opencola.service.search.SearchService
 import org.kodein.di.instance
 import kotlin.IllegalArgumentException
 import kotlin.io.path.Path
 import opencola.core.config.Application as app
 
 // TODO: All routes should authenticate caller and authorize activity. Right now everything is open
-fun Application.configureRouting() {
-    val injector = opencola.core.config.Application.instance.injector
+fun Application.configureRouting(application: app) {
+    val injector = application.injector
     val logger = app.instance.logger
 
     routing {
         get("/search"){
-            SearchHandler(call).respond()
+            val searchService by injector.instance<SearchService>()
+            handleSearchCall(call, searchService)
         }
 
         get("/entity/{id}"){
-            // Handler that returns info on entity by URL
             // TODO: Authority should be passed (and authenticated) in header
-            val stringId = call.parameters["id"] ?: throw IllegalArgumentException("No id set")
             val authority by injector.instance<Authority>()
             val entityStore by injector.instance<EntityStore>()
-
-            val entity = entityStore.getEntity(authority.authorityId, Id.fromHexString(stringId))
-
-            if(entity != null)
-                call.respond(entity.getFacts())
-
+            handleEntityCall(call, authority.authorityId, entityStore)
         }
 
         get("/transactions/{authorityId}"){
-            TransactionsHandler(call).respond()
+            val entityStore by injector.instance<EntityStore>()
+            handleTransactionsCall(call, entityStore)
         }
 
         get("/transactions/{authorityId}/{transactionId}"){
-            TransactionsHandler(call).respond()
+            val entityStore by injector.instance<EntityStore>()
+            handleTransactionsCall(call, entityStore)
         }
 
         get("/data/{id}/{partName}"){
@@ -66,7 +63,6 @@ fun Application.configureRouting() {
         get("/data/{id}"){
              // Handler that returns data from datastore
             val stringId = call.parameters["id"] ?: throw IllegalArgumentException("No id set")
-            println("Data id: $stringId")
             val id = Id.fromHexString(stringId)
             val dataHandler by injector.instance<DataHandler>()
 
@@ -116,12 +112,15 @@ fun Application.configureRouting() {
             }
 
             println("Action: $action Bytes: ${mhtml?.size}")
-            handleAction(action as String, value, mhtml as ByteArray)
+            val entityService by opencola.core.config.Application.instance.injector.instance<EntityService>()
+            handleActionCall(action as String, value, entityService, mhtml as ByteArray)
             call.respond(HttpStatusCode.Accepted)
         }
 
         get("/actions/{uri}"){
-            ActionsHandler(call).respond()
+            val authority by injector.instance<Authority>()
+            val entityStore by injector.instance<EntityStore>()
+            ActionsHandler(call, authority, entityStore).respond()
         }
 
         post("/notifications"){

@@ -13,10 +13,8 @@ import org.kodein.di.instance
 import java.net.URI
 
 // TODO: Abstract out Handler with ApplicationCall, injector, logger, respond, etc.
-class ActionsHandler(private val call: ApplicationCall) {
+class ActionsHandler(private val call: ApplicationCall, val authority: Authority, val entityStore: EntityStore) {
     val injector = Application.instance.injector
-    val authority by injector.instance<Authority>()
-    val entityStore by injector.instance<EntityStore>()
 
     suspend fun respond() {
         val stringUri = call.parameters["uri"] ?: throw IllegalArgumentException("No uri set")
