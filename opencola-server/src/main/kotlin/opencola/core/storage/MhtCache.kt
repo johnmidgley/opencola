@@ -16,7 +16,7 @@ import kotlin.io.path.outputStream
 import kotlin.io.path.readBytes
 
 class MhtCache(private val cachePath: Path, private val entityStore: EntityStore, private val fileStore: FileStore) {
-    private val logger = KotlinLogging.logger {}
+    private val logger = KotlinLogging.logger("MhtCache")
 
     init{
         logger.info { "Cache Path: $cachePath" }

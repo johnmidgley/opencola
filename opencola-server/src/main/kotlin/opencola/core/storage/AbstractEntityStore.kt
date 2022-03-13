@@ -10,7 +10,7 @@ const val INVALID_TRANSACTION_ID: Long = -1
 // TODO: Should support multiple authorities
 abstract class AbstractEntityStore(val authority: Authority, protected val signator: Signator) : EntityStore {
     // TODO: Make logger class?
-    protected val logger = KotlinLogging.logger {}
+    protected val logger = KotlinLogging.logger("EntityStore")
     protected fun logAndThrow(exception: Exception) {
         logger.error { exception.message }
         throw exception

@@ -16,7 +16,7 @@ import opencola.core.model.Id
 import opencola.core.network.Peer.*
 
 class PeerRouter(private val networkConfig: NetworkConfig) {
-    private val logger = KotlinLogging.logger{}
+    private val logger = KotlinLogging.logger("PeerRouter")
     private val idToPeerMap = peersFromNetworkConfig(networkConfig)
     val peers: List<Peer> get() { return idToPeerMap.values.map { it.toPeer() }.toList() }
 

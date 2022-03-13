@@ -29,7 +29,7 @@ private const val solrSocketTimeoutMillis = 60000
 
 // TODO: Probably just id is better. Nothing needs to be signed, and no other properties are used
 class SearchIndex(val authority: Authority) {
-    private val logger = KotlinLogging.logger {}
+    private val logger = KotlinLogging.logger("SearchIndex")
 
     private val solrClient: HttpSolrClient = HttpSolrClient.Builder(solrBaseUrl)
         .withConnectionTimeout(solrConnectionTimeoutMillis)
@@ -42,6 +42,7 @@ class SearchIndex(val authority: Authority) {
 
     // This needs to come after networkPath has been initialized
     init{
+        logger.info { "Initializing Index: $solrCollectionName" }
         create()
     }
 
@@ -71,12 +72,12 @@ class SearchIndex(val authority: Authority) {
         return false
     }
     fun create() : Boolean{
-        logger.info { "Creating Index: $solrCollectionName" }
         // Shell docs at: https://github.com/lordcodes/turtle
         // TODO - error checking
         // TODO - Check that solr exists and that authorities directory exists (create if not)
 
         if(!isCoreReady()) {
+            logger.info { "Creating Index: $solrCollectionName" }
             val createRequest = CoreAdminRequest.Create()
             createRequest.setCoreName(solrCollectionName)
             createRequest.configSet = configSet

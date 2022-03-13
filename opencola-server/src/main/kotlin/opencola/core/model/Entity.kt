@@ -21,7 +21,7 @@ import java.lang.IllegalArgumentException
 
 abstract class Entity(val authorityId: Id, val entityId: Id){
     companion object Factory {
-        private val logger = KotlinLogging.logger {}
+        private val logger = KotlinLogging.logger("Entity")
 
         // TODO: Iterable<Fact> instead of List<Fact> for any parameters
         fun getInstance(facts: List<Fact>) : Entity? {
