@@ -1,75 +1,73 @@
-package opencola.server
+package opencola.core.storage
 
 import mu.KotlinLogging
 import opencola.core.config.Application
 import opencola.core.content.parseMime
 import opencola.core.content.splitMht
 import opencola.core.extensions.nullOrElse
-import opencola.core.model.Authority
 import opencola.core.model.DataEntity
 import opencola.core.model.Id
 import opencola.core.model.ResourceEntity
-import opencola.core.storage.EntityStore
-import opencola.core.storage.FileStore
 import java.io.ByteArrayInputStream
 import java.nio.file.Path
-import kotlin.io.path.*
+import kotlin.io.path.createDirectory
+import kotlin.io.path.exists
+import kotlin.io.path.outputStream
+import kotlin.io.path.readBytes
 
-
-// TODO - Move to DataService.
-// TODO- Factor out MhtCache
-// TODD - Rename to DataService?
-class DataHandler(private val authority: Authority, private val entityStore: EntityStore, private val fileStore: FileStore) {
+class MhtCache(private val cachePath: Path, private val entityStore: EntityStore, private val fileStore: FileStore) {
     private val logger = KotlinLogging.logger {}
 
     // TODO: Add cache to config
     private val mhtCachePath = Application.instance.storagePath.resolve("mht-cache")
 
     init{
+        TODO("Make sure cache path is set right in DI")
         if(!mhtCachePath.exists()) mhtCachePath.createDirectory()
     }
 
-    private fun getDataEntity(id: Id): DataEntity? {
-        val entity = entityStore.getEntity(authority.authorityId, id)
+    // TODO: Move this to entityService, since it's general
+    private fun getDataEntity(authorityId: Id, entityId: Id): DataEntity? {
+        val entity = entityStore.getEntity(authorityId, entityId)
 
-       return when (entity) {
-            is ResourceEntity -> entity.dataId.nullOrElse { entityStore.getEntity(authority.authorityId, it) }
+        return when (entity) {
+            is ResourceEntity -> entity.dataId.nullOrElse { entityStore.getEntity(authorityId, it) }
             is DataEntity -> entity
             else -> null
         } as DataEntity?
     }
 
-    fun getData(id: Id): ByteArray? {
-        return getDataEntity(id).nullOrElse { fileStore.read(it.entityId)  }
+    fun getData(authorityId: Id, entityId: Id): ByteArray? {
+        return getDataEntity(authorityId, entityId).nullOrElse { fileStore.read(it.entityId)  }
     }
 
     private fun cachedPartPath(id: Id, partName: String): Path {
         return mhtCachePath.resolve(id.toString()).resolve(partName)
     }
 
-    fun createDataDirectory(id: Id){
+    private fun createDataDirectory(id: Id){
         val dataPath = mhtCachePath.resolve(id.toString())
         if(!dataPath.exists()){
             dataPath.createDirectory()
         }
     }
 
-    private fun cacheMhtParts(id: Id){
-        val data = getData(id)
+    private fun cacheMhtParts(authorityId: Id, entityId: Id){
+        val data = getData(authorityId, entityId)
 
         if(data == null){
-            logger.warn { "No data available to cache for id: $id" }
+            logger.warn { "No data available to cache for id: $entityId" }
             return
         }
 
         val message = parseMime(ByteArrayInputStream(data))
-        createDataDirectory(id)
+        createDataDirectory(entityId)
 
         if(message != null) {
             val parts = splitMht(message)
 
             parts.forEach{
-                cachedPartPath(id, it.name).outputStream().use{ stream ->
+                cachedPartPath(entityId, it.name).outputStream().use{ stream ->
                     stream.write(it.bytes)
                 }
             }
@@ -85,11 +83,11 @@ class DataHandler(private val authority: Authority, private val entityStore: Ent
         return if(partPath.exists()) partPath.readBytes() else null
     }
 
-    fun getDataPart(id: Id, partName: String): ByteArray? {
-        if(!isPartCached(id, partName)){
-            cacheMhtParts(id)
+    fun getDataPart(authorityId: Id, entityId: Id, partName: String): ByteArray? {
+        if(!isPartCached(entityId, partName)){
+            cacheMhtParts(authorityId, entityId)
         }
 
-        return getCachedPart(id, partName)
+        return getCachedPart(entityId, partName)
     }
 }

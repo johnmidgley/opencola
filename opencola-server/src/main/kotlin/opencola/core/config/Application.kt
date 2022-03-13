@@ -14,9 +14,9 @@ import opencola.core.security.publicKeyFromBytes
 import opencola.core.storage.ExposedEntityStore
 import opencola.core.storage.LocalFileStore
 import opencola.core.storage.SQLiteDB
-import opencola.server.DataHandler
 import opencola.service.EntityService
 import opencola.core.network.PeerRouter
+import opencola.core.storage.MhtCache
 import opencola.service.search.SearchService
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
@@ -95,8 +95,9 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
                 bindSingleton { PeerRouter(config.network) }
                 bindSingleton { SearchService(instance(), instance(), instance()) }
                 bindSingleton { EntityService(instance(), instance(), instance(), instance(), instance(), instance()) }
-                // TODO: Add unit test for data handler
-                bindSingleton { DataHandler(instance(), instance(), instance()) }
+                // TODO: Add unit tests for MhtCache
+                // TODO: Get cache name from config
+                bindSingleton { MhtCache(storagePath.resolve("mht-cache"), instance(), instance()) }
             }
 
             return Application(storagePath, config, injector)

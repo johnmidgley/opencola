@@ -92,7 +92,7 @@ class EntityService(private val authority: Authority,
         }
     }
 
-    fun updateEntities(vararg entities: Entity): SignedTransaction? {
+    private fun updateEntities(vararg entities: Entity): SignedTransaction? {
         val signedTransaction = entityStore.commitChanges(*entities)
 
         if (signedTransaction != null) {
