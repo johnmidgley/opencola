@@ -18,12 +18,9 @@ import kotlin.io.path.readBytes
 class MhtCache(private val cachePath: Path, private val entityStore: EntityStore, private val fileStore: FileStore) {
     private val logger = KotlinLogging.logger {}
 
-    // TODO: Add cache to config
-    private val mhtCachePath = Application.instance.storagePath.resolve("mht-cache")
-
     init{
         TODO("Make sure cache path is set right in DI")
-        if(!mhtCachePath.exists()) mhtCachePath.createDirectory()
+        if(!cachePath.exists()) cachePath.createDirectory()
     }
 
     // TODO: Move this to entityService, since it's general
@@ -42,11 +39,11 @@ class MhtCache(private val cachePath: Path, private val entityStore: EntityStore
     }
 
     private fun cachedPartPath(id: Id, partName: String): Path {
-        return mhtCachePath.resolve(id.toString()).resolve(partName)
+        return cachePath.resolve(id.toString()).resolve(partName)
     }
 
     private fun createDataDirectory(id: Id){
-        val dataPath = mhtCachePath.resolve(id.toString())
+        val dataPath = cachePath.resolve(id.toString())
         if(!dataPath.exists()){
             dataPath.createDirectory()
         }
@@ -75,7 +72,7 @@ class MhtCache(private val cachePath: Path, private val entityStore: EntityStore
     }
 
     private fun isPartCached(id: Id, partName: String): Boolean {
-        return mhtCachePath.resolve(id.toString()).resolve(partName).exists()
+        return cachePath.resolve(id.toString()).resolve(partName).exists()
     }
 
     private fun getCachedPart(id: Id, partName: String): ByteArray? {

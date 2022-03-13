@@ -32,19 +32,8 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
     val logger = KotlinLogging.logger("opencola.${config.env}")
 
     companion object Global {
+        // TODO: Remove - create loggers by component / namespace
         val logger = KotlinLogging.logger("opencola.init")
-
-        private var application: Application? = null
-        var instance: Application
-            get() {
-                return application ?: throw IllegalStateException("Attempt to get an uninitialized application")
-            }
-            set(value) {
-                if (application != null)
-                    throw IllegalStateException("Attempt to reset global application")
-
-                application = value
-            }
 
         fun getStoragePath(applicationPath: Path, config: Config): Path {
             val storagePath = applicationPath.resolve(config.storage.path)
@@ -57,6 +46,7 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
         }
 
         // TODO: pub key should come from private store, not authority.pub, and multiple authorities (personas) should be allowed
+        // TODO: Move to Identity Service
         fun getOrCreateRootPublicKey(storagePath: Path, config: Config): PublicKey {
             val publicKeyFile = "authority.pub" // TODO: Config?
             val authorityPubPath = storagePath.resolve(publicKeyFile)

@@ -4,6 +4,7 @@ import io.ktor.routing.*
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.http.content.*
+import mu.KotlinLogging
 import opencola.core.model.Authority
 import opencola.core.network.PeerRouter
 import opencola.core.storage.EntityStore
@@ -18,7 +19,8 @@ import opencola.core.config.Application as app
 // TODO: All routes should authenticate caller and authorize activity. Right now everything is open
 fun Application.configureRouting(application: app) {
     val injector = application.injector
-    val logger = app.instance.logger
+    // TODO: Make and user general opencola.server
+    val logger = KotlinLogging.logger("opencola.init")
 
     routing {
         get("/search"){

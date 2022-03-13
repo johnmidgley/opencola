@@ -31,15 +31,15 @@ object TestApplication {
             config.security.keystore.password
         )
         keyStore.addKey(authority.authorityId, KeyPair(authorityPublicKey, authorityPrivateKey))
-        Application.instance = Application.instance(testRunStoragePath, config, authorityPublicKey)
-        val index by Application.instance.injector.instance<SearchIndex>()
+        val instance =  Application.instance(testRunStoragePath, config, authorityPublicKey)
+        val index by instance.injector.instance<SearchIndex>()
 
         // Clear out any existing index
         index.delete()
         index.create()
 
         // Return the instance
-        Application.instance
+        instance
     }
 
     val config by lazy {
