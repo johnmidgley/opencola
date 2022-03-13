@@ -19,7 +19,7 @@ class MhtCache(private val cachePath: Path, private val entityStore: EntityStore
     private val logger = KotlinLogging.logger {}
 
     init{
-        TODO("Make sure cache path is set right in DI")
+        logger.info { "Cache Path: $cachePath" }
         if(!cachePath.exists()) cachePath.createDirectory()
     }
 

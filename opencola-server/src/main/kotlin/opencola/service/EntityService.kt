@@ -105,7 +105,7 @@ class EntityService(private val authority: Authority,
         return signedTransaction
     }
 
-    fun updateResource(mhtmlPage: MhtmlPage, actions: Actions) {
+    fun updateResource(mhtmlPage: MhtmlPage, actions: Actions): ResourceEntity {
         // TODO: Add data id to resource entity - when indexing, index body from the dataEntity
         // TODO: Parse description
         // TODO - EntityStore should detect if a duplicate entity is added. Just merge it?
@@ -138,6 +138,7 @@ class EntityService(private val authority: Authority,
 
             updateEntities(entity, dataEntity)
             searchIndex.index(entity)
+            return entity
         }
     }
 
