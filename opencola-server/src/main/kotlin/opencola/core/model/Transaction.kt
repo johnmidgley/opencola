@@ -13,10 +13,6 @@ import java.security.PublicKey
 import java.time.Instant
 
 @Serializable
-// TODO: Change id to epoch
-// TODO: Add timestamp
-// TODO: Should id be a long? Would int suffice?
-// TODO: Change List<T>s to Iterable<T>s
 data class Transaction(val id: Long, val authorityId: Id, val transactionFacts: List<TransactionFact>, val epochSecond: Long = Instant.EPOCH.epochSecond){
     fun getFacts(): List<Fact> {
         return transactionFacts.map { Fact(authorityId, it.entityId, it.attribute, it.value, it.operation, id) }
@@ -41,7 +37,6 @@ data class Transaction(val id: Long, val authorityId: Id, val transactionFacts: 
     }
 
     @Serializable
-    // TODO: Consider making value a Value with a clean string serializer (signature too). Maybe doesn't matter with protobuf, but nice for json
     data class TransactionFact(val entityId: Id, val attribute: Attribute, val value: Value, val operation: Operation) {
          companion object Factory : StreamSerializer<TransactionFact> {
             fun fromFact(fact: Fact): TransactionFact {
