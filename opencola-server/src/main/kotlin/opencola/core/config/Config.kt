@@ -10,7 +10,7 @@ data class FilestoreConfig(val name: String = "filestore")
 data class StorageConfig(val path: Path, val filestore: FilestoreConfig = FilestoreConfig())
 data class KeystoreConfig(val name: String, val password: String)
 data class SecurityConfig(val keystore: KeystoreConfig)
-data class PeerConfig(val id: String, val name: String, val host: String)
+data class PeerConfig(val id: String, val publicKey: String, val name: String, val host: String)
 data class NetworkConfig(val peers: List<PeerConfig> = emptyList())
 data class Config(val env: String,
                   val server: ServerConfig?,

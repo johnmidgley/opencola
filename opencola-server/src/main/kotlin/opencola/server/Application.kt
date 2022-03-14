@@ -3,8 +3,8 @@ package opencola.server
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import opencola.core.config.Application
-import opencola.core.config.ServerConfig
 import opencola.core.config.loadConfig
+import opencola.core.extensions.toHexString
 import opencola.core.model.Id
 import opencola.server.plugins.configureContentNegotiation
 import opencola.server.plugins.configureHTTP
@@ -28,7 +28,8 @@ fun main() {
     val publicKey = Application.getOrCreateRootPublicKey(applicationPath.resolve(config.storage.path), config)
 
     val application = Application.instance(Application.getStoragePath(applicationPath, config),  config, publicKey)
-    application.logger.info("Application authority: ${Id.ofPublicKey(publicKey)}")
+    application.logger.info("Authority: ${Id.ofPublicKey(publicKey)}")
+    application.logger.info("Public Key : ${publicKey.encoded.toHexString()}")
 
     // TODO: Make sure entityService starts as soon as server is up, so that transactions can be received
 
