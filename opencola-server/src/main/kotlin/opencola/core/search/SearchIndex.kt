@@ -129,8 +129,11 @@ class SearchIndex(val authority: Authority) {
         )
 
         return queryResponse.results.map{
+            val idParts = it.getFieldValue("id").toString().split(":")
+
             SearchResult(
-                Id.fromHexString(it.getFieldValue("id").toString()),
+                Id.fromHexString(idParts[0]),
+                Id.fromHexString(idParts[1]),
                 it.getFieldValue(CoreAttribute.Name.spec.name)?.toString(),
                 it.getFieldValue(CoreAttribute.Description.spec.name)?.toString(),
             )
@@ -142,10 +145,12 @@ class SearchIndex(val authority: Authority) {
     // Also think about adding "from" multi field, so peer ids can be stored too.
     // Consider external fields for personalized ranks: https://solr.apache.org/guide/8_10/working-with-external-files-and-processes.html
     fun index(entity: Entity){
-        logger.info { "Indexing: ${entity.entityId}" }
+        val id = "${entity.authorityId}:${entity.entityId}"
+        logger.info { "Indexing: $id" }
 
         val doc = SolrInputDocument()
-        doc.addField("id", entity.entityId.toString())
+        doc.addField("id", id)
+
 
         // TODO: Probably need to manage multivalued fields (like tags) differently
         CoreAttribute.values()

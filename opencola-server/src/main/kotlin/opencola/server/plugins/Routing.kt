@@ -28,11 +28,16 @@ fun Application.configureRouting(application: app) {
             handleGetSearchCall(call, searchService)
         }
 
-        get("/entity/{id}"){
+        get("/entity/{entityId}"){
             // TODO: Authority should be passed (and authenticated) in header
             val authority by injector.instance<Authority>()
             val entityStore by injector.instance<EntityStore>()
             handleGetEntityCall(call, authority.authorityId, entityStore)
+        }
+
+        get("/entity/{authorityId}/{entityId}"){
+            val entityStore by injector.instance<EntityStore>()
+            handleGetEntityCall(call, entityStore)
         }
 
         get("/transactions/{authorityId}"){
