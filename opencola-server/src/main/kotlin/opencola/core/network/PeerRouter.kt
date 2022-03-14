@@ -11,22 +11,26 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
-import opencola.core.config.NetworkConfig
 import opencola.core.model.Id
-import opencola.core.network.Peer.*
+import opencola.core.model.Peer
+import opencola.core.network.PeerRouter.PeerStatus.Status.*
+import opencola.core.storage.AddressBook
 
-class PeerRouter(private val networkConfig: NetworkConfig) {
+// TODO: Should respond to changes in address book
+class PeerRouter(private val addressBook: AddressBook) {
     private val logger = KotlinLogging.logger("PeerRouter")
-    private val idToPeerMap = peersFromNetworkConfig(networkConfig)
-    val peers: List<Peer> get() { return idToPeerMap.values.map { it.toPeer() }.toList() }
+    private val peerIdToStatusMap = addressBook.peers.associate { Pair(it.id, PeerStatus(it)) }
+    val peers: List<Peer> get() { return peerIdToStatusMap.values.map { it.peer }}
 
     fun getPeer(peerId: Id): Peer? {
-        return idToPeerMap[peerId]?.toPeer() ?: null
+        return peerIdToStatusMap[peerId]?.peer
     }
 
-    data class MutablePeer(val id: Id, val name: String, val host: String, var status: Status = Status.Unknown){
-        fun toPeer(): Peer {
-            return Peer(id, name, host, status)
+    data class PeerStatus(val peer: Peer, var status: Status = Unknown){
+        enum class Status{
+            Unknown,
+            Offline,
+            Online
         }
     }
 
@@ -43,30 +47,22 @@ class PeerRouter(private val networkConfig: NetworkConfig) {
         }
     }
 
-    // TODO: Peers should eventually come from a private part of the entity store
-    private fun peersFromNetworkConfig(networkConfig: NetworkConfig): MutableMap<Id, MutablePeer> {
-        return networkConfig.peers.associate {
-            val peerId = Id.fromHexString(it.id)
-            Pair(peerId, MutablePeer(Id.fromHexString(it.id), it.name, it.host))
-        }.toMutableMap()
-    }
-
     fun broadcastMessage(path: String, message: Any){
         runBlocking {
-            idToPeerMap.values.forEach {
+            peerIdToStatusMap.values.forEach {
                 // TODO: Make batched, to limit simultaneous connections
                 async { sendMessage(it, path, message) }
             }
         }
     }
 
-    fun updateStatus(peerId: Id, status: Status){
-        val peer = idToPeerMap[peerId] ?: throw IllegalArgumentException("Attempt to update status for unknown peer: $peerId")
+    fun updateStatus(peerId: Id, status: PeerStatus.Status){
+        val peer = peerIdToStatusMap[peerId] ?: throw IllegalArgumentException("Attempt to update status for unknown peer: $peerId")
         peer.status = status
     }
 
-    private suspend fun sendMessage(peer: MutablePeer, path: String, message: Any){
-        val urlString = "http://${peer.host}/$path"
+    private suspend fun sendMessage(peerStatus: PeerStatus, path: String, message: Any){
+        val urlString = "http://${peerStatus.peer.host}/$path"
         logger.info { "Sending $message to $urlString" }
 
         try {
@@ -76,10 +72,11 @@ class PeerRouter(private val networkConfig: NetworkConfig) {
             }.execute()
 
             logger.info { "Response: ${response.status}" }
-            peer.status = Status.Online
+
+            peerStatus.status = Online
         } catch (e: Exception){
             logger.error { e.message }
-            peer.status = Status.Offline
+            peerStatus.status = Offline
         }
     }
 }

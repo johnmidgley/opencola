@@ -8,26 +8,29 @@ import java.security.PublicKey
 const val INVALID_TRANSACTION_ID: Long = -1
 
 // TODO: Should support multiple authorities
-abstract class AbstractEntityStore(val authority: Authority, protected val signator: Signator) : EntityStore {
+abstract class AbstractEntityStore(val authority: Authority, val addressBook: AddressBook, protected val signator: Signator) : EntityStore {
+    // TODO: Assumes transaction has been validated. Cleanup?
+    protected abstract fun persistTransaction(signedTransaction: SignedTransaction)
+
+
     // TODO: Make logger class?
     protected val logger = KotlinLogging.logger("EntityStore")
     protected fun logAndThrow(exception: Exception) {
         logger.error { exception.message }
         throw exception
     }
+
     private fun logAndThrow(message: String){
         logAndThrow(RuntimeException(message))
     }
 
     protected var transactionId: Long = INVALID_TRANSACTION_ID
         @Synchronized
-        set(id: Long){ field = id}
+        set(id){ field = id}
 
     protected fun isValidTransaction(signedTransaction: SignedTransaction): Boolean {
         // TODO: Move what can be moved to transaction
         val transactionId = signedTransaction.transaction.id
-        val facts = signedTransaction.transaction.getFacts()
-
 
         if (signedTransaction.transaction.authorityId != authority.entityId) {
             logger.warn { "Ignoring transaction $transactionId with unverifiable authority: $authority" }
@@ -47,7 +50,7 @@ abstract class AbstractEntityStore(val authority: Authority, protected val signa
     }
 
     // TODO - make entity method?
-    protected fun validateEntity(entity: Entity) : Entity {
+    private fun validateEntity(entity: Entity) : Entity {
         val authorityIds = entity.getFacts().map { it.authorityId }.distinct()
 
         if(authorityIds.size != 1){
@@ -105,5 +108,18 @@ abstract class AbstractEntityStore(val authority: Authority, protected val signa
         this.transactionId = nextTransactionId
 
         return signedTransaction
+    }
+
+    override fun addTransactions(signedTransactions: List<SignedTransaction>) {
+        signedTransactions.forEach {
+            val transactionAuthorityId = it.transaction.authorityId
+            val publicKey = addressBook.getPublicKey(transactionAuthorityId)
+                ?: throw IllegalArgumentException("No public key for: $transactionAuthorityId - cannot persist transaction ${it.transaction.id}")
+
+            if (!it.isValidTransaction(publicKey))
+                throw IllegalArgumentException("Transaction ${it.transaction.id} failed to validate from $transactionAuthorityId")
+
+            persistTransaction(it)
+        }
     }
 }

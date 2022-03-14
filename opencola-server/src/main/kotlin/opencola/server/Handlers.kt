@@ -12,13 +12,12 @@ import opencola.core.model.Actions
 import opencola.core.model.Id
 import opencola.core.model.ResourceEntity
 import opencola.core.model.SignedTransaction
-import opencola.core.network.Peer
 import opencola.core.network.PeerRouter
+import opencola.core.network.PeerRouter.PeerStatus.Status.*
 import opencola.core.storage.EntityStore
 import opencola.core.storage.MhtCache
 import opencola.service.EntityService
 import opencola.service.search.SearchService
-import org.kodein.di.instance
 import java.net.URI
 
 suspend fun handleGetSearchCall(call: ApplicationCall, searchService: SearchService) {
@@ -149,7 +148,7 @@ suspend fun handlePostNotifications(call: ApplicationCall, entityService: Entity
     val peerId = notification.peerId
 
     // TODO: Handle switch to online with event bus that triggers request for new transactions
-    peerRouter.updateStatus(peerId, Peer.Status.Online)
+    peerRouter.updateStatus(peerId, Online)
 
     when(notification.event){
         PeerRouter.Event.NewTransactions -> entityService.requestTransactions(peerId)

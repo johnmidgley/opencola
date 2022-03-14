@@ -12,7 +12,7 @@ import kotlin.io.path.exists
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 
-class SimpleEntityStore(val path: Path, authority: Authority, signator: Signator) : AbstractEntityStore(authority, signator) {
+class SimpleEntityStore(val path: Path, addressBook: AddressBook , authority: Authority, signator: Signator) : AbstractEntityStore(authority, addressBook, signator) {
     // TODO: Synchronize access
     private var transactions =
         if (!path.exists()) {
@@ -65,7 +65,7 @@ class SimpleEntityStore(val path: Path, authority: Authority, signator: Signator
         path.outputStream(StandardOpenOption.APPEND, StandardOpenOption.CREATE)
             .use { SignedTransaction.encode(it, signedTransaction) }
         transactions += signedTransaction
-        facts += signedTransaction.expandFacts()
+        facts += signedTransaction.transaction.expandFacts()
     }
 
     override fun getTransaction(authorityId: Id, transactionId: Long): SignedTransaction? {
@@ -84,6 +84,6 @@ class SimpleEntityStore(val path: Path, authority: Authority, signator: Signator
 
     override fun resetStore(): SimpleEntityStore {
         path.deleteIfExists()
-        return SimpleEntityStore(path, authority, signator)
+        return SimpleEntityStore(path, addressBook, authority, signator)
     }
 }

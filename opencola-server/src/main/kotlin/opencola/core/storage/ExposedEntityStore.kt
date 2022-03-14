@@ -1,6 +1,7 @@
 package opencola.core.storage
 
 import opencola.core.model.*
+import opencola.core.model.Transaction
 import opencola.core.security.Signator
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.statements.api.ExposedBlob
@@ -9,7 +10,7 @@ import java.io.ByteArrayInputStream
 
 // TODO: Think about using SQLite - super simple and maybe better fit for local use.
 
-class ExposedEntityStore(authority: Authority, signator: Signator, private val database: Database) : AbstractEntityStore(authority, signator) {
+class ExposedEntityStore(authority: Authority, addressBook: AddressBook, signator: Signator, private val database: Database) : AbstractEntityStore(authority, addressBook, signator) {
     // NOTE: Some databases may truncate the table name. This is an issue to the degree that it increases the
     // chances of collisions. Given the number of ids stored in a single DB, the chances of issue are exceedingly low.
     // This would likely be an issue only when storing data for large sets of users (millions to billions?)
@@ -69,7 +70,7 @@ class ExposedEntityStore(authority: Authority, signator: Signator, private val d
             SchemaUtils.drop(facts, transactions)
         }
 
-        return ExposedEntityStore(authority, signator, database)
+        return ExposedEntityStore(authority, addressBook, signator, database)
     }
 
     override fun getEntity(authorityId: Id, entityId: Id): Entity? {
@@ -90,8 +91,10 @@ class ExposedEntityStore(authority: Authority, signator: Signator, private val d
     }
 
     override fun persistTransaction(signedTransaction: SignedTransaction) {
+        val transaction = signedTransaction.transaction
+
         transaction(database){
-            signedTransaction.expandFacts().forEach{ fact ->
+            transaction.expandFacts().forEach{ fact ->
                 facts.insert {
                     it[authorityId] = Id.encode(fact.authorityId)
                     it[entityId] = Id.encode(fact.entityId)
@@ -103,9 +106,9 @@ class ExposedEntityStore(authority: Authority, signator: Signator, private val d
             }
 
             transactions.insert {
-                it[id] = signedTransaction.transaction.id
-                it[authorityId] = Id.encode(signedTransaction.transaction.authorityId)
-                it[epochSecond] = signedTransaction.transaction.epochSecond
+                it[id] = transaction.id
+                it[authorityId] = Id.encode(transaction.authorityId)
+                it[epochSecond] = transaction.epochSecond
                 it[encoded] = ExposedBlob(SignedTransaction.encode(signedTransaction))
             }
         }

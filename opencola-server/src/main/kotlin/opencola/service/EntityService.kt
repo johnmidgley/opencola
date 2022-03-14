@@ -12,11 +12,11 @@ import opencola.core.content.MhtmlPage
 import opencola.core.content.TextExtractor
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.*
-import opencola.core.network.Peer
-import opencola.core.network.Peer.Status
+import opencola.core.model.Peer
 import opencola.core.network.PeerRouter
 import opencola.core.network.PeerRouter.Event
 import opencola.core.network.PeerRouter.Notification
+import opencola.core.network.PeerRouter.PeerStatus.Status.*
 import opencola.core.search.SearchIndex
 import opencola.core.storage.EntityStore
 import opencola.core.storage.FileStore
@@ -54,6 +54,7 @@ class EntityService(private val authority: Authority,
         val peer = peerRouter.getPeer(peerId)
             ?: throw IllegalArgumentException("Attempt to request transactions for unknown peer: $peerId ")
 
+        // TODO: This blocks startup. Make fully async (and/or handle startup with event bus)
         runBlocking {
             async { requestTransactions(peer) }
         }
@@ -74,13 +75,8 @@ class EntityService(private val authority: Authority,
                 val transactionsResponse: TransactionsResponse =
                     httpClient.get(urlString)
 
-                peerRouter.updateStatus(peer.id, Status.Online)
-
-                transactionsResponse.transactions.forEach {
-                    entityStore.persistTransaction(it)
-                    indexTransaction(it)
-                }
-
+                peerRouter.updateStatus(peer.id, Online)
+                entityStore.addTransactions(transactionsResponse.transactions)
                 nextTransactionId = transactionsResponse.transactions.maxOf { it.transaction.id }
 
                 if(nextTransactionId >= transactionsResponse.currentTransactionId)
@@ -89,7 +85,7 @@ class EntityService(private val authority: Authority,
         } catch (e: Exception){
             logger.error { e.message }
             // TODO: This should depend on the error
-            peerRouter.updateStatus(peer.id, Status.Offline)
+            peerRouter.updateStatus(peer.id, Offline)
         }
     }
 
@@ -141,11 +137,6 @@ class EntityService(private val authority: Authority,
             searchIndex.index(entity)
             return entity
         }
-    }
-
-    fun importTransaction(signedTransaction: SignedTransaction){
-        entityStore.persistTransaction(signedTransaction)
-        indexTransaction(signedTransaction)
     }
 
     private fun indexTransaction(signedTransaction: SignedTransaction) {

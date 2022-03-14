@@ -22,6 +22,12 @@ data class Transaction(val id: Long, val authorityId: Id, val transactionFacts: 
         return transactionFacts.map { Fact(authorityId, it.entityId, it.attribute, it.value, it.operation, id) }
     }
 
+    fun expandFacts() : Iterable<Fact> {
+        return transactionFacts.map {
+            Fact(authorityId, it.entityId, it.attribute, it.value, it.operation, id)
+        }
+    }
+
     // TODO: This is common to a number of classes. Figure out how to make properly generic
     override fun toString(): String {
         return Json.encodeToString(this)
@@ -93,12 +99,6 @@ data class SignedTransaction(val transaction: Transaction, val signature: ByteAr
     // TODO: Fix signature serialization - right now json array vs. an encoded hex string
     fun isValidTransaction(publicKey: PublicKey): Boolean {
         return isValidSignature(publicKey, transaction.toString().toByteArray(), signature)
-    }
-
-    fun expandFacts() : Iterable<Fact> {
-        return transaction.transactionFacts.map {
-            Fact(transaction.authorityId, it.entityId, it.attribute, it.value, it.operation, transaction.id)
-        }
     }
 
     override fun equals(other: Any?): Boolean {

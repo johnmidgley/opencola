@@ -17,11 +17,12 @@ class EntityStoreTest {
     private val app = TestApplication.instance
     private val authority by app.injector.instance<Authority>()
     private val signator by app.injector.instance<Signator>()
+    private val addressBook by app.injector.instance<AddressBook>()
     // TODO: Make .txs and .db use the test run folder - currently save directly in the test folder
     private val simpleEntityStorePath = TestApplication.testRunStoragePath.resolve("${TestApplication.testRunName}.txs")
-    private val getSimpleEntityStore = { SimpleEntityStore(simpleEntityStorePath, authority, signator) }
+    private val getSimpleEntityStore = { SimpleEntityStore(simpleEntityStorePath, addressBook, authority, signator) }
     private val sqLiteEntityStorePath = TestApplication.testRunStoragePath.resolve("${TestApplication.testRunName}.db")
-    private val getSQLiteEntityStore = { ExposedEntityStore(authority, signator, SQLiteDB(sqLiteEntityStorePath).db) }
+    private val getSQLiteEntityStore = { ExposedEntityStore(authority, addressBook, signator, SQLiteDB(sqLiteEntityStorePath).db) }
 
     // TODO: Remove these and switch to functions below
     init{
@@ -30,11 +31,11 @@ class EntityStoreTest {
     }
 
     fun getFreshSimpleEntityStore(): SimpleEntityStore {
-        return SimpleEntityStore(TestApplication.getTmpFilePath(".txs"), authority, signator)
+        return SimpleEntityStore(TestApplication.getTmpFilePath(".txs"), addressBook, authority, signator)
     }
 
     fun getFreshExposeEntityStore(): ExposedEntityStore {
-        return ExposedEntityStore(authority, signator, SQLiteDB(TestApplication.getTmpFilePath(".db")).db)
+        return ExposedEntityStore(authority, addressBook, signator, SQLiteDB(TestApplication.getTmpFilePath(".db")).db)
     }
 
     @Test

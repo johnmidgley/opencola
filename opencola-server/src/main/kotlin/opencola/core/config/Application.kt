@@ -11,12 +11,9 @@ import opencola.core.security.KeyStore
 import opencola.core.security.Signator
 import opencola.core.security.generateKeyPair
 import opencola.core.security.publicKeyFromBytes
-import opencola.core.storage.ExposedEntityStore
-import opencola.core.storage.LocalFileStore
-import opencola.core.storage.SQLiteDB
 import opencola.service.EntityService
 import opencola.core.network.PeerRouter
-import opencola.core.storage.MhtCache
+import opencola.core.storage.*
 import opencola.service.search.SearchService
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
@@ -80,9 +77,10 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
                 bindSingleton { fileStore }
                 bindSingleton { TextExtractor() }
                 bindSingleton { Signator(instance()) }
+                bindSingleton { AddressBook(instance(), config.network) }
+                bindSingleton { PeerRouter(instance()) }
                 bindSingleton { SearchIndex(instance()) }
-                bindSingleton { ExposedEntityStore(instance(), instance(), sqLiteDB) }
-                bindSingleton { PeerRouter(config.network) }
+                bindSingleton { ExposedEntityStore(instance(), instance(), instance(), sqLiteDB) }
                 bindSingleton { SearchService(instance(), instance(), instance()) }
                 bindSingleton { EntityService(instance(), instance(), instance(), instance(), instance(), instance()) }
                 // TODO: Add unit tests for MhtCache
