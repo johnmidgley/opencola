@@ -113,6 +113,8 @@
     <field name="id" type="string" indexed="true" stored="true" required="true" multiValued="false" />
 
     <!-- Memex specific fields -->
+    <field name="authorityId" type="string" indexed="true" stored="true" required="true" multiValued="false" />
+    <field name="entityId" type="string" indexed="true" stored="true" required="true" multiValued="false" />
     <field name="name" type="text_general" multiValued="false" stored="true"/>
     <field name="description" type="text_general" multiValued="false" stored="true"/>
     <field name="tags" type="text_general" multiValued="true" stored="true"/>

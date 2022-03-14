@@ -451,7 +451,9 @@
   <field name="_root_" type="string" docValues="false" indexed="true" stored="false"/>
   <field name="_text_" type="text_general" multiValued="true" indexed="true" stored="false"/>
   <field name="_version_" type="plong" indexed="false" stored="false"/>
+  <field name="authorityId" type="string" multiValued="false" indexed="true" required="true" stored="true"/>
   <field name="description" type="text_general" multiValued="false" stored="true"/>
+  <field name="entityId" type="string" multiValued="false" indexed="true" required="true" stored="true"/>
   <field name="id" type="string" multiValued="false" indexed="true" required="true" stored="true"/>
   <field name="like" type="boolean" multiValued="false" stored="true"/>
   <field name="name" type="text_general" multiValued="false" stored="true"/>

@@ -9,6 +9,8 @@ import opencola.core.model.Entity
 import mu.KotlinLogging
 import opencola.core.extensions.logErrorAndThrow
 import opencola.core.extensions.nullOrElse
+import opencola.core.extensions.toHexString
+import opencola.core.security.sha256
 import opencola.core.serialization.ByteArrayCodec
 import opencola.core.serialization.StringByteArrayCodec
 import org.apache.solr.client.solrj.impl.HttpSolrClient
@@ -125,15 +127,13 @@ class SearchIndex(val authority: Authority) {
 
         val queryResponse = solrClient.query(
             solrCollectionName,
-            MapSolrParams(mapOf("q" to q, "fl" to "id, name, description"))
+            MapSolrParams(mapOf("q" to q, "fl" to "id, authorityId, entityId, name, description"))
         )
 
         return queryResponse.results.map{
-            val idParts = it.getFieldValue("id").toString().split(":")
-
             SearchResult(
-                Id.fromHexString(idParts[0]),
-                Id.fromHexString(idParts[1]),
+                Id.fromHexString(it.getFieldValue("authorityId").toString()),
+                Id.fromHexString(it.getFieldValue("entityId").toString()),
                 it.getFieldValue(CoreAttribute.Name.spec.name)?.toString(),
                 it.getFieldValue(CoreAttribute.Description.spec.name)?.toString(),
             )
@@ -145,11 +145,13 @@ class SearchIndex(val authority: Authority) {
     // Also think about adding "from" multi field, so peer ids can be stored too.
     // Consider external fields for personalized ranks: https://solr.apache.org/guide/8_10/working-with-external-files-and-processes.html
     fun index(entity: Entity){
-        val id = "${entity.authorityId}:${entity.entityId}"
-        logger.info { "Indexing: $id" }
+        val id = sha256("${entity.authorityId}:${entity.entityId}")
+        logger.info { "Indexing authorityId: ${entity.authorityId} entityId: ${entity.entityId}" }
 
         val doc = SolrInputDocument()
-        doc.addField("id", id)
+        doc.addField("id", id.toHexString())
+        doc.addField("authorityId", authority.authorityId.toString())
+        doc.addField("entityId", entity.entityId.toString())
 
 
         // TODO: Probably need to manage multivalued fields (like tags) differently
