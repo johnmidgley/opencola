@@ -39,3 +39,7 @@ img.status {
     margin: 5px;
     border-radius: 2px;
 }
+
+div.tooltip {
+   display:table-cell;
+}
