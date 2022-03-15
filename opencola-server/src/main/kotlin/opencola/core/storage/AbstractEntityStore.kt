@@ -11,6 +11,10 @@ abstract class AbstractEntityStore(val authority: Authority, val addressBook: Ad
     protected abstract fun persistTransaction(signedTransaction: SignedTransaction) : SignedTransaction
     protected abstract fun getNextTransactionId(authorityId: Id): Id
 
+    protected fun getFirstTransactionId(authorityId: Id): Id {
+        return Id.ofData("$authorityId.firstTransaction".toByteArray())
+    }
+
     // TODO: Make logger class?
     protected val logger = KotlinLogging.logger("EntityStore")
     protected fun logAndThrow(exception: Exception) {

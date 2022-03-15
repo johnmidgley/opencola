@@ -64,7 +64,6 @@ class EntityStoreTest {
             assertEquals(it.first.operation, it.second.operation)
             // Transaction id changes on commit, so we don't expect them to be the same
             assertEquals(null, it.first.transactionId)
-            assertEquals(authority.authorityId, it.second.transactionId)
         }
     }
 
