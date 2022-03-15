@@ -39,7 +39,7 @@ class SimpleEntityStore(val path: Path, addressBook: AddressBook , authority: Au
     override fun getNextTransactionId(authorityId: Id): Id {
         return transactions
             .lastOrNull { it.transaction.authorityId == authorityId }
-            .ifNotNullOrElse({ Id.ofData(SignedTransaction.encode(it)) }, { authorityId })
+            .ifNotNullOrElse({ Id.ofData(SignedTransaction.encode(it)) }, { getFirstTransactionId(authorityId) })
     }
 
     private fun transactionsFromPath(path: Path): Sequence<SignedTransaction> {

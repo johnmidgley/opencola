@@ -70,7 +70,7 @@ class ExposedEntityStore(authority: Authority, addressBook: AddressBook, signato
     override fun getNextTransactionId(authorityId: Id) : Id {
         return getLastTransactionRow(authorityId).ifNotNullOrElse(
             { Id.ofData(it[transactions.encoded].bytes) },
-            { authorityId }
+            { getFirstTransactionId(authorityId) }
         )
     }
 
