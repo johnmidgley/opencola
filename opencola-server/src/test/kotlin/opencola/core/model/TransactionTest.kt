@@ -2,6 +2,8 @@ package opencola.core.model
 
 import opencola.core.TestApplication
 import opencola.core.extensions.toHexString
+import opencola.core.security.KEY_ALGO
+import opencola.core.security.SIGNATURE_ALGO
 import opencola.core.security.Signator
 import opencola.core.security.sha256
 import org.junit.Test
@@ -17,11 +19,11 @@ class TransactionTest {
 
     @Test
     fun testTransactionStructure(){
-        val stableStructureHash = "be5d76bb8869a6ad3739da6b9b5889e050a32ffa1f3d0da78b4bcdd0b7071394"
+        val stableStructureHash = "3960f25b533fedf4cda71a701553a4bf7fef02689a0b5bb7a335de3bd6c6efbd"
         val id = Id.ofData("".toByteArray())
-        val transactionFact = Transaction.TransactionFact(id, CoreAttribute.Type.spec, Value.emptyValue, Operation.Add)
-        val transaction = Transaction(id, id, listOf(transactionFact))
-        val signedTransaction = SignedTransaction(transaction, "".toByteArray())
+        val fact = Fact(id, id, CoreAttribute.Type.spec, Value.emptyValue, Operation.Add)
+        val transaction = Transaction.fromFacts(id, listOf(fact))
+        val signedTransaction = SignedTransaction(transaction, SIGNATURE_ALGO, "".toByteArray())
 
         val hash = ByteArrayOutputStream().use {
             SignedTransaction.encode(it, signedTransaction)
@@ -37,7 +39,7 @@ class TransactionTest {
         val entityId = Id.ofData("entityId".toByteArray())
         val value = Value("value".toByteArray())
         val fact = Fact(authorityId, entityId, CoreAttribute.Name.spec, value, Operation.Add)
-        val transaction = Transaction(authorityId, authorityId, listOf(Transaction.TransactionFact.fromFact(fact)))
+        val transaction = Transaction.fromFacts(authorityId, listOf(fact))
         val signedTransaction = transaction.sign(signator)
 
         val encodedTransaction = ByteArrayOutputStream().use {

@@ -69,7 +69,7 @@ class SimpleEntityStore(val path: Path, addressBook: AddressBook , authority: Au
         path.outputStream(StandardOpenOption.APPEND, StandardOpenOption.CREATE)
             .use { SignedTransaction.encode(it, signedTransaction) }
         transactions = transactions + signedTransaction
-        facts = facts + signedTransaction.transaction.expandFacts()
+        facts = facts + signedTransaction.transaction.getFacts()
         return signedTransaction
     }
 

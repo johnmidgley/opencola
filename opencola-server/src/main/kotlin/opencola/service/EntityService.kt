@@ -145,7 +145,7 @@ class EntityService(private val authority: Authority,
     private fun indexTransaction(signedTransaction: SignedTransaction) {
         val authorityId = signedTransaction.transaction.authorityId
 
-        signedTransaction.transaction.transactionFacts
+        signedTransaction.transaction.transactionEntities
             .map { f -> f.entityId }
             .distinct()
             .forEach { eid ->

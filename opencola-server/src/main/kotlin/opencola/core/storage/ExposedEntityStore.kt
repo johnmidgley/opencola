@@ -103,7 +103,7 @@ class ExposedEntityStore(authority: Authority, addressBook: AddressBook, signato
         val transaction = signedTransaction.transaction
 
         transaction(database){
-            transaction.expandFacts().forEach{ fact ->
+            transaction.getFacts().forEach{ fact ->
                 facts.insert {
                     it[authorityId] = Id.encode(fact.authorityId)
                     it[entityId] = Id.encode(fact.entityId)
