@@ -14,29 +14,28 @@ const val UNCOMMITTED = -1L
 // TODO: Think about making this only usable from inside the entity store, so that transaction ids can be controlled
 //  SubjectiveFact (add subject), and TransactionFact (add transaction id / epoch) - just one? Transaction fact? Subjective fact with epoch?
 @Serializable
-data class Fact(val authorityId: Id, val entityId: Id, val attribute: Attribute, val value: Value, val operation: Operation, val transactionId: Long = UNCOMMITTED){
+data class Fact(val authorityId: Id, val entityId: Id, val attribute: Attribute, val value: Value, val operation: Operation, val transactionId: Id? = null){
 
     override fun toString(): String {
         val decodedValue = value.nullOrElse { attribute.codec.decode(it.bytes) }
         return "{ authorityId: $authorityId entityId: $entityId attribute: $attribute value: $decodedValue operation: $operation transactionId: $transactionId"
     }
-
-    fun updateTransactionId(transactionId: Long): Fact {
-        return Fact(authorityId, entityId, attribute, value, operation, transactionId)
-    }
-
-    companion object Factory : StreamSerializer<Fact> {
+        companion object Factory : StreamSerializer<Fact> {
         override fun encode(stream: OutputStream, value: Fact) {
+            if(value.transactionId == null){
+                throw IllegalArgumentException("Attempt to encode fact with no transaction id set")
+            }
+
             Id.encode(stream, value.authorityId)
             Id.encode(stream, value.entityId)
             Attribute.encode(stream, value.attribute)
             Value.encode(stream, value.value)
             Operation.encode(stream, value.operation)
-            writeLong(stream, value.transactionId)
+            Id.encode(stream, value.transactionId)
         }
 
         override fun decode(stream: InputStream): Fact {
-            return Fact(Id.decode(stream), Id.decode(stream), Attribute.decode(stream), Value.decode(stream), Operation.decode(stream), readLong(stream))
+            return Fact(Id.decode(stream), Id.decode(stream), Attribute.decode(stream), Value.decode(stream), Operation.decode(stream), Id.decode(stream))
         }
 
     }

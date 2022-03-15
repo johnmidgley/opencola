@@ -5,13 +5,11 @@ import opencola.core.model.*
 import opencola.core.security.Signator
 import java.security.PublicKey
 
-const val INVALID_TRANSACTION_ID: Long = -1
-
 // TODO: Should support multiple authorities
 abstract class AbstractEntityStore(val authority: Authority, val addressBook: AddressBook, protected val signator: Signator) : EntityStore {
     // TODO: Assumes transaction has been validated. Cleanup?
-    protected abstract fun persistTransaction(signedTransaction: SignedTransaction)
-
+    protected abstract fun persistTransaction(signedTransaction: SignedTransaction) : SignedTransaction
+    protected abstract fun getNextTransactionId(authorityId: Id): Id
 
     // TODO: Make logger class?
     protected val logger = KotlinLogging.logger("EntityStore")
@@ -24,10 +22,6 @@ abstract class AbstractEntityStore(val authority: Authority, val addressBook: Ad
         logAndThrow(RuntimeException(message))
     }
 
-    protected var transactionId: Long = INVALID_TRANSACTION_ID
-        @Synchronized
-        set(id){ field = id}
-
     protected fun isValidTransaction(signedTransaction: SignedTransaction): Boolean {
         // TODO: Move what can be moved to transaction
         val transactionId = signedTransaction.transaction.id
@@ -37,7 +31,7 @@ abstract class AbstractEntityStore(val authority: Authority, val addressBook: Ad
             return false
         }
 
-        if(signedTransaction.transaction.getFacts().any { it.transactionId == UNCOMMITTED }){
+        if(signedTransaction.transaction.getFacts().any { it.transactionId == null }){
             // TODO: Throw or ignore?
             logAndThrow(IllegalStateException("Transaction has uncommitted id" ))
         }
@@ -79,7 +73,7 @@ abstract class AbstractEntityStore(val authority: Authority, val addressBook: Ad
 
     // TODO: This is messed up. Untangle the transaction id usage.
     @Synchronized
-    override fun commitChanges(vararg entities: Entity): SignedTransaction? {
+    override fun updateEntities(vararg entities: Entity): SignedTransaction? {
         entities.forEach { validateEntity(it) }
 
         if(entities.distinctBy { it.entityId }.size != entities.size){
@@ -90,22 +84,14 @@ abstract class AbstractEntityStore(val authority: Authority, val addressBook: Ad
             logAndThrow(RuntimeException("Attempt to commit changes not controlled by authority"))
         }
 
-        val uncommittedFacts = entities.flatMap { it.getFacts() }.filter{ it.transactionId == UNCOMMITTED }
+        val uncommittedFacts = entities.flatMap { it.getFacts() }.filter{ it.transactionId == null }
         if (uncommittedFacts.isEmpty()) {
             logger.info { "Ignoring update with no novel facts" }
             return null
         }
 
-        // TODO: Cleanup - very messy. Probably lock around epoch
-        val transactionId = this.transactionId
-        if(transactionId == INVALID_TRANSACTION_ID) {
-            logAndThrow("Attempt to commit transaction without setting transaction id")
-        }
-
-        val nextTransactionId = transactionId.inc()
-        val signedTransaction = Transaction.fromFacts(nextTransactionId, uncommittedFacts).sign(signator)
+        val signedTransaction = Transaction.fromFacts(getNextTransactionId(authority.authorityId), uncommittedFacts).sign(signator)
         persistTransaction(signedTransaction)
-        this.transactionId = nextTransactionId
 
         return signedTransaction
     }

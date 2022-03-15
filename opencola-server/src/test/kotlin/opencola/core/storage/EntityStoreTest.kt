@@ -5,7 +5,6 @@ import opencola.core.TestApplication
 import opencola.core.model.ActorEntity
 import opencola.core.model.Authority
 import opencola.core.model.ResourceEntity
-import opencola.core.model.UNCOMMITTED
 import opencola.core.security.Signator
 import org.kodein.di.instance
 import java.net.URI
@@ -51,7 +50,7 @@ class EntityStoreTest {
     private fun testEntityStore(authority: Authority, getEntityStore: ()-> EntityStore) {
         val store = getEntityStore()
         val entity = getActorEntity(authority.entityId)
-        store.commitChanges(entity)
+        store.updateEntities(entity)
 
         val store2 = getEntityStore()
         val entity2 = store2.getEntity(authority.authorityId, entity.entityId)
@@ -64,8 +63,8 @@ class EntityStoreTest {
             assertEquals(it.first.value, it.second.value)
             assertEquals(it.first.operation, it.second.operation)
             // Transaction id changes on commit, so we don't expect them to be the same
-            assertEquals(UNCOMMITTED, it.first.transactionId)
-            assertEquals(1, it.second.transactionId)
+            assertEquals(null, it.first.transactionId)
+            assertEquals(authority.authorityId, it.second.transactionId)
         }
     }
 
@@ -82,12 +81,12 @@ class EntityStoreTest {
     private fun testUpdateAfterReload(authority: Authority, getEntityStore: ()-> EntityStore){
         val store = getEntityStore()
         val entity = getActorEntity(authority.entityId)
-        store.commitChanges(entity)
+        store.updateEntities(entity)
 
         val store1 = getEntityStore()
         val entity1 = store1.getEntity(authority.authorityId, entity.entityId) as ActorEntity
         entity1.name = "new name"
-        store.commitChanges(entity1)
+        store.updateEntities(entity1)
 
         val store2 = getEntityStore()
         val entity2 = store2.getEntity(authority.authorityId, entity.entityId) as ActorEntity
@@ -104,11 +103,11 @@ class EntityStoreTest {
         testGetTransaction(getFreshExposeEntityStore())
     }
 
-    fun testGetTransaction(entityStore: EntityStore){
+    private fun testGetTransaction(entityStore: EntityStore){
         val entity = ResourceEntity(authority.authorityId, URI("http://opencola.org"))
-        entityStore.commitChanges(entity)
-        val transaction = entityStore.getTransaction(authority.authorityId, 1)
-
-        assertNotNull(transaction)
+        val signedTransaction = entityStore.updateEntities(entity)
+        assertNotNull(signedTransaction)
+        val transaction = entityStore.getTransactions(authority.authorityId, signedTransaction.transaction.id, 1)
+        assert(transaction.count() == 1)
     }
 }

@@ -62,24 +62,27 @@ class EntityService(private val authority: Authority,
 
     private suspend fun requestTransactions(peer: Peer){
         // TODO: Update getTransaction to take authorityId
-        var nextTransactionId = entityStore.getTransactionId(peer.id) + 1
 
         try {
+            var peerTransactionId = entityStore.getLastTransactionId(peer.id)
+
             // TODO - Config max batches
+            // TODO: Set reasonable max batches and batch sizes
             for(batch in 1..10) {
-                val urlString = "http://${peer.host}/transactions/${peer.id}/$nextTransactionId"
+                val urlString = "http://${peer.host}/transactions/${peer.id}/$peerTransactionId"
                 logger.info { "Requesting transactions - Batch $batch - $urlString" }
 
-                //TODO - see implment PeerService.get(peer, path) to get rid of httpClient here
+                //TODO - see implement PeerService.get(peer, path) to get rid of httpClient here
                 // plus no need to update peer status here
                 val transactionsResponse: TransactionsResponse =
                     httpClient.get(urlString)
 
                 peerRouter.updateStatus(peer.id, Online)
                 entityStore.addTransactions(transactionsResponse.transactions)
-                nextTransactionId = transactionsResponse.transactions.maxOf { it.transaction.id }
+                peerTransactionId = transactionsResponse.transactions.last().transaction.id
 
-                if(nextTransactionId >= transactionsResponse.currentTransactionId)
+                if(transactionsResponse.transactions.isEmpty()
+                    || peerTransactionId == transactionsResponse.currentTransactionId)
                     break
             }
         } catch (e: Exception){
@@ -90,7 +93,7 @@ class EntityService(private val authority: Authority,
     }
 
     private fun updateEntities(vararg entities: Entity): SignedTransaction? {
-        val signedTransaction = entityStore.commitChanges(*entities)
+        val signedTransaction = entityStore.updateEntities(*entities)
 
         if (signedTransaction != null) {
             peerRouter.broadcastMessage(

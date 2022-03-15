@@ -1,9 +1,11 @@
 package opencola.core.storage
 
+import opencola.core.extensions.ifNotNullOrElse
 import opencola.core.model.*
-import opencola.core.model.Transaction
 import opencola.core.security.Signator
+import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.statements.api.ExposedBlob
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.ByteArrayInputStream
@@ -16,18 +18,18 @@ class ExposedEntityStore(authority: Authority, addressBook: AddressBook, signato
     // This would likely be an issue only when storing data for large sets of users (millions to billions?)
     // TODO: Magic numbers (32, 128) should come from config
     // TODO: Normalize attribute
-    private class Facts(authorityId: Id) : Table("fct-${authorityId.toString()}"){
+    private class Facts(authorityId: Id) : Table("fct-${authorityId}") {
         val authorityId = binary("authorityId", 32)
         val entityId = binary("entityId", 32).index()
         val attribute = text("attribute")
         val value = blob("value")
         val operation = enumeration("operation", Operation::class)
-        val transactionId = long("transactionId")
+        val transactionId = binary("transactionId", 32)
     }
 
-    private class Transactions(authorityId: Id) : Table("txs-${authorityId.toString()}") {
-        // TODO - Make id unique
-        val id = long("id")
+    // LongIdTable has implicit, autoincrement long id field
+    private class Transactions(authorityId: Id) : LongIdTable("txs-${authorityId}") {
+        val transactionId = binary("transactionId", 32).uniqueIndex()
         val authorityId = binary("authorityId", 32)
         val epochSecond = long("epochSecond")
         val encoded = blob("encoded")
@@ -45,24 +47,31 @@ class ExposedEntityStore(authority: Authority, addressBook: AddressBook, signato
         transaction(database) {
             SchemaUtils.create(facts)
             SchemaUtils.create(transactions)
-
-            transactionId = getTransactionId(authority.authorityId)
         }
     }
 
-    override fun getTransactionId(authorityId: Id) : Long{
-        return if(authorityId == authority.authorityId && transactionId != INVALID_TRANSACTION_ID)
-            transactionId
-        else
-            transaction(database) {
-                transactions.select {
-                    (transactions.authorityId eq Id.encode(authorityId))
-                }
-                    .orderBy(transactions.id to SortOrder.DESC)
-                    .limit(1).firstOrNull()
-                    ?.getOrNull(transactions.id)
-                    ?: 0
-            }
+    private fun getLastTransactionRow(authorityId: Id): ResultRow? {
+        // TODO: Better way to get max?
+        return transaction(database) {
+            transactions.select { (transactions.authorityId eq Id.encode(authorityId)) }
+                .orderBy(transactions.id to SortOrder.DESC)
+                .limit(1)
+                .firstOrNull()
+        }
+    }
+
+    override fun getLastTransactionId(authorityId: Id): Id? {
+        return getLastTransactionRow(authorityId).ifNotNullOrElse(
+            { Id.decode(it[transactions.transactionId]) },
+            { null }
+        )
+    }
+
+    override fun getNextTransactionId(authorityId: Id) : Id {
+        return getLastTransactionRow(authorityId).ifNotNullOrElse(
+            { Id.ofData(it[transactions.encoded].bytes) },
+            { authorityId }
+        )
     }
 
     override fun resetStore(): EntityStore {
@@ -83,14 +92,14 @@ class ExposedEntityStore(authority: Authority, addressBook: AddressBook, signato
                     CoreAttribute.values().single { a -> a.spec.uri.toString() == it[facts.attribute]}.spec,
                     Value(it[facts.value].bytes),
                     it[facts.operation],
-                    it[facts.transactionId])
+                    Id.decode(it[facts.transactionId]))
             }
 
             if(facts.isNotEmpty()) Entity.getInstance(facts) else null
         }
     }
 
-    override fun persistTransaction(signedTransaction: SignedTransaction) {
+    override fun persistTransaction(signedTransaction: SignedTransaction) : SignedTransaction {
         val transaction = signedTransaction.transaction
 
         transaction(database){
@@ -101,35 +110,46 @@ class ExposedEntityStore(authority: Authority, addressBook: AddressBook, signato
                     it[attribute] = fact.attribute.uri.toString()
                     it[value] = ExposedBlob(fact.value.bytes)
                     it[operation] = fact.operation
-                    it[transactionId] = fact.transactionId
+                    it[transactionId] = Id.encode(fact.transactionId!!)
                 }
             }
 
             transactions.insert {
-                it[id] = transaction.id
+                it[transactionId] = Id.encode(transaction.id)
                 it[authorityId] = Id.encode(transaction.authorityId)
                 it[epochSecond] = transaction.epochSecond
                 it[encoded] = ExposedBlob(SignedTransaction.encode(signedTransaction))
             }
         }
+
+        return signedTransaction
     }
 
-    // TODO: Remover getTransaction, or move to abstract entityStore
-    override fun getTransaction(authorityId: Id, transactionId: Long): SignedTransaction? {
-        return getTransactions(authorityId, transactionId, transactionId).firstOrNull()
-    }
-
-    override fun getTransactions(authorityId: Id, startTransactionId: Long, endTransactionId: Long): Iterable<SignedTransaction> {
+    override fun getTransactions(authorityId: Id, startTransactionId: Id?, numTransactions: Int): Iterable<SignedTransaction> {
         return transaction(database){
-            transactions.select{
-                (transactions.authorityId eq Id.encode(authority.authorityId)
-                        and (transactions.id greaterEq startTransactionId)
-                        and (transactions.id lessEq endTransactionId))
-            }.map { row ->
-                ByteArrayInputStream(row[transactions.encoded].bytes).use {
-                    SignedTransaction.decode(it)
-                }
-            }.toList()
+            val op =
+                if(startTransactionId == null)
+                    (transactions.id eq 0)
+                else
+                    (transactions.transactionId eq Id.encode(startTransactionId))
+
+            val startTransaction =
+                    transactions.select {
+                        (transactions.authorityId eq Id.encode(authority.authorityId) and op)
+                    }.firstOrNull()
+
+            if(startTransaction == null)
+                emptyList()
+            else
+                transactions.select{ (transactions.id greaterEq  startTransaction[transactions.id]) }
+                    .orderBy(transactions.id to SortOrder.ASC)
+                    .limit(numTransactions)
+                    .map{ row ->
+                        ByteArrayInputStream(row[transactions.encoded].bytes).use {
+                            SignedTransaction.decode(it)
+                        }
+                    }
+                    .toList()
         }
     }
 }

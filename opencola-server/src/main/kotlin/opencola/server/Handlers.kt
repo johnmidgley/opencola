@@ -43,15 +43,17 @@ suspend fun handleGetEntityCall(call: ApplicationCall, entityStore: EntityStore)
 
 @Serializable
 data class TransactionsResponse(
-    val startTransactionId: Long?,
-    val currentTransactionId: Long,
+    val startTransactionId: Id?,
+    val currentTransactionId: Id?,
     val transactions: List<SignedTransaction>)
 
 suspend fun handleGetTransactionsCall(call: ApplicationCall, entityStore: EntityStore){
     val authorityId = Id.fromHexString(call.parameters["authorityId"] ?: throw IllegalArgumentException("No authorityId set"))
-    val transactionId = call.parameters["transactionId"].nullOrElse { it.toLong() }
-    val currentTransactionId = entityStore.getTransactionId(authorityId)
-    val transactions = if (transactionId != null) entityStore.getTransactions(authorityId, transactionId) else emptyList()
+    val transactionId = call.parameters["mostRecentTransactionId"].nullOrElse { Id.fromHexString(it) }
+    val extra = (if (transactionId == null) 0 else 1)
+    val numTransactions =(call.parameters["numTransactions"].nullOrElse { it.toInt() } ?: 10) + extra
+    val currentTransactionId = entityStore.getLastTransactionId(authorityId)
+    val transactions = entityStore.getTransactions(authorityId, transactionId, numTransactions + 1).drop(extra)
 
     // TODO: Getting a request is a sign the the remote host is up - update the peer status in the PeerService
     call.respond(TransactionsResponse(transactionId, currentTransactionId, transactions.toList()))

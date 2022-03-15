@@ -39,7 +39,7 @@ class ApplicationTest {
         val entityStore by injector.instance<EntityStore>()
         val entity = ResourceEntity(authority.authorityId, URI("http://opencola.org"), trust = 1.0F, like = true, rating = 1.0F)
 
-        entityStore.commitChanges(entity)
+        entityStore.updateEntities(entity)
 
         withTestApplication({ configureRouting(application); configureContentNegotiation() }) {
             handleRequest(HttpMethod.Get, "/entity/${entity.entityId}").apply {
@@ -68,7 +68,7 @@ class ApplicationTest {
         val uri = URI("https://opencola.org")
         val entity = ResourceEntity(authority.authorityId, uri, trust = 1.0F, like = true, rating = 1.0F)
 
-        entityStore.commitChanges(entity)
+        entityStore.updateEntities(entity)
 
         withTestApplication({ configureRouting(application); configureContentNegotiation() }) {
             handleRequest(HttpMethod.Get, "/actions/${URLEncoder.encode(uri.toString(), "utf-8")}").apply {

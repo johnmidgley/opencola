@@ -3,22 +3,6 @@ package opencola.core.model
 import mu.KotlinLogging
 import java.lang.IllegalArgumentException
 
-// Types of entities
-// Producer
-// Consumer
-// Resource?
-//      Product (ISBN)
-//      Page
-//      Document
-//      Video
-
-
-// Local entity?
-// Larger scope entities could have computed values (likes, trust, etc), but to what scope? Need to figure this out!
-// Reference entities vs. data entities?
-// Actors vs. object - artifacts cannot take action on anything, they just exist.
-// Artifacts can be data or external (products, etc.)
-
 abstract class Entity(val authorityId: Id, val entityId: Id){
     companion object Factory {
         private val logger = KotlinLogging.logger("Entity")
@@ -109,7 +93,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id){
                 return currentFact
             }
 
-            if(currentFact.transactionId == UNCOMMITTED){
+            if(currentFact.transactionId == null){
                 throw IllegalStateException("Attempt to re-set an uncommitted value")
             }
         }

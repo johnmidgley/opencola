@@ -45,7 +45,7 @@ fun Application.configureRouting(application: app) {
             handleGetTransactionsCall(call, entityStore)
         }
 
-        get("/transactions/{authorityId}/{transactionId}"){
+        get("/transactions/{authorityId}/{mostRecentTransactionId}"){
             val entityStore by injector.instance<EntityStore>()
             handleGetTransactionsCall(call, entityStore)
         }

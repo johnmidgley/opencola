@@ -1,5 +1,7 @@
 package opencola.core.storage
 
+import opencola.core.extensions.ifNotNullOrElse
+import opencola.core.extensions.nullOrElse
 import opencola.core.model.Authority
 import opencola.core.model.Entity
 import opencola.core.model.Id
@@ -28,17 +30,16 @@ class SimpleEntityStore(val path: Path, addressBook: AddressBook , authority: Au
             .flatMap { it.transaction.getFacts() }
             .toList()
 
-    init {
-        transactionId = getTransactionId(authority.authorityId)
+    override fun getLastTransactionId(authorityId: Id): Id? {
+        return transactions
+            .lastOrNull { it.transaction.authorityId == authorityId }
+            .nullOrElse { it.transaction.id }
     }
 
-    override fun getTransactionId(authorityId: Id) : Long {
-        return if(authorityId == authority.authorityId && transactionId != INVALID_TRANSACTION_ID)
-            transactionId
-        else
-            transactions
-                .filter{ it.transaction.authorityId == authorityId }
-                .maxOfOrNull { it.transaction.id } ?: 0
+    override fun getNextTransactionId(authorityId: Id): Id {
+        return transactions
+            .lastOrNull { it.transaction.authorityId == authorityId }
+            .ifNotNullOrElse({ Id.ofData(SignedTransaction.encode(it)) }, { authorityId })
     }
 
     private fun transactionsFromPath(path: Path): Sequence<SignedTransaction> {
@@ -61,25 +62,22 @@ class SimpleEntityStore(val path: Path, addressBook: AddressBook , authority: Au
         return Entity.getInstance(facts.filter { it.authorityId == authorityId && it.entityId == entityId }.toList())
     }
 
-    override fun persistTransaction(signedTransaction: SignedTransaction) {
+    override fun persistTransaction(signedTransaction: SignedTransaction) : SignedTransaction{
+        if(transactions.any{ it.transaction.id == signedTransaction.transaction.id})
+            throw IllegalArgumentException("Attempt to insert duplicate transaction: ${signedTransaction.transaction.id}")
+
         path.outputStream(StandardOpenOption.APPEND, StandardOpenOption.CREATE)
             .use { SignedTransaction.encode(it, signedTransaction) }
-        transactions += signedTransaction
-        facts += signedTransaction.transaction.expandFacts()
+        transactions = transactions + signedTransaction
+        facts = facts + signedTransaction.transaction.expandFacts()
+        return signedTransaction
     }
 
-    override fun getTransaction(authorityId: Id, transactionId: Long): SignedTransaction? {
-        // TODO: Super inefficient. If this needs to be used, have transactions loaded to memory.
+    override fun getTransactions(authorityId: Id, startTransactionId: Id?, numTransactions: Int): Iterable<SignedTransaction> {
         return transactions
-            .filter { it.transaction.authorityId == authorityId && it.transaction.id == transactionId }
-            .firstOrNull()
-    }
-
-    override fun getTransactions(authorityId: Id, startTransactionId: Long, endTransactionId: Long): Iterable<SignedTransaction> {
-        return transactions
-            .filter { it.transaction.authorityId == authorityId
-                    && it.transaction.id >= startTransactionId
-                    && it.transaction.id <= endTransactionId }
+            .filter { it.transaction.authorityId == authorityId }
+            .dropWhile { if(startTransactionId != null) it.transaction.id != startTransactionId else false }
+            .take(numTransactions)
     }
 
     override fun resetStore(): SimpleEntityStore {

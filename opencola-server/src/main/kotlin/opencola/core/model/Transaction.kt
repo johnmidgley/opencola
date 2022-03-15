@@ -13,7 +13,7 @@ import java.security.PublicKey
 import java.time.Instant
 
 @Serializable
-data class Transaction(val id: Long, val authorityId: Id, val transactionFacts: List<TransactionFact>, val epochSecond: Long = Instant.EPOCH.epochSecond){
+data class Transaction(val id: Id, val authorityId: Id, val transactionFacts: List<TransactionFact>, val epochSecond: Long = Instant.EPOCH.epochSecond){
     fun getFacts(): List<Fact> {
         return transactionFacts.map { Fact(authorityId, it.entityId, it.attribute, it.value, it.operation, id) }
     }
@@ -57,7 +57,7 @@ data class Transaction(val id: Long, val authorityId: Id, val transactionFacts: 
     }
 
     companion object Factory : StreamSerializer<Transaction> {
-        fun fromFacts(id: Long, facts: List<Fact>) : Transaction {
+        fun fromFacts(id: Id, facts: List<Fact>) : Transaction {
             return Transaction(id, facts.first().authorityId, validateFacts(facts).map{ TransactionFact.fromFact(it) })
         }
 
@@ -72,7 +72,7 @@ data class Transaction(val id: Long, val authorityId: Id, val transactionFacts: 
         }
 
         override fun encode(stream: OutputStream, value: Transaction) {
-            writeLong(stream, value.id)
+            Id.encode(stream, value.id)
             Id.encode(stream, value.authorityId)
             writeInt(stream, value.transactionFacts.size)
             for(fact in value.transactionFacts){
@@ -82,7 +82,7 @@ data class Transaction(val id: Long, val authorityId: Id, val transactionFacts: 
         }
 
         override fun decode(stream: InputStream): Transaction {
-            return Transaction(readLong(stream), Id.decode(stream), readInt(stream).downTo(1).map { TransactionFact.decode(stream) }, readLong(stream))
+            return Transaction(Id.decode(stream), Id.decode(stream), readInt(stream).downTo(1).map { TransactionFact.decode(stream) }, readLong(stream))
         }
     }
 }
