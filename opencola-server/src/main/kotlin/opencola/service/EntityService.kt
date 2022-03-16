@@ -67,6 +67,7 @@ class EntityService(val authority: Authority,
 
     private suspend fun requestTransactions(peer: Peer){
         // TODO: Update getTransaction to take authorityId
+        logger.info { "Requesting transaction from: ${peer.name}" }
 
         try {
             var peerTransactionId = entityStore.getLastTransactionId(peer.id)
@@ -84,20 +85,27 @@ class EntityService(val authority: Authority,
 
                 peerRouter.updateStatus(peer.id, Online)
                 entityStore.addTransactions(transactionsResponse.transactions)
+                transactionsResponse.transactions.forEach{ indexTransaction(it)}
                 peerTransactionId = transactionsResponse.transactions.last().transaction.id
 
                 if(transactionsResponse.transactions.isEmpty()
                     || peerTransactionId == transactionsResponse.currentTransactionId)
                     break
             }
-        } catch (e: Exception){
+        }
+        catch(e: java.net.ConnectException){
+            logger.info { "${peer.name} appears to be offline." }
+            peerRouter.updateStatus(peer.id, Offline)
+        }
+        catch (e: Exception){
             logger.error { e.message }
             // TODO: This should depend on the error
             peerRouter.updateStatus(peer.id, Offline)
         }
+        logger.info { "Completed requesting transaction transaction from: ${peer.name}" }
     }
 
-    private fun updateEntities(vararg entities: Entity): SignedTransaction? {
+    fun updateEntities(vararg entities: Entity): SignedTransaction? {
         val signedTransaction = entityStore.updateEntities(*entities)
 
         if (signedTransaction != null) {

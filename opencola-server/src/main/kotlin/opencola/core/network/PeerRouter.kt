@@ -74,7 +74,12 @@ class PeerRouter(private val addressBook: AddressBook) {
             logger.info { "Response: ${response.status}" }
 
             peerStatus.status = Online
-        } catch (e: Exception){
+        }
+        catch(e: java.net.ConnectException){
+            logger.info { "${peerStatus.peer.name} appears to be offline." }
+            peerStatus.status = Offline
+        }
+        catch (e: Exception){
             logger.error { e.message }
             peerStatus.status = Offline
         }

@@ -106,7 +106,7 @@ data class Transaction(val id: Id,
 data class SignedTransaction(val transaction: Transaction, val algorithm: String, val signature: ByteArray) {
     // TODO: Fix signature serialization - right now json array vs. an encoded hex string
     fun isValidTransaction(publicKey: PublicKey): Boolean {
-        return isValidSignature(publicKey, transaction.toString().toByteArray(), signature)
+        return isValidSignature(publicKey, Transaction.encode(transaction), signature)
     }
 
     override fun equals(other: Any?): Boolean {
