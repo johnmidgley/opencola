@@ -26,7 +26,7 @@ import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
 class Application(val storagePath: Path, val config: Config, val injector: DI) {
-    val logger = KotlinLogging.logger("opencola.${config.env}")
+    val logger = KotlinLogging.logger("opencola.${config.name}")
 
     companion object Global {
         // TODO: Remove - create loggers by component / namespace
@@ -44,10 +44,10 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
 
         // TODO: pub key should come from private store, not authority.pub, and multiple authorities (personas) should be allowed
         // TODO: Move to Identity Service
-        fun getOrCreateRootPublicKey(storagePath: Path, config: Config): PublicKey {
+        fun getOrCreateRootPublicKey(storagePath: Path, securityConfig: SecurityConfig): PublicKey {
             val publicKeyFile = "authority.pub" // TODO: Config?
             val authorityPubPath = storagePath.resolve(publicKeyFile)
-            val keyStore = KeyStore(storagePath.resolve(config.security.keystore.name), config.security.keystore.password)
+            val keyStore = KeyStore(storagePath.resolve(securityConfig.keystore.name), securityConfig.keystore.password)
             val publicKey =  if (authorityPubPath.exists()) {
                 val publicKey = publicKeyFromBytes(authorityPubPath.readText().hexStringToByteArray())
                 val privateKey = keyStore.getPrivateKey(Id.ofPublicKey(publicKey))

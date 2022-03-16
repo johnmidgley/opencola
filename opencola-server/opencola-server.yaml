@@ -1,4 +1,4 @@
-env: server # Should this be the logger name?
+name: server # Should this be the logger name?
 
 server:
   host: "0.0.0.0"

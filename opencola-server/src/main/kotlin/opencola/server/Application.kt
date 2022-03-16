@@ -34,7 +34,7 @@ fun getServer(application: Application): NettyApplicationEngine {
 fun main() {
     val applicationPath = Path(System.getProperty("user.dir"))
     val config = loadConfig(applicationPath.resolve( "opencola-server.yaml"))
-    val publicKey = Application.getOrCreateRootPublicKey(applicationPath.resolve(config.storage.path), config)
+    val publicKey = Application.getOrCreateRootPublicKey(applicationPath.resolve(config.storage.path), config.security)
 
     val application = Application.instance(Application.getStoragePath(applicationPath, config),  config, publicKey)
     application.logger.info("Authority: ${Id.ofPublicKey(publicKey)}")

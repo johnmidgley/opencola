@@ -7,6 +7,6 @@ import kotlin.test.assertEquals
 class ConfigTest {
     @Test
     fun testLoadConfig(){
-        assertEquals("test", TestApplication.instance.config.env)
+        assertEquals("test", TestApplication.instance.config.name)
     }
 }

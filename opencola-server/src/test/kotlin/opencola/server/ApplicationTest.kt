@@ -132,6 +132,7 @@ class ApplicationTest {
 
     @Test
     fun testPostNotification(){
+        // TODO: Don't rely on config.yaml - make peer node here
         val peerId = Id.fromHexString(TestApplication.config.network.peers.first().id)
         val notification = PeerRouter.Notification(peerId, PeerRouter.Event.NewTransactions)
 
