@@ -18,9 +18,9 @@ class EntityStoreTest {
     private val signator by app.injector.instance<Signator>()
     private val addressBook by app.injector.instance<AddressBook>()
     // TODO: Make .txs and .db use the test run folder - currently save directly in the test folder
-    private val simpleEntityStorePath = TestApplication.testRunStoragePath.resolve("${TestApplication.testRunName}.txs")
+    private val simpleEntityStorePath = app.config.storage.path.resolve("${TestApplication.testRunName}.txs")
     private val getSimpleEntityStore = { SimpleEntityStore(simpleEntityStorePath, addressBook, authority, signator) }
-    private val sqLiteEntityStorePath = TestApplication.testRunStoragePath.resolve("${TestApplication.testRunName}.db")
+    private val sqLiteEntityStorePath = app.config.storage.path.resolve("${TestApplication.testRunName}.db")
     private val getSQLiteEntityStore = { ExposedEntityStore(authority, addressBook, signator, SQLiteDB(sqLiteEntityStorePath).db) }
 
     // TODO: Remove these and switch to functions below

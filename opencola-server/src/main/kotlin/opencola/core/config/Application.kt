@@ -25,7 +25,7 @@ import kotlin.io.path.exists
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
-class Application(val storagePath: Path, val config: Config, val injector: DI) {
+class Application(val config: Config, val injector: DI) {
     val logger = KotlinLogging.logger("opencola.${config.name}")
 
     companion object Global {
@@ -64,8 +64,9 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
             return publicKey
         }
 
-        fun instance(storagePath: Path, config: Config, authorityPublicKey: PublicKey): Application {
+        fun instance(config: Config, authorityPublicKey: PublicKey): Application {
             // TODO: Change from authority to public key - they authority should come from the private store based on the private key
+            val storagePath = config.storage.path
             val authority = Authority(authorityPublicKey)
             val keyStore = KeyStore(storagePath.resolve(config.security.keystore.name), config.security.keystore.password)
             val fileStore = LocalFileStore(storagePath.resolve(config.storage.filestore.name))
@@ -88,7 +89,7 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
                 bindSingleton { MhtCache(storagePath.resolve("mht-cache"), instance(), instance()) }
             }
 
-            return Application(storagePath, config, injector)
+            return Application(config, injector)
         }
     }
 }

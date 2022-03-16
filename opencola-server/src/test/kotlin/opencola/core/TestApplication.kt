@@ -27,11 +27,11 @@ object TestApplication {
     val instance by lazy {
         val authority = Authority(authorityPublicKey)
         val keyStore = KeyStore(
-            testRunStoragePath.resolve(config.security.keystore.name),
+            config.storage.path.resolve(config.security.keystore.name),
             config.security.keystore.password
         )
         keyStore.addKey(authority.authorityId, KeyPair(authorityPublicKey, authorityPrivateKey))
-        val instance =  Application.instance(testRunStoragePath, config, authorityPublicKey)
+        val instance =  Application.instance(config, authorityPublicKey)
         val index by instance.injector.instance<SearchIndex>()
 
         // Clear out any existing index
@@ -43,16 +43,11 @@ object TestApplication {
     }
 
     val config by lazy {
-        loadConfig(applicationPath.resolve("opencola-test.yaml"))
-    }
-
-    val testRunStoragePath: Path by lazy {
-        val path = applicationPath.resolve(config.storage.path).resolve(testRunName)
-        Files.createDirectories(path)
-        path
+        val baseConfig = loadConfig(applicationPath, "opencola-test.yaml")
+        baseConfig.setStoragePath(applicationPath.resolve(baseConfig.storage.path).resolve(testRunName))
     }
 
     fun getTmpFilePath(suffix: String): Path {
-        return testRunStoragePath.resolve("${UUID.randomUUID()}$suffix")
+        return config.storage.path.resolve("${UUID.randomUUID()}$suffix")
     }
 }
