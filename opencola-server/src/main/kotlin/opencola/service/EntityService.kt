@@ -10,6 +10,7 @@ import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import opencola.core.content.MhtmlPage
 import opencola.core.content.TextExtractor
+import opencola.core.extensions.ifNotNullOrElse
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.*
 import opencola.core.model.Peer
@@ -60,6 +61,10 @@ class EntityService(val authority: Authority,
         }
     }
 
+    private fun getTransactionsUrl(peer: Peer, peerTransactionId: Id?): String {
+        return "http://${peer.host}/transactions/${peer.id}${peerTransactionId.ifNotNullOrElse({"/${it.toString()}"}, {""})}"
+    }
+
     private suspend fun requestTransactions(peer: Peer){
         // TODO: Update getTransaction to take authorityId
 
@@ -69,7 +74,7 @@ class EntityService(val authority: Authority,
             // TODO - Config max batches
             // TODO: Set reasonable max batches and batch sizes
             for(batch in 1..10) {
-                val urlString = "http://${peer.host}/transactions/${peer.id}/$peerTransactionId"
+                val urlString = getTransactionsUrl(peer, peerTransactionId)
                 logger.info { "Requesting transactions - Batch $batch - $urlString" }
 
                 //TODO - see implement PeerService.get(peer, path) to get rid of httpClient here

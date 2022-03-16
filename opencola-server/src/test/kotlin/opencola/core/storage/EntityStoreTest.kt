@@ -106,7 +106,12 @@ class EntityStoreTest {
         val entity = ResourceEntity(authority.authorityId, URI("http://opencola.org"))
         val signedTransaction = entityStore.updateEntities(entity)
         assertNotNull(signedTransaction)
-        val transaction = entityStore.getTransactions(authority.authorityId, signedTransaction.transaction.id, 1)
-        assert(transaction.count() == 1)
+
+        val transactions = entityStore.getTransactions(authority.authorityId, signedTransaction.transaction.id, 1)
+        assert(transactions.count() == 1)
+
+        val transaction = transactions.first()
+        val transactionsFromNull = entityStore.getTransactions(authority.authorityId, null, 100)
+        assertNotNull(transactionsFromNull.firstOrNull{ it.transaction.id == transaction.transaction.id})
     }
 }

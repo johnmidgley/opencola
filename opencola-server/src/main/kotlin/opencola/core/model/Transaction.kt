@@ -11,7 +11,11 @@ import java.security.PublicKey
 import java.time.Instant
 
 @Serializable
-data class Transaction(val id: Id, val authorityId: Id, val transactionEntities: List<TransactionEntity>, val epochSecond: Long = Instant.EPOCH.epochSecond){
+data class Transaction(val id: Id,
+                       val authorityId: Id,
+                       val transactionEntities: List<TransactionEntity>,
+                       val epochSecond: Long = Instant.EPOCH.epochSecond) {
+
     fun getFacts(): List<Fact> {
         return transactionEntities.flatMap { entity ->
             entity.facts.map { Fact(authorityId, entity.entityId, it.attribute, it.value, it.operation, id) }

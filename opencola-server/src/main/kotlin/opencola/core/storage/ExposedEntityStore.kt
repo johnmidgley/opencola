@@ -127,15 +127,12 @@ class ExposedEntityStore(authority: Authority, addressBook: AddressBook, signato
 
     override fun getTransactions(authorityId: Id, startTransactionId: Id?, numTransactions: Int): Iterable<SignedTransaction> {
         return transaction(database){
-            val op =
-                if(startTransactionId == null)
-                    (transactions.id eq 0)
-                else
-                    (transactions.transactionId eq Id.encode(startTransactionId))
+            val startId = startTransactionId.ifNotNullOrElse({startTransactionId!!}, {getFirstTransactionId(authorityId)})
 
             val startTransaction =
                     transactions.select {
-                        (transactions.authorityId eq Id.encode(authority.authorityId) and op)
+                        (transactions.authorityId eq Id.encode(authority.authorityId)) and
+                                (transactions.transactionId eq Id.encode(startId))
                     }.firstOrNull()
 
             if(startTransaction == null)
