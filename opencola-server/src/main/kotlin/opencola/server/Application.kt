@@ -1,5 +1,6 @@
 package opencola.server
 
+import io.ktor.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import opencola.core.config.Application
@@ -9,7 +10,14 @@ import opencola.core.model.Id
 import opencola.server.plugins.configureContentNegotiation
 import opencola.server.plugins.configureHTTP
 import opencola.server.plugins.configureRouting
+import opencola.service.EntityService
+import org.kodein.di.instance
 import kotlin.io.path.Path
+
+fun onServerStarted(application: Application){
+    val entityService by application.injector.instance<EntityService>()
+    application.logger.info { "Node Started: ${entityService.authority.authorityId}" }
+}
 
 fun getServer(application: Application): NettyApplicationEngine {
     val serverConfig = application.config.server ?: throw RuntimeException("Server config not specified")
@@ -19,6 +27,7 @@ fun getServer(application: Application): NettyApplicationEngine {
         configureHTTP()
         configureContentNegotiation()
         configureRouting(application)
+        this.environment.monitor.subscribe(ApplicationStarted) { onServerStarted(application) }
     }
 }
 

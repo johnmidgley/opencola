@@ -25,7 +25,7 @@ import org.apache.james.mime4j.message.DefaultMessageWriter
 import java.io.ByteArrayOutputStream
 
 // TODO - with an event bus, this is likely not needed, as this just really coordinates messaging between components
-class EntityService(private val authority: Authority,
+class EntityService(val authority: Authority,
                     private val entityStore: EntityStore,
                     private val searchIndex: SearchIndex,
                     private val fileStore: FileStore,

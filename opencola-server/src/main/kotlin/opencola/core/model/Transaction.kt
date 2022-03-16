@@ -1,8 +1,6 @@
 package opencola.core.model
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import opencola.core.security.SIGNATURE_ALGO
 import opencola.core.security.Signator
 import opencola.core.security.isValidSignature
@@ -20,16 +18,28 @@ data class Transaction(val id: Id, val authorityId: Id, val transactionEntities:
         }
     }
 
-    // TODO: This is common to a number of classes. Figure out how to make properly generic
-    override fun toString(): String {
-        return Json.encodeToString(this)
-    }
-
     fun sign(signator: Signator) : SignedTransaction {
         // This is probably not the right way to serialize. Likely should create a serializer / provider that can be
         // configured to serialize in an appropriate format.
         // TODO: Validate transaction
         return SignedTransaction(this, SIGNATURE_ALGO, signator.signBytes(authorityId, Transaction.encode(this)))
+    }
+
+    @Serializable
+    data class TransactionEntity(val entityId: Id, val facts: List<TransactionFact>){
+        companion object Factory : StreamSerializer<TransactionEntity> {
+            override fun encode(stream: OutputStream, value: TransactionEntity) {
+                Id.encode(stream, value.entityId)
+                Transaction.writeInt(stream, value.facts.size)
+                for(fact in value.facts){
+                    TransactionFact.encode(stream, fact)
+                }
+            }
+
+            override fun decode(stream: InputStream): TransactionEntity {
+                return TransactionEntity(Id.decode(stream), readInt(stream).downTo(1).map { TransactionFact.decode(stream) } )
+            }
+        }
     }
 
     @Serializable
@@ -49,23 +59,6 @@ data class Transaction(val id: Id, val authorityId: Id, val transactionEntities:
                  return TransactionFact(Attribute.decode(stream), Value.decode(stream), Operation.decode(stream))
              }
          }
-    }
-
-    @Serializable
-    data class TransactionEntity(val entityId: Id, val facts: List<TransactionFact>){
-        companion object Factory : StreamSerializer<TransactionEntity> {
-            override fun encode(stream: OutputStream, value: TransactionEntity) {
-                Id.encode(stream, value.entityId)
-                Transaction.writeInt(stream, value.facts.size)
-                for(fact in value.facts){
-                    TransactionFact.encode(stream, fact)
-                }
-            }
-
-            override fun decode(stream: InputStream): TransactionEntity {
-                return TransactionEntity(Id.decode(stream), readInt(stream).downTo(1).map { TransactionFact.decode(stream) } )
-            }
-        }
     }
 
     companion object Factory : StreamSerializer<Transaction> {
@@ -140,7 +133,6 @@ data class SignedTransaction(val transaction: Transaction, val algorithm: String
         override fun decode(stream: InputStream): SignedTransaction {
             return SignedTransaction(Transaction.decode(stream), String(readByteArray(stream)), readByteArray(stream))
         }
-
     }
 }
 
