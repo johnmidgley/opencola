@@ -27,8 +27,8 @@ class TextExtractor {
         ByteArrayInputStream(bytes).use { return getType(it)}
     }
 
-    fun getBody(stream: InputStream) : String {
-        val handler = BodyContentHandler()
+    private fun getBody(stream: InputStream) : String {
+        val handler = BodyContentHandler(-1) // -1 removes default text limit
         val metadata = Metadata()
         val parser = AutoDetectParser()
         val context = ParseContext()
