@@ -76,7 +76,7 @@ class ExposedEntityStore(authority: Authority, addressBook: AddressBook, signato
     private fun authoritiesQuery(authorityIds: List<Id>, id: Long?, order: TransactionOrder): Query {
         return transactions
             .select {
-                (transactions.id greaterEq 0)
+                (transactions.id greaterEq 0) // Not elegant, but avoids separate selectAll clause when no constraints provided
                     .withIdConstraint(id, order)
                     .withAuthorityIdConstraints(authorityIds)
             }
