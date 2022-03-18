@@ -1,6 +1,5 @@
 package opencola.core.storage
 
-import opencola.core.extensions.ifNotNullOrElse
 import opencola.core.model.*
 import opencola.core.security.Signator
 import opencola.core.storage.EntityStore.TransactionOrder
@@ -53,22 +52,22 @@ class ExposedEntityStore(authority: Authority, addressBook: AddressBook, signato
         }
     }
 
-    private fun addIdConstraint(op: Op<Boolean>, id: Long?, order: TransactionOrder): Op<Boolean> {
+    private fun Op<Boolean>.withIdConstraint(id: Long?, order: TransactionOrder): Op<Boolean> {
         return if(id == null)
-            op
+            this
         else{
             if (order == TransactionOrder.Ascending)
-                op.and( transactions.id greaterEq id)
+                this.and( transactions.id greaterEq id)
             else
-                op.and(transactions.id lessEq id)
+                this.and(transactions.id lessEq id)
         }
     }
 
-    private fun addAuthorityIdConstraints(op: Op<Boolean>, authorityIds: List<Id>): Op<Boolean>{
+    private fun Op<Boolean>.withAuthorityIdConstraints(authorityIds: List<Id>): Op<Boolean>{
         return if(authorityIds.isEmpty())
-            op
+            this
         else
-            op.and(authorityIds
+            this.and(authorityIds
                 .map { (transactions.authorityId eq Id.encode(it)) }
                 .reduce { acc, op -> acc.or(op) })
 
@@ -77,8 +76,9 @@ class ExposedEntityStore(authority: Authority, addressBook: AddressBook, signato
     private fun authoritiesQuery(authorityIds: List<Id>, id: Long?, order: TransactionOrder): Query {
         return transactions
             .select {
-                // TODO: Make extension methods so this can be turned inside out
-                addAuthorityIdConstraints(addIdConstraint(transactions.id greaterEq 0, id, order), authorityIds)
+                (transactions.id greaterEq 0)
+                    .withIdConstraint(id, order)
+                    .withAuthorityIdConstraints(authorityIds)
             }
             .orderBy(transactions.id to if (order == TransactionOrder.Ascending) SortOrder.ASC else SortOrder.DESC)
     }
