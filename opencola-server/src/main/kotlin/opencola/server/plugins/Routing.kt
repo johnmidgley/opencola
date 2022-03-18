@@ -80,6 +80,11 @@ fun Application.configureRouting(application: app) {
             handlePostNotifications(call, entityService, peerRouter)
         }
 
+        get("/feed"){
+            val entityStore by injector.instance<EntityStore>()
+            handleGetFeed(call, entityStore)
+        }
+
         static(""){
             logger.info("Initializing static resources from ${Path(System.getProperty("user.dir"))} ")
             file("/", "resources/index.html")

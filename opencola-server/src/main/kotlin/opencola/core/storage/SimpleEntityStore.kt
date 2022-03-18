@@ -1,7 +1,5 @@
 package opencola.core.storage
 
-import opencola.core.extensions.ifNotNullOrElse
-import opencola.core.extensions.nullOrElse
 import opencola.core.model.Authority
 import opencola.core.model.Entity
 import opencola.core.model.Id
@@ -30,18 +28,6 @@ class SimpleEntityStore(val path: Path, addressBook: AddressBook , authority: Au
             .flatMap { it.transaction.getFacts() }
             .toList()
 
-    override fun getLastTransactionId(authorityId: Id): Id? {
-        return transactions
-            .lastOrNull { it.transaction.authorityId == authorityId }
-            .nullOrElse { it.transaction.id }
-    }
-
-    override fun getNextTransactionId(authorityId: Id): Id {
-        return transactions
-            .lastOrNull { it.transaction.authorityId == authorityId }
-            .ifNotNullOrElse({ Id.ofData(SignedTransaction.encode(it)) }, { getFirstTransactionId(authorityId) })
-    }
-
     private fun transactionsFromPath(path: Path): Sequence<SignedTransaction> {
         return sequence {
             path.inputStream().use {
@@ -62,6 +48,20 @@ class SimpleEntityStore(val path: Path, addressBook: AddressBook , authority: Au
         return Entity.getInstance(facts.filter { it.authorityId == authorityId && it.entityId == entityId }.toList())
     }
 
+    override fun getTransactions(
+        authorityIds: Iterable<Id>,
+        startTransactionId: Id?,
+        order: EntityStore.TransactionOrder,
+        limit: Int
+    ): Iterable<SignedTransaction> {
+        val authorityIdList = authorityIds.toList()
+
+        return (if (order == EntityStore.TransactionOrder.Ascending) transactions else transactions.reversed())
+            .dropWhile { startTransactionId != null && it.transaction.id != startTransactionId }
+            .filter { authorityIdList.isEmpty() || authorityIdList.contains(it.transaction.authorityId) }
+            .take(limit)
+    }
+
     override fun persistTransaction(signedTransaction: SignedTransaction) : SignedTransaction{
         if(transactions.any{ it.transaction.id == signedTransaction.transaction.id})
             throw IllegalArgumentException("Attempt to insert duplicate transaction: ${signedTransaction.transaction.id}")
@@ -71,13 +71,6 @@ class SimpleEntityStore(val path: Path, addressBook: AddressBook , authority: Au
         transactions = transactions + signedTransaction
         facts = facts + signedTransaction.transaction.getFacts()
         return signedTransaction
-    }
-
-    override fun getTransactions(authorityId: Id, startTransactionId: Id?, numTransactions: Int): Iterable<SignedTransaction> {
-        return transactions
-            .filter { it.transaction.authorityId == authorityId }
-            .dropWhile { if(startTransactionId != null) it.transaction.id != startTransactionId else false }
-            .take(numTransactions)
     }
 
     override fun resetStore(): SimpleEntityStore {

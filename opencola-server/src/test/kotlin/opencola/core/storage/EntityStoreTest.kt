@@ -6,6 +6,7 @@ import opencola.core.model.ActorEntity
 import opencola.core.model.Authority
 import opencola.core.model.ResourceEntity
 import opencola.core.security.Signator
+import opencola.core.storage.EntityStore.*
 import org.kodein.di.instance
 import java.net.URI
 import kotlin.test.Test
@@ -107,11 +108,56 @@ class EntityStoreTest {
         val signedTransaction = entityStore.updateEntities(entity)
         assertNotNull(signedTransaction)
 
-        val transactions = entityStore.getTransactions(authority.authorityId, signedTransaction.transaction.id, 1)
-        assert(transactions.count() == 1)
+        val transaction = entityStore.getTransaction(signedTransaction.transaction.id)
+        assertNotNull(transaction)
 
-        val transaction = transactions.first()
-        val transactionsFromNull = entityStore.getTransactions(authority.authorityId, null, 100)
+        val transactionsFromNull = entityStore.getTransactions(listOf(authority.authorityId), null, TransactionOrder.Ascending, 100)
         assertNotNull(transactionsFromNull.firstOrNull{ it.transaction.id == transaction.transaction.id})
+    }
+
+    @Test
+    fun testGetTransactionsSimple() {
+        testGetTransactions(getFreshSimpleEntityStore())
+    }
+
+    @Test
+    fun testGetTransactionsExposed() {
+        testGetTransactions(getFreshExposeEntityStore())
+    }
+
+    private fun testGetTransactions(entityStore: EntityStore){
+        val entities = (0 until 3).map { ResourceEntity(authority.authorityId, URI("http://test/$it")) }
+        val transactions = entities.map{ entityStore.updateEntities(it)!! }
+        val transactionIds = transactions.map{ it.transaction.id }
+
+        val firstTransaction = entityStore.getTransactions(listOf(authority.authorityId), null, TransactionOrder.Ascending, 1).firstOrNull()
+        assertNotNull(firstTransaction)
+        assertEquals(transactions.first(), firstTransaction)
+
+        val firstTransactionAll = entityStore.getTransactions(emptyList(), null, TransactionOrder.Ascending, 1).firstOrNull()
+        assertNotNull(firstTransactionAll)
+        assertEquals(transactions.first(), firstTransaction)
+
+        val lastTransaction = entityStore.getTransactions(listOf(authority.authorityId), null, TransactionOrder.Descending, 1).firstOrNull()
+        assertNotNull(lastTransaction)
+        assertEquals(entities.last().entityId, lastTransaction.transaction.transactionEntities.first().entityId)
+
+        val lastTransactionAll = entityStore.getTransactions(emptyList(), null, TransactionOrder.Descending, 1).firstOrNull()
+        assertNotNull(lastTransactionAll)
+        assertEquals(transactions.last(), lastTransactionAll)
+
+        val middleTransactionsForward = entityStore.getTransactions(listOf(authority.authorityId), transactionIds[1], TransactionOrder.Ascending, 10)
+        assertEquals(transactions.drop(1), middleTransactionsForward)
+
+        val middleTransactionsBackward = entityStore.getTransactions(listOf(authority.authorityId), transactionIds[1], TransactionOrder.Descending, 10)
+        assertEquals(transactions.reversed().drop(1), middleTransactionsBackward)
+
+        val allTransactionsForward = entityStore.getTransactions(emptyList(), null, TransactionOrder.Ascending, 10)
+        assertEquals(transactions, allTransactionsForward)
+
+        val allTransactionsBackward = entityStore.getTransactions(emptyList(), null, TransactionOrder.Descending, 10)
+        assertEquals(transactions.reversed(), allTransactionsBackward)
+
+        // TODO - Add tests across AuthorityIds
     }
 }

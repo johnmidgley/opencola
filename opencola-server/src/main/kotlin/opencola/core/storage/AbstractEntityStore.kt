@@ -1,18 +1,25 @@
 package opencola.core.storage
 
 import mu.KotlinLogging
+import opencola.core.extensions.ifNotNullOrElse
 import opencola.core.model.*
 import opencola.core.security.Signator
+import opencola.core.storage.EntityStore.*
 import java.security.PublicKey
 
 // TODO: Should support multiple authorities
 abstract class AbstractEntityStore(val authority: Authority, val addressBook: AddressBook, protected val signator: Signator) : EntityStore {
     // TODO: Assumes transaction has been validated. Cleanup?
     protected abstract fun persistTransaction(signedTransaction: SignedTransaction) : SignedTransaction
-    protected abstract fun getNextTransactionId(authorityId: Id): Id
 
     protected fun getFirstTransactionId(authorityId: Id): Id {
         return Id.ofData("$authorityId.firstTransaction".toByteArray())
+    }
+
+    private fun getNextTransactionId(authorityId: Id): Id{
+        return getTransactions(listOf(authorityId), null, TransactionOrder.Descending, 1)
+            .firstOrNull()
+            .ifNotNullOrElse({ Id.ofData(SignedTransaction.encode(it)) }, { getFirstTransactionId(authorityId) })
     }
 
     // TODO: Make logger class?

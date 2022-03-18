@@ -3,9 +3,12 @@ package opencola.core.storage
 import opencola.core.extensions.ifNotNullOrElse
 import opencola.core.model.*
 import opencola.core.security.Signator
+import opencola.core.storage.EntityStore.TransactionOrder
 import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.greaterEq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.lessEq
 import org.jetbrains.exposed.sql.statements.api.ExposedBlob
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.ByteArrayInputStream
@@ -50,28 +53,79 @@ class ExposedEntityStore(authority: Authority, addressBook: AddressBook, signato
         }
     }
 
-    private fun getLastTransactionRow(authorityId: Id): ResultRow? {
-        // TODO: Better way to get max?
-        return transaction(database) {
-            transactions.select { (transactions.authorityId eq Id.encode(authorityId)) }
-                .orderBy(transactions.id to SortOrder.DESC)
-                .limit(1)
-                .firstOrNull()
+    private fun addIdConstraint(op: Op<Boolean>, id: Long?, order: TransactionOrder): Op<Boolean> {
+        return if(id == null)
+            op
+        else{
+            if (order == TransactionOrder.Ascending)
+                op.and( transactions.id greaterEq id)
+            else
+                op.and(transactions.id lessEq id)
         }
     }
 
-    override fun getLastTransactionId(authorityId: Id): Id? {
-        return getLastTransactionRow(authorityId).ifNotNullOrElse(
-            { Id.decode(it[transactions.transactionId]) },
-            { null }
-        )
+    private fun addAuthorityIdConstraints(op: Op<Boolean>, authorityIds: List<Id>): Op<Boolean>{
+        return if(authorityIds.isEmpty())
+            op
+        else
+            op.and(authorityIds
+                .map { (transactions.authorityId eq Id.encode(it)) }
+                .reduce { acc, op -> acc.or(op) })
+
     }
 
-    override fun getNextTransactionId(authorityId: Id) : Id {
-        return getLastTransactionRow(authorityId).ifNotNullOrElse(
-            { Id.ofData(it[transactions.encoded].bytes) },
-            { getFirstTransactionId(authorityId) }
-        )
+    private fun authoritiesQuery(authorityIds: List<Id>, id: Long?, order: TransactionOrder): Query {
+        return transactions
+            .select {
+                // TODO: Make extension methods so this can be turned inside out
+                addAuthorityIdConstraints(addIdConstraint(transactions.id greaterEq 0, id, order), authorityIds)
+            }
+            .orderBy(transactions.id to if (order == TransactionOrder.Ascending) SortOrder.ASC else SortOrder.DESC)
+    }
+
+    private fun startRowQuery(
+        authorityIds: List<Id>,
+        startTransactionId: Id?,
+        order: TransactionOrder
+    ): Query {
+        return if (startTransactionId == null)
+            authoritiesQuery(authorityIds, null, order).limit(1)
+        else
+            transactions.select { transactions.transactionId eq Id.encode(startTransactionId) }
+    }
+
+    private fun getTransactionRows(
+        authorityIds: Iterable<Id>,
+        startTransactionId: Id?,
+        order: TransactionOrder,
+        limit: Int
+    ): List<ResultRow> {
+        return transaction(database){
+            val authorityIdList = authorityIds.toList()
+            val startRow = startRowQuery(authorityIdList, startTransactionId, order).firstOrNull()
+
+            if(startRow == null)
+                emptyList()
+            else {
+                authoritiesQuery(authorityIdList, startRow[transactions.id].value, order)
+                    .limit(limit)
+                    .toList()
+            }
+
+        }
+    }
+
+    override fun getTransactions(
+        authorityIds: Iterable<Id>,
+        startTransactionId: Id?,
+        order: TransactionOrder,
+        limit: Int
+    ): Iterable<SignedTransaction> {
+        return getTransactionRows(authorityIds, startTransactionId, order, limit).map { row ->
+            ByteArrayInputStream(row[transactions.encoded].bytes).use {
+                SignedTransaction.decode(it)
+            }
+        }
     }
 
     override fun resetStore(): EntityStore {
@@ -123,30 +177,5 @@ class ExposedEntityStore(authority: Authority, addressBook: AddressBook, signato
         }
 
         return signedTransaction
-    }
-
-    override fun getTransactions(authorityId: Id, startTransactionId: Id?, numTransactions: Int): Iterable<SignedTransaction> {
-        return transaction(database){
-            val startId = startTransactionId.ifNotNullOrElse({startTransactionId!!}, {getFirstTransactionId(authorityId)})
-
-            val startTransaction =
-                    transactions.select {
-                        (transactions.authorityId eq Id.encode(authority.authorityId)) and
-                                (transactions.transactionId eq Id.encode(startId))
-                    }.firstOrNull()
-
-            if(startTransaction == null)
-                emptyList()
-            else
-                transactions.select{ (transactions.id greaterEq  startTransaction[transactions.id]) }
-                    .orderBy(transactions.id to SortOrder.ASC)
-                    .limit(numTransactions)
-                    .map{ row ->
-                        ByteArrayInputStream(row[transactions.encoded].bytes).use {
-                            SignedTransaction.decode(it)
-                        }
-                    }
-                    .toList()
-        }
     }
 }

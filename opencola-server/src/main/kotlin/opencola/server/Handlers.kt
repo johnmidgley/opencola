@@ -53,7 +53,7 @@ suspend fun handleGetTransactionsCall(call: ApplicationCall, entityStore: Entity
     val extra = (if (transactionId == null) 0 else 1)
     val numTransactions =(call.parameters["numTransactions"].nullOrElse { it.toInt() } ?: 10) + extra
     val currentTransactionId = entityStore.getLastTransactionId(authorityId)
-    val transactions = entityStore.getTransactions(authorityId, transactionId, numTransactions + 1).drop(extra)
+    val transactions = entityStore.getTransactions(authorityId, transactionId, EntityStore.TransactionOrder.Ascending, numTransactions + 1).drop(extra)
 
     // TODO: Getting a request is a sign the the remote host is up - update the peer status in the PeerService
     call.respond(TransactionsResponse(transactionId, currentTransactionId, transactions.toList()))
@@ -157,4 +157,9 @@ suspend fun handlePostNotifications(call: ApplicationCall, entityService: Entity
     }
 
     call.respond(HttpStatusCode.OK)
+}
+
+suspend fun handleGetFeed(call: ApplicationCall, entityStore: EntityStore){
+    // val transactions = entityStore.getTransactions(
+
 }
