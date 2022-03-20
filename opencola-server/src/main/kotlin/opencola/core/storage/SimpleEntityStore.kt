@@ -1,9 +1,6 @@
 package opencola.core.storage
 
-import opencola.core.model.Authority
-import opencola.core.model.Entity
-import opencola.core.model.Id
-import opencola.core.model.SignedTransaction
+import opencola.core.model.*
 import opencola.core.security.Signator
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
@@ -73,8 +70,14 @@ class SimpleEntityStore(val path: Path, addressBook: AddressBook , authority: Au
         return signedTransaction
     }
 
-    override fun getFacts(authorityIds: Iterable<Id>, entityIds: Iterable<Id>) {
-        TODO("Not yet implemented")
+    override fun getFacts(authorityIds: Iterable<Id>, entityIds: Iterable<Id>): List<Fact> {
+        val authorityIdList = authorityIds.toList()
+        val entityIdList = entityIds.toList()
+
+        return facts.filter {
+            (authorityIdList.isEmpty() || authorityIdList.contains(it.authorityId)
+                    && (entityIdList.isEmpty() || entityIdList.contains(it.entityId)))
+        }
     }
 
     override fun resetStore(): SimpleEntityStore {

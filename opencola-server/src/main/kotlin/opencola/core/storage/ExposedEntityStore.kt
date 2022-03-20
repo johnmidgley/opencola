@@ -137,18 +137,20 @@ class ExposedEntityStore(authority: Authority, addressBook: AddressBook, signato
         return ExposedEntityStore(authority, addressBook, signator, database)
     }
 
+    private fun factFromResultRow(resultRow: ResultRow): Fact {
+        return Fact(Id.decode(resultRow[facts.authorityId]),
+            Id.decode(resultRow[facts.entityId]),
+            CoreAttribute.values().single { a -> a.spec.uri.toString() == resultRow[facts.attribute]}.spec,
+            Value(resultRow[facts.value].bytes),
+            resultRow[facts.operation],
+            Id.decode(resultRow[facts.transactionId]))
+    }
+
     override fun getEntity(authorityId: Id, entityId: Id): Entity? {
         return transaction(database){
             val facts = facts.select{
                 (facts.authorityId eq Id.encode(authorityId) and (facts.entityId eq Id.encode(entityId)))
-            }.map {
-                Fact(Id.decode(it[facts.authorityId]),
-                    Id.decode(it[facts.entityId]),
-                    CoreAttribute.values().single { a -> a.spec.uri.toString() == it[facts.attribute]}.spec,
-                    Value(it[facts.value].bytes),
-                    it[facts.operation],
-                    Id.decode(it[facts.transactionId]))
-            }
+            }.map { factFromResultRow(it) }
 
             if(facts.isNotEmpty()) Entity.getInstance(facts) else null
         }
@@ -180,12 +182,13 @@ class ExposedEntityStore(authority: Authority, addressBook: AddressBook, signato
         return signedTransaction
     }
 
-    override fun getFacts(authorityIds: Iterable<Id>, entityIds: Iterable<Id>) {
-        facts.select {
-            val thing = facts.authorityId
-            (facts.id greaterEq 0)
-                .withIdConstraint(facts.authorityId, authorityIds.toList())
-                .withIdConstraint(facts.entityId, entityIds.toList())
+    override fun getFacts(authorityIds: Iterable<Id>, entityIds: Iterable<Id>): List<Fact> {
+        return transaction(database) {
+            facts.select {
+                (facts.id greaterEq 0)
+                    .withIdConstraint(facts.authorityId, authorityIds.toList())
+                    .withIdConstraint(facts.entityId, entityIds.toList())
+            }.map { factFromResultRow(it) }
         }
     }
 }

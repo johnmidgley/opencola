@@ -2,9 +2,8 @@ package opencola.core.storage
 
 import opencola.core.getActorEntity
 import opencola.core.TestApplication
-import opencola.core.model.ActorEntity
-import opencola.core.model.Authority
-import opencola.core.model.ResourceEntity
+import opencola.core.config.getApplications
+import opencola.core.model.*
 import opencola.core.security.Signator
 import opencola.core.storage.EntityStore.*
 import org.kodein.di.instance
@@ -12,6 +11,7 @@ import java.net.URI
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class EntityStoreTest {
     private val app = TestApplication.instance
@@ -159,5 +159,48 @@ class EntityStoreTest {
         assertEquals(transactions.reversed(), allTransactionsBackward)
 
         // TODO - Add tests across AuthorityIds
+    }
+
+    // TODO: This only tests the entity store that is used in the test config (i.e. SimpleEntityStore is not tested)
+    @Test
+    fun testGetFacts(){
+        val applications = getApplications(2, TestApplication.config, 6000)
+
+        // Create some entities for first authority
+        val authority0 by applications[0].injector.instance<Authority>()
+        val entityStore0 by applications[0].injector.instance<EntityStore>()
+        val entities0 = (0 until 2).map { ResourceEntity(authority0.authorityId, URI("http://test/$it")) }
+        entityStore0.updateEntities(*entities0.toTypedArray<Entity>())
+
+        // Add some entities from peer store with same entity ids
+        val authority1 by applications[1].injector.instance<Authority>()
+        val entityStore1 by applications[1].injector.instance<EntityStore>()
+        val entities1 = (0 until 2).map { ResourceEntity(authority1.authorityId, URI("http://test/$it")) }
+        val transaction = entityStore1.updateEntities(*entities1.toTypedArray<Entity>()) ?: throw RuntimeException("Unable to update entities")
+        entityStore0.addTransactions(listOf(transaction))
+
+        val authority0Facts = entityStore0.getFacts(listOf(authority0.authorityId), emptyList())
+        assert(authority0Facts.isNotEmpty())
+        assert(authority0Facts.all{ it.authorityId == authority0.authorityId} )
+        assertNotNull(authority0Facts.firstOrNull{ it.entityId == entities0[0].entityId})
+        assertNotNull(authority0Facts.firstOrNull{ it.entityId == entities0[1].entityId})
+
+        val authority1Facts = entityStore0.getFacts(listOf(authority1.authorityId), emptyList())
+        assert(authority1Facts.isNotEmpty())
+        assert(authority1Facts.all{ it.authorityId == authority1.authorityId} )
+        assertNotNull(authority1Facts.firstOrNull{ it.entityId == entities1[0].entityId})
+        assertNotNull(authority1Facts.firstOrNull{ it.entityId == entities1[1].entityId})
+
+        val entity0Facts = entityStore0.getFacts(emptyList(), listOf(entities0[0].entityId))
+        assert(entity0Facts.isNotEmpty())
+        assertTrue { entity0Facts.all { it.entityId == entities0[0].entityId } }
+        assertTrue(entity0Facts.any{ it.authorityId == authority0.authorityId} )
+        assertTrue(entity0Facts.any{ it.authorityId == authority1.authorityId} )
+
+        val entity1Facts = entityStore0.getFacts(emptyList(), listOf(entities0[1].entityId))
+        assert(entity1Facts.isNotEmpty())
+        assertTrue { entity1Facts.all { it.entityId == entities0[1].entityId } }
+        assertTrue(entity1Facts.any{ it.authorityId == authority0.authorityId} )
+        assertTrue(entity1Facts.any{ it.authorityId == authority1.authorityId} )
     }
 }

@@ -2,6 +2,7 @@ package opencola.core.storage
 
 import opencola.core.extensions.ifNotNullOrElse
 import opencola.core.model.Entity
+import opencola.core.model.Fact
 import opencola.core.model.Id
 import opencola.core.model.SignedTransaction
 
@@ -12,7 +13,7 @@ interface EntityStore {
     }
 
     // TODO: Separate fact store from entity store?
-    fun getFacts(authorityIds: Iterable<Id>, entityIds: Iterable<Id>)
+    fun getFacts(authorityIds: Iterable<Id>, entityIds: Iterable<Id>) : List<Fact>
 
     fun getEntity(authorityId: Id, entityId: Id): Entity?
     fun updateEntities(vararg entities: Entity) : SignedTransaction?
