@@ -3,6 +3,7 @@ package opencola.core.storage
 import opencola.core.model.*
 import opencola.core.security.Signator
 import opencola.core.storage.EntityStore.TransactionOrder
+import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -20,7 +21,7 @@ class ExposedEntityStore(authority: Authority, addressBook: AddressBook, signato
     // This would likely be an issue only when storing data for large sets of users (millions to billions?)
     // TODO: Magic numbers (32, 128) should come from config
     // TODO: Normalize attribute
-    private class Facts(authorityId: Id) : Table("fct-${authorityId}") {
+    private class Facts(authorityId: Id) : LongIdTable("fct-${authorityId}") {
         val authorityId = binary("authorityId", 32)
         val entityId = binary("entityId", 32).index()
         val attribute = text("attribute")
@@ -52,33 +53,33 @@ class ExposedEntityStore(authority: Authority, addressBook: AddressBook, signato
         }
     }
 
-    private fun Op<Boolean>.withIdConstraint(id: Long?, order: TransactionOrder): Op<Boolean> {
+    private fun Op<Boolean>.withTableIdOrdering(column: Column<EntityID<Long>>, id: Long?, ascending: Boolean): Op<Boolean> {
         return if(id == null)
             this
         else{
-            if (order == TransactionOrder.Ascending)
-                this.and( transactions.id greaterEq id)
+            if (ascending)
+                this.and( column greaterEq id)
             else
-                this.and(transactions.id lessEq id)
+                this.and(column lessEq id)
         }
     }
 
-    private fun Op<Boolean>.withAuthorityIdConstraints(authorityIds: List<Id>): Op<Boolean>{
-        return if(authorityIds.isEmpty())
+    private fun Op<Boolean>.withIdConstraint(column: Column<ByteArray>, ids: List<Id>): Op<Boolean>{
+        return if(ids.isEmpty())
             this
         else
-            this.and(authorityIds
-                .map { (transactions.authorityId eq Id.encode(it)) }
+            this.and(ids
+                .map { (column eq Id.encode(it)) }
                 .reduce { acc, op -> acc.or(op) })
 
     }
 
-    private fun authoritiesQuery(authorityIds: List<Id>, id: Long?, order: TransactionOrder): Query {
+    private fun transactionsByAuthoritiesQuery(authorityIds: List<Id>, id: Long?, order: TransactionOrder): Query {
         return transactions
             .select {
                 (transactions.id greaterEq 0) // Not elegant, but avoids separate selectAll clause when no constraints provided
-                    .withIdConstraint(id, order)
-                    .withAuthorityIdConstraints(authorityIds)
+                    .withTableIdOrdering(transactions.id, id, order == TransactionOrder.Ascending)
+                    .withIdConstraint(transactions.authorityId, authorityIds)
             }
             .orderBy(transactions.id to if (order == TransactionOrder.Ascending) SortOrder.ASC else SortOrder.DESC)
     }
@@ -89,7 +90,7 @@ class ExposedEntityStore(authority: Authority, addressBook: AddressBook, signato
         order: TransactionOrder
     ): Query {
         return if (startTransactionId == null)
-            authoritiesQuery(authorityIds, null, order).limit(1)
+            transactionsByAuthoritiesQuery(authorityIds, null, order).limit(1)
         else
             transactions.select { transactions.transactionId eq Id.encode(startTransactionId) }
     }
@@ -107,7 +108,7 @@ class ExposedEntityStore(authority: Authority, addressBook: AddressBook, signato
             if(startRow == null)
                 emptyList()
             else {
-                authoritiesQuery(authorityIdList, startRow[transactions.id].value, order)
+                transactionsByAuthoritiesQuery(authorityIdList, startRow[transactions.id].value, order)
                     .limit(limit)
                     .toList()
             }
@@ -177,5 +178,14 @@ class ExposedEntityStore(authority: Authority, addressBook: AddressBook, signato
         }
 
         return signedTransaction
+    }
+
+    override fun getFacts(authorityIds: Iterable<Id>, entityIds: Iterable<Id>) {
+        facts.select {
+            val thing = facts.authorityId
+            (facts.id greaterEq 0)
+                .withIdConstraint(facts.authorityId, authorityIds.toList())
+                .withIdConstraint(facts.entityId, entityIds.toList())
+        }
     }
 }

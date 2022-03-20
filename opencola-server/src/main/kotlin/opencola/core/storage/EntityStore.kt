@@ -11,6 +11,9 @@ interface EntityStore {
         Descending,
     }
 
+    // TODO: Separate fact store from entity store?
+    fun getFacts(authorityIds: Iterable<Id>, entityIds: Iterable<Id>)
+
     fun getEntity(authorityId: Id, entityId: Id): Entity?
     fun updateEntities(vararg entities: Entity) : SignedTransaction?
     fun addTransactions(signedTransactions: List<SignedTransaction>)

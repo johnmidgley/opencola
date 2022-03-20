@@ -159,7 +159,22 @@ suspend fun handlePostNotifications(call: ApplicationCall, entityService: Entity
     call.respond(HttpStatusCode.OK)
 }
 
+
+
+@Serializable
+// TODO - Replace Search Result
+data class EntityResult(val authorityId: Id, val entities: List<Summary>, val activities: List<Activity>){
+    @Serializable
+    data class Summary(val entityId: String, val name: String?, val uri: String, val description: String?)
+
+    @Serializable
+    data class Activity(val authorityId: Id, val entityId: Id, val epochSecond: Long, val actions: Actions)
+}
+
 suspend fun handleGetFeed(call: ApplicationCall, entityStore: EntityStore){
-    // val transactions = entityStore.getTransactions(
+    val authorityId = Id.fromHexString(call.parameters["authorityId"] ?: throw IllegalArgumentException("No authorityId set"))
+    val transactions = entityStore.getTransactions(emptyList(), null, EntityStore.TransactionOrder.Descending, 100)
+    val entityIds = transactions.flatMap { tx -> tx.transaction.transactionEntities.map { it.entityId } }.distinct()
+    val entityFacts = entityIds.map {  }
 
 }

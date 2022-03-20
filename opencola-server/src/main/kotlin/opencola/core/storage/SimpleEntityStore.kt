@@ -73,6 +73,10 @@ class SimpleEntityStore(val path: Path, addressBook: AddressBook , authority: Au
         return signedTransaction
     }
 
+    override fun getFacts(authorityIds: Iterable<Id>, entityIds: Iterable<Id>) {
+        TODO("Not yet implemented")
+    }
+
     override fun resetStore(): SimpleEntityStore {
         path.deleteIfExists()
         return SimpleEntityStore(path, addressBook, authority, signator)
