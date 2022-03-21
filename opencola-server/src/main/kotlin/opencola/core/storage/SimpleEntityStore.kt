@@ -45,7 +45,7 @@ class SimpleEntityStore(val path: Path, addressBook: AddressBook , authority: Au
         return Entity.getInstance(facts.filter { it.authorityId == authorityId && it.entityId == entityId }.toList())
     }
 
-    override fun getTransactions(
+    override fun getSignedTransactions(
         authorityIds: Iterable<Id>,
         startTransactionId: Id?,
         order: EntityStore.TransactionOrder,

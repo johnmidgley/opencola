@@ -12,12 +12,12 @@ abstract class AbstractEntityStore(val authority: Authority, val addressBook: Ad
     // TODO: Assumes transaction has been validated. Cleanup?
     protected abstract fun persistTransaction(signedTransaction: SignedTransaction) : SignedTransaction
 
-    protected fun getFirstTransactionId(authorityId: Id): Id {
+    private fun getFirstTransactionId(authorityId: Id): Id {
         return Id.ofData("$authorityId.firstTransaction".toByteArray())
     }
 
     private fun getNextTransactionId(authorityId: Id): Id{
-        return getTransactions(listOf(authorityId), null, TransactionOrder.Descending, 1)
+        return getSignedTransactions(listOf(authorityId), null, TransactionOrder.Descending, 1)
             .firstOrNull()
             .ifNotNullOrElse({ Id.ofData(SignedTransaction.encode(it)) }, { getFirstTransactionId(authorityId) })
     }
@@ -104,10 +104,14 @@ abstract class AbstractEntityStore(val authority: Authority, val addressBook: Ad
         val signedTransaction = Transaction.fromFacts(getNextTransactionId(authority.authorityId), uncommittedFacts).sign(signator)
         persistTransaction(signedTransaction)
 
+        entities.forEach {
+            it.commitFacts(signedTransaction.transaction.id)
+        }
+
         return signedTransaction
     }
 
-    override fun addTransactions(signedTransactions: List<SignedTransaction>) {
+    override fun addSignedTransactions(signedTransactions: List<SignedTransaction>) {
         signedTransactions.forEach {
             val transactionAuthorityId = it.transaction.authorityId
             val publicKey = addressBook.getPublicKey(transactionAuthorityId)

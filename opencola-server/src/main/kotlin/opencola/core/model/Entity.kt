@@ -102,4 +102,9 @@ abstract class Entity(val authorityId: Id, val entityId: Id){
         facts = facts + newFact
         return newFact
     }
+
+     fun commitFacts(transactionId: Id){
+        val partitionedFacts = facts.partition { it.transactionId == null }
+        facts = partitionedFacts.second + partitionedFacts.first.map { Fact(it.authorityId, it.entityId, it.attribute, it.value, it.operation, transactionId) }
+    }
 }

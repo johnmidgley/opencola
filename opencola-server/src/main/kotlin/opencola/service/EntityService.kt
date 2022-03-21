@@ -84,7 +84,7 @@ class EntityService(val authority: Authority,
                     httpClient.get(urlString)
 
                 peerRouter.updateStatus(peer.id, Online)
-                entityStore.addTransactions(transactionsResponse.transactions)
+                entityStore.addSignedTransactions(transactionsResponse.transactions)
                 transactionsResponse.transactions.forEach{ indexTransaction(it)}
                 peerTransactionId = transactionsResponse.transactions.last().transaction.id
 

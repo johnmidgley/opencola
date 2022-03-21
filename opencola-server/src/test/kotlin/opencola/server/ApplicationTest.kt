@@ -1,5 +1,6 @@
 package opencola.server
 
+import com.sksamuel.hoplite.fp.invalid
 import io.ktor.http.*
 import io.ktor.http.content.*
 import kotlin.test.*
@@ -22,6 +23,7 @@ import opencola.core.network.PeerRouter
 
 class ApplicationTest {
     private val application = TestApplication.instance
+    val injector = TestApplication.instance.injector
 
     @Test
     fun testRoot() {
@@ -34,7 +36,6 @@ class ApplicationTest {
 
     @Test
     fun testGetEntity(){
-        val injector = TestApplication.instance.injector
         val authority by injector.instance<Authority>()
         val entityStore by injector.instance<EntityStore>()
         val entity = ResourceEntity(authority.authorityId, URI("http://opencola.org"), trust = 1.0F, like = true, rating = 1.0F)
@@ -62,7 +63,6 @@ class ApplicationTest {
 
     @Test
     fun testStatusActions(){
-        val injector = TestApplication.instance.injector
         val authority by injector.instance<Authority>()
         val entityStore by injector.instance<EntityStore>()
         val uri = URI("https://opencola.org")
@@ -142,6 +142,40 @@ class ApplicationTest {
                 setBody(Json.encodeToString(notification))
             }) {
                 assertEquals(HttpStatusCode.OK, response.status())
+            }
+        }
+    }
+
+    @Test
+    fun testGetFeed(){
+        val authority by injector.instance<Authority>()
+        val entityStore by injector.instance<EntityStore>()
+        entityStore.resetStore()
+
+        val uri = URI("https://opencola.org")
+        val entity = ResourceEntity(authority.authorityId, uri)
+        entityStore.updateEntities(entity)
+
+        entity.trust = 1.0F
+        entityStore.updateEntities(entity)
+
+        entity.like = true
+        entityStore.updateEntities(entity)
+
+        entity.rating = 1.0F
+        entityStore.updateEntities(entity)
+
+        // TODO: Add another authority
+
+        withTestApplication({ configureRouting(application); configureContentNegotiation() }) {
+            handleRequest(HttpMethod.Get, "/feed").apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                assertNotNull(response.content)
+                val feedResult = Json.decodeFromString<FeedResult>(response.content!!)
+
+                assertEquals(entity.entityId, feedResult.results[0].entityId)
+                assertEquals(3, feedResult.results[0].activities.count())
+                assertEquals(uri.toString(), feedResult.results[0].summary.uri)
             }
         }
     }

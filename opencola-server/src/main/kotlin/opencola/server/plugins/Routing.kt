@@ -80,7 +80,8 @@ fun Application.configureRouting(application: app) {
             handlePostNotifications(call, entityService, peerRouter)
         }
 
-        get("/feed/{authorityId}"){
+        get("/feed"){
+            // TODO: Handle filtering of authorities
             val entityStore by injector.instance<EntityStore>()
             handleGetFeed(call, entityStore)
         }

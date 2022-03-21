@@ -8,6 +8,7 @@ import opencola.core.security.Signator
 import opencola.core.storage.EntityStore.*
 import org.kodein.di.instance
 import java.net.URI
+import java.time.Instant
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -30,11 +31,11 @@ class EntityStoreTest {
         getSQLiteEntityStore().resetStore()
     }
 
-    fun getFreshSimpleEntityStore(): SimpleEntityStore {
+    private fun getFreshSimpleEntityStore(): SimpleEntityStore {
         return SimpleEntityStore(TestApplication.getTmpFilePath(".txs"), addressBook, authority, signator)
     }
 
-    fun getFreshExposeEntityStore(): ExposedEntityStore {
+    private fun getFreshExposeEntityStore(): ExposedEntityStore {
         return ExposedEntityStore(authority, addressBook, signator, SQLiteDB(TestApplication.getTmpFilePath(".db")).db)
     }
 
@@ -63,8 +64,7 @@ class EntityStoreTest {
             assertEquals(it.first.attribute, it.second.attribute)
             assertEquals(it.first.value, it.second.value)
             assertEquals(it.first.operation, it.second.operation)
-            // Transaction id changes on commit, so we don't expect them to be the same
-            assertEquals(null, it.first.transactionId)
+            assertEquals(it.first.transactionId, it.second.transactionId)
         }
     }
 
@@ -105,13 +105,15 @@ class EntityStoreTest {
 
     private fun testGetTransaction(entityStore: EntityStore){
         val entity = ResourceEntity(authority.authorityId, URI("http://opencola.org"))
+        val epochSecond = Instant.now().epochSecond
         val signedTransaction = entityStore.updateEntities(entity)
         assertNotNull(signedTransaction)
+        assert(signedTransaction.transaction.epochSecond >= epochSecond)
 
         val transaction = entityStore.getTransaction(signedTransaction.transaction.id)
         assertNotNull(transaction)
 
-        val transactionsFromNull = entityStore.getTransactions(listOf(authority.authorityId), null, TransactionOrder.Ascending, 100)
+        val transactionsFromNull = entityStore.getSignedTransactions(listOf(authority.authorityId), null, TransactionOrder.Ascending, 100)
         assertNotNull(transactionsFromNull.firstOrNull{ it.transaction.id == transaction.transaction.id})
     }
 
@@ -130,32 +132,32 @@ class EntityStoreTest {
         val transactions = entities.map{ entityStore.updateEntities(it)!! }
         val transactionIds = transactions.map{ it.transaction.id }
 
-        val firstTransaction = entityStore.getTransactions(listOf(authority.authorityId), null, TransactionOrder.Ascending, 1).firstOrNull()
+        val firstTransaction = entityStore.getSignedTransactions(listOf(authority.authorityId), null, TransactionOrder.Ascending, 1).firstOrNull()
         assertNotNull(firstTransaction)
         assertEquals(transactions.first(), firstTransaction)
 
-        val firstTransactionAll = entityStore.getTransactions(emptyList(), null, TransactionOrder.Ascending, 1).firstOrNull()
+        val firstTransactionAll = entityStore.getSignedTransactions(emptyList(), null, TransactionOrder.Ascending, 1).firstOrNull()
         assertNotNull(firstTransactionAll)
         assertEquals(transactions.first(), firstTransaction)
 
-        val lastTransaction = entityStore.getTransactions(listOf(authority.authorityId), null, TransactionOrder.Descending, 1).firstOrNull()
+        val lastTransaction = entityStore.getSignedTransactions(listOf(authority.authorityId), null, TransactionOrder.Descending, 1).firstOrNull()
         assertNotNull(lastTransaction)
         assertEquals(entities.last().entityId, lastTransaction.transaction.transactionEntities.first().entityId)
 
-        val lastTransactionAll = entityStore.getTransactions(emptyList(), null, TransactionOrder.Descending, 1).firstOrNull()
+        val lastTransactionAll = entityStore.getSignedTransactions(emptyList(), null, TransactionOrder.Descending, 1).firstOrNull()
         assertNotNull(lastTransactionAll)
         assertEquals(transactions.last(), lastTransactionAll)
 
-        val middleTransactionsForward = entityStore.getTransactions(listOf(authority.authorityId), transactionIds[1], TransactionOrder.Ascending, 10)
+        val middleTransactionsForward = entityStore.getSignedTransactions(listOf(authority.authorityId), transactionIds[1], TransactionOrder.Ascending, 10)
         assertEquals(transactions.drop(1), middleTransactionsForward)
 
-        val middleTransactionsBackward = entityStore.getTransactions(listOf(authority.authorityId), transactionIds[1], TransactionOrder.Descending, 10)
+        val middleTransactionsBackward = entityStore.getSignedTransactions(listOf(authority.authorityId), transactionIds[1], TransactionOrder.Descending, 10)
         assertEquals(transactions.reversed().drop(1), middleTransactionsBackward)
 
-        val allTransactionsForward = entityStore.getTransactions(emptyList(), null, TransactionOrder.Ascending, 10)
+        val allTransactionsForward = entityStore.getSignedTransactions(emptyList(), null, TransactionOrder.Ascending, 10)
         assertEquals(transactions, allTransactionsForward)
 
-        val allTransactionsBackward = entityStore.getTransactions(emptyList(), null, TransactionOrder.Descending, 10)
+        val allTransactionsBackward = entityStore.getSignedTransactions(emptyList(), null, TransactionOrder.Descending, 10)
         assertEquals(transactions.reversed(), allTransactionsBackward)
 
         // TODO - Add tests across AuthorityIds
@@ -177,7 +179,7 @@ class EntityStoreTest {
         val entityStore1 by applications[1].injector.instance<EntityStore>()
         val entities1 = (0 until 2).map { ResourceEntity(authority1.authorityId, URI("http://test/$it")) }
         val transaction = entityStore1.updateEntities(*entities1.toTypedArray<Entity>()) ?: throw RuntimeException("Unable to update entities")
-        entityStore0.addTransactions(listOf(transaction))
+        entityStore0.addSignedTransactions(listOf(transaction))
 
         val authority0Facts = entityStore0.getFacts(listOf(authority0.authorityId), emptyList())
         assert(authority0Facts.isNotEmpty())

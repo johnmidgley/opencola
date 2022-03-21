@@ -81,6 +81,7 @@ class ExposedEntityStore(authority: Authority, addressBook: AddressBook, signato
                     .withTableIdOrdering(transactions.id, id, order == TransactionOrder.Ascending)
                     .withIdConstraint(transactions.authorityId, authorityIds)
             }
+            // TODO: order by transactions.id or transactions.epochSecond??
             .orderBy(transactions.id to if (order == TransactionOrder.Ascending) SortOrder.ASC else SortOrder.DESC)
     }
 
@@ -116,7 +117,7 @@ class ExposedEntityStore(authority: Authority, addressBook: AddressBook, signato
         }
     }
 
-    override fun getTransactions(
+    override fun getSignedTransactions(
         authorityIds: Iterable<Id>,
         startTransactionId: Id?,
         order: TransactionOrder,

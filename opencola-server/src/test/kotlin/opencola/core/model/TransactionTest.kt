@@ -22,7 +22,7 @@ class TransactionTest {
         val stableStructureHash = "3960f25b533fedf4cda71a701553a4bf7fef02689a0b5bb7a335de3bd6c6efbd"
         val id = Id.ofData("".toByteArray())
         val fact = Fact(id, id, CoreAttribute.Type.spec, Value.emptyValue, Operation.Add)
-        val transaction = Transaction.fromFacts(id, listOf(fact))
+        val transaction = Transaction.fromFacts(id, listOf(fact), 0)
         val signedTransaction = SignedTransaction(transaction, SIGNATURE_ALGO, "".toByteArray())
 
         val hash = ByteArrayOutputStream().use {

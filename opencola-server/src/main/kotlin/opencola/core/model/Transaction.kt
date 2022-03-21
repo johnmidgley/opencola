@@ -14,7 +14,7 @@ import java.time.Instant
 data class Transaction(val id: Id,
                        val authorityId: Id,
                        val transactionEntities: List<TransactionEntity>,
-                       val epochSecond: Long = Instant.EPOCH.epochSecond) {
+                       val epochSecond: Long = Instant.now().epochSecond) {
 
     fun getFacts(): List<Fact> {
         return transactionEntities.flatMap { entity ->
@@ -66,9 +66,9 @@ data class Transaction(val id: Id,
     }
 
     companion object Factory : StreamSerializer<Transaction> {
-        fun fromFacts(id: Id, facts: List<Fact>) : Transaction {
+        fun fromFacts(id: Id, facts: List<Fact>, epochSecond: Long = Instant.now().epochSecond) : Transaction {
             val (authorityId, transactionEntities) = toTransactionEntities(facts)
-            return Transaction(id, authorityId, transactionEntities)
+            return Transaction(id, authorityId, transactionEntities, epochSecond)
         }
 
         private fun toTransactionEntities(facts: List<Fact>) : Pair<Id, List<TransactionEntity>> {

@@ -8,14 +8,14 @@ import io.ktor.response.*
 import kotlinx.serialization.Serializable
 import opencola.core.content.parseMhtml
 import opencola.core.extensions.nullOrElse
-import opencola.core.model.Actions
-import opencola.core.model.Id
-import opencola.core.model.ResourceEntity
-import opencola.core.model.SignedTransaction
+import opencola.core.model.*
+import opencola.core.model.Transaction.TransactionFact
 import opencola.core.network.PeerRouter
-import opencola.core.network.PeerRouter.PeerStatus.Status.*
+import opencola.core.network.PeerRouter.PeerStatus.Status.Online
 import opencola.core.storage.EntityStore
 import opencola.core.storage.MhtCache
+import opencola.server.EntityResult.Activity
+import opencola.server.EntityResult.Summary
 import opencola.service.EntityService
 import opencola.service.search.SearchService
 import java.net.URI
@@ -53,7 +53,7 @@ suspend fun handleGetTransactionsCall(call: ApplicationCall, entityStore: Entity
     val extra = (if (transactionId == null) 0 else 1)
     val numTransactions =(call.parameters["numTransactions"].nullOrElse { it.toInt() } ?: 10) + extra
     val currentTransactionId = entityStore.getLastTransactionId(authorityId)
-    val transactions = entityStore.getTransactions(authorityId, transactionId, EntityStore.TransactionOrder.Ascending, numTransactions + 1).drop(extra)
+    val transactions = entityStore.getSignedTransactions(authorityId, transactionId, EntityStore.TransactionOrder.Ascending, numTransactions + 1).drop(extra)
 
     // TODO: Getting a request is a sign the the remote host is up - update the peer status in the PeerService
     call.respond(TransactionsResponse(transactionId, currentTransactionId, transactions.toList()))
@@ -159,22 +159,73 @@ suspend fun handlePostNotifications(call: ApplicationCall, entityService: Entity
     call.respond(HttpStatusCode.OK)
 }
 
-
-
 @Serializable
 // TODO - Replace Search Result
-data class EntityResult(val authorityId: Id, val entities: List<Summary>, val activities: List<Activity>){
-    @Serializable
-    data class Summary(val entityId: String, val name: String?, val uri: String, val description: String?)
+data class EntityResult(val entityId: Id, val summary: Summary, val activities: List<Activity>){
 
     @Serializable
-    data class Activity(val authorityId: Id, val entityId: Id, val epochSecond: Long, val actions: Actions)
+    data class Summary(val name: String?, val uri: String, val description: String?)
+
+    @Serializable
+    data class Activity(val authorityId: Id, val epochSecond: Long, val actions: Actions)
 }
 
-suspend fun handleGetFeed(call: ApplicationCall, entityStore: EntityStore){
-    val authorityId = Id.fromHexString(call.parameters["authorityId"] ?: throw IllegalArgumentException("No authorityId set"))
-    val transactions = entityStore.getTransactions(emptyList(), null, EntityStore.TransactionOrder.Descending, 100)
-    val entityIds = transactions.flatMap { tx -> tx.transaction.transactionEntities.map { it.entityId } }.distinct()
-    val entityFacts = entityIds.map {  }
+@Serializable
+data class FeedResult(val transactionId: Id?, val results: List<EntityResult>)
 
+fun stringAttributeFromFacts(facts: List<Fact>, attribute: Attribute): String? {
+    return facts
+        .firstOrNull{ it.attribute == attribute }
+        .nullOrElse { attribute.codec.decode(it.value.bytes).toString() }
+}
+
+fun getSummary(facts: List<Fact>): Summary{
+    return Summary(
+        stringAttributeFromFacts(facts, CoreAttribute.Name.spec),
+        stringAttributeFromFacts(facts, CoreAttribute.Uri.spec)!!,
+        stringAttributeFromFacts(facts, CoreAttribute.Description.spec)
+    )
+}
+
+fun getActivity(authorityId: Id, epochSecond: Long, fact: TransactionFact): Activity? {
+    return when(fact.attribute){
+        CoreAttribute.Trust.spec -> Actions(CoreAttribute.Trust.spec.codec.decode(fact.value.bytes) as Float, null,null)
+        CoreAttribute.Like.spec -> Actions(null, CoreAttribute.Like.spec.codec.decode(fact.value.bytes) as Boolean, null)
+        CoreAttribute.Rating.spec -> Actions(null, null, CoreAttribute.Rating.spec.codec.decode(fact.value.bytes) as Float)
+        else -> null
+    }.nullOrElse { Activity(authorityId, epochSecond, it) } // TODO: Set epoch
+}
+
+fun getEntityActivities(transactions: Iterable<Transaction>): Map<Id, List<Activity>> {
+    return transactions.flatMap { t ->
+        t.transactionEntities.flatMap { e ->
+            e.facts.map {
+                Pair(e.entityId, getActivity(t.authorityId, t.epochSecond, it))
+            }
+                .filter { it.second != null }
+                .map { Pair(it.first, it.second!!) }
+        }
+    }
+        .groupBy { it.first }
+        .entries
+        .associate { entry -> Pair(entry.key, entry.value.map { it.second }) }
+}
+
+suspend fun handleGetFeed(call: ApplicationCall, entityStore: EntityStore) {
+    // TODO: Look for startTransactionId in call (For paging)
+    val signedTransactions = entityStore.getSignedTransactions(emptyList(), null, EntityStore.TransactionOrder.Descending, 100) // TODO: Config limit
+    val entityIds = signedTransactions.flatMap { tx -> tx.transaction.transactionEntities.map { it.entityId } }.distinct()
+    val entityFacts = entityStore.getFacts(emptyList(), entityIds).groupBy { it.entityId }
+    val entityActivities = getEntityActivities(signedTransactions.map { it.transaction })
+
+    call.respond(FeedResult(
+        signedTransactions.lastOrNull()?.transaction?.id,
+        entityIds.map{
+            val entityIdFacts = entityFacts[it]
+                ?: throw RuntimeException("Can't find facts for id: $it")
+            val entityIdActivities = entityActivities[it]
+                ?: throw RuntimeException("Can't find activities for id: $it")
+
+            EntityResult(it, getSummary(entityIdFacts), entityIdActivities) }
+    ))
 }
