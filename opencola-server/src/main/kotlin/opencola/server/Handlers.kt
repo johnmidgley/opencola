@@ -8,14 +8,14 @@ import io.ktor.response.*
 import kotlinx.serialization.Serializable
 import opencola.core.content.parseMhtml
 import opencola.core.extensions.nullOrElse
+import opencola.service.EntityResult
 import opencola.core.model.*
+import opencola.service.EntityResult.*
 import opencola.core.model.Transaction.TransactionFact
 import opencola.core.network.PeerRouter
 import opencola.core.network.PeerRouter.PeerStatus.Status.Online
 import opencola.core.storage.EntityStore
 import opencola.core.storage.MhtCache
-import opencola.server.EntityResult.Activity
-import opencola.server.EntityResult.Summary
 import opencola.service.EntityService
 import opencola.service.search.SearchService
 import java.net.URI
@@ -160,17 +160,6 @@ suspend fun handlePostNotifications(call: ApplicationCall, entityService: Entity
 }
 
 @Serializable
-// TODO - Replace Search Result
-data class EntityResult(val entityId: Id, val summary: Summary, val activities: List<Activity>){
-
-    @Serializable
-    data class Summary(val name: String?, val uri: String, val description: String?)
-
-    @Serializable
-    data class Activity(val authorityId: Id, val epochSecond: Long, val actions: Actions)
-}
-
-@Serializable
 data class FeedResult(val transactionId: Id?, val results: List<EntityResult>)
 
 fun stringAttributeFromFacts(facts: List<Fact>, attribute: Attribute): String? {
@@ -179,7 +168,7 @@ fun stringAttributeFromFacts(facts: List<Fact>, attribute: Attribute): String? {
         .nullOrElse { attribute.codec.decode(it.value.bytes).toString() }
 }
 
-fun getSummary(facts: List<Fact>): Summary{
+fun getSummary(facts: List<Fact>): Summary {
     return Summary(
         stringAttributeFromFacts(facts, CoreAttribute.Name.spec),
         stringAttributeFromFacts(facts, CoreAttribute.Uri.spec)!!,
