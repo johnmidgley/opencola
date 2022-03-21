@@ -62,7 +62,7 @@ class EntityService(val authority: Authority,
     }
 
     private fun getTransactionsUrl(peer: Peer, peerTransactionId: Id?): String {
-        return "http://${peer.host}/transactions/${peer.id}${peerTransactionId.ifNotNullOrElse({"/${it.toString()}"}, {""})}"
+        return "http://${peer.host}/transactions/${peer.id}${peerTransactionId.ifNotNullOrElse({"/${it.toString()}"}, {""})}?peerId=${authority.authorityId}"
     }
 
     private suspend fun requestTransactions(peer: Peer){

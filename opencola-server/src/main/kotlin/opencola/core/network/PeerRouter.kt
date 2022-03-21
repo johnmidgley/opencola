@@ -50,8 +50,10 @@ class PeerRouter(private val addressBook: AddressBook) {
     fun broadcastMessage(path: String, message: Any){
         runBlocking {
             peerIdToStatusMap.values.forEach {
-                // TODO: Make batched, to limit simultaneous connections
-                async { sendMessage(it, path, message) }
+                if(listOf(Unknown, Online).contains(it.status)) {
+                    // TODO: Make batched, to limit simultaneous connections
+                    async { sendMessage(it, path, message) }
+                }
             }
         }
     }

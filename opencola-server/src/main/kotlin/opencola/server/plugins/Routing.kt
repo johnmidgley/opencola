@@ -42,12 +42,14 @@ fun Application.configureRouting(application: app) {
 
         get("/transactions/{authorityId}"){
             val entityStore by injector.instance<EntityStore>()
-            handleGetTransactionsCall(call, entityStore)
+            val peerRouter by injector.instance<PeerRouter>()
+            handleGetTransactionsCall(call, entityStore, peerRouter)
         }
 
         get("/transactions/{authorityId}/{mostRecentTransactionId}"){
             val entityStore by injector.instance<EntityStore>()
-            handleGetTransactionsCall(call, entityStore)
+            val peerRouter by injector.instance<PeerRouter>()
+            handleGetTransactionsCall(call, entityStore, peerRouter)
         }
 
         get("/data/{id}"){

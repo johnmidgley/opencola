@@ -173,8 +173,8 @@ class ApplicationTest {
                 assertNotNull(response.content)
                 val feedResult = Json.decodeFromString<FeedResult>(response.content!!)
 
-                assertEquals(entity.entityId, feedResult.results[0].entityId)
-                assertEquals(3, feedResult.results[0].activities.count())
+                assertEquals(entity.entityId.toString(), feedResult.results[0].entityId)
+                assertEquals(4, feedResult.results[0].activities.count())
                 assertEquals(uri.toString(), feedResult.results[0].summary.uri)
             }
         }

@@ -47,16 +47,18 @@ data class TransactionsResponse(
     val currentTransactionId: Id?,
     val transactions: List<SignedTransaction>)
 
-suspend fun handleGetTransactionsCall(call: ApplicationCall, entityStore: EntityStore){
+suspend fun handleGetTransactionsCall(call: ApplicationCall, entityStore: EntityStore, peerRouter: PeerRouter){
     val authorityId = Id.fromHexString(call.parameters["authorityId"] ?: throw IllegalArgumentException("No authorityId set"))
+    val peerId = Id.fromHexString(call.parameters["peerId"] ?: throw IllegalArgumentException("No peerId set"))
     val transactionId = call.parameters["mostRecentTransactionId"].nullOrElse { Id.fromHexString(it) }
     val extra = (if (transactionId == null) 0 else 1)
     val numTransactions =(call.parameters["numTransactions"].nullOrElse { it.toInt() } ?: 10) + extra
     val currentTransactionId = entityStore.getLastTransactionId(authorityId)
     val transactions = entityStore.getSignedTransactions(authorityId, transactionId, EntityStore.TransactionOrder.Ascending, numTransactions + 1).drop(extra)
 
-    // TODO: Getting a request is a sign the the remote host is up - update the peer status in the PeerService
+    peerRouter.updateStatus(peerId, Online)
     call.respond(TransactionsResponse(transactionId, currentTransactionId, transactions.toList()))
+
 }
 
 suspend fun handleGetDataCall(call: ApplicationCall, mhtCache: MhtCache, authorityId: Id){
@@ -87,7 +89,7 @@ fun handleAction(action: String, value: String?, entityService: EntityService, m
     val mhtmlPage = mhtml.inputStream().use { parseMhtml(it) ?: throw RuntimeException("Unable to parse mhtml") }
 
     val actions = when(action){
-        "save" -> Actions()
+        "save" -> Actions(save = true)
         "like" -> Actions(like = value?.toBooleanStrict() ?: throw RuntimeException("No value specified for like"))
         "trust" -> Actions(trust = value?.toFloat() ?: throw RuntimeException("No value specified for trust"))
         else -> throw NotImplementedError("No handler for $action")
@@ -141,7 +143,7 @@ suspend fun handleGetActionsCall(call: ApplicationCall, authorityId: Id, entityS
     val entity = entityStore.getEntity(authorityId, entityId) as? ResourceEntity
 
     if(entity != null){
-        call.respond(Actions(entity.trust, entity.like, entity.rating))
+        call.respond(Actions(true, entity.trust, entity.like, entity.rating))
     }
 }
 
@@ -160,7 +162,9 @@ suspend fun handlePostNotifications(call: ApplicationCall, entityService: Entity
 }
 
 @Serializable
-data class FeedResult(val transactionId: Id?, val results: List<EntityResult>)
+data class FeedResult(val transactionId: String?, val results: List<EntityResult>){
+    constructor(transactionId: Id?, results: List<EntityResult>) : this(transactionId?.toString(), results)
+}
 
 fun stringAttributeFromFacts(facts: List<Fact>, attribute: Attribute): String? {
     return facts
@@ -178,9 +182,10 @@ fun getSummary(facts: List<Fact>): Summary {
 
 fun getActivity(authorityId: Id, epochSecond: Long, fact: TransactionFact): Activity? {
     return when(fact.attribute){
-        CoreAttribute.Trust.spec -> Actions(CoreAttribute.Trust.spec.codec.decode(fact.value.bytes) as Float, null,null)
-        CoreAttribute.Like.spec -> Actions(null, CoreAttribute.Like.spec.codec.decode(fact.value.bytes) as Boolean, null)
-        CoreAttribute.Rating.spec -> Actions(null, null, CoreAttribute.Rating.spec.codec.decode(fact.value.bytes) as Float)
+        CoreAttribute.Uri.spec -> Actions(true)
+        CoreAttribute.Trust.spec -> Actions(false, CoreAttribute.Trust.spec.codec.decode(fact.value.bytes) as Float, null,null)
+        CoreAttribute.Like.spec -> Actions(false, null, CoreAttribute.Like.spec.codec.decode(fact.value.bytes) as Boolean, null)
+        CoreAttribute.Rating.spec -> Actions(false, null, null, CoreAttribute.Rating.spec.codec.decode(fact.value.bytes) as Float)
         else -> null
     }.nullOrElse { Activity(authorityId, epochSecond, it) } // TODO: Set epoch
 }
@@ -204,12 +209,15 @@ suspend fun handleGetFeed(call: ApplicationCall, entityStore: EntityStore) {
     // TODO: Look for startTransactionId in call (For paging)
     val signedTransactions = entityStore.getSignedTransactions(emptyList(), null, EntityStore.TransactionOrder.Descending, 100) // TODO: Config limit
     val entityIds = signedTransactions.flatMap { tx -> tx.transaction.transactionEntities.map { it.entityId } }.distinct()
-    val entityFacts = entityStore.getFacts(emptyList(), entityIds).groupBy { it.entityId }
+    val entityFacts = entityStore.getFacts(emptyList(), entityIds)
+        .groupBy { it.entityId }
+        .filter{ Entity.getInstance(it.value) !is DataEntity }
+        .toMap()
     val entityActivities = getEntityActivities(signedTransactions.map { it.transaction })
 
     call.respond(FeedResult(
         signedTransactions.lastOrNull()?.transaction?.id,
-        entityIds.map{
+        entityFacts.keys.map{
             val entityIdFacts = entityFacts[it]
                 ?: throw RuntimeException("Can't find facts for id: $it")
             val entityIdActivities = entityActivities[it]
