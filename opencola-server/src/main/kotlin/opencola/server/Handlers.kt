@@ -240,11 +240,11 @@ suspend fun handleGetFeed(call: ApplicationCall, entityStore: EntityStore) {
 
     call.respond(FeedResult(
         signedTransactions.lastOrNull()?.transaction?.id,
-        entityFacts.keys.map{
-            val entityIdFacts = entityFacts[it]
-                ?: throw RuntimeException("Can't find facts for id: $it")
-            val entityIdActivities = entityActivities[it]
-                ?: throw RuntimeException("Can't find activities for id: $it")
+        entityIds
+            .filter { entityFacts.containsKey(it) }
+            .map{
+            val entityIdFacts = entityFacts[it] ?: throw RuntimeException("Can't find facts for id: $it")
+            val entityIdActivities = entityActivities[it] ?: throw RuntimeException("Can't find activities for id: $it")
 
             EntityResult(it, getSummary(entityIdFacts), entityIdActivities) }
     ))
