@@ -76,7 +76,7 @@
     :on-change #(swap! app-state assoc :query (-> % .-target .-value))
     :on-keyUp #(if (= (.-key %) "Enter")
                  (let [query (:query @app-state)]
-                   (if (= query "")
+                   (if (or (not query) (= query "")) 
                      (get-feed)
                      (search query))))}])
 
@@ -140,8 +140,9 @@
    (let [summary (:summary item)
          activities (:activities item)]
      [:div.name [:a {:href (:uri summary) :target "_blank"} (:name summary)]
-      [:p.description (:description summary)]
-      (activities-list activities)])])
+      [:div [:img.image {:src (:imageUri summary)}]
+       [:p.description (:description summary)]]
+      [:div (activities-list activities)]])])
 
 (defn feed []
   (if-let [feed (:feed @app-state)]
