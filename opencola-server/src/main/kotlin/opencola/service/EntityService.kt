@@ -142,8 +142,9 @@ class EntityService(val authority: Authority,
             if(mhtmlPage.htmlText != null){
                 entity.text = textExtractor.getBody(mhtmlPage.htmlText.toByteArray())
                 // TODO - Check if this writes a retraction when description is null
-                entity.description = HtmlParser(mhtmlPage.htmlText).parseDescription()
-                // TODO: Add image parsing here too
+                val htmlParser = HtmlParser(mhtmlPage.htmlText)
+                entity.description = htmlParser.parseDescription()
+                entity.imageUri = htmlParser.parseImageUri()
             }
 
             actions.trust.nullOrElse { entity.trust = it }

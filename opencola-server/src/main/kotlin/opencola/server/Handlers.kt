@@ -177,7 +177,8 @@ fun getSummary(facts: List<Fact>): Summary {
     return Summary(
         stringAttributeFromFacts(facts, CoreAttribute.Name.spec),
         stringAttributeFromFacts(facts, CoreAttribute.Uri.spec)!!,
-        stringAttributeFromFacts(facts, CoreAttribute.Description.spec)
+        stringAttributeFromFacts(facts, CoreAttribute.Description.spec),
+        stringAttributeFromFacts(facts, CoreAttribute.ImageUri.spec)
     )
 }
 

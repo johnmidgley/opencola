@@ -1,5 +1,6 @@
 package opencola.service
 
+import com.ctc.wstx.shaded.msv_core.util.Uri
 import kotlinx.serialization.Serializable
 import opencola.core.model.Actions
 import opencola.core.model.Id
@@ -10,7 +11,7 @@ data class EntityResult(val entityId: String, val summary: Summary, val activiti
     constructor(entityId: Id, summary: Summary, activities: List<Activity>) : this(entityId.toString(), summary, activities)
 
     @Serializable
-    data class Summary(val name: String?, val uri: String, val description: String?)
+    data class Summary(val name: String?, val uri: String, val description: String?, val imageUri: String?)
 
     @Serializable
     data class Activity(val authorityId: String, val authorityName: String, val epochSecond: Long, val actions: Actions){
