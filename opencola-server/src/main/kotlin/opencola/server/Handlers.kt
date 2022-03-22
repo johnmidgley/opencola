@@ -8,14 +8,15 @@ import io.ktor.response.*
 import kotlinx.serialization.Serializable
 import opencola.core.content.parseMhtml
 import opencola.core.extensions.nullOrElse
-import opencola.service.EntityResult
 import opencola.core.model.*
-import opencola.service.EntityResult.*
 import opencola.core.model.Transaction.TransactionFact
 import opencola.core.network.PeerRouter
 import opencola.core.network.PeerRouter.PeerStatus.Status.Online
 import opencola.core.storage.EntityStore
 import opencola.core.storage.MhtCache
+import opencola.service.EntityResult
+import opencola.service.EntityResult.Activity
+import opencola.service.EntityResult.Summary
 import opencola.service.EntityService
 import opencola.service.search.SearchService
 import java.net.URI
@@ -190,19 +191,41 @@ fun getActivity(authorityId: Id, epochSecond: Long, fact: TransactionFact): Acti
     }.nullOrElse { Activity(authorityId, epochSecond, it) } // TODO: Set epoch
 }
 
+fun getFact(facts: List<TransactionFact>, attribute: Attribute): TransactionFact? {
+    return facts.firstOrNull{ it.attribute == attribute }
+}
+
+fun getAttributeValue(facts: List<TransactionFact>, attribute: Attribute): Any? {
+    return getFact(facts, attribute).nullOrElse { attribute.codec.decode(it.value.bytes) }
+}
+
+fun getActivity(authorityId: Id, epochSecond: Long, save: Boolean?, trust: Float?, like: Boolean?, rating: Float?): Activity? {
+    return if(listOf(save, trust, like, rating).all { it == null })
+        null
+    else
+        Activity(authorityId, epochSecond, Actions(save, trust, like, rating))
+}
+
+fun getActivity(authorityId: Id, epochSecond: Long, facts: List<TransactionFact>): Activity? {
+    return getActivity(
+        authorityId,
+        epochSecond,
+        getFact(facts, CoreAttribute.Uri.spec).nullOrElse { true },
+        getAttributeValue(facts, CoreAttribute.Trust.spec) as Float?,
+        getAttributeValue(facts, CoreAttribute.Like.spec) as Boolean?,
+        getAttributeValue(facts, CoreAttribute.Rating.spec) as Float?
+    )
+}
+
 fun getEntityActivities(transactions: Iterable<Transaction>): Map<Id, List<Activity>> {
-    return transactions.flatMap { t ->
-        t.transactionEntities.flatMap { e ->
-            e.facts.map {
-                Pair(e.entityId, getActivity(t.authorityId, t.epochSecond, it))
-            }
-                .filter { it.second != null }
-                .map { Pair(it.first, it.second!!) }
-        }
+    return transactions.flatMap { transaction ->
+        transaction.transactionEntities
+            .map { Pair(it.entityId, getActivity(transaction.authorityId, transaction.epochSecond, it.facts)) }
+            .filter { it.second != null }
+            .map { Pair(it.first, it.second!!) }
     }
         .groupBy { it.first }
-        .entries
-        .associate { entry -> Pair(entry.key, entry.value.map { it.second }) }
+        .entries.associate { entry -> Pair(entry.key, entry.value.map { it.second }) }
 }
 
 suspend fun handleGetFeed(call: ApplicationCall, entityStore: EntityStore) {
