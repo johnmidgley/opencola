@@ -8,6 +8,7 @@ import io.ktor.client.request.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
+import opencola.core.content.HtmlParser
 import opencola.core.content.MhtmlPage
 import opencola.core.content.TextExtractor
 import opencola.core.extensions.ifNotNullOrElse
@@ -137,7 +138,13 @@ class EntityService(val authority: Authority,
             // Add / update fields
             entity.dataId = dataId
             entity.name = mhtmlPage.title
-            entity.text = mhtmlPage.htmlText.nullOrElse { textExtractor.getBody(it.toByteArray()) }
+
+            if(mhtmlPage.htmlText != null){
+                entity.text = textExtractor.getBody(mhtmlPage.htmlText.toByteArray())
+                // TODO - Check if this writes a retraction when description is null
+                entity.description = HtmlParser(mhtmlPage.htmlText).parseDescription()
+                // TODO: Add image parsing here too
+            }
 
             actions.trust.nullOrElse { entity.trust = it }
             actions.like.nullOrElse { entity.like = it }
