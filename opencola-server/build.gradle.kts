@@ -66,6 +66,7 @@ dependencies {
     implementation("com.sksamuel.hoplite:hoplite-yaml:1.4.16")
     implementation("org.kodein.di:kodein-di:7.10.0")
     implementation("org.kodein.di:kodein-di-framework-ktor-server-jvm:7.10.0")
+    implementation("org.jsoup:jsoup:1.14.3")
 
 
     testImplementation("io.ktor:ktor-server-tests:$ktor_version")

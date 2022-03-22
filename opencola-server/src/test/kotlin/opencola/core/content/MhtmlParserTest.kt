@@ -10,11 +10,11 @@ import kotlin.io.path.readBytes
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class MhtmlParserTest {
-    private fun readMhtmlPage(path: Path): MhtmlPage {
-        return MhtmlPage(path.inputStream().use { parseMime(it) ?: throw RuntimeException("Unable to parse $it") })
-    }
+fun readMhtmlPage(path: Path): MhtmlPage {
+    return MhtmlPage(path.inputStream().use { parseMime(it) ?: throw RuntimeException("Unable to parse $it") })
+}
 
+class MhtmlParserTest {
     private fun writeMhtmlPage(path: Path, page: MhtmlPage){
         path.outputStream().use{
             DefaultMessageWriter().writeMessage(page.message, it)
