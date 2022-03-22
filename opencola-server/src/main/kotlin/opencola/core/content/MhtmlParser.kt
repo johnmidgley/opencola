@@ -34,7 +34,7 @@ class MhtmlPage {
 
         val htmlParser = htmlText.nullOrElse { HtmlParser(htmlText!!) }
         description = htmlParser.nullOrElse { it.parseDescription() }
-        imageUri = htmlParser.nullOrElse { it.parseImageUri() }
+        imageUri = htmlParser.nullOrElse { it.parseImageUri() } ?: getImageUri(message)
         text = htmlText.nullOrElse { TextExtractor().getBody(it.toByteArray()) }
     }
 

@@ -1,9 +1,11 @@
 package opencola.core.content
 
+import opencola.core.extensions.tryParseUri
 import org.apache.james.mime4j.dom.*
 import org.apache.james.mime4j.message.DefaultMessageBuilder
 import org.apache.james.mime4j.stream.MimeConfig
 import java.io.InputStream
+import java.net.URI
 
 fun parseMime(inputStream: InputStream): Message? {
     // TODO: Think about a .thread extension that allows for a chain of operations on an original value
@@ -54,9 +56,8 @@ data class Part(val name: String, val mimeType: String, val bytes: ByteArray) {
     }
 }
 
-// TODO: Validate that the Mime message is Mht, as expected
-fun splitMht(message: Message): List<Part> {
-    val multipart = message.body as? Multipart ?: throw RuntimeException("Attempt to split a message that is not Multipart")
+fun getBodyParts(message: Message): MutableList<Entity> {
+    val multipart = message.body as? Multipart ?: throw RuntimeException("Cannot get body parts of a message that is not Multipart")
     val bodyParts = multipart.bodyParts
 
     val header = bodyParts.first().header
@@ -64,8 +65,12 @@ fun splitMht(message: Message): List<Part> {
         throw RuntimeException("First body part of Mht message must be of type 'html' and have a location")
     }
 
+    return bodyParts
+}
+
+fun splitMht(message: Message): List<Part> {
     // TODO: Investigate: It makes no sense, but some docs have parts with no content location or duplicate locations
-    val partsWithLocation = bodyParts
+    val partsWithLocation = getBodyParts(message)
         .filter { it.header.contentLocation() != null }
         .distinctBy { it.header.contentLocation()!!.location }
 
@@ -89,3 +94,14 @@ fun splitMht(message: Message): List<Part> {
     return parts
 }
 
+fun getImageUri(message: Message): URI? {
+    return getBodyParts(message)
+        .asSequence()
+        .filter { it.header.contentLocation() != null }
+        .filter { it.header.contentType()?.mediaType?.lowercase() == "image" }
+        .filter { it.body is BinaryBody }
+        .sortedByDescending { (it.body as BinaryBody).inputStream.available() } // Pick the biggest image - not always best?
+        .map { it.header.contentLocation()!!.location }
+        .firstOrNull()
+        ?.tryParseUri()
+}

@@ -2,6 +2,7 @@ package opencola.core.content
 
 import opencola.core.model.Id
 import org.apache.james.mime4j.message.DefaultMessageWriter
+import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.inputStream
@@ -40,5 +41,15 @@ class MhtmlParserTest {
         val stableMhtmlBytes = Path(rootPath, "Conway's Game of Life - Wikipedia.opencola.mht").readBytes()
 
         assertEquals(mhtmlPage1.getDataId(), Id.ofData(stableMhtmlBytes))
+    }
+
+    @Test
+    fun testGetImageUri(){
+        val rootPath = Path(System.getProperty("user.dir"),"..", "sample-docs").toString()
+        val mhtmlPage = readMhtmlPage(Path(rootPath, "Conway's Game of Life - Wikipedia.mht"))
+
+
+        assertEquals(URI("https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Trefoil_knot_conways_game_of_life.gif/220px-Trefoil_knot_conways_game_of_life.gif"),
+            mhtmlPage.imageUri)
     }
 }
