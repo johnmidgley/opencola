@@ -1,3 +1,4 @@
+.DS_Store
 /storage/filestore
 /storage/var-solr/data/*.opencola
 /storage/var-solr/data/opencola/data/

@@ -19,7 +19,8 @@
 
 (defn reset-state [] 
   (swap! app-state assoc :error nil)
-  (swap! app-state assoc :results nil))
+  (swap! app-state assoc :results nil)
+  (swap! app-state assoc :feed nil))
 
 (defn get-app-element []
   (gdom/getElement "app"))
@@ -74,7 +75,10 @@
     :value (:query @app-state)
     :on-change #(swap! app-state assoc :query (-> % .-target .-value))
     :on-keyUp #(if (= (.-key %) "Enter")
-                 (search (:query @app-state)))}])
+                 (let [query (:query @app-state)]
+                   (if (= query "")
+                     (get-feed)
+                     (search query))))}])
 
 
 (defn search-header []
@@ -107,12 +111,28 @@
 
 
 (defn format-time [epoch-second]
-  (f/unparse (f/formatters :basic-date-time) (c/from-long epoch-second)))
+  (f/unparse (f/formatter "yyyy-MM-dd hh:mm") (c/from-long (* epoch-second 1000))))
+
+
+(defn action-item [action value]
+  ^{:key action} [:span [:img {:src (str "../img/" (name action) ".png") 
+                    :width 15 
+                    :height 15
+                    :border 0
+                    :margin 0}] 
+       (if-not value (str value))])
+
+(defn actions-list [actions]
+  (for [[action value] actions]
+    (action-item action value)))
+
 
 (defn activities-list [activities]
   (for [[idx activity] (map-indexed vector activities)]
     ^{:key (str "activity-" idx)}
-    [:div (str (:name activity) " " (:actions activity) " " (format-time (:epochSecond activity)))]))
+    [:div (:authorityName activity) " "
+     (actions-list (:actions activity)) " "
+     (format-time (:epochSecond activity))]))
 
 (defn feed-item [item]
   ^{:key (:entityId item)} 
@@ -120,6 +140,7 @@
    (let [summary (:summary item)
          activities (:activities item)]
      [:div.name [:a {:href (:uri summary) :target "_blank"} (:name summary)]
+      [:p.description (:description summary)]
       (activities-list activities)])])
 
 (defn feed []
