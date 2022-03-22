@@ -181,14 +181,14 @@ fun getSummary(facts: List<Fact>): Summary {
     )
 }
 
-fun getActivity(authorityId: Id, epochSecond: Long, fact: TransactionFact): Activity? {
+fun getActivity(authorityId: Id, name: String, epochSecond: Long, fact: TransactionFact): Activity? {
     return when(fact.attribute){
         CoreAttribute.Uri.spec -> Actions(true)
         CoreAttribute.Trust.spec -> Actions(false, CoreAttribute.Trust.spec.codec.decode(fact.value.bytes) as Float, null,null)
         CoreAttribute.Like.spec -> Actions(false, null, CoreAttribute.Like.spec.codec.decode(fact.value.bytes) as Boolean, null)
         CoreAttribute.Rating.spec -> Actions(false, null, null, CoreAttribute.Rating.spec.codec.decode(fact.value.bytes) as Float)
         else -> null
-    }.nullOrElse { Activity(authorityId, epochSecond, it) } // TODO: Set epoch
+    }.nullOrElse { Activity(authorityId, name, epochSecond, it) } // TODO: Set epoch
 }
 
 fun getFact(facts: List<TransactionFact>, attribute: Attribute): TransactionFact? {
@@ -199,16 +199,17 @@ fun getAttributeValue(facts: List<TransactionFact>, attribute: Attribute): Any? 
     return getFact(facts, attribute).nullOrElse { attribute.codec.decode(it.value.bytes) }
 }
 
-fun getActivity(authorityId: Id, epochSecond: Long, save: Boolean?, trust: Float?, like: Boolean?, rating: Float?): Activity? {
+fun getActivity(authorityId: Id, name: String, epochSecond: Long, save: Boolean?, trust: Float?, like: Boolean?, rating: Float?): Activity? {
     return if(listOf(save, trust, like, rating).all { it == null })
         null
     else
-        Activity(authorityId, epochSecond, Actions(save, trust, like, rating))
+        Activity(authorityId, name, epochSecond, Actions(save, trust, like, rating))
 }
 
-fun getActivity(authorityId: Id, epochSecond: Long, facts: List<TransactionFact>): Activity? {
+fun getActivity(authorityId: Id, name: String, epochSecond: Long, facts: List<TransactionFact>): Activity? {
     return getActivity(
         authorityId,
+        name,
         epochSecond,
         getFact(facts, CoreAttribute.Uri.spec).nullOrElse { true },
         getAttributeValue(facts, CoreAttribute.Trust.spec) as Float?,
@@ -217,10 +218,19 @@ fun getActivity(authorityId: Id, epochSecond: Long, facts: List<TransactionFact>
     )
 }
 
-fun getEntityActivities(transactions: Iterable<Transaction>): Map<Id, List<Activity>> {
+fun getActorName(id: Id, rootAuthority: Authority, peerRouter: PeerRouter): String {
+    return if (id == rootAuthority.authorityId)
+        "You"
+    else
+        peerRouter.getPeer(id)?.name ?: "Unknown"
+
+
+}
+
+fun getEntityActivities(transactions: Iterable<Transaction>, idToName: (Id) -> String): Map<Id, List<Activity>> {
     return transactions.flatMap { transaction ->
         transaction.transactionEntities
-            .map { Pair(it.entityId, getActivity(transaction.authorityId, transaction.epochSecond, it.facts)) }
+            .map { Pair(it.entityId, getActivity(transaction.authorityId, idToName(transaction.authorityId), transaction.epochSecond, it.facts)) }
             .filter { it.second != null }
             .map { Pair(it.first, it.second!!) }
     }
@@ -228,7 +238,7 @@ fun getEntityActivities(transactions: Iterable<Transaction>): Map<Id, List<Activ
         .entries.associate { entry -> Pair(entry.key, entry.value.map { it.second }) }
 }
 
-suspend fun handleGetFeed(call: ApplicationCall, entityStore: EntityStore) {
+suspend fun handleGetFeed(call: ApplicationCall, authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter) {
     // TODO: Look for startTransactionId in call (For paging)
     val signedTransactions = entityStore.getSignedTransactions(emptyList(), null, EntityStore.TransactionOrder.Descending, 100) // TODO: Config limit
     val entityIds = signedTransactions.flatMap { tx -> tx.transaction.transactionEntities.map { it.entityId } }.distinct()
@@ -236,7 +246,9 @@ suspend fun handleGetFeed(call: ApplicationCall, entityStore: EntityStore) {
         .groupBy { it.entityId }
         .filter{ Entity.getInstance(it.value) !is DataEntity }
         .toMap()
-    val entityActivities = getEntityActivities(signedTransactions.map { it.transaction })
+
+    val idToName: (Id) -> String = { id -> getActorName(id, authority, peerRouter) }
+    val entityActivities = getEntityActivities(signedTransactions.map { it.transaction }, idToName)
 
     call.respond(FeedResult(
         signedTransactions.lastOrNull()?.transaction?.id,

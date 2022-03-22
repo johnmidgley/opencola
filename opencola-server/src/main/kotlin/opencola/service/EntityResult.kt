@@ -13,7 +13,7 @@ data class EntityResult(val entityId: String, val summary: Summary, val activiti
     data class Summary(val name: String?, val uri: String, val description: String?)
 
     @Serializable
-    data class Activity(val authorityId: String, val epochSecond: Long, val actions: Actions){
-        constructor(authorityId: Id, epochSecond: Long, actions: Actions) : this(authorityId.toString(), epochSecond, actions)
+    data class Activity(val authorityId: String, val authorityName: String, val epochSecond: Long, val actions: Actions){
+        constructor(authorityId: Id, authorityName: String, epochSecond: Long, actions: Actions) : this(authorityId.toString(), authorityName, epochSecond, actions)
     }
 }

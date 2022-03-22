@@ -84,8 +84,10 @@ fun Application.configureRouting(application: app) {
 
         get("/feed"){
             // TODO: Handle filtering of authorities
+            val authority by injector.instance<Authority>()
             val entityStore by injector.instance<EntityStore>()
-            handleGetFeed(call, entityStore)
+            val peerRouter by injector.instance<PeerRouter>() // TODO: Should really be general address book, or from entity store
+            handleGetFeed(call, authority, entityStore, peerRouter)
         }
 
         static(""){
