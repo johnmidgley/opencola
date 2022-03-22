@@ -4,6 +4,8 @@
    [reagent.core :as reagent :refer [atom]]
    [reagent.dom :as rdom]
    [ajax.core :refer [GET POST]] ; https://github.com/JulianBirch/cljs-ajax
+   [cljs-time.coerce :as c]
+   [cljs-time.format :as f]
    ))
 
 ; Good resourcde with secure POST examples
@@ -15,19 +17,24 @@
 ;; define your app data so that it doesn't get over-written on reload
 (defonce app-state (atom {}))
 
+(defn reset-state [] 
+  (swap! app-state assoc :error nil)
+  (swap! app-state assoc :results nil))
+
 (defn get-app-element []
   (gdom/getElement "app"))
 
 (defn error-handler [{:keys [status status-text]}]
-  (.log js/console (str "something bad happened: " status " " status-text)))
+  (swap! app-state assoc :error status-text)
+  (.log js/console (str "Error: " status " " status-text)))
 
 
-(defn config-handler [response]
-  (.log js/console (str "Config Response: " response))
-  (swap! app-state assoc :config response))
+(defn config-handler [on-complete-fn response]
+  (swap! app-state assoc :config response)
+  (on-complete-fn))
 
-(defn get-config []
-  (GET "config.json" {:handler config-handler
+(defn get-config [on-complete-fn]
+  (GET "config.json" {:handler (partial config-handler on-complete-fn)
                       :response-format :json
                       :keywords? true
                       :error-handler error-handler}))
@@ -36,16 +43,30 @@
   (.log js/console (str "Search Response: " response))
   (swap! app-state assoc :results response))
 
+(defn feed-handler [response]
+  (.log js/console (str "Feed Response: " response))
+  (swap! app-state assoc :feed response))
+
+
 (defn resolve-service-url [path]
   (str (-> @app-state :config :service-url) path))
 
 
 (defn search [query]
+  (reset-state)
   (GET (resolve-service-url "search") {:params {:q query}
                                        :handler results-handler
                                        :response-format :json
                                        :keywords? true
                                        :error-handler error-handler}))
+
+(defn get-feed []
+  (reset-state)
+  (GET (resolve-service-url "feed") {:handler feed-handler
+                                     :response-format :json
+                                     :keywords? true
+                                     :error-handler error-handler}))
+
 
 (defn search-box []
   [:div#opencola.search-box>input
@@ -84,10 +105,41 @@
           (for [result matches]
             (search-result result))))))])
 
+
+(defn format-time [epoch-second]
+  (f/unparse (f/formatters :basic-date-time) (c/from-long epoch-second)))
+
+(defn activities-list [activities]
+  (for [[idx activity] (map-indexed vector activities)]
+    ^{:key (str "activity-" idx)}
+    [:div (str (:name activity) " " (:actions activity) " " (format-time (:epochSecond activity)))]))
+
+(defn feed-item [item]
+  ^{:key (:entityId item)} 
+  [:div.feed-item 
+   (let [summary (:summary item)
+         activities (:activities item)]
+     [:div.name [:a {:href (:uri summary) :target "_blank"} (:name summary)]
+      (activities-list activities)])])
+
+(defn feed []
+  (if-let [feed (:feed @app-state)]
+    [:div#feed.feed
+     (let [results (:results feed)]
+       (for [item results]
+         (feed-item item)))]))
+
+(defn request-error []
+  (if-let [e (:error @app-state)]
+    [:div#request-error.search-error e]))
+
 (defn search-page []
   [:div#opencola.search-page
    (search-header)
-   (search-results)])
+   (search-results)
+   (feed)
+   (request-error)])
+
 
 (defn mount [el]
   (rdom/render [search-page] el))
@@ -108,4 +160,5 @@
   ;; (swap! app-state update-in [:__figwheel_counter] inc)
 )
 
-(get-config)
+(get-config #(get-feed))
+
