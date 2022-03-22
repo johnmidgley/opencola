@@ -1,3 +1,4 @@
+
 (defproject opencola/search-ui "0.1.0-SNAPSHOT"
   :description "FIXME: write this!"
   :url "http://example.com/FIXME"
@@ -9,7 +10,8 @@
   :dependencies [[org.clojure/clojure "1.10.0"]
                  [org.clojure/clojurescript "1.10.773"]
                  [reagent "0.10.0" ]
-                 [cljs-ajax "0.8.4"]]
+                 [cljs-ajax "0.8.4"]
+                 [com.andrewmcveigh/cljs-time "0.5.2"]]
 
   :source-paths ["src"]
 
