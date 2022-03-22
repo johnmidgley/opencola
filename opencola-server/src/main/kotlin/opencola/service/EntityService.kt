@@ -136,16 +136,12 @@ class EntityService(val authority: Authority,
             )) as ResourceEntity
 
             // Add / update fields
+            // TODO - Check if setting null writes a retraction when fields are null
             entity.dataId = dataId
             entity.name = mhtmlPage.title
-
-            if(mhtmlPage.htmlText != null){
-                entity.text = textExtractor.getBody(mhtmlPage.htmlText.toByteArray())
-                // TODO - Check if this writes a retraction when description is null
-                val htmlParser = HtmlParser(mhtmlPage.htmlText)
-                entity.description = htmlParser.parseDescription()
-                entity.imageUri = htmlParser.parseImageUri()
-            }
+            entity.text = mhtmlPage.text
+            entity.description = mhtmlPage.description
+            entity.imageUri = mhtmlPage.imageUri
 
             actions.trust.nullOrElse { entity.trust = it }
             actions.like.nullOrElse { entity.like = it }

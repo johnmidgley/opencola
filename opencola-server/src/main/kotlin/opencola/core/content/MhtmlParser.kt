@@ -15,6 +15,10 @@ class MhtmlPage {
     val message: Message
     val uri: URI
     val title: String?
+    val description: String?
+    val imageUri: URI?
+    val text: String?
+
     val htmlText : String?
     private val contentLocationMap: Map<String,String>
 
@@ -27,6 +31,11 @@ class MhtmlPage {
             ?: throw RuntimeException("No URI specified in MHTML message")
         title = DecoderUtil.decodeEncodedWords(message.header.getField("Subject")?.body, Charset.defaultCharset())
         htmlText = parseHtmlText()
+
+        val htmlParser = htmlText.nullOrElse { HtmlParser(htmlText!!) }
+        description = htmlParser.nullOrElse { it.parseDescription() }
+        imageUri = htmlParser.nullOrElse { it.parseImageUri() }
+        text = htmlText.nullOrElse { TextExtractor().getBody(it.toByteArray()) }
     }
 
     private fun parseHtmlText() : String? {
