@@ -12,6 +12,12 @@ security:
     name: "keystore.pks"
     password: "password" # This should be typed in by user and removed from here
 
+search:
+  solr:
+    baseUrl: "http://localhost:8983/solr/"
+    connectionTimeoutMillis: 10000
+    socketTimeoutMillis: 60000
+
 network:
 #  peers:
 #    - id: 4e8361b7d6463ccb8fcfbec44b166a53d9a75e577250f3e32d1b0ac064819ddb

@@ -16,7 +16,8 @@ import kotlin.test.assertEquals
 
 class SearchIndexTest {
     private val authority by TestApplication.instance.injector.instance<Authority>()
-    private val searchIndex = SearchIndex(authority)
+    private val searchConfig = TestApplication.config.search
+    private val searchIndex = SearchIndex(authority, searchConfig)
 
     init {
         // Make sure we have a fresh index
@@ -30,13 +31,13 @@ class SearchIndexTest {
     }
     // @Test
     fun testCreateIndex(){
-        val searchIndex = SearchIndex(authority)
+        val searchIndex = SearchIndex(authority, searchConfig)
         searchIndex.create()
     }
 
     // @Test
     fun testDeleteIndex(){
-        val searchIndex = SearchIndex(authority)
+        val searchIndex = SearchIndex(authority, searchConfig)
         searchIndex.delete()
     }
 

@@ -7,6 +7,7 @@ import opencola.core.model.Id
 import opencola.core.model.Authority
 import opencola.core.model.Entity
 import mu.KotlinLogging
+import opencola.core.config.SearchConfig
 import opencola.core.extensions.logErrorAndThrow
 import opencola.core.extensions.nullOrElse
 import opencola.core.extensions.toHexString
@@ -20,22 +21,16 @@ import org.apache.solr.common.params.MapSolrParams
 import org.apache.solr.common.util.NamedList
 import java.io.File
 
-
-// TODO: Make client params configurable
-private const val solrBaseUrl = "http://localhost:8983/solr/"
-private const val solrConnectionTimeoutMillis = 10000
-private const val solrSocketTimeoutMillis = 60000
-
 // https://solr.apache.org/guide/8_10/using-solrj.html
 // TODO: Create local objects for search results (see https://solr.apache.org/guide/8_10/using-solrj.html#java-object-binding)
 
 // TODO: Probably just id is better. Nothing needs to be signed, and no other properties are used
-class SearchIndex(val authority: Authority) {
+class SearchIndex(val authority: Authority, val config: SearchConfig) {
     private val logger = KotlinLogging.logger("SearchIndex")
 
-    private val solrClient: HttpSolrClient = HttpSolrClient.Builder(solrBaseUrl)
-        .withConnectionTimeout(solrConnectionTimeoutMillis)
-        .withSocketTimeout(solrSocketTimeoutMillis)
+    private val solrClient: HttpSolrClient = HttpSolrClient.Builder(config.solr.baseUrl)
+        .withConnectionTimeout(config.solr.connectionTimeoutMillis)
+        .withSocketTimeout(config.solr.socketTimeoutMillis)
         .build()
 
     private val networkPath = File(System.getProperties()["user.dir"].toString(), "../network")

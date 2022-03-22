@@ -12,6 +12,12 @@ security:
     name: "keystore.pks"
     password: "password"
 
+search:
+  solr:
+    baseUrl: "http://localhost:8983/solr/"
+    connectionTimeoutMillis: 10000
+    socketTimeoutMillis: 60000
+
 network:
   # TODO: Remove - create manually in test
   peers:

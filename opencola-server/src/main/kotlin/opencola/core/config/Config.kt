@@ -12,39 +12,44 @@ data class FilestoreConfig(val name: String = "filestore")
 data class StorageConfig(val path: Path, val filestore: FilestoreConfig = FilestoreConfig())
 data class KeystoreConfig(val name: String, val password: String)
 data class SecurityConfig(val keystore: KeystoreConfig)
+data class SolrConfig(val baseUrl: String, val connectionTimeoutMillis: Int, val socketTimeoutMillis: Int)
+data class SearchConfig(val solr: SolrConfig)
 data class PeerConfig(val id: String, val publicKey: String, val name: String, val host: String)
 data class NetworkConfig(val peers: List<PeerConfig> = emptyList())
+
+
 data class Config(val name: String,
                   val server: ServerConfig,
                   val storage: StorageConfig,
                   val security: SecurityConfig,
+                  val search: SearchConfig,
                   val network: NetworkConfig){
     fun setName(name: String): Config {
-        return Config(name, server, storage, security, network)
+        return Config(name, server, storage, security, search, network)
 
     }
 
     fun setServer(server: ServerConfig): Config {
-        return Config(name, server, storage, security, network)
+        return Config(name, server, storage, security, search, network)
     }
 
     fun setStorage(storage: StorageConfig): Config {
-        return Config(name, server, storage, security, network)
+        return Config(name, server, storage, security, search, network)
     }
 
     fun setStoragePath(path: Path): Config {
         if(!path.exists()){
             path.createDirectory()
         }
-        return Config(name, server, StorageConfig(path, storage.filestore), security, network)
+        return Config(name, server, StorageConfig(path, storage.filestore), security, search, network)
     }
 
     fun setSecurity(security: SecurityConfig): Config {
-        return Config(name, server, storage, security, network)
+        return Config(name, server, storage, security, search, network)
     }
 
     fun setNetwork(network: NetworkConfig): Config {
-        return Config(name, server, storage, security, network)
+        return Config(name, server, storage, security, search, network)
     }
 }
 
