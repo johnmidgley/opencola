@@ -16,10 +16,22 @@ class HtmlParser(html: String) {
             .map { it.attributes()["content"] }
     }
 
+    private fun firstNonEmptyParagraphText(cssQuery: String): String? {
+        return doc.select(cssQuery)
+            .firstOrNull()?.select("p")
+            ?.firstOrNull { it.text().isNotEmpty() }
+            ?.text()
+    }
+
+    private fun firstNonEmptyParagraphText(cssQueries: List<String>) : String? {
+        return cssQueries.mapNotNull { firstNonEmptyParagraphText(it) }.firstOrNull()
+    }
+
     // TODO - make meta content lists configurable
-    fun parseDescription() : String? {
-        return selectMetaContent(listOf("description", "og:description", "twitter:description"))
-            .firstOrNull() ?: doc.select("p").firstOrNull()?.text()
+    fun parseDescription(): String? {
+        return selectMetaContent(listOf("description", "og:description", "twitter:description")).firstOrNull()
+            ?: firstNonEmptyParagraphText(listOf("#storytext", "#content", "main", "body"))
+
     }
 
     fun parseImageUri() : URI? {
