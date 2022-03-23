@@ -19,7 +19,7 @@ class HtmlParser(html: String) {
     // TODO - make meta content lists configurable
     fun parseDescription() : String? {
         return selectMetaContent(listOf("description", "og:description", "twitter:description"))
-            .firstOrNull()
+            .firstOrNull() ?: doc.select("p").firstOrNull()?.text()
     }
 
     fun parseImageUri() : URI? {
