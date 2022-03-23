@@ -135,8 +135,8 @@
   [:div.feed-item 
    (let [summary (:summary item)
          activities (:activities item)]
-     [:div.item-name [:a {:href (:uri summary) :target "_blank"} (:name summary)]
-      [:img.item-img {:src (:imageUri summary)}]
+     [:div.item-name [:a.item-link {:href (:uri summary) :target "_blank"} (:name summary)]
+      [:div.item-img-box [:img.item-img {:src (:imageUri summary)}]]
       [:p.item-desc (:description summary)]
       (activities-list activities)])])
 
