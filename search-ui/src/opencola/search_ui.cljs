@@ -70,7 +70,7 @@
 
 
 (defn search-box []
-  [:div#opencola.search-box>input
+  [:div.search-box>input
    {:type "text"
     :value (:query @app-state)
     :on-change #(swap! app-state assoc :query (-> % .-target .-value))
@@ -82,7 +82,7 @@
 
 
 (defn search-header []
-  [:div#header.search-header 
+  [:div.search-header 
    [:img {:src "../img/pull-tab.png" :width 50 :height 50}]
    "openCola"
    (search-box)])
@@ -100,7 +100,7 @@
                          "download"]])
 
 (defn search-results []
-  [:div#search-results.search-results 
+  [:div.search-results 
    (doall 
     (if-let [results (:results @app-state)]
       (let [matches (:matches results)]
@@ -115,38 +115,34 @@
 
 
 (defn action-item [action value]
-  ^{:key action} [:span [:img {:src (str "../img/" (name action) ".png") 
-                    :width 15 
-                    :height 15
-                    :border 0
-                    :margin 0}] 
-       (if-not value (str value))])
+  ^{:key action} [:span.action-item [:img.action-img {:src (str "../img/" (name action) ".png")}] 
+                  (if-not value (str value))])
 
 (defn actions-list [actions]
-  (for [[action value] actions]
-    (action-item action value)))
+  [:span.actions-list (for [[action value] actions]
+      (action-item action value))])
 
 
 (defn activities-list [activities]
-  (for [[idx activity] (map-indexed vector activities)]
-    ^{:key (str "activity-" idx)}
-    [:div (:authorityName activity) " "
-     (actions-list (:actions activity)) " "
-     (format-time (:epochSecond activity))]))
+  [:div.activities-list (for [[idx activity] (map-indexed vector activities)]
+      ^{:key (str "activity-" idx)}
+      [:div.activity-item (:authorityName activity) " "
+       (actions-list (:actions activity)) " "
+       (format-time (:epochSecond activity))])])
 
 (defn feed-item [item]
   ^{:key (:entityId item)} 
   [:div.feed-item 
    (let [summary (:summary item)
          activities (:activities item)]
-     [:div.name [:a {:href (:uri summary) :target "_blank"} (:name summary)]
-      [:div [:img.image {:src (:imageUri summary)}]
-       [:p.description (:description summary)]]
-      [:div (activities-list activities)]])])
+     [:div.item-name [:a {:href (:uri summary) :target "_blank"} (:name summary)]
+      [:img.item-img {:src (:imageUri summary)}]
+      [:p.item-desc (:description summary)]
+      (activities-list activities)])])
 
 (defn feed []
   (if-let [feed (:feed @app-state)]
-    [:div#feed.feed
+    [:div.feed
      (let [results (:results feed)]
        (for [item results]
          (feed-item item)))]))

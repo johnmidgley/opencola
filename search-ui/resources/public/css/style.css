@@ -1,11 +1,25 @@
-/* some style */
-
-div.feed-item {
-   margin-bottom: 10px
+.search-header {
+    margin-bottom: 10px;
 }
 
-img.image {
-    height: 50px;
+.feed {
+    border: 10px;
+}
+
+.feed-item {
+   margin-bottom: 10px;
+   height: 200px;
+                   
+}
+
+.item-img {
+    height: 150px;
     float: left;
     margin-right: 10px;
 }
+
+.action-img {
+    width: 15px;
+    height: 15px;
+}
+
