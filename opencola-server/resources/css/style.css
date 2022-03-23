@@ -1,11 +1,49 @@
-/* some style */
-
-div.feed-item {
-   margin-bottom: 10px
+body {
+    font-family: Arial, Helvetica, sans-serif;
 }
 
-img.image {
-    height: 50px;
+.search-header {
+    margin-bottom: 20px;
+}
+
+.feed {
+    border: 10px;
+}
+
+.feed-item {
+   margin-bottom: 50px;
+}
+
+.item-img-box {
     float: left;
+    //width: 150px;
+    height: 100px;
+    overflow: hidden;
     margin-right: 10px;
+    background: #F0F0F0;
+    margin-bottom: 10px;
+
 }
+
+/* Clear floats after the columns */
+.item-body:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+
+.item-img {
+    height: 100px;
+}
+
+.item-link {
+    text-decoration: none;
+    font-size: 120%;
+}
+
+.action-img {
+    width: 15px;
+    height: 15px;
+}
+

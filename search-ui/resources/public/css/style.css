@@ -14,22 +14,24 @@ body {
    margin-bottom: 50px;
 }
 
+.item-img-box {
+    float: left;
+    //width: 150px;
+    height: 100px;
+    overflow: hidden;
+    margin-right: 10px;
+    background: #F0F0F0;
+    margin-bottom: 10px;
+
+}
+
 /* Clear floats after the columns */
-.feed-item:after {
+.item-body:after {
   content: "";
   display: table;
   clear: both;
 }
 
-.item-img-box {
-    float: left;
-    width: 150px;
-    height: 100px;
-    overflow: hidden;
-    margin-right: 10px;
-    background: #F0F0F0;
-
-}
 
 .item-img {
     height: 100px;

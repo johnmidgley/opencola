@@ -132,13 +132,14 @@
 
 (defn feed-item [item]
   ^{:key (:entityId item)} 
-  [:div.feed-item 
-   (let [summary (:summary item)
-         activities (:activities item)]
-     [:div.item-name [:a.item-link {:href (:uri summary) :target "_blank"} (:name summary)]
+  (let [summary (:summary item)
+        activities (:activities item)]
+    [:div.feed-item
+     [:div.item-name [:a.item-link {:href (:uri summary) :target "_blank"} (:name summary)]]
+     [:div.item-body 
       [:div.item-img-box [:img.item-img {:src (:imageUri summary)}]]
-      [:p.item-desc (:description summary)]
-      (activities-list activities)])])
+      [:p.item-desc (:description summary)]]
+     (activities-list activities)]))
 
 (defn feed []
   (if-let [feed (:feed @app-state)]
