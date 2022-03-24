@@ -85,8 +85,7 @@ class EntityService(val authority: Authority,
                     httpClient.get(urlString)
 
                 peerRouter.updateStatus(peer.id, Online)
-                entityStore.addSignedTransactions(transactionsResponse.transactions)
-                transactionsResponse.transactions.forEach{ indexTransaction(it)}
+                addSignedTransactions(transactionsResponse.transactions)
                 peerTransactionId = transactionsResponse.transactions.last().transaction.id
 
                 if(transactionsResponse.transactions.isEmpty()
@@ -104,6 +103,11 @@ class EntityService(val authority: Authority,
             peerRouter.updateStatus(peer.id, Offline)
         }
         logger.info { "Completed requesting transaction transaction from: ${peer.name}" }
+    }
+
+    fun addSignedTransactions(transactions: List<SignedTransaction>){
+        entityStore.addSignedTransactions(transactions)
+        transactions.forEach{ indexTransaction(it)}
     }
 
     fun updateEntities(vararg entities: Entity): SignedTransaction? {

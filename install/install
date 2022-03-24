@@ -40,6 +40,14 @@ fi
 echo "Creating tarball"
 cd ..
 tar -czf  "opencola-"`date +%s`".tgz" opencola
+echo "Installing CLI"
+rm -rf ~/.opencola
+mkdir ~/.opencola
+cp -r opencola/server/bin opencola/server/lib ~/.opencola
+cp ~/.opencola/bin/opencola-server ~/.opencola/bin/oc
+sed -i '' "s/opencola.server.ApplicationKt/opencola.cli.OcKt/g" ~/.opencola/bin/oc
 echo "Done."
+
+
 
 
