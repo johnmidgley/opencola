@@ -11,7 +11,10 @@ body {
 }
 
 .feed-item {
-   margin-bottom: 50px;
+   margin-bottom: 20px;
+   padding: 10px;
+   box-shadow: 5px 5px 5px 5px #EEEEEE;
+   -webkit-box-shadow: 5px 5px 5px 5px #EEEEEE;
 }
 
 .item-img-box {
