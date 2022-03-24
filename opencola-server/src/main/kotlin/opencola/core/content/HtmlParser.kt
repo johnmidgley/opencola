@@ -34,9 +34,8 @@ class HtmlParser(html: String) {
 
     }
 
-    fun parseImageUri() : URI? {
+    fun parseImageUri(): URI? {
         return selectMetaContent(listOf("image", "og:image", "twitter:image", "twitter:image:src"))
-            .mapNotNull { it.tryParseUri() }
-            .firstOrNull()
+            .mapNotNull { it.tryParseUri() }.firstOrNull { it.isAbsolute }
     }
 }

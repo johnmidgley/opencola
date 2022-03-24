@@ -101,7 +101,7 @@ fun getImageUri(message: Message): URI? {
         .filter { it.header.contentType()?.mediaType?.lowercase() == "image" }
         .filter { it.body is BinaryBody }
         .sortedByDescending { (it.body as BinaryBody).inputStream.available() } // Pick the biggest image - not always best?
-        .map { it.header.contentLocation()!!.location }
+        .mapNotNull { it.header.contentLocation()!!.location.tryParseUri() }
+        .filter { it.isAbsolute }
         .firstOrNull()
-        ?.tryParseUri()
 }
