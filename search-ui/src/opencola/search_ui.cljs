@@ -61,12 +61,13 @@
                                        :keywords? true
                                        :error-handler error-handler}))
 
-(defn get-feed []
+(defn get-feed
+  [q]
   (reset-state)
-  (GET (resolve-service-url "feed") {:handler feed-handler
-                                     :response-format :json
-                                     :keywords? true
-                                     :error-handler error-handler}))
+  (GET (resolve-service-url (str "feed" "?q=" q)) {:handler feed-handler
+                                                   :response-format :json
+                                                   :keywords? true
+                                                   :error-handler error-handler}))
 
 
 (defn search-box []
@@ -76,9 +77,7 @@
     :on-change #(swap! app-state assoc :query (-> % .-target .-value))
     :on-keyUp #(if (= (.-key %) "Enter")
                  (let [query (:query @app-state)]
-                   (if (or (not query) (= query "")) 
-                     (get-feed)
-                     (search query))))}])
+                   (get-feed query)))}])
 
 
 (defn search-header []
@@ -87,27 +86,21 @@
    "openCola"
    (search-box)])
 
-(defn search-result [result]
-  ^{:key (:id result)} [:div#search-result.search-result 
-                        [:a {:href (:uri result) :target "_blank"} (:name result)]
-                        " "
-                        [:a {:href (resolve-service-url (str "data/" (:id result) "/0.html"))
-                             :target "blank_"} 
-                         "archive"]
-                        " "
-                        [:a {:href (resolve-service-url (str "data/" (:id result)))
-                             :target "blank_"} 
-                         "download"]])
-
-(defn search-results []
+#_(defn search-results-old []
   [:div.search-results 
-   (doall 
-    (if-let [results (:results @app-state)]
+   (    (if-let [results (:results @app-state)]
       (let [matches (:matches results)]
         (if (empty? matches) 
           (apply str "No results for '" (:query results) "'")
           (for [result matches]
             (search-result result))))))])
+
+(defn search-results []
+  [:div.search-results 
+   (let [query (:query @app-state)]
+    (if (and (not (empty? query))
+             (empty? (-> @app-state :feed :results)))
+      (apply str "No results for '" query  "'")))])
 
 
 (defn format-time [epoch-second]
@@ -131,9 +124,9 @@
        (format-time (:epochSecond activity))])])
 
 (defn feed-item [item]
-  ^{:key (:entityId item)} 
   (let [summary (:summary item)
         activities (:activities item)]
+    ^{:key (:entityId item)} 
     [:div.feed-item
      [:div.item-name [:a.item-link {:href (:uri summary) :target "_blank"} (:name summary)]]
      [:div.item-body 
@@ -179,5 +172,5 @@
   ;; (swap! app-state update-in [:__figwheel_counter] inc)
 )
 
-(get-config #(get-feed))
+(get-config #(get-feed (:query @app-state)))
 

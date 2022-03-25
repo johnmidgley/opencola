@@ -11,7 +11,9 @@ import opencola.core.extensions.nullOrElse
 import opencola.core.model.*
 import opencola.core.network.PeerRouter
 import opencola.core.network.PeerRouter.PeerStatus.Status.Online
+import opencola.core.search.SearchIndex
 import opencola.core.storage.EntityStore
+import opencola.core.storage.EntityStore.TransactionOrder
 import opencola.core.storage.MhtCache
 import opencola.service.EntityResult
 import opencola.service.EntityResult.Activity
@@ -62,7 +64,7 @@ suspend fun handleGetTransactionsCall(call: ApplicationCall, entityStore: Entity
     val transactions = entityStore.getSignedTransactions(
         authorityId,
         transactionId,
-        EntityStore.TransactionOrder.Ascending,
+        TransactionOrder.Ascending,
         numTransactions + 1
     ).drop(extra)
 
@@ -172,7 +174,7 @@ suspend fun handlePostNotifications(call: ApplicationCall, entityService: Entity
 }
 
 @Serializable
-data class FeedResult(val transactionId: String?, val results: List<EntityResult>) {
+data class FeedResult(val pagingToken: String?, val results: List<EntityResult>) {
     constructor(transactionId: Id?, results: List<EntityResult>) : this(transactionId?.toString(), results)
 }
 
@@ -191,15 +193,7 @@ fun getSummary(facts: List<Fact>): Summary {
     )
 }
 
-fun getActivity(
-    authorityId: Id,
-    name: String,
-    epochSecond: Long,
-    save: Boolean?,
-    trust: Float?,
-    like: Boolean?,
-    rating: Float?
-): Activity? {
+fun getActivity(authorityId: Id, name: String, epochSecond: Long, save: Boolean?, trust: Float?, like: Boolean?, rating: Float?): Activity? {
     return if (listOf(save, trust, like, rating).all { it == null })
         null
     else
@@ -249,43 +243,41 @@ fun getEntityActivitiesFromFacts(entityFacts: Iterable<Fact>, idToName: (Id) -> 
         }.filterNotNull()
 }
 
-suspend fun handleGetFeed(
-    call: ApplicationCall,
-    authority: Authority,
-    entityStore: EntityStore,
-    peerRouter: PeerRouter
-) {
-    // TODO: Look for startTransactionId in call (For paging)
-    val signedTransactions = entityStore.getSignedTransactions(
-        emptyList(),
-        null,
-        EntityStore.TransactionOrder.Descending,
-        100
-    ) // TODO: Config limit
+fun isEntityIsVisible(entity: Entity?) : Boolean{
+    return when(entity){
+        is ResourceEntity -> entity.like != false
+        is ActorEntity -> entity.like != false
+        else -> false
+    }
+}
 
-    val entityIds = signedTransactions
-        .flatMap { tx -> tx.transaction.transactionEntities.map { it.entityId } }
-        .distinct()
-
-    val entityFacts = entityStore.getFacts(emptyList(), entityIds)
+fun getEntityFacts(entityStore: EntityStore, entityIds: Iterable<Id>): Map<Id, List<Fact>> {
+    return entityStore.getFacts(emptyList(), entityIds)
         .groupBy { it.entityId }
-        .filter { Entity.getInstance(it.value) !is DataEntity }
+        .filter { isEntityIsVisible( Entity.getInstance(it.value)) }
         .toMap()
+}
 
+fun getEntityIds(entityStore: EntityStore, searchIndex: SearchIndex, query: String?): List<Id> {
+    return if (query == null || query.trim().isEmpty()){
+        val signedTransactions = entityStore.getSignedTransactions(emptyList(),null, TransactionOrder.Descending,100) // TODO: Config limit
+        signedTransactions.flatMap { tx -> tx.transaction.transactionEntities.map { it.entityId } }.distinct()
+    } else {
+        searchIndex.search(query).map { it.entityId }
+    }
+}
+
+suspend fun handleGetFeed(call: ApplicationCall, authority: Authority, entityStore: EntityStore, searchIndex: SearchIndex, peerRouter: PeerRouter) {
+    // TODO: Look for startTransactionId in call (For paging)
+    val entityIds = getEntityIds(entityStore, searchIndex, call.parameters["q"])
+    val entityFactsById = getEntityFacts(entityStore, entityIds)
     val idToName: (Id) -> String = { id -> getActorName(id, authority, peerRouter) }
-    val entityActivitiesById =
-        entityFacts.entries.associate { Pair(it.key, getEntityActivitiesFromFacts(it.value, idToName)) }
+    val entityActivitiesById = entityFactsById.entries.associate { Pair(it.key, getEntityActivitiesFromFacts(it.value, idToName)) }
 
     call.respond(FeedResult(
-        signedTransactions.lastOrNull()?.transaction?.id,
+        "",
         entityIds
-            .filter { entityFacts.containsKey(it) }
-            .map {
-                val entityIdFacts = entityFacts[it] ?: throw RuntimeException("Can't find facts for id: $it")
-                val entityIdActivities =
-                    entityActivitiesById[it] ?: throw RuntimeException("Can't find activities for id: $it")
-
-                EntityResult(it, getSummary(entityIdFacts), entityIdActivities)
-            }
+            .filter { entityFactsById.containsKey(it) }
+            .map { EntityResult(it, getSummary(entityFactsById[it]!!), entityActivitiesById[it]!!) }
     ))
 }

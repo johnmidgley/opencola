@@ -7,6 +7,7 @@ import io.ktor.http.content.*
 import mu.KotlinLogging
 import opencola.core.model.Authority
 import opencola.core.network.PeerRouter
+import opencola.core.search.SearchIndex
 import opencola.core.storage.EntityStore
 import opencola.core.storage.MhtCache
 import opencola.server.*
@@ -86,8 +87,9 @@ fun Application.configureRouting(application: app) {
             // TODO: Handle filtering of authorities
             val authority by injector.instance<Authority>()
             val entityStore by injector.instance<EntityStore>()
+            val searchIndex by injector.instance<SearchIndex>()
             val peerRouter by injector.instance<PeerRouter>() // TODO: Should really be general address book, or from entity store
-            handleGetFeed(call, authority, entityStore, peerRouter)
+            handleGetFeed(call, authority, entityStore, searchIndex, peerRouter)
         }
 
         static(""){
