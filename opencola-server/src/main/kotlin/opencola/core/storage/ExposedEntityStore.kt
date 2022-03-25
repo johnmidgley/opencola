@@ -22,11 +22,12 @@ class ExposedEntityStore(authority: Authority, addressBook: AddressBook, signato
     // TODO: Magic numbers (32, 128) should come from config
     // TODO: Normalize attribute
     private class Facts(authorityId: Id) : LongIdTable("fct-${authorityId}") {
-        val authorityId = binary("authorityId", 32)
+        val authorityId = binary("authorityId", 32).index()
         val entityId = binary("entityId", 32).index()
         val attribute = text("attribute")
         val value = blob("value")
         val operation = enumeration("operation", Operation::class)
+        val epochSecond = long("epochSecond")
         val transactionId = binary("transactionId", 32)
     }
 
@@ -144,6 +145,7 @@ class ExposedEntityStore(authority: Authority, addressBook: AddressBook, signato
             CoreAttribute.values().single { a -> a.spec.uri.toString() == resultRow[facts.attribute]}.spec,
             Value(resultRow[facts.value].bytes),
             resultRow[facts.operation],
+            resultRow[facts.epochSecond],
             Id.decode(resultRow[facts.transactionId]))
     }
 
@@ -168,6 +170,7 @@ class ExposedEntityStore(authority: Authority, addressBook: AddressBook, signato
                     it[attribute] = fact.attribute.uri.toString()
                     it[value] = ExposedBlob(fact.value.bytes)
                     it[operation] = fact.operation
+                    it[epochSecond] = fact.epochSecond!!
                     it[transactionId] = Id.encode(fact.transactionId!!)
                 }
             }

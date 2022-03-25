@@ -105,7 +105,7 @@ abstract class AbstractEntityStore(val authority: Authority, val addressBook: Ad
         persistTransaction(signedTransaction)
 
         entities.forEach {
-            it.commitFacts(signedTransaction.transaction.id)
+            it.commitFacts(signedTransaction.transaction.epochSecond, signedTransaction.transaction.id)
         }
 
         return signedTransaction

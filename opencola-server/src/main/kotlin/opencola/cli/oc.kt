@@ -18,7 +18,7 @@ fun printUsage(){
     println("Usage: oc TASK COMMAND [ARGS] ")
 }
 
-fun exportTransactions(application: Application, args: Sequence<String>){
+fun exportTransactions(application: Application, args: List<String>){
     val entityStore by application.injector.instance<EntityStore>()
 
     if(args.count() != 1){
@@ -64,7 +64,7 @@ private fun transactionsFromPath(path: Path): Sequence<SignedTransaction> {
     }
 }
 
-fun importTransactions(application: Application, args: Sequence<String>){
+fun importTransactions(application: Application, args: List<String>){
         if(args.count() != 1){
         println("import transactions should have exactly 1 argument - filename")
         return
@@ -77,7 +77,7 @@ fun importTransactions(application: Application, args: Sequence<String>){
     }
 }
 
-fun transactions(application: Application, args: Sequence<String>){
+fun transactions(application: Application, args: Iterable<String>){
     val commandArgs = args.drop(1)
 
     when(val command = args.first()){
@@ -88,7 +88,7 @@ fun transactions(application: Application, args: Sequence<String>){
 
 }
 
-fun cleanStorage(application: Application, commandArgs: Sequence<String>) {
+fun cleanStorage(application: Application, commandArgs: Iterable<String>) {
     if (commandArgs.count() != 1 || commandArgs.first() != "-f"){
         println("reset storage: illegal arguments ${commandArgs.joinToString(" ")}")
         return
@@ -104,7 +104,7 @@ fun cleanStorage(application: Application, commandArgs: Sequence<String>) {
 }
 
 
-fun storage(application: Application, args: Sequence<String>){
+fun storage(application: Application, args: Iterable<String>){
     val commandArgs = args.drop(1)
 
     when(val command = args.first()){
@@ -129,13 +129,11 @@ fun main(args: Array<String>) {
     }
 
     val task = args[0]
-    val taskArgs = args.asSequence().drop(1)
+    val taskArgs = args.asList().drop(1)
 
     when(args[0]){
         "transactions" -> transactions(application, taskArgs)
         "storage" -> storage(application, taskArgs)
         else -> println("Unknown task: $task")
     }
-
-
 }

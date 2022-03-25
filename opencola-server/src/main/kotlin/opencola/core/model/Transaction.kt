@@ -18,7 +18,7 @@ data class Transaction(val id: Id,
 
     fun getFacts(): List<Fact> {
         return transactionEntities.flatMap { entity ->
-            entity.facts.map { Fact(authorityId, entity.entityId, it.attribute, it.value, it.operation, id) }
+            entity.facts.map { Fact(authorityId, entity.entityId, it.attribute, it.value, it.operation, epochSecond, id) }
         }
     }
 
