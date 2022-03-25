@@ -63,7 +63,6 @@
 
 (defn get-feed
   [q]
-  (reset-state)
   (GET (resolve-service-url (str "feed" "?q=" q)) {:handler feed-handler
                                                    :response-format :json
                                                    :keywords? true
