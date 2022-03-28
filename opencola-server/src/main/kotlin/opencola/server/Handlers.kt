@@ -53,6 +53,9 @@ data class TransactionsResponse(
     val transactions: List<SignedTransaction>
 )
 
+//TODO: This should return transactions until the root transaction, not all transactions for the authority in the
+// store, as the user a peer may have deleted their store, which creates a new HEAD. Only the transaction for the
+// current chain should be propagated to other peers
 suspend fun handleGetTransactionsCall(call: ApplicationCall, entityStore: EntityStore, peerRouter: PeerRouter) {
     val authorityId =
         Id.fromHexString(call.parameters["authorityId"] ?: throw IllegalArgumentException("No authorityId set"))
@@ -65,7 +68,7 @@ suspend fun handleGetTransactionsCall(call: ApplicationCall, entityStore: Entity
         authorityId,
         transactionId,
         TransactionOrder.Ascending,
-        numTransactions + 1
+        numTransactions
     ).drop(extra)
 
     peerRouter.updateStatus(peerId, Online)

@@ -8,13 +8,11 @@ import io.ktor.client.request.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
-import opencola.core.content.HtmlParser
 import opencola.core.content.MhtmlPage
 import opencola.core.content.TextExtractor
 import opencola.core.extensions.ifNotNullOrElse
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.*
-import opencola.core.model.Peer
 import opencola.core.network.PeerRouter
 import opencola.core.network.PeerRouter.Event
 import opencola.core.network.PeerRouter.Notification
@@ -53,6 +51,9 @@ class EntityService(val authority: Authority,
     }
 
     fun requestTransactions(peerId: Id){
+        //TODO: After requesting transactions, check to see if a new HEAD has been set (i.e. the transactions don't
+        // chain to existing ones, which can happen if a peer deletes their store). If this happens, inform the user
+        // and ask if "abandoned" transactions should be deleted.
         val peer = peerRouter.getPeer(peerId)
             ?: throw IllegalArgumentException("Attempt to request transactions for unknown peer: $peerId ")
 
