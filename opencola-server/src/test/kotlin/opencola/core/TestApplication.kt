@@ -50,4 +50,8 @@ object TestApplication {
     fun getTmpFilePath(suffix: String): Path {
         return config.storage.path.resolve("${UUID.randomUUID()}$suffix")
     }
+
+    fun createStorageDirectory(name: String) : Path {
+        return config.storage.path.resolve("$name").createDirectory()
+    }
 }

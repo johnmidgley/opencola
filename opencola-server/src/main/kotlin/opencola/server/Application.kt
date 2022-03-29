@@ -3,6 +3,7 @@ package opencola.server
 import io.ktor.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import kotlinx.coroutines.runBlocking
 import opencola.core.config.Application
 import opencola.core.config.loadConfig
 import opencola.core.extensions.toHexString
@@ -42,5 +43,8 @@ fun main() {
 
     // TODO: Make sure entityService starts as soon as server is up, so that transactions can be received
 
-    getServer(application).start(wait = true)
+    runBlocking {
+
+        getServer(application).start(wait = true)
+    }
 }
