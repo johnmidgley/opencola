@@ -1,10 +1,7 @@
 package opencola.core.messaging
 
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import opencola.core.TestApplication
-import opencola.core.messaging.MessageBus.*
+import opencola.core.messaging.MessageBus.Message
 import org.junit.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
@@ -13,6 +10,10 @@ class MessageBusTest{
     class MessageReactor : Reactor {
         var messages = emptyList<Message>()
         override fun handleMessage(message: Message) {
+            if(message.name == "EXPLODE"){
+                throw RuntimeException("Exploded")
+            }
+
             messages = messages + message
         }
 
@@ -25,15 +26,16 @@ class MessageBusTest{
         val messageBus = MessageBus(TestApplication.createStorageDirectory("message-bus"), reactor)
 
         messageBus.sendMessage("1", "1".toByteArray())
+        messageBus.startReactor()
+        messageBus.sendMessage("EXPLODE", "".toByteArray())
+        messageBus.sendMessage("2", "2".toByteArray())
+        Thread.sleep(100)
+        messageBus.stopReactor()
+        messageBus.sendMessage("3", "3".toByteArray())
+        messageBus.startReactor()
+        Thread.sleep(100)
+        messageBus.stopReactor()
 
-        runBlocking {
-            launch { messageBus.startReactor() }
-            messageBus.sendMessage("2", "2".toByteArray())
-            messageBus.stopReactor()
-            messageBus.sendMessage("3", "3".toByteArray())
-            launch { messageBus.startReactor() }
-            messageBus.stopReactor()
-        }
 
         assertEquals(3, reactor.messages.count())
         assertEquals("1", reactor.messages[0].name)
