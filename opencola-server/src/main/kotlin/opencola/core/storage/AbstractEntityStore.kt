@@ -1,6 +1,7 @@
 package opencola.core.storage
 
 import mu.KotlinLogging
+import opencola.core.event.EventBus
 import opencola.core.extensions.ifNotNullOrElse
 import opencola.core.model.*
 import opencola.core.security.Signator
@@ -8,7 +9,7 @@ import opencola.core.storage.EntityStore.*
 import java.security.PublicKey
 
 // TODO: Should support multiple authorities
-abstract class AbstractEntityStore(val authority: Authority, val addressBook: AddressBook, protected val signator: Signator) : EntityStore {
+abstract class AbstractEntityStore(val authority: Authority, val eventBus: EventBus,  val addressBook: AddressBook, protected val signator: Signator) : EntityStore {
     // TODO: Assumes transaction has been validated. Cleanup?
     protected abstract fun persistTransaction(signedTransaction: SignedTransaction) : SignedTransaction
 

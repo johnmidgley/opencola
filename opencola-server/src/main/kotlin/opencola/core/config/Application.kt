@@ -84,7 +84,7 @@ class Application(val config: Config, val injector: DI) {
                 bindSingleton { AddressBook(instance(), config.network) }
                 bindSingleton { PeerRouter(instance()) }
                 bindSingleton { SearchIndex(instance(), config.search) }
-                bindSingleton { ExposedEntityStore(instance(), instance(), instance(), sqLiteDB) }
+                bindSingleton { ExposedEntityStore(instance(), instance(), instance(), instance(), sqLiteDB) }
                 bindSingleton { SearchService(instance(), instance(), instance()) }
                 bindSingleton { EntityService(instance(), instance(), instance(), instance(), instance(), instance()) }
                 // TODO: Add unit tests for MhtCache
