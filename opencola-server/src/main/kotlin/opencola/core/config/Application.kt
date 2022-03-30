@@ -2,6 +2,8 @@ package opencola.core.config
 
 import mu.KotlinLogging
 import opencola.core.content.TextExtractor
+import opencola.core.event.EventBus
+import opencola.core.event.MainReactor
 import opencola.core.extensions.hexStringToByteArray
 import opencola.core.extensions.toHexString
 import opencola.core.model.Authority
@@ -77,6 +79,7 @@ class Application(val config: Config, val injector: DI) {
                 bindSingleton { keyStore }
                 bindSingleton { fileStore }
                 bindSingleton { TextExtractor() }
+                bindSingleton { EventBus(storagePath, config.eventBus, MainReactor()) }
                 bindSingleton { Signator(instance()) }
                 bindSingleton { AddressBook(instance(), config.network) }
                 bindSingleton { PeerRouter(instance()) }

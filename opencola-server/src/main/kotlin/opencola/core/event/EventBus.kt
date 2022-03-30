@@ -1,9 +1,9 @@
-package opencola.core.messaging
+package opencola.core.event
 
 
 import mu.KotlinLogging
+import opencola.core.config.EventBusConfig
 import opencola.core.extensions.nullOrElse
-import opencola.core.extensions.toHexString
 import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.statements.api.ExposedBlob
@@ -15,13 +15,13 @@ import java.time.Instant
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-class MessageBus(private val storagePath: Path, private val reactor: Reactor) {
+class EventBus(private val storagePath: Path, config: EventBusConfig, private val reactor: Reactor) {
     private val logger = KotlinLogging.logger("MessageBus")
     private val messages = Messages()
-    private val maxAttempts = 3
+    private val maxAttempts = config.maxAttempts
     private val executorService = Executors.newSingleThreadExecutor()
     private val db by lazy {
-        val db = Database.connect("jdbc:sqlite:$storagePath/message-bus.db", "org.sqlite.JDBC")
+        val db = Database.connect("jdbc:sqlite:$storagePath/${config.name}", "org.sqlite.JDBC")
         TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
         db
     }
@@ -34,35 +34,35 @@ class MessageBus(private val storagePath: Path, private val reactor: Reactor) {
 
     private class Messages() : LongIdTable("messages") {
         val name = text("name")
-        val body = blob("body")
+        val data = blob("data")
         val attempt = integer("attempt")
         val epochSecond = long("epochSecond")
     }
 
-    class Message(
+    class Event(
         val id: Long,
         val name: String,
-        val body: ByteArray,
+        val data: ByteArray,
         val attempt: Int = 0,
         val epochSecond: Long = Instant.now().epochSecond,
         ) {
         override fun toString(): String {
-            return "Message(id=${this.id}, name=${this.name}, body=${body.toHexString()}, attempt=$attempt, epochSecond=$epochSecond)"
+            return "Message(id=${this.id}, name=${this.name}, data=${data.size} bytes, attempt=$attempt, epochSecond=$epochSecond)"
         }
     }
 
-    private fun addMessageToStore(name: String, body: ByteArray, attempt: Int){
+    private fun addMessageToStore(name: String, data: ByteArray, attempt: Int){
         transaction(db) {
             messages.insert {
                 it[messages.name] = name
-                it[messages.body] = ExposedBlob(body)
+                it[messages.data] = ExposedBlob(data)
                 it[messages.attempt] = attempt
                 it[messages.epochSecond] = Instant.now().epochSecond
             }
         }
     }
 
-    private fun getMessagesFromStore(limit: Int): List<Message> {
+    private fun getMessagesFromStore(limit: Int): List<Event> {
         return transaction(db) {
             messages
                 .select {
@@ -71,10 +71,10 @@ class MessageBus(private val storagePath: Path, private val reactor: Reactor) {
                 .orderBy(messages.id, SortOrder.ASC)
                 .limit(limit)
                 .map {
-                    Message(
+                    Event(
                         it[messages.id].value,
                         it[messages.name],
-                        it[messages.body].bytes,
+                        it[messages.data].bytes,
                         it[messages.attempt],
                         it[messages.epochSecond],
                     )
@@ -88,18 +88,18 @@ class MessageBus(private val storagePath: Path, private val reactor: Reactor) {
         }
     }
 
-    fun sendMessage(name: String, body: ByteArray) {
-        addMessageToStore(name, body, 1)
+    fun sendMessage(name: String, data: ByteArray) {
+        addMessageToStore(name, data, 1)
         executorService.execute { processMessages() }
     }
 
-    private fun processMessage(message: Message) {
+    private fun processMessage(message: Event) {
         try {
             reactor.handleMessage(message)
         } catch (e: Exception) {
             logger.error { "Exception occurred processing $message: ${e.message}" }
             if(message.attempt < maxAttempts){
-                addMessageToStore(message.name, message.body, message.attempt + 1)
+                addMessageToStore(message.name, message.data, message.attempt + 1)
             }
         }
 

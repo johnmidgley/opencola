@@ -7,6 +7,7 @@ import kotlin.io.path.exists
 
 // TODO: Add config layers, that allow for override. Use push / pop
 // https://github.com/sksamuel/hoplite
+data class EventBusConfig(val name: String = "event-bus", val maxAttempts: Int = 3)
 data class ServerConfig(val host: String, val port: Int)
 data class FilestoreConfig(val name: String = "filestore")
 data class StorageConfig(val path: Path, val filestore: FilestoreConfig = FilestoreConfig())
@@ -19,37 +20,39 @@ data class NetworkConfig(val peers: List<PeerConfig> = emptyList())
 
 
 data class Config(val name: String,
+                  val eventBus: EventBusConfig,
                   val server: ServerConfig,
                   val storage: StorageConfig,
                   val security: SecurityConfig,
                   val search: SearchConfig,
-                  val network: NetworkConfig){
+                  val network: NetworkConfig,
+                  ){
     fun setName(name: String): Config {
-        return Config(name, server, storage, security, search, network)
+        return Config(name, eventBus, server, storage, security, search, network, )
 
     }
 
     fun setServer(server: ServerConfig): Config {
-        return Config(name, server, storage, security, search, network)
+        return Config(name, eventBus, server, storage, security, search, network)
     }
 
     fun setStorage(storage: StorageConfig): Config {
-        return Config(name, server, storage, security, search, network)
+        return Config(name, eventBus, server, storage, security, search, network)
     }
 
     fun setStoragePath(path: Path): Config {
         if(!path.exists()){
             path.createDirectory()
         }
-        return Config(name, server, StorageConfig(path, storage.filestore), security, search, network)
+        return Config(name, eventBus, server, StorageConfig(path, storage.filestore), security, search, network)
     }
 
     fun setSecurity(security: SecurityConfig): Config {
-        return Config(name, server, storage, security, search, network)
+        return Config(name,eventBus, server, storage, security, search, network)
     }
 
     fun setNetwork(network: NetworkConfig): Config {
-        return Config(name, server, storage, security, search, network)
+        return Config(name, eventBus, server, storage, security, search, network)
     }
 }
 
