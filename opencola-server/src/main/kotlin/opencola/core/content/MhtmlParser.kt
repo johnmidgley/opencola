@@ -32,7 +32,7 @@ class MhtmlPage {
         title = DecoderUtil.decodeEncodedWords(message.header.getField("Subject")?.body, Charset.defaultCharset())
         htmlText = parseHtmlText()
 
-        val htmlParser = htmlText.nullOrElse { HtmlParser(htmlText!!) }
+        val htmlParser = htmlText.nullOrElse { HtmlParser(it) }
         description = htmlParser.nullOrElse { it.parseDescription() }
         imageUri = htmlParser.nullOrElse { it.parseImageUri() } ?: getImageUri(message)
         text = htmlText.nullOrElse { TextExtractor().getBody(it.toByteArray()) }
