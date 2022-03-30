@@ -8,13 +8,6 @@
    [cljs-time.format :as f]
    ))
 
-; Good resourcde with secure POST examples
-; https://medium.com/pragmatic-programmers/build-the-ui-with-reagent-a2f3757a9176
-(println "Loaded.")
-
-(defn multiply [a b] (* a b))
-
-;; define your app data so that it doesn't get over-written on reload
 (defonce app-state (atom {}))
 
 (defn reset-state [] 
@@ -53,16 +46,7 @@
   (str (-> @app-state :config :service-url) path))
 
 
-(defn search [query]
-  (reset-state)
-  (GET (resolve-service-url "search") {:params {:q query}
-                                       :handler results-handler
-                                       :response-format :json
-                                       :keywords? true
-                                       :error-handler error-handler}))
-
-(defn get-feed
-  [q]
+(defn get-feed [q]
   (GET (resolve-service-url (str "feed" "?q=" q)) {:handler feed-handler
                                                    :response-format :json
                                                    :keywords? true
@@ -73,7 +57,10 @@
   [:div.search-box>input
    {:type "text"
     :value (:query @app-state)
-    :on-change #(swap! app-state assoc :query (-> % .-target .-value))
+    :on-change #(do 
+                  (swap! app-state assoc :query (-> % .-target .-value))
+                  (if (empty? (-> @app-state :feed :results))
+                    (swap! app-state dissoc :feed)))
     :on-keyUp #(if (= (.-key %) "Enter")
                  (let [query (:query @app-state)]
                    (get-feed query)))}])
@@ -85,20 +72,12 @@
    "openCola"
    (search-box)])
 
-#_(defn search-results-old []
-  [:div.search-results 
-   (    (if-let [results (:results @app-state)]
-      (let [matches (:matches results)]
-        (if (empty? matches) 
-          (apply str "No results for '" (:query results) "'")
-          (for [result matches]
-            (search-result result))))))])
 
 (defn search-results []
   [:div.search-results 
    (let [query (:query @app-state)]
     (if (and (not (empty? query))
-             (empty? (-> @app-state :feed :results)))
+             (= [] (-> @app-state :feed :results)))
       (apply str "No results for '" query  "'")))])
 
 
@@ -144,7 +123,7 @@
   (if-let [e (:error @app-state)]
     [:div#request-error.search-error e]))
 
-(defn search-page []
+(defn feed-page []
   [:div#opencola.search-page
    (search-header)
    (search-results)
@@ -153,7 +132,7 @@
 
 
 (defn mount [el]
-  (rdom/render [search-page] el))
+  (rdom/render [feed-page] el))
 
 (defn mount-app-element []
   (when-let [el (get-app-element)]
