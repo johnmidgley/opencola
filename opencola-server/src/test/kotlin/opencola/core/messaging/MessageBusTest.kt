@@ -10,14 +10,14 @@ class MessageBusTest{
     class MessageReactor : Reactor {
         var messages = emptyList<Message>()
         override fun handleMessage(message: Message) {
+            println("Handling $message")
+
             if(message.name == "EXPLODE"){
                 throw RuntimeException("Exploded")
             }
 
             messages = messages + message
         }
-
-
     }
 
     @Test
@@ -26,16 +26,11 @@ class MessageBusTest{
         val messageBus = MessageBus(TestApplication.createStorageDirectory("message-bus"), reactor)
 
         messageBus.sendMessage("1", "1".toByteArray())
-        messageBus.startReactor()
         messageBus.sendMessage("EXPLODE", "".toByteArray())
         messageBus.sendMessage("2", "2".toByteArray())
-        Thread.sleep(100)
-        messageBus.stopReactor()
         messageBus.sendMessage("3", "3".toByteArray())
-        messageBus.startReactor()
         Thread.sleep(100)
-        messageBus.stopReactor()
-
+        messageBus.stop()
 
         assertEquals(3, reactor.messages.count())
         assertEquals("1", reactor.messages[0].name)
