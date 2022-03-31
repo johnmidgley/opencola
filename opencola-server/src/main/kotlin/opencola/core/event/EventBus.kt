@@ -22,7 +22,7 @@ class EventBus(private val storagePath: Path, config: EventBusConfig) {
     private val maxAttempts = config.maxAttempts
     private val executorService = Executors.newSingleThreadExecutor()
     private val db by lazy {
-        val db = Database.connect("jdbc:sqlite:$storagePath/${config.name}", "org.sqlite.JDBC")
+        val db = Database.connect("jdbc:sqlite:$storagePath/${config.name}.db", "org.sqlite.JDBC")
         TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
         db
     }
