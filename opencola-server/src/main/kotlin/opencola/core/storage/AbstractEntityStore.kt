@@ -2,6 +2,7 @@ package opencola.core.storage
 
 import mu.KotlinLogging
 import opencola.core.event.EventBus
+import opencola.core.event.Events
 import opencola.core.extensions.ifNotNullOrElse
 import opencola.core.model.*
 import opencola.core.security.Signator
@@ -109,6 +110,7 @@ abstract class AbstractEntityStore(val authority: Authority, val eventBus: Event
             it.commitFacts(signedTransaction.transaction.epochSecond, signedTransaction.transaction.id)
         }
 
+        eventBus.sendMessage(Events.NewTransaction.toString(), SignedTransaction.encode(signedTransaction))
         return signedTransaction
     }
 
@@ -122,6 +124,7 @@ abstract class AbstractEntityStore(val authority: Authority, val eventBus: Event
                 throw IllegalArgumentException("Transaction ${it.transaction.id} failed to validate from $transactionAuthorityId")
 
             persistTransaction(it)
+            eventBus.sendMessage(Events.NewTransaction.toString(), SignedTransaction.encode(it))
         }
     }
 }

@@ -88,7 +88,7 @@ class EventBus(private val storagePath: Path, config: EventBusConfig, private va
         }
     }
 
-    fun sendMessage(name: String, data: ByteArray) {
+    fun sendMessage(name: String, data: ByteArray = "".toByteArray()) {
         addMessageToStore(name, data, 1)
         executorService.execute { processMessages() }
     }

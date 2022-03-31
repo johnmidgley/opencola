@@ -12,6 +12,7 @@ class MainReactor : Reactor {
 
     override fun handleMessage(event: Event) {
         when(Events.valueOf(event.name)){
+            Events.NodeStarted -> logger.info { "Node Started" }
             Events.NewTransaction -> logger.info { "New Transaction Event" }
             Events.PeerOnline -> logger.info { "Peer Online Event" }
         }

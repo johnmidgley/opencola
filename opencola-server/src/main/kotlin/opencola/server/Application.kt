@@ -3,9 +3,10 @@ package opencola.server
 import io.ktor.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import kotlinx.coroutines.runBlocking
 import opencola.core.config.Application
 import opencola.core.config.loadConfig
+import opencola.core.event.EventBus
+import opencola.core.event.Events
 import opencola.core.extensions.toHexString
 import opencola.core.model.Id
 import opencola.server.plugins.configureContentNegotiation
@@ -18,6 +19,8 @@ import kotlin.io.path.Path
 fun onServerStarted(application: Application){
     val entityService by application.injector.instance<EntityService>()
     application.logger.info { "Node Started: ${entityService.authority.authorityId}" }
+    val eventBus by application.injector.instance<EventBus>()
+    eventBus.sendMessage(Events.NodeStarted.toString())
 }
 
 fun getServer(application: Application): NettyApplicationEngine {
@@ -42,9 +45,5 @@ fun main() {
     application.logger.info("Public Key : ${publicKey.encoded.toHexString()}")
 
     // TODO: Make sure entityService starts as soon as server is up, so that transactions can be received
-
-    runBlocking {
-
-        getServer(application).start(wait = true)
-    }
+    getServer(application).start(wait = true)
 }
