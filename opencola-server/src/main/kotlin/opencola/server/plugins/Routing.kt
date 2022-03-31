@@ -5,13 +5,13 @@ import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.http.content.*
 import mu.KotlinLogging
+import opencola.core.event.EventBus
 import opencola.core.model.Authority
 import opencola.core.network.PeerRouter
 import opencola.core.search.SearchIndex
 import opencola.core.storage.EntityStore
 import opencola.core.storage.MhtCache
 import opencola.server.*
-import opencola.service.EntityService
 import opencola.service.search.SearchService
 import org.kodein.di.instance
 import kotlin.io.path.Path
@@ -67,8 +67,8 @@ fun Application.configureRouting(application: app) {
         }
 
         post("/action"){
-            val entityService by injector.instance<EntityService>()
-            handlePostActionCall(call, entityService)
+            val entityStore by injector.instance<EntityStore>()
+            handlePostActionCall(call, entityStore)
         }
 
         get("/actions/{uri}"){
@@ -78,9 +78,8 @@ fun Application.configureRouting(application: app) {
         }
 
         post("/notifications"){
-            val entityService by injector.instance<EntityService>()
-            val peerRouter by injector.instance<PeerRouter>()
-            handlePostNotifications(call, entityService, peerRouter)
+            val eventBus by injector.instance<EventBus>()
+            handlePostNotifications(call, eventBus)
         }
 
         get("/feed"){

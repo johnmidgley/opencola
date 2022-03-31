@@ -1,6 +1,5 @@
 package opencola.server
 
-import com.sksamuel.hoplite.fp.invalid
 import io.ktor.http.*
 import io.ktor.http.content.*
 import kotlin.test.*
@@ -134,7 +133,7 @@ class ApplicationTest {
     fun testPostNotification(){
         // TODO: Don't rely on config.yaml - make peer node here
         val peerId = Id.fromHexString(TestApplication.config.network.peers.first().id)
-        val notification = PeerRouter.Notification(peerId, PeerRouter.Event.NewTransactions)
+        val notification = PeerRouter.Notification(peerId, PeerRouter.Event.NewTransaction)
 
         withTestApplication({ configureRouting(application); configureContentNegotiation() }) {
             with(handleRequest(HttpMethod.Post, "/notifications"){

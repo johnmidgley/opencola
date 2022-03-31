@@ -1,5 +1,6 @@
 package opencola.core.storage
 
+import opencola.core.content.TextExtractor
 import opencola.core.event.EventBus
 import opencola.core.model.*
 import opencola.core.security.Signator
@@ -16,8 +17,15 @@ import java.io.ByteArrayInputStream
 
 // TODO: Think about using SQLite - super simple and maybe better fit for local use.
 
-class ExposedEntityStore(authority: Authority, eventBus: EventBus, addressBook: AddressBook, signator: Signator, private val database: Database)
-    : AbstractEntityStore(authority, eventBus, addressBook, signator) {
+class ExposedEntityStore(
+    authority: Authority,
+    eventBus: EventBus,
+    fileStore: FileStore,
+    textExtractor: TextExtractor,
+    addressBook: AddressBook,
+    signator: Signator,
+    private val database: Database
+) : AbstractEntityStore(authority, eventBus, fileStore, textExtractor, addressBook, signator) {
     // NOTE: Some databases may truncate the table name. This is an issue to the degree that it increases the
     // chances of collisions. Given the number of ids stored in a single DB, the chances of issue are exceedingly low.
     // This would likely be an issue only when storing data for large sets of users (millions to billions?)
@@ -56,19 +64,23 @@ class ExposedEntityStore(authority: Authority, eventBus: EventBus, addressBook: 
         }
     }
 
-    private fun Op<Boolean>.withTableIdOrdering(column: Column<EntityID<Long>>, id: Long?, ascending: Boolean): Op<Boolean> {
-        return if(id == null)
+    private fun Op<Boolean>.withTableIdOrdering(
+        column: Column<EntityID<Long>>,
+        id: Long?,
+        ascending: Boolean
+    ): Op<Boolean> {
+        return if (id == null)
             this
-        else{
+        else {
             if (ascending)
-                this.and( column greaterEq id)
+                this.and(column greaterEq id)
             else
                 this.and(column lessEq id)
         }
     }
 
-    private fun Op<Boolean>.withIdConstraint(column: Column<ByteArray>, ids: List<Id>): Op<Boolean>{
-        return if(ids.isEmpty())
+    private fun Op<Boolean>.withIdConstraint(column: Column<ByteArray>, ids: List<Id>): Op<Boolean> {
+        return if (ids.isEmpty())
             this
         else
             this.and(ids
@@ -105,11 +117,11 @@ class ExposedEntityStore(authority: Authority, eventBus: EventBus, addressBook: 
         order: TransactionOrder,
         limit: Int
     ): List<ResultRow> {
-        return transaction(database){
+        return transaction(database) {
             val authorityIdList = authorityIds.toList()
             val startRow = startRowQuery(authorityIdList, startTransactionId, order).firstOrNull()
 
-            if(startRow == null)
+            if (startRow == null)
                 emptyList()
             else {
                 transactionsByAuthoritiesQuery(authorityIdList, startRow[transactions.id].value, order)
@@ -134,38 +146,40 @@ class ExposedEntityStore(authority: Authority, eventBus: EventBus, addressBook: 
     }
 
     override fun resetStore(): EntityStore {
-        transaction(database){
+        transaction(database) {
             SchemaUtils.drop(facts, transactions)
         }
 
-        return ExposedEntityStore(authority, eventBus, addressBook, signator, database)
+        return ExposedEntityStore(authority, eventBus, fileStore, textExtractor, addressBook, signator, database)
     }
 
     private fun factFromResultRow(resultRow: ResultRow): Fact {
-        return Fact(Id.decode(resultRow[facts.authorityId]),
+        return Fact(
+            Id.decode(resultRow[facts.authorityId]),
             Id.decode(resultRow[facts.entityId]),
-            CoreAttribute.values().single { a -> a.spec.uri.toString() == resultRow[facts.attribute]}.spec,
+            CoreAttribute.values().single { a -> a.spec.uri.toString() == resultRow[facts.attribute] }.spec,
             Value(resultRow[facts.value].bytes),
             resultRow[facts.operation],
             resultRow[facts.epochSecond],
-            Id.decode(resultRow[facts.transactionId]))
+            Id.decode(resultRow[facts.transactionId])
+        )
     }
 
     override fun getEntity(authorityId: Id, entityId: Id): Entity? {
-        return transaction(database){
-            val facts = facts.select{
+        return transaction(database) {
+            val facts = facts.select {
                 (facts.authorityId eq Id.encode(authorityId) and (facts.entityId eq Id.encode(entityId)))
             }.map { factFromResultRow(it) }
 
-            if(facts.isNotEmpty()) Entity.getInstance(facts) else null
+            if (facts.isNotEmpty()) Entity.getInstance(facts) else null
         }
     }
 
-    override fun persistTransaction(signedTransaction: SignedTransaction) : SignedTransaction {
+    override fun persistTransaction(signedTransaction: SignedTransaction): SignedTransaction {
         val transaction = signedTransaction.transaction
 
-        transaction(database){
-            transaction.getFacts().forEach{ fact ->
+        transaction(database) {
+            transaction.getFacts().forEach { fact ->
                 facts.insert {
                     it[authorityId] = Id.encode(fact.authorityId)
                     it[entityId] = Id.encode(fact.entityId)

@@ -4,6 +4,7 @@ import mu.KotlinLogging
 import opencola.core.content.TextExtractor
 import opencola.core.event.EventBus
 import opencola.core.event.MainReactor
+import opencola.core.event.Reactor
 import opencola.core.extensions.hexStringToByteArray
 import opencola.core.extensions.toHexString
 import opencola.core.model.Authority
@@ -13,7 +14,6 @@ import opencola.core.security.KeyStore
 import opencola.core.security.Signator
 import opencola.core.security.generateKeyPair
 import opencola.core.security.publicKeyFromBytes
-import opencola.service.EntityService
 import opencola.core.network.PeerRouter
 import opencola.core.storage.*
 import opencola.service.search.SearchService
@@ -79,18 +79,23 @@ class Application(val config: Config, val injector: DI) {
                 bindSingleton { keyStore }
                 bindSingleton { fileStore }
                 bindSingleton { TextExtractor() }
-                bindSingleton { EventBus(storagePath, config.eventBus, MainReactor()) }
                 bindSingleton { Signator(instance()) }
                 bindSingleton { AddressBook(instance(), config.network) }
                 bindSingleton { PeerRouter(instance()) }
                 bindSingleton { SearchIndex(instance(), config.search) }
-                bindSingleton { ExposedEntityStore(instance(), instance(), instance(), instance(), sqLiteDB) }
+                bindSingleton { ExposedEntityStore(instance(), instance(), instance(), instance(), instance(), instance(), sqLiteDB) }
                 bindSingleton { SearchService(instance(), instance(), instance()) }
-                bindSingleton { EntityService(instance(), instance(), instance(), instance(), instance(), instance()) }
                 // TODO: Add unit tests for MhtCache
                 // TODO: Get cache name from config
                 bindSingleton { MhtCache(storagePath.resolve("mht-cache"), instance(), instance()) }
+                bindSingleton { MainReactor(instance(), instance(), instance(), instance()) }
+                bindSingleton { EventBus(storagePath, config.eventBus) }
             }
+
+            val reactor by injector.instance<Reactor>()
+            val eventBus by injector.instance<EventBus>()
+
+            eventBus.start(reactor)
 
             return Application(config, injector)
         }

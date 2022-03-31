@@ -1,10 +1,8 @@
 package opencola.core.storage
 
+import opencola.core.content.MhtmlPage
 import opencola.core.extensions.ifNotNullOrElse
-import opencola.core.model.Entity
-import opencola.core.model.Fact
-import opencola.core.model.Id
-import opencola.core.model.SignedTransaction
+import opencola.core.model.*
 
 interface EntityStore {
     enum class TransactionOrder {
@@ -17,6 +15,7 @@ interface EntityStore {
 
     fun getEntity(authorityId: Id, entityId: Id): Entity?
     fun updateEntities(vararg entities: Entity) : SignedTransaction?
+    fun updateResource(mhtmlPage: MhtmlPage, actions: Actions): ResourceEntity
     fun addSignedTransactions(signedTransactions: List<SignedTransaction>)
     fun getSignedTransactions(authorityIds: Iterable<Id>, startTransactionId: Id?, order: TransactionOrder, limit: Int) : Iterable<SignedTransaction>
 

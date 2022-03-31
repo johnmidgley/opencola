@@ -8,7 +8,6 @@ import opencola.core.config.Application
 import opencola.core.model.Authority
 import opencola.core.model.ResourceEntity
 import opencola.core.storage.EntityStore
-import opencola.service.EntityService
 import opencola.service.search.SearchService
 import org.junit.Test
 import org.kodein.di.instance
@@ -56,8 +55,7 @@ class PeerTransactionTest {
 
         // Verify entity update triggers live replication
         val resource1 = ResourceEntity(authority0.authorityId, URI("http://www.opencola.org/page"), "document 2", text = "other stuff")
-        val entityService0 by application0.injector.instance<EntityService>()
-        entityService0.updateEntities(resource1)
+        entityStore0.updateEntities(resource1)
         sleep(1000)
         val results1 = searchService1.search("other")
         assert(results1.matches.size == 1)

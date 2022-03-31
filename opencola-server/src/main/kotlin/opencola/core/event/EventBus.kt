@@ -15,8 +15,9 @@ import java.time.Instant
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-class EventBus(private val storagePath: Path, config: EventBusConfig, private val reactor: Reactor) {
+class EventBus(private val storagePath: Path, config: EventBusConfig) {
     private val logger = KotlinLogging.logger("MessageBus")
+    private var reactor: Reactor? = null
     private val messages = Messages()
     private val maxAttempts = config.maxAttempts
     private val executorService = Executors.newSingleThreadExecutor()
@@ -89,12 +90,16 @@ class EventBus(private val storagePath: Path, config: EventBusConfig, private va
     }
 
     fun sendMessage(name: String, data: ByteArray = "".toByteArray()) {
+        if(reactor == null){
+            throw IllegalStateException("Attempt to sendMessage without having set a reactor")
+        }
         addMessageToStore(name, data, 1)
         executorService.execute { processMessages() }
     }
 
     private fun processMessage(message: Event) {
         try {
+            val reactor = this.reactor ?: throw IllegalStateException("Attempt to process a message with no reactor set")
             reactor.handleMessage(message)
         } catch (e: Exception) {
             logger.error { "Exception occurred processing $message: ${e.message}" }
@@ -116,6 +121,14 @@ class EventBus(private val storagePath: Path, config: EventBusConfig, private va
             if (messages.count() > 1)
                 executorService.execute { processMessages() }
         }
+    }
+
+    // Reactor is defined independently of EventBus in order to avoid circular dependencies
+    fun start(reactor: Reactor) {
+        if(this.reactor != null)
+            throw IllegalStateException("Attempt to re-start event bus")
+
+        this.reactor = reactor
     }
 
     // TODO: Call this on dispose / finalize?

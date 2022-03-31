@@ -1,5 +1,6 @@
 package opencola.core.storage
 
+import opencola.core.content.TextExtractor
 import opencola.core.event.EventBus
 import opencola.core.model.*
 import opencola.core.security.Signator
@@ -10,8 +11,15 @@ import kotlin.io.path.exists
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 
-class SimpleEntityStore(val path: Path, eventBus: EventBus, addressBook: AddressBook, authority: Authority, signator: Signator)
-    : AbstractEntityStore(authority, eventBus, addressBook, signator) {
+class SimpleEntityStore(
+    val path: Path,
+    eventBus: EventBus,
+    fileStore: FileStore,
+    textExtractor: TextExtractor,
+    addressBook: AddressBook,
+    authority: Authority,
+    signator: Signator
+) : AbstractEntityStore(authority, eventBus, fileStore, textExtractor, addressBook, signator) {
     // TODO: Synchronize access
     private var transactions =
         if (!path.exists()) {
@@ -61,8 +69,8 @@ class SimpleEntityStore(val path: Path, eventBus: EventBus, addressBook: Address
             .take(limit)
     }
 
-    override fun persistTransaction(signedTransaction: SignedTransaction) : SignedTransaction{
-        if(transactions.any{ it.transaction.id == signedTransaction.transaction.id})
+    override fun persistTransaction(signedTransaction: SignedTransaction): SignedTransaction {
+        if (transactions.any { it.transaction.id == signedTransaction.transaction.id })
             throw IllegalArgumentException("Attempt to insert duplicate transaction: ${signedTransaction.transaction.id}")
 
         path.outputStream(StandardOpenOption.APPEND, StandardOpenOption.CREATE)
@@ -84,6 +92,6 @@ class SimpleEntityStore(val path: Path, eventBus: EventBus, addressBook: Address
 
     override fun resetStore(): SimpleEntityStore {
         path.deleteIfExists()
-        return SimpleEntityStore(path, eventBus, addressBook, authority, signator)
+        return SimpleEntityStore(path, eventBus, fileStore, textExtractor, addressBook, authority, signator)
     }
 }

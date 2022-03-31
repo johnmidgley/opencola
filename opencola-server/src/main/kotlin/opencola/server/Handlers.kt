@@ -7,6 +7,8 @@ import io.ktor.request.*
 import io.ktor.response.*
 import kotlinx.serialization.Serializable
 import opencola.core.content.parseMhtml
+import opencola.core.event.EventBus
+import opencola.core.event.Events
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.*
 import opencola.core.network.PeerRouter
@@ -18,7 +20,6 @@ import opencola.core.storage.MhtCache
 import opencola.service.EntityResult
 import opencola.service.EntityResult.Activity
 import opencola.service.EntityResult.Summary
-import opencola.service.EntityService
 import opencola.service.search.SearchService
 import java.net.URI
 
@@ -100,7 +101,8 @@ suspend fun handleGetDataPartCall(call: ApplicationCall, authorityId: Id, mhtCac
     }
 }
 
-fun handleAction(action: String, value: String?, entityService: EntityService, mhtml: ByteArray) {
+
+fun handleAction(action: String, value: String?, entityStore: EntityStore, mhtml: ByteArray) {
     val mhtmlPage = mhtml.inputStream().use { parseMhtml(it) ?: throw RuntimeException("Unable to parse mhtml") }
 
     val actions = when (action) {
@@ -110,10 +112,10 @@ fun handleAction(action: String, value: String?, entityService: EntityService, m
         else -> throw NotImplementedError("No handler for $action")
     }
 
-    entityService.updateResource(mhtmlPage, actions)
+    entityStore.updateResource(mhtmlPage, actions)
 }
 
-suspend fun handlePostActionCall(call: ApplicationCall, entityService: EntityService) {
+suspend fun handlePostActionCall(call: ApplicationCall, entityStore: EntityStore) {
     val multipart = call.receiveMultipart()
     var action: String? = null
     var value: String? = null
@@ -148,7 +150,7 @@ suspend fun handlePostActionCall(call: ApplicationCall, entityService: EntitySer
         throw IllegalArgumentException("No mhtml specified for request")
     }
 
-    handleAction(action as String, value, entityService, mhtml as ByteArray)
+    handleAction(action as String, value, entityStore, mhtml as ByteArray)
     call.respond(HttpStatusCode.Accepted)
 }
 
@@ -162,17 +164,10 @@ suspend fun handleGetActionsCall(call: ApplicationCall, authorityId: Id, entityS
     }
 }
 
-suspend fun handlePostNotifications(call: ApplicationCall, entityService: EntityService, peerRouter: PeerRouter) {
+// TODO - This should change to handlePeerEvent
+suspend fun handlePostNotifications(call: ApplicationCall, eventBus: EventBus) {
     val notification = call.receive<PeerRouter.Notification>()
-    val peerId = notification.peerId
-
-    // TODO: Handle switch to online with event bus that triggers request for new transactions
-    peerRouter.updateStatus(peerId, Online)
-
-    when (notification.event) {
-        PeerRouter.Event.NewTransactions -> entityService.requestTransactions(peerId)
-    }
-
+    eventBus.sendMessage(Events.PeerNotification.toString(), notification.encode())
     call.respond(HttpStatusCode.OK)
 }
 

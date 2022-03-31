@@ -1,24 +1,36 @@
 package opencola.core.storage
 
 import mu.KotlinLogging
+import opencola.core.content.MhtmlPage
+import opencola.core.content.TextExtractor
 import opencola.core.event.EventBus
 import opencola.core.event.Events
 import opencola.core.extensions.ifNotNullOrElse
+import opencola.core.extensions.nullOrElse
 import opencola.core.model.*
 import opencola.core.security.Signator
 import opencola.core.storage.EntityStore.*
+import org.apache.james.mime4j.message.DefaultMessageWriter
+import java.io.ByteArrayOutputStream
 import java.security.PublicKey
 
 // TODO: Should support multiple authorities
-abstract class AbstractEntityStore(val authority: Authority, val eventBus: EventBus,  val addressBook: AddressBook, protected val signator: Signator) : EntityStore {
+abstract class AbstractEntityStore(
+    val authority: Authority,
+    val eventBus: EventBus,
+    val fileStore: FileStore,
+    val textExtractor: TextExtractor,
+    val addressBook: AddressBook,
+    protected val signator: Signator
+) : EntityStore {
     // TODO: Assumes transaction has been validated. Cleanup?
-    protected abstract fun persistTransaction(signedTransaction: SignedTransaction) : SignedTransaction
+    protected abstract fun persistTransaction(signedTransaction: SignedTransaction): SignedTransaction
 
     private fun getFirstTransactionId(authorityId: Id): Id {
         return Id.ofData("$authorityId.firstTransaction".toByteArray())
     }
 
-    private fun getNextTransactionId(authorityId: Id): Id{
+    private fun getNextTransactionId(authorityId: Id): Id {
         return getSignedTransactions(listOf(authorityId), null, TransactionOrder.Descending, 1)
             .firstOrNull()
             .ifNotNullOrElse({ Id.ofData(SignedTransaction.encode(it)) }, { getFirstTransactionId(authorityId) })
@@ -31,7 +43,7 @@ abstract class AbstractEntityStore(val authority: Authority, val eventBus: Event
         throw exception
     }
 
-    private fun logAndThrow(message: String){
+    private fun logAndThrow(message: String) {
         logAndThrow(RuntimeException(message))
     }
 
@@ -44,9 +56,9 @@ abstract class AbstractEntityStore(val authority: Authority, val eventBus: Event
             return false
         }
 
-        if(signedTransaction.transaction.getFacts().any { it.transactionId == null }){
+        if (signedTransaction.transaction.getFacts().any { it.transactionId == null }) {
             // TODO: Throw or ignore?
-            logAndThrow(IllegalStateException("Transaction has uncommitted id" ))
+            logAndThrow(IllegalStateException("Transaction has uncommitted id"))
         }
 
         if (!signedTransaction.isValidTransaction(authority.publicKey as PublicKey)) {
@@ -57,15 +69,15 @@ abstract class AbstractEntityStore(val authority: Authority, val eventBus: Event
     }
 
     // TODO - make entity method?
-    private fun validateEntity(entity: Entity) : Entity {
+    private fun validateEntity(entity: Entity): Entity {
         val authorityIds = entity.getFacts().map { it.authorityId }.distinct()
 
-        if(authorityIds.size != 1){
+        if (authorityIds.size != 1) {
             logAndThrow(RuntimeException("Entity{${entity.entityId}} contains facts from multiple authorities $authorityIds }"))
         }
 
         val authorityId = authorityIds.single()
-        if(entity.authorityId != authorityId){
+        if (entity.authorityId != authorityId) {
             logAndThrow(RuntimeException("Entity{${entity.entityId}} with authority ${entity.authorityId} contains facts from wrong authority $authorityId }"))
         }
 
@@ -74,7 +86,7 @@ abstract class AbstractEntityStore(val authority: Authority, val eventBus: Event
             logAndThrow(RuntimeException("Entity Id:{${entity.entityId}} contains facts not matching its id: $invalidEntityIds"))
         }
 
-        if(entity.getFacts().distinct().size < entity.getFacts().size){
+        if (entity.getFacts().distinct().size < entity.getFacts().size) {
             logAndThrow(RuntimeException("Entity Id:{${entity.entityId}} contains non-distinct facts"))
         }
 
@@ -89,21 +101,22 @@ abstract class AbstractEntityStore(val authority: Authority, val eventBus: Event
     override fun updateEntities(vararg entities: Entity): SignedTransaction? {
         entities.forEach { validateEntity(it) }
 
-        if(entities.distinctBy { it.entityId }.size != entities.size){
+        if (entities.distinctBy { it.entityId }.size != entities.size) {
             logAndThrow(RuntimeException("Attempt to commit changes to multiple entities with the same id."))
         }
 
-        if(entities.any { it.authorityId != authority.authorityId }){
+        if (entities.any { it.authorityId != authority.authorityId }) {
             logAndThrow(RuntimeException("Attempt to commit changes not controlled by authority"))
         }
 
-        val uncommittedFacts = entities.flatMap { it.getFacts() }.filter{ it.transactionId == null }
+        val uncommittedFacts = entities.flatMap { it.getFacts() }.filter { it.transactionId == null }
         if (uncommittedFacts.isEmpty()) {
             logger.info { "Ignoring update with no novel facts" }
             return null
         }
 
-        val signedTransaction = Transaction.fromFacts(getNextTransactionId(authority.authorityId), uncommittedFacts).sign(signator)
+        val signedTransaction =
+            Transaction.fromFacts(getNextTransactionId(authority.authorityId), uncommittedFacts).sign(signator)
         persistTransaction(signedTransaction)
 
         entities.forEach {
@@ -112,6 +125,45 @@ abstract class AbstractEntityStore(val authority: Authority, val eventBus: Event
 
         eventBus.sendMessage(Events.NewTransaction.toString(), SignedTransaction.encode(signedTransaction))
         return signedTransaction
+    }
+
+    override fun updateResource(mhtmlPage: MhtmlPage, actions: Actions): ResourceEntity {
+        // TODO: Add data id to resource entity - when indexing, index body from the dataEntity
+        // TODO: Parse description
+        // TODO - EntityStore should detect if a duplicate entity is added. Just merge it?
+        val writer = DefaultMessageWriter()
+        ByteArrayOutputStream().use { outputStream ->
+            writer.writeMessage(mhtmlPage.message, outputStream)
+            val pageBytes = outputStream.toByteArray()
+            val dataId = fileStore.write(pageBytes)
+            val mimeType = textExtractor.getType(pageBytes)
+            val resourceId = Id.ofUri(mhtmlPage.uri)
+            val entity = (getEntity(authority.authorityId, resourceId) ?: ResourceEntity(
+                authority.entityId,
+                mhtmlPage.uri
+            )) as ResourceEntity
+
+            // Add / update fields
+            // TODO - Check if setting null writes a retraction when fields are null
+            entity.dataId = dataId
+            entity.name = mhtmlPage.title
+            entity.text = mhtmlPage.text
+            entity.description = mhtmlPage.description
+            entity.imageUri = mhtmlPage.imageUri
+
+            actions.trust.nullOrElse { entity.trust = it }
+            actions.like.nullOrElse { entity.like = it }
+            actions.rating.nullOrElse { entity.rating = it }
+
+            val dataEntity = (getEntity(authority.authorityId, dataId) ?: DataEntity(
+                authority.entityId,
+                dataId,
+                mimeType
+            ))
+
+            updateEntities(entity, dataEntity)
+            return entity
+        }
     }
 
     override fun addSignedTransactions(signedTransactions: List<SignedTransaction>) {

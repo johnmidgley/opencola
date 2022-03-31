@@ -12,19 +12,16 @@ import opencola.core.model.Id
 import opencola.server.plugins.configureContentNegotiation
 import opencola.server.plugins.configureHTTP
 import opencola.server.plugins.configureRouting
-import opencola.service.EntityService
 import org.kodein.di.instance
 import kotlin.io.path.Path
 
 fun onServerStarted(application: Application){
-    val entityService by application.injector.instance<EntityService>()
-    application.logger.info { "Node Started: ${entityService.authority.authorityId}" }
     val eventBus by application.injector.instance<EventBus>()
     eventBus.sendMessage(Events.NodeStarted.toString())
 }
 
 fun getServer(application: Application): NettyApplicationEngine {
-    val serverConfig = application.config.server ?: throw RuntimeException("Server config not specified")
+    val serverConfig = application.config.server
 
     return embeddedServer(Netty, port = serverConfig.port, host = serverConfig.host) {
         // install(CallLogging)

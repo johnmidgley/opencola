@@ -5,7 +5,6 @@ import opencola.core.config.loadConfig
 import opencola.core.model.Id
 import opencola.core.model.SignedTransaction
 import opencola.core.storage.EntityStore
-import opencola.service.EntityService
 import org.kodein.di.instance
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -30,8 +29,6 @@ fun exportTransactions(application: Application, args: List<String>){
     println("Exporting transactions to: ${args.first()} batch size: $batchSize")
 
     Path(args.first()).outputStream().use { stream ->
-        var transactionId: Id? = null
-
         var transactions = entityStore.getSignedTransactions(emptyList(), null, EntityStore.TransactionOrder.Ascending, batchSize)
 
         while (true) {
@@ -70,10 +67,10 @@ fun importTransactions(application: Application, args: List<String>){
         return
     }
 
-    val entityService by application.injector.instance<EntityService>()
+    val entityStore by application.injector.instance<EntityStore>()
     transactionsFromPath(Path(args.first())).forEach {
         println("Reading: ${it.transaction.id}")
-        entityService.addSignedTransactions(listOf(it))
+        entityStore.addSignedTransactions(listOf(it))
     }
 }
 
@@ -97,7 +94,7 @@ fun cleanStorage(application: Application, commandArgs: Iterable<String>) {
     val storagePath = File(application.config.storage.path.toString())
 
     println("Cleaning storage directory:")
-    var result = shellRun(storagePath){
+    val result = shellRun(storagePath){
         command("./clean", listOf("-f"))
     }
     println(result)

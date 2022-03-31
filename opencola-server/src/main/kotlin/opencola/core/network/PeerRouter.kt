@@ -14,10 +14,17 @@ import mu.KotlinLogging
 import opencola.core.model.Id
 import opencola.core.model.Peer
 import opencola.core.network.PeerRouter.PeerStatus.Status.*
+import opencola.core.serialization.ByteArrayCodec
+import opencola.core.serialization.IntByteArrayCodec
+import opencola.core.serialization.StreamSerializer
 import opencola.core.storage.AddressBook
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.InputStream
+import java.io.OutputStream
 
 // TODO: Should respond to changes in address book
-class PeerRouter(private val addressBook: AddressBook) {
+class PeerRouter(addressBook: AddressBook) {
     private val logger = KotlinLogging.logger("PeerRouter")
     private val peerIdToStatusMap = addressBook.peers.associate { Pair(it.id, PeerStatus(it)) }
     val peers: List<Peer> get() { return peerIdToStatusMap.values.map { it.peer }}
@@ -35,11 +42,28 @@ class PeerRouter(private val addressBook: AddressBook) {
     }
 
     enum class Event {
-        NewTransactions
+        Online,
+        NewTransaction
     }
 
     @Serializable
-    data class Notification(val peerId: Id, val event: Event)
+    data class Notification(val peerId: Id, val event: Event)  {
+        fun encode() : ByteArray {
+            return Factory.encode(this)
+        }
+
+        companion object Factory : StreamSerializer<Notification> {
+            override fun encode(stream: OutputStream, value: Notification) {
+                Id.encode(stream, value.peerId)
+                writeInt(stream, value.event.ordinal)
+            }
+
+            override fun decode(stream: InputStream): Notification {
+                // TODO: Could throw exception
+                return Notification(Id.decode(stream), Event.values()[readInt(stream)])
+            }
+        }
+    }
 
     private val httpClient = HttpClient(CIO) {
         install(JsonFeature){
