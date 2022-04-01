@@ -6,6 +6,8 @@ import org.apache.james.mime4j.message.DefaultMessageBuilder
 import org.apache.james.mime4j.stream.MimeConfig
 import java.io.InputStream
 import java.net.URI
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 fun parseMime(inputStream: InputStream): Message? {
     // TODO: Think about a .thread extension that allows for a chain of operations on an original value
@@ -94,14 +96,19 @@ fun splitMht(message: Message): List<Part> {
     return parts
 }
 
+fun scoreImage(rank: Int, size: Int): Double {
+    return size.toDouble()
+}
+
 fun getImageUri(message: Message): URI? {
     return getBodyParts(message)
         .asSequence()
-        .filter { it.header.contentLocation() != null }
+        .filter { it.header.contentLocation()?.location?.tryParseUri()?.isAbsolute != null }
         .filter { it.header.contentType()?.mediaType?.lowercase() == "image" }
         .filter { it.body is BinaryBody }
-        .sortedByDescending { (it.body as BinaryBody).inputStream.available() } // Pick the biggest image - not always best?
+        .mapIndexed { i, v -> Pair(scoreImage(i, (v.body as BinaryBody).inputStream.available()), v) }
+        .sortedByDescending { (score, v) -> score } // Pick the biggest image - not always best?
+        .map { (_, v) -> v }
         .mapNotNull { it.header.contentLocation()!!.location.tryParseUri() }
-        .filter { it.isAbsolute }
         .firstOrNull()
 }

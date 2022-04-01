@@ -7,7 +7,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         private val logger = KotlinLogging.logger("Entity")
 
         // TODO: Iterable<Fact> instead of List<Fact> for any parameters
-        fun getInstance(facts: List<Fact>): Entity? {
+        fun fromFacts(facts: List<Fact>): Entity? {
             if (facts.isEmpty()) return null
 
             // TODO: Validate that all subjects and entities are equal

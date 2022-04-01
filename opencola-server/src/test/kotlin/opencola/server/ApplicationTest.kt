@@ -46,7 +46,7 @@ class ApplicationTest {
                 assertEquals(HttpStatusCode.OK, response.status())
                 assertNotNull(response.content)
                 val facts = Json.decodeFromString<List<Fact>>(response.content!!)
-                val returnedEntity = Entity.getInstance(facts) as? ResourceEntity
+                val returnedEntity = Entity.fromFacts(facts) as? ResourceEntity
                 assertNotNull(returnedEntity)
                 // TODO: Can't use .equals, since returned entity has committed transaction ids.
                 // Make commit return the updated entity or implement a contentEquals that ignores transaction id

@@ -177,9 +177,7 @@ data class FeedResult(val pagingToken: String?, val results: List<EntityResult>)
 }
 
 fun stringAttributeFromFacts(facts: List<Fact>, attribute: Attribute): String? {
-    return facts
-        .firstOrNull { it.attribute == attribute }
-        .nullOrElse { attribute.codec.decode(it.value.bytes).toString() }
+    return getFact(facts, attribute).nullOrElse { attribute.codec.decode(it.value.bytes).toString() }
 }
 
 fun getSummary(facts: List<Fact>): Summary {
@@ -208,7 +206,9 @@ fun getActorName(id: Id, rootAuthority: Authority, peerRouter: PeerRouter): Stri
 }
 
 fun getFact(facts: Iterable<Fact>, attribute: Attribute): Fact? {
-    return facts.firstOrNull { it.attribute == attribute }
+    return facts
+        .filter { it.operation != Operation.Retract }
+        .lastOrNull { it.attribute == attribute }
 }
 
 fun getAttributeValueFromFact(facts: Iterable<Fact>, attribute: Attribute): Any? {
@@ -252,7 +252,7 @@ fun isEntityIsVisible(entity: Entity?) : Boolean{
 fun getEntityFacts(entityStore: EntityStore, entityIds: Iterable<Id>): Map<Id, List<Fact>> {
     return entityStore.getFacts(emptyList(), entityIds)
         .groupBy { it.entityId }
-        .filter { isEntityIsVisible( Entity.getInstance(it.value)) }
+        .filter { isEntityIsVisible( Entity.fromFacts(it.value)) }
         .toMap()
 }
 

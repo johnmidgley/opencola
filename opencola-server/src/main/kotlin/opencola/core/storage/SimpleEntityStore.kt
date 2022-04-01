@@ -52,7 +52,7 @@ class SimpleEntityStore(
 
     override fun getEntity(authorityId: Id, entityId: Id): Entity? {
         // TODO: Entity.fromFacts
-        return Entity.getInstance(facts.filter { it.authorityId == authorityId && it.entityId == entityId }.toList())
+        return Entity.fromFacts(facts.filter { it.authorityId == authorityId && it.entityId == entityId }.toList())
     }
 
     override fun getSignedTransactions(

@@ -171,7 +171,7 @@ class ExposedEntityStore(
                 (facts.authorityId eq Id.encode(authorityId) and (facts.entityId eq Id.encode(entityId)))
             }.map { factFromResultRow(it) }
 
-            if (facts.isNotEmpty()) Entity.getInstance(facts) else null
+            if (facts.isNotEmpty()) Entity.fromFacts(facts) else null
         }
     }
 
