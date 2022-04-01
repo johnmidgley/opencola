@@ -9,11 +9,10 @@ import java.net.URI
 class HtmlParser(html: String) {
     private val doc = Jsoup.parse(html)
 
-    private fun selectMetaContent(names: List<String>): List<String> {
-        return doc.select("meta[name]")
-            .filter{ names.contains(it.attributes()["name"]) }
-            .sortedBy { names.indexOf(it.attributes()["name"]) }
-            .map { it.attributes()["content"] }
+    private fun selectMetaContent(selectors: List<String>): List<String> {
+        return selectors
+            .flatMap { s -> doc.select(s).map { it.attributes()["content"] } }
+            .filter { it.isNotEmpty() }
     }
 
     private fun firstNonEmptyParagraphText(cssQuery: String): String? {
@@ -29,13 +28,13 @@ class HtmlParser(html: String) {
 
     // TODO - make meta content lists configurable
     fun parseDescription(): String? {
-        return selectMetaContent(listOf("description", "og:description", "twitter:description")).firstOrNull()
+        return selectMetaContent(listOf("meta[name=description]", "meta[property=og:description]", "meta[name=twitter:description]")).firstOrNull()
             ?: firstNonEmptyParagraphText(listOf("#storytext", "#content", "main", "body"))
 
     }
 
     fun parseImageUri(): URI? {
-        return selectMetaContent(listOf("image", "og:image", "twitter:image", "twitter:image:src"))
+        return selectMetaContent(listOf("meta[name=image]", "meta[property=og:image]", "meta[name=twitter:image]", "meta[name=twitter:image:src]"))
             .mapNotNull { it.tryParseUri() }.firstOrNull { it.isAbsolute }
     }
 }

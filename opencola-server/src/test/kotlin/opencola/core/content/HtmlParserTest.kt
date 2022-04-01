@@ -23,4 +23,59 @@ class HtmlParserTest {
         assertEquals(URI("https://i.kinja-img.com/gawker-media/image/upload/c_fill,f_auto,fl_progressive,g_center,h_675,pg_1,q_80,w_1200/4319e530fb6ea0a32066eaac679e316e.jpg"),
             HtmlParser(mhtmlPage.htmlText!!).parseImageUri())
     }
+
+    @Test
+    fun testParseMetaDescription(){
+        val testDescription = "Test Description"
+        val parser = HtmlParser("<head><meta name=\"description\" content=\"$testDescription\"></body>")
+        assertEquals(testDescription, parser.parseDescription())
+    }
+
+    @Test
+    fun testParseOgDescription(){
+        val testDescription = "Test Description"
+        val parser = HtmlParser("<head><meta property=\"og:description\" content=\"$testDescription\"></body>")
+        assertEquals(testDescription, parser.parseDescription())
+    }
+
+    @Test
+    fun testParseTwitterDescription(){
+        val testDescription = "Test Description"
+        val parser = HtmlParser("<head><meta name=\"twitter:description\" content=\"$testDescription\"></body>")
+        assertEquals(testDescription, parser.parseDescription())
+    }
+
+    @Test
+    fun testParseFirstBodyParagraph(){
+        val testDescription = "Test Description"
+        val parser = HtmlParser("<body><p>$testDescription</p></body>")
+        assertEquals(testDescription, parser.parseDescription())
+    }
+
+    @Test
+    fun testParseMetaDescriptionNoContent(){
+        val parser = HtmlParser("<head><meta name=\"description\"></body>")
+        assertEquals(null, parser.parseDescription())
+    }
+
+    @Test
+    fun testParseMetaImage(){
+        val testImageUri = URI("http://opencola.io/img.png")
+        val parser = HtmlParser("<head><meta name=\"image\" content=\"$testImageUri\"></body>")
+        assertEquals(testImageUri, parser.parseImageUri())
+    }
+
+    @Test
+    fun testParseOgImage(){
+        val testImageUri = URI("http://opencola.io/img.png")
+        val parser = HtmlParser("<head><meta property=\"og:image\" content=\"$testImageUri\"></body>")
+        assertEquals(testImageUri, parser.parseImageUri())
+    }
+
+    @Test
+    fun testParseTwitterImage(){
+        val testImageUri = URI("http://opencola.io/img.png")
+        val parser = HtmlParser("<head><meta name=\"twitter:image\" content=\"$testImageUri\"></body>")
+        assertEquals(testImageUri, parser.parseImageUri())
+    }
 }

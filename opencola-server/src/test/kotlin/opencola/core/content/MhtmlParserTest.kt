@@ -49,7 +49,7 @@ class MhtmlParserTest {
         val mhtmlPage = readMhtmlPage(Path(rootPath, "Conway's Game of Life - Wikipedia.mht"))
 
 
-        assertEquals(URI("https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Trefoil_knot_conways_game_of_life.gif/220px-Trefoil_knot_conways_game_of_life.gif"),
+        assertEquals(URI("https://upload.wikimedia.org/wikipedia/commons/e/e5/Gospers_glider_gun.gif"),
             mhtmlPage.imageUri)
     }
 }
