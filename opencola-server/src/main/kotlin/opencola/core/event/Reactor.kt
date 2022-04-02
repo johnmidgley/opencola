@@ -91,7 +91,7 @@ class MainReactor(
             // TODO: This should depend on the error
             peerRouter.updateStatus(peer.id, Offline)
         }
-        logger.info { "Completed requesting transaction transaction from: ${peer.name}" }
+        logger.info { "Completed requesting transactions from: ${peer.name}" }
     }
 
     private fun requestTransactions(peerId: Id){
