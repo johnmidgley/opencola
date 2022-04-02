@@ -64,6 +64,7 @@ class ExposedEntityStore(
         }
     }
 
+    // TODO: Ids are not the same as time - switch to time ordering?
     private fun Op<Boolean>.withTableIdOrdering(
         column: Column<EntityID<Long>>,
         id: Long?,
