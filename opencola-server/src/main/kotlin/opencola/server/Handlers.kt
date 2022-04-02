@@ -6,6 +6,7 @@ import io.ktor.http.content.*
 import io.ktor.request.*
 import io.ktor.response.*
 import kotlinx.serialization.Serializable
+import mu.KotlinLogging
 import opencola.core.content.parseMhtml
 import opencola.core.event.EventBus
 import opencola.core.event.Events
@@ -22,6 +23,8 @@ import opencola.service.EntityResult.Activity
 import opencola.service.EntityResult.Summary
 import opencola.service.search.SearchService
 import java.net.URI
+
+private val logger = KotlinLogging.logger("Handler")
 
 suspend fun handleGetSearchCall(call: ApplicationCall, searchService: SearchService) {
     val query =
@@ -62,6 +65,9 @@ suspend fun handleGetTransactionsCall(call: ApplicationCall, entityStore: Entity
         Id.fromHexString(call.parameters["authorityId"] ?: throw IllegalArgumentException("No authorityId set"))
     val peerId = Id.fromHexString(call.parameters["peerId"] ?: throw IllegalArgumentException("No peerId set"))
     val transactionId = call.parameters["mostRecentTransactionId"].nullOrElse { Id.fromHexString(it) }
+
+    logger.info { "handleGetTransactionsCall authorityId: $authorityId, peerId: $peerId, transactionId: $transactionId" }
+
     val extra = (if (transactionId == null) 0 else 1)
     val numTransactions = (call.parameters["numTransactions"].nullOrElse { it.toInt() } ?: 10) + extra
     val currentTransactionId = entityStore.getLastTransactionId(authorityId)
