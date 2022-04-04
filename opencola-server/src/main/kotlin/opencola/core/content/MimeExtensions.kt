@@ -14,6 +14,6 @@ fun Header.contentType(): ContentTypeField? {
 }
 
 fun Header.unstructuredField(name: String): UnstructuredField? {
-    return getField("name") as UnstructuredField?
+    return getField(name) as UnstructuredField?
 
 }

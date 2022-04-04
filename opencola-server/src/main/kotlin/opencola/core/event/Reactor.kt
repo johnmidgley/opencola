@@ -37,7 +37,7 @@ class MainReactor(
     }
 
     private fun handleNodeStarted(event: Event){
-        logger.info { "Node started" }
+        logger.info { event.name }
         updatePeerTransactions()
     }
 

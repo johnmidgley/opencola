@@ -15,6 +15,7 @@ import opencola.core.security.Signator
 import opencola.core.security.generateKeyPair
 import opencola.core.security.publicKeyFromBytes
 import opencola.core.network.PeerRouter
+import opencola.core.search.SolrSearchIndex
 import opencola.core.storage.*
 import opencola.service.search.SearchService
 import org.kodein.di.DI
@@ -53,7 +54,11 @@ class Application(val config: Config, val injector: DI) {
             val publicKey =  if (authorityPubPath.exists()) {
                 val publicKey = publicKeyFromBytes(authorityPubPath.readText().hexStringToByteArray())
                 val privateKey = keyStore.getPrivateKey(Id.ofPublicKey(publicKey))
-                    ?: throw IllegalStateException("No private key found in keystore {${keyStore.path}} for public key {${publicKey}} found in $publicKeyFile")
+                if(privateKey != null)
+                    logger.info { "Found private key in store" }
+                else
+                    throw IllegalStateException("No private key found in keystore {${keyStore.path}} for public key {${publicKey}} found in $publicKeyFile")
+
                 publicKey
             } else {
                 logger.info { "Key file $publicKeyFile doesn't exist. Creating new KeyPair" }
@@ -82,7 +87,7 @@ class Application(val config: Config, val injector: DI) {
                 bindSingleton { Signator(instance()) }
                 bindSingleton { AddressBook(instance(), config.network) }
                 bindSingleton { PeerRouter(instance()) }
-                bindSingleton { SearchIndex(instance(), config.search) }
+                bindSingleton { SolrSearchIndex(authority.authorityId, config.search) }
                 bindSingleton { ExposedEntityStore(instance(), instance(), instance(), instance(), instance(), instance(), sqLiteDB) }
                 bindSingleton { SearchService(instance(), instance(), instance()) }
                 // TODO: Add unit tests for MhtCache

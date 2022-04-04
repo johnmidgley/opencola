@@ -107,7 +107,7 @@ fun getImageUri(message: Message): URI? {
         .filter { it.header.contentType()?.mediaType?.lowercase() == "image" }
         .filter { it.body is BinaryBody }
         .mapIndexed { i, v -> Pair(scoreImage(i, (v.body as BinaryBody).inputStream.available()), v) }
-        .sortedByDescending { (score, v) -> score } // Pick the biggest image - not always best?
+        .sortedByDescending { (score, _) -> score } // Pick the biggest image - not always best?
         .map { (_, v) -> v }
         .mapNotNull { it.header.contentLocation()!!.location.tryParseUri() }
         .firstOrNull()

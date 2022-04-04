@@ -51,13 +51,6 @@ fun privateKeyFromBytes(bytes: ByteArray) : PrivateKey {
 }
 
 fun calculateDate(hoursInFuture: Int) : Date {
-    val secs = System.currentTimeMillis() / 1000;
-    return Date((secs + (hoursInFuture * 60 * 60)) * 1000);
-}
-
-fun createAuthority(){
-    // Need to store full credential (i.e. including private key - private key is not in cert)
-    val id = Id.ofData(UUID.randomUUID().toByteArray())
-    val keyPair = generateKeyPair()
-    val cert = createCertificate(id, keyPair)
+    val secs = System.currentTimeMillis() / 1000
+    return Date((secs + (hoursInFuture * 60 * 60)) * 1000)
 }
