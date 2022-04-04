@@ -1,9 +1,12 @@
-chrome.storage.sync.get("color", ({ color }) => {
-    // changeColor.style.backgroundColor = color;
-});
-
 let baseServiceUrl = "http://0.0.0.0:5795"
 let statusImg = document.getElementById("status")
+
+
+chrome.storage.sync.get("serviceUrl", (data) => {
+  let serviceUrl = data.serviceUrl
+  baseServiceUrl = serviceUrl
+})
+
 
 function setStatus(status){
     switch(status){
@@ -30,11 +33,11 @@ async function sendAction(tab, action, value){
         chrome.pageCapture.saveAsMHTML(
             {tabId: tab.id}, function (mhtmlData) {
                 // Good resource: https://javascript.info/blob
-                let xhr = new XMLHttpRequest(), formData = new FormData();
-                formData.append("action", action);
+                let xhr = new XMLHttpRequest(), formData = new FormData()
+                formData.append("action", action)
                 formData.append("value", value)
-                formData.append("mhtml", mhtmlData);
-                xhr.open("POST", baseServiceUrl + "/action");
+                formData.append("mhtml", mhtmlData)
+                xhr.open("POST", baseServiceUrl + "/action")
                 xhr.onreadystatechange = function () {
                     // In local files, status is 0 upon success in Mozilla Firefox
                     if(xhr.readyState === XMLHttpRequest.DONE) {
@@ -60,24 +63,24 @@ async function sendAction(tab, action, value){
 
 document.getElementById("save").addEventListener("click", async () => {
     // TODO: For some reason, can't move this call inside send action.
-  let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  let [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
   await sendAction(tab, "save", true)
 });
 
 
 document.getElementById("like").addEventListener("click", async () => {
-  let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  let [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
   await sendAction(tab, "like", true)
 });
 
 
 document.getElementById("trust").addEventListener("click", async () => {
-  let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  let [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
   await sendAction(tab, "trust", 1.0)
 });
 
 document.getElementById("search").addEventListener("click", async () => {
-  window.open(baseServiceUrl, "_blank");
+  window.open(baseServiceUrl, "_blank")
 });
 
 
