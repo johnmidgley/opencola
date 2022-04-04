@@ -1,0 +1,57 @@
+## Attempting to build a standalone repeatable build image
+## Build the oc build docker image from oc git root
+## I had to set core.autocrlf=false on Windows to avoid filenames w ^M etc
+
+## Buid with 'docker build --no-cache -t oc-bld -f Dockerfile.bld .'
+
+## To get a shell: 
+# 'docker run -i -t oc-bld bash' to get a running shell in the install dir
+
+## To get the .tgz file in the 'install' dir
+# Windows: 'docker run --rm -v %cd%/install:/tmptarvol oc-bld /bin/bash -c "cp *.tgz /tmptarvol"'
+# *nix: 'docker run -v ./install:/tmptarvol oc-bld /bin/bash -c "cp *.tgz /tmptarvol"' *** I assume. Never tested!! ***
+
+FROM ubuntu
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+RUN /usr/bin/apt-get update --assume-yes
+RUN /usr/bin/apt-get install curl --assume-yes
+RUN /usr/bin/apt-get install unzip --assume-yes
+RUN /usr/bin/apt-get install zip --assume-yes
+
+#Install SDKMAN
+ENV SDKMAN_DIR /opt/sdkman
+RUN curl -s get.sdkman.io | bash
+WORKDIR $SDKMAN_DIR
+RUN chmod +x ${SDKMAN_DIR}/bin/sdkman-init.sh
+
+#Update SDKMAN config variables to allow longer download times using sed to try to get rid of sdkman offline error
+RUN sed -i 's/sdkman_curl_connect_timeout=7/sdkman_curl_connect_timeout=20/' ${SDKMAN_DIR}/etc/config
+RUN sed -i 's/sdkman_curl_max_time=10/sdkman_curl_max_time=0/' ${SDKMAN_DIR}/etc/config
+
+#source sdkman env vars for good luck
+RUN source ${SDKMAN_DIR}/bin/sdkman-init.sh
+
+#Install Java 16 and Gradle
+RUN source ${SDKMAN_DIR}/bin/sdkman-init.sh && sdk install java 16.0.2-zulu 
+RUN source ${SDKMAN_DIR}/bin/sdkman-init.sh && sdk install gradle 7.4.1
+
+ENV JAVA_HOME ${SDKMAN_DIR}/candidates/java/current
+ENV GRADLE_HOME ${SDKMAN_DIR}/candidates/gradle/current
+ENV SDKMAN_CANDIDATES_DIR ${SDKMAN_DIR}/candidates
+ENV SDKMAN_PLATFORM linuxx64
+ENV PATH /opt/sdkman/candidates/java/current/bin:/opt/sdkman/candidates/gradle/current/bin:${PATH}
+
+#Copy source to image
+ADD . /opencola-src/
+
+#Gradle build step. Paths don't seem to work properly from 'install' sh script
+WORKDIR /opencola-src/opencola-server
+RUN ./gradlew installDist
+
+#Run installer - create .tgz install file
+WORKDIR /opencola-src/install
+RUN ./install
+
+
+
+
