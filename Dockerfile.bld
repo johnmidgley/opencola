@@ -8,7 +8,7 @@
 # 'docker run -i -t oc-bld bash' to get a running shell in the install dir
 
 ## To get the .tgz file in the 'install' dir
-# Windows: 'docker run -v %cd%/install:/tmptarvol oc-bld /bin/bash -c "cp *.tgz /tmptarvol"'
+# Windows: 'docker run --rm -v %cd%/install:/tmptarvol oc-bld /bin/bash -c "cp *.tgz /tmptarvol"'
 # *nix: 'docker run -v ./install:/tmptarvol oc-bld /bin/bash -c "cp *.tgz /tmptarvol"' *** I assume. Never tested!! ***
 
 FROM ubuntu
