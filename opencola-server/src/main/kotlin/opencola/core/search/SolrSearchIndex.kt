@@ -6,7 +6,6 @@ import opencola.core.config.SearchConfig
 import opencola.core.extensions.logErrorAndThrow
 import opencola.core.extensions.nullOrElse
 import opencola.core.extensions.toHexString
-import opencola.core.model.Authority
 import opencola.core.model.CoreAttribute
 import opencola.core.model.Entity
 import opencola.core.model.Id
@@ -24,7 +23,7 @@ import java.io.File
 // TODO: Create local objects for search results (see https://solr.apache.org/guide/8_10/using-solrj.html#java-object-binding)
 
 class SolrSearchIndex(val authorityId: Id, val config: SearchConfig) : SearchIndex {
-    private val logger = KotlinLogging.logger("SearchIndex")
+    private val logger = KotlinLogging.logger("SolrSearchIndex")
 
     private val solrClient: HttpSolrClient = HttpSolrClient.Builder(config.solr.baseUrl)
         .withConnectionTimeout(config.solr.connectionTimeoutMillis)
@@ -37,7 +36,7 @@ class SolrSearchIndex(val authorityId: Id, val config: SearchConfig) : SearchInd
 
     // This needs to come after networkPath has been initialized
     init{
-        logger.info { "Initializing Index: $solrCollectionName" }
+        logger.info { "Initializing Solr Index: $solrCollectionName" }
         create()
     }
 
