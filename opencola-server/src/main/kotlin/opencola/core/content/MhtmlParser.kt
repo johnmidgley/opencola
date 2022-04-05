@@ -29,10 +29,10 @@ class MhtmlPage {
         this.message = canonicalizeMessage(message)
         uri = message.header.getField("Snapshot-Content-Location")?.body.nullOrElse { URI(it) }
             ?: throw RuntimeException("No URI specified in MHTML message")
-        title = DecoderUtil.decodeEncodedWords(message.header.getField("Subject")?.body, Charset.defaultCharset())
         htmlText = parseHtmlText()
 
         val htmlParser = htmlText.nullOrElse { HtmlParser(it) }
+        title = htmlParser?.parseTitle() ?: DecoderUtil.decodeEncodedWords(message.header.getField("Subject")?.body, Charset.defaultCharset())
         description = htmlParser.nullOrElse { it.parseDescription() }
         imageUri = htmlParser.nullOrElse { it.parseImageUri() } ?: getImageUri(message)
         text = htmlText.nullOrElse { TextExtractor().getBody(it.toByteArray()) }
