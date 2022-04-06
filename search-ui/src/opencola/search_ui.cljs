@@ -95,18 +95,41 @@
 
 
 (defn activities-list [activities]
-  [:div.activities-list (for [[idx activity] (map-indexed vector activities)]
-      ^{:key (str "activity-" idx)}
-      [:div.activity-item (:authorityName activity) " "
-       (actions-list (:actions activity)) " "
-       (format-time (:epochSecond activity))])])
+  [:div.activities-list 
+   (for [[idx activity] (map-indexed vector activities)]
+     ^{:key (str "activity-" idx)}
+     [:div.activity-item (:authorityName activity) " "
+      (actions-list (:actions activity)) " "
+      (format-time (:epochSecond activity))])])
+
+
+(defn activity [action-counts action-value]
+  (when-let [count (action-counts action-value)]
+    ^{:key action-value} [:span.activity count " " (apply action-item action-value) " "]))
+
+
+(def display-activities [[:save true] [:like true] [:trust 1.0]])
+
+(defn activities-summary [activities]
+(let [action-counts (frequencies (mapcat :actions activities))]  
+  [:div.activities-summary
+   (filter some? (map #(activity action-counts %) display-activities))]))
+
+(defn actions [item]
+  (if-let [dataId (:dataId item)]
+    [:span.item-link " "
+     [:a.action-link {:href (resolve-service-url (str "data/" dataId "/0.html") ) 
+                      :target "_blank"} "[Archive]"] " "
+     [:a.action-link {:href (resolve-service-url (str "data/" dataId) ) 
+                      :target "_blank"} [:img.action-img {:src "../img/download.png"}]]]))
 
 (defn feed-item [item]
   (let [summary (:summary item)
         activities (:activities item)]
     ^{:key (:entityId item)} 
     [:div.feed-item
-     [:div.item-name [:a.item-link {:href (:uri summary) :target "_blank"} (:name summary)]]
+     [:div.item-name [:a.item-link {:href (:uri summary) :target "_blank"} (:name summary)] 
+      (actions item)]
      [:div.item-body 
       [:div.item-img-box [:img.item-img {:src (:imageUri summary)}]]
       [:p.item-desc (:description summary)]]
