@@ -221,6 +221,15 @@ fun getAttributeValueFromFact(facts: Iterable<Fact>, attribute: Attribute): Any?
     return getFact(facts, attribute).nullOrElse { attribute.codec.decode(it.value.bytes) }
 }
 
+fun getDataId(authorityId: Id, facts: List<Fact>) : Id?{
+    val dataIdAttribute = CoreAttribute.DataId.spec
+
+    return facts
+        .filter { it.authorityId == authorityId && it.operation != Operation.Retract }
+        .lastOrNull { it.attribute == dataIdAttribute }
+        .nullOrElse { dataIdAttribute.codec.decode(it.value.bytes) as Id }
+}
+
 fun getActivityFromFacts(authorityId: Id, name: String, epochSecond: Long, facts: Iterable<Fact>): Activity? {
     return getActivity(
         authorityId,
@@ -271,17 +280,33 @@ fun getEntityIds(entityStore: EntityStore, searchIndex: SearchIndex, query: Stri
     }
 }
 
-suspend fun handleGetFeed(call: ApplicationCall, authority: Authority, entityStore: EntityStore, searchIndex: SearchIndex, peerRouter: PeerRouter) {
+
+suspend fun handleGetFeed(
+    call: ApplicationCall,
+    authority: Authority,
+    entityStore: EntityStore,
+    searchIndex: SearchIndex,
+    peerRouter: PeerRouter
+) {
     // TODO: Look for startTransactionId in call (For paging)
     val entityIds = getEntityIds(entityStore, searchIndex, call.parameters["q"])
     val entityFactsById = getEntityFacts(entityStore, entityIds)
     val idToName: (Id) -> String = { id -> getActorName(id, authority, peerRouter) }
-    val entityActivitiesById = entityFactsById.entries.associate { Pair(it.key, getEntityActivitiesFromFacts(it.value, idToName)) }
+    val entityActivitiesById =
+        entityFactsById.entries.associate { Pair(it.key, getEntityActivitiesFromFacts(it.value, idToName)) }
 
     call.respond(FeedResult(
         "",
         entityIds
             .filter { entityFactsById.containsKey(it) }
-            .map { EntityResult(it, getSummary(entityFactsById[it]!!), entityActivitiesById[it]!!) }
+            .map {
+                val entityFacts = entityFactsById[it]!!
+                EntityResult(
+                    it,
+                    getDataId(authority.authorityId, entityFacts),
+                    getSummary(entityFacts),
+                    entityActivitiesById[it]!!
+                )
+            }
     ))
 }
