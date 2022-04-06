@@ -6,6 +6,7 @@
    [ajax.core :refer [GET POST]] ; https://github.com/JulianBirch/cljs-ajax
    [cljs-time.coerce :as c]
    [cljs-time.format :as f]
+   [lambdaisland.uri :refer [uri]]
    ))
 
 (defonce app-state (atom {}))
@@ -118,17 +119,19 @@
 (defn actions [item]
   (if-let [dataId (:dataId item)]
     [:span.item-link " "
-     [:a.action-link {:href (resolve-service-url (str "data/" dataId "/0.html") ) 
-                      :target "_blank"} "[Archive]"] " "
-     [:a.action-link {:href (resolve-service-url (str "data/" dataId) ) 
-                      :target "_blank"} [:img.action-img {:src "../img/download.png"}]]]))
+     [:a.action-link {:href (str "data/" dataId "/0.html") :target "_blank"} "[Archive]"] " "
+     [:a.action-link {:href (str "data/" dataId) :target "_blank"} 
+      [:img.action-img {:src "../img/download.png" :alt "Download" :title "Download"}]]]))
 
 (defn feed-item [item]
   (let [summary (:summary item)
+        item-uri (uri (:uri summary))
         activities (:activities item)]
     ^{:key (:entityId item)} 
     [:div.feed-item
-     [:div.item-name [:a.item-link {:href (:uri summary) :target "_blank"} (:name summary)] 
+     [:div.item-name 
+      [:div.item-host (:host item-uri)]
+      [:a.item-link {:href item-uri :target "_blank"} (:name summary)] 
       (actions item)]
      [:div.item-body 
       [:div.item-img-box [:img.item-img {:src (:imageUri summary)}]]

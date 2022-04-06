@@ -36,8 +36,10 @@ body {
 }
 
 
-.item-img {
-    height: 100px;
+.item-host {
+    padding-bottom: 5px;
+    font-size: 14px;
+    color: grey;
 }
 
 .item-link {
@@ -45,8 +47,16 @@ body {
     font-size: 120%;
 }
 
+.item-img {
+    height: 100px;
+}
+
 .action-img {
     width: 15px;
     height: 15px;
 }
 
+.activity-item {
+    font-size: 14px;
+    color: grey;
+}

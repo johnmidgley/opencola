@@ -11,7 +11,8 @@
                  [org.clojure/clojurescript "1.10.773"]
                  [reagent "0.10.0" ]
                  [cljs-ajax "0.8.4"]
-                 [com.andrewmcveigh/cljs-time "0.5.2"]]
+                 [com.andrewmcveigh/cljs-time "0.5.2"]
+                 [lambdaisland/uri "1.13.95"]]
 
   :source-paths ["src"]
 
