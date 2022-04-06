@@ -2,9 +2,10 @@ package opencola.core.search
 
 import mu.KotlinLogging
 import opencola.core.extensions.nullOrElse
+import opencola.core.extensions.recursiveDelete
 import opencola.core.extensions.toHexString
 import opencola.core.model.CoreAttribute
-import opencola.core.model.CoreAttribute.*
+import opencola.core.model.CoreAttribute.values
 import opencola.core.model.Entity
 import opencola.core.model.Id
 import opencola.core.security.sha256
@@ -21,40 +22,50 @@ import org.apache.lucene.index.IndexWriterConfig
 import org.apache.lucene.queryparser.classic.QueryParser
 import org.apache.lucene.search.IndexSearcher
 import org.apache.lucene.search.Query
-import org.apache.lucene.store.Directory
 import org.apache.lucene.store.FSDirectory
 import java.nio.file.Path
-import kotlin.io.path.createDirectory
 
-
-class LuceneSearchIndex(val authorityId: Id, val storagePath: Path) : SearchIndex {
+class LuceneSearchIndex(val authorityId: Id, private val storagePath: Path) : SearchIndex {
     private val logger = KotlinLogging.logger("LuceneSearchIndex")
     private val analyzer = StandardAnalyzer()
-    private val indexWriterConfig = IndexWriterConfig(analyzer)
-    private val directory: Directory = FSDirectory.open(storagePath)
+
+    // TODO: How to close this?
+    private val directory = FSDirectory.open(storagePath)
 
     init{
         logger.info { "Initializing Lucene Index" }
-        indexWriterConfig.openMode = IndexWriterConfig.OpenMode.CREATE_OR_APPEND
+        create()
     }
 
     override fun create() {
-        // Will get created on index
-        storagePath.createDirectory()
+        // Create a dummy doc to make sure index is ready to be searched
+        val doc = Document()
+        doc.add(Field("id", authorityId.toString(), StringField.TYPE_NOT_STORED))
+        indexDocuments(listOf(doc))
     }
 
     override fun delete() {
-        TODO("Not yet implemented")
+        storagePath.recursiveDelete()
     }
 
+    private fun indexDocuments(documents: Iterable<Document>){
+        val indexWriterConfig = IndexWriterConfig(analyzer)
+        indexWriterConfig.openMode = IndexWriterConfig.OpenMode.CREATE_OR_APPEND
+
+        IndexWriter(directory, IndexWriterConfig(analyzer)).use { writer ->
+            documents.forEach {
+                writer.addDocument(it)
+            }
+        }
+    }
     // TODO: Make var-arg entity, so multiple docs can be indexed at once
     override fun index(entity: Entity) {
         logger.info { "Indexing authorityId: ${entity.authorityId} entityId: ${entity.entityId}" }
         val id = sha256("${entity.authorityId}:${entity.entityId}")
-        val doc = Document()
-        doc.add(Field("id", id.toHexString(), StringField.TYPE_STORED))
-        doc.add(Field("authorityId", entity.authorityId.toString(), StringField.TYPE_STORED))
-        doc.add(Field("entityId", entity.entityId.toString(), StringField.TYPE_STORED))
+        val document = Document()
+        document.add(Field("id", id.toHexString(), StringField.TYPE_STORED))
+        document.add(Field("authorityId", entity.authorityId.toString(), StringField.TYPE_STORED))
+        document.add(Field("entityId", entity.entityId.toString(), StringField.TYPE_STORED))
 
         // TODO: Probably need to manage multivalued fields (like tags) differently
         values()
@@ -65,12 +76,10 @@ class LuceneSearchIndex(val authorityId: Id, val storagePath: Path) : SearchInde
             .forEach {
                 // TODO: This doesn't work well for non string types - create typed dispatcher
                 val (name, value) = it
-                doc.add(Field(name, value.toString(), TextField.TYPE_STORED))
+                document.add(Field(name, value.toString(), TextField.TYPE_STORED))
             }
 
-        IndexWriter(directory, indexWriterConfig).use { writer ->
-            writer.addDocument(doc)
-        }
+        indexDocuments(listOf(document))
     }
 
     override fun search(query: String): List<SearchResult> {

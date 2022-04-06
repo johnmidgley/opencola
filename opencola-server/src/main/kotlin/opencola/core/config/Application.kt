@@ -9,13 +9,12 @@ import opencola.core.extensions.hexStringToByteArray
 import opencola.core.extensions.toHexString
 import opencola.core.model.Authority
 import opencola.core.model.Id
-import opencola.core.search.SearchIndex
 import opencola.core.security.KeyStore
 import opencola.core.security.Signator
 import opencola.core.security.generateKeyPair
 import opencola.core.security.publicKeyFromBytes
 import opencola.core.network.PeerRouter
-import opencola.core.search.SolrSearchIndex
+import opencola.core.search.LuceneSearchIndex
 import opencola.core.storage.*
 import opencola.service.search.SearchService
 import org.kodein.di.DI
@@ -87,7 +86,7 @@ class Application(val config: Config, val injector: DI) {
                 bindSingleton { Signator(instance()) }
                 bindSingleton { AddressBook(instance(), config.network) }
                 bindSingleton { PeerRouter(instance()) }
-                bindSingleton { SolrSearchIndex(authority.authorityId, config.search) }
+                bindSingleton { LuceneSearchIndex(authority.authorityId, storagePath.resolve("lucene")) }
                 bindSingleton { ExposedEntityStore(instance(), instance(), instance(), instance(), instance(), instance(), sqLiteDB) }
                 bindSingleton { SearchService(instance(), instance(), instance()) }
                 // TODO: Add unit tests for MhtCache

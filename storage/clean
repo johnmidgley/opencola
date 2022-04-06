@@ -20,6 +20,7 @@ rm -rf filestore
 rm -rf mht-cache
 rm -rf var-solr/logs
 rm -rf var-solr/data/*.opencola
+rm -rf lucene
 rm -rf test
 
 echo "Re-starting docker"

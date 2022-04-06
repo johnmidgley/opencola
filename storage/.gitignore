@@ -11,3 +11,4 @@
 *.pks
 *.db
 /mht-cache
+/lucene
