@@ -67,6 +67,8 @@ dependencies {
     implementation("org.kodein.di:kodein-di:7.11.0")
     implementation("org.kodein.di:kodein-di-framework-ktor-server-jvm:7.11.0")
     implementation("org.jsoup:jsoup:1.14.3")
+    implementation("org.apache.lucene:lucene-core:9.1.0")
+    implementation("org.apache.lucene:lucene-queryparser:9.1.0")
 
 
     testImplementation("io.ktor:ktor-server-tests:$ktor_version")
