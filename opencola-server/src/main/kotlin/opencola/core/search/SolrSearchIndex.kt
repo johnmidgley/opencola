@@ -107,16 +107,9 @@ class SolrSearchIndex(val authorityId: Id, val config: SearchConfig) : SearchInd
     override fun search(query: String): List<SearchResult> {
         logger.info { "Searching: $query" }
 
-        // TODO:
-        val q = CoreAttribute.values()
-            .map { it.spec }
-            // TODO: Fix this hack that identifies text search fields
-            .filter { it.isIndexable && it.codec == StringByteArrayCodec as ByteArrayCodec<Any> }
-            .joinToString(" ") { "${it.name}:\"$query\"" }
-
         val queryResponse = solrClient.query(
             solrCollectionName,
-            MapSolrParams(mapOf("q" to q, "fl" to "id, authorityId, entityId, name, description"))
+            MapSolrParams(mapOf("q" to getLuceneQueryString(query), "fl" to "id, authorityId, entityId, name, description"))
         )
 
         return queryResponse.results.map{

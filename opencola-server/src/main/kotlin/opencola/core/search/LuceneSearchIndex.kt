@@ -4,13 +4,10 @@ import mu.KotlinLogging
 import opencola.core.extensions.nullOrElse
 import opencola.core.extensions.recursiveDelete
 import opencola.core.extensions.toHexString
-import opencola.core.model.CoreAttribute
 import opencola.core.model.CoreAttribute.values
 import opencola.core.model.Entity
 import opencola.core.model.Id
 import opencola.core.security.sha256
-import opencola.core.serialization.ByteArrayCodec
-import opencola.core.serialization.StringByteArrayCodec
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.document.Document
 import org.apache.lucene.document.Field
@@ -83,26 +80,19 @@ class LuceneSearchIndex(val authorityId: Id, private val storagePath: Path) : Se
     }
 
     override fun search(query: String): List<SearchResult> {
-        // TODO:
-        val expandedQuery = CoreAttribute.values()
-            .map { it.spec }
-            // TODO: Fix this hack that identifies text search fields
-            .filter { it.isIndexable && it.codec == StringByteArrayCodec as ByteArrayCodec<Any> }
-            .joinToString(" ") { "${it.name}:\"$query\"" }
-
         // TODO: This should probably be opened just once
-        DirectoryReader.open(directory).use {
-            val indexSearcher = IndexSearcher(it)
+        DirectoryReader.open(directory).use { directoryReader ->
+            val indexSearcher = IndexSearcher(directoryReader)
             val parser = QueryParser("text", analyzer)
-            val luceneQuery: Query = parser.parse(expandedQuery)
+            val luceneQuery: Query = parser.parse(getLuceneQueryString(query))
             val scoreDocs = indexSearcher.search(luceneQuery, 100).scoreDocs
 
             return scoreDocs.map {
-                val doc = indexSearcher.doc(it.doc)
-                val authorityId = Id.fromHexString(doc.get("authorityId"))
-                val entityId = Id.fromHexString(doc.get("entityId"))
-                val name = doc.get("name")
-                val description = doc.get("description")
+                val document = indexSearcher.doc(it.doc)
+                val authorityId = Id.fromHexString(document.get("authorityId"))
+                val entityId = Id.fromHexString(document.get("entityId"))
+                val name = document.get("name")
+                val description = document.get("description")
                 SearchResult(authorityId, entityId, name, description)
             }
         }
