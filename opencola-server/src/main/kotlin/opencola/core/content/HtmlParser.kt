@@ -15,26 +15,48 @@ class HtmlParser(html: String) {
             .filter { it.isNotEmpty() }
     }
 
-    private fun firstNonEmptyParagraphText(cssQuery: String): String? {
+    private fun firstNonEmptyElementText(cssQuery: String, elementQuery: String): String? {
         return doc.select(cssQuery)
-            .firstOrNull()?.select("p")
+            .firstOrNull()?.select(elementQuery)
             ?.firstOrNull { it.text().isNotEmpty() }
             ?.text()
     }
 
-    private fun firstNonEmptyParagraphText(cssQueries: List<String>) : String? {
-        return cssQueries.mapNotNull { firstNonEmptyParagraphText(it) }.firstOrNull()
+    private fun firstNonEmptyElementText(cssQueries: List<String>, elementQuery: String): String? {
+        return cssQueries.firstNotNullOfOrNull { firstNonEmptyElementText(it, elementQuery) }
+    }
+
+    fun parseTitle(): String? {
+        return doc.select("title").firstOrNull()?.text() ?: selectMetaContent(
+            listOf(
+                "meta[property=og:title]",
+                "meta[name=twitter:title]",
+            )
+        ).firstOrNull()
     }
 
     // TODO - make meta content lists configurable
     fun parseDescription(): String? {
-        return selectMetaContent(listOf("meta[name=description]", "meta[property=og:description]", "meta[name=twitter:description]")).firstOrNull()
-            ?: firstNonEmptyParagraphText(listOf("#storytext", "#content", "main", "body"))
+        return selectMetaContent(
+            listOf(
+                "meta[name=description]",
+                "meta[property=og:description]",
+                "meta[name=twitter:description]"
+            )
+        ).firstOrNull()
+            ?: firstNonEmptyElementText(listOf("#storytext", "#content", "main", "body"), "p")
 
     }
 
     fun parseImageUri(): URI? {
-        return selectMetaContent(listOf("meta[name=image]", "meta[property=og:image]", "meta[name=twitter:image]", "meta[name=twitter:image:src]"))
+        return selectMetaContent(
+            listOf(
+                "meta[name=image]",
+                "meta[property=og:image]",
+                "meta[name=twitter:image]",
+                "meta[name=twitter:image:src]"
+            )
+        )
             .mapNotNull { it.tryParseUri() }.firstOrNull { it.isAbsolute }
     }
 }

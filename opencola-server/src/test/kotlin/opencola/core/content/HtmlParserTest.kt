@@ -7,6 +7,27 @@ import kotlin.test.assertEquals
 
 class HtmlParserTest {
     @Test
+    fun testParseHeadTitle(){
+        val testTitle = "Test Title"
+        val parser = HtmlParser("<head><title>$testTitle</title></body")
+        assertEquals(testTitle, parser.parseTitle())
+    }
+
+    @Test
+    fun testParseOGTitle(){
+        val testTitle = "Test Title"
+        val parser = HtmlParser("<head><meta property=\"og:title\" content=\"$testTitle\"></head>")
+        assertEquals(testTitle, parser.parseTitle())
+    }
+
+    @Test
+    fun testParseTwitterTitle(){
+        val testTitle = "Test Title"
+        val parser = HtmlParser("<head><meta name=\"twitter:title\" content=\"$testTitle\"></head>")
+        assertEquals(testTitle, parser.parseTitle())
+    }
+
+    @Test
     fun testParseDescription(){
         val rootPath = Path(System.getProperty("user.dir"),"..", "sample-docs").toString()
         val mhtmlPage = readMhtmlPage(Path(rootPath, "body-language.mht"))
