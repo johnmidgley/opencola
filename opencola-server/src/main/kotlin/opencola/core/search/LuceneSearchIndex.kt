@@ -51,6 +51,8 @@ class LuceneSearchIndex(val authorityId: Id, private val storagePath: Path) : Se
 
         IndexWriter(directory, IndexWriterConfig(analyzer)).use { writer ->
             documents.forEach {
+                // Delete any existing document
+                writer.deleteDocuments(QueryParser("id", analyzer).parse(it.get("id")))
                 writer.addDocument(it)
             }
         }

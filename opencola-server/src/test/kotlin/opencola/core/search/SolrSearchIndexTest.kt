@@ -1,14 +1,13 @@
 package opencola.core.search
 
 import opencola.core.TestApplication
-import opencola.core.model.Authority
+import opencola.core.model.Id
 import org.junit.Test
-import org.kodein.di.instance
 
 class SolrSearchIndexTest {
-    private val authority by TestApplication.instance.injector.instance<Authority>()
+    private val authorityId = Id.ofData("authority".toByteArray())
     private val searchConfig = TestApplication.config.search
-    private val solrSearchIndex = SolrSearchIndex(authority.authorityId, searchConfig)
+    private val solrSearchIndex = SolrSearchIndex(authorityId, searchConfig)
 
     init {
         // Make sure we have a fresh index
@@ -23,12 +22,16 @@ class SolrSearchIndexTest {
 
     @Test
     fun testIndexSolr(){
-        testIndex(authority.authorityId, solrSearchIndex)
-
+        testIndex(authorityId, solrSearchIndex)
     }
 
     @Test
     fun testSolrIndexResourceWithMhtml(){
-        testIndexResourceWithMhtml(authority.authorityId, solrSearchIndex)
+        testIndexResourceWithMhtml(authorityId, solrSearchIndex)
+    }
+
+    @Test
+    fun testSolrRepeatIndexing(){
+        testRepeatIndexing(authorityId, solrSearchIndex)
     }
 }

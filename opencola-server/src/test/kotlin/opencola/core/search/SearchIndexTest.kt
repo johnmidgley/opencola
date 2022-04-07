@@ -25,7 +25,7 @@ fun testIndex(authorityId: Id, searchIndex: SearchIndex) {
     assertEquals(resourceEntity.description, results[0].description)
 }
 
-fun testIndexResourceWithMhtml(authorityId: Id, searchIndex: SearchIndex) {
+fun indexGameOfLife(authorityId: Id, searchIndex: SearchIndex) : ResourceEntity {
     val rootPath = Path(System.getProperty("user.dir"), "..", "sample-docs").toString()
 
     val path = Path(rootPath, "Conway's Game of Life - Wikipedia.mht")
@@ -37,6 +37,20 @@ fun testIndexResourceWithMhtml(authorityId: Id, searchIndex: SearchIndex) {
     val resourceEntity = ResourceEntity(authorityId, mhtmlPage.uri, mhtmlPage.title, text = text)
 
     searchIndex.index(resourceEntity)
+    return resourceEntity
+}
+
+fun testIndexResourceWithMhtml(authorityId: Id, searchIndex: SearchIndex) {
+    val resourceEntity = indexGameOfLife(authorityId, searchIndex)
+    val results = searchIndex.search("game of life")
+    assertEquals(1, results.size)
+    assertEquals(resourceEntity.description, results[0].description)
+}
+
+fun testRepeatIndexing(authorityId: Id, searchIndex: SearchIndex){
+    indexGameOfLife(authorityId, searchIndex)
+    val resourceEntity = indexGameOfLife(authorityId, searchIndex)
+
     val results = searchIndex.search("game of life")
     assertEquals(1, results.size)
     assertEquals(resourceEntity.description, results[0].description)

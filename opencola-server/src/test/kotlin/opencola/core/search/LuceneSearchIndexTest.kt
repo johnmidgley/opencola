@@ -6,7 +6,7 @@ import org.junit.Test
 
 class LuceneSearchIndexTest {
     private val authorityId = Id.ofData("authority".toByteArray())
-    private val luceneSearchIndex = LuceneSearchIndex(authorityId, TestApplication.instance.config.storage.path.resolve("lucene"))
+    private val luceneSearchIndex = LuceneSearchIndex(authorityId, TestApplication.config.storage.path.resolve("lucene"))
 
     @Test
     fun testIndexLucene(){
@@ -16,5 +16,10 @@ class LuceneSearchIndexTest {
     @Test
     fun testLuceneIndexResourceWithMhtml(){
         testIndexResourceWithMhtml(authorityId, luceneSearchIndex)
+    }
+
+    @Test
+    fun testLuceneRepeatIndexing(){
+        testRepeatIndexing(authorityId, luceneSearchIndex)
     }
 }
