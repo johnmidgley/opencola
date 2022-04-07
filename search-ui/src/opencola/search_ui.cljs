@@ -106,7 +106,8 @@
 
 (defn activity [action-counts action-value]
   (when-let [count (action-counts action-value)]
-    ^{:key action-value} [:span.activity count " " (apply action-item action-value) " "]))
+    ^{:key action-value} [:span.activity-item count " " (apply action-item action-value) " " 
+                          (name (first action-value)) " "]))
 
 
 (def display-activities [[:save true] [:like true] [:trust 1.0]])
@@ -130,9 +131,9 @@
     ^{:key (:entityId item)} 
     [:div.feed-item
      [:div.item-name 
-      [:div.item-host (:host item-uri)]
       [:a.item-link {:href (str item-uri) :target "_blank"} (:name summary)] 
-      (actions item)]
+      (actions item)
+      [:div.item-host (:host item-uri)]]
      [:div.item-body 
       [:div.item-img-box [:img.item-img {:src (:imageUri summary)}]]
       [:p.item-desc (:description summary)]]
