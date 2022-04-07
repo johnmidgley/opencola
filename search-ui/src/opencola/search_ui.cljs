@@ -131,7 +131,7 @@
     [:div.feed-item
      [:div.item-name 
       [:div.item-host (:host item-uri)]
-      [:a.item-link {:href item-uri :target "_blank"} (:name summary)] 
+      [:a.item-link {:href (str item-uri) :target "_blank"} (:name summary)] 
       (actions item)]
      [:div.item-body 
       [:div.item-img-box [:img.item-img {:src (:imageUri summary)}]]

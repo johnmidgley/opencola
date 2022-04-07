@@ -80,12 +80,16 @@ class LuceneSearchIndex(val authorityId: Id, private val storagePath: Path) : Se
     }
 
     override fun search(query: String): List<SearchResult> {
+        logger.info { "Searching: $query" }
+
         // TODO: This should probably be opened just once
         DirectoryReader.open(directory).use { directoryReader ->
             val indexSearcher = IndexSearcher(directoryReader)
             val parser = QueryParser("text", analyzer)
             val luceneQuery: Query = parser.parse(getLuceneQueryString(query))
             val scoreDocs = indexSearcher.search(luceneQuery, 100).scoreDocs
+
+            logger.info{ "Found ${scoreDocs.size} results"}
 
             return scoreDocs.map {
                 val document = indexSearcher.doc(it.doc)
