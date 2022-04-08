@@ -24,16 +24,11 @@ abstract class AbstractEntityStore(
     protected val signator: Signator
 ) : EntityStore {
     // TODO: Assumes transaction has been validated. Cleanup?
-    protected abstract fun persistTransaction(signedTransaction: SignedTransaction): SignedTransaction
+    protected abstract fun persistTransaction(signedTransaction: SignedTransaction): Long
 
     private fun getFirstTransactionId(authorityId: Id): Id {
+        // TODO: Random, or rooted with authority?
         return Id.ofData("$authorityId.firstTransaction".toByteArray())
-    }
-
-    private fun getNextTransactionId(authorityId: Id): Id {
-        return getSignedTransactions(listOf(authorityId), null, TransactionOrder.Descending, 1)
-            .firstOrNull()
-            .ifNotNullOrElse({ Id.ofData(SignedTransaction.encode(it)) }, { getFirstTransactionId(authorityId) })
     }
 
     // TODO: Make logger class?
@@ -54,11 +49,6 @@ abstract class AbstractEntityStore(
         if (signedTransaction.transaction.authorityId != authority.entityId) {
             logger.warn { "Ignoring transaction $transactionId with unverifiable authority: $authority" }
             return false
-        }
-
-        if (signedTransaction.transaction.getFacts().any { it.transactionId == null }) {
-            // TODO: Throw or ignore?
-            logAndThrow(IllegalStateException("Transaction has uncommitted id"))
         }
 
         if (!signedTransaction.isValidTransaction(authority.publicKey as PublicKey)) {
@@ -96,8 +86,6 @@ abstract class AbstractEntityStore(
         return entity
     }
 
-    // TODO: This is messed up. Untangle the transaction id usage.
-    @Synchronized
     override fun updateEntities(vararg entities: Entity): SignedTransaction? {
         entities.forEach { validateEntity(it) }
 
@@ -109,22 +97,33 @@ abstract class AbstractEntityStore(
             logAndThrow(RuntimeException("Attempt to commit changes not controlled by authority"))
         }
 
-        val uncommittedFacts = entities.flatMap { it.getFacts() }.filter { it.transactionId == null }
+        val uncommittedFacts = entities.flatMap { it.getFacts() }.filter { it.transactionOrdinal == null }
         if (uncommittedFacts.isEmpty()) {
             logger.info { "Ignoring update with no novel facts" }
             return null
         }
 
-        val signedTransaction =
-            Transaction.fromFacts(getNextTransactionId(authority.authorityId), uncommittedFacts).sign(signator)
-        persistTransaction(signedTransaction)
+        val (signedTransaction, transactionOrdinal) = persistTransaction(authority.authorityId , uncommittedFacts)
 
         entities.forEach {
-            it.commitFacts(signedTransaction.transaction.epochSecond, signedTransaction.transaction.id)
+            it.commitFacts(signedTransaction.transaction.epochSecond, transactionOrdinal)
         }
 
         eventBus.sendMessage(Events.NewTransaction.toString(), SignedTransaction.encode(signedTransaction))
         return signedTransaction
+    }
+
+    @Synchronized
+    private fun persistTransaction(authorityId: Id, facts: List<Fact>) : Pair<SignedTransaction, Long> {
+        val nextTransactionId =
+            getSignedTransactions(listOf(authorityId), null, TransactionOrder.Descending, 1)
+                .firstOrNull()
+                .ifNotNullOrElse({ Id.ofData(SignedTransaction.encode(it)) }, { getFirstTransactionId(authorityId) })
+
+        val signedTransaction = Transaction.fromFacts(nextTransactionId, facts).sign(signator)
+        val transactionOrdinal = persistTransaction(signedTransaction)
+
+        return Pair(signedTransaction, transactionOrdinal)
     }
 
     override fun updateResource(mhtmlPage: MhtmlPage, actions: Actions): ResourceEntity {
@@ -163,6 +162,18 @@ abstract class AbstractEntityStore(
 
             updateEntities(entity, dataEntity)
             return entity
+        }
+    }
+
+    override fun deleteEntity(authorityId: Id, entityId: Id) {
+        getEntity(authorityId, entityId).nullOrElse { entity ->
+            val facts = entity.getFacts()
+                .groupBy { it.attribute }
+                .mapNotNull { (attribute, facts) ->
+                    if(facts.maxByOrNull { it.transactionOrdinal!! }!!.operation == Operation.Add) attribute else null }
+                .map { Fact(authorityId, entityId, it, Value.emptyValue, Operation.Retract) }
+
+            persistTransaction(authorityId, facts)
         }
     }
 

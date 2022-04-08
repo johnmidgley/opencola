@@ -69,7 +69,7 @@ class EntityStoreTest {
             assertEquals(it.first.attribute, it.second.attribute)
             assertEquals(it.first.value, it.second.value)
             assertEquals(it.first.operation, it.second.operation)
-            assertEquals(it.first.transactionId, it.second.transactionId)
+            assertEquals(it.first.transactionOrdinal, it.second.transactionOrdinal)
         }
     }
 

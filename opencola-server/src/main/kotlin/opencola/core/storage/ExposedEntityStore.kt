@@ -38,7 +38,7 @@ class ExposedEntityStore(
         val value = blob("value")
         val operation = enumeration("operation", Operation::class)
         val epochSecond = long("epochSecond")
-        val transactionId = binary("transactionId", 32)
+        val transactionOrdinal = long("transactionOrdinal")
     }
 
     // LongIdTable has implicit, autoincrement long id field
@@ -162,7 +162,7 @@ class ExposedEntityStore(
             Value(resultRow[facts.value].bytes),
             resultRow[facts.operation],
             resultRow[facts.epochSecond],
-            Id.decode(resultRow[facts.transactionId])
+            resultRow[facts.transactionOrdinal]
         )
     }
 
@@ -176,11 +176,17 @@ class ExposedEntityStore(
         }
     }
 
-    override fun persistTransaction(signedTransaction: SignedTransaction): SignedTransaction {
-        val transaction = signedTransaction.transaction
+    override fun persistTransaction(signedTransaction: SignedTransaction): Long {
+        return transaction(database) {
+            val transaction = signedTransaction.transaction
+            val transactionsId = transactions.insert {
+                it[transactionId] = Id.encode(transaction.id)
+                it[authorityId] = Id.encode(transaction.authorityId)
+                it[epochSecond] = transaction.epochSecond
+                it[encoded] = ExposedBlob(SignedTransaction.encode(signedTransaction))
+            } get transactions.id
 
-        transaction(database) {
-            transaction.getFacts().forEach { fact ->
+            transaction.getFacts(transactionsId.value).forEach { fact ->
                 facts.insert {
                     it[authorityId] = Id.encode(fact.authorityId)
                     it[entityId] = Id.encode(fact.entityId)
@@ -188,19 +194,12 @@ class ExposedEntityStore(
                     it[value] = ExposedBlob(fact.value.bytes)
                     it[operation] = fact.operation
                     it[epochSecond] = fact.epochSecond!!
-                    it[transactionId] = Id.encode(fact.transactionId!!)
+                    it[transactionOrdinal] = transactionsId.value
                 }
             }
 
-            transactions.insert {
-                it[transactionId] = Id.encode(transaction.id)
-                it[authorityId] = Id.encode(transaction.authorityId)
-                it[epochSecond] = transaction.epochSecond
-                it[encoded] = ExposedBlob(SignedTransaction.encode(signedTransaction))
-            }
+            transactionsId.value
         }
-
-        return signedTransaction
     }
 
     override fun getFacts(authorityIds: Iterable<Id>, entityIds: Iterable<Id>): List<Fact> {

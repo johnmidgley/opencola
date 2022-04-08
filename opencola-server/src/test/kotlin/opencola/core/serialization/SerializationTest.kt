@@ -23,7 +23,7 @@ class SerializationTest {
             Value("Test value".toByteArray()),
             Operation.Add,
             0,
-            authority.authorityId,
+            0,
         )
 
         val protoEncoded = ProtoBuf.encodeToByteArray(fact)

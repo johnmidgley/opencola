@@ -1,6 +1,7 @@
 package opencola.core.model
 
 import mu.KotlinLogging
+import opencola.core.extensions.nullOrElse
 
 abstract class Entity(val authorityId: Id, val entityId: Id) {
     companion object Factory {
@@ -51,7 +52,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
             throw IllegalArgumentException("Attempt to construct an entity with facts with multiple entity ids")
         }
 
-        this.facts = facts
+        this.facts = facts.sortedBy { it.transactionOrdinal }
     }
 
     override fun equals(other: Any?): Boolean {
@@ -75,7 +76,11 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
     private fun getFact(propertyName: String): Pair<Attribute, Fact?> {
         val attribute = getAttributeByName(propertyName)
             ?: throw IllegalArgumentException("Attempt to access unknown property $propertyName")
-        val fact = facts.lastOrNull { it.attribute == attribute }
+
+        val fact = facts
+            .lastOrNull { it.attribute == attribute }
+            .nullOrElse { if(it.operation == Operation.Add) it else null }
+
         return Pair(attribute, fact)
     }
 
@@ -93,7 +98,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
                 return currentFact
             }
 
-            if (currentFact.transactionId == null) {
+            if (currentFact.transactionOrdinal == null) {
                 throw IllegalStateException("Attempt to re-set an uncommitted value")
             }
         }
@@ -109,10 +114,11 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         return newFact
     }
 
-    fun commitFacts(epochSecond: Long, transactionId: Id) {
-        val partitionedFacts = facts.partition { it.transactionId == null }
+    // NOT Great. Decoupled from actual factions that were persisted.
+    fun commitFacts(epochSecond: Long, transactionOrdinal: Long) {
+        val partitionedFacts = facts.partition { it.transactionOrdinal == null }
         facts = partitionedFacts.second + partitionedFacts.first.map {
-            Fact(it.authorityId, it.entityId, it.attribute, it.value, it.operation, epochSecond, transactionId)
+            Fact(it.authorityId, it.entityId, it.attribute, it.value, it.operation, epochSecond, transactionOrdinal)
         }
     }
 }

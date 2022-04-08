@@ -15,6 +15,7 @@ interface EntityStore {
 
     fun getEntity(authorityId: Id, entityId: Id): Entity?
     fun updateEntities(vararg entities: Entity) : SignedTransaction?
+    fun deleteEntity(authorityId: Id, entityId: Id)
     fun updateResource(mhtmlPage: MhtmlPage, actions: Actions): ResourceEntity
     fun addSignedTransactions(signedTransactions: List<SignedTransaction>)
     fun getSignedTransactions(authorityIds: Iterable<Id>, startTransactionId: Id?, order: TransactionOrder, limit: Int) : Iterable<SignedTransaction>

@@ -29,11 +29,14 @@ class SimpleEntityStore(
             transactionsFromPath(path).toList()
         }
 
+    private var nextTransactionOrdinal = 0L
+
     private var facts =
         transactions
             .filter { isValidTransaction(it) }
-            .flatMap { it.transaction.getFacts() }
+            .flatMap { it.transaction.getFacts(nextTransactionOrdinal++) }
             .toList()
+
 
     private fun transactionsFromPath(path: Path): Sequence<SignedTransaction> {
         return sequence {
@@ -69,15 +72,19 @@ class SimpleEntityStore(
             .take(limit)
     }
 
-    override fun persistTransaction(signedTransaction: SignedTransaction): SignedTransaction {
+    @Synchronized
+    override fun persistTransaction(signedTransaction: SignedTransaction): Long {
         if (transactions.any { it.transaction.id == signedTransaction.transaction.id })
             throw IllegalArgumentException("Attempt to insert duplicate transaction: ${signedTransaction.transaction.id}")
 
         path.outputStream(StandardOpenOption.APPEND, StandardOpenOption.CREATE)
             .use { SignedTransaction.encode(it, signedTransaction) }
         transactions = transactions + signedTransaction
-        facts = facts + signedTransaction.transaction.getFacts()
-        return signedTransaction
+
+        val transactionOrdinal = nextTransactionOrdinal++
+        facts = facts + signedTransaction.transaction.getFacts(transactionOrdinal)
+
+        return transactionOrdinal
     }
 
     override fun getFacts(authorityIds: Iterable<Id>, entityIds: Iterable<Id>): List<Fact> {

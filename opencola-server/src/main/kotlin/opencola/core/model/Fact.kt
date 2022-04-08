@@ -21,16 +21,16 @@ data class Fact(
     val value: Value,
     val operation: Operation,
     val epochSecond: Long? = null,
-    val transactionId: Id? = null,
+    val transactionOrdinal: Long? = null,
 ) {
     override fun toString(): String {
         val decodedValue = value.nullOrElse { attribute.codec.decode(it.bytes) }
-        return "{ authorityId: $authorityId entityId: $entityId attribute: $attribute value: $decodedValue operation: $operation transactionId: $transactionId"
+        return "{ authorityId: $authorityId entityId: $entityId attribute: $attribute value: $decodedValue operation: $operation transactionOrdinal: $transactionOrdinal"
     }
 
     companion object Factory : StreamSerializer<Fact> {
         override fun encode(stream: OutputStream, value: Fact) {
-            if (value.transactionId == null) {
+            if (value.transactionOrdinal == null) {
                 throw IllegalArgumentException("Attempt to encode fact with no transaction id set")
             }
             if (value.epochSecond == null) {
@@ -43,7 +43,7 @@ data class Fact(
             Value.encode(stream, value.value)
             Operation.encode(stream, value.operation)
             writeLong(stream, value.epochSecond)
-            Id.encode(stream, value.transactionId)
+            writeLong(stream, value.transactionOrdinal)
         }
 
         override fun decode(stream: InputStream): Fact {
@@ -54,7 +54,7 @@ data class Fact(
                 Value.decode(stream),
                 Operation.decode(stream),
                 readLong(stream),
-                Id.decode(stream)
+                readLong(stream)
             )
         }
 
