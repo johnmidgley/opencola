@@ -71,6 +71,9 @@ class EntityStoreTest {
             assertEquals(it.first.operation, it.second.operation)
             assertEquals(it.first.transactionOrdinal, it.second.transactionOrdinal)
         }
+
+        store2.deleteEntity(authority.authorityId, entity.entityId)
+        assertEquals(null, store2.getEntity(authority.authorityId, entity.entityId))
     }
 
     @Test
