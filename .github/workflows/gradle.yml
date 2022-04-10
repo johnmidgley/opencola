@@ -18,8 +18,12 @@ permissions:
 
 jobs:
   build:
-
+    name: Build oc-server
     runs-on: ubuntu-latest
+    defaults:
+      run:
+      # opencola-server working directory
+        working-directory: opencola-server
 
     #borrowed from: https://github.com/marketplace/actions/setup-java-jdk
     steps:
@@ -29,7 +33,7 @@ jobs:
         distribution: 'zulu'
         java-version: '16'
         cache: 'gradle'
-    - run: ./opencola-server/gradlew installDist
+    - run: ./gradlew installDist
 
 #    steps:
 #    - uses: actions/checkout@v3
