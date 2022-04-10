@@ -23,7 +23,7 @@ jobs:
     defaults:
       run:
       # opencola-server working directory
-        working-directory: opencola-server
+        working-directory: install
 
     #borrowed from: https://github.com/marketplace/actions/setup-java-jdk
     steps:
@@ -33,7 +33,8 @@ jobs:
         distribution: 'zulu'
         java-version: '16'
         cache: 'gradle'
-    - run: ./gradlew installDist
+    - run: ./install
+    
     - name: Upload build reports
       uses: actions/upload-artifact@v3
       with:
