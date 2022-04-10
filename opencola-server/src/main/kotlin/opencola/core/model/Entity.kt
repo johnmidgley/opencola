@@ -1,6 +1,7 @@
 package opencola.core.model
 
 import mu.KotlinLogging
+import opencola.core.extensions.currentFacts
 import opencola.core.extensions.nullOrElse
 
 abstract class Entity(val authorityId: Id, val entityId: Id) {
@@ -9,18 +10,20 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
 
         // TODO: Iterable<Fact> instead of List<Fact> for any parameters
         fun fromFacts(facts: List<Fact>): Entity? {
-            if (facts.isEmpty()) return null
+            val sortedFacts = facts.sortedBy { it.transactionOrdinal }
+            val currentFacts = sortedFacts.currentFacts()
+            if (currentFacts.isEmpty()) return null
 
             // TODO: Validate that all subjects and entities are equal
             // TODO: Should type be mutable? Probably no
-            val typeFact = facts.lastOrNull { it.attribute == CoreAttribute.Type.spec }
+            val typeFact = currentFacts.lastOrNull { it.attribute == CoreAttribute.Type.spec }
                 ?: throw IllegalStateException("Entity has no type")
 
             return when (val type = CoreAttribute.Type.spec.codec.decode(typeFact.value.bytes).toString()) {
                 // TODO: Use fully qualified names
-                ActorEntity::class.simpleName -> ActorEntity(facts)
-                ResourceEntity::class.simpleName -> ResourceEntity(facts)
-                DataEntity::class.simpleName -> DataEntity(facts)
+                ActorEntity::class.simpleName -> ActorEntity(sortedFacts)
+                ResourceEntity::class.simpleName -> ResourceEntity(sortedFacts)
+                DataEntity::class.simpleName -> DataEntity(sortedFacts)
                 // TODO: Throw if not type?
                 else -> {
                     logger.error { "Found unknown type: $type" }
