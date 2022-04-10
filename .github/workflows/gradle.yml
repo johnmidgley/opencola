@@ -36,11 +36,11 @@ jobs:
     - run: ./install
     - run: cp *.tgz ..
     
-    - name: Upload build reports
+    - name: Upload build
       uses: actions/upload-artifact@v3
       with:
-        name: build-reports
-        path: build/reports/
+        name: my-build
+        path: ./*.tgz
 
 #    steps:
 #    - uses: actions/checkout@v3
