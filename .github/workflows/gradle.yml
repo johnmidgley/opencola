@@ -20,10 +20,7 @@ jobs:
   build:
     name: Build oc-server
     runs-on: ubuntu-latest
-    defaults:
-      run:
-      # opencola-server working directory
-        working-directory: opencola-server
+    working-directory: opencola-server
 
     #borrowed from: https://github.com/marketplace/actions/setup-java-jdk
     steps:
@@ -33,13 +30,15 @@ jobs:
         distribution: 'zulu'
         java-version: '16'
         cache: 'gradle'
-    - run: ./gradlew installDist
-    - name: Upload build reports
-      uses: actions/upload-artifact@v3
-      with:
-        name: build-reports
-        path: build/reports/
-
+        
+    - name: Gradle build
+      run: ./gradlew installDist
+      working-directory: opencola-server
+      
+    - name: Install step
+      run: ./install
+      working-directory: install
+    
 #    steps:
 #    - uses: actions/checkout@v3
 #    - name: Set up JDK 11
