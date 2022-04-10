@@ -5,7 +5,7 @@ mkdir opencola
 
 echo "Running gradle installDist"
 cd ../opencola-server
-gradlew installDist
+./gradlew installDist
 
 echo "Copying distribution"
 cd ../install/opencola
