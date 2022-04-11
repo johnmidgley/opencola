@@ -35,12 +35,9 @@ jobs:
         cache: 'gradle'
     - run: ./install
     
-    - name: Add SHORT_SHA env property with commit short sha
-      run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
-    
     - name: Upload build
       uses: actions/upload-artifact@v3
       with:
-        name: oc-bld_${{ github.REF_NAME }}-${{ github.RUN_ATTEMPT }}-${{ runner.OS }}-${SHORT_SHA}
+        name: oc-bld_${{ github.REF_NAME }}-${{ github.RUN_ATTEMPT }}-${{ runner.OS }}-${{ github.SHA }}
         path: install/opencola/
 
