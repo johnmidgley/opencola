@@ -34,13 +34,12 @@ jobs:
         java-version: '16'
         cache: 'gradle'
     - run: ./install
-    - run: cp *.tgz ..
     
     - name: Upload build
       uses: actions/upload-artifact@v3
       with:
         name: my-build
-        path: ./*.tgz
+        path: install/*.tgz
 
 #    steps:
 #    - uses: actions/checkout@v3
