@@ -38,6 +38,6 @@ jobs:
     - name: Upload build
       uses: actions/upload-artifact@v3
       with:
-        name: my-build-${{ github.REF_NAME }}-bld
+        name: oc-bld_${{ github.REF_NAME }}-${{ github.SHA }}${{ github.RUN_ATTEMPT }}
         path: install/*.tgz
 
