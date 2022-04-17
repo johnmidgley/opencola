@@ -33,7 +33,10 @@ jobs:
         distribution: 'zulu'
         java-version: '16'
         cache: 'gradle'
+      #uild everything with "install" script
     - run: ./install
+      #remove the tgz file for the github workflow runs because it's redundant
+    - run: rm *.tgz
     
     - name: Upload build
       uses: actions/upload-artifact@v3
