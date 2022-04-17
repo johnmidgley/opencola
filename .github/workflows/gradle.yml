@@ -39,5 +39,5 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: oc-bld_${{ github.REF_NAME }}-${{ github.RUN_ATTEMPT }}-${{ runner.OS }}-${{ github.SHA }}
-        path: install/opencola/
+        path: install/
 
