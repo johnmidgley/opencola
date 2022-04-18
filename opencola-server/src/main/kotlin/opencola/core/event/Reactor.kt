@@ -74,11 +74,13 @@ class MainReactor(
                     httpClient.get(urlString)
 
                 peerRouter.updateStatus(peer.id, Online)
-                entityStore.addSignedTransactions(transactionsResponse.transactions)
-                peerTransactionId = transactionsResponse.transactions.last().transaction.id
 
-                if(transactionsResponse.transactions.isEmpty()
-                    || peerTransactionId == transactionsResponse.currentTransactionId)
+                if(transactionsResponse.transactions.isEmpty())
+                    break
+
+                entityStore.addSignedTransactions(transactionsResponse.transactions)
+
+                if(transactionsResponse.transactions.last().transaction.id == transactionsResponse.currentTransactionId)
                     break
             }
         }
@@ -147,10 +149,10 @@ class MainReactor(
     private fun handlePeerNotification(event: Event){
         logger.info { "Handling peer notification" }
         val notification = ByteArrayInputStream(event.data).use { PeerRouter.Notification.decode(it) }
-        peerRouter.updateStatus(notification.peerId, Online)
+        val previousStatus = peerRouter.updateStatus(notification.peerId, Online)
 
         when(notification.event){
-            PeerRouter.Event.Online -> requestTransactions(notification.peerId)
+            PeerRouter.Event.Online -> { if(previousStatus == Offline) requestTransactions(notification.peerId) }
             PeerRouter.Event.NewTransaction -> requestTransactions(notification.peerId)
         }
     }

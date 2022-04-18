@@ -60,7 +60,7 @@ data class TransactionsResponse(
 //TODO: This should return transactions until the root transaction, not all transactions for the authority in the
 // store, as the user a peer may have deleted their store, which creates a new HEAD. Only the transaction for the
 // current chain should be propagated to other peers
-suspend fun handleGetTransactionsCall(call: ApplicationCall, entityStore: EntityStore, peerRouter: PeerRouter) {
+suspend fun handleGetTransactionsCall(call: ApplicationCall, entityStore: EntityStore, eventBus: EventBus) {
     val authorityId =
         Id.fromHexString(call.parameters["authorityId"] ?: throw IllegalArgumentException("No authorityId set"))
     val peerId = Id.fromHexString(call.parameters["peerId"] ?: throw IllegalArgumentException("No peerId set"))
@@ -78,7 +78,8 @@ suspend fun handleGetTransactionsCall(call: ApplicationCall, entityStore: Entity
         numTransactions
     ).drop(extra)
 
-    peerRouter.updateStatus(peerId, Online)
+    // TODO: This is sending unnecessary events (if we know the peer is already online). Check peer status here?
+    eventBus.sendMessage(Events.PeerNotification.toString(), PeerRouter.Notification(peerId, PeerRouter.Event.Online).encode())
     call.respond(TransactionsResponse(transactionId, currentTransactionId, transactions.toList()))
 
 }

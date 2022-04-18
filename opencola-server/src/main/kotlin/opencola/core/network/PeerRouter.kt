@@ -13,13 +13,10 @@ import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import opencola.core.model.Id
 import opencola.core.model.Peer
+import opencola.core.network.PeerRouter.PeerStatus.*
 import opencola.core.network.PeerRouter.PeerStatus.Status.*
-import opencola.core.serialization.ByteArrayCodec
-import opencola.core.serialization.IntByteArrayCodec
 import opencola.core.serialization.StreamSerializer
 import opencola.core.storage.AddressBook
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
 
@@ -82,9 +79,11 @@ class PeerRouter(addressBook: AddressBook) {
         }
     }
 
-    fun updateStatus(peerId: Id, status: PeerStatus.Status){
+    fun updateStatus(peerId: Id, status: Status): Status {
         val peer = peerIdToStatusMap[peerId] ?: throw IllegalArgumentException("Attempt to update status for unknown peer: $peerId")
+        val currentStatus = peer.status
         peer.status = status
+        return currentStatus
     }
 
     private suspend fun sendMessage(peerStatus: PeerStatus, path: String, message: Any){
