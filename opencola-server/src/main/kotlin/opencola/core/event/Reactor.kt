@@ -98,8 +98,10 @@ class MainReactor(
         //TODO: After requesting transactions, check to see if a new HEAD has been set (i.e. the transactions don't
         // chain to existing ones, which can happen if a peer deletes their store). If this happens, inform the user
         // and ask if "abandoned" transactions should be deleted.
+        // TODO: Catch / handle this error and return appropriate forbidden / not authorized status
         val peer = peerRouter.getPeer(peerId)
             ?: throw IllegalArgumentException("Attempt to request transactions for unknown peer: $peerId ")
+
 
         // TODO: This blocks startup. Make fully async (and/or handle startup with event bus)
         // TODO: Remove all runBlocking - replace with appropriate executor
