@@ -92,7 +92,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         return fact?.value
     }
 
-    internal fun setValue(propertyName: String, value: Value): Fact {
+    internal fun setValue(propertyName: String, value: Value?): Fact {
         val (attribute, currentFact) = getFact(propertyName)
 
         if (currentFact != null) {
@@ -110,8 +110,8 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
             authorityId,
             entityId,
             attribute,
-            value,
-            if (value.bytes.isNotEmpty()) Operation.Add else Operation.Retract
+            value ?: Value.emptyValue,
+            if (value == null) Operation.Retract else Operation.Add
         )
         facts = facts + newFact
         return newFact

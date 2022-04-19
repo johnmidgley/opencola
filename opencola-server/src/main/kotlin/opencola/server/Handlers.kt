@@ -13,7 +13,6 @@ import opencola.core.event.Events
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.*
 import opencola.core.network.PeerRouter
-import opencola.core.network.PeerRouter.PeerStatus.Status.Online
 import opencola.core.search.SearchIndex
 import opencola.core.storage.EntityStore
 import opencola.core.storage.EntityStore.TransactionOrder
@@ -196,20 +195,21 @@ fun getSummary(facts: List<Fact>): Summary {
     )
 }
 
-fun getActivity(authorityId: Id, name: String, epochSecond: Long, save: Boolean?, trust: Float?, like: Boolean?, rating: Float?): Activity? {
+// TODO - Take authority instead of id, host and name?
+fun getActivity(authority: Authority, dataId: Id?, epochSecond: Long, save: Boolean?, trust: Float?, like: Boolean?, rating: Float?
+): Activity? {
     return if (listOf(save, trust, like, rating).all { it == null })
         null
     else
-        Activity(authorityId, name, epochSecond, Actions(save, trust, like, rating))
+        Activity(authority, dataId, epochSecond, Actions(save, trust, like, rating))
 }
 
-fun getActorName(id: Id, rootAuthority: Authority, peerRouter: PeerRouter): String {
+// TODO: generate this list once, vs creating Authorities for each activity
+fun getAuthority(id: Id, rootAuthority: Authority, peerRouter: PeerRouter): Authority? {
     return if (id == rootAuthority.authorityId)
-        "You"
+        Authority(rootAuthority.publicKey!!, URI(""), name = "You")
     else
-        peerRouter.getPeer(id)?.name ?: "Unknown"
-
-
+        peerRouter.getPeer(id).nullOrElse { Authority(it.publicKey, URI(it.host), name = it.name) }
 }
 
 fun getFact(facts: Iterable<Fact>, attribute: Attribute): Fact? {
@@ -231,10 +231,10 @@ fun getDataId(authorityId: Id, facts: List<Fact>) : Id?{
         .nullOrElse { dataIdAttribute.codec.decode(it.value.bytes) as Id }
 }
 
-fun getActivityFromFacts(authorityId: Id, name: String, epochSecond: Long, facts: Iterable<Fact>): Activity? {
+fun getActivityFromFacts(authority: Authority, epochSecond: Long, facts: Iterable<Fact>): Activity? {
     return getActivity(
-        authorityId,
-        name,
+        authority,
+        getFact(facts, CoreAttribute.DataId.spec)?.value?.bytes.nullOrElse { Id.decode(it) },
         epochSecond,
         getFact(facts, CoreAttribute.Uri.spec).nullOrElse { true },
         getAttributeValueFromFact(facts, CoreAttribute.Trust.spec) as Float?,
@@ -243,7 +243,7 @@ fun getActivityFromFacts(authorityId: Id, name: String, epochSecond: Long, facts
     )
 }
 
-fun getEntityActivitiesFromFacts(entityFacts: Iterable<Fact>, idToName: (Id) -> String): List<Activity> {
+fun getEntityActivitiesFromFacts(entityFacts: Iterable<Fact>, idToAuthority: (Id) -> Authority?): List<Activity> {
     if(entityFacts.distinctBy { it.entityId }.size != 1){
         throw IllegalArgumentException("Attempt to get activities from facts with multiple entities")
     }
@@ -253,7 +253,7 @@ fun getEntityActivitiesFromFacts(entityFacts: Iterable<Fact>, idToName: (Id) -> 
         .groupBy { Pair(it.authorityId, it.epochSecond!!) }
         .map {
             val (authorityId, epochSecond) = it.key
-            getActivityFromFacts(authorityId, idToName(authorityId), epochSecond, it.value)
+            idToAuthority(authorityId).nullOrElse { authority -> getActivityFromFacts(authority, epochSecond, it.value) }
         }.filterNotNull()
 }
 
@@ -281,7 +281,6 @@ fun getEntityIds(entityStore: EntityStore, searchIndex: SearchIndex, query: Stri
     }
 }
 
-
 suspend fun handleGetFeed(
     call: ApplicationCall,
     authority: Authority,
@@ -292,9 +291,9 @@ suspend fun handleGetFeed(
     // TODO: Look for startTransactionId in call (For paging)
     val entityIds = getEntityIds(entityStore, searchIndex, call.parameters["q"])
     val entityFactsById = getEntityFacts(entityStore, entityIds)
-    val idToName: (Id) -> String = { id -> getActorName(id, authority, peerRouter) }
+    val idToAuthority: (Id) -> Authority? = { id -> getAuthority(id, authority, peerRouter) }
     val entityActivitiesById =
-        entityFactsById.entries.associate { Pair(it.key, getEntityActivitiesFromFacts(it.value, idToName)) }
+        entityFactsById.entries.associate { Pair(it.key, getEntityActivitiesFromFacts(it.value, idToAuthority)) }
 
     call.respond(FeedResult(
         "",
