@@ -27,6 +27,7 @@ suspend fun getEntity(call: ApplicationCall, entityStore: EntityStore) {
     getEntity(call, authorityId, entityStore)
 }
 
+// TODO - investigate delete and then re-add. It seems to "restore" all previous saves. Is this good or bad?
 suspend fun deleteEntity(call: ApplicationCall, authorityId: Id, entityStore: EntityStore) {
     val stringId = call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified")
     val entityId = Id.fromHexString(stringId)
