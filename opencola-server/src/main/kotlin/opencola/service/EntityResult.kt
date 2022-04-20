@@ -29,11 +29,11 @@ data class EntityResult(
         val authorityId: String,
         val authorityName: String,
         val host: String,
-        val dataId: String,
+        val dataId: String?,
         val epochSecond: Long,
         val actions: Actions
     ) {
         constructor(authority: Authority, dataId: Id?, epochSecond: Long, actions: Actions) :
-                this(authority.authorityId.toString(), authority.name!!, authority.uri.toString(), dataId.toString(), epochSecond, actions)
+                this(authority.authorityId.toString(), authority.name!!, authority.uri!!.authority ?: "", dataId?.toString(), epochSecond, actions)
     }
 }

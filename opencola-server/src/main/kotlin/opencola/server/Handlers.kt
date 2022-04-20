@@ -209,7 +209,7 @@ fun getAuthority(id: Id, rootAuthority: Authority, peerRouter: PeerRouter): Auth
     return if (id == rootAuthority.authorityId)
         Authority(rootAuthority.publicKey!!, URI(""), name = "You")
     else
-        peerRouter.getPeer(id).nullOrElse { Authority(it.publicKey, URI(it.host), name = it.name) }
+        peerRouter.getPeer(id).nullOrElse { Authority(it.publicKey, URI("http://${it.host}"), name = it.name) }
 }
 
 fun getFact(facts: Iterable<Fact>, attribute: Attribute): Fact? {
@@ -231,11 +231,11 @@ fun getDataId(authorityId: Id, facts: List<Fact>) : Id?{
         .nullOrElse { dataIdAttribute.codec.decode(it.value.bytes) as Id }
 }
 
-fun getActivityFromFacts(authority: Authority, epochSecond: Long, facts: Iterable<Fact>): Activity? {
+fun getActivityFromFacts(authority: Authority, facts: Iterable<Fact>): Activity? {
     return getActivity(
         authority,
         getFact(facts, CoreAttribute.DataId.spec)?.value?.bytes.nullOrElse { Id.decode(it) },
-        epochSecond,
+        facts.first().epochSecond!!,
         getFact(facts, CoreAttribute.Uri.spec).nullOrElse { true },
         getAttributeValueFromFact(facts, CoreAttribute.Trust.spec) as Float?,
         getAttributeValueFromFact(facts, CoreAttribute.Like.spec) as Boolean?,
@@ -250,10 +250,10 @@ fun getEntityActivitiesFromFacts(entityFacts: Iterable<Fact>, idToAuthority: (Id
 
     return entityFacts
         .sortedByDescending { it.epochSecond }
-        .groupBy { Pair(it.authorityId, it.epochSecond!!) }
+        .groupBy { Pair(it.authorityId, it.transactionOrdinal) }
         .map {
             val (authorityId, epochSecond) = it.key
-            idToAuthority(authorityId).nullOrElse { authority -> getActivityFromFacts(authority, epochSecond, it.value) }
+            idToAuthority(authorityId).nullOrElse { authority -> getActivityFromFacts(authority, it.value) }
         }.filterNotNull()
 }
 

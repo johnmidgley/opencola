@@ -90,18 +90,32 @@
   ^{:key action} [:span.action-item [:img.action-img {:src (str "../img/" (name action) ".png")}] 
                   (if-not value (str value))])
 
-(defn actions-list [actions]
+(defn authority-actions [actions]
   [:span.actions-list (for [[action value] actions]
       (action-item action value))])
 
+(defn data-url [item]
+  (when-let [dataId (:dataId item)]
+    (let [path (str "/data/" dataId)
+          host (:host item)]
+      (str (if (not= host "") "http://") host path)))) 
+
+(defn data-actions [item]
+  (println item)
+  (when-let [dataId (:dataId item)]
+    [:span.item-link " "
+     [:a.action-link {:href (str (data-url item) "/0.html") :target "_blank"} "[Archive]"] " "
+     [:a.action-link {:href (data-url item) :target "_blank"} 
+      [:img.action-img {:src "../img/download.png" :alt "Download" :title "Download"}]]]))
 
 (defn activities-list [activities]
   [:div.activities-list 
    (for [[idx activity] (map-indexed vector activities)]
      ^{:key (str "activity-" idx)}
      [:div.activity-item (:authorityName activity) " "
-      (actions-list (:actions activity)) " "
-      (format-time (:epochSecond activity))])])
+      (authority-actions (:actions activity)) " "
+      (format-time (:epochSecond activity)) " "
+      (data-actions activity)])])
 
 
 (defn activity [action-counts action-value]
@@ -117,13 +131,6 @@
   [:div.activities-summary
    (filter some? (map #(activity action-counts %) display-activities))]))
 
-(defn actions [item]
-  (if-let [dataId (:dataId item)]
-    [:span.item-link " "
-     [:a.action-link {:href (str "data/" dataId "/0.html") :target "_blank"} "[Archive]"] " "
-     [:a.action-link {:href (str "data/" dataId) :target "_blank"} 
-      [:img.action-img {:src "../img/download.png" :alt "Download" :title "Download"}]]]))
-
 (defn feed-item [item]
   (let [summary (:summary item)
         item-uri (uri (:uri summary))
@@ -132,7 +139,6 @@
     [:div.feed-item
      [:div.item-name 
       [:a.item-link {:href (str item-uri) :target "_blank"} (:name summary)] 
-      (actions item)
       [:div.item-host (:host item-uri)]]
      [:div.item-body 
       [:div.item-img-box [:img.item-img {:src (:imageUri summary)}]]
