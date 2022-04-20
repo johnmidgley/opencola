@@ -91,6 +91,7 @@ fun getEntityActivitiesFromFacts(entityFacts: Iterable<Fact>, idToAuthority: (Id
 }
 
 // TODO - All items should be visible in search (i.e. even un-liked)
+// TODO - Add unit tests for items with multiple authorities and make sure remote authority items are returned
 fun isEntityIsVisible(authorityId: Id, facts: Iterable<Fact>) : Boolean {
     val authorityToFacts = facts.groupBy { it.authorityId }
     val authorityFacts = authorityToFacts[authorityId] ?: authorityToFacts.values.firstOrNull() ?: return false
