@@ -19,6 +19,7 @@ import java.net.URI
 import java.net.URLEncoder
 import kotlinx.serialization.encodeToString
 import opencola.core.network.PeerRouter
+import opencola.server.handlers.FeedResult
 
 class ApplicationTest {
     private val application = TestApplication.instance

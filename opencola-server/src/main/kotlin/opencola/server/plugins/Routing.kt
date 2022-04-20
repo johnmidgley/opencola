@@ -11,9 +11,7 @@ import opencola.core.network.PeerRouter
 import opencola.core.search.SearchIndex
 import opencola.core.storage.EntityStore
 import opencola.core.storage.MhtCache
-import opencola.server.*
-import opencola.server.handlers.deleteEntity
-import opencola.server.handlers.getEntity
+import opencola.server.handlers.*
 import opencola.service.search.SearchService
 import org.kodein.di.instance
 import kotlin.io.path.Path

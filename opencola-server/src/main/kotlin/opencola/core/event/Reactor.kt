@@ -15,8 +15,7 @@ import opencola.core.network.PeerRouter
 import opencola.core.network.PeerRouter.PeerStatus.Status.*
 import opencola.core.search.SearchIndex
 import opencola.core.storage.EntityStore
-import opencola.server.TransactionsResponse
-import org.jetbrains.exposed.sql.not
+import opencola.server.handlers.TransactionsResponse
 import java.io.ByteArrayInputStream
 
 interface Reactor {
