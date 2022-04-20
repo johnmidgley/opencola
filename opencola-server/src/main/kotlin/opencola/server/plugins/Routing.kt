@@ -12,6 +12,8 @@ import opencola.core.search.SearchIndex
 import opencola.core.storage.EntityStore
 import opencola.core.storage.MhtCache
 import opencola.server.*
+import opencola.server.handlers.deleteEntity
+import opencola.server.handlers.getEntity
 import opencola.service.search.SearchService
 import org.kodein.di.instance
 import kotlin.io.path.Path
@@ -33,12 +35,18 @@ fun Application.configureRouting(application: app) {
             // TODO: Authority should be passed (and authenticated) in header
             val authority by injector.instance<Authority>()
             val entityStore by injector.instance<EntityStore>()
-            handleGetEntityCall(call, authority.authorityId, entityStore)
+            getEntity(call, authority.authorityId, entityStore)
         }
 
         get("/entity/{authorityId}/{entityId}"){
             val entityStore by injector.instance<EntityStore>()
-            handleGetEntityCall(call, entityStore)
+            getEntity(call, entityStore)
+        }
+
+        delete("/entity/{entityId}") {
+            val authority by injector.instance<Authority>()
+            val entityStore by injector.instance<EntityStore>()
+            deleteEntity(call, authority.authorityId, entityStore)
         }
 
         get("/transactions/{authorityId}"){
