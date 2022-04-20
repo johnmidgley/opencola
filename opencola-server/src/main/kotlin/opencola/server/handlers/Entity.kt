@@ -3,8 +3,11 @@ package opencola.server.handlers
 import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.response.*
+import mu.KotlinLogging
 import opencola.core.model.Id
 import opencola.core.storage.EntityStore
+
+private val logger = KotlinLogging.logger("EntityHandler")
 
 suspend fun getEntity(call: ApplicationCall, authorityId: Id, entityStore: EntityStore) {
     // TODO: Authority should be passed (and authenticated) in header
@@ -27,6 +30,8 @@ suspend fun getEntity(call: ApplicationCall, entityStore: EntityStore) {
 suspend fun deleteEntity(call: ApplicationCall, authorityId: Id, entityStore: EntityStore) {
     val stringId = call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified")
     val entityId = Id.fromHexString(stringId)
+
+    logger.info { "Deleting $entityId" }
     entityStore.deleteEntity(authorityId, entityId)
     call.respond(HttpStatusCode.OK)
 }

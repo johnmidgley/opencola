@@ -90,10 +90,14 @@ fun getEntityActivitiesFromFacts(entityFacts: Iterable<Fact>, idToAuthority: (Id
         }.filterNotNull()
 }
 
-fun isEntityIsVisible(authorityId: Id, facts: Iterable<Fact>) : Boolean{
-    return when(val entity = Entity.fromFacts(facts.filter { it.authorityId == authorityId })){
-        is ResourceEntity -> entity.like != false
-        is ActorEntity -> entity.like != false
+// TODO - All items should be visible in search (i.e. even un-liked)
+fun isEntityIsVisible(authorityId: Id, facts: Iterable<Fact>) : Boolean {
+    val authorityToFacts = facts.groupBy { it.authorityId }
+    val authorityFacts = authorityToFacts[authorityId] ?: authorityToFacts.values.firstOrNull() ?: return false
+
+    return when(val entity = Entity.fromFacts(authorityFacts)){
+        is ResourceEntity -> entity.authorityId != authorityId || entity.like != false
+        is ActorEntity -> entity.authorityId != authorityId || entity.like != false
         else -> false
     }
 }

@@ -3,7 +3,7 @@
    [goog.dom :as gdom]
    [reagent.core :as reagent :refer [atom]]
    [reagent.dom :as rdom]
-   [ajax.core :refer [GET POST]] ; https://github.com/JulianBirch/cljs-ajax
+   [ajax.core :refer [GET POST DELETE]] ; https://github.com/JulianBirch/cljs-ajax
    [cljs-time.coerce :as c]
    [cljs-time.format :as f]
    [lambdaisland.uri :refer [uri]]
@@ -33,10 +33,6 @@
                       :response-format :json
                       :keywords? true
                       :error-handler error-handler}))
-
-(defn results-handler [response]
-  (.log js/console (str "Search Response: " response))
-  (swap! app-state assoc :results response))
 
 (defn feed-handler [response]
   (.log js/console (str "Feed Response: " response))
@@ -74,20 +70,14 @@
    (search-box)])
 
 
-(defn search-results []
-  [:div.search-results 
-   (let [query (:query @app-state)]
-    (if (and (not (empty? query))
-             (= [] (-> @app-state :feed :results)))
-      (apply str "No results for '" query  "'")))])
-
-
 (defn format-time [epoch-second]
   (f/unparse (f/formatter "yyyy-MM-dd hh:mm") (c/from-long (* epoch-second 1000))))
 
+(defn action-img [name]
+  [:img.action-img {:src (str "../img/" name ".png")}])
 
 (defn action-item [action value]
-  ^{:key action} [:span.action-item [:img.action-img {:src (str "../img/" (name action) ".png")}] 
+  ^{:key action} [:span.action-item (action-img (name action))
                   (if-not value (str value))])
 
 (defn authority-actions [actions]
@@ -101,7 +91,6 @@
       (str (if (not= host "") "http://") host path)))) 
 
 (defn data-actions [item]
-  (println item)
   (when-let [dataId (:dataId item)]
     [:span.item-link " "
      [:a.action-link {:href (str (data-url item) "/0.html") :target "_blank"} "[Archive]"] " "
@@ -131,14 +120,27 @@
   [:div.activities-summary
    (filter some? (map #(activity action-counts %) display-activities))]))
 
+(defn delete-handler [entity-id response]
+  (swap! app-state update-in [:feed :results] (fn [results] (remove #(= (:entityId %) entity-id) results))))
+
+(defn delete-entity [entity-id]
+  (DELETE (resolve-service-url (str "entity/" entity-id)) 
+       {:handler (partial delete-handler entity-id)
+        :error-handler error-handler}))
+
+(defn delete-control [entity-id]
+  [:span.delete-entity {:on-click #(delete-entity entity-id)} (action-img "delete")])
+
 (defn feed-item [item]
-  (let [summary (:summary item)
+  (let [entity-id (:entityId item)
+        summary (:summary item)
         item-uri (uri (:uri summary))
         activities (:activities item)]
-    ^{:key (:entityId item)} 
+    ^{:key entity-id} 
     [:div.feed-item
      [:div.item-name 
-      [:a.item-link {:href (str item-uri) :target "_blank"} (:name summary)] 
+      [:a.item-link {:href (str item-uri) :target "_blank"} (:name summary)] " "
+      (delete-control entity-id)
       [:div.item-host (:host item-uri)]]
      [:div.item-body 
       [:div.item-img-box [:img.item-img {:src (:imageUri summary)}]]
@@ -154,14 +156,13 @@
 
 (defn request-error []
   (if-let [e (:error @app-state)]
-    [:div#request-error.search-error e]))
+    [:div.request-error e]))
 
 (defn feed-page []
   [:div#opencola.search-page
    (search-header)
-   (search-results)
-   (feed)
-   (request-error)])
+   (request-error)
+   (feed)])
 
 
 (defn mount [el]
