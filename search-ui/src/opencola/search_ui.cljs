@@ -34,6 +34,7 @@
                       :keywords? true
                       :error-handler error-handler}))
 
+
 (defn feed-handler [response]
   (.log js/console (str "Feed Response: " response))
   (swap! app-state assoc :feed response))
@@ -69,6 +70,12 @@
    "openCola"
    (search-box)])
 
+(defn search-results []
+  [:div.search-results
+   (let [query (:query @app-state)]
+    (if (and (not (empty? query))
+             (= [] (-> @app-state :feed :results)))
+      (apply str "No results for '" query  "'")))])
 
 (defn format-time [epoch-second]
   (f/unparse (f/formatter "yyyy-MM-dd hh:mm") (c/from-long (* epoch-second 1000))))
@@ -162,6 +169,7 @@
   [:div#opencola.search-page
    (search-header)
    (request-error)
+   (search-results)
    (feed)])
 
 
