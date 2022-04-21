@@ -109,7 +109,6 @@ abstract class AbstractEntityStore(
             it.commitFacts(signedTransaction.transaction.epochSecond, transactionOrdinal)
         }
 
-        eventBus.sendMessage(Events.NewTransaction.toString(), SignedTransaction.encode(signedTransaction))
         return signedTransaction
     }
 
@@ -122,6 +121,7 @@ abstract class AbstractEntityStore(
 
         val signedTransaction = Transaction.fromFacts(nextTransactionId, facts).sign(signator)
         val transactionOrdinal = persistTransaction(signedTransaction)
+        eventBus.sendMessage(Events.NewTransaction.toString(), SignedTransaction.encode(signedTransaction))
 
         return Pair(signedTransaction, transactionOrdinal)
     }

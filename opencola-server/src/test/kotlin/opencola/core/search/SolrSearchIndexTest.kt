@@ -11,7 +11,7 @@ class SolrSearchIndexTest {
 
     init {
         // Make sure we have a fresh index
-        solrSearchIndex.delete()
+        solrSearchIndex.destroy()
         // This is horrible, but there's no way to know when solr is ready to create the index again other than trying to create the index
         // TODO: Likely a race condition here between deleting the old index and creating a new one
         // TODO: Think about overriding index name, so that fresh index can be used. Or just generate new authority for each version of this test.

@@ -41,7 +41,7 @@ class LuceneSearchIndex(val authorityId: Id, private val storagePath: Path) : Se
         indexDocuments(listOf(doc))
     }
 
-    override fun delete() {
+    override fun destroy() {
         storagePath.recursiveDelete()
     }
 
@@ -57,12 +57,17 @@ class LuceneSearchIndex(val authorityId: Id, private val storagePath: Path) : Se
             }
         }
     }
+
+    private fun getDocId(authorityId: Id, entityId: Id): String {
+        return sha256("${authorityId}:${entityId}").toHexString()
+    }
+
     // TODO: Make var-arg entity, so multiple docs can be indexed at once
-    override fun index(entity: Entity) {
+    override fun add(entity: Entity) {
         logger.info { "Indexing authorityId: ${entity.authorityId} entityId: ${entity.entityId}" }
-        val id = sha256("${entity.authorityId}:${entity.entityId}")
+        val id = getDocId(entity.authorityId, entity.entityId)
         val document = Document()
-        document.add(Field("id", id.toHexString(), StringField.TYPE_STORED))
+        document.add(Field("id", id, StringField.TYPE_STORED))
         document.add(Field("authorityId", entity.authorityId.toString(), StringField.TYPE_STORED))
         document.add(Field("entityId", entity.entityId.toString(), StringField.TYPE_STORED))
 
@@ -79,6 +84,16 @@ class LuceneSearchIndex(val authorityId: Id, private val storagePath: Path) : Se
             }
 
         indexDocuments(listOf(document))
+    }
+
+    override fun delete(authorityId: Id, entityId: Id) {
+        val indexWriterConfig = IndexWriterConfig(analyzer)
+        indexWriterConfig.openMode = IndexWriterConfig.OpenMode.CREATE_OR_APPEND
+
+        IndexWriter(directory, IndexWriterConfig(analyzer)).use{ writer ->
+            val id = getDocId(authorityId, entityId)
+            writer.deleteDocuments(QueryParser("id", analyzer).parse(id))
+        }
     }
 
     override fun search(query: String): List<SearchResult> {

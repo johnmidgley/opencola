@@ -9,7 +9,6 @@ import opencola.core.security.KeyStore
 import opencola.core.security.privateKeyFromBytes
 import opencola.core.security.publicKeyFromBytes
 import org.kodein.di.instance
-import java.nio.file.Files
 import java.nio.file.Path
 import java.security.KeyPair
 import java.time.Instant
@@ -35,7 +34,7 @@ object TestApplication {
         val index by instance.injector.instance<SearchIndex>()
 
         // Clear out any existing index
-        index.delete()
+        index.destroy()
         index.create()
 
         // Return the instance

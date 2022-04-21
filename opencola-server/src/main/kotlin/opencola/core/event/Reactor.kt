@@ -134,15 +134,17 @@ class MainReactor(
         signedTransaction.transaction.transactionEntities
             .map { f -> f.entityId }
             .distinct()
-            .forEach { eid ->
-                val entity = entityStore.getEntity(authorityId, eid)
+            .forEach { entityId ->
+                val entity = entityStore.getEntity(authorityId, entityId)
 
-                if (entity == null)
-                    logger.error { "Can't get entity after persisting entity facts: $authorityId:$eid" }
+                if (entity == null) {
+                    // Entity was deleted
+                    searchIndex.delete(authorityId, entityId)
+                }
                 else if (entity !is DataEntity){ // TODO: Should data entities be indexed?
                     //TODO: Archive will not be available - figure out what to do
                     // Call peer for data?
-                    searchIndex.index(entity)
+                    searchIndex.add(entity)
                 }
             }
     }

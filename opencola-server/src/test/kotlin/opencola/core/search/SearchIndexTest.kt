@@ -15,7 +15,7 @@ fun testIndex(authorityId: Id, searchIndex: SearchIndex) {
     val keyword = "keyword"
     val resourceEntity =
         ResourceEntity(authorityId, URI("http://www.site.com/page"), description = "Test description with $keyword")
-    searchIndex.index(resourceEntity)
+    searchIndex.add(resourceEntity)
 
     val results = searchIndex.search(keyword)
     assertEquals(1, results.size)
@@ -36,7 +36,7 @@ fun indexGameOfLife(authorityId: Id, searchIndex: SearchIndex) : ResourceEntity 
     val text = mhtmlPage.htmlText.nullOrElse { textExtractor.getBody(it.toByteArray()) }
     val resourceEntity = ResourceEntity(authorityId, mhtmlPage.uri, mhtmlPage.title, text = text)
 
-    searchIndex.index(resourceEntity)
+    searchIndex.add(resourceEntity)
     return resourceEntity
 }
 

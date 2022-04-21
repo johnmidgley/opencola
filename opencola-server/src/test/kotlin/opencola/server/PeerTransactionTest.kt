@@ -34,6 +34,20 @@ class PeerTransactionTest {
         }
     }
 
+    // @Test
+    fun createDemo(){
+        val applications = getApplications(2)
+        val (application0, application1) = applications
+        val (server0, server1) = applications.map { getServer(it) }
+
+        startServer(server0)
+        startServer(server1)
+
+        sleep(2000)
+        server0.stop(1000,1000)
+        server1.stop(1000,1000)
+    }
+
     @Test
     fun testTransactionReplication(){
         val applications = getApplications(2)
@@ -62,6 +76,11 @@ class PeerTransactionTest {
         val results1 = searchService1.search("other")
         assert(results1.matches.size == 1)
         assert(results1.matches[0].name == resource1.name)
+
+        entityStore0.deleteEntity(authority0.authorityId, resource1.entityId)
+        sleep(1000)
+        val results2 = searchService1.search("other")
+        assert(results2.matches.isEmpty())
 
         server0.stop(1000,1000)
         server1.stop(1000,1000)

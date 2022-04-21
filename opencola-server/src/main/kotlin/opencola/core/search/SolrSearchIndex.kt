@@ -86,7 +86,7 @@ class SolrSearchIndex(val authorityId: Id, val config: SearchConfig) : SearchInd
         }
     }
 
-    override fun delete(){
+    override fun destroy(){
         logger.info { "Deleting Index: $solrCollectionName" }
 
         CoreAdminRequest.unloadCore(solrCollectionName, solrClient)
@@ -122,16 +122,20 @@ class SolrSearchIndex(val authorityId: Id, val config: SearchConfig) : SearchInd
         }.toList()
     }
 
+    private fun getDocId(authorityId: Id, entityId: Id): String {
+        return sha256("${authorityId}:${entityId}").toHexString()
+    }
+
     // TODO - This is fine for now, but what happens when you index the same doc (i.e. ref.to) from another user?
     // Don't want to overwrite local reference. Should just add trust rank, etc.
     // Also think about adding "from" multi field, so peer ids can be stored too.
     // Consider external fields for personalized ranks: https://solr.apache.org/guide/8_10/working-with-external-files-and-processes.html
-    override fun index(entity: Entity){
-        val id = sha256("${entity.authorityId}:${entity.entityId}")
+    override fun add(entity: Entity){
+        val id = getDocId(entity.authorityId,entity.entityId)
         logger.info { "Indexing authorityId: ${entity.authorityId} entityId: ${entity.entityId}" }
 
         val doc = SolrInputDocument()
-        doc.addField("id", id.toHexString())
+        doc.addField("id", id)
         doc.addField("authorityId", authorityId.toString())
         doc.addField("entityId", entity.entityId.toString())
 
@@ -150,5 +154,10 @@ class SolrSearchIndex(val authorityId: Id, val config: SearchConfig) : SearchInd
         // TODO - check status of update, commit and log errors
         solrClient.add(solrCollectionName, doc)
         solrClient.commit(solrCollectionName)
+    }
+
+    override fun delete(authorityId: Id, entityId: Id) {
+        // TODO: Check response and log errors
+        solrClient.deleteById(getDocId(authorityId, entityId))
     }
 }
