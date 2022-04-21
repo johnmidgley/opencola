@@ -85,7 +85,7 @@ fun getEntityActivitiesFromFacts(entityFacts: Iterable<Fact>, idToAuthority: (Id
         .sortedByDescending { it.epochSecond }
         .groupBy { Pair(it.authorityId, it.transactionOrdinal) }
         .map {
-            val (authorityId, epochSecond) = it.key
+            val (authorityId, _) = it.key
             idToAuthority(authorityId).nullOrElse { authority -> getActivityFromFacts(authority, it.value) }
         }.filterNotNull()
 }
@@ -111,12 +111,14 @@ fun getEntityFacts(entityStore: EntityStore, authorityId: Id, entityIds: Iterabl
 }
 
 fun getEntityIds(entityStore: EntityStore, searchIndex: SearchIndex, query: String?): List<Id> {
-    return if (query == null || query.trim().isEmpty()){
+    val entityIds =  if (query == null || query.trim().isEmpty()){
         val signedTransactions = entityStore.getSignedTransactions(emptyList(),null, EntityStore.TransactionOrder.Descending,100) // TODO: Config limit
-        signedTransactions.flatMap { tx -> tx.transaction.transactionEntities.map { it.entityId } }.distinct()
+        signedTransactions.flatMap { tx -> tx.transaction.transactionEntities.map { it.entityId } }
     } else {
         searchIndex.search(query).map { it.entityId }
     }
+
+    return entityIds.distinct()
 }
 
 suspend fun handleGetFeed(
