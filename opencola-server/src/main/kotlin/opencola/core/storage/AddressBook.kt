@@ -11,7 +11,7 @@ import java.security.PublicKey
 // TODO: Back by entity store
 class AddressBook(private val authority: Authority, networkConfig: NetworkConfig) {
     val peers = networkConfig.peers.map {
-        Peer(Id.fromHexString(it.id), publicKeyFromBytes(it.publicKey.hexStringToByteArray()), it.name, it.host)
+        Peer(Id.fromHexString(it.id), publicKeyFromBytes(it.publicKey.hexStringToByteArray()), it.name, it.host, it.active)
     }
 
     fun getPublicKey(authorityId: Id): PublicKey? {

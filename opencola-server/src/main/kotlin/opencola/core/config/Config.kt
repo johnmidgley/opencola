@@ -15,7 +15,7 @@ data class KeystoreConfig(val name: String, val password: String)
 data class SecurityConfig(val keystore: KeystoreConfig)
 data class SolrConfig(val baseUrl: String, val connectionTimeoutMillis: Int, val socketTimeoutMillis: Int)
 data class SearchConfig(val solr: SolrConfig)
-data class PeerConfig(val id: String, val publicKey: String, val name: String, val host: String)
+data class PeerConfig(val id: String, val publicKey: String, val name: String, val host: String, val active: Boolean = true)
 data class NetworkConfig(val peers: List<PeerConfig> = emptyList())
 
 

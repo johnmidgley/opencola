@@ -30,7 +30,7 @@ class PeerRouter(addressBook: AddressBook) {
         return peerIdToStatusMap[peerId]?.peer
     }
 
-    data class PeerStatus(val peer: Peer, var status: Status = Unknown){
+    data class PeerStatus(val peer: Peer, var status: Status = if (peer.active) Unknown else Offline){
         enum class Status{
             Unknown,
             Offline,
@@ -71,7 +71,7 @@ class PeerRouter(addressBook: AddressBook) {
     fun broadcastMessage(path: String, message: Any){
         runBlocking {
             peerIdToStatusMap.values.forEach {
-                if(listOf(Unknown, Online).contains(it.status)) {
+                if(listOf(Unknown, Online).contains(it.status) && it.peer.active) {
                     // TODO: Make batched, to limit simultaneous connections
                     async { sendMessage(it, path, message) }
                 }

@@ -1,7 +1,5 @@
 package opencola.core.security
 
-import opencola.core.extensions.toByteArray
-import opencola.core.model.Id
 import java.security.*
 import java.security.spec.ECGenParameterSpec
 import java.security.spec.PKCS8EncodedKeySpec

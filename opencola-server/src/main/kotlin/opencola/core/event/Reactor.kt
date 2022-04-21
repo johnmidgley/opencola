@@ -44,7 +44,9 @@ class MainReactor(
         logger.info { "Updating peer transactions" }
         // TODO: Swap runBlocking with adding to peerExecutor
         runBlocking {
-            peerRouter.peers.forEach {
+            peerRouter.peers
+                .filter { it.active }
+                .forEach {
                 async { requestTransactions(it) }
             }
         }
