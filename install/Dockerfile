@@ -1,6 +1,6 @@
 ## Creates an openjdk image that runs oc
 # docker build -t oc .
-# docker run -d -it oc
+# docker run -d -p 5795:5795 -it oc
 FROM openjdk:16
 COPY ./opencola/ /opencola
 WORKDIR /opencola/server
