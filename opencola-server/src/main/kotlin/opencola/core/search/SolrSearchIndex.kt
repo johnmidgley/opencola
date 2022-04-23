@@ -2,7 +2,7 @@ package opencola.core.search
 
 import com.lordcodes.turtle.shellRun
 import mu.KotlinLogging
-import opencola.core.config.SearchConfig
+import opencola.core.config.SolrConfig
 import opencola.core.extensions.logErrorAndThrow
 import opencola.core.extensions.nullOrElse
 import opencola.core.extensions.toHexString
@@ -10,8 +10,6 @@ import opencola.core.model.CoreAttribute
 import opencola.core.model.Entity
 import opencola.core.model.Id
 import opencola.core.security.sha256
-import opencola.core.serialization.ByteArrayCodec
-import opencola.core.serialization.StringByteArrayCodec
 import org.apache.solr.client.solrj.impl.HttpSolrClient
 import org.apache.solr.client.solrj.request.CoreAdminRequest
 import org.apache.solr.common.SolrInputDocument
@@ -22,12 +20,12 @@ import java.io.File
 // https://solr.apache.org/guide/8_10/using-solrj.html
 // TODO: Create local objects for search results (see https://solr.apache.org/guide/8_10/using-solrj.html#java-object-binding)
 
-class SolrSearchIndex(val authorityId: Id, val config: SearchConfig) : SearchIndex {
+class SolrSearchIndex(val authorityId: Id, val config: SolrConfig) : SearchIndex {
     private val logger = KotlinLogging.logger("SolrSearchIndex")
 
-    private val solrClient: HttpSolrClient = HttpSolrClient.Builder(config.solr.baseUrl)
-        .withConnectionTimeout(config.solr.connectionTimeoutMillis)
-        .withSocketTimeout(config.solr.socketTimeoutMillis)
+    private val solrClient: HttpSolrClient = HttpSolrClient.Builder(config.baseUrl)
+        .withConnectionTimeout(config.connectionTimeoutMillis)
+        .withSocketTimeout(config.socketTimeoutMillis)
         .build()
 
     private val networkPath = File(System.getProperties()["user.dir"].toString(), "../network")

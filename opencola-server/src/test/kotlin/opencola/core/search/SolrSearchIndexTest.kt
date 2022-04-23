@@ -7,7 +7,7 @@ import org.junit.Test
 class SolrSearchIndexTest {
     private val authorityId = Id.ofData("authority".toByteArray())
     private val searchConfig = TestApplication.config.search
-    private val solrSearchIndex = SolrSearchIndex(authorityId, searchConfig)
+    private val solrSearchIndex = SolrSearchIndex(authorityId, searchConfig.solr!!)
 
     init {
         // Make sure we have a fresh index
