@@ -22,25 +22,37 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-      # opencola-server working directory
         working-directory: install
 
-    #borrowed from: https://github.com/marketplace/actions/setup-java-jdk
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-java@v3
+    
+    #step: Checkout code
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    #step: Set up Java env
+    - name: Build
+      uses: actions/setup-java@v3
       with:
         distribution: 'zulu'
-        java-version: '16'
+        java-version: '17'
         cache: 'gradle'
-      #uild everything with "install" script
-    - run: ./install
-      #remove the tgz file for the github workflow runs because it's redundant
-    - run: rm *.tgz
     
+    #step: Build
+    - name: Build with install script
+      run: ./install
+
+    #step: get the date for the build packages
+    - name: Get date for build outputs
+      id: date
+      #run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+      run: echo "date_string=$(date +'%Y-%m-%d_%H-%M-%S')" >> $GITHUB_ENV
+      
+    #step: upload build
     - name: Upload build
       uses: actions/upload-artifact@v3
       with:
-        name: oc-bld_${{ github.REF_NAME }}-${{ github.RUN_ATTEMPT }}-${{ runner.OS }}-${{ github.SHA }}
-        path: install/
+        name: oc_${{ env.date_string }}_${{ github.REF_NAME }}_${{ github.RUN_ID }}-${{ github.RUN_ATTEMPT }}_${{ env.TAG_NAME }}_${{ github.SHA }}
+        path: install/opencola/
+        retention-days: 3
 
