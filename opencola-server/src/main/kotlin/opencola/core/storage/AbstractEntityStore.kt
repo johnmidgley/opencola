@@ -1,7 +1,6 @@
 package opencola.core.storage
 
 import mu.KotlinLogging
-import opencola.core.content.MhtmlPage
 import opencola.core.content.TextExtractor
 import opencola.core.event.EventBus
 import opencola.core.event.Events
@@ -10,8 +9,6 @@ import opencola.core.extensions.nullOrElse
 import opencola.core.model.*
 import opencola.core.security.Signator
 import opencola.core.storage.EntityStore.*
-import org.apache.james.mime4j.message.DefaultMessageWriter
-import java.io.ByteArrayOutputStream
 import java.security.PublicKey
 
 // TODO: Should support multiple authorities
@@ -124,45 +121,6 @@ abstract class AbstractEntityStore(
         eventBus.sendMessage(Events.NewTransaction.toString(), SignedTransaction.encode(signedTransaction))
 
         return Pair(signedTransaction, transactionOrdinal)
-    }
-
-    override fun updateResource(mhtmlPage: MhtmlPage, actions: Actions): ResourceEntity {
-        // TODO: Add data id to resource entity - when indexing, index body from the dataEntity
-        // TODO: Parse description
-        // TODO - EntityStore should detect if a duplicate entity is added. Just merge it?
-        val writer = DefaultMessageWriter()
-        ByteArrayOutputStream().use { outputStream ->
-            writer.writeMessage(mhtmlPage.message, outputStream)
-            val pageBytes = outputStream.toByteArray()
-            val dataId = fileStore.write(pageBytes)
-            val mimeType = textExtractor.getType(pageBytes)
-            val resourceId = Id.ofUri(mhtmlPage.uri)
-            val entity = (getEntity(authority.authorityId, resourceId) ?: ResourceEntity(
-                authority.entityId,
-                mhtmlPage.uri
-            )) as ResourceEntity
-
-            // Add / update fields
-            // TODO - Check if setting null writes a retraction when fields are null
-            entity.dataId = dataId
-            entity.name = mhtmlPage.title
-            entity.text = mhtmlPage.text
-            entity.description = mhtmlPage.description
-            entity.imageUri = mhtmlPage.imageUri
-
-            actions.trust.nullOrElse { entity.trust = it }
-            actions.like.nullOrElse { entity.like = it }
-            actions.rating.nullOrElse { entity.rating = it }
-
-            val dataEntity = (getEntity(authority.authorityId, dataId) ?: DataEntity(
-                authority.entityId,
-                dataId,
-                mimeType
-            ))
-
-            updateEntities(entity, dataEntity)
-            return entity
-        }
     }
 
     override fun deleteEntity(authorityId: Id, entityId: Id) {

@@ -2,12 +2,10 @@ package opencola.server.handlers
 
 import io.ktor.application.*
 import io.ktor.http.*
-import io.ktor.http.content.*
 import io.ktor.request.*
 import io.ktor.response.*
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
-import opencola.core.content.parseMhtml
 import opencola.core.event.EventBus
 import opencola.core.event.Events
 import opencola.core.extensions.nullOrElse
@@ -17,7 +15,6 @@ import opencola.core.storage.EntityStore
 import opencola.core.storage.EntityStore.TransactionOrder
 import opencola.core.storage.MhtCache
 import opencola.service.search.SearchService
-import java.net.URI
 
 private val logger = KotlinLogging.logger("Handler")
 
@@ -82,69 +79,6 @@ suspend fun handleGetDataPartCall(call: ApplicationCall, authorityId: Id, mhtCac
     if (bytes != null) {
         val contentType = ContentType.fromFilePath(partName).firstOrNull()
         call.respondBytes(bytes, contentType = contentType)
-    }
-}
-
-
-fun handleAction(action: String, value: String?, entityStore: EntityStore, mhtml: ByteArray) {
-    val mhtmlPage = mhtml.inputStream().use { parseMhtml(it) ?: throw RuntimeException("Unable to parse mhtml") }
-
-    val actions = when (action) {
-        "save" -> Actions(save = true)
-        "like" -> Actions(like = value?.toBooleanStrict() ?: throw RuntimeException("No value specified for like"))
-        "trust" -> Actions(trust = value?.toFloat() ?: throw RuntimeException("No value specified for trust"))
-        else -> throw NotImplementedError("No handler for $action")
-    }
-
-    entityStore.updateResource(mhtmlPage, actions)
-}
-
-suspend fun handlePostActionCall(call: ApplicationCall, entityStore: EntityStore) {
-    val multipart = call.receiveMultipart()
-    var action: String? = null
-    var value: String? = null
-    var mhtml: ByteArray? = null
-
-    multipart.forEachPart { part ->
-        when (part) {
-            is PartData.FormItem -> {
-                when (part.name) {
-                    "action" -> action = part.value
-                    "value" -> value = part.value
-                    else -> throw IllegalArgumentException("Unknown FormItem in action request: ${part.name}")
-                }
-            }
-            is PartData.FileItem -> {
-                if (part.name != "mhtml") throw IllegalArgumentException("Unknown FileItem in action request: ${part.name}")
-                mhtml = part.streamProvider().use { it.readAllBytes() }
-            }
-            else -> throw IllegalArgumentException("Unknown part in request: ${part.name}")
-        }
-    }
-
-    if (action == null) {
-        throw IllegalArgumentException("No action specified for request")
-    }
-
-    if (value == null) {
-        throw IllegalArgumentException("No value specified for request")
-    }
-
-    if (mhtml == null) {
-        throw IllegalArgumentException("No mhtml specified for request")
-    }
-
-    handleAction(action as String, value, entityStore, mhtml as ByteArray)
-    call.respond(HttpStatusCode.Accepted)
-}
-
-suspend fun handleGetActionsCall(call: ApplicationCall, authorityId: Id, entityStore: EntityStore) {
-    val stringUri = call.parameters["uri"] ?: throw IllegalArgumentException("No uri set")
-    val entityId = Id.ofUri(URI(stringUri))
-    val entity = entityStore.getEntity(authorityId, entityId) as? ResourceEntity
-
-    if (entity != null) {
-        call.respond(Actions(true, entity.trust, entity.like, entity.rating))
     }
 }
 
