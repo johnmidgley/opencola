@@ -69,7 +69,7 @@ dependencies {
     implementation("org.jsoup:jsoup:1.14.3")
     implementation("org.apache.lucene:lucene-core:9.1.0")
     implementation("org.apache.lucene:lucene-queryparser:9.1.0")
-
+    implementation("org.jetbrains.kotlinx:kotlinx-cli:0.3.4")
 
     testImplementation("io.ktor:ktor-server-tests:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
