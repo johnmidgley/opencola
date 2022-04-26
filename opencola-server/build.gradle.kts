@@ -48,8 +48,6 @@ dependencies {
     // Logging: https://www.kotlinresources.com/library/kotlin-logging/
     implementation("io.github.microutils:kotlin-logging:2.1.21")
     implementation("org.slf4j:slf4j-api:1.7.36")
-    implementation("ch.qos.logback:logback-classic:1.2.11")
-    implementation("ch.qos.logback:logback-core:1.2.11")
     implementation("com.lordcodes.turtle:turtle:0.6.0")
     implementation("org.apache.james:apache-mime4j-core:0.8.6")
     implementation("org.apache.james:apache-mime4j-dom:0.8.6")
@@ -61,6 +59,7 @@ dependencies {
     implementation("io.ktor:ktor-client-cio:$ktor_version")
     implementation("io.ktor:ktor-client-serialization:$ktor_version")
     implementation("ch.qos.logback:logback-classic:$logback_version")
+    implementation("ch.qos.logback:logback-core:$logback_version")
     implementation("org.bouncycastle:bcprov-jdk15on:1.70")
     implementation("com.sksamuel.hoplite:hoplite-core:1.4.16")
     implementation("com.sksamuel.hoplite:hoplite-yaml:1.4.16")
