@@ -12,15 +12,13 @@ import opencola.core.extensions.nullOrElse
 import opencola.core.model.*
 import opencola.core.storage.EntityStore
 import opencola.core.storage.FileStore
+import opencola.service.EntityResult
 import org.apache.james.mime4j.message.DefaultMessageWriter
 import java.io.ByteArrayOutputStream
 import java.net.URI
 
 fun updateResource(authorityId: Id, entityStore: EntityStore, fileStore: FileStore, textExtractor: TextExtractor,
                    mhtmlPage: MhtmlPage, actions: Actions): ResourceEntity {
-    // TODO: Add data id to resource entity - when indexing, index body from the dataEntity
-    // TODO: Parse description
-    // TODO - EntityStore should detect if a duplicate entity is added. Just merge it?
     val writer = DefaultMessageWriter()
     ByteArrayOutputStream().use { outputStream ->
         writer.writeMessage(mhtmlPage.message, outputStream)
