@@ -120,7 +120,7 @@ class EntityStoreTest {
         val transaction = entityStore.getTransaction(signedTransaction.transaction.id)
         assertNotNull(transaction)
 
-        val transactionsFromNull = entityStore.getSignedTransactions(listOf(authority.authorityId), null, TransactionOrder.Ascending, 100)
+        val transactionsFromNull = entityStore.getSignedTransactions(listOf(authority.authorityId), null, TransactionOrder.IdAscending, 100)
         assertNotNull(transactionsFromNull.firstOrNull{ it.transaction.id == transaction.transaction.id})
     }
 
@@ -139,32 +139,32 @@ class EntityStoreTest {
         val transactions = entities.map{ entityStore.updateEntities(it)!! }
         val transactionIds = transactions.map{ it.transaction.id }
 
-        val firstTransaction = entityStore.getSignedTransactions(listOf(authority.authorityId), null, TransactionOrder.Ascending, 1).firstOrNull()
+        val firstTransaction = entityStore.getSignedTransactions(listOf(authority.authorityId), null, TransactionOrder.IdAscending, 1).firstOrNull()
         assertNotNull(firstTransaction)
         assertEquals(transactions.first(), firstTransaction)
 
-        val firstTransactionAll = entityStore.getSignedTransactions(emptyList(), null, TransactionOrder.Ascending, 1).firstOrNull()
+        val firstTransactionAll = entityStore.getSignedTransactions(emptyList(), null, TransactionOrder.IdAscending, 1).firstOrNull()
         assertNotNull(firstTransactionAll)
         assertEquals(transactions.first(), firstTransaction)
 
-        val lastTransaction = entityStore.getSignedTransactions(listOf(authority.authorityId), null, TransactionOrder.Descending, 1).firstOrNull()
+        val lastTransaction = entityStore.getSignedTransactions(listOf(authority.authorityId), null, TransactionOrder.IdDescending, 1).firstOrNull()
         assertNotNull(lastTransaction)
         assertEquals(entities.last().entityId, lastTransaction.transaction.transactionEntities.first().entityId)
 
-        val lastTransactionAll = entityStore.getSignedTransactions(emptyList(), null, TransactionOrder.Descending, 1).firstOrNull()
+        val lastTransactionAll = entityStore.getSignedTransactions(emptyList(), null, TransactionOrder.IdDescending, 1).firstOrNull()
         assertNotNull(lastTransactionAll)
         assertEquals(transactions.last(), lastTransactionAll)
 
-        val middleTransactionsForward = entityStore.getSignedTransactions(listOf(authority.authorityId), transactionIds[1], TransactionOrder.Ascending, 10)
+        val middleTransactionsForward = entityStore.getSignedTransactions(listOf(authority.authorityId), transactionIds[1], TransactionOrder.IdAscending, 10)
         assertEquals(transactions.drop(1), middleTransactionsForward)
 
-        val middleTransactionsBackward = entityStore.getSignedTransactions(listOf(authority.authorityId), transactionIds[1], TransactionOrder.Descending, 10)
+        val middleTransactionsBackward = entityStore.getSignedTransactions(listOf(authority.authorityId), transactionIds[1], TransactionOrder.IdDescending, 10)
         assertEquals(transactions.reversed().drop(1), middleTransactionsBackward)
 
-        val allTransactionsForward = entityStore.getSignedTransactions(emptyList(), null, TransactionOrder.Ascending, 10)
+        val allTransactionsForward = entityStore.getSignedTransactions(emptyList(), null, TransactionOrder.IdAscending, 10)
         assertEquals(transactions, allTransactionsForward)
 
-        val allTransactionsBackward = entityStore.getSignedTransactions(emptyList(), null, TransactionOrder.Descending, 10)
+        val allTransactionsBackward = entityStore.getSignedTransactions(emptyList(), null, TransactionOrder.IdDescending, 10)
         assertEquals(transactions.reversed(), allTransactionsBackward)
 
         // TODO - Add tests across AuthorityIds

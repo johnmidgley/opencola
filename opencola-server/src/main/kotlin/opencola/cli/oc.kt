@@ -29,7 +29,7 @@ fun exportTransactions(application: Application, args: List<String>){
     println("Exporting transactions to: ${args.first()} batch size: $batchSize")
 
     Path(args.first()).outputStream().use { stream ->
-        var transactions = entityStore.getSignedTransactions(emptyList(), null, EntityStore.TransactionOrder.Ascending, batchSize)
+        var transactions = entityStore.getSignedTransactions(emptyList(), null, EntityStore.TransactionOrder.IdAscending, batchSize)
 
         while (true) {
             transactions.forEach{
@@ -41,7 +41,7 @@ fun exportTransactions(application: Application, args: List<String>){
                 break
             }
 
-            transactions = entityStore.getSignedTransactions(emptyList(), transactions.last().transaction.id, EntityStore.TransactionOrder.Ascending, batchSize + 1).drop(1)
+            transactions = entityStore.getSignedTransactions(emptyList(), transactions.last().transaction.id, EntityStore.TransactionOrder.IdAscending, batchSize + 1).drop(1)
         }
     }
 }

@@ -112,7 +112,7 @@ fun getEntityFacts(entityStore: EntityStore, authorityId: Id, entityIds: Iterabl
 
 fun getEntityIds(entityStore: EntityStore, searchIndex: SearchIndex, query: String?): List<Id> {
     val entityIds =  if (query == null || query.trim().isEmpty()){
-        val signedTransactions = entityStore.getSignedTransactions(emptyList(),null, EntityStore.TransactionOrder.Descending,100) // TODO: Config limit
+        val signedTransactions = entityStore.getSignedTransactions(emptyList(),null, EntityStore.TransactionOrder.TimeDescending,100) // TODO: Config limit
         signedTransactions.flatMap { tx -> tx.transaction.transactionEntities.map { it.entityId } }
     } else {
         searchIndex.search(query).map { it.entityId }

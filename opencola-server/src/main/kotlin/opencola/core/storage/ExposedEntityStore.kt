@@ -45,7 +45,7 @@ class ExposedEntityStore(
     private class Transactions(authorityId: Id) : LongIdTable("txs-${authorityId}") {
         val transactionId = binary("transactionId", 32).uniqueIndex()
         val authorityId = binary("authorityId", 32)
-        val epochSecond = long("epochSecond")
+        val epochSecond = long("epochSecond").index()
         val encoded = blob("encoded")
     }
 
@@ -65,7 +65,7 @@ class ExposedEntityStore(
     }
 
     // TODO: Ids are not the same as time - switch to time ordering?
-    private fun Op<Boolean>.withTableIdOrdering(
+    private fun Op<Boolean>.withLongColumnOrdering(
         column: Column<EntityID<Long>>,
         id: Long?,
         ascending: Boolean
@@ -90,15 +90,36 @@ class ExposedEntityStore(
 
     }
 
+    private fun getOrderColumn(order: TransactionOrder): Column<*> {
+        return when(order){
+            TransactionOrder.IdAscending -> transactions.id
+            TransactionOrder.IdDescending -> transactions.id
+            TransactionOrder.TimeAscending -> transactions.epochSecond
+            TransactionOrder.TimeDescending -> transactions.epochSecond
+        }
+    }
+
+    private fun isAscending(order: TransactionOrder): Boolean {
+        return when (order){
+            TransactionOrder.IdAscending -> true
+            TransactionOrder.IdDescending -> false
+            TransactionOrder.TimeAscending -> true
+            TransactionOrder.TimeDescending -> false
+        }
+    }
+
     private fun transactionsByAuthoritiesQuery(authorityIds: List<Id>, id: Long?, order: TransactionOrder): Query {
+        val orderColumn = getOrderColumn(order)
+        val isAscending = isAscending(order)
+
         return transactions
             .select {
                 (transactions.id greaterEq 0) // Not elegant, but avoids separate selectAll clause when no constraints provided
-                    .withTableIdOrdering(transactions.id, id, order == TransactionOrder.Ascending)
+                    .withLongColumnOrdering(transactions.id, id, isAscending)
                     .withIdConstraint(transactions.authorityId, authorityIds)
             }
             // TODO: order by transactions.id or transactions.epochSecond??
-            .orderBy(transactions.id to if (order == TransactionOrder.Ascending) SortOrder.ASC else SortOrder.DESC)
+            .orderBy(orderColumn to if (isAscending) SortOrder.ASC else SortOrder.DESC)
     }
 
     private fun startRowQuery(

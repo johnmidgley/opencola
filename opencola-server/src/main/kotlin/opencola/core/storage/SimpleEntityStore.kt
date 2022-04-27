@@ -4,6 +4,7 @@ import opencola.core.content.TextExtractor
 import opencola.core.event.EventBus
 import opencola.core.model.*
 import opencola.core.security.Signator
+import opencola.core.storage.EntityStore.TransactionOrder
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import kotlin.io.path.deleteIfExists
@@ -58,15 +59,24 @@ class SimpleEntityStore(
         return Entity.fromFacts(facts.filter { it.authorityId == authorityId && it.entityId == entityId }.toList())
     }
 
+    private fun orderedTransactions(order: TransactionOrder): List<SignedTransaction> {
+        return when(order){
+            TransactionOrder.IdAscending -> transactions
+            TransactionOrder.IdDescending -> transactions.reversed()
+            TransactionOrder.TimeAscending -> transactions.sortedBy { it.transaction.epochSecond }
+            TransactionOrder.TimeDescending -> transactions.sortedByDescending { it.transaction.epochSecond }
+        }
+    }
+
     override fun getSignedTransactions(
         authorityIds: Iterable<Id>,
         startTransactionId: Id?,
-        order: EntityStore.TransactionOrder,
+        order: TransactionOrder,
         limit: Int
     ): Iterable<SignedTransaction> {
         val authorityIdList = authorityIds.toList()
 
-        return (if (order == EntityStore.TransactionOrder.Ascending) transactions else transactions.reversed())
+        return orderedTransactions(order)
             .dropWhile { startTransactionId != null && it.transaction.id != startTransactionId }
             .filter { authorityIdList.isEmpty() || authorityIdList.contains(it.transaction.authorityId) }
             .take(limit)

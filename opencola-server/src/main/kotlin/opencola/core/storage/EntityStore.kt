@@ -6,8 +6,10 @@ import opencola.core.model.*
 
 interface EntityStore {
     enum class TransactionOrder {
-        Ascending,
-        Descending,
+        IdAscending,
+        IdDescending,
+        TimeAscending,
+        TimeDescending,
     }
 
     // TODO: Separate fact store from entity store?
@@ -23,13 +25,13 @@ interface EntityStore {
     fun resetStore() : EntityStore
 
     fun getLastTransactionId(authorityId: Id): Id? {
-        return getSignedTransactions(listOf(authorityId), null, TransactionOrder.Descending, 1)
+        return getSignedTransactions(listOf(authorityId), null, TransactionOrder.IdDescending, 1)
             .firstOrNull()
             .ifNotNullOrElse( { it.transaction.id }, { null } )
     }
 
     fun getTransaction(transactionId: Id): SignedTransaction? {
-        return getSignedTransactions(listOf(), transactionId, TransactionOrder.Ascending, 1).firstOrNull()
+        return getSignedTransactions(listOf(), transactionId, TransactionOrder.IdAscending, 1).firstOrNull()
     }
 
     fun getSignedTransactions(authorityId: Id, startTransactionId: Id?, order: TransactionOrder, limit: Int) : Iterable<SignedTransaction> {

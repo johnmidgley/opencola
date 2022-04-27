@@ -48,7 +48,7 @@ suspend fun handleGetTransactionsCall(call: ApplicationCall, entityStore: Entity
     val transactions = entityStore.getSignedTransactions(
         authorityId,
         transactionId,
-        TransactionOrder.Ascending,
+        TransactionOrder.IdAscending,
         numTransactions
     ).drop(extra)
 

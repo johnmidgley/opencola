@@ -112,7 +112,7 @@ abstract class AbstractEntityStore(
     @Synchronized
     private fun persistTransaction(authorityId: Id, facts: List<Fact>) : Pair<SignedTransaction, Long> {
         val nextTransactionId =
-            getSignedTransactions(listOf(authorityId), null, TransactionOrder.Descending, 1)
+            getSignedTransactions(listOf(authorityId), null, TransactionOrder.IdDescending, 1)
                 .firstOrNull()
                 .ifNotNullOrElse({ Id.ofData(SignedTransaction.encode(it)) }, { getFirstTransactionId(authorityId) })
 
