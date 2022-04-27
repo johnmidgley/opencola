@@ -18,10 +18,9 @@ import java.net.URI
 class PeerTransactionTest {
     private val logger = KotlinLogging.logger("PeerTransactionTest")
     private val basePortNumber: Int = 6000
-    private val baseConfig = TestApplication.config
 
     private fun getApplications(nServers: Int): List<Application> {
-        return getApplications(nServers, baseConfig, basePortNumber)
+        return getApplications(TestApplication.applicationPath, TestApplication.storagePath, TestApplication.config, basePortNumber, nServers)
     }
 
     private fun startServer(engine: NettyApplicationEngine){

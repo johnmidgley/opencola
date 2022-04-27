@@ -15,6 +15,7 @@ import java.time.Instant
 import java.util.*
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectory
+import kotlin.io.path.exists
 
 object TestApplication {
     private val authorityPublicKey = publicKeyFromBytes("3059301306072a8648ce3d020106082a8648ce3d030107034200043afa5d5e418d40dcce131c15cc0338e2be043584b168f3820ddc120259641973edff721756948b0bb8833b486fbde224b5e4987432383f79c3e013ebc40f0dc3".hexStringToByteArray())
@@ -22,15 +23,22 @@ object TestApplication {
 
     val applicationPath = Path(System.getProperty("user.dir"))
     val testRunName = Instant.now().epochSecond.toString()
+    val storagePath: Path = applicationPath.resolve("../test/storage/").resolve(testRunName)
+
+    init{
+        if(!storagePath.exists()){
+            storagePath.createDirectory()
+        }
+    }
 
     val instance by lazy {
         val authority = Authority(authorityPublicKey)
         val keyStore = KeyStore(
-            config.storage.path.resolve(config.security.keystore.name),
+            storagePath.resolve(config.security.keystore.name),
             config.security.keystore.password
         )
         keyStore.addKey(authority.authorityId, KeyPair(authorityPublicKey, authorityPrivateKey))
-        val instance =  Application.instance(config, authorityPublicKey)
+        val instance =  Application.instance(applicationPath, storagePath, config, authorityPublicKey)
         val index by instance.injector.instance<SearchIndex>()
 
         // Clear out any existing index
@@ -42,15 +50,14 @@ object TestApplication {
     }
 
     val config by lazy {
-        val baseConfig = loadConfig(applicationPath, "opencola-test.yaml")
-        baseConfig.setStoragePath(applicationPath.resolve(baseConfig.storage.path).resolve(testRunName))
+        loadConfig(applicationPath.resolve("../test/storage"), "opencola-test.yaml")
     }
 
     fun getTmpFilePath(suffix: String): Path {
-        return config.storage.path.resolve("${UUID.randomUUID()}$suffix")
+        return storagePath.resolve("${UUID.randomUUID()}$suffix")
     }
 
     fun createStorageDirectory(name: String) : Path {
-        return config.storage.path.resolve("$name").createDirectory()
+        return storagePath.resolve(name).createDirectory()
     }
 }

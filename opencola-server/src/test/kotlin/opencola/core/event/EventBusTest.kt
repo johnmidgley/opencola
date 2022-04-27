@@ -24,7 +24,7 @@ class EventBusTest{
     @Test
     fun testEventBus(){
         val reactor = MessageReactor()
-        val eventBus = EventBus(TestApplication.config.storage.path, EventBusConfig())
+        val eventBus = EventBus(TestApplication.storagePath, EventBusConfig())
         eventBus.start(reactor)
 
         eventBus.sendMessage("1", "1".toByteArray())

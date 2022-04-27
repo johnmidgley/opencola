@@ -27,22 +27,12 @@ import kotlin.io.path.exists
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
-class Application(val config: Config, val injector: DI) {
+class Application(val applicationPath: Path, val storagePath: Path, val config: Config, val injector: DI) {
     val logger = KotlinLogging.logger("opencola.${config.name}")
 
     companion object Global {
         // TODO: Remove - create loggers by component / namespace
         val logger = KotlinLogging.logger("opencola.init")
-
-        fun getStoragePath(applicationPath: Path, config: Config): Path {
-            val storagePath = applicationPath.resolve(config.storage.path)
-
-            if(!storagePath.exists()){
-                storagePath.createDirectory()
-            }
-
-            return storagePath
-        }
 
         // TODO: pub key should come from private store, not authority.pub, and multiple authorities (personas) should be allowed
         // TODO: Move to Identity Service
@@ -70,12 +60,15 @@ class Application(val config: Config, val injector: DI) {
             return publicKey
         }
 
-        fun instance(config: Config, authorityPublicKey: PublicKey): Application {
+        fun instance(applicationPath: Path, storagePath: Path, config: Config, authorityPublicKey: PublicKey): Application {
+            if(!storagePath.exists()){
+                storagePath.createDirectory()
+            }
+
             // TODO: Change from authority to public key - they authority should come from the private store based on the private key
-            val storagePath = config.storage.path
             val authority = Authority(authorityPublicKey)
             val keyStore = KeyStore(storagePath.resolve(config.security.keystore.name), config.security.keystore.password)
-            val fileStore = LocalFileStore(storagePath.resolve(config.storage.filestore.name))
+            val fileStore = LocalFileStore(storagePath.resolve("filestore"))
             val sqLiteDB = SQLiteDB(storagePath.resolve("${authority.authorityId}.db")).db
 
             val injector = DI {
@@ -101,7 +94,7 @@ class Application(val config: Config, val injector: DI) {
 
             eventBus.start(reactor)
 
-            return Application(config, injector)
+            return Application(applicationPath, storagePath, config, injector)
         }
     }
 }

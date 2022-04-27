@@ -86,18 +86,19 @@ fun transactions(application: Application, args: Iterable<String>){
 }
 
 fun cleanStorage(application: Application, commandArgs: Iterable<String>) {
-    if (commandArgs.count() != 1 || commandArgs.first() != "-f"){
-        println("reset storage: illegal arguments ${commandArgs.joinToString(" ")}")
-        return
-    }
-
-    val storagePath = File(application.config.storage.path.toString())
-
-    println("Cleaning storage directory:")
-    val result = shellRun(storagePath){
-        command("./clean", listOf("-f"))
-    }
-    println(result)
+    TODO("Fix")
+//    if (commandArgs.count() != 1 || commandArgs.first() != "-f"){
+//        println("reset storage: illegal arguments ${commandArgs.joinToString(" ")}")
+//        return
+//    }
+//
+//    val storagePath = File(application.config.storage.path.toString())
+//
+//    println("Cleaning storage directory:")
+//    val result = shellRun(storagePath){
+//        command("./clean", listOf("-f"))
+//    }
+//    println(result)
 }
 
 
@@ -113,10 +114,11 @@ fun storage(application: Application, args: Iterable<String>){
 
 
 private val application: Application by lazy {
-    val applicationPath = Path(System.getProperty("user.dir"))
-    val config = loadConfig(applicationPath, "opencola-server.yaml")
-    val publicKey = Application.getOrCreateRootPublicKey(applicationPath.resolve(config.storage.path), config.security)
-    Application.instance(config, publicKey)
+    TODO("Replace with proper config")
+//    val applicationPath = Path(System.getProperty("user.dir"))
+//    val config = loadConfig(applicationPath, "opencola-server.yaml")
+//    val publicKey = Application.getOrCreateRootPublicKey(applicationPath.resolve(config.storage.path), config.security)
+//    Application.instance(config, publicKey)
 }
 
 fun main(args: Array<String>) {

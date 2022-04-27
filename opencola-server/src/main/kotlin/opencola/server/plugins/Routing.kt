@@ -103,9 +103,10 @@ fun Application.configureRouting(application: app) {
         }
 
         static(""){
-            logger.info("Initializing static resources from ${Path(System.getProperty("user.dir"))} ")
-            file("/", "resources/index.html")
-            files("resources")
+            val resourcePath = application.applicationPath.resolve("resources")
+            logger.info("Initializing static resources from $resourcePath")
+            file("/", resourcePath.resolve("index.html").toString())
+            files(resourcePath.toString())
         }
     }
 }

@@ -24,10 +24,9 @@ class EntityStoreTest {
     private val fileStore by app.injector.instance<FileStore>()
     private val textExtractor by app.injector.instance<TextExtractor>()
     private val addressBook by app.injector.instance<AddressBook>()
-    // TODO: Make .txs and .db use the test run folder - currently save directly in the test folder
-    private val simpleEntityStorePath = app.config.storage.path.resolve("${TestApplication.testRunName}.txs")
+    private val simpleEntityStorePath = app.storagePath.resolve("${TestApplication.testRunName}.txs")
     private val getSimpleEntityStore = { SimpleEntityStore(simpleEntityStorePath, eventBus, fileStore, textExtractor, addressBook, authority, signator) }
-    private val sqLiteEntityStorePath = app.config.storage.path.resolve("${TestApplication.testRunName}.db")
+    private val sqLiteEntityStorePath = app.storagePath.resolve("${TestApplication.testRunName}.db")
     private val getSQLiteEntityStore = { ExposedEntityStore(authority, eventBus, fileStore, textExtractor, addressBook, signator, SQLiteDB(sqLiteEntityStorePath).db) }
 
     // TODO: Remove these and switch to functions below
@@ -174,7 +173,7 @@ class EntityStoreTest {
     // TODO: This only tests the entity store that is used in the test config (i.e. SimpleEntityStore is not tested)
     @Test
     fun testGetFacts(){
-        val applications = getApplications(2, TestApplication.config, 6000)
+        val applications = getApplications(TestApplication.applicationPath, TestApplication.storagePath, TestApplication.config, 6000, 2)
 
         // Create some entities for first authority
         val authority0 by applications[0].injector.instance<Authority>()

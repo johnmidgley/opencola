@@ -6,7 +6,7 @@ import org.junit.Test
 
 class LuceneSearchIndexTest {
     private val authorityId = Id.ofData("authority".toByteArray())
-    private val luceneSearchIndex = LuceneSearchIndex(authorityId, TestApplication.config.storage.path.resolve("lucene"))
+    private val luceneSearchIndex = LuceneSearchIndex(authorityId, TestApplication.storagePath.resolve("lucene"))
 
     @Test
     fun testIndexLucene(){
