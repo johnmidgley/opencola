@@ -1,17 +1,25 @@
 package opencola.core.model
 
 import mu.KotlinLogging
-import opencola.core.extensions.currentFacts
 import opencola.core.extensions.nullOrElse
 
 abstract class Entity(val authorityId: Id, val entityId: Id) {
     companion object Factory {
         private val logger = KotlinLogging.logger("Entity")
 
+        private fun currentFacts(facts: Iterable<Fact>) : List<Fact> {
+            // Assumes facts have been sorted by transactionOrdinal
+            // TODO: Won't work for multivalued attributes - fix when supported
+            return facts
+                .groupBy { it.attribute }
+                .map{ it.value.last() }
+                .filter { it.operation != Operation.Retract }
+        }
+
         // TODO: Iterable<Fact> instead of List<Fact> for any parameters
         fun fromFacts(facts: List<Fact>): Entity? {
-            val sortedFacts = facts.sortedBy { it.transactionOrdinal }
-            val currentFacts = sortedFacts.currentFacts()
+            val sortedFacts = facts.sortedBy { it.transactionOrdinal ?: Long.MAX_VALUE }
+            val currentFacts = currentFacts(sortedFacts)
             if (currentFacts.isEmpty()) return null
 
             // TODO: Validate that all subjects and entities are equal

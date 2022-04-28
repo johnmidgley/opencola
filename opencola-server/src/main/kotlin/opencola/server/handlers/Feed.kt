@@ -83,6 +83,8 @@ fun getEntityActivitiesFromFacts(entityFacts: Iterable<Fact>, idToAuthority: (Id
 
     return entityFacts
         .sortedByDescending { it.epochSecond }
+        // TODO: This is problematic. If you delete an entity and then re-add it, old activity will show up.
+        //  Instead of doing this by transaction, facts should be filtered to all non-retracted facts first
         .groupBy { Pair(it.authorityId, it.transactionOrdinal) }
         .map {
             val (authorityId, _) = it.key
