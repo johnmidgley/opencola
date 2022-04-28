@@ -11,6 +11,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
+import opencola.core.event.EventBus
+import opencola.core.event.Events
 import opencola.core.model.Id
 import opencola.core.model.Peer
 import opencola.core.network.PeerRouter.PeerStatus.*
@@ -21,9 +23,9 @@ import java.io.InputStream
 import java.io.OutputStream
 
 // TODO: Should respond to changes in address book
-class PeerRouter(addressBook: AddressBook) {
+class PeerRouter(private val addressBook: AddressBook, private val eventBus: EventBus) {
     private val logger = KotlinLogging.logger("PeerRouter")
-    private val peerIdToStatusMap = addressBook.peers.associate { Pair(it.id, PeerStatus(it)) }
+    private val peerIdToStatusMap = this.addressBook.peers.associate { Pair(it.id, PeerStatus(it)) }
     val peers: List<Peer> get() { return peerIdToStatusMap.values.map { it.peer }}
 
     fun getPeer(peerId: Id): Peer? {
@@ -79,11 +81,17 @@ class PeerRouter(addressBook: AddressBook) {
         }
     }
 
-    fun updateStatus(peerId: Id, status: Status): Status {
+    fun updateStatus(peerId: Id, status: Status, suppressNotifications: Boolean = false): Status {
+        logger.info { "Updating peer $peerId to $status" }
         val peer = peerIdToStatusMap[peerId] ?: throw IllegalArgumentException("Attempt to update status for unknown peer: $peerId")
-        val currentStatus = peer.status
+        val previousStatus = peer.status
         peer.status = status
-        return currentStatus
+
+        if(!suppressNotifications && status != previousStatus && status == Online){
+            eventBus.sendMessage(Events.PeerNotification.toString(), Notification(peerId, Event.Online).encode())
+        }
+
+        return previousStatus
     }
 
     private suspend fun sendMessage(peerStatus: PeerStatus, path: String, message: Any){

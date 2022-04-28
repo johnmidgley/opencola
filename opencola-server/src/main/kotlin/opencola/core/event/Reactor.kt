@@ -74,14 +74,18 @@ class MainReactor(
                 val transactionsResponse: TransactionsResponse =
                     httpClient.get(urlString)
 
-                peerRouter.updateStatus(peer.id, Online)
+                // Suppress notifications, otherwise will trigger another transactions request
+                // TODO: Seems a bit messy. Is there a cleaner way to handle switch to online
+                //  without having to specify suppression?
+                peerRouter.updateStatus(peer.id, Online, true)
 
                 if(transactionsResponse.transactions.isEmpty())
                     break
 
                 entityStore.addSignedTransactions(transactionsResponse.transactions)
+                peerTransactionId = transactionsResponse.transactions.last().transaction.id
 
-                if(transactionsResponse.transactions.last().transaction.id == transactionsResponse.currentTransactionId)
+                if(peerTransactionId == transactionsResponse.currentTransactionId)
                     break
             }
         }
@@ -120,6 +124,7 @@ class MainReactor(
 
         if (signedTransaction.transaction.authorityId == authority.authorityId) {
             // Transaction originated locally, so inform peers
+            logger.info { "Broadcasting new transaction notification" }
             peerRouter.broadcastMessage(
                 "notifications",
                 PeerRouter.Notification(signedTransaction.transaction.authorityId, PeerRouter.Event.NewTransaction)
@@ -150,12 +155,11 @@ class MainReactor(
     }
 
     private fun handlePeerNotification(event: Event){
-        logger.info { "Handling peer notification" }
         val notification = ByteArrayInputStream(event.data).use { PeerRouter.Notification.decode(it) }
-        val previousStatus = peerRouter.updateStatus(notification.peerId, Online)
+        logger.info { "Handling notification for peer ${notification.peerId} event: ${notification.event}" }
 
         when(notification.event){
-            PeerRouter.Event.Online -> { if(previousStatus == Offline) requestTransactions(notification.peerId) }
+            PeerRouter.Event.Online -> { requestTransactions(notification.peerId) }
             PeerRouter.Event.NewTransaction -> requestTransactions(notification.peerId)
         }
     }

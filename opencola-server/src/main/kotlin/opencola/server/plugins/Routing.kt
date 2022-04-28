@@ -16,7 +16,6 @@ import opencola.core.storage.MhtCache
 import opencola.server.handlers.*
 import opencola.service.search.SearchService
 import org.kodein.di.instance
-import kotlin.io.path.Path
 import opencola.core.config.Application as app
 
 // TODO: All routes should authenticate caller and authorize activity. Right now everything is open
@@ -51,14 +50,14 @@ fun Application.configureRouting(application: app) {
 
         get("/transactions/{authorityId}"){
             val entityStore by injector.instance<EntityStore>()
-            val eventBus by injector.instance<EventBus>()
-            handleGetTransactionsCall(call, entityStore, eventBus)
+            val peerRouter by injector.instance<PeerRouter>()
+            handleGetTransactionsCall(call, entityStore, peerRouter)
         }
 
         get("/transactions/{authorityId}/{mostRecentTransactionId}"){
             val entityStore by injector.instance<EntityStore>()
-            val eventBus by injector.instance<EventBus>()
-            handleGetTransactionsCall(call, entityStore, eventBus)
+            val peerRouter by injector.instance<PeerRouter>()
+            handleGetTransactionsCall(call, entityStore, peerRouter)
         }
 
         get("/data/{id}"){

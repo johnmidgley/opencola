@@ -11,6 +11,7 @@ import opencola.core.event.Events
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.*
 import opencola.core.network.PeerRouter
+import opencola.core.network.PeerRouter.PeerStatus.Status.Online
 import opencola.core.storage.EntityStore
 import opencola.core.storage.EntityStore.TransactionOrder
 import opencola.core.storage.MhtCache
@@ -34,13 +35,19 @@ data class TransactionsResponse(
 //TODO: This should return transactions until the root transaction, not all transactions for the authority in the
 // store, as the user a peer may have deleted their store, which creates a new HEAD. Only the transaction for the
 // current chain should be propagated to other peers
-suspend fun handleGetTransactionsCall(call: ApplicationCall, entityStore: EntityStore, eventBus: EventBus) {
+suspend fun handleGetTransactionsCall(call: ApplicationCall, entityStore: EntityStore, peerRouter: PeerRouter) {
     val authorityId =
         Id.fromHexString(call.parameters["authorityId"] ?: throw IllegalArgumentException("No authorityId set"))
     val peerId = Id.fromHexString(call.parameters["peerId"] ?: throw IllegalArgumentException("No peerId set"))
     val transactionId = call.parameters["mostRecentTransactionId"].nullOrElse { Id.fromHexString(it) }
 
     logger.info { "handleGetTransactionsCall authorityId: $authorityId, peerId: $peerId, transactionId: $transactionId" }
+
+    if(peerRouter.getPeer(peerId) == null){
+        logger.error { "Attempt to request transactions from an unknown peer: $peerId" }
+        call.respond(HttpStatusCode.Unauthorized)
+        return
+    }
 
     val extra = (if (transactionId == null) 0 else 1)
     val numTransactions = (call.parameters["numTransactions"].nullOrElse { it.toInt() } ?: 10) + extra
@@ -52,10 +59,8 @@ suspend fun handleGetTransactionsCall(call: ApplicationCall, entityStore: Entity
         numTransactions
     ).drop(extra)
 
-    // TODO: This is sending unnecessary events (if we know the peer is already online). Check peer status here?
-    eventBus.sendMessage(Events.PeerNotification.toString(), PeerRouter.Notification(peerId, PeerRouter.Event.Online).encode())
+    peerRouter.updateStatus(peerId, Online)
     call.respond(TransactionsResponse(transactionId, currentTransactionId, transactions.toList()))
-
 }
 
 suspend fun handleGetDataCall(call: ApplicationCall, mhtCache: MhtCache, authorityId: Id) {
@@ -85,6 +90,7 @@ suspend fun handleGetDataPartCall(call: ApplicationCall, authorityId: Id, mhtCac
 // TODO - This should change to handlePeerEvent
 suspend fun handlePostNotifications(call: ApplicationCall, eventBus: EventBus) {
     val notification = call.receive<PeerRouter.Notification>()
+    logger.info { "Received notification: $notification" }
     eventBus.sendMessage(Events.PeerNotification.toString(), notification.encode())
     call.respond(HttpStatusCode.OK)
 }

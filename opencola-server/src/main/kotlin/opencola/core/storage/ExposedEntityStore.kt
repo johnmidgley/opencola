@@ -5,7 +5,7 @@ import opencola.core.event.EventBus
 import opencola.core.model.*
 import opencola.core.security.Signator
 import opencola.core.storage.EntityStore.TransactionOrder
-import org.jetbrains.exposed.dao.id.EntityID
+import opencola.core.storage.EntityStore.TransactionOrder.*
 import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -66,17 +66,17 @@ class ExposedEntityStore(
 
     // TODO: Ids are not the same as time - switch to time ordering?
     private fun Op<Boolean>.withLongColumnOrdering(
-        column: Column<EntityID<Long>>,
-        id: Long?,
+        column: Column<*>,
+        value: Long?,
         ascending: Boolean
     ): Op<Boolean> {
-        return if (id == null)
+        return if (value == null)
             this
         else {
             if (ascending)
-                this.and(column greaterEq id)
+                this.and(column greaterEq value)
             else
-                this.and(column lessEq id)
+                this.and(column lessEq value)
         }
     }
 
@@ -92,19 +92,19 @@ class ExposedEntityStore(
 
     private fun getOrderColumn(order: TransactionOrder): Column<*> {
         return when(order){
-            TransactionOrder.IdAscending -> transactions.id
-            TransactionOrder.IdDescending -> transactions.id
-            TransactionOrder.TimeAscending -> transactions.epochSecond
-            TransactionOrder.TimeDescending -> transactions.epochSecond
+            IdAscending -> transactions.id
+            IdDescending -> transactions.id
+            TimeAscending -> transactions.epochSecond
+            TimeDescending -> transactions.epochSecond
         }
     }
 
     private fun isAscending(order: TransactionOrder): Boolean {
         return when (order){
-            TransactionOrder.IdAscending -> true
-            TransactionOrder.IdDescending -> false
-            TransactionOrder.TimeAscending -> true
-            TransactionOrder.TimeDescending -> false
+            IdAscending -> true
+            IdDescending -> false
+            TimeAscending -> true
+            TimeDescending -> false
         }
     }
 
@@ -114,8 +114,8 @@ class ExposedEntityStore(
 
         return transactions
             .select {
-                (transactions.id greaterEq 0) // Not elegant, but avoids separate selectAll clause when no constraints provided
-                    .withLongColumnOrdering(transactions.id, id, isAscending)
+                (orderColumn greaterEq 0) // Not elegant, but avoids separate selectAll clause when no constraints provided
+                    .withLongColumnOrdering(orderColumn, id, isAscending)
                     .withIdConstraint(transactions.authorityId, authorityIds)
             }
             // TODO: order by transactions.id or transactions.epochSecond??
@@ -133,6 +133,14 @@ class ExposedEntityStore(
             transactions.select { transactions.transactionId eq Id.encode(startTransactionId) }
     }
 
+    private fun getStartValue(order: TransactionOrder, row: ResultRow): Long {
+        return when(order){
+            IdAscending -> row[transactions.id].value
+            IdDescending -> row[transactions.id].value
+            TimeAscending -> row[transactions.epochSecond]
+            TimeDescending -> row[transactions.epochSecond]
+        }
+    }
     private fun getTransactionRows(
         authorityIds: Iterable<Id>,
         startTransactionId: Id?,
@@ -141,12 +149,14 @@ class ExposedEntityStore(
     ): List<ResultRow> {
         return transaction(database) {
             val authorityIdList = authorityIds.toList()
+            // TODO: There's likely a seam problem lurking here when ordering by time,
+            //  since time isn't unique. Solve!
             val startRow = startRowQuery(authorityIdList, startTransactionId, order).firstOrNull()
 
             if (startRow == null)
                 emptyList()
             else {
-                transactionsByAuthoritiesQuery(authorityIdList, startRow[transactions.id].value, order)
+                transactionsByAuthoritiesQuery(authorityIdList, getStartValue(order, startRow), order)
                     .limit(limit)
                     .toList()
             }
