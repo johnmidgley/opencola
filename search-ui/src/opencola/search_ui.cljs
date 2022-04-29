@@ -68,7 +68,7 @@
   [:div.search-header 
    [:img {:src "../img/pull-tab.png" :width 50 :height 50}]
    "openCola"
-   (search-box)])
+   [search-box]])
 
 (defn search-results []
   [:div.search-results
@@ -84,12 +84,13 @@
   [:img.action-img {:src (str "../img/" name ".png")}])
 
 (defn action-item [action value]
-  ^{:key action} [:span.action-item (action-img (name action))
-                  (if-not value (str value))])
+  [:span.action-item (action-img (name action))
+   (if-not value (str value))])
 
 (defn authority-actions [actions]
-  [:span.actions-list (for [[action value] actions]
-      (action-item action value))])
+  [:span.actions-list 
+   (for [[action value] actions]
+      ^{:key action} [action-item action value])])
 
 (defn data-url [item]
   (when-let [dataId (:dataId item)]
@@ -109,9 +110,9 @@
    (for [[idx activity] (map-indexed vector activities)]
      ^{:key (str "activity-" idx)}
      [:div.activity-item (:authorityName activity) " "
-      (authority-actions (:actions activity)) " "
+      [authority-actions (:actions activity)] " "
       (format-time (:epochSecond activity)) " "
-      (data-actions activity)])])
+      [data-actions activity]])])
 
 
 (defn activity [action-counts action-value]
@@ -143,23 +144,22 @@
         summary (:summary item)
         item-uri (uri (:uri summary))
         activities (:activities item)]
-    ^{:key entity-id} 
     [:div.feed-item
      [:div.item-name 
       [:a.item-link {:href (str item-uri) :target "_blank"} (:name summary)] " "
-      (delete-control entity-id)
+      [delete-control entity-id]
       [:div.item-host (:host item-uri)]]
      [:div.item-body 
       [:div.item-img-box [:img.item-img {:src (:imageUri summary)}]]
       [:p.item-desc (:description summary)]]
-     (activities-list activities)]))
+     [activities-list activities]]))
 
 (defn feed []
   (if-let [feed (:feed @app-state)]
     [:div.feed
      (let [results (:results feed)]
        (for [item results]
-         (feed-item item)))]))
+         ^{:key (:entityId item)} [feed-item item]))]))
 
 (defn request-error []
   (if-let [e (:error @app-state)]
@@ -167,11 +167,10 @@
 
 (defn feed-page []
   [:div#opencola.search-page
-   (search-header)
-   (request-error)
+   [search-header]
+   [request-error]
    (search-results)
-   (feed)])
-
+   [feed]])
 
 (defn mount [el]
   (rdom/render [feed-page] el))
