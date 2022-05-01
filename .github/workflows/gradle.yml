@@ -53,6 +53,6 @@ jobs:
     #  uses: actions/upload-artifact@v3
     #  with:
     #    name: oc_${{ env.date_string }}_${{ github.REF_NAME }}_${{ github.RUN_ID }}-${{ github.RUN_ATTEMPT }}_${{ env.TAG_NAME }}_${{ github.SHA }}
-    #    path: install/opencola/
+    #    path: install/
     #    retention-days: 3
 

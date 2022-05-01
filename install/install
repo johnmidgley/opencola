@@ -15,7 +15,7 @@ mkdir server
 cp -r ../../opencola-server/build/install/opencola-server/* server
 
 echo "Copying config"
-cp ../../opencola-server/opencola-server.yaml server
+#cp ../../opencola-server/opencola-server.yaml server
 mkdir oc-network
 cp ../../network/docker-compose.yml oc-network
 
@@ -32,6 +32,7 @@ echo "Storage already exists"
 else
 echo "Creating storage"
 mkdir -p storage/var-solr/data
+cp ../../storage/opencola-server.yaml storage/
 cp ../../storage/var-solr/log4j2.xml storage/var-solr/
 cp -r ../../storage/var-solr/data/configsets/ storage/var-solr/data/configsets
 cp ../../storage/var-solr/data/solr.xml storage/var-solr/data/

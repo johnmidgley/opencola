@@ -43,13 +43,12 @@ jobs:
     #step: get the date for the build packages
     - name: Get date for build outputs
       id: date
-      #run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
       run: echo "date_string=$(date +'%Y-%m-%d_%H-%M-%S')" >> $GITHUB_ENV
       
     #step: upload build
     - name: Upload build
       uses: actions/upload-artifact@v3
       with:
-        name: oc_${{ env.date_string }}_${{ github.REF_NAME }}_${{ github.RUN_ID }}-${{ github.RUN_ATTEMPT }}_${{ env.TAG_NAME }}_${{ github.SHA }}
-        path: install/opencola/
+        name: oc_${{ env.date_string }}_${{ github.REF_NAME }}_${{ github.RUN_ID }}-${{ github.RUN_ATTEMPT }}
+        path: install/
         retention-days: 3
