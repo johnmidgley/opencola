@@ -6,8 +6,7 @@
    [ajax.core :refer [GET POST DELETE]] ; https://github.com/JulianBirch/cljs-ajax
    [cljs-time.coerce :as c]
    [cljs-time.format :as f]
-   [lambdaisland.uri :refer [uri]]
-   ))
+   [lambdaisland.uri :refer [uri]]))
 
 (defonce app-state (atom {}))
 
@@ -136,10 +135,20 @@
        {:handler (partial delete-handler entity-id)
         :error-handler error-handler}))
 
+
 (defn delete-control [entity-id]
   [:span.delete-entity {:on-click #(delete-entity entity-id)} (action-img "delete")])
 
-(defn feed-item [item]
+
+(defn edit-entity [entity-id]
+ (swap! app-state update-in [:feed :results] (fn [results] (remove #(= (:entityId %) entity-id) results)))
+  (println (str "Edit " entity-id)))
+
+(defn edit-control [editing?]
+  [:span.delete-entity {:on-click #(reset! editing? true)} (action-img "edit")])
+
+
+(defn display-feed-item [item editing?]
   (let [entity-id (:entityId item)
         summary (:summary item)
         item-uri (uri (:uri summary))
@@ -148,18 +157,66 @@
      [:div.item-name 
       [:a.item-link {:href (str item-uri) :target "_blank"} (:name summary)] " "
       [delete-control entity-id]
+      [edit-control editing?]
       [:div.item-host (:host item-uri)]]
      [:div.item-body 
       [:div.item-img-box [:img.item-img {:src (:imageUri summary)}]]
       [:p.item-desc (:description summary)]]
      [activities-list activities]]))
 
+;; TODO: Pass in app-state
+(defn update-feed-item [item]
+  (let [entity-id (:entityId item)
+        feed (@app-state :feed)
+        updated-feed (update-in 
+                      feed 
+                      [:results]
+                      #(map (fn [i] (if (= entity-id (:entityId i)) item i)) %))]
+    (swap! app-state assoc :feed updated-feed)))
+
+;; TODO: Use keys to get 
+(defn edit-feed-item [item editing?]
+  (println "edit-feed-item")
+  (let [entity-id (:entityId item)
+        summary (:summary item)
+        item-uri (uri (:uri summary))
+        edit-item (atom item)]
+    (fn []
+      [:div.feed-item
+       [:div.item-name 
+        [:input.item-link
+         {:type "text"
+          :value (-> @edit-item :summary :name)
+          :on-change #(swap! edit-item assoc-in [:summary :name] (-> % .-target .-value))}]]
+       [:div.item-body 
+        [:div.item-img-box 
+         [:img.item-img {:src (:imageUri summary)}]]
+        [:div.item-image-url 
+         [:input.item-img-url
+          {:type "text"
+           :value (-> @edit-item :summary :imageUri)
+           :on-change #(swap! edit-item assoc-in [:summary :imageUri] (-> % .-target .-value))}]]
+        [:p.item-desc [:textarea.item-desc-edit
+                       {:type "text"
+                        :value (-> @edit-item :summary :description)
+                        :on-change #(swap! edit-item assoc-in [:summary :description] (-> % .-target .-value))}]]
+        [:button {:on-click #(do 
+                               (update-feed-item @edit-item)                               
+                               (reset! editing? false))} "Save"]
+        [:button {:on-click #(reset! editing? false)} "Cancel"]]])))
+
+(defn feed-item [item]
+  (let [editing? (atom false)]
+    (fn []
+      (if @editing? [edit-feed-item item editing?] [display-feed-item item editing?]))))
+
+
 (defn feed []
   (if-let [feed (:feed @app-state)]
     [:div.feed
      (let [results (:results feed)]
-       (for [item results]
-         ^{:key (:entityId item)} [feed-item item]))]))
+       (doall (for [item results]
+                ^{:key item} [feed-item item])))]))
 
 (defn request-error []
   (if-let [e (:error @app-state)]
