@@ -3,25 +3,27 @@
    [goog.dom :as gdom]
    [reagent.core :as reagent :refer [atom]]
    [reagent.dom :as rdom]
-   [ajax.core :refer [GET POST DELETE]] ; https://github.com/JulianBirch/cljs-ajax
    [cljs-time.coerce :as c]
    [cljs-time.format :as f]
    [lambdaisland.uri :refer [uri]]
    [opencola.web-ui.config :as config]
    [opencola.web-ui.ajax :as ajax]))
 
-(defonce app-state (atom {}))
+
+(defonce feed (atom nil))
+(defonce query (atom ""))
+(defonce search-message (atom nil))
+(defonce error-message (atom nil))
 
 (defn reset-state [] 
-  (swap! app-state assoc :error nil)
-  (swap! app-state assoc :results nil)
-  (swap! app-state assoc :feed nil))
+  (reset! error-message nil)
+  (swap! feed nil))
 
 (defn get-app-element []
   (gdom/getElement "app"))
 
 (defn error [message]
-  (swap! app-state assoc :error message)
+  (reset! error-message message)
   (.log js/console message))
 
 ;; TODO: Clear error on any successful call
@@ -29,30 +31,26 @@
   (error (str "Error: " status ": " status-text)))
 
 
-(defn feed-handler [response]
-  (.log js/console (str "Feed Response: " response))
-  (swap! app-state assoc :feed response))
-
-
-(defn resolve-service-url [path]
-  (str (-> @app-state :config :service-url) path))
-
-
 (defn get-feed [q]
-  (ajax/GET (str "feed" "?q=" q) feed-handler error-handler))
+  (ajax/GET (str "feed" "?q=" q) 
+            (fn [response]
+              (.log js/console (str "Feed Response: " response))
+              (if (empty? (response :results))
+                (reset! search-message (str "No results for '" q "'"))
+                (if (not (empty? q))
+                 (reset! search-message (str "Results for '" q "':"))
+                   (reset! search-message nil)))
+              (reset! feed response)              )
+            error-handler))
 
 
 (defn search-box []
   [:div.search-box>input
    {:type "text"
-    :value (:query @app-state)
-    :on-change #(do 
-                  (swap! app-state assoc :query (-> % .-target .-value))
-                  (if (empty? (-> @app-state :feed :results))
-                    (swap! app-state dissoc :feed)))
+    :value @query
+    :on-change #(reset! query (-> % .-target .-value))
     :on-keyUp #(if (= (.-key %) "Enter")
-                 (let [query (:query @app-state)]
-                   (get-feed query)))}])
+                 (get-feed @query))}])
 
 
 (defn search-header []
@@ -63,10 +61,8 @@
 
 (defn search-results []
   [:div.search-results
-   (let [query (:query @app-state)]
-    (if (and (not (empty? query))
-             (= [] (-> @app-state :feed :results)))
-      (apply str "No results for '" query  "'")))])
+   (let [message @search-message]
+    (if (not (empty? message)) message))])
 
 (defn format-time [epoch-second]
   (f/unparse (f/formatter "yyyy-MM-dd hh:mm") (c/from-long (* epoch-second 1000))))
@@ -120,7 +116,7 @@
    (filter some? (map #(activity action-counts %) display-activities))]))
 
 (defn delete-handler [entity-id response]
-  (swap! app-state update-in [:feed :results] (fn [results] (remove #(= (:entityId %) entity-id) results))))
+  (swap! feed update-in [:results] (fn [results] (remove #(= (:entityId %) entity-id) results))))
 
 (defn delete-entity [entity-id]
   (ajax/DELETE (str "entity/" entity-id) 
@@ -155,12 +151,11 @@
 
 (defn update-item-handler [editing? item response]
   (let [entity-id (:entityId item)
-        feed (@app-state :feed)
         updated-feed (update-in 
-                      feed 
+                      @feed 
                       [:results]
                       #(map (fn [i] (if (= entity-id (:entityId i)) item i)) %))]
-    (swap! app-state assoc :feed updated-feed))
+    (reset! feed updated-feed))
   (reset! editing? false))
 
 (defn update-item-error-handler [editing? response]
@@ -209,15 +204,15 @@
       (if @editing? [edit-feed-item item editing?] [display-feed-item item editing?]))))
 
 
-(defn feed []
-  (if-let [feed (:feed @app-state)]
+(defn feed-list []
+  (if-let [feed @feed]
     [:div.feed
      (let [results (:results feed)]
        (doall (for [item results]
                 ^{:key item} [feed-item item])))]))
 
 (defn request-error []
-  (if-let [e (:error @app-state)]
+  (if-let [e @error-message]
     [:div.request-error e]))
 
 (defn feed-page []
@@ -225,7 +220,7 @@
    [search-header]
    [request-error]
    (search-results)
-   [feed]])
+   [feed-list]])
 
 (defn mount [el]
   (rdom/render [feed-page] el))
@@ -246,5 +241,5 @@
   ;; (swap! app-state update-in [:__figwheel_counter] inc)
 )
 
-(config/get-config #(get-feed (:query @app-state)) error-handler)
+(config/get-config #(get-feed @query) error-handler)
 
