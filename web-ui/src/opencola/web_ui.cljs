@@ -39,7 +39,7 @@
 
 
 (defn get-feed [q]
-  (ajax/GET (-> @app-state :config) (str "feed" "?q=" q) feed-handler error-handler))
+  (ajax/GET (str "feed" "?q=" q) feed-handler error-handler))
 
 
 (defn search-box []
@@ -123,8 +123,7 @@
   (swap! app-state update-in [:feed :results] (fn [results] (remove #(= (:entityId %) entity-id) results))))
 
 (defn delete-entity [entity-id]
-  (ajax/DELETE (-> @app-state :config) 
-               (str "entity/" entity-id) 
+  (ajax/DELETE (str "entity/" entity-id) 
                (partial delete-handler entity-id)
                error-handler)) 
 
@@ -170,7 +169,6 @@
 
 (defn update-entity [editing? item] 
   (ajax/POST 
-   (-> @app-state :config) 
    (str "/entity/" (:entityId item))
    item
    (partial update-item-handler editing? item)
@@ -248,9 +246,5 @@
   ;; (swap! app-state update-in [:__figwheel_counter] inc)
 )
 
-(config/get-config 
- (fn [response]
-   (swap! app-state assoc :config response)
-   (get-feed (:query @app-state)))
- error-handler)
+(config/get-config #(get-feed (:query @app-state)) error-handler)
 
