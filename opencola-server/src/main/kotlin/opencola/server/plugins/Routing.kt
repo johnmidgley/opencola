@@ -4,6 +4,7 @@ import io.ktor.routing.*
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.http.content.*
+import io.ktor.request.*
 import mu.KotlinLogging
 import opencola.core.content.TextExtractor
 import opencola.core.event.EventBus
@@ -14,6 +15,7 @@ import opencola.core.storage.EntityStore
 import opencola.core.storage.FileStore
 import opencola.core.storage.MhtCache
 import opencola.server.handlers.*
+import opencola.service.EntityResult
 import opencola.service.search.SearchService
 import org.kodein.di.instance
 import opencola.core.config.Application as app
@@ -35,6 +37,13 @@ fun Application.configureRouting(application: app) {
             val authority by injector.instance<Authority>()
             val entityStore by injector.instance<EntityStore>()
             getEntity(call, authority.authorityId, entityStore)
+        }
+
+        post("/entity/{entityId}"){
+            val authority by injector.instance<Authority>()
+            val entityStore by injector.instance<EntityStore>()
+            val entity = call.receive<EntityResult>()
+            updateEntity(call, authority.authorityId, entityStore, entity)
         }
 
         get("/entity/{authorityId}/{entityId}"){

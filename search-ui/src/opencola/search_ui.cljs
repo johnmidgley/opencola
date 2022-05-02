@@ -18,9 +18,13 @@
 (defn get-app-element []
   (gdom/getElement "app"))
 
+(defn error [message]
+  (swap! app-state assoc :error message)
+  (.log js/console message))
+
+;; TODO: Clear error on any successful call
 (defn error-handler [{:keys [status status-text]}]
-  (swap! app-state assoc :error status-text)
-  (.log js/console (str "Error: " status " " status-text)))
+  (error (str "Error: " status ": " status-text)))
 
 
 (defn config-handler [on-complete-fn response]
@@ -140,10 +144,6 @@
   [:span.delete-entity {:on-click #(delete-entity entity-id)} (action-img "delete")])
 
 
-(defn edit-entity [entity-id]
- (swap! app-state update-in [:feed :results] (fn [results] (remove #(= (:entityId %) entity-id) results)))
-  (println (str "Edit " entity-id)))
-
 (defn edit-control [editing?]
   [:span.delete-entity {:on-click #(reset! editing? true)} (action-img "edit")])
 
@@ -164,15 +164,27 @@
       [:p.item-desc (:description summary)]]
      [activities-list activities]]))
 
-;; TODO: Pass in app-state
-(defn update-feed-item [item]
+
+(defn update-item-handler [editing? item response]
   (let [entity-id (:entityId item)
         feed (@app-state :feed)
         updated-feed (update-in 
                       feed 
                       [:results]
                       #(map (fn [i] (if (= entity-id (:entityId i)) item i)) %))]
-    (swap! app-state assoc :feed updated-feed)))
+    (swap! app-state assoc :feed updated-feed))
+  (reset! editing? false))
+
+(defn update-item-error-handler [editing? response]
+  (error-handler response)
+  (reset! editing? false))
+
+(defn update-entity [editing? item] 
+  (POST (resolve-service-url (str "/entity/" (:entityId item)))
+        {:params item
+         :handler (partial update-item-handler editing? item)
+         :error-handler (partial update-item-error-handler editing?)
+         :format :json}))
 
 ;; TODO: Use keys to get 
 (defn edit-feed-item [item editing?]
@@ -200,9 +212,7 @@
                        {:type "text"
                         :value (-> @edit-item :summary :description)
                         :on-change #(swap! edit-item assoc-in [:summary :description] (-> % .-target .-value))}]]
-        [:button {:on-click #(do 
-                               (update-feed-item @edit-item)                               
-                               (reset! editing? false))} "Save"]
+        [:button {:on-click #(update-entity editing? @edit-item)} "Save"]
         [:button {:on-click #(reset! editing? false)} "Cancel"]]])))
 
 (defn feed-item [item]
