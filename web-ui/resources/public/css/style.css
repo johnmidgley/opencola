@@ -1,0 +1,79 @@
+body {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.search-header {
+    margin-bottom: 20px;
+}
+
+.feed {
+    border: 10px;
+}
+
+.feed-item {
+   margin-bottom: 20px;
+   padding: 10px;
+   box-shadow: 5px 5px 5px 5px #EEEEEE;
+   -webkit-box-shadow: 5px 5px 5px 5px #EEEEEE;
+}
+
+.item-img-box {
+    float: left;
+    //width: 150px;
+    height: 100px;
+    overflow: hidden;
+    margin-right: 10px;
+    background: #F0F0F0;
+    margin-bottom: 10px;
+
+}
+
+/* Clear floats after the columns */
+.item-body:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+
+.item-host {
+    font-size: 14px;
+    color: grey;
+}
+
+.item-link {
+    text-decoration: none;
+    font-size: 120%;
+    width: 100%
+}
+
+.item-img {
+    height: 100px;
+}
+
+.item-img-url {
+    width: 100%;
+}
+
+.item-desc-edit {
+    width: 100%;
+    height: 200px;
+}
+
+.action-img {
+    width: 15px;
+    height: 15px;
+}
+
+.activity-item {
+    font-size: 14px;
+    color: grey;
+}
+
+.delete-entity {
+    cursor: pointer;
+}
+
+.request-error {
+    color: red;
+}
