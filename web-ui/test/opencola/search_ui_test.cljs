@@ -1,5 +1,5 @@
-(ns opencola.search-ui-test
+(ns opencola.web-ui-test
     (:require
      [cljs.test :refer-macros [deftest is testing]]
-     [opencola.search-ui]))
+     [opencola.web-ui]))
 
