@@ -6,7 +6,9 @@
    [ajax.core :refer [GET POST DELETE]] ; https://github.com/JulianBirch/cljs-ajax
    [cljs-time.coerce :as c]
    [cljs-time.format :as f]
-   [lambdaisland.uri :refer [uri]]))
+   [lambdaisland.uri :refer [uri]]
+   [opencola.web-ui.config :as config]
+   [opencola.web-ui.ajax :as ajax]))
 
 (defonce app-state (atom {}))
 
@@ -27,17 +29,6 @@
   (error (str "Error: " status ": " status-text)))
 
 
-(defn config-handler [on-complete-fn response]
-  (swap! app-state assoc :config response)
-  (on-complete-fn))
-
-(defn get-config [on-complete-fn]
-  (GET "config.json" {:handler (partial config-handler on-complete-fn)
-                      :response-format :json
-                      :keywords? true
-                      :error-handler error-handler}))
-
-
 (defn feed-handler [response]
   (.log js/console (str "Feed Response: " response))
   (swap! app-state assoc :feed response))
@@ -48,10 +39,7 @@
 
 
 (defn get-feed [q]
-  (GET (resolve-service-url (str "feed" "?q=" q)) {:handler feed-handler
-                                                   :response-format :json
-                                                   :keywords? true
-                                                   :error-handler error-handler}))
+  (ajax/GET (-> @app-state :config) (str "feed" "?q=" q) feed-handler error-handler))
 
 
 (defn search-box []
@@ -135,9 +123,10 @@
   (swap! app-state update-in [:feed :results] (fn [results] (remove #(= (:entityId %) entity-id) results))))
 
 (defn delete-entity [entity-id]
-  (DELETE (resolve-service-url (str "entity/" entity-id)) 
-       {:handler (partial delete-handler entity-id)
-        :error-handler error-handler}))
+  (ajax/DELETE (-> @app-state :config) 
+               (str "entity/" entity-id) 
+               (partial delete-handler entity-id)
+               error-handler)) 
 
 
 (defn delete-control [entity-id]
@@ -180,11 +169,12 @@
   (reset! editing? false))
 
 (defn update-entity [editing? item] 
-  (POST (resolve-service-url (str "/entity/" (:entityId item)))
-        {:params item
-         :handler (partial update-item-handler editing? item)
-         :error-handler (partial update-item-error-handler editing?)
-         :format :json}))
+  (ajax/POST 
+   (-> @app-state :config) 
+   (str "/entity/" (:entityId item))
+   item
+   (partial update-item-handler editing? item)
+   (partial update-item-error-handler editing?)))
 
 ;; TODO: Use keys to get 
 (defn edit-feed-item [item editing?]
@@ -258,5 +248,9 @@
   ;; (swap! app-state update-in [:__figwheel_counter] inc)
 )
 
-(get-config #(get-feed (:query @app-state)))
+(config/get-config 
+ (fn [response]
+   (swap! app-state assoc :config response)
+   (get-feed (:query @app-state)))
+ error-handler)
 
