@@ -81,7 +81,8 @@
 (defn data-actions [item]
   (when-let [dataId (:dataId item)]
     [:span.item-link " "
-     [:a.action-link {:href (str (data-url item) "/0.html") :target "_blank"} "[Archive]"] " "
+     [:a.action-link {:href (str (data-url item) "/0.html") :target "_blank"}
+      [:img.action-img {:src "../img/archive.png" :alt "View Archive" :title "View Archive"}]] " "
      [:a.action-link {:href (data-url item) :target "_blank"} 
       [:img.action-img {:src "../img/download.png" :alt "Download" :title "Download"}]]]))
 
