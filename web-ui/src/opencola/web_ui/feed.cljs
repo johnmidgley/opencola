@@ -213,7 +213,9 @@
     [:div.error e]))
 
 (defn feed-page []
-  [:div#opencola.search-page
-   [search-header]
-   [request-error]
-   [feed-list]])
+  (get-feed "" nil)
+  (fn []
+    [:div#opencola.search-page
+     [search-header]
+     [request-error]
+     [feed-list]]))

@@ -32,7 +32,8 @@
 
 ;; conditionally start your application based on the presence of an "app" element
 ;; this is particularly helpful for testing this ns without launching the app
-(mount-app-element)
+#_(mount-app-element)
+(config/get-config #(mount-app-element) error-handler)
 
 ;; specify reload hook with ^:after-load metadata
 (defn ^:after-load on-reload []
@@ -42,5 +43,5 @@
   ;; (swap! app-state update-in [:__figwheel_counter] inc)
 )
 
-(config/get-config #(feed/get-feed "" nil) error-handler)
+
 
