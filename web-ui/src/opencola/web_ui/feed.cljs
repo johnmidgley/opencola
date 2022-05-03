@@ -10,7 +10,6 @@
    [opencola.web-ui.ajax :as ajax]))
 
 (defonce feed (atom nil))
-(defonce query (atom nil))
 (defonce search-message (atom nil))
 (defonce error-message (atom nil))
 
@@ -34,12 +33,14 @@
             error-handler))
 
 (defn search-box []
-  [:div.search-box>input
-   {:type "text"
-    :value @query
-    :on-change #(reset! query (-> % .-target .-value))
-    :on-keyUp #(if (= (.-key %) "Enter")
-                 (get-feed @query))}])
+  (let [query (atom "")]
+    (fn []
+      [:div.search-box>input
+       {:type "text"
+        :value @query
+        :on-change #(reset! query (-> % .-target .-value))
+        :on-keyUp #(if (= (.-key %) "Enter")
+                     (get-feed @query))}])))
 
 
 (defn search-header []
