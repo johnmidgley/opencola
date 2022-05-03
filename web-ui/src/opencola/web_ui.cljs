@@ -42,5 +42,5 @@
   ;; (swap! app-state update-in [:__figwheel_counter] inc)
 )
 
-(config/get-config #(feed/get-feed "") error-handler)
+(config/get-config #(feed/get-feed "" nil) error-handler)
 

@@ -10,7 +10,6 @@
    [opencola.web-ui.ajax :as ajax]))
 
 (defonce feed (atom nil))
-(defonce search-message (atom nil))
 (defonce error-message (atom nil))
 
 (defn error [message]
@@ -21,18 +20,21 @@
 (defn error-handler [{:keys [status status-text]}]
   (error (str "Error: " status ": " status-text)))
 
-(defn get-feed [q]
+
+
+(defn get-feed [q message]
   (ajax/GET (str "feed" "?q=" q) 
             (fn [response]
               (.log js/console (str "Feed Response: " response))
-              (reset! search-message (cond
-                                       (empty? q) nil
-                                       (empty? (response :results)) (str "No results for '" q "'")
-                                       :else (str "Results for '" q "'")))
+              (if message
+                (reset! message (cond
+                                         (empty? q) nil
+                                         (empty? (response :results)) (str "No results for '" q "'")
+                                         :else (str "Results for '" q "'"))))
               (reset! feed response))
             error-handler))
 
-(defn search-box []
+(defn search-box [message]
   (let [query (atom "")]
     (fn []
       [:div.search-box>input
@@ -40,20 +42,20 @@
         :value @query
         :on-change #(reset! query (-> % .-target .-value))
         :on-keyUp #(if (= (.-key %) "Enter")
-                     (get-feed @query))}])))
+                     (get-feed @query message))}])))
 
+(defn search-status [message]
+  [:div.search-status @message])
 
 (defn search-header []
-  [:div.search-header 
-   [:img {:src "../img/pull-tab.png" :width 50 :height 50}]
-   "openCola"
-   [search-box]])
+  (let [message (atom nil)]
+    (fn []
+      [:div.search-header 
+       [:img {:src "../img/pull-tab.png" :width 50 :height 50}]
+       "openCola"
+       [search-box message]
+       [search-status message]])))
 
-
-(defn search-status []
-  [:div.search-results
-   (let [message @search-message]
-    (if (not (empty? message)) message))])
 
 (defn format-time [epoch-second]
   (f/unparse (f/formatter "yyyy-MM-dd hh:mm") (c/from-long (* epoch-second 1000))))
@@ -214,5 +216,4 @@
   [:div#opencola.search-page
    [search-header]
    [request-error]
-   (search-status)
    [feed-list]])
