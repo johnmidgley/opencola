@@ -19,7 +19,6 @@
 (defn get-app-element []
   (gdom/getElement "app"))
 
-
 (defn mount [el]
   (rdom/render 
    [:div.app
