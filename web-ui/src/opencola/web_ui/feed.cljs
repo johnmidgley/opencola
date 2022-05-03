@@ -22,19 +22,16 @@
 (defn error-handler [{:keys [status status-text]}]
   (error (str "Error: " status ": " status-text)))
 
-
 (defn get-feed [q]
   (ajax/GET (str "feed" "?q=" q) 
             (fn [response]
               (.log js/console (str "Feed Response: " response))
-              (if (empty? (response :results))
-                (reset! search-message (str "No results for '" q "'"))
-                (if (not (empty? q))
-                 (reset! search-message (str "Results for '" q "':"))
-                   (reset! search-message nil)))
+              (reset! search-message (cond
+                                       (empty? q) nil
+                                       (empty? (response :results)) (str "No results for '" q "'")
+                                       :else (str "Results for '" q "'")))
               (reset! feed response))
             error-handler))
-
 
 (defn search-box []
   [:div.search-box>input
