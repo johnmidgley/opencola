@@ -47,12 +47,14 @@ class MultiValue(val key: UUID, val value: ByteArray) {
     }
 
     companion object Factory {
+        fun keyOf(value: Value): UUID {
+            ByteArrayInputStream(value.bytes).use { return it.readUUID() }
+        }
+
         fun fromValue(value: Value): MultiValue {
             ByteArrayInputStream(value.bytes).use {
                 return MultiValue(it.readUUID(), it.readByteArray())
             }
         }
     }
-
-
 }

@@ -85,15 +85,15 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         return result
     }
 
-    private fun getFact(propertyName: String): Pair<Attribute, Fact?> {
+    private fun getFact(propertyName: String, key: UUID? = null): Pair<Attribute, Fact?> {
         val attribute = getAttributeByName(propertyName)
             ?: throw IllegalArgumentException("Attempt to access unknown property $propertyName")
 
-        if(attribute.isMultiValued)
-            throw IllegalArgumentException("Cannot call getFact for multivalued properties (${attribute.name}). Call getFacts instead.")
+        if(attribute.isMultiValued && key == null)
+            throw IllegalArgumentException("Key must be specified for multivalued properties (${attribute.name}).")
 
         val fact = facts
-            .lastOrNull { it.attribute == attribute }
+            .lastOrNull { it.attribute == attribute && (key == null || MultiValue.keyOf(it.value) == key) }
             .nullOrElse { if(it.operation == Operation.Add) it else null }
 
         return Pair(attribute, fact)
@@ -109,8 +109,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         val factList = facts
             .asSequence()
             .filter { it.attribute == attribute }
-            .sortedBy { it.transactionOrdinal }
-            .groupBy { MultiValue.fromValue(it.value).key }
+            .groupBy { MultiValue.keyOf(it.value) }
             .map { it.value.last() }
             .filter { it.operation != Operation.Retract }
             .toList()
@@ -123,13 +122,27 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         return fact?.value
     }
 
+    internal fun getMultiValue(propertyName: String, key: UUID) : MultiValue? {
+        val (_, fact) = getFact(propertyName, key)
+        return fact.nullOrElse { MultiValue.fromValue(it.value) }
+    }
+
     internal fun getMultiValues(propertyName: String): List<MultiValue> {
         val (_, facts) = getFacts(propertyName)
         return facts.map { MultiValue.fromValue(it.value) }
     }
 
-    internal fun setValue(propertyName: String, value: Value?): Fact {
-        val (attribute, currentFact) = getFact(propertyName)
+    private fun valueToStore(key: UUID?, value: Value?) : Value {
+        val storableValue = value ?: Value.emptyValue
+
+        if(key == null)
+            return storableValue
+
+        return MultiValue(key, storableValue.bytes).toValue()
+    }
+
+    private fun setValue(propertyName: String, key: UUID?, value: Value?): Fact {
+        val (attribute, currentFact) = getFact(propertyName, key)
 
         if (currentFact != null) {
             if (currentFact.value == value) {
@@ -146,15 +159,19 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
             authorityId,
             entityId,
             attribute,
-            value ?: Value.emptyValue,
+            valueToStore(key, value),
             if (value == null) Operation.Retract else Operation.Add
         )
         facts = facts + newFact
         return newFact
     }
 
-    fun setMultiValue(propertyName: String, key: UUID, value: Value?){
-        TODO("Implement")
+    internal fun setValue(propertyName: String, value: Value?) : Fact {
+        return setValue(propertyName, null, value)
+    }
+
+    internal fun setMultiValue(propertyName: String, key: UUID, value: Value?) : Fact {
+        return setValue(propertyName, key, value)
     }
 
     // NOT Great. Decoupled from actual factions that were persisted.
