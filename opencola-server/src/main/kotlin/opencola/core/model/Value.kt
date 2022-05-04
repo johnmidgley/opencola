@@ -1,10 +1,9 @@
 package opencola.core.model
 
 import kotlinx.serialization.Serializable
-import opencola.core.extensions.append
-import opencola.core.extensions.toByteArray
 import opencola.core.serialization.*
 import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.*
@@ -43,7 +42,11 @@ data class Value(val bytes: ByteArray) {
 
 class MultiValue(val key: UUID, val value: ByteArray) {
     fun toValue(): Value {
-        return Value(key.toByteArray().append(value))
+        ByteArrayOutputStream().use {
+            it.writeUUID(key)
+            it.writeByteArray(value)
+            return Value(it.toByteArray())
+        }
     }
 
     companion object Factory {
@@ -60,6 +63,20 @@ class MultiValue(val key: UUID, val value: ByteArray) {
 }
 
 class MultiValueString(val key: UUID, val value: String?) {
+    constructor(value: String?) : this (UUID.randomUUID(), value)
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as MultiValueString
+
+        if (other.key != key) return false
+        if (other.value != value) return false
+
+        return true
+    }
+
     companion object Factory{
         fun fromMultiValue(multiValue: MultiValue): MultiValueString {
             return MultiValueString(multiValue.key, String(multiValue.value))

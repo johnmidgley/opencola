@@ -13,6 +13,7 @@ open class ResourceEntity : Entity {
     var tags by SetOfStringAttributeDelegate
     var like by BooleanAttributeDelegate
     var rating by FloatAttributeDelegate
+    var comments by MultiValueStringAttributeDelegate
 
     constructor(authorityId: Id,
                 uri: URI,
@@ -24,6 +25,7 @@ open class ResourceEntity : Entity {
                 tags: Set<String>? = null,
                 like: Boolean? = null,
                 rating: Float? = null,
+                comments: List<MultiValueString>? = null,
     ) : super(authorityId, Id.ofUri(uri)){
         // Null checks are more efficient, but more importantly, don't result in retracting facts
         this.uri = uri
@@ -35,6 +37,7 @@ open class ResourceEntity : Entity {
         if(tags != null) this.tags = tags
         if(like != null) this.like = like
         if(rating != null) this.rating = rating
+        if(comments != null) this.comments = comments
     }
 
     constructor(facts: List<Fact>) : super(facts)

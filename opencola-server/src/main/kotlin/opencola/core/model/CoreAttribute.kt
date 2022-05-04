@@ -112,6 +112,7 @@ enum class CoreAttribute(val spec: Attribute) {
     ),
     Comment(
         Attribute(
+            "comments",
             URI("opencola://attributes/comment"),
             StringByteArrayCodec as ByteArrayCodec<Any>,
             isMultiValued = true,

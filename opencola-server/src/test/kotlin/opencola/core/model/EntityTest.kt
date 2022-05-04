@@ -5,6 +5,7 @@ import opencola.core.security.generateKeyPair
 import org.kodein.di.instance
 import java.net.URI
 import kotlin.test.Test
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 
@@ -47,8 +48,21 @@ class EntityTest {
         assertEquals(tags, entity.tags)
 
         entity.rating = rating
-        assertEquals(rating, entity.rating
-        )
+        assertEquals(rating, entity.rating)
+    }
+
+    @Test
+    fun testComments(){
+        val entity = ResourceEntity(Id.ofData("".toByteArray()), URI("https://test.com"))
+
+        val comment1 = MultiValueString("Comment 1")
+        val comment2 = MultiValueString("Comment 2")
+        val comments = listOf(comment1, comment2)
+        entity.comments = comments
+
+        val comments1 = entity.comments
+
+        assertContentEquals(comments, comments1)
     }
 
     @Test

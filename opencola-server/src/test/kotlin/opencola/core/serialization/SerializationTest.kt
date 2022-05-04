@@ -9,6 +9,7 @@ import org.junit.Test
 import org.kodein.di.instance
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.util.*
 import kotlin.test.assertEquals
 
 class SerializationTest {
@@ -40,5 +41,14 @@ class SerializationTest {
         assertEquals(fact, protoDecoded)
         assertEquals(fact, jsonDecoded)
         assertEquals(fact, customDecoded)
+    }
+
+    @Test
+    fun testUUIDCodec(){
+        val uuid = UUID.randomUUID()
+        val encoded = UUIDByteArrayCodecCodec.encode(uuid)
+        val decoded = UUIDByteArrayCodecCodec.decode(encoded)
+
+        assertEquals(uuid, decoded)
     }
 }
