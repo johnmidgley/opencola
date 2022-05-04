@@ -58,3 +58,11 @@ class MultiValue(val key: UUID, val value: ByteArray) {
         }
     }
 }
+
+class MultiValueString(val key: UUID, val value: String?) {
+    companion object Factory{
+        fun fromMultiValue(multiValue: MultiValue): MultiValueString {
+            return MultiValueString(multiValue.key, String(multiValue.value))
+        }
+    }
+}

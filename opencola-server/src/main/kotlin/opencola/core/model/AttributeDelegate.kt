@@ -89,3 +89,15 @@ object PublicKeyAttributeDelegate {
         thisRef.setValue(property.name, value.ifNotNullOrElse( { Value(PublicKeyByteArrayCodec.encode(value as PublicKey)) }, { Value.emptyValue }))
     }
 }
+
+object MultiValueStringAttributeDelegate {
+    operator fun getValue(thisRef: Entity, property: KProperty<*>): List<MultiValueString> {
+        return thisRef.getMultiValues(property.name).map { MultiValueString.fromMultiValue(it) }
+    }
+
+    operator fun setValue(thisRef: Entity, property: KProperty<*>, value: List<MultiValueString>) {
+        value.forEach{ multiValueString ->
+            thisRef.setMultiValue(property.name, multiValueString.key, multiValueString.value?.toByteArray().nullOrElse { Value(it) })
+        }
+    }
+}
