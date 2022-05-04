@@ -2,6 +2,7 @@ package opencola.core.model
 
 import mu.KotlinLogging
 import opencola.core.extensions.nullOrElse
+import java.util.*
 
 abstract class Entity(val authorityId: Id, val entityId: Id) {
     companion object Factory {
@@ -88,6 +89,9 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         val attribute = getAttributeByName(propertyName)
             ?: throw IllegalArgumentException("Attempt to access unknown property $propertyName")
 
+        if(attribute.isMultiValued)
+            throw IllegalArgumentException("Cannot call getFact for multivalued properties (${attribute.name}). Call getFacts instead.")
+
         val fact = facts
             .lastOrNull { it.attribute == attribute }
             .nullOrElse { if(it.operation == Operation.Add) it else null }
@@ -95,9 +99,33 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         return Pair(attribute, fact)
     }
 
+    private fun getFacts(propertyName: String): Pair<Attribute, List<Fact>> {
+        val attribute = getAttributeByName(propertyName)
+            ?: throw IllegalArgumentException("Attempt to access unknown property $propertyName")
+
+        if(!attribute.isMultiValued)
+            throw IllegalArgumentException("Cannot call getFacts for single valued properties (${attribute.name}). Call getFact instead.")
+
+        val factList = facts
+            .asSequence()
+            .filter { it.attribute == attribute }
+            .sortedBy { it.transactionOrdinal }
+            .groupBy { MultiValue.fromValue(it.value).key }
+            .map { it.value.last() }
+            .filter { it.operation != Operation.Retract }
+            .toList()
+
+        return Pair(attribute, factList)
+    }
+
     internal fun getValue(propertyName: String): Value? {
         val (_, fact) = getFact(propertyName)
         return fact?.value
+    }
+
+    internal fun getMultiValues(propertyName: String): List<MultiValue> {
+        val (_, facts) = getFacts(propertyName)
+        return facts.map { MultiValue.fromValue(it.value) }
     }
 
     internal fun setValue(propertyName: String, value: Value?): Fact {
@@ -123,6 +151,10 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         )
         facts = facts + newFact
         return newFact
+    }
+
+    fun setMultiValue(propertyName: String, key: UUID, value: Value?){
+        TODO("Implement")
     }
 
     // NOT Great. Decoupled from actual factions that were persisted.

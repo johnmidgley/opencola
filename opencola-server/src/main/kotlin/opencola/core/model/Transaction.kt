@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 import opencola.core.security.SIGNATURE_ALGO
 import opencola.core.security.Signator
 import opencola.core.security.isValidSignature
-import opencola.core.serialization.StreamSerializer
+import opencola.core.serialization.*
 import java.io.InputStream
 import java.io.OutputStream
 import java.security.PublicKey
@@ -34,14 +34,14 @@ data class Transaction(val id: Id,
         companion object Factory : StreamSerializer<TransactionEntity> {
             override fun encode(stream: OutputStream, value: TransactionEntity) {
                 Id.encode(stream, value.entityId)
-                Transaction.writeInt(stream, value.facts.size)
+                stream.writeInt(value.facts.size)
                 for(fact in value.facts){
                     TransactionFact.encode(stream, fact)
                 }
             }
 
             override fun decode(stream: InputStream): TransactionEntity {
-                return TransactionEntity(Id.decode(stream), readInt(stream).downTo(1).map { TransactionFact.decode(stream) } )
+                return TransactionEntity(Id.decode(stream), stream.readInt().downTo(1).map { TransactionFact.decode(stream) } )
             }
         }
     }
@@ -89,15 +89,15 @@ data class Transaction(val id: Id,
         override fun encode(stream: OutputStream, value: Transaction) {
             Id.encode(stream, value.id)
             Id.encode(stream, value.authorityId)
-            writeInt(stream, value.transactionEntities.size)
+            stream.writeInt(value.transactionEntities.size)
             for(entity in value.transactionEntities){
                 TransactionEntity.encode(stream, entity)
             }
-            writeLong(stream, value.epochSecond)
+            stream.writeLong(value.epochSecond)
         }
 
         override fun decode(stream: InputStream): Transaction {
-            return Transaction(Id.decode(stream), Id.decode(stream), readInt(stream).downTo(1).map { TransactionEntity.decode(stream) }, readLong(stream))
+            return Transaction(Id.decode(stream), Id.decode(stream), stream.readInt().downTo(1).map { TransactionEntity.decode(stream) }, stream.readLong())
         }
     }
 }
@@ -130,12 +130,12 @@ data class SignedTransaction(val transaction: Transaction, val algorithm: String
     companion object Factory : StreamSerializer<SignedTransaction> {
         override fun encode(stream: OutputStream, value: SignedTransaction) {
             Transaction.encode(stream, value.transaction)
-            writeByteArray(stream, SIGNATURE_ALGO.toByteArray())
-            writeByteArray(stream, value.signature)
+            stream.writeByteArray(SIGNATURE_ALGO.toByteArray())
+            stream.writeByteArray(value.signature)
         }
 
         override fun decode(stream: InputStream): SignedTransaction {
-            return SignedTransaction(Transaction.decode(stream), String(readByteArray(stream)), readByteArray(stream))
+            return SignedTransaction(Transaction.decode(stream), String(stream.readByteArray()), stream.readByteArray())
         }
     }
 }

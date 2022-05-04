@@ -18,6 +18,8 @@ import opencola.core.model.Peer
 import opencola.core.network.PeerRouter.PeerStatus.*
 import opencola.core.network.PeerRouter.PeerStatus.Status.*
 import opencola.core.serialization.StreamSerializer
+import opencola.core.serialization.readInt
+import opencola.core.serialization.writeInt
 import opencola.core.storage.AddressBook
 import java.io.InputStream
 import java.io.OutputStream
@@ -54,12 +56,12 @@ class PeerRouter(private val addressBook: AddressBook, private val eventBus: Eve
         companion object Factory : StreamSerializer<Notification> {
             override fun encode(stream: OutputStream, value: Notification) {
                 Id.encode(stream, value.peerId)
-                writeInt(stream, value.event.ordinal)
+                stream.writeInt(value.event.ordinal)
             }
 
             override fun decode(stream: InputStream): Notification {
                 // TODO: Could throw exception
-                return Notification(Id.decode(stream), Event.values()[readInt(stream)])
+                return Notification(Id.decode(stream), Event.values()[stream.readInt()])
             }
         }
     }

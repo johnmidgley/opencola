@@ -3,6 +3,8 @@ package opencola.core.model
 import kotlinx.serialization.Serializable
 import opencola.core.extensions.nullOrElse
 import opencola.core.serialization.StreamSerializer
+import opencola.core.serialization.readLong
+import opencola.core.serialization.writeLong
 import java.io.InputStream
 import java.io.OutputStream
 
@@ -42,8 +44,8 @@ data class Fact(
             Attribute.encode(stream, value.attribute)
             Value.encode(stream, value.value)
             Operation.encode(stream, value.operation)
-            writeLong(stream, value.epochSecond)
-            writeLong(stream, value.transactionOrdinal)
+            stream.writeLong(value.epochSecond)
+            stream.writeLong(value.transactionOrdinal)
         }
 
         override fun decode(stream: InputStream): Fact {
@@ -53,8 +55,8 @@ data class Fact(
                 Attribute.decode(stream),
                 Value.decode(stream),
                 Operation.decode(stream),
-                readLong(stream),
-                readLong(stream)
+                stream.readLong(),
+                stream.readLong()
             )
         }
 

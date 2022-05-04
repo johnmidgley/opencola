@@ -3,10 +3,13 @@ package opencola.core.serialization
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import opencola.core.extensions.toByteArray
 import opencola.core.security.publicKeyFromBytes
+import java.io.ByteArrayInputStream
 import java.net.URI
 import java.nio.ByteBuffer
 import java.security.PublicKey
+import java.util.*
 
 // TODO: Should this be ValueCodec?
 // TODO - change to ByteArraySerializer?
@@ -97,5 +100,18 @@ object PublicKeyByteArrayCodec : ByteArrayCodec<PublicKey> {
 
     override fun decode(value: ByteArray): PublicKey {
         return publicKeyFromBytes(value)
+    }
+}
+
+object UUIDByteArrayCodecCodec : ByteArrayCodec<UUID> {
+    override fun encode(value: UUID): ByteArray {
+        return value.toByteArray()
+    }
+
+    override fun decode(value: ByteArray): UUID {
+        return ByteArrayInputStream(value).use {
+            UUID(ByteBuffer.wrap(it.readNBytes(Long.SIZE_BYTES)).long,
+                ByteBuffer.wrap(it.readNBytes(Long.SIZE_BYTES)).long)
+        }
     }
 }

@@ -1,9 +1,13 @@
 package opencola.core.model
 
 import kotlinx.serialization.Serializable
-import opencola.core.serialization.StreamSerializer
+import opencola.core.extensions.append
+import opencola.core.extensions.toByteArray
+import opencola.core.serialization.*
+import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.io.OutputStream
+import java.util.*
 
 @Serializable
 // TODO: Can codec be put here?
@@ -27,12 +31,28 @@ data class Value(val bytes: ByteArray) {
         val emptyValue = Value("".toByteArray())
 
         override fun encode(stream: OutputStream, value: Value) {
-            writeByteArray(stream, value.bytes)
+            stream.writeByteArray(value.bytes)
         }
 
         override fun decode(stream: InputStream): Value {
-            val bytes = readByteArray(stream)
+            val bytes = stream.readByteArray()
             return if(bytes.isEmpty()) emptyValue else Value(bytes)
         }
     }
+}
+
+class MultiValue(val key: UUID, val value: ByteArray) {
+    fun toValue(): Value {
+        return Value(key.toByteArray().append(value))
+    }
+
+    companion object Factory {
+        fun fromValue(value: Value): MultiValue {
+            ByteArrayInputStream(value.bytes).use {
+                return MultiValue(it.readUUID(), it.readByteArray())
+            }
+        }
+    }
+
+
 }
