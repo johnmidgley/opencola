@@ -96,8 +96,19 @@ object MultiValueStringAttributeDelegate {
     }
 
     operator fun setValue(thisRef: Entity, property: KProperty<*>, value: List<MultiValueString>) {
-        value.forEach{ multiValueString ->
-            thisRef.setMultiValue(property.name, multiValueString.key, multiValueString.value?.toByteArray().nullOrElse { Value(it) })
+        // Update any present values
+        value.forEach { multiValueString ->
+            thisRef.setMultiValue(
+                property.name,
+                multiValueString.key,
+                multiValueString.value?.toByteArray().nullOrElse { Value(it) })
         }
+
+        // Delete any removed values
+        thisRef
+            .getMultiValues(property.name).map { it.key }
+            .toSet()
+            .minus(value.map { it.key }.toSet())
+            .forEach { thisRef.setMultiValue(property.name, it, null) }
     }
 }
