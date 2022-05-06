@@ -2,6 +2,7 @@ package opencola.core.model
 
 import mu.KotlinLogging
 import opencola.core.extensions.nullOrElse
+import opencola.core.model.AttributeType.*
 import java.util.*
 
 abstract class Entity(val authorityId: Id, val entityId: Id) {
@@ -85,31 +86,39 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         return result
     }
 
-    private fun getFact(propertyName: String, key: UUID? = null): Pair<Attribute, Fact?> {
+    // For multi-valued lists
+     private fun getFact(propertyName: String, key: UUID?, value: Value?): Pair<Attribute, Fact?> {
         val attribute = getAttributeByName(propertyName)
             ?: throw IllegalArgumentException("Attempt to access unknown property $propertyName")
 
-        if(attribute.isMultiValued && key == null)
-            throw IllegalArgumentException("Key must be specified for multivalued properties (${attribute.name}).")
+        when(attribute.type){
+            SingleValue -> if(key != null) throw IllegalArgumentException("Can't getFact for Single valued attribute by key")
+            MultiValueList -> if(key == null) throw IllegalArgumentException("Can't getFact for List attribute without key")
+            MultiValueSet -> if(key != null) throw IllegalArgumentException("Can't getFact for Set attribute by key")
+        }
 
         val fact = facts
-            .lastOrNull { it.attribute == attribute && (key == null || MultiValue.keyOf(it.value) == key) }
+            .lastOrNull { it.attribute == attribute
+                    && (key == null || MultiValue.keyOf(it.value) == key)
+                    && (value == null || it.value == value)
+            }
             .nullOrElse { if(it.operation == Operation.Add) it else null }
 
         return Pair(attribute, fact)
     }
 
+    // Only for Multi-value attributes
     private fun getFacts(propertyName: String): Pair<Attribute, List<Fact>> {
         val attribute = getAttributeByName(propertyName)
             ?: throw IllegalArgumentException("Attempt to access unknown property $propertyName")
 
-        if(!attribute.isMultiValued)
+        if(attribute.type == SingleValue)
             throw IllegalArgumentException("Cannot call getFacts for single valued properties (${attribute.name}). Call getFact instead.")
 
         val factList = facts
             .asSequence()
             .filter { it.attribute == attribute }
-            .groupBy { MultiValue.keyOf(it.value) }
+            .groupBy { if(attribute.type == MultiValueList) MultiValue.keyOf(it.value) else it.value }
             .map { it.value.last() }
             .filter { it.operation != Operation.Retract }
             .toList()
@@ -118,12 +127,12 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
     }
 
     internal fun getValue(propertyName: String): Value? {
-        val (_, fact) = getFact(propertyName)
+        val (_, fact) = getFact(propertyName, null, null)
         return fact?.value
     }
 
     internal fun getMultiValue(propertyName: String, key: UUID) : MultiValue? {
-        val (_, fact) = getFact(propertyName, key)
+        val (_, fact) = getFact(propertyName, key, null)
         return fact.nullOrElse { MultiValue.fromValue(it.value) }
     }
 
@@ -142,7 +151,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
     }
 
     private fun setValue(propertyName: String, key: UUID?, value: Value?): Fact {
-        val (attribute, currentFact) = getFact(propertyName, key)
+        val (attribute, currentFact) = getFact(propertyName, key, null)
 
         if (currentFact != null) {
             if (currentFact.value == value) {

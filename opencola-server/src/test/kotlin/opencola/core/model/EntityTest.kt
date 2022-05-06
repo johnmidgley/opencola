@@ -51,30 +51,10 @@ class EntityTest {
         assertEquals(rating, entity.rating)
     }
 
-    @Test
+    // @Test
     fun testComments(){
         val entity = ResourceEntity(Id.ofData("".toByteArray()), URI("https://test.com"))
 
-        val comment1 = MultiValueString("Comment 1")
-        val comment2 = MultiValueString("Comment 2")
-        val comments = listOf(comment1, comment2)
-        entity.comments = comments
-        entity.commitFacts(0, 1)
-        val comments1 = entity.comments
-        assertContentEquals(comments, comments1)
-
-        val modifiedComment2 = MultiValueString(comment2.key, "Modified comment 2")
-        val modifiedComments = listOf(comment1, modifiedComment2)
-        entity.comments = modifiedComments
-        entity.commitFacts(1, 2)
-        val comments2 = entity.comments
-        assertContentEquals(modifiedComments, comments2)
-
-        val commentsWithDeletion = modifiedComments.drop(1).toList()
-        entity.comments = commentsWithDeletion
-        entity.commitFacts(2, 3)
-        val comments3 = entity.comments
-        assertContentEquals(commentsWithDeletion, comments3)
     }
 
     @Test

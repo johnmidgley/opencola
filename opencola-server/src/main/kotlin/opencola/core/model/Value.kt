@@ -62,14 +62,14 @@ class MultiValue(val key: UUID, val value: ByteArray) {
     }
 }
 
-class MultiValueString(val key: UUID, val value: String?) {
+class MultiValueListOfStringItem(val key: UUID, val value: String?) {
     constructor(value: String?) : this (UUID.randomUUID(), value)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as MultiValueString
+        other as MultiValueListOfStringItem
 
         if (other.key != key) return false
         if (other.value != value) return false
@@ -78,8 +78,8 @@ class MultiValueString(val key: UUID, val value: String?) {
     }
 
     companion object Factory{
-        fun fromMultiValue(multiValue: MultiValue): MultiValueString {
-            return MultiValueString(multiValue.key, String(multiValue.value))
+        fun fromMultiValue(multiValue: MultiValue): MultiValueListOfStringItem {
+            return MultiValueListOfStringItem(multiValue.key, String(multiValue.value))
         }
     }
 }

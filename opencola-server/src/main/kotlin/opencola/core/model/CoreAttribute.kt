@@ -10,53 +10,56 @@ enum class CoreAttribute(val spec: Attribute) {
     Type(
         Attribute(
             URI("opencola://attributes/type"),
+            AttributeType.SingleValue,
             StringByteArrayCodec as ByteArrayCodec<Any>,
-            isMultiValued = false,
             isIndexable = false
         )
     ),
     MimeType(
         Attribute(
             URI("opencola://attributes/mimeType"),
+            AttributeType.SingleValue,
             StringByteArrayCodec as ByteArrayCodec<Any>,
-            isMultiValued = false,
             isIndexable = false
         )
     ),
     Uri(
         Attribute(
-            URI("opencola://attributes/uri"), UriByteArrayCodec as ByteArrayCodec<Any>,
-            isMultiValued = false,
+            URI("opencola://attributes/uri"),
+            AttributeType.SingleValue,
+            UriByteArrayCodec as ByteArrayCodec<Any>,
             isIndexable = false
         )
     ),
     DataId(
         Attribute(
-            URI("opencola://attributes/dataId"), Id.Factory as ByteArrayCodec<Any>,
-            isMultiValued = false,
+            URI("opencola://attributes/dataId"),
+            AttributeType.SingleValue,
+            Id.Factory as ByteArrayCodec<Any>,
             isIndexable = false
         )
     ),
     PublicKey(
         Attribute(
             URI("opencola://attributes/publicKey"),
+            AttributeType.SingleValue,
             PublicKeyByteArrayCodec as ByteArrayCodec<Any>,
-            false,
-            false
+            isIndexable = false
         )
     ),
     Name(
         Attribute(
-            URI("opencola://attributes/name"), StringByteArrayCodec as ByteArrayCodec<Any>,
-            isMultiValued = false,
+            URI("opencola://attributes/name"),
+            AttributeType.SingleValue,
+            StringByteArrayCodec as ByteArrayCodec<Any>,
             isIndexable = true
         )
     ),
     Description(
         Attribute(
             URI("opencola://attributes/description"),
+            AttributeType.SingleValue,
             StringByteArrayCodec as ByteArrayCodec<Any>,
-            isMultiValued = false,
             isIndexable = true
         )
     ),
@@ -65,48 +68,48 @@ enum class CoreAttribute(val spec: Attribute) {
     Text(
         Attribute(
             URI("opencola://attributes/text"),
+            AttributeType.SingleValue,
             StringByteArrayCodec as ByteArrayCodec<Any>,
-            isMultiValued = false,
             isIndexable = true
         )
     ),
     ImageUri(
         Attribute(
             URI("opencola://attributes/imageUri"),
+            AttributeType.SingleValue,
             UriByteArrayCodec as ByteArrayCodec<Any>,
-            isMultiValued = false,
             isIndexable = false
         )
     ),
     Tags(
         Attribute(
             URI("opencola://attributes/tags"),
+            AttributeType.SingleValue,
             SetOfStringByteArrayCodec as ByteArrayCodec<Any>,
-            isMultiValued = false,
             isIndexable = true
         )
     ),
     Trust(
         Attribute(
             URI("opencola://attributes/trust"),
+            AttributeType.SingleValue,
             FloatByteArrayCodec as ByteArrayCodec<Any>,
-            isMultiValued = false,
             isIndexable = true
         )
     ),
     Like(
         Attribute(
             URI("opencola://attributes/like"),
+            AttributeType.SingleValue,
             BooleanByteArrayCodec as ByteArrayCodec<Any>,
-            isMultiValued = false,
             isIndexable = true
         )
     ),
     Rating(
         Attribute(
             URI("opencola://attributes/rating"),
+            AttributeType.SingleValue,
             FloatByteArrayCodec as ByteArrayCodec<Any>,
-            isMultiValued = false,
             isIndexable = true
         )
     ),
@@ -114,8 +117,8 @@ enum class CoreAttribute(val spec: Attribute) {
         Attribute(
             "comments",
             URI("opencola://attributes/comment"),
-            StringByteArrayCodec as ByteArrayCodec<Any>,
-            isMultiValued = true,
+            AttributeType.MultiValueSet,
+            Id.Factory as ByteArrayCodec<Any>,
             isIndexable = false
         )
     )

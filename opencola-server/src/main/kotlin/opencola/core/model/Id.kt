@@ -3,6 +3,7 @@ package opencola.core.model
 import kotlinx.serialization.Serializable
 import opencola.core.security.sha256
 import opencola.core.extensions.hexStringToByteArray
+import opencola.core.extensions.toByteArray
 import opencola.core.extensions.toHexString
 import opencola.core.serialization.ByteArrayCodec
 import opencola.core.serialization.StreamSerializer
@@ -10,6 +11,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI
 import java.security.PublicKey
+import java.util.*
 
 // TODO: Make all classes data classes
 // TODO: Fact, SubjectiveFact, FactStore<T: Fact> - for both objective and subjective facts
@@ -61,6 +63,10 @@ data class Id(private val bytes: ByteArray) {
         // TODO: Think about a data object rather than ByteArray
         fun ofData(data: ByteArray) : Id {
             return Id(sha256(data))
+        }
+
+        fun new() : Id {
+            return Id.ofData(UUID.randomUUID().toByteArray())
         }
 
         override fun encode(value: Id): ByteArray {

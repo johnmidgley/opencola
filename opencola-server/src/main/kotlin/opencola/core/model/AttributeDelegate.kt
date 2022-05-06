@@ -90,12 +90,12 @@ object PublicKeyAttributeDelegate {
     }
 }
 
-object MultiValueStringAttributeDelegate {
-    operator fun getValue(thisRef: Entity, property: KProperty<*>): List<MultiValueString> {
-        return thisRef.getMultiValues(property.name).map { MultiValueString.fromMultiValue(it) }
+object MultiValueListOfStringAttributeDelegate {
+    operator fun getValue(thisRef: Entity, property: KProperty<*>): List<MultiValueListOfStringItem> {
+        return thisRef.getMultiValues(property.name).map { MultiValueListOfStringItem.fromMultiValue(it) }
     }
 
-    operator fun setValue(thisRef: Entity, property: KProperty<*>, value: List<MultiValueString>) {
+    operator fun setValue(thisRef: Entity, property: KProperty<*>, value: List<MultiValueListOfStringItem>) {
         // Update any present values
         value.forEach { multiValueString ->
             thisRef.setMultiValue(
