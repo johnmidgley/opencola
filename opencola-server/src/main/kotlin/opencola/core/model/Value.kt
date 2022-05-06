@@ -40,7 +40,7 @@ data class Value(val bytes: ByteArray) {
     }
 }
 
-class MultiValue(val key: UUID, val value: ByteArray) {
+class MultiValueListItem(val key: UUID, val value: ByteArray) {
     fun toValue(): Value {
         ByteArrayOutputStream().use {
             it.writeUUID(key)
@@ -54,14 +54,15 @@ class MultiValue(val key: UUID, val value: ByteArray) {
             ByteArrayInputStream(value.bytes).use { return it.readUUID() }
         }
 
-        fun fromValue(value: Value): MultiValue {
+        fun fromValue(value: Value): MultiValueListItem {
             ByteArrayInputStream(value.bytes).use {
-                return MultiValue(it.readUUID(), it.readByteArray())
+                return MultiValueListItem(it.readUUID(), it.readByteArray())
             }
         }
     }
 }
 
+// TODO: Templatize
 class MultiValueListOfStringItem(val key: UUID, val value: String?) {
     constructor(value: String?) : this (UUID.randomUUID(), value)
 
@@ -78,8 +79,9 @@ class MultiValueListOfStringItem(val key: UUID, val value: String?) {
     }
 
     companion object Factory{
-        fun fromMultiValue(multiValue: MultiValue): MultiValueListOfStringItem {
+        fun fromMultiValue(multiValue: MultiValueListItem): MultiValueListOfStringItem {
             return MultiValueListOfStringItem(multiValue.key, String(multiValue.value))
         }
     }
 }
+

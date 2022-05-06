@@ -94,13 +94,13 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         when(attribute.type){
             SingleValue -> if(key != null) throw IllegalArgumentException("Can't getFact for Single valued attribute by key")
             MultiValueList -> if(key == null) throw IllegalArgumentException("Can't getFact for List attribute without key")
-            MultiValueSet -> if(key != null) throw IllegalArgumentException("Can't getFact for Set attribute by key")
+            MultiValueSet -> if(key != null || value == null) throw IllegalArgumentException("getFact for MultiValueSet attribute must not have a key but have a value specified")
         }
 
         val fact = facts
             .lastOrNull { it.attribute == attribute
-                    && (key == null || MultiValue.keyOf(it.value) == key)
-                    && (value == null || it.value == value)
+                    && (key == null || MultiValueListItem.keyOf(it.value) == key)
+                    && (attribute.type != MultiValueSet || value == null || it.value == value)
             }
             .nullOrElse { if(it.operation == Operation.Add) it else null }
 
@@ -118,7 +118,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         val factList = facts
             .asSequence()
             .filter { it.attribute == attribute }
-            .groupBy { if(attribute.type == MultiValueList) MultiValue.keyOf(it.value) else it.value }
+            .groupBy { if(attribute.type == MultiValueList) MultiValueListItem.keyOf(it.value) else it.value }
             .map { it.value.last() }
             .filter { it.operation != Operation.Retract }
             .toList()
@@ -131,27 +131,40 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         return fact?.value
     }
 
-    internal fun getMultiValue(propertyName: String, key: UUID) : MultiValue? {
+    internal fun getMultiValue(propertyName: String, key: UUID) : MultiValueListItem? {
         val (_, fact) = getFact(propertyName, key, null)
-        return fact.nullOrElse { MultiValue.fromValue(it.value) }
+        return fact.nullOrElse { MultiValueListItem.fromValue(it.value) }
     }
 
-    internal fun getMultiValues(propertyName: String): List<MultiValue> {
-        val (_, facts) = getFacts(propertyName)
-        return facts.map { MultiValue.fromValue(it.value) }
+    internal fun getListValues(propertyName: String): List<MultiValueListItem> {
+        val (attribute, facts) = getFacts(propertyName)
+
+        if(attribute.type != MultiValueList)
+            throw IllegalArgumentException("Attempt to getListValues for non list attribute (${attribute.name})")
+
+        return facts.map { MultiValueListItem.fromValue(it.value) }
     }
 
-    private fun valueToStore(key: UUID?, value: Value?) : Value {
+    internal fun getSetValues(propertyName: String): List<Value> {
+        val (attribute, facts) = getFacts(propertyName)
+
+        if(attribute.type != MultiValueSet)
+            throw IllegalArgumentException("Attempt to getSetValues for non set attribute (${attribute.name})")
+
+        return facts.map { it.value }
+    }
+
+    private fun valueToStore(key: UUID?, value: Value?): Value {
         val storableValue = value ?: Value.emptyValue
 
-        if(key == null)
-            return storableValue
-
-        return MultiValue(key, storableValue.bytes).toValue()
+        return if (key == null)
+            storableValue
+        else
+            MultiValueListItem(key, storableValue.bytes).toValue()
     }
 
     private fun setValue(propertyName: String, key: UUID?, value: Value?): Fact {
-        val (attribute, currentFact) = getFact(propertyName, key, null)
+        val (attribute, currentFact) = getFact(propertyName, key, value)
 
         if (currentFact != null) {
             if (currentFact.value == value) {
@@ -159,6 +172,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
                 return currentFact
             }
 
+            // TODO: Is it really a problem to edit not committed facts?
             if (currentFact.transactionOrdinal == null) {
                 throw IllegalStateException("Attempt to re-set an uncommitted value")
             }
@@ -173,6 +187,24 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         )
         facts = facts + newFact
         return newFact
+    }
+
+    internal fun deleteValue(propertyName: String, key: UUID?, value: Value?) : Fact? {
+        val (attribute, fact) = getFact(propertyName, key, value)
+
+        if(fact != null && fact.operation != Operation.Retract){
+            val newFact = Fact(
+                authorityId,
+                entityId,
+                attribute,
+                valueToStore(key, value),
+                Operation.Retract
+            )
+            facts = facts + newFact
+            return newFact
+        }
+
+        return null
     }
 
     internal fun setValue(propertyName: String, value: Value?) : Fact {

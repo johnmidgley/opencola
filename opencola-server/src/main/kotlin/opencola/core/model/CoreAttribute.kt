@@ -115,7 +115,7 @@ enum class CoreAttribute(val spec: Attribute) {
     ),
     Comment(
         Attribute(
-            "comments",
+            "commentIds",
             URI("opencola://attributes/comment"),
             AttributeType.MultiValueSet,
             Id.Factory as ByteArrayCodec<Any>,

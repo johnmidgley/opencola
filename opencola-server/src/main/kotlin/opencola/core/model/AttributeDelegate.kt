@@ -90,9 +90,29 @@ object PublicKeyAttributeDelegate {
     }
 }
 
+object MultiValueSetOfIdAttributeDelegate {
+    operator fun getValue(thisRef: Entity, property: KProperty<*>): List<Id> {
+        return thisRef.getSetValues(property.name).map { Id.decode(it.bytes) }
+    }
+
+    operator fun setValue(thisRef: Entity, property: KProperty<*>, value: List<Id>) {
+        // Update any present values
+        value.forEach { id ->
+            thisRef.setValue(property.name, Value(Id.encode(id)))
+        }
+
+        // Delete any removed values
+        thisRef
+            .getSetValues(property.name).map { Id.decode(it.bytes) }
+            .toSet()
+            .minus(value.toSet())
+            .forEach { thisRef.deleteValue(property.name, null, Value(Id.encode(it))) }
+    }
+}
+
 object MultiValueListOfStringAttributeDelegate {
     operator fun getValue(thisRef: Entity, property: KProperty<*>): List<MultiValueListOfStringItem> {
-        return thisRef.getMultiValues(property.name).map { MultiValueListOfStringItem.fromMultiValue(it) }
+        return thisRef.getListValues(property.name).map { MultiValueListOfStringItem.fromMultiValue(it) }
     }
 
     operator fun setValue(thisRef: Entity, property: KProperty<*>, value: List<MultiValueListOfStringItem>) {
@@ -106,9 +126,9 @@ object MultiValueListOfStringAttributeDelegate {
 
         // Delete any removed values
         thisRef
-            .getMultiValues(property.name).map { it.key }
+            .getListValues(property.name).map { it.key }
             .toSet()
             .minus(value.map { it.key }.toSet())
-            .forEach { thisRef.setMultiValue(property.name, it, null) }
+            .forEach { thisRef.deleteValue(property.name, it, null) }
     }
 }
