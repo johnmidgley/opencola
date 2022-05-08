@@ -62,7 +62,7 @@ class EntityStoreTest {
         val entity2 = store2.getEntity(authority.authorityId, entity.entityId)
             ?: throw RuntimeException("Entity could not be reloaded from store")
 
-        entity.getFacts().zip(entity2.getFacts()).forEach {
+        entity.getAllFacts().zip(entity2.getAllFacts()).forEach {
             assertEquals(it.first.authorityId, it.second.authorityId)
             assertEquals(it.first.entityId, it.second.entityId)
             assertEquals(it.first.attribute, it.second.attribute)
@@ -211,5 +211,37 @@ class EntityStoreTest {
         assertTrue { entity1Facts.all { it.entityId == entities0[1].entityId } }
         assertTrue(entity1Facts.any{ it.authorityId == authority0.authorityId} )
         assertTrue(entity1Facts.any{ it.authorityId == authority1.authorityId} )
+    }
+
+    @Test
+    fun testCommentsWithComputedFactsSimple(){
+        testCommentsWithComputedFacts(getFreshSimpleEntityStore())
+    }
+
+    @Test
+    fun testCommentsWithComputedFactsExposed() {
+        testCommentsWithComputedFacts(getFreshExposeEntityStore())
+    }
+
+    private fun testCommentsWithComputedFacts(entityStore: EntityStore){
+        val resource = ResourceEntity(authority.authorityId, URI("https://opencola"))
+        entityStore.updateEntities(resource)
+
+        val comment = CommentEntity(authority.authorityId, resource.entityId, "Comment")
+        entityStore.updateEntities(comment)
+
+        val comment1 = entityStore.getEntity(authority.authorityId, comment.entityId) as? CommentEntity
+        assertNotNull(comment1)
+        assertEquals(comment, comment1)
+
+        val resource1 = entityStore.getEntity(authority.authorityId, resource.entityId) as? ResourceEntity
+        assertNotNull(resource1)
+        assertEquals(1, resource1.commentIds.count())
+        assertEquals(comment.entityId, resource1.commentIds.single())
+
+        entityStore.deleteEntity(authority.authorityId, comment.entityId)
+        val resource2 = entityStore.getEntity(authority.authorityId, resource.entityId) as? ResourceEntity
+        assertNotNull(resource2)
+        assertEquals(0, resource2.commentIds.count())
     }
 }

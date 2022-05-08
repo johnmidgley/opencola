@@ -3,17 +3,17 @@ package opencola.core.model
 import java.net.URI
 
 open class ResourceEntity : Entity {
-    var uri by UriAttributeDelegate
-    var dataId by IdAttributeDelegate
-    var name by StringAttributeDelegate
-    var description by StringAttributeDelegate
-    var text by StringAttributeDelegate
-    var imageUri by UriAttributeDelegate
-    var trust by FloatAttributeDelegate
-    var tags by SetOfStringAttributeDelegate
-    var like by BooleanAttributeDelegate
-    var rating by FloatAttributeDelegate
-    var commentIds by MultiValueSetOfIdAttributeDelegate
+    var uri by uriAttributeDelegate
+    var dataId by idAttributeDelegate
+    var name by stringAttributeDelegate
+    var description by stringAttributeDelegate
+    var text by stringAttributeDelegate
+    var imageUri by uriAttributeDelegate
+    var trust by floatAttributeDelegate
+    var tags by setOfStringAttributeDelegate
+    var like by booleanAttributeDelegate
+    var rating by floatAttributeDelegate
+    val commentIds by MultiValueSetOfIdAttributeDelegate // Read only, computed property
 
     constructor(authorityId: Id,
                 uri: URI,
@@ -25,7 +25,6 @@ open class ResourceEntity : Entity {
                 tags: Set<String>? = null,
                 like: Boolean? = null,
                 rating: Float? = null,
-                commentIds: List<Id>? = null,
     ) : super(authorityId, Id.ofUri(uri)){
         // Null checks are more efficient, but more importantly, don't result in retracting facts
         this.uri = uri
@@ -37,7 +36,6 @@ open class ResourceEntity : Entity {
         if(tags != null) this.tags = tags
         if(like != null) this.like = like
         if(rating != null) this.rating = rating
-        if(commentIds != null) this.commentIds = commentIds
     }
 
     constructor(facts: List<Fact>) : super(facts)

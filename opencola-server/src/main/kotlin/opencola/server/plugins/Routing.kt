@@ -42,8 +42,7 @@ fun Application.configureRouting(application: app) {
         post("/entity/{entityId}"){
             val authority by injector.instance<Authority>()
             val entityStore by injector.instance<EntityStore>()
-            val entity = call.receive<EntityResult>()
-            updateEntity(call, authority.authorityId, entityStore, entity)
+            updateEntity(call, authority.authorityId, entityStore)
         }
 
         get("/entity/{authorityId}/{entityId}"){
@@ -55,6 +54,12 @@ fun Application.configureRouting(application: app) {
             val authority by injector.instance<Authority>()
             val entityStore by injector.instance<EntityStore>()
             deleteEntity(call, authority.authorityId, entityStore)
+        }
+
+        post ("/entity/{entityId}/comment"){
+            val authority by injector.instance<Authority>()
+            val entityStore by injector.instance<EntityStore>()
+            addComment(call, authority.authorityId, entityStore)
         }
 
         get("/transactions/{authorityId}"){

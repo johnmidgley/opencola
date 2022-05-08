@@ -16,7 +16,7 @@ data class Transaction(val id: Id,
                        val transactionEntities: List<TransactionEntity>,
                        val epochSecond: Long = Instant.now().epochSecond) {
 
-    fun getFacts(transactionOrdinal: Long?): List<Fact> {
+    fun getFacts(transactionOrdinal: Long? = null): List<Fact> {
         return transactionEntities.flatMap { entity ->
             entity.facts.map { Fact(authorityId, entity.entityId, it.attribute, it.value, it.operation, epochSecond, transactionOrdinal) }
         }

@@ -21,7 +21,8 @@ abstract class AbstractEntityStore(
     protected val signator: Signator
 ) : EntityStore {
     // TODO: Assumes transaction has been validated. Cleanup?
-    protected abstract fun persistTransaction(signedTransaction: SignedTransaction): Long
+    protected abstract fun persistTransaction(signedTransaction: SignedTransaction,
+                                              computeFacts: (Iterable<Fact>) -> Iterable<Fact>): Long
 
     private fun getFirstTransactionId(authorityId: Id): Id {
         // TODO: Random, or rooted with authority?
@@ -57,7 +58,7 @@ abstract class AbstractEntityStore(
 
     // TODO - make entity method?
     private fun validateEntity(entity: Entity): Entity {
-        val authorityIds = entity.getFacts().map { it.authorityId }.distinct()
+        val authorityIds = entity.getAllFacts().map { it.authorityId }.distinct()
 
         if (authorityIds.size != 1) {
             logAndThrow(RuntimeException("Entity{${entity.entityId}} contains facts from multiple authorities $authorityIds }"))
@@ -68,12 +69,12 @@ abstract class AbstractEntityStore(
             logAndThrow(RuntimeException("Entity{${entity.entityId}} with authority ${entity.authorityId} contains facts from wrong authority $authorityId }"))
         }
 
-        val invalidEntityIds = entity.getFacts().filter { it.entityId != entity.entityId }.map { it.entityId }
+        val invalidEntityIds = entity.getAllFacts().filter { it.entityId != entity.entityId }.map { it.entityId }
         if (invalidEntityIds.isNotEmpty()) {
             logAndThrow(RuntimeException("Entity Id:{${entity.entityId}} contains facts not matching its id: $invalidEntityIds"))
         }
 
-        if (entity.getFacts().distinct().size < entity.getFacts().size) {
+        if (entity.getAllFacts().distinct().size < entity.getAllFacts().size) {
             logAndThrow(RuntimeException("Entity Id:{${entity.entityId}} contains non-distinct facts"))
         }
 
@@ -94,7 +95,7 @@ abstract class AbstractEntityStore(
             logAndThrow(RuntimeException("Attempt to commit changes not controlled by authority"))
         }
 
-        val uncommittedFacts = entities.flatMap { it.getFacts() }.filter { it.transactionOrdinal == null }
+        val uncommittedFacts = entities.flatMap { it.getAllFacts() }.filter { it.transactionOrdinal == null }
         if (uncommittedFacts.isEmpty()) {
             logger.info { "Ignoring update with no novel facts" }
             return null
@@ -109,6 +110,13 @@ abstract class AbstractEntityStore(
         return signedTransaction
     }
 
+
+    val computeFacts: (Iterable<Fact>) -> Iterable<Fact> = { facts ->
+        CoreAttribute.values().flatMap { attribute ->
+            attribute.spec.computeFacts.ifNotNullOrElse({ it(facts) }, { emptyList() })
+        }
+    }
+
     @Synchronized
     private fun persistTransaction(authorityId: Id, facts: List<Fact>) : Pair<SignedTransaction, Long> {
         val nextTransactionId =
@@ -117,19 +125,25 @@ abstract class AbstractEntityStore(
                 .ifNotNullOrElse({ Id.ofData(SignedTransaction.encode(it)) }, { getFirstTransactionId(authorityId) })
 
         val signedTransaction = Transaction.fromFacts(nextTransactionId, facts).sign(signator)
-        val transactionOrdinal = persistTransaction(signedTransaction)
+        val transactionOrdinal = persistTransaction(signedTransaction, computeFacts)
         eventBus.sendMessage(Events.NewTransaction.toString(), SignedTransaction.encode(signedTransaction))
 
         return Pair(signedTransaction, transactionOrdinal)
     }
 
+    private fun getDeletedValue(fact: Fact) : Value {
+        return if(fact.attribute.type != AttributeType.SingleValue
+            || fact.attribute == CoreAttribute.Type.spec
+            || fact.attribute == CoreAttribute.ParentId.spec)
+            fact.value
+        else
+            Value.emptyValue
+    }
+    
     override fun deleteEntity(authorityId: Id, entityId: Id) {
         getEntity(authorityId, entityId).nullOrElse { entity ->
-            val facts = entity.getFacts()
-                .groupBy { it.attribute }
-                .mapNotNull { (attribute, facts) ->
-                    if(facts.maxByOrNull { it.transactionOrdinal!! }!!.operation == Operation.Add) attribute else null }
-                .map { Fact(authorityId, entityId, it, Value.emptyValue, Operation.Retract) }
+            val facts = entity.getCurrentFacts()
+                .map { Fact(authorityId, entityId, it.attribute, getDeletedValue(it), Operation.Retract) }
 
             persistTransaction(authorityId, facts)
         }
@@ -144,7 +158,7 @@ abstract class AbstractEntityStore(
             if (!it.isValidTransaction(publicKey))
                 throw IllegalArgumentException("Transaction ${it.transaction.id} failed to validate from $transactionAuthorityId")
 
-            persistTransaction(it)
+            persistTransaction(it, computeFacts)
             eventBus.sendMessage(Events.NewTransaction.toString(), SignedTransaction.encode(it))
         }
     }

@@ -7,88 +7,28 @@ import java.net.URI
 import java.security.PublicKey
 import kotlin.reflect.KProperty
 
+class AttributeDelegate<T>(val codec: ByteArrayCodec<T>, val resettable: Boolean = true) {
+    operator fun getValue(thisRef: Entity, property: KProperty<*>): T? {
+        return thisRef.getValue(property.name)?.bytes.nullOrElse { codec.decode(it) }
+    }
+
+    operator fun setValue(thisRef: Entity, property: KProperty<*>, value: T?) {
+        if(!resettable && getValue(thisRef, property) != null)
+             throw IllegalStateException("Attempt to reset a non resettable property: ${property.name}")
+
+        thisRef.setValue(property.name, value.ifNotNullOrElse( { Value(codec.encode(it as T)) }, { Value.emptyValue }))
+    }
+}
 
 // TODO - validate all fields (i.e. ratings should be between 0 and 1.0)
-// TODO - Only allow update if value has changed - otherwise ignore (i.e. get before setting)
-object BooleanAttributeDelegate {
-    operator fun getValue(thisRef: Entity, property: KProperty<*>): Boolean? {
-        // TODO - Can these two lines be collapsed (in all delegates)
-        // TODO: Can we abstract more - the only difference between these delegates is the encode / decode expression
-        val value = thisRef.getValue(property.name)?.bytes
-        return value.nullOrElse { BooleanByteArrayCodec.decode(it) }
-    }
-
-    operator fun setValue(thisRef: Entity, property: KProperty<*>, value: Boolean?) {
-        thisRef.setValue(property.name, value.ifNotNullOrElse( { Value(BooleanByteArrayCodec.encode(value as Boolean)) }, { Value.emptyValue }))
-    }
-}
-
-object FloatAttributeDelegate {
-    operator fun getValue(thisRef: Entity, property: KProperty<*>): Float? {
-        val value = thisRef.getValue(property.name)?.bytes
-        return value.nullOrElse { FloatByteArrayCodec.decode(it) }
-    }
-
-    operator fun setValue(thisRef: Entity, property: KProperty<*>, value: Float?) {
-        thisRef.setValue(property.name, value.ifNotNullOrElse( { Value(FloatByteArrayCodec.encode(value as Float)) }, { Value.emptyValue }))
-    }
-}
-
-object StringAttributeDelegate {
-    operator fun getValue(thisRef: Entity, property: KProperty<*>): String? {
-        val value = thisRef.getValue(property.name)?.bytes
-        return value.nullOrElse { StringByteArrayCodec.decode(it) }
-    }
-
-    operator fun setValue(thisRef: Entity, property: KProperty<*>, value: String?) {
-        thisRef.setValue(property.name, value.ifNotNullOrElse( { Value(StringByteArrayCodec.encode(value as String)) }, { Value.emptyValue }))
-    }
-}
-
-object IdAttributeDelegate {
-    operator fun getValue(thisRef: Entity, property: KProperty<*>): Id? {
-        val value = thisRef.getValue(property.name)?.bytes
-        return value.nullOrElse { Id.decode(it) }
-    }
-
-    operator fun setValue(thisRef: Entity, property: KProperty<*>, value: Id?) {
-        thisRef.setValue(property.name, value.ifNotNullOrElse( { Value(Id.encode(value as Id)) }, { Value.emptyValue }))
-    }
-}
-
-object UriAttributeDelegate {
-    operator fun getValue(thisRef: Entity, property: KProperty<*>): URI? {
-        val value = thisRef.getValue(property.name)?.bytes
-        return value.nullOrElse { UriByteArrayCodec.decode(it) }
-    }
-
-    operator fun setValue(thisRef: Entity, property: KProperty<*>, value: URI?) {
-        thisRef.setValue(property.name, value.ifNotNullOrElse( { Value(UriByteArrayCodec.encode(value as URI)) }, { Value.emptyValue }))
-    }
-}
-
-object SetOfStringAttributeDelegate {
-    operator fun getValue(thisRef: Entity, property: KProperty<*>): Set<String>? {
-        // TODO: Is there anything that can be done here, given Type erasure? Probably make tags class...
-        val value = thisRef.getValue(property.name)?.bytes
-        return value.nullOrElse { SetOfStringByteArrayCodec.decode(it) }
-    }
-
-    operator fun setValue(thisRef: Entity, property: KProperty<*>, value: Set<String>?) {
-        thisRef.setValue(property.name, value.ifNotNullOrElse( { Value(SetOfStringByteArrayCodec.encode(value as Set<String>)) }, { Value.emptyValue }))
-    }
-}
-
-object PublicKeyAttributeDelegate {
-    operator fun getValue(thisRef: Entity, property: KProperty<*>): PublicKey? {
-        val value = thisRef.getValue(property.name)?.bytes
-        return value.nullOrElse { PublicKeyByteArrayCodec.decode(it) }
-    }
-
-    operator fun setValue(thisRef: Entity, property: KProperty<*>, value: PublicKey?) {
-        thisRef.setValue(property.name, value.ifNotNullOrElse( { Value(PublicKeyByteArrayCodec.encode(value as PublicKey)) }, { Value.emptyValue }))
-    }
-}
+val nonResettableIdAttributeDelegate = AttributeDelegate(Id.Factory, false)
+val booleanAttributeDelegate = AttributeDelegate(BooleanByteArrayCodec)
+val floatAttributeDelegate = AttributeDelegate(FloatByteArrayCodec)
+val stringAttributeDelegate = AttributeDelegate(StringByteArrayCodec)
+val idAttributeDelegate = AttributeDelegate(Id.Factory)
+val uriAttributeDelegate = AttributeDelegate(UriByteArrayCodec)
+val setOfStringAttributeDelegate = AttributeDelegate(SetOfStringByteArrayCodec)
+val publicKeyAttributeDelegate = AttributeDelegate(PublicKeyByteArrayCodec)
 
 object MultiValueSetOfIdAttributeDelegate {
     operator fun getValue(thisRef: Entity, property: KProperty<*>): List<Id> {

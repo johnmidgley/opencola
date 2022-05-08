@@ -6,15 +6,15 @@ import java.security.PublicKey
 // Person or website (organization), identified by hash of public key
 //  TODO: Figure out how to properly initialize and store publicKey attribute
 open class ActorEntity : Entity {
-    var uri by UriAttributeDelegate
-    var imageUri by UriAttributeDelegate
-    var name by StringAttributeDelegate
-    var description by StringAttributeDelegate
-    var publicKey by PublicKeyAttributeDelegate
-    var trust by FloatAttributeDelegate
-    var tags by SetOfStringAttributeDelegate
-    var like by BooleanAttributeDelegate
-    var rating by FloatAttributeDelegate
+    var uri by uriAttributeDelegate
+    var imageUri by uriAttributeDelegate
+    var name by stringAttributeDelegate
+    var description by stringAttributeDelegate
+    var publicKey by publicKeyAttributeDelegate
+    var trust by floatAttributeDelegate
+    var tags by setOfStringAttributeDelegate
+    var like by booleanAttributeDelegate
+    var rating by floatAttributeDelegate
 
     constructor(authorityId: Id,
                 publicKey: PublicKey,

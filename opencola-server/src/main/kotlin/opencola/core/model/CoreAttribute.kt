@@ -5,6 +5,7 @@ import java.net.URI
 
 // NOTE: In order to be properly searchable, attributes should be added to the search schema.
 // TODO: Create dynamic attribute list for extensibility
+// WARNING: ONLY ADD ATTRIBUTES TO THE END OF THIS ENUMERATION
 @Suppress("UNCHECKED_CAST")
 enum class CoreAttribute(val spec: Attribute) {
     Type(
@@ -113,13 +114,22 @@ enum class CoreAttribute(val spec: Attribute) {
             isIndexable = true
         )
     ),
-    Comment(
+    ParentId(
+      Attribute(
+          URI("opencola://attributes/parentId"),
+          AttributeType.SingleValue,
+          Id.Factory as ByteArrayCodec<Any>,
+          isIndexable = false,
+      )
+    ),
+    CommentIds(
         Attribute(
             "commentIds",
-            URI("opencola://attributes/comment"),
+            URI("opencola://attributes/commentId"),
             AttributeType.MultiValueSet,
             Id.Factory as ByteArrayCodec<Any>,
-            isIndexable = false
+            isIndexable = false,
+            computeEntityCommentIds
         )
     )
 }

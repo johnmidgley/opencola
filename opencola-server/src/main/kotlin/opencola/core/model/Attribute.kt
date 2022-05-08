@@ -20,13 +20,20 @@ enum class AttributeType {
 }
 
 @Serializable(with = Attribute.AttributeAsStringSerializer::class)
-data class Attribute(val name: String, val uri: URI, val type: AttributeType, val codec: ByteArrayCodec<Any>, val isIndexable: Boolean){
-    constructor(uri: URI, type: AttributeType, codec: ByteArrayCodec<Any>, isIndexable: Boolean) :
-            this(uri.path.split("/").last(), uri, type, codec, isIndexable)
+data class Attribute(
+    val name: String,
+    val uri: URI,
+    val type: AttributeType,
+    val codec: ByteArrayCodec<Any>,
+    val isIndexable: Boolean,
+    val computeFacts: ((Iterable<Fact>) -> Iterable<Fact>)?
+) {
+    constructor(uri: URI, type: AttributeType, codec: ByteArrayCodec<Any>, isIndexable: Boolean, computeFacts: ((Iterable<Fact>) -> Iterable<Fact>)? = null) :
+            this(uri.path.split("/").last(), uri, type, codec, isIndexable, computeFacts)
 
     companion object Factory : StreamSerializer<Attribute> {
-        override fun encode(stream: OutputStream, value: Attribute){
-            val ordinal = CoreAttribute.values().firstOrNull{ it.spec == value }?.ordinal
+        override fun encode(stream: OutputStream, value: Attribute) {
+            val ordinal = CoreAttribute.values().firstOrNull { it.spec == value }?.ordinal
                 ?: throw NotImplementedError("Attempt to encode Attribute not in Attributes enum: ${value.uri}")
             stream.write(ordinal)
         }

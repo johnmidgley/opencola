@@ -9,12 +9,24 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
     companion object Factory {
         private val logger = KotlinLogging.logger("Entity")
 
-        private fun currentFacts(facts: Iterable<Fact>) : List<Fact> {
+        private fun headAttributeFacts(attribute: Attribute, facts: List<Fact>) : List<Fact> {
+            return facts
+                .filter { it.attribute == attribute }
+                .groupBy {
+                    when(attribute.type){
+                        SingleValue -> null
+                        MultiValueSet -> it.value
+                        MultiValueList -> MultiValueListItem.keyOf(it.value)
+                    }
+                }
+                .map { it.value.last() }
+        }
+
+        fun currentFacts(facts: Iterable<Fact>) : List<Fact> {
             // Assumes facts have been sorted by transactionOrdinal
-            // TODO: Won't work for multivalued attributes - fix when supported
             return facts
                 .groupBy { it.attribute }
-                .map{ it.value.last() }
+                .flatMap { headAttributeFacts(it.key, it.value) }
                 .filter { it.operation != Operation.Retract }
         }
 
@@ -34,6 +46,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
                 ActorEntity::class.simpleName -> ActorEntity(sortedFacts)
                 ResourceEntity::class.simpleName -> ResourceEntity(sortedFacts)
                 DataEntity::class.simpleName -> DataEntity(sortedFacts)
+                CommentEntity::class.simpleName -> CommentEntity(sortedFacts)
                 // TODO: Throw if not type?
                 else -> {
                     logger.error { "Found unknown type: $type" }
@@ -44,11 +57,15 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
     }
 
     // TODO: Remove
-    private var type by StringAttributeDelegate
+    private var type by stringAttributeDelegate
 
     private var facts = emptyList<Fact>()
-    fun getFacts(): List<Fact> {
+    fun getAllFacts(): List<Fact> {
         return facts
+    }
+
+    fun getCurrentFacts() : List<Fact> {
+        return currentFacts(facts)
     }
 
     init {
@@ -86,7 +103,6 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         return result
     }
 
-    // For multi-valued lists
      private fun getFact(propertyName: String, key: UUID?, value: Value?): Pair<Attribute, Fact?> {
         val attribute = getAttributeByName(propertyName)
             ?: throw IllegalArgumentException("Attempt to access unknown property $propertyName")
@@ -107,19 +123,22 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         return Pair(attribute, fact)
     }
 
-    // Only for Multi-value attributes
-    private fun getFacts(propertyName: String): Pair<Attribute, List<Fact>> {
+    private fun getAllFacts(propertyName: String): Pair<Attribute, List<Fact>> {
         val attribute = getAttributeByName(propertyName)
             ?: throw IllegalArgumentException("Attempt to access unknown property $propertyName")
-
-        if(attribute.type == SingleValue)
-            throw IllegalArgumentException("Cannot call getFacts for single valued properties (${attribute.name}). Call getFact instead.")
 
         val factList = facts
             .asSequence()
             .filter { it.attribute == attribute }
-            .groupBy { if(attribute.type == MultiValueList) MultiValueListItem.keyOf(it.value) else it.value }
-            .map { it.value.last() }
+            .groupBy {
+                //  TODO: Could re-use code from entity - getAttributeFacts
+                when(attribute.type){
+                    SingleValue -> throw IllegalArgumentException("Cannot call getFacts for single valued properties (${attribute.name}). Call getFact instead.")
+                    MultiValueSet -> it.value
+                    MultiValueList -> MultiValueListItem.keyOf(it.value)
+                }
+            }
+            .map { (_, attributeFacts) -> attributeFacts.last() }
             .filter { it.operation != Operation.Retract }
             .toList()
 
@@ -137,7 +156,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
     }
 
     internal fun getListValues(propertyName: String): List<MultiValueListItem> {
-        val (attribute, facts) = getFacts(propertyName)
+        val (attribute, facts) = getAllFacts(propertyName)
 
         if(attribute.type != MultiValueList)
             throw IllegalArgumentException("Attempt to getListValues for non list attribute (${attribute.name})")
@@ -146,7 +165,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
     }
 
     internal fun getSetValues(propertyName: String): List<Value> {
-        val (attribute, facts) = getFacts(propertyName)
+        val (attribute, facts) = getAllFacts(propertyName)
 
         if(attribute.type != MultiValueSet)
             throw IllegalArgumentException("Attempt to getSetValues for non set attribute (${attribute.name})")
@@ -215,11 +234,15 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         return setValue(propertyName, key, value)
     }
 
-    // NOT Great. Decoupled from actual factions that were persisted.
-    fun commitFacts(epochSecond: Long, transactionOrdinal: Long) {
-        val partitionedFacts = facts.partition { it.transactionOrdinal == null }
-        facts = partitionedFacts.second + partitionedFacts.first.map {
+    // NOT Great. Decoupled from actual facts that were persisted. Take list of facts instead?
+    fun commitFacts(epochSecond: Long, transactionOrdinal: Long) : Iterable<Fact> {
+        val (uncommittedFacts, committedFacts) = facts.partition { it.transactionOrdinal == null }
+
+        val newCommittedFacts = uncommittedFacts.map {
             Fact(it.authorityId, it.entityId, it.attribute, it.value, it.operation, epochSecond, transactionOrdinal)
         }
+
+        facts = committedFacts + newCommittedFacts
+        return newCommittedFacts
     }
 }

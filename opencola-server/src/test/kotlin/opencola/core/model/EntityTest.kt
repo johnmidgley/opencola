@@ -51,27 +51,22 @@ class EntityTest {
     @Test
     fun testComments(){
         val authorityId = Id.ofData("".toByteArray())
-        val comment1 = CommentEntity(authorityId, "comment1", true, .5f)
-        val comment2 = CommentEntity(authorityId, "comment2", false, .3f)
         val entity = ResourceEntity(authorityId, URI("https://test.com"))
+        val comment1 = CommentEntity(authorityId, entity.entityId,"comment1", true, .5f)
 
-        comment1.commitFacts(2,2)
+        entity.commitFacts(0,0)
+        val comment1Facts = comment1.commitFacts(1,1)
         assertEquals(comment1.authorityId, authorityId)
         assertEquals(comment1.text, "comment1")
         assertEquals(comment1.like, true)
         assertEquals(comment1.rating, .5f)
 
-        entity.commentIds += comment1.entityId
-        entity.commentIds += comment2.entityId
-        entity.commitFacts(0,0)
-        assertEquals(2, entity.commentIds.count())
-        assertContains(entity.commentIds, comment1.entityId)
-        assertContains(entity.commentIds, comment2.entityId)
-
-        entity.commentIds -= comment1.entityId
-        entity.commitFacts(1,1)
-        assertEquals(1, entity.commentIds.count())
-        assertContains(entity.commentIds, comment2.entityId)
+        val computedFact1 = computeEntityCommentIds(comment1Facts).single()
+        assertEquals(computedFact1.authorityId, authorityId)
+        assertEquals(computedFact1.entityId, entity.entityId)
+        assertEquals(computedFact1.attribute, CoreAttribute.CommentIds.spec)
+        assertEquals(computedFact1.value, Value(Id.encode(comment1.entityId)))
+        assertEquals(computedFact1.operation, Operation.Add)
     }
 
     @Test
@@ -80,7 +75,7 @@ class EntityTest {
         val entity = ResourceEntity(Id.ofUri(uri), uri)
         entity.uri = uri
 
-        assertEquals(1, entity.getFacts().filter{ it.attribute == CoreAttribute.Uri.spec}.size)
+        assertEquals(1, entity.getAllFacts().filter{ it.attribute == CoreAttribute.Uri.spec}.size)
         assertFails { entity.uri = URI("opencola://different-uri") }
 
         val authority = TestApplication.instance.injector.instance<Authority>()

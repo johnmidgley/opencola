@@ -12,5 +12,5 @@ open class DataEntity : Entity {
     constructor(facts: List<Fact>) : super(facts)
 
     // URI where data was originally fetched
-    var mimeType by StringAttributeDelegate
+    var mimeType by stringAttributeDelegate
 }
