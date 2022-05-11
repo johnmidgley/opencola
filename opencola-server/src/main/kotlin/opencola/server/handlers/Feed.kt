@@ -5,10 +5,12 @@ import io.ktor.response.*
 import kotlinx.serialization.Serializable
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.*
+import opencola.core.model.CoreAttribute.*
 import opencola.core.network.PeerRouter
 import opencola.core.search.SearchIndex
 import opencola.core.storage.EntityStore
 import opencola.service.EntityResult
+import opencola.service.EntityResult.*
 import java.net.URI
 
 @Serializable
@@ -16,25 +18,19 @@ data class FeedResult(val pagingToken: String?, val results: List<EntityResult>)
     constructor(transactionId: Id?, results: List<EntityResult>) : this(transactionId?.toString(), results)
 }
 
-fun stringAttributeFromFacts(facts: List<Fact>, attribute: Attribute): String? {
-    return getFact(facts, attribute).nullOrElse { attribute.codec.decode(it.value.bytes).toString() }
+fun entityAttributeAsString(entity: Entity, attribute: Attribute) : String? {
+    return entity.getValue(attribute.name).nullOrElse { attribute.codec.decode(it.bytes).toString() }
 }
 
-fun getSummary(facts: List<Fact>): EntityResult.Summary {
-    return EntityResult.Summary(
-        stringAttributeFromFacts(facts, CoreAttribute.Name.spec),
-        stringAttributeFromFacts(facts, CoreAttribute.Uri.spec)!!,
-        stringAttributeFromFacts(facts, CoreAttribute.Description.spec),
-        stringAttributeFromFacts(facts, CoreAttribute.ImageUri.spec)
+fun getSummary(authorityId: Id, entities: List<Entity>): Summary {
+    val entity = entities.minByOrNull { if (it.authorityId == authorityId) 0 else 1 } !!
+
+    return Summary(
+        entityAttributeAsString(entity, Name.spec),
+        entityAttributeAsString(entity, Uri.spec)!!,
+        entityAttributeAsString(entity, Description.spec),
+        entityAttributeAsString(entity, ImageUri.spec),
     )
-}
-
-fun getActivity(authority: Authority, dataId: Id?, epochSecond: Long, save: Boolean?, trust: Float?, like: Boolean?, rating: Float?
-): EntityResult.Activity? {
-    return if (listOf(save, trust, like, rating).all { it == null })
-        null
-    else
-        EntityResult.Activity(authority, dataId, epochSecond, Actions(save, trust, like, rating))
 }
 
 // TODO: generate this list once, vs creating Authorities for each activity
@@ -56,7 +52,7 @@ fun getAttributeValueFromFact(facts: Iterable<Fact>, attribute: Attribute): Any?
 }
 
 fun getDataId(authorityId: Id, facts: List<Fact>) : Id?{
-    val dataIdAttribute = CoreAttribute.DataId.spec
+    val dataIdAttribute = DataId.spec
 
     return facts
         .filter { it.authorityId == authorityId && it.operation != Operation.Retract }
@@ -64,32 +60,49 @@ fun getDataId(authorityId: Id, facts: List<Fact>) : Id?{
         .nullOrElse { dataIdAttribute.codec.decode(it.value.bytes) as Id }
 }
 
-fun getActivityFromFacts(authority: Authority, facts: Iterable<Fact>): EntityResult.Activity? {
-    return getActivity(
-        authority,
-        getFact(facts, CoreAttribute.DataId.spec)?.value?.bytes.nullOrElse { Id.decode(it) },
-        facts.first().epochSecond!!,
-        getFact(facts, CoreAttribute.Uri.spec).nullOrElse { true },
-        getAttributeValueFromFact(facts, CoreAttribute.Trust.spec) as Float?,
-        getAttributeValueFromFact(facts, CoreAttribute.Like.spec) as Boolean?,
-        getAttributeValueFromFact(facts, CoreAttribute.Rating.spec) as Float?
-    )
+fun factToAction(comments: Map<Id, CommentEntity>, fact: Fact) : Action? {
+    return when(fact.attribute) {
+        DataId.spec -> Action(ActionType.Save, fact.decodeValue(), null)
+        Trust.spec -> Action(ActionType.Trust, null, fact.decodeValue())
+        Like.spec -> Action(ActionType.Like, null, fact.decodeValue())
+        Rating.spec -> Action(ActionType.Rate, null, fact.decodeValue())
+        CommentIds.spec -> {
+            val commentId = fact.decodeValue<Id>()
+            Action(ActionType.Comment, commentId, comments.getValue(commentId)?.text)
+        }
+        else -> null
+    }
 }
 
-fun getEntityActivitiesFromFacts(entityFacts: Iterable<Fact>, idToAuthority: (Id) -> Authority?): List<EntityResult.Activity> {
-    if(entityFacts.distinctBy { it.entityId }.size != 1){
-        throw IllegalArgumentException("Attempt to get activities from facts with multiple entities")
+fun entityActivities(authority: Authority, entity: Entity, comments: Map<Id, CommentEntity>): List<Activity> {
+    if (authority.authorityId != entity.authorityId) {
+        throw IllegalArgumentException("authorityId does not match entity")
     }
 
-    return entityFacts
-        .sortedByDescending { it.epochSecond }
-        // TODO: This is problematic. If you delete an entity and then re-add it, old activity will show up.
-        //  Instead of doing this by transaction, facts should be filtered to all non-retracted facts first
-        .groupBy { Pair(it.authorityId, it.transactionOrdinal) }
-        .map {
-            val (authorityId, _) = it.key
-            idToAuthority(authorityId).nullOrElse { authority -> getActivityFromFacts(authority, it.value) }
-        }.filterNotNull()
+    return entity.getNonRetractedFacts()
+        .groupBy { it.transactionOrdinal }
+        .map { (_, facts) ->
+            Activity(
+                authority,
+                facts.first().epochSecond!!,
+                facts.mapNotNull { factToAction(comments, it) })
+        }
+}
+
+fun activitiesByEntityId(idToAuthority: (Id) -> Authority?,
+                         entities: Iterable<Entity>,
+                         comments: Map<Id, CommentEntity>): Map<Id, List<Activity>> {
+    return entities
+        .groupBy { it.entityId }
+        .map { (entityId, entities) ->
+            val activities = entities
+                .mapNotNull { entity -> idToAuthority(entity.authorityId).nullOrElse { entityActivities(it, entity, comments) } }
+                .flatten()
+                .filter { it.actions.isNotEmpty() }
+                .sortedBy { it.epochSecond }
+            Pair(entityId, activities)
+        }
+        .associate { it }
 }
 
 // TODO - All items should be visible in search (i.e. even un-liked)
@@ -99,6 +112,15 @@ fun isEntityIsVisible(authorityId: Id, facts: Iterable<Fact>) : Boolean {
     val authorityFacts = authorityToFacts[authorityId] ?: authorityToFacts.values.firstOrNull() ?: return false
 
     return when(val entity = Entity.fromFacts(authorityFacts)){
+        is ResourceEntity -> entity.authorityId != authorityId || entity.like != false
+        is ActorEntity -> entity.authorityId != authorityId || entity.like != false
+        else -> false
+    }
+}
+
+fun isEntityIsVisible(authorityId: Id, entity: Entity) : Boolean {
+    return when(entity){
+        // TODO: This hides unliked entities in search results
         is ResourceEntity -> entity.authorityId != authorityId || entity.like != false
         is ActorEntity -> entity.authorityId != authorityId || entity.like != false
         else -> false
@@ -123,6 +145,36 @@ fun getEntityIds(entityStore: EntityStore, searchIndex: SearchIndex, query: Stri
     return entityIds.distinct()
 }
 
+fun getComments(entityStore: EntityStore, entities: Iterable<Entity>): Map<Id, CommentEntity> {
+    val commentIds = entities
+        .mapNotNull { it as? ResourceEntity }
+        .flatMap { it.commentIds }
+        .toSet()
+
+   return entityStore.getEntities(emptyList(), commentIds)
+       .mapNotNull { it as? CommentEntity }
+       .associateBy { it.entityId }
+}
+
+fun getEntityResults(authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter, entityIds: Iterable<Id>): List<EntityResult> {
+    val idToAuthority: (Id) -> Authority? = { id -> getAuthority(id, authority, peerRouter) }
+    val entities = entityStore.getEntities(emptyList(), entityIds).filter { isEntityIsVisible(authority.authorityId, it) }
+    val comments = getComments(entityStore, entities)
+    val entitiesByEntityId = entities.groupBy { it.entityId }
+    val activitiesByEntityId = activitiesByEntityId(idToAuthority, entities, comments)
+
+    return entityIds
+            .filter { entitiesByEntityId.containsKey(it) }
+            .map {
+                val entitiesForId = entitiesByEntityId[it]!!
+                EntityResult(
+                    it,
+                    getSummary(authority.authorityId, entitiesForId),
+                    activitiesByEntityId[it]!!
+                )
+            }
+}
+
 suspend fun handleGetFeed(
     call: ApplicationCall,
     authority: Authority,
@@ -132,23 +184,9 @@ suspend fun handleGetFeed(
 ) {
     // TODO: Look for startTransactionId in call (For paging)
     val entityIds = getEntityIds(entityStore, searchIndex, call.parameters["q"])
-    val entityFactsById = getEntityFacts(entityStore, authority.authorityId, entityIds)
-    val idToAuthority: (Id) -> Authority? = { id -> getAuthority(id, authority, peerRouter) }
-    val entityActivitiesById =
-        entityFactsById.entries.associate { Pair(it.key, getEntityActivitiesFromFacts(it.value, idToAuthority)) }
 
     call.respond(FeedResult(
         "",
-        entityIds
-            .filter { entityFactsById.containsKey(it) }
-            .map {
-                val entityFacts = entityFactsById[it]!!
-                EntityResult(
-                    it,
-                    getDataId(authority.authorityId, entityFacts),
-                    getSummary(entityFacts),
-                    entityActivitiesById[it]!!
-                )
-            }
+        getEntityResults(authority, entityStore, peerRouter, entityIds)
     ))
 }

@@ -20,6 +20,7 @@ import java.net.URLEncoder
 import kotlinx.serialization.encodeToString
 import opencola.core.network.PeerRouter
 import opencola.server.handlers.FeedResult
+import opencola.service.EntityResult
 
 class ApplicationTest {
     private val application = TestApplication.instance
@@ -46,17 +47,26 @@ class ApplicationTest {
             handleRequest(HttpMethod.Get, "/entity/${entity.entityId}").apply {
                 assertEquals(HttpStatusCode.OK, response.status())
                 assertNotNull(response.content)
-                val facts = Json.decodeFromString<List<Fact>>(response.content!!)
-                val returnedEntity = Entity.fromFacts(facts) as? ResourceEntity
-                assertNotNull(returnedEntity)
+                val entityResult = Json.decodeFromString<EntityResult>(response.content!!)
                 // TODO: Can't use .equals, since returned entity has committed transaction ids.
                 // Make commit return the updated entity or implement a contentEquals that ignores transaction id
-                assertEquals(entity.authorityId, returnedEntity.authorityId)
-                assertEquals(entity.entityId, returnedEntity.entityId)
-                assertEquals(entity.uri, returnedEntity.uri)
-                assertEquals(entity.trust, returnedEntity.trust)
-                assertEquals(entity.like, returnedEntity.like)
-                assertEquals(entity.rating, returnedEntity.rating)
+                assertEquals(entity.entityId, Id.fromHexString(entityResult.entityId))
+                assertEquals(entity.uri, URI(entityResult.summary.uri))
+
+                val activity = entityResult.activities.single()
+                assertEquals(authority.authorityId.toString(), activity.authorityId)
+
+                val actions = activity.actions
+                assertEquals(3, actions.size)
+
+                val trustAction = actions.single { it.type == "trust" }
+                assertEquals(entity.trust.toString(), trustAction.value)
+
+                val likeAction = actions.single { it.type == "like" }
+                assertEquals(entity.like.toString(), likeAction.value)
+
+                val ratingAction = actions.single { it.type == "rate" }
+                assertEquals(entity.rating.toString(), ratingAction.value)
             }
         }
     }
@@ -154,6 +164,7 @@ class ApplicationTest {
 
         val uri = URI("https://opencola.org")
         val entity = ResourceEntity(authority.authorityId, uri)
+        entity.dataId = Id.new()
         entityStore.updateEntities(entity)
 
         entity.trust = 1.0F
@@ -162,8 +173,11 @@ class ApplicationTest {
         entity.like = true
         entityStore.updateEntities(entity)
 
-        entity.rating = 1.0F
+        entity.rating = 0.5F
         entityStore.updateEntities(entity)
+
+        val comment = CommentEntity(authority.authorityId, entity.entityId, "Test Comment")
+        entityStore.updateEntities(comment)
 
         // TODO: Add another authority
 
@@ -174,8 +188,13 @@ class ApplicationTest {
                 val feedResult = Json.decodeFromString<FeedResult>(response.content!!)
 
                 assertEquals(entity.entityId.toString(), feedResult.results[0].entityId)
-                assertEquals(4, feedResult.results[0].activities.count())
+                assertEquals(5, feedResult.results[0].activities.count())
                 assertEquals(uri.toString(), feedResult.results[0].summary.uri)
+                assertEquals(entity.dataId.toString(), feedResult.results[0].activities[0].actions[0].id)
+                assertEquals(entity.trust.toString(), feedResult.results[0].activities[1].actions[0].value)
+                assertEquals(entity.like.toString(), feedResult.results[0].activities[2].actions[0].value)
+                assertEquals(entity.rating.toString(), feedResult.results[0].activities[3].actions[0].value)
+                assertEquals(comment.text, feedResult.results[0].activities[4].actions[0].value)
             }
         }
     }

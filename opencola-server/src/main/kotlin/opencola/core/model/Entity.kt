@@ -5,58 +5,8 @@ import opencola.core.extensions.nullOrElse
 import opencola.core.model.AttributeType.*
 import java.util.*
 
+
 abstract class Entity(val authorityId: Id, val entityId: Id) {
-    companion object Factory {
-        private val logger = KotlinLogging.logger("Entity")
-
-        private fun headAttributeFacts(attribute: Attribute, facts: List<Fact>) : List<Fact> {
-            return facts
-                .filter { it.attribute == attribute }
-                .groupBy {
-                    when(attribute.type){
-                        SingleValue -> null
-                        MultiValueSet -> it.value
-                        MultiValueList -> MultiValueListItem.keyOf(it.value)
-                    }
-                }
-                .map { it.value.last() }
-        }
-
-        fun currentFacts(facts: Iterable<Fact>) : List<Fact> {
-            // Assumes facts have been sorted by transactionOrdinal
-            return facts
-                .groupBy { it.attribute }
-                .flatMap { headAttributeFacts(it.key, it.value) }
-                .filter { it.operation != Operation.Retract }
-        }
-
-        // TODO: Iterable<Fact> instead of List<Fact> for any parameters
-        fun fromFacts(facts: List<Fact>): Entity? {
-            val sortedFacts = facts.sortedBy { it.transactionOrdinal ?: Long.MAX_VALUE }
-            val currentFacts = currentFacts(sortedFacts)
-            if (currentFacts.isEmpty()) return null
-
-            // TODO: Validate that all subjects and entities are equal
-            // TODO: Should type be mutable? Probably no
-            val typeFact = currentFacts.lastOrNull { it.attribute == CoreAttribute.Type.spec }
-                ?: throw IllegalStateException("Entity has no type")
-
-            return when (val type = CoreAttribute.Type.spec.codec.decode(typeFact.value.bytes).toString()) {
-                // TODO: Use fully qualified names
-                ActorEntity::class.simpleName -> ActorEntity(sortedFacts)
-                ResourceEntity::class.simpleName -> ResourceEntity(sortedFacts)
-                DataEntity::class.simpleName -> DataEntity(sortedFacts)
-                CommentEntity::class.simpleName -> CommentEntity(sortedFacts)
-                // TODO: Throw if not type?
-                else -> {
-                    logger.error { "Found unknown type: $type" }
-                    null
-                }
-            }
-        }
-    }
-
-    // TODO: Remove
     private var type by stringAttributeDelegate
 
     private var facts = emptyList<Fact>()
@@ -66,6 +16,10 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
 
     fun getCurrentFacts() : List<Fact> {
         return currentFacts(facts)
+    }
+
+    fun getNonRetractedFacts() : List<Fact> {
+        return nonRetractedFacts(facts)
     }
 
     init {
@@ -123,7 +77,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         return Pair(attribute, fact)
     }
 
-    private fun getAllFacts(propertyName: String): Pair<Attribute, List<Fact>> {
+    private fun getCurrentAttributeFacts(propertyName: String): Pair<Attribute, List<Fact>> {
         val attribute = getAttributeByName(propertyName)
             ?: throw IllegalArgumentException("Attempt to access unknown property $propertyName")
 
@@ -156,7 +110,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
     }
 
     internal fun getListValues(propertyName: String): List<MultiValueListItem> {
-        val (attribute, facts) = getAllFacts(propertyName)
+        val (attribute, facts) = getCurrentAttributeFacts(propertyName)
 
         if(attribute.type != MultiValueList)
             throw IllegalArgumentException("Attempt to getListValues for non list attribute (${attribute.name})")
@@ -165,7 +119,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
     }
 
     internal fun getSetValues(propertyName: String): List<Value> {
-        val (attribute, facts) = getAllFacts(propertyName)
+        val (attribute, facts) = getCurrentAttributeFacts(propertyName)
 
         if(attribute.type != MultiValueSet)
             throw IllegalArgumentException("Attempt to getSetValues for non set attribute (${attribute.name})")
@@ -244,5 +198,70 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
 
         facts = committedFacts + newCommittedFacts
         return newCommittedFacts
+    }
+
+    companion object Factory {
+        private val logger = KotlinLogging.logger("Entity")
+
+        val attributeGroupingKey: (Fact) -> Any? = { fact ->
+            when (fact.attribute.type) {
+                SingleValue -> null
+                MultiValueSet -> fact.value
+                MultiValueList -> MultiValueListItem.keyOf(fact.value)
+            }
+        }
+
+        // Assumes facts have been sorted by transactionOrdinal
+        private fun headAttributeFacts(attribute: Attribute, facts: List<Fact>) : List<Fact> {
+            return facts
+                .filter { it.attribute == attribute }
+                .groupBy(attributeGroupingKey)
+                .map { it.value.last() }
+        }
+
+        // Assumes facts have been sorted by transactionOrdinal
+        fun currentFacts(facts: Iterable<Fact>) : List<Fact> {
+            return facts
+                .groupBy { it.attribute }
+                .flatMap { headAttributeFacts(it.key, it.value) }
+                .filter { it.operation != Operation.Retract }
+        }
+
+        // Assumes facts have been sorted by transactionOrdinal
+        fun nonRetractedFacts(facts: Iterable<Fact>) : List<Fact> {
+            return facts
+                .groupBy(attributeGroupingKey)
+                .flatMap { (_, value) ->
+                    value
+                        .reversed()
+                        .takeWhile { it.operation != Operation.Retract }
+                        .reversed()
+                }
+        }
+
+        // TODO: Iterable<Fact> instead of List<Fact> for any parameters
+        fun fromFacts(facts: List<Fact>): Entity? {
+            val sortedFacts = facts.sortedBy { it.transactionOrdinal ?: Long.MAX_VALUE }
+            val currentFacts = currentFacts(sortedFacts)
+            if (currentFacts.isEmpty()) return null
+
+            // TODO: Validate that all subjects and entities are equal
+            // TODO: Should type be mutable? Probably no
+            val typeFact = currentFacts.lastOrNull { it.attribute == CoreAttribute.Type.spec }
+                ?: throw IllegalStateException("Entity has no type")
+
+            return when (val type = CoreAttribute.Type.spec.codec.decode(typeFact.value.bytes).toString()) {
+                // TODO: Use fully qualified names
+                ActorEntity::class.simpleName -> ActorEntity(sortedFacts)
+                ResourceEntity::class.simpleName -> ResourceEntity(sortedFacts)
+                DataEntity::class.simpleName -> DataEntity(sortedFacts)
+                CommentEntity::class.simpleName -> CommentEntity(sortedFacts)
+                // TODO: Throw if not type?
+                else -> {
+                    logger.error { "Found unknown type: $type" }
+                    null
+                }
+            }
+        }
     }
 }

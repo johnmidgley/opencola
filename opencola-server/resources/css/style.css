@@ -55,9 +55,51 @@ body {
     width: 100%;
 }
 
+.item-comments {
+    padding-top: 10px;
+}
+
+.item-comment {
+    padding-top: 10px
+}
+
+.item-saves {
+   padding-top: 10px;
+}
+
+.item-likes {
+   padding-top: 10px;
+}
+
+.item-comment-text{
+   /* outline: #dddddd dashed 1px; */
+   background-color: #eee;
+   margin: 2px;
+   border: 20px;
+   padding: 2px;
+   padding-left: 6px;
+   border-radius: 6px;
+   font-family: "Lucida Console", "Courier New", monospace;
+}
+
+.comment {
+    padding-top: 10px
+}
+
+.item-attribution {
+    font-size: 14px;
+    color: grey;
+}
+
+
 .item-desc-edit {
     width: 100%;
     height: 200px;
+}
+
+.comment-text-edit {
+    width: 100%;
+    height: 100px;
 }
 
 .action-img {
@@ -77,3 +119,4 @@ body {
 .error {
     color: red;
 }
+

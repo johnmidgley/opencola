@@ -36,18 +36,14 @@ fun Application.configureRouting(application: app) {
             // TODO: Authority should be passed (and authenticated) in header
             val authority by injector.instance<Authority>()
             val entityStore by injector.instance<EntityStore>()
-            getEntity(call, authority.authorityId, entityStore)
+            val peerRouter by injector.instance<PeerRouter>()
+            getEntity(call, authority, entityStore, peerRouter)
         }
 
         post("/entity/{entityId}"){
             val authority by injector.instance<Authority>()
             val entityStore by injector.instance<EntityStore>()
             updateEntity(call, authority.authorityId, entityStore)
-        }
-
-        get("/entity/{authorityId}/{entityId}"){
-            val entityStore by injector.instance<EntityStore>()
-            getEntity(call, entityStore)
         }
 
         delete("/entity/{entityId}") {
@@ -59,7 +55,8 @@ fun Application.configureRouting(application: app) {
         post ("/entity/{entityId}/comment"){
             val authority by injector.instance<Authority>()
             val entityStore by injector.instance<EntityStore>()
-            addComment(call, authority.authorityId, entityStore)
+            val peerRouter by injector.instance<PeerRouter>()
+            addComment(call, authority, entityStore, peerRouter)
         }
 
         get("/transactions/{authorityId}"){

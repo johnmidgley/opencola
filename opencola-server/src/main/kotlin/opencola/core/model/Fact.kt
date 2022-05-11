@@ -30,6 +30,10 @@ data class Fact(
         return "{ authorityId: $authorityId entityId: $entityId attribute: $attribute value: $decodedValue operation: $operation transactionOrdinal: $transactionOrdinal"
     }
 
+    fun <T> decodeValue(): T {
+        return attribute.codec.decode(value.bytes) as T
+    }
+
     companion object Factory : StreamSerializer<Fact> {
         override fun encode(stream: OutputStream, value: Fact) {
             if (value.transactionOrdinal == null) {

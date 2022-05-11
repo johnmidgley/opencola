@@ -4,34 +4,27 @@ import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
+import kotlinx.serialization.Serializable
 import mu.KotlinLogging
+import opencola.core.model.Authority
 import opencola.core.model.CommentEntity as CommentEntity
 import opencola.core.model.Id
 import opencola.core.model.ResourceEntity
+import opencola.core.network.PeerRouter
 import opencola.core.storage.EntityStore
 import opencola.service.EntityResult
 import java.net.URI
 
 private val logger = KotlinLogging.logger("EntityHandler")
 
-data class Comment(val commentId: String?, val entityId: String, val text: String)
-
-suspend fun getEntity(call: ApplicationCall, authorityId: Id, entityStore: EntityStore) {
+suspend fun getEntity(call: ApplicationCall, authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter) {
     // TODO: Authority should be passed (and authenticated) in header
     val stringId = call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified")
-    val entity = entityStore.getEntity(authorityId, Id.fromHexString(stringId))
+    val entityId = Id.fromHexString(stringId)
+    val entityResult = getEntityResults(authority, entityStore, peerRouter, listOf(entityId)).firstOrNull()
 
-    if (entity != null)
-        call.respond(entity.getAllFacts())
-}
-
-suspend fun getEntity(call: ApplicationCall, entityStore: EntityStore) {
-    val authorityId = Id.fromHexString(
-        call.parameters["authorityId"]
-            ?: throw IllegalArgumentException("No authority id specified")
-    )
-
-    getEntity(call, authorityId, entityStore)
+    if (entityResult != null)
+        call.respond(entityResult)
 }
 
 // TODO - investigate delete and then re-add. It seems to "restore" all previous saves. Is this good or bad?
@@ -67,10 +60,14 @@ suspend fun updateEntity(call: ApplicationCall, authorityId: Id, entityStore: En
     call.respond(HttpStatusCode.OK)
 }
 
-suspend fun addComment(call: ApplicationCall, authorityId: Id, entityStore: EntityStore) {
+@Serializable
+data class PostCommentPayload(val commentId: String? = null, val text: String)
+
+suspend fun addComment(call: ApplicationCall, authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter) {
+    val authorityId = authority.authorityId
     val stringId = call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified")
     val entityId = Id.fromHexString(stringId)
-    val comment = call.receive<Comment>()
+    val comment = call.receive<PostCommentPayload>()
 
     logger.info { "Adding comment to $entityId" }
 
@@ -89,4 +86,9 @@ suspend fun addComment(call: ApplicationCall, authorityId: Id, entityStore: Enti
 
     commentEntity.text = comment.text
     entityStore.updateEntities(commentEntity)
+
+    val entityResult = getEntityResults(authority, entityStore, peerRouter, listOf(entityId)).firstOrNull()
+
+    if(entityResult != null)
+        call.respond(entityResult)
 }

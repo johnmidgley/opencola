@@ -110,6 +110,11 @@ abstract class AbstractEntityStore(
         return signedTransaction
     }
 
+    override fun getEntities(authorityIds: Iterable<Id>, entityIds: Iterable<Id>): List<Entity> {
+        return getFacts(authorityIds, entityIds)
+            .groupBy { Pair(it.authorityId, it.entityId) }
+            .mapNotNull { Entity.fromFacts(it.value) }
+    }
 
     val computeFacts: (Iterable<Fact>) -> Iterable<Fact> = { facts ->
         CoreAttribute.values().flatMap { attribute ->
