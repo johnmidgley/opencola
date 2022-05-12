@@ -6,10 +6,8 @@ import io.ktor.request.*
 import io.ktor.response.*
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
-import opencola.core.model.Authority
-import opencola.core.model.CommentEntity as CommentEntity
-import opencola.core.model.Id
-import opencola.core.model.ResourceEntity
+import opencola.core.extensions.nullOrElse
+import opencola.core.model.*
 import opencola.core.network.PeerRouter
 import opencola.core.storage.EntityStore
 import opencola.service.EntityResult
@@ -47,8 +45,8 @@ suspend fun updateEntity(call: ApplicationCall, authorityId: Id, entityStore: En
         return
     }
 
-    val imageUri = URI(entityItem.summary.imageUri)
-    if(!imageUri.isAbsolute){
+    val imageUri = entityItem.summary.imageUri.nullOrElse { URI(entityItem.summary.imageUri) }
+    if(imageUri != null && !imageUri.isAbsolute){
         throw IllegalArgumentException("Image URI must be absolute")
     }
 
@@ -60,35 +58,65 @@ suspend fun updateEntity(call: ApplicationCall, authorityId: Id, entityStore: En
     call.respond(HttpStatusCode.OK)
 }
 
+fun getOrCopyEntity(authorityId : Id, entityStore: EntityStore, entityId: Id): Entity? {
+    val existingEntity = entityStore.getEntity(authorityId, entityId) ?:
+        entityStore.getEntities(emptyList(), listOf(entityId)).firstOrNull()
+
+    if(existingEntity == null || existingEntity.authorityId == authorityId )
+        return existingEntity
+
+    val newEntity = when(existingEntity){
+        is ResourceEntity -> {
+            ResourceEntity(
+                authorityId,
+                existingEntity.uri!!,
+                existingEntity.name,
+                existingEntity.description,
+                existingEntity.text,
+                existingEntity.imageUri
+            )
+        }
+        else -> throw IllegalArgumentException("Don't know how to add ${existingEntity.javaClass.simpleName}")
+    }
+
+    return newEntity
+}
+
+fun addComment(
+    authority: Authority,
+    entityStore: EntityStore,
+    entityId: Id,
+    commentId: Id?,
+    text: String
+): CommentEntity {
+    logger.info { "Adding comment to $entityId" }
+    val authorityId = authority.authorityId
+
+    val entity = getOrCopyEntity(authorityId, entityStore, entityId)
+        ?: throw IllegalArgumentException("Attempt to add comment to unknown entity")
+
+    val commentEntity =
+        if (commentId == null)
+            CommentEntity(authorityId, entity.entityId, text)
+        else
+            entityStore.getEntity(authorityId, commentId) as? CommentEntity
+                ?: throw IllegalArgumentException("Unknown comment: $commentId")
+
+    commentEntity.text = text
+    entityStore.updateEntities(entity, commentEntity)
+
+    return commentEntity
+}
+
 @Serializable
 data class PostCommentPayload(val commentId: String? = null, val text: String)
 
 suspend fun addComment(call: ApplicationCall, authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter) {
-    val authorityId = authority.authorityId
-    val stringId = call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified")
-    val entityId = Id.fromHexString(stringId)
+    val entityId = Id.fromHexString(call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified"))
     val comment = call.receive<PostCommentPayload>()
 
-    logger.info { "Adding comment to $entityId" }
-
-    // TODO: This is interesting. You should be able to comment on an item you don't "own", but what should it do?
-    //  Should it automatically add it to your store? Probably...
-    val entity = entityStore.getEntity(authorityId, entityId)
-        ?: throw IllegalArgumentException("Attempt to add comment to unknown entity")
-
-    val commentEntity =
-        if (comment.commentId == null)
-            CommentEntity(authorityId, entityId, comment.text)
-        else
-            entityStore.getEntity(authorityId, Id.fromHexString(comment.commentId)) as? CommentEntity
-                ?: throw IllegalArgumentException("Unknown comment: ${comment.commentId}")
-
-
-    commentEntity.text = comment.text
-    entityStore.updateEntities(commentEntity)
-
-    val entityResult = getEntityResults(authority, entityStore, peerRouter, listOf(entityId)).firstOrNull()
-
-    if(entityResult != null)
-        call.respond(entityResult)
+    addComment(authority, entityStore, entityId, comment.commentId.nullOrElse { Id.fromHexString(it) }, comment.text)
+    getEntityResults(authority, entityStore, peerRouter, listOf(entityId))
+        .firstOrNull()
+        .nullOrElse { call.respond(it) }
 }

@@ -1,11 +1,5 @@
 package opencola.server
 
-import io.ktor.application.*
-import io.ktor.server.netty.*
-import mu.KotlinLogging
-import opencola.core.TestApplication
-import opencola.core.config.*
-import opencola.core.config.Application
 import opencola.core.model.Authority
 import opencola.core.model.ResourceEntity
 import opencola.core.storage.EntityStore
@@ -15,38 +9,7 @@ import org.kodein.di.instance
 import java.lang.Thread.sleep
 import java.net.URI
 
-class PeerTransactionTest {
-    private val logger = KotlinLogging.logger("PeerTransactionTest")
-    private val basePortNumber: Int = 6000
-
-    private fun getApplications(nServers: Int): List<Application> {
-        return getApplications(TestApplication.applicationPath, TestApplication.storagePath, TestApplication.config, basePortNumber, nServers)
-    }
-
-    private fun startServer(engine: NettyApplicationEngine){
-        // TODO: This is horrible. Figure out how to do this properly with suspend / coroutine / etc..
-        var started = false
-        engine.environment.monitor.subscribe(ApplicationStarted) { started = true }
-        engine.start()
-        while(!started){
-            sleep(100)
-        }
-    }
-
-    // @Test
-    fun createDemo(){
-        val applications = getApplications(2)
-        val (application0, application1) = applications
-        val (server0, server1) = applications.map { getServer(it) }
-
-        startServer(server0)
-        startServer(server1)
-
-        sleep(2000)
-        server0.stop(1000,1000)
-        server1.stop(1000,1000)
-    }
-
+class PeerTransactionTest : PeerTest() {
     @Test
     fun testTransactionReplication(){
         val applications = getApplications(2)
