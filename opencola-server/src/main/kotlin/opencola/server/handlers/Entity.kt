@@ -35,17 +35,21 @@ suspend fun deleteEntity(call: ApplicationCall, authorityId: Id, entityStore: En
     call.respond(HttpStatusCode.OK)
 }
 
-suspend fun updateEntity(call: ApplicationCall, authorityId: Id, entityStore: EntityStore){
+suspend fun updateEntity(call: ApplicationCall, authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter){
+    val authorityId = authority.authorityId
     val entityItem = call.receive<EntityResult>()
     logger.info { "Updating: $entityItem" }
 
-    val entity = entityStore.getEntity(authorityId, Id.fromHexString(entityItem.entityId)) as? ResourceEntity
+    val entity = getOrCopyEntity(authorityId, entityStore, Id.fromHexString(entityItem.entityId)) as? ResourceEntity
     if(entity == null){
         call.respond(HttpStatusCode.Unauthorized)
         return
     }
 
-    val imageUri = entityItem.summary.imageUri.nullOrElse { URI(entityItem.summary.imageUri) }
+    val imageUri = entityItem.summary.imageUri.nullOrElse {
+        if(it.isBlank()) null else URI(entityItem.summary.imageUri)
+    }
+
     if(imageUri != null && !imageUri.isAbsolute){
         throw IllegalArgumentException("Image URI must be absolute")
     }
@@ -55,7 +59,8 @@ suspend fun updateEntity(call: ApplicationCall, authorityId: Id, entityStore: En
     entity.description = entityItem.summary.description
 
     entityStore.updateEntities(entity)
-    call.respond(HttpStatusCode.OK)
+    getEntityResult(authority, entityStore, peerRouter, entity.entityId)
+        .nullOrElse { call.respond(it) }
 }
 
 fun getOrCopyEntity(authorityId : Id, entityStore: EntityStore, entityId: Id): Entity? {

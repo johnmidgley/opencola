@@ -145,9 +145,9 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
                 return currentFact
             }
 
-            // TODO: Is it really a problem to edit not committed facts?
             if (currentFact.transactionOrdinal == null) {
-                throw IllegalStateException("Attempt to re-set an uncommitted value")
+                // Remove uncommitted fact, since it's being overwritten
+                facts = facts.minus(currentFact)
             }
         }
 

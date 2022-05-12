@@ -26,7 +26,7 @@ val booleanAttributeDelegate = AttributeDelegate(BooleanByteArrayCodec)
 val floatAttributeDelegate = AttributeDelegate(FloatByteArrayCodec)
 val stringAttributeDelegate = AttributeDelegate(StringByteArrayCodec)
 val idAttributeDelegate = AttributeDelegate(Id.Factory)
-val uriAttributeDelegate = AttributeDelegate(UriByteArrayCodec)
+val uriAttributeDelegate = AttributeDelegate(UriByteArrayCodec, false)
 val setOfStringAttributeDelegate = AttributeDelegate(SetOfStringByteArrayCodec)
 val publicKeyAttributeDelegate = AttributeDelegate(PublicKeyByteArrayCodec)
 

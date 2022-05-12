@@ -43,7 +43,8 @@ fun Application.configureRouting(application: app) {
         post("/entity/{entityId}"){
             val authority by injector.instance<Authority>()
             val entityStore by injector.instance<EntityStore>()
-            updateEntity(call, authority.authorityId, entityStore)
+            val peerRouter by injector.instance<PeerRouter>()
+            updateEntity(call, authority, entityStore, peerRouter)
         }
 
         delete("/entity/{entityId}") {

@@ -175,6 +175,10 @@ fun getEntityResults(authority: Authority, entityStore: EntityStore, peerRouter:
             }
 }
 
+fun getEntityResult(authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter, entityId: Id) : EntityResult? {
+    return getEntityResults(authority, entityStore, peerRouter, listOf(entityId)).firstOrNull()
+}
+
 suspend fun handleGetFeed(
     call: ApplicationCall,
     authority: Authority,

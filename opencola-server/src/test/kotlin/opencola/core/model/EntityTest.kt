@@ -73,7 +73,6 @@ class EntityTest {
     fun testSettingSameValue(){
         val uri = URI("opencola://test-resource")
         val entity = ResourceEntity(Id.ofUri(uri), uri)
-        entity.uri = uri
 
         assertEquals(1, entity.getAllFacts().filter{ it.attribute == CoreAttribute.Uri.spec}.size)
         assertFails { entity.uri = URI("opencola://different-uri") }
