@@ -96,7 +96,7 @@ fun splitMht(message: Message): List<Part> {
     return parts
 }
 
-fun scoreImage(rank: Int, size: Int): Double {
+fun scoreImage(size: Int): Double {
     return size.toDouble()
 }
 
@@ -106,7 +106,7 @@ fun getImageUri(message: Message): URI? {
         .filter { it.header.contentLocation()?.location?.tryParseUri()?.isAbsolute != null }
         .filter { it.header.contentType()?.mediaType?.lowercase() == "image" }
         .filter { it.body is BinaryBody }
-        .mapIndexed { i, v -> Pair(scoreImage(i, (v.body as BinaryBody).inputStream.available()), v) }
+        .mapIndexed { _, v -> Pair(scoreImage((v.body as BinaryBody).inputStream.available()), v) }
         .sortedByDescending { (score, _) -> score } // Pick the biggest image - not always best?
         .map { (_, v) -> v }
         .mapNotNull { it.header.contentLocation()!!.location.tryParseUri() }

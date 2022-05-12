@@ -13,13 +13,13 @@ import java.io.File
 private val networkPath = File(System.getProperties()["user.dir"].toString(), "network")
 
 fun startNetwork(){
-    var result = shellRun(networkPath){
+    shellRun(networkPath){
         command("docker-compose", listOf("up", "-d"))
     }
 }
 
 fun stopNetwork(){
-    var result = shellRun(networkPath){
+    shellRun(networkPath){
         command("docker-compose", listOf("down"))
     }
 }

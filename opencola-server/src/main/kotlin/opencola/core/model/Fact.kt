@@ -30,7 +30,7 @@ data class Fact(
         return "{ authorityId: $authorityId entityId: $entityId attribute: $attribute value: $decodedValue operation: $operation transactionOrdinal: $transactionOrdinal"
     }
 
-    fun <T> decodeValue(): T {
+    inline fun <reified T> decodeValue(): T {
         return attribute.codec.decode(value.bytes) as T
     }
 

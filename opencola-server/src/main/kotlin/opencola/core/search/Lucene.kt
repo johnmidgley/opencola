@@ -10,7 +10,7 @@ fun getLuceneQueryString(query: String) : String {
     return CoreAttribute.values()
         .map { it.spec }
         // TODO: Fix this hack that identifies text search fields
-        .filter { it.isIndexable && it.codec == StringByteArrayCodec as ByteArrayCodec<Any> }
+        .filter { it.isIndexable && it.codec == StringByteArrayCodec as ByteArrayCodec<*> }
         .joinToString(" ") { "${it.name}:\"$query\"~10000" }
 
 }

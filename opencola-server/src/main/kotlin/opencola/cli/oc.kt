@@ -85,42 +85,6 @@ fun transactions(application: Application, args: Iterable<String>){
 
 }
 
-fun cleanStorage(application: Application, commandArgs: Iterable<String>) {
-    TODO("Fix")
-//    if (commandArgs.count() != 1 || commandArgs.first() != "-f"){
-//        println("reset storage: illegal arguments ${commandArgs.joinToString(" ")}")
-//        return
-//    }
-//
-//    val storagePath = File(application.config.storage.path.toString())
-//
-//    println("Cleaning storage directory:")
-//    val result = shellRun(storagePath){
-//        command("./clean", listOf("-f"))
-//    }
-//    println(result)
-}
-
-
-fun storage(application: Application, args: Iterable<String>){
-    val commandArgs = args.drop(1)
-
-    when(val command = args.first()){
-        "clean" -> cleanStorage(application, commandArgs)
-        else -> println("Unknown storage command: $command")
-    }
-}
-
-
-
-private val application: Application by lazy {
-    TODO("Replace with proper config")
-//    val applicationPath = Path(System.getProperty("user.dir"))
-//    val config = loadConfig(applicationPath, "opencola-server.yaml")
-//    val publicKey = Application.getOrCreateRootPublicKey(applicationPath.resolve(config.storage.path), config.security)
-//    Application.instance(config, publicKey)
-}
-
 fun main(args: Array<String>) {
     if(args.size < 2) {
         printUsage()
@@ -128,11 +92,10 @@ fun main(args: Array<String>) {
     }
 
     val task = args[0]
-    val taskArgs = args.asList().drop(1)
+    // val taskArgs = args.asList().drop(1)
 
     when(args[0]){
-        "transactions" -> transactions(application, taskArgs)
-        "storage" -> storage(application, taskArgs)
+        // "transactions" -> transactions(application, taskArgs)
         else -> println("Unknown task: $task")
     }
 }

@@ -68,7 +68,7 @@ fun factToAction(comments: Map<Id, CommentEntity>, fact: Fact) : Action? {
         Rating.spec -> Action(ActionType.Rate, null, fact.decodeValue())
         CommentIds.spec -> {
             val commentId = fact.decodeValue<Id>()
-            Action(ActionType.Comment, commentId, comments.getValue(commentId)?.text)
+            Action(ActionType.Comment, commentId, comments.getValue(commentId).text)
         }
         else -> null
     }

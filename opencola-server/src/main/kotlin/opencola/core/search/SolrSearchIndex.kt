@@ -74,7 +74,7 @@ class SolrSearchIndex(val authorityId: Id, val config: SolrConfig) : SearchIndex
             createRequest.setCoreName(solrCollectionName)
             createRequest.configSet = configSet
             // TODO: Fix this warning - https://stackoverflow.com/questions/36569421/kotlin-how-to-work-with-list-casts-unchecked-cast-kotlin-collections-listkot
-            val status = (solrClient.request(createRequest)["responseHeader"] as NamedList<Int>).get("status")
+            val status = (solrClient.request(createRequest)["responseHeader"] as NamedList<*>).get("status") as Int
 
             if(status != 0){
                 logger.logErrorAndThrow("Index creation failed with status $status")
