@@ -198,4 +198,39 @@ class ApplicationTest {
             }
         }
     }
+
+    // @Test
+    fun testUpdateEntity(){
+        val authority by injector.instance<Authority>()
+        val entityStore by injector.instance<EntityStore>()
+        val resourceEntity = ResourceEntity(
+            authority.authorityId,
+            URI("https://opencola.io"),
+            "Name",
+            "Description",
+            "Text",
+            URI("https://opencola.io/image.png")
+        )
+        entityStore.updateEntities(resourceEntity)
+        val entity = EntityResult(
+            resourceEntity.entityId,
+            EntityResult.Summary("Name1", "", "Description1", "https://opencola.io/image1.png"),
+            emptyList())
+
+
+        withTestApplication({ configureRouting(application); configureContentNegotiation() }) {
+            with(handleRequest(HttpMethod.Post, "/entity/${resourceEntity.entityId}"){
+                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                setBody(Json.encodeToString(entity))
+            }) {
+                assertEquals(HttpStatusCode.OK, response.status())
+                val entityResult = Json.decodeFromString<EntityResult>(response.content!!)
+
+                assertEquals(entity.entityId, entityResult.entityId)
+                assertEquals(entity.summary.name, entityResult.summary.name)
+                assertEquals(entity.summary.description, entityResult.summary.description)
+                assertEquals(entity.summary.imageUri, entityResult.summary.imageUri)
+            }
+        }
+    }
 }

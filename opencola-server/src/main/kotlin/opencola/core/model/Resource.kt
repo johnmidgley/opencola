@@ -8,7 +8,7 @@ open class ResourceEntity : Entity {
     var name by stringAttributeDelegate
     var description by stringAttributeDelegate
     var text by stringAttributeDelegate
-    var imageUri by uriAttributeDelegate
+    var imageUri by imageUriAttributeDelegate
     var trust by floatAttributeDelegate
     var tags by setOfStringAttributeDelegate
     var like by booleanAttributeDelegate

@@ -27,6 +27,7 @@ val floatAttributeDelegate = AttributeDelegate(FloatByteArrayCodec)
 val stringAttributeDelegate = AttributeDelegate(StringByteArrayCodec)
 val idAttributeDelegate = AttributeDelegate(Id.Factory)
 val uriAttributeDelegate = AttributeDelegate(UriByteArrayCodec, false)
+val imageUriAttributeDelegate = AttributeDelegate(UriByteArrayCodec)
 val setOfStringAttributeDelegate = AttributeDelegate(SetOfStringByteArrayCodec)
 val publicKeyAttributeDelegate = AttributeDelegate(PublicKeyByteArrayCodec)
 
