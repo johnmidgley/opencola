@@ -162,7 +162,7 @@ class ApplicationTest {
         val entityStore by injector.instance<EntityStore>()
         entityStore.resetStore()
 
-        val uri = URI("https://opencola.org")
+        val uri = URI("https://opencola.org/${Id.new()}")
         val entity = ResourceEntity(authority.authorityId, uri)
         entity.dataId = Id.new()
         entityStore.updateEntities(entity)

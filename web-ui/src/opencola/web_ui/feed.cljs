@@ -108,10 +108,6 @@
                       @feed 
                       [:results]
                       #(map (fn [i] (if (= entity-id (:entityId i)) item i)) %))]
-    (println "Feed: ")
-    (println @feed)
-    (println "Updated feed: ")
-    (println updated-feed)
     (reset! feed updated-feed))
   (reset! editing? false))
 
@@ -128,19 +124,19 @@
              (partial comment-handler feed editing?)
              error-handler))
 
-(defn comment-control [feed entity-id commenting?]
+(defn comment-control [feed entity-id expanded?]
   (let [text (atom "")]
     (fn []
-      (if @commenting?
+      (if @expanded?
         [:div.comment
          [:textarea.comment-text-edit {:type "text"
                                        :value @text
                                        :on-change #(reset! text (-> % .-target .-value))}]
-        [:button {:on-click #(add-comment feed entity-id commenting? @text)} "Save"]
-        [:button {:on-click #(reset! commenting? false)} "Cancel"]]))))
+        [:button {:on-click #(add-comment feed entity-id expanded? @text)} "Save"]
+        [:button {:on-click #(reset! expanded? false)} "Cancel"]]))))
 
-(defn action-summary [name expanded? actions]
-  [:span {:on-click (fn [] (swap! expanded? #(not %)))} (action-img name) " " (count actions)]) 
+(defn action-summary [name toggle-fn actions]
+  [:span {:on-click toggle-fn} (action-img name) " " (count actions)]) 
 
 (defn flatten-activity [item]
   (mapcat
@@ -155,15 +151,19 @@
        [:div.item-comment-text text]
        [:span.item-attribution (str authority-name " " (format-time epoch-second))]]))
 
-(defn item-comments [expanded? comment-actions]
-  (let [comment-actions (if @expanded? comment-actions (take-last 3 comment-actions))] 
-    (if (not-empty comment-actions)
-        [:div.item-comments 
-         [:span 
-          {:on-click (fn [] (swap! expanded? #(not %)))}
-          (str (if (not @expanded?) "Latest ") "Comments:")]
-         (doall (for [comment-action comment-actions]
-                  ^{:key comment-action} [item-comment comment-action]))])))
+(defn item-comments [fn-visible? expanded? comment-actions feed entity-id]
+(if (fn-visible?)
+ (let [comment-actions (if @expanded? comment-actions (take 3 comment-actions))] 
+   (if (not-empty comment-actions)
+
+     [:div.item-comments
+      [:span 
+       {:on-click (fn [] (swap! expanded? #(not %)))}
+       "Comments "
+       [action-img (if @expanded? "collapse" "expand")]]
+      [comment-control feed entity-id expanded?] 
+      (doall (for [comment-action comment-actions]
+               ^{:key comment-action} [item-comment comment-action]))]))))
 
 (defn item-save [save-action]
   (let [{authority-name :authorityName 
@@ -199,25 +199,33 @@
      (doall (for [like-action like-actions]
               ^{:key like-action} [item-like like-action]))]))
 
+
+(defn toggle-atom [atoms atom]
+  (doall(for [a atoms]
+          (if (not= a atom)
+            (reset! a false))))
+  (swap! atom #(not %)))
+
 (defn item-activities [feed item editing?]
   (let [comments-expanded? (atom false)
         saves-expanded? (atom false)
-        likes-expanded? (atom false)] 
+        likes-expanded? (atom false)
+        fn-comments-visible? (fn [] (every? #(not @%) [saves-expanded? likes-expanded? ]))
+        toggle (partial toggle-atom [comments-expanded? saves-expanded? likes-expanded?])] 
     (fn [] 
       (let [entity-id (:entityId item)
             actions-by-type (group-by #(keyword (:type %)) (flatten-activity item))]  
         [:div.activities-summary
-         [action-summary "save" saves-expanded? (:save actions-by-type)]
+         [action-summary "save" (partial toggle saves-expanded?) (:save actions-by-type)]
          [:span.divider " | "]
-         [action-summary "like" likes-expanded? (:like actions-by-type)] 
+         [action-summary "like" (partial toggle likes-expanded?) (:like actions-by-type)] 
          [:span.divider " | "]
-         [action-summary "comment" comments-expanded? (:comment actions-by-type)]
+         [action-summary "comment" (partial toggle comments-expanded?) (:comment actions-by-type)]
          [:span.divider " | "]
          [delete-control feed entity-id]
          [:span.divider " | "]
          [edit-control editing?]
-         [comment-control feed entity-id comments-expanded?]
-         [item-comments comments-expanded? (:comment actions-by-type)]
+         [item-comments fn-comments-visible? comments-expanded? (:comment actions-by-type) feed entity-id]
          [item-saves saves-expanded? (:save actions-by-type)]
          [item-likes likes-expanded? (:like actions-by-type)]]))))
 
