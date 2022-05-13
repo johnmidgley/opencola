@@ -10,7 +10,7 @@ open class ResourceEntity : Entity {
     var text by stringAttributeDelegate
     var imageUri by imageUriAttributeDelegate
     var trust by floatAttributeDelegate
-    var tags by setOfStringAttributeDelegate
+    var tags by tagsAttributeDelegate
     var like by booleanAttributeDelegate
     var rating by floatAttributeDelegate
     val commentIds by MultiValueSetOfIdAttributeDelegate // Read only, computed property

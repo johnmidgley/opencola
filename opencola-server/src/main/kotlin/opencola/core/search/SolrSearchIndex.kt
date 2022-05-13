@@ -20,7 +20,7 @@ import java.io.File
 // https://solr.apache.org/guide/8_10/using-solrj.html
 // TODO: Create local objects for search results (see https://solr.apache.org/guide/8_10/using-solrj.html#java-object-binding)
 
-class SolrSearchIndex(val authorityId: Id, val config: SolrConfig) : SearchIndex {
+class SolrSearchIndex(val authorityId: Id, val config: SolrConfig) : AbstractSearchIndex() {
     private val logger = KotlinLogging.logger("SolrSearchIndex")
 
     private val solrClient: HttpSolrClient = HttpSolrClient.Builder(config.baseUrl)
@@ -129,7 +129,7 @@ class SolrSearchIndex(val authorityId: Id, val config: SolrConfig) : SearchIndex
     // Also think about adding "from" multi field, so peer ids can be stored too.
     // Consider external fields for personalized ranks: https://solr.apache.org/guide/8_10/working-with-external-files-and-processes.html
     override fun add(entity: Entity){
-        val id = getDocId(entity.authorityId,entity.entityId)
+        val id = getDocId(entity.authorityId, entity.entityId)
         logger.info { "Indexing authorityId: ${entity.authorityId} entityId: ${entity.entityId}" }
 
         val doc = SolrInputDocument()
@@ -142,8 +142,8 @@ class SolrSearchIndex(val authorityId: Id, val config: SolrConfig) : SearchIndex
         CoreAttribute.values()
             .map{ it.spec }
             .filter { it.isIndexable }
-            .map { Pair(it.name, entity.getValue(it.name).nullOrElse { v -> it.codec.decode(v.bytes) } ) }
-            .filter { it.second != null }
+            .map { Pair(it.name, getAttributeAsText(entity, it)) }
+            .filter { it.second != null && it.second!!.isNotBlank()}
             .forEach {
                 val (name, value) = it
                 doc.addField(name, value)

@@ -22,7 +22,7 @@ import org.apache.lucene.search.Query
 import org.apache.lucene.store.FSDirectory
 import java.nio.file.Path
 
-class LuceneSearchIndex(val authorityId: Id, private val storagePath: Path) : SearchIndex {
+class LuceneSearchIndex(val authorityId: Id, private val storagePath: Path) : AbstractSearchIndex() {
     private val logger = KotlinLogging.logger("LuceneSearchIndex")
     private val analyzer = StandardAnalyzer()
 
@@ -75,12 +75,12 @@ class LuceneSearchIndex(val authorityId: Id, private val storagePath: Path) : Se
         values()
             .map{ it.spec }
             .filter { it.isIndexable }
-            .map { Pair(it.name, entity.getValue(it.name).nullOrElse { v -> it.codec.decode(v.bytes) } ) }
-            .filter { it.second != null }
+            .map { Pair(it.name, getAttributeAsText(entity, it)) }
+            .filter { it.second != null && it.second!!.isNotBlank() }
             .forEach {
                 // TODO: This doesn't work well for non string types - create typed dispatcher
                 val (name, value) = it
-                document.add(Field(name, value.toString(), TextField.TYPE_STORED))
+                document.add(Field(name, value, TextField.TYPE_STORED))
             }
 
         indexDocuments(listOf(document))

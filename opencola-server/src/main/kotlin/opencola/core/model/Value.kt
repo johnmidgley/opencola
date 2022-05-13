@@ -40,11 +40,11 @@ data class Value(val bytes: ByteArray) {
     }
 }
 
-class MultiValueListItem(val key: UUID, val value: ByteArray) {
+class MultiValueListItem(val key: UUID, val bytes: ByteArray) {
     fun toValue(): Value {
         ByteArrayOutputStream().use {
             it.writeUUID(key)
-            it.writeByteArray(value)
+            it.writeByteArray(bytes)
             return Value(it.toByteArray())
         }
     }
@@ -80,7 +80,7 @@ class MultiValueListOfStringItem(val key: UUID, val value: String?) {
 
     companion object Factory{
         fun fromMultiValue(multiValue: MultiValueListItem): MultiValueListOfStringItem {
-            return MultiValueListOfStringItem(multiValue.key, String(multiValue.value))
+            return MultiValueListOfStringItem(multiValue.key, String(multiValue.bytes))
         }
     }
 }

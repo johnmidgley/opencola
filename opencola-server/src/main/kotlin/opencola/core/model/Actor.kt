@@ -12,7 +12,7 @@ open class ActorEntity : Entity {
     var description by stringAttributeDelegate
     var publicKey by publicKeyAttributeDelegate
     var trust by floatAttributeDelegate
-    var tags by setOfStringAttributeDelegate
+    var tags by tagsAttributeDelegate
     var like by booleanAttributeDelegate
     var rating by floatAttributeDelegate
 

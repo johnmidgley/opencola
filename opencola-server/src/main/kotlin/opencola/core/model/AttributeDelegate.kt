@@ -28,9 +28,32 @@ val stringAttributeDelegate = AttributeDelegate(StringByteArrayCodec)
 val idAttributeDelegate = AttributeDelegate(Id.Factory)
 val uriAttributeDelegate = AttributeDelegate(UriByteArrayCodec, false)
 val imageUriAttributeDelegate = AttributeDelegate(UriByteArrayCodec)
-val setOfStringAttributeDelegate = AttributeDelegate(SetOfStringByteArrayCodec)
+val tagsAttributeDelegate = MultiValueSetAttributeDelegate<String>(CoreAttribute.Tags.spec)
 val publicKeyAttributeDelegate = AttributeDelegate(PublicKeyByteArrayCodec)
 
+
+class MultiValueSetAttributeDelegate<T> (val attribute: Attribute) {
+    operator fun getValue(thisRef: Entity, property: KProperty<*>): Set<T> {
+        return thisRef
+            .getSetValues(property.name)
+            .map { attribute.codec.decode(it.bytes) as T }
+            .toSet()
+    }
+
+    operator fun setValue(thisRef: Entity, property: KProperty<*>, value: Set<T>) {
+        // Update any present values
+        value.forEach { thisRef.setValue(property.name, Value(attribute.codec.encode(it as Any))) }
+
+        // Delete any removed values
+        thisRef
+            .getSetValues(property.name).map { attribute.codec.decode(it.bytes) }
+            .toSet()
+            .minus(value.toSet())
+            .forEach { thisRef.deleteValue(property.name, null, Value(attribute.codec.encode(it!!))) }
+    }
+}
+
+// TODO: Move to MultiValueSetAttributeDelegate<T> template
 object MultiValueSetOfIdAttributeDelegate {
     operator fun getValue(thisRef: Entity, property: KProperty<*>): List<Id> {
         return thisRef.getSetValues(property.name).map { Id.decode(it.bytes) }

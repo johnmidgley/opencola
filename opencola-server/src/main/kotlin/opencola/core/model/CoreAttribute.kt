@@ -85,8 +85,8 @@ enum class CoreAttribute(val spec: Attribute) {
     Tags(
         Attribute(
             URI("opencola://attributes/tags"),
-            AttributeType.SingleValue,
-            SetOfStringByteArrayCodec as ByteArrayCodec<Any>,
+            AttributeType.MultiValueSet,
+            StringByteArrayCodec as ByteArrayCodec<Any>,
             isIndexable = true
         )
     ),
