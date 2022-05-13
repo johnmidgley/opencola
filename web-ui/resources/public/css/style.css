@@ -35,6 +35,19 @@ body {
   clear: both;
 }
 
+.field-header:before {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.field-header {
+    margin-bottom: 5px;
+}
+
+.item-img-url {
+    margin-bottom: 10px;
+}
 
 .item-host {
     font-size: 14px;
@@ -53,6 +66,10 @@ body {
 
 .item-img-url {
     width: 100%;
+}
+
+.list-header {
+    padding-top: 10px
 }
 
 .item-comments {

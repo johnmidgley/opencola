@@ -10,7 +10,6 @@ import opencola.core.extensions.nullOrElse
 import opencola.core.model.*
 import opencola.core.network.PeerRouter
 import opencola.core.storage.EntityStore
-import opencola.service.EntityResult
 import java.net.URI
 
 private val logger = KotlinLogging.logger("EntityHandler")
@@ -35,28 +34,40 @@ suspend fun deleteEntity(call: ApplicationCall, authorityId: Id, entityStore: En
     call.respond(HttpStatusCode.OK)
 }
 
+@Serializable
+data class UpdateEntityPayload(
+    val entityId: String,
+    val name: String,
+    val imageUri: String,
+    val description: String,
+    val tags: String,
+)
+
 suspend fun updateEntity(call: ApplicationCall, authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter){
     val authorityId = authority.authorityId
-    val entityItem = call.receive<EntityResult>()
-    logger.info { "Updating: $entityItem" }
+    val updateEntityPayload = call.receive<UpdateEntityPayload>()
+    logger.info { "Updating: $updateEntityPayload" }
 
-    val entity = getOrCopyEntity(authorityId, entityStore, Id.fromHexString(entityItem.entityId)) as? ResourceEntity
+    val entity = getOrCopyEntity(authorityId, entityStore, Id.fromHexString(updateEntityPayload.entityId)) as? ResourceEntity
     if(entity == null){
         call.respond(HttpStatusCode.Unauthorized)
         return
     }
 
-    val imageUri = entityItem.summary.imageUri.nullOrElse {
-        if(it.isBlank()) null else URI(entityItem.summary.imageUri)
+    val imageUri = updateEntityPayload.imageUri.nullOrElse {
+        if(it.isBlank()) null else URI(updateEntityPayload.imageUri)
     }
 
     if(imageUri != null && !imageUri.isAbsolute){
         throw IllegalArgumentException("Image URI must be absolute")
     }
 
-    entity.name = entityItem.summary.name
+    entity.name = updateEntityPayload.name
     entity.imageUri = imageUri
-    entity.description = entityItem.summary.description
+    entity.description = updateEntityPayload.description
+
+    val tags = updateEntityPayload.tags.split(" ").filter { it.isNotBlank() }.toSet()
+    entity.tags = tags
 
     entityStore.updateEntities(entity)
     getEntityResult(authority, entityStore, peerRouter, entity.entityId)

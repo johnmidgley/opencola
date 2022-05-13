@@ -14,8 +14,8 @@ import opencola.service.EntityResult.*
 import java.net.URI
 
 @Serializable
-data class FeedResult(val pagingToken: String?, val results: List<EntityResult>) {
-    constructor(transactionId: Id?, results: List<EntityResult>) : this(transactionId?.toString(), results)
+data class FeedResult(val authorityId: String, val pagingToken: String?, val results: List<EntityResult>) {
+    constructor(authorityId: Id, transactionId: Id?, results: List<EntityResult>) : this(authorityId.toString(), transactionId?.toString(), results)
 }
 
 fun entityAttributeAsString(entity: Entity, attribute: Attribute) : String? {
@@ -66,6 +66,7 @@ fun factToAction(comments: Map<Id, CommentEntity>, fact: Fact) : Action? {
         Trust.spec -> Action(ActionType.Trust, null, fact.decodeValue())
         Like.spec -> Action(ActionType.Like, null, fact.decodeValue())
         Rating.spec -> Action(ActionType.Rate, null, fact.decodeValue())
+        Tags.spec -> Action(ActionType.Tag, null, fact.decodeValue())
         CommentIds.spec -> {
             val commentId = fact.decodeValue<Id>()
             Action(ActionType.Comment, commentId, comments.getValue(commentId).text)
@@ -190,7 +191,8 @@ suspend fun handleGetFeed(
     val entityIds = getEntityIds(entityStore, searchIndex, call.parameters["q"])
 
     call.respond(FeedResult(
-        "",
+        authority.authorityId,
+        null,
         getEntityResults(authority, entityStore, peerRouter, entityIds)
     ))
 }

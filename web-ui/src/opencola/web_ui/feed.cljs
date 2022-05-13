@@ -1,5 +1,6 @@
 (ns ^:figwheel-hooks opencola.web-ui.feed 
   (:require
+   [clojure.string :as string :refer [lower-case]]
    [goog.dom :as gdom]
    [reagent.core :as reagent :refer [atom]]
    [reagent.dom :as rdom]
@@ -8,6 +9,8 @@
    [lambdaisland.uri :refer [uri]]
    [opencola.web-ui.config :as config]
    [opencola.web-ui.ajax :as ajax]))
+
+;; TODO: Look at https://github.com/Day8/re-com
 
 (defonce error-message (atom nil))
 
@@ -24,7 +27,6 @@
 (defn get-feed [feed q message]
   (ajax/GET (str "feed" "?q=" q) 
             (fn [response]
-              (.log js/console (str "Feed Response: " response))
               (if message
                 (reset! message (cond
                                   (empty? q) nil
@@ -44,7 +46,7 @@
                      (get-feed feed @query message))}])))
 
 (defn search-status [message]
-  [:div.search-status @message])
+  [:div.search-status @message]) 
 
 (defn search-header [feed]
   (let [message (atom nil)]
@@ -93,6 +95,7 @@
   (when data-id
     (str (if (not= host "") "http://") host "/data/" data-id))) 
 
+
 (defn delete-control [feed entity-id]
   [:span.delete-entity {:on-click #(delete-entity feed entity-id)} (action-img "delete")])
 
@@ -101,8 +104,6 @@
   [:span.delete-entity {:on-click #(reset! editing? true)} (action-img "edit")])
 
 (defn comment-handler [feed editing? item]
-  (println "Item:")
-  (println item)
   (let [entity-id (:entityId item)
         updated-feed (update-in 
                       @feed 
@@ -112,8 +113,6 @@
   (reset! editing? false))
 
 (defn comment-handler-old [feed entity-id editing? response]
-  (println "Saved: ")
-  (println response)
   (reset! editing? false))
 
 
@@ -151,11 +150,10 @@
        [:div.item-comment-text text]
        [:span.item-attribution (str authority-name " " (format-time epoch-second))]]))
 
-(defn item-comments [fn-visible? expanded? comment-actions feed entity-id]
-(if (fn-visible?)
+(defn item-comments [visible-fn? expanded? comment-actions feed entity-id]
+(if (visible-fn?)
  (let [comment-actions (if @expanded? comment-actions (take 3 comment-actions))] 
-   (if (not-empty comment-actions)
-
+   (if (or @expanded? (not-empty comment-actions))
      [:div.item-comments
       [:span 
        {:on-click (fn [] (swap! expanded? #(not %)))}
@@ -184,6 +182,19 @@
      (doall (for [save-action save-actions]
               ^{:key save-action} [item-save save-action]))]))
 
+(defn item-tag [tag-action]
+  (let [{authority-name :authorityName
+         epoch-second :epochSecond} tag-action] 
+    [:div.item-tag
+     [:span.item-attribution (str authority-name " " (format-time epoch-second))] " " (:value tag-action)]))
+
+(defn item-list [name expanded? actions item-action]
+  (if @expanded?
+    [(keyword (str "div.item-" (lower-case name)))
+     [:div.list-header (str name ":")]
+     (doall (for [action actions]
+              ^{:key action} [item-action action]))]))
+
 
 (defn item-like [like-action]
   (let [{authority-name :authorityName 
@@ -207,11 +218,12 @@
   (swap! atom #(not %)))
 
 (defn item-activities [feed item editing?]
-  (let [comments-expanded? (atom false)
-        saves-expanded? (atom false)
+  (let [saves-expanded? (atom false)
         likes-expanded? (atom false)
-        fn-comments-visible? (fn [] (every? #(not @%) [saves-expanded? likes-expanded? ]))
-        toggle (partial toggle-atom [comments-expanded? saves-expanded? likes-expanded?])] 
+        tags-expanded? (atom false)
+        comments-expanded? (atom false)
+        preview-visible-fn? (fn [] (every? #(not @%) [saves-expanded? likes-expanded? tags-expanded?]))
+        toggle (partial toggle-atom [saves-expanded? likes-expanded? tags-expanded? comments-expanded?])] 
     (fn [] 
       (let [entity-id (:entityId item)
             actions-by-type (group-by #(keyword (:type %)) (flatten-activity item))]  
@@ -222,10 +234,13 @@
          [:span.divider " | "]
          [action-summary "comment" (partial toggle comments-expanded?) (:comment actions-by-type)]
          [:span.divider " | "]
+         [action-summary "tag" (partial toggle tags-expanded?) (:tag actions-by-type)]
+         [:span.divider " | "]
          [delete-control feed entity-id]
          [:span.divider " | "]
          [edit-control editing?]
-         [item-comments fn-comments-visible? comments-expanded? (:comment actions-by-type) feed entity-id]
+         [item-list "Tags" tags-expanded? (:tag actions-by-type) item-tag]
+         [item-comments preview-visible-fn? comments-expanded? (:comment actions-by-type) feed entity-id]
          [item-saves saves-expanded? (:save actions-by-type)]
          [item-likes likes-expanded? (:like actions-by-type)]]))))
 
@@ -247,11 +262,11 @@
 
 
 (defn update-item-handler [feed editing? item response]
-  (let [entity-id (:entityId item)
+  (let [entity-id (:entityId response)
         updated-feed (update-in 
                       @feed 
                       [:results]
-                      #(map (fn [i] (if (= entity-id (:entityId i)) item i)) %))]
+                      #(map (fn [i] (if (= entity-id (:entityId i)) response i)) %))]
     (reset! feed updated-feed))
   (reset! editing? false))
 
@@ -267,32 +282,63 @@
    (partial update-item-handler feed editing? item)
    (partial update-item-error-handler editing?)))
 
+
+(defn authority-actions-of-type [authority-id type item]
+  (->> item 
+       flatten-activity
+       (group-by #(keyword (:type %)))
+       type
+       (filter #(= authority-id (:authorityId %)))))
+
+(defn tags-as-string [authority-id item]
+  (string/join " " (map :value (authority-actions-of-type authority-id :tag item))))
+
+;; TODO - Use https://clj-commons.org/camel-snake-kebab/
+(defn edit-item [authority-id item]
+  (let [summary (:summary item)
+        tags (group-by #(keyword (:type %)) (flatten-activity item))] 
+    {:entityId (:entityId item)
+     :name (:name summary)
+     :imageUri (:imageUri summary)
+     :description (:description summary)
+     :tags (tags-as-string authority-id item)}))
+
 ;; TODO: Use keys to get 
 (defn edit-feed-item [feed item editing?]
   (let [entity-id (:entityId item)
         summary (:summary item)
         item-uri (uri (:uri summary))
-        edit-item (atom item)]
+        edit-item (atom (edit-item (:authorityId @feed) item))]
     (fn []
+      (println edit-item)
       [:div.feed-item
-       [:div.item-name 
+       [:div.item-name
+        [:div.field-header "Name:"]
         [:input.item-link
          {:type "text"
-          :value (-> @edit-item :summary :name)
-          :on-change #(swap! edit-item assoc-in [:summary :name] (-> % .-target .-value))}]]
+          :value (:name @edit-item)
+          :on-change #(swap! edit-item assoc-in [:name] (-> % .-target .-value))}]]
        [:div.item-body 
         [:div.item-img-box 
          [:img.item-img {:src (:imageUri summary)}]]
         [:div.item-image-url 
+         [:div.field-header "Image URL:"]
          [:input.item-img-url
           {:type "text"
-           :value (-> @edit-item :summary :imageUri)
-           :on-change #(swap! edit-item assoc-in [:summary :imageUri] (-> % .-target .-value))}]]
+           :value (:imageUri @edit-item)
+           :on-change #(swap! edit-item assoc-in [:imageUri] (-> % .-target .-value))}]]
+        [:div.field-header "Description:"]
         [:p.item-desc [:textarea.item-desc-edit
                        {:type "text"
-                        :value (-> @edit-item :summary :description)
-                        :on-change #(swap! edit-item assoc-in [:summary :description] (-> % .-target .-value))}]]
-        [:button {:on-click #(update-entity feed editing? @edit-item)} "Save"]
+                        :value (:description @edit-item)
+                        :on-change #(swap! edit-item assoc-in [:description] (-> % .-target .-value))}]]
+        [:div.item-image-url 
+         [:div.field-header "Tags:"]
+         [:input.item-img-url
+          {:type "text"
+           :value (:tags @edit-item)
+           :on-change #(swap! edit-item assoc-in [:tags] (-> % .-target .-value))}]]
+        [:button {:on-click #(update-entity feed editing? @edit-item)} "Save"] " "
         [:button {:on-click #(reset! editing? false)} "Cancel"]]])))
 
 

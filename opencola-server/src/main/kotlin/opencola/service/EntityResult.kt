@@ -27,6 +27,7 @@ data class EntityResult(
         Trust,
         Like,
         Rate,
+        Tag,
         Comment,
     }
 
