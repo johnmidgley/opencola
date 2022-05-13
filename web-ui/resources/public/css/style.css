@@ -47,6 +47,7 @@ body {
 
 .item-img-url {
     margin-bottom: 10px;
+    width: 100%
 }
 
 .item-host {
@@ -64,9 +65,6 @@ body {
     height: 100px;
 }
 
-.item-img-url {
-    width: 100%;
-}
 
 .list-header {
     padding-top: 10px
@@ -131,6 +129,31 @@ body {
 
 .delete-entity {
     cursor: pointer;
+}
+
+
+.tags-text {
+    margin-bottom: 10px;
+    width: 100%
+}
+
+.edit-item-body {
+    margin-top: 10px;
+}
+
+.tag {
+    font-size: 14px;
+    color: white;
+    background-color: #FFCC00;
+    padding: 1px;
+    padding-left: 5px;
+    padding-right: 5px;
+    border-radius: 10px;
+    font-family: "Lucida Console", "Courier New", monospace;
+}
+
+.tags {
+    padding-top: 10px;
 }
 
 .error {

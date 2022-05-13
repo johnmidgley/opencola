@@ -23,7 +23,6 @@
   (error (str "Error: " status ": " status-text)))
 
 
-
 (defn get-feed [feed q message]
   (ajax/GET (str "feed" "?q=" q) 
             (fn [response]
@@ -68,12 +67,6 @@
   [:span.action-item (action-img (:type action))
    (when-let [value (:value action)] 
      [:pre (str value)])])
-
-(defn authority-actions [actions]
-  [:span.actions-list 
-   (for [action actions]
-      ^{:key action} [action-item action])])
-
 
 
 (defn activity [action-counts action-value]
@@ -182,11 +175,15 @@
      (doall (for [save-action save-actions]
               ^{:key save-action} [item-save save-action]))]))
 
+(defn tag [name]
+  [:span.tag name])
+
+
 (defn item-tag [tag-action]
   (let [{authority-name :authorityName
          epoch-second :epochSecond} tag-action] 
     [:div.item-tag
-     [:span.item-attribution (str authority-name " " (format-time epoch-second))] " " (:value tag-action)]))
+     [:span.item-attribution (str authority-name " " (format-time epoch-second))] " " (tag (:value tag-action))]))
 
 (defn item-list [name expanded? actions item-action]
   (if @expanded?
@@ -194,6 +191,8 @@
      [:div.list-header (str name ":")]
      (doall (for [action actions]
               ^{:key action} [item-action action]))]))
+
+
 
 
 (defn item-like [like-action]
@@ -244,6 +243,12 @@
          [item-saves saves-expanded? (:save actions-by-type)]
          [item-likes likes-expanded? (:like actions-by-type)]]))))
 
+(defn item-tags [item]
+  (let [actions-by-type (group-by #(keyword (:type %)) (flatten-activity item))
+        tag-actions (:tag actions-by-type)]
+    (when (not-empty tag-actions)
+      [:div.tags 
+       (doall (interpose " " (map #(tag (:value %)) tag-actions)))])))
 
 (defn display-feed-item [feed item editing?]
   (let [entity-id (:entityId item)
@@ -258,7 +263,10 @@
        [:div.item-body 
         [:div.item-img-box [:img.item-img {:src (:imageUri summary)}]]
         [:p.item-desc (:description summary)]]
-       [item-activities feed item editing?]])))
+       [item-activities feed item editing?]
+       [item-tags item]
+
+])))
 
 
 (defn update-item-handler [feed editing? item response]
@@ -303,6 +311,44 @@
      :description (:description summary)
      :tags (tags-as-string authority-id item)}))
 
+
+(defn name-edit-control [edit-item]
+       [:div.item-name
+        [:div.field-header "Name:"]
+        [:input.item-link
+         {:type "text"
+          :value (:name @edit-item)
+          :on-change #(swap! edit-item assoc-in [:name] (-> % .-target .-value))}]])
+
+(defn image-uri-edit-control [edit-item]
+  [:div.item-uri-edit-control
+   [:div.item-img-box 
+    [:img.item-img {:src (str (:imageUri @edit-item))}]]
+   [:div.item-image-url 
+    [:div.field-header "Image URL:"]
+    [:input.item-img-url
+     {:type "text"
+      :value (:imageUri @edit-item)
+      :on-change #(swap! edit-item assoc-in [:imageUri] (-> % .-target .-value))}]]])
+
+
+(defn tags-edit-control [edit-item]
+  [:div.tags-edit-control
+   [:div.field-header "Tags:"]
+   [:input.tags-text
+    {:type "text"
+     :value (:tags @edit-item)
+     :on-change #(swap! edit-item assoc-in [:tags] (-> % .-target .-value))}]])
+
+(defn description-edit-control [edit-item]
+  [:div.description-edit-control
+       [:div.field-header "Description:"]
+       [:p.item-desc [:textarea.item-desc-edit
+                      {:type "text"
+                       :value (:description @edit-item)
+                       :on-change #(swap! edit-item assoc-in [:description] (-> % .-target .-value))}]]])
+
+
 ;; TODO: Use keys to get 
 (defn edit-feed-item [feed item editing?]
   (let [entity-id (:entityId item)
@@ -310,36 +356,13 @@
         item-uri (uri (:uri summary))
         edit-item (atom (edit-item (:authorityId @feed) item))]
     (fn []
-      (println edit-item)
       [:div.feed-item
-       [:div.item-name
-        [:div.field-header "Name:"]
-        [:input.item-link
-         {:type "text"
-          :value (:name @edit-item)
-          :on-change #(swap! edit-item assoc-in [:name] (-> % .-target .-value))}]]
-       [:div.item-body 
-        [:div.item-img-box 
-         [:img.item-img {:src (:imageUri summary)}]]
-        [:div.item-image-url 
-         [:div.field-header "Image URL:"]
-         [:input.item-img-url
-          {:type "text"
-           :value (:imageUri @edit-item)
-           :on-change #(swap! edit-item assoc-in [:imageUri] (-> % .-target .-value))}]]
-        [:div.field-header "Description:"]
-        [:p.item-desc [:textarea.item-desc-edit
-                       {:type "text"
-                        :value (:description @edit-item)
-                        :on-change #(swap! edit-item assoc-in [:description] (-> % .-target .-value))}]]
-        [:div.item-image-url 
-         [:div.field-header "Tags:"]
-         [:input.item-img-url
-          {:type "text"
-           :value (:tags @edit-item)
-           :on-change #(swap! edit-item assoc-in [:tags] (-> % .-target .-value))}]]
-        [:button {:on-click #(update-entity feed editing? @edit-item)} "Save"] " "
-        [:button {:on-click #(reset! editing? false)} "Cancel"]]])))
+       [name-edit-control edit-item]
+       [image-uri-edit-control edit-item]
+       [tags-edit-control edit-item]
+       [description-edit-control edit-item]
+       [:button {:on-click #(update-entity feed editing? @edit-item)} "Save"] " "
+       [:button {:on-click #(reset! editing? false)} "Cancel"]])))
 
 
 
