@@ -2,7 +2,7 @@
 # Windows: 
 # Build docker image: "docker build -t oc ."
 # Copy a valid opencola-server.yaml to %appdata%\opencola\
-# Run docker image: "docker run -d -p 5795:5795 -v %appdata%\opencola\storage\:/opencola/storage -v %appdata%\opencola\opencola-server.yaml:/opencola/server/opencola-server.yaml -it oc"
+# Run docker image: "docker run -d -p 5795:5795 -v %appdata%\opencola\storage\:/opencola/storage -it oc"
 # 
 #Run on MacOS: [TBD]
 #
