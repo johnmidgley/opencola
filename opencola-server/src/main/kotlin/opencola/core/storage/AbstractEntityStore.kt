@@ -36,10 +36,6 @@ abstract class AbstractEntityStore(
         throw exception
     }
 
-    private fun logAndThrow(message: String) {
-        logAndThrow(RuntimeException(message))
-    }
-
     protected fun isValidTransaction(signedTransaction: SignedTransaction): Boolean {
         // TODO: Move what can be moved to transaction
         val transactionId = signedTransaction.transaction.id
@@ -116,7 +112,7 @@ abstract class AbstractEntityStore(
             .mapNotNull { Entity.fromFacts(it.value) }
     }
 
-    val computeFacts: (Iterable<Fact>) -> Iterable<Fact> = { facts ->
+    private val computeFacts: (Iterable<Fact>) -> Iterable<Fact> = { facts ->
         CoreAttribute.values().flatMap { attribute ->
             attribute.spec.computeFacts.ifNotNullOrElse({ it(facts) }, { emptyList() })
         }
