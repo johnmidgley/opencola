@@ -47,6 +47,7 @@ body {
 
 .item-img-url {
     margin-bottom: 10px;
+    width: 100%
 }
 
 .item-host {
@@ -55,6 +56,7 @@ body {
 }
 
 .item-link {
+    color: darkblue;
     text-decoration: none;
     font-size: 120%;
     width: 100%
@@ -64,9 +66,6 @@ body {
     height: 100px;
 }
 
-.item-img-url {
-    width: 100%;
-}
 
 .list-header {
     padding-top: 10px
@@ -90,7 +89,7 @@ body {
 
 .item-comment-text{
    /* outline: #dddddd dashed 1px; */
-   background-color: #eee;
+   background-color: #EAEBE0;
    margin: 2px;
    border: 20px;
    padding: 2px;
@@ -131,6 +130,36 @@ body {
 
 .delete-entity {
     cursor: pointer;
+}
+
+
+.tags-text {
+    margin-bottom: 10px;
+    width: 100%
+}
+
+.edit-item-body {
+    margin-top: 10px;
+}
+
+.tag {
+    font-size: 12px;
+    color: grey;
+    background-color: #EAEBE0;
+    font-weight: bold;
+    padding: 3px;
+    padding-left: 15px;
+    padding-right: 15px;
+    border-radius: 20px;
+    //font-family: "Lucida ConsoleTimes", "Courier New", monospace;
+}
+
+.tags {
+    padding-top: 10px;
+}
+
+.item-tag {
+    padding-top: 8px;
 }
 
 .error {
