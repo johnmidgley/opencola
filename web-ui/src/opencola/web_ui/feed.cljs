@@ -143,18 +143,18 @@
        [:div.item-comment-text text]
        [:span.item-attribution (str authority-name " " (format-time epoch-second))]]))
 
-(defn item-comments [visible-fn? expanded? comment-actions feed entity-id]
-(if (visible-fn?)
- (let [comment-actions (if @expanded? comment-actions (take 3 comment-actions))] 
-   (if (or @expanded? (not-empty comment-actions))
-     [:div.item-comments
-      [:span 
-       {:on-click (fn [] (swap! expanded? #(not %)))}
-       "Comments "
-       [action-img (if @expanded? "collapse" "expand")]]
-      [comment-control feed entity-id expanded?] 
-      (doall (for [comment-action comment-actions]
-               ^{:key comment-action} [item-comment comment-action]))]))))
+(defn item-comments [preview-fn? expanded? comment-actions feed entity-id]
+  (let [preview? (preview-fn?)
+        comment-actions (if preview? (take 3 comment-actions) comment-actions)]
+    (if (or @expanded? (and preview? (not-empty comment-actions)))
+      [:div.item-comments
+       [:span 
+        {:on-click (fn [] (swap! expanded? #(not %)))}
+        "Comments "
+        [action-img (if @expanded? "collapse" "expand")]]
+       [comment-control feed entity-id expanded?] 
+       (doall (for [comment-action comment-actions]
+                ^{:key comment-action} [item-comment comment-action]))])))
 
 (defn item-save [save-action]
   (let [{authority-name :authorityName 
@@ -192,7 +192,20 @@
      (doall (for [action actions]
               ^{:key action} [item-action action]))]))
 
+(defn item-tags-summary [actions]
+  (when (not-empty actions)
+    [:div.tags 
+     (doall (interpose " " (map #(tag (:value %)) actions)))]))
 
+
+(defn item-tags [preview-fn? expanded? actions]
+  (if (preview-fn?)
+    [item-tags-summary actions]
+    (if @expanded?
+      [:div.item-tags
+       [:div.list-header "Tags:"]
+       (doall (for [action actions]
+                ^{:key action} [item-tag action]))])))
 
 
 (defn item-like [like-action]
@@ -203,11 +216,11 @@
 
 ;; TODO: Templatize this - same for saves and comments
 (defn item-likes [expanded? like-actions]
-  (if @expanded?
-    [:div.item-likes 
-     "Likes:"
-     (doall (for [like-action like-actions]
-              ^{:key like-action} [item-like like-action]))]))
+  (if (and @expanded?) 
+      [:div.item-likes 
+       "Likes:"
+       (doall (for [like-action like-actions]
+                ^{:key like-action} [item-like like-action]))]))
 
 
 (defn toggle-atom [atoms atom]
@@ -221,7 +234,7 @@
         likes-expanded? (atom false)
         tags-expanded? (atom false)
         comments-expanded? (atom false)
-        preview-visible-fn? (fn [] (every? #(not @%) [saves-expanded? likes-expanded? tags-expanded?]))
+        preview-fn? (fn [] (every? #(not @%) [saves-expanded? likes-expanded? tags-expanded? comments-expanded?]))
         toggle (partial toggle-atom [saves-expanded? likes-expanded? tags-expanded? comments-expanded?])] 
     (fn [] 
       (let [entity-id (:entityId item)
@@ -238,17 +251,11 @@
          [delete-control feed entity-id]
          [:span.divider " | "]
          [edit-control editing?]
-         [item-list "Tags" tags-expanded? (:tag actions-by-type) item-tag]
-         [item-comments preview-visible-fn? comments-expanded? (:comment actions-by-type) feed entity-id]
          [item-saves saves-expanded? (:save actions-by-type)]
-         [item-likes likes-expanded? (:like actions-by-type)]]))))
+         [item-likes likes-expanded? (:like actions-by-type)]
+         [item-comments preview-fn? comments-expanded? (:comment actions-by-type) feed entity-id]
+         [item-tags preview-fn? tags-expanded? (:tag actions-by-type)] ]))))
 
-(defn item-tags [item]
-  (let [actions-by-type (group-by #(keyword (:type %)) (flatten-activity item))
-        tag-actions (:tag actions-by-type)]
-    (when (not-empty tag-actions)
-      [:div.tags 
-       (doall (interpose " " (map #(tag (:value %)) tag-actions)))])))
 
 (defn display-feed-item [feed item editing?]
   (let [entity-id (:entityId item)
@@ -261,12 +268,10 @@
         [:a.item-link {:href (str item-uri) :target "_blank"} (:name summary)]
         [:div.item-host (:host item-uri)]]
        [:div.item-body 
-        [:div.item-img-box [:img.item-img {:src (:imageUri summary)}]]
+        [:div.item-img-box 
+         [:a {:href (str item-uri) :taget "_blank"} [:img.item-img {:src (:imageUri summary)}]]]
         [:p.item-desc (:description summary)]]
-       [item-activities feed item editing?]
-       [item-tags item]
-
-])))
+       [item-activities feed item editing?]])))
 
 
 (defn update-item-handler [feed editing? item response]
