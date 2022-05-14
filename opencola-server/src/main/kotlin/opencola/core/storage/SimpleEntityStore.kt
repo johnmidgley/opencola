@@ -83,8 +83,7 @@ class SimpleEntityStore(
     }
 
     @Synchronized
-    override fun persistTransaction(signedTransaction: SignedTransaction,
-                                    computeFacts: (Iterable<Fact>) -> Iterable<Fact>): Long {
+    override fun persistTransaction(signedTransaction: SignedTransaction): Long {
         if (transactions.any { it.transaction.id == signedTransaction.transaction.id })
             throw IllegalArgumentException("Attempt to insert duplicate transaction: ${signedTransaction.transaction.id}")
 
@@ -94,7 +93,7 @@ class SimpleEntityStore(
 
         val transactionOrdinal = nextTransactionOrdinal++
         val transactionFacts = signedTransaction.transaction.getFacts(transactionOrdinal)
-        facts = facts + transactionFacts + computeFacts(transactionFacts)
+        facts = facts + transactionFacts
 
         return transactionOrdinal
     }

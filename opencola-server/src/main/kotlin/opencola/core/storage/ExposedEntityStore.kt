@@ -207,8 +207,7 @@ class ExposedEntityStore(
         }
     }
 
-    override fun persistTransaction(signedTransaction: SignedTransaction,
-                                    computeFacts: (Iterable<Fact>) -> Iterable<Fact>): Long {
+    override fun persistTransaction(signedTransaction: SignedTransaction): Long {
         return transaction(database) {
             val transaction = signedTransaction.transaction
             val transactionsId = transactions.insert {
@@ -220,7 +219,6 @@ class ExposedEntityStore(
 
             val transactionFacts = transaction.getFacts(transactionsId.value)
             transactionFacts
-                .plus(computeFacts(transactionFacts))
                 .forEach { fact ->
                 facts.insert {
                     it[authorityId] = Id.encode(fact.authorityId)

@@ -21,8 +21,7 @@ abstract class AbstractEntityStore(
     protected val signator: Signator
 ) : EntityStore {
     // TODO: Assumes transaction has been validated. Cleanup?
-    protected abstract fun persistTransaction(signedTransaction: SignedTransaction,
-                                              computeFacts: (Iterable<Fact>) -> Iterable<Fact>): Long
+    protected abstract fun persistTransaction(signedTransaction: SignedTransaction): Long
 
     private fun getFirstTransactionId(authorityId: Id): Id {
         // TODO: Random, or rooted with authority?
@@ -112,8 +111,8 @@ abstract class AbstractEntityStore(
             .mapNotNull { Entity.fromFacts(it.value) }
     }
 
-    private val computeFacts: (Iterable<Fact>) -> Iterable<Fact> = { facts ->
-        CoreAttribute.values().flatMap { attribute ->
+    private  fun computedFacts(facts: Iterable<Fact>) : List<Fact> {
+        return CoreAttribute.values().flatMap { attribute ->
             attribute.spec.computeFacts.ifNotNullOrElse({ it(facts) }, { emptyList() })
         }
     }
@@ -125,8 +124,9 @@ abstract class AbstractEntityStore(
                 .firstOrNull()
                 .ifNotNullOrElse({ Id.ofData(SignedTransaction.encode(it)) }, { getFirstTransactionId(authorityId) })
 
-        val signedTransaction = Transaction.fromFacts(nextTransactionId, facts).sign(signator)
-        val transactionOrdinal = persistTransaction(signedTransaction, computeFacts)
+        val allFacts = facts.plus(computedFacts(facts))
+        val signedTransaction = Transaction.fromFacts(nextTransactionId, allFacts).sign(signator)
+        val transactionOrdinal = persistTransaction(signedTransaction)
         eventBus.sendMessage(Events.NewTransaction.toString(), SignedTransaction.encode(signedTransaction))
 
         return Pair(signedTransaction, transactionOrdinal)
@@ -159,7 +159,7 @@ abstract class AbstractEntityStore(
             if (!it.isValidTransaction(publicKey))
                 throw IllegalArgumentException("Transaction ${it.transaction.id} failed to validate from $transactionAuthorityId")
 
-            persistTransaction(it, computeFacts)
+            persistTransaction(it)
             eventBus.sendMessage(Events.NewTransaction.toString(), SignedTransaction.encode(it))
         }
     }
