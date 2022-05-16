@@ -1,4 +1,5 @@
 #!/bin/bash
-cd oc-network
-docker-compose down
+ps -e | grep opencola | grep -v grep | cut -f1 -d " " | xargs kill
+# cd oc-network
+# docker-compose down
 

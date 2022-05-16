@@ -1,4 +1,8 @@
 #!/bin/bash
-cd server
-bin/opencola-server
-cd ..
+stop
+pushd server
+touch nohup.out
+nohup bin/opencola-server &
+tail -f nohup.out
+popd
+
