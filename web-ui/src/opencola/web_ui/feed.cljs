@@ -34,6 +34,8 @@
               (reset! feed response))
             error-handler))
 
+(def inline-divider [:span.divider " | "])
+
 (defn search-box [feed message]
   (let [query (atom "")]
     (fn []
@@ -137,11 +139,19 @@
        (map #(merge activity-no-actions %) (:actions activity))))
    (:activities item)))
 
-(defn item-comment [comment-action]
-  (let [{authority-name :authorityName epoch-second :epochSecond text :value} comment-action]
-      [:div.item-comment 
-       [:div.item-comment-text text]
-       [:span.item-attribution (str authority-name " " (format-time epoch-second))]]))
+(defn item-comment [feed entity-id comment-action]
+  (let [root-authority-id (:authorityId @feed)
+        {authority-id :authorityId
+         authority-name :authorityName 
+         epoch-second :epochSecond 
+         text :value} comment-action]
+       [:div.item-comment 
+       [:span.item-attribution 
+        authority-name " " (format-time epoch-second) 
+        #_(if (= authority-id root-authority-id)
+          [:span " " [action-img "delete"] inline-divider [action-img "edit"]])
+        ":"]
+       [:div.item-comment-text text]]))
 
 (defn item-comments [preview-fn? expanded? comment-actions feed entity-id]
   (let [preview? (preview-fn?)
@@ -154,7 +164,7 @@
         [action-img (if @expanded? "collapse" "expand")]]
        [comment-control feed entity-id expanded?] 
        (doall (for [comment-action comment-actions]
-                ^{:key comment-action} [item-comment comment-action]))])))
+                ^{:key comment-action} [item-comment feed entity-id comment-action]))])))
 
 (defn item-save [save-action]
   (let [{authority-name :authorityName 
@@ -164,7 +174,7 @@
     [:div.item-save 
      [:span.item-attribution (str authority-name " " (format-time epoch-second))] " "
      [:a.action-link  {:href (str (data-url host data-id) "/0.html") :target "_blank"} [action-img "archive"]]
-     " | "
+     inline-divider
      [:a.action-link  {:href (data-url host data-id) :target "_blank"} [action-img "download"]]]))
  
 
@@ -195,17 +205,17 @@
 (defn item-tags-summary [actions]
   (when (not-empty actions)
     [:div.tags 
-     (doall (interpose " " (map #(tag (:value %)) actions)))]))
+     (interpose " " 
+                (doall (for [action actions]
+                         ^{:key action} [tag (:value action)])))]))
 
 
 (defn item-tags [preview-fn? expanded? actions]
-  (if (preview-fn?)
-    [item-tags-summary actions]
-    (if @expanded?
-      [:div.item-tags
-       [:div.list-header "Tags:"]
-       (doall (for [action actions]
-                ^{:key action} [item-tag action]))])))
+  (if @expanded?
+    [:div.item-tags
+     [:div.list-header "Tags:"]
+     (doall (for [action actions]
+              ^{:key action} [item-tag action]))]))
 
 
 (defn item-like [like-action]
@@ -240,17 +250,12 @@
       (let [entity-id (:entityId item)
             actions-by-type (group-by #(keyword (:type %)) (flatten-activity item))]  
         [:div.activities-summary
-         [action-summary "save" (partial toggle saves-expanded?) (:save actions-by-type)]
-         [:span.divider " | "]
-         [action-summary "like" (partial toggle likes-expanded?) (:like actions-by-type)] 
-         [:span.divider " | "]
-         [action-summary "comment" (partial toggle comments-expanded?) (:comment actions-by-type)]
-         [:span.divider " | "]
-         [action-summary "tag" (partial toggle tags-expanded?) (:tag actions-by-type)]
-         [:span.divider " | "]
-         [delete-control feed entity-id]
-         [:span.divider " | "]
-         [edit-control editing?]
+         [action-summary "save" (partial toggle saves-expanded?) (:save actions-by-type)] inline-divider
+         [action-summary "like" (partial toggle likes-expanded?) (:like actions-by-type)] inline-divider
+         [action-summary "comment" (partial toggle comments-expanded?) (:comment actions-by-type)] inline-divider
+         [action-summary "tag" (partial toggle tags-expanded?) (:tag actions-by-type)] inline-divider
+         [delete-control feed entity-id] inline-divider
+         [edit-control editing?] 
          [item-saves saves-expanded? (:save actions-by-type)]
          [item-likes likes-expanded? (:like actions-by-type)]
          [item-comments preview-fn? comments-expanded? (:comment actions-by-type) feed entity-id]
@@ -261,7 +266,8 @@
   (let [entity-id (:entityId item)
         summary (:summary item)
         item-uri (uri (:uri summary))
-        activities (:activities item)]
+        activities (:activities item)
+        actions-by-type (group-by #(keyword (:type %)) (flatten-activity item))]
     (fn []
       [:div.feed-item
        [:div.item-name 
@@ -271,6 +277,7 @@
         [:div.item-img-box 
          [:a {:href (str item-uri) :taget "_blank"} [:img.item-img {:src (:imageUri summary)}]]]
         [:p.item-desc (:description summary)]]
+       [item-tags-summary (:tag actions-by-type)]
        [item-activities feed item editing?]])))
 
 
@@ -364,8 +371,8 @@
       [:div.feed-item
        [name-edit-control edit-item]
        [image-uri-edit-control edit-item]
-       [tags-edit-control edit-item]
        [description-edit-control edit-item]
+       [tags-edit-control edit-item]
        [:button {:on-click #(update-entity feed editing? @edit-item)} "Save"] " "
        [:button {:on-click #(reset! editing? false)} "Cancel"]])))
 
