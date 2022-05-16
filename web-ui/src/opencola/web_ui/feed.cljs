@@ -7,22 +7,11 @@
    [cljs-time.coerce :as c]
    [cljs-time.format :as f]
    [lambdaisland.uri :refer [uri]]
-   [opencola.web-ui.model.error :as error]
    [opencola.web-ui.config :as config]
-   [opencola.web-ui.ajax :as ajax]))
+   [opencola.web-ui.model.error :as error]
+   [opencola.web-ui.model.feed :as feed]))
 
 ;; TODO: Look at https://github.com/Day8/re-com
-
-(defn get-feed [feed q message]
-  (ajax/GET (str "feed" "?q=" q) 
-            (fn [response]
-              (if message
-                (reset! message (cond
-                                  (empty? q) nil
-                                  (empty? (response :results)) (str "No results for '" q "'")
-                                  :else (str "Results for '" q "'"))))
-              (reset! feed response))
-            error/error-handler))
 
 (def inline-divider [:span.divider " | "])
 
@@ -34,7 +23,7 @@
         :value @query
         :on-change #(reset! query (-> % .-target .-value))
         :on-keyUp #(if (= (.-key %) "Enter")
-                     (get-feed feed @query message))}])))
+                     (feed/get-feed feed @query message))}])))
 
 (defn search-status [message]
   [:div.search-status @message]) 
@@ -67,46 +56,18 @@
                           (name (first action-value)) " "]))
 
 
-(defn delete-handler [feed entity-id response]
-  (swap! feed update-in [:results] (fn [results] (remove #(= (:entityId %) entity-id) results))))
-
-(defn delete-entity [feed entity-id]
-  (ajax/DELETE (str "entity/" entity-id) 
-               (partial delete-handler feed entity-id)
-               error/error-handler)) 
-
-
 (defn data-url [host data-id]
   (when data-id
     (str (if (not= host "") "http://") host "/data/" data-id))) 
 
 
 (defn delete-control [feed entity-id]
-  [:span.delete-entity {:on-click #(delete-entity feed entity-id)} (action-img "delete")])
+  [:span.delete-entity {:on-click #(feed/delete-entity feed entity-id)} (action-img "delete")])
 
 
 (defn edit-control [editing?]
   [:span.delete-entity {:on-click #(reset! editing? true)} (action-img "edit")])
 
-(defn comment-handler [feed editing? item]
-  (let [entity-id (:entityId item)
-        updated-feed (update-in 
-                      @feed 
-                      [:results]
-                      #(map (fn [i] (if (= entity-id (:entityId i)) item i)) %))]
-    (reset! feed updated-feed))
-  (reset! editing? false))
-
-(defn comment-handler-old [feed entity-id editing? response]
-  (reset! editing? false))
-
-
-
-(defn add-comment [feed entity-id editing? text]
-  (ajax/POST (str "entity/" entity-id "/comment") 
-             {:text text }
-             (partial comment-handler feed editing?)
-             error/error-handler))
 
 (defn comment-control [feed entity-id expanded?]
   (let [text (atom "")]
@@ -116,7 +77,7 @@
          [:textarea.comment-text-edit {:type "text"
                                        :value @text
                                        :on-change #(reset! text (-> % .-target .-value))}]
-        [:button {:on-click #(add-comment feed entity-id expanded? @text)} "Save"]
+        [:button {:on-click #(feed/add-comment feed entity-id expanded? @text)} "Save"]
         [:button {:on-click #(reset! expanded? false)} "Cancel"]]))))
 
 (defn action-summary [name toggle-fn actions]
@@ -271,28 +232,6 @@
        [item-activities feed item editing?]])))
 
 
-(defn update-item-handler [feed editing? item response]
-  (let [entity-id (:entityId response)
-        updated-feed (update-in 
-                      @feed 
-                      [:results]
-                      #(map (fn [i] (if (= entity-id (:entityId i)) response i)) %))]
-    (reset! feed updated-feed))
-  (reset! editing? false))
-
-
-(defn update-item-error-handler [editing? response]
-  (error/error-handler response)
-  (reset! editing? false))
-
-(defn update-entity [feed editing? item] 
-  (ajax/POST 
-   (str "/entity/" (:entityId item))
-   item
-   (partial update-item-handler feed editing? item)
-   (partial update-item-error-handler editing?)))
-
-
 (defn authority-actions-of-type [authority-id type item]
   (->> item 
        flatten-activity
@@ -363,7 +302,7 @@
        [image-uri-edit-control edit-item]
        [description-edit-control edit-item]
        [tags-edit-control edit-item]
-       [:button {:on-click #(update-entity feed editing? @edit-item)} "Save"] " "
+       [:button {:on-click #(feed/update-entity feed editing? @edit-item)} "Save"] " "
        [:button {:on-click #(reset! editing? false)} "Cancel"]])))
 
 
@@ -385,13 +324,12 @@
   (if-let [e (error/get-error-message)]
     [:div.error e]))
 
-(def feed (atom {}))
+(def ^:private feed (atom {}))
 
 (defn feed-page []
-  (let [feed_ (atom {})]
-      (get-feed feed "" nil)
-    (fn []
-      [:div#opencola.search-page
-       [search-header feed]
-       [request-error]
-       [feed-list feed]])))
+  (feed/get-feed feed)
+  (fn []
+    [:div#opencola.search-page
+     [search-header feed]
+     [request-error]
+     [feed-list feed]]))
