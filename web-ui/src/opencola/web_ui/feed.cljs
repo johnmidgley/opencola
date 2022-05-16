@@ -7,21 +7,11 @@
    [cljs-time.coerce :as c]
    [cljs-time.format :as f]
    [lambdaisland.uri :refer [uri]]
+   [opencola.web-ui.model.error :as error]
    [opencola.web-ui.config :as config]
    [opencola.web-ui.ajax :as ajax]))
 
 ;; TODO: Look at https://github.com/Day8/re-com
-
-(defonce error-message (atom nil))
-
-(defn error [message]
-  (reset! error-message message)
-  (.log js/console message))
-
-;; TODO: Clear error on any successful call
-(defn error-handler [{:keys [status status-text]}]
-  (error (str "Error: " status ": " status-text)))
-
 
 (defn get-feed [feed q message]
   (ajax/GET (str "feed" "?q=" q) 
@@ -32,7 +22,7 @@
                                   (empty? (response :results)) (str "No results for '" q "'")
                                   :else (str "Results for '" q "'"))))
               (reset! feed response))
-            error-handler))
+            error/error-handler))
 
 (def inline-divider [:span.divider " | "])
 
@@ -83,7 +73,7 @@
 (defn delete-entity [feed entity-id]
   (ajax/DELETE (str "entity/" entity-id) 
                (partial delete-handler feed entity-id)
-               error-handler)) 
+               error/error-handler)) 
 
 
 (defn data-url [host data-id]
@@ -116,7 +106,7 @@
   (ajax/POST (str "entity/" entity-id "/comment") 
              {:text text }
              (partial comment-handler feed editing?)
-             error-handler))
+             error/error-handler))
 
 (defn comment-control [feed entity-id expanded?]
   (let [text (atom "")]
@@ -292,7 +282,7 @@
 
 
 (defn update-item-error-handler [editing? response]
-  (error-handler response)
+  (error/error-handler response)
   (reset! editing? false))
 
 (defn update-entity [feed editing? item] 
@@ -392,7 +382,7 @@
                 ^{:key item} [feed-item feed item])))]))
 
 (defn request-error []
-  (if-let [e @error-message]
+  (if-let [e (error/get-error-message)]
     [:div.error e]))
 
 (def feed (atom {}))
