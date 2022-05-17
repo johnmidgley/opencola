@@ -3,18 +3,16 @@
    [opencola.web-ui.ajax :as ajax]
    [opencola.web-ui.model.error :as error]))
 
-(defn get-feed
-  ([feed] (get-feed feed "" nil))
-  ([feed q message]
+
+(defn get-feed 
+  ([q view-model] (get-feed q view-model nil nil))
+  ([q view-model on-success] (get-feed q view-model on-success nil))
+  ([q view-model on-success on-error]
    (ajax/GET (str "feed" "?q=" q) 
-             (fn [response]
-               (if message
-                 (reset! message (cond
-                                   (empty? q) nil
-                                   (empty? (response :results)) (str "No results for '" q "'")
-                                   :else (str "Results for '" q "'"))))
-               (reset! feed response))
-             error/error-handler)))
+             #(do (reset! view-model %)
+                  (when on-success (on-success %)))
+             #(do (error/error-handler %)       
+                  (when on-error (on-error %))))))
 
 (defn delete-entity-handler [feed entity-id response]
   (swap! feed update-in [:results] (fn [results] (remove #(= (:entityId %) entity-id) results))))

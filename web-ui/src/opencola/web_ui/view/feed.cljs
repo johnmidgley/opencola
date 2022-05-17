@@ -1,4 +1,4 @@
-(ns ^:figwheel-hooks opencola.web-ui.feed 
+(ns ^:figwheel-hooks opencola.web-ui.view.feed 
   (:require
    [clojure.string :as string :refer [lower-case]]
    [goog.dom :as gdom]
@@ -15,6 +15,13 @@
 
 (def inline-divider [:span.divider " | "])
 
+(defn get-feed [view-model query message]
+  (feed/get-feed 
+   query
+   view-model 
+   #(reset! message (when (not-empty query)
+                      (str (count (@view-model :results)) " results for '" query "'")))))
+
 (defn search-box [feed message]
   (let [query (atom "")]
     (fn []
@@ -23,7 +30,7 @@
         :value @query
         :on-change #(reset! query (-> % .-target .-value))
         :on-keyUp #(if (= (.-key %) "Enter")
-                     (feed/get-feed feed @query message))}])))
+                     (get-feed feed @query message))}])))
 
 (defn search-status [message]
   [:div.search-status @message]) 
@@ -327,7 +334,7 @@
 (def ^:private feed (atom {}))
 
 (defn feed-page []
-  (feed/get-feed feed)
+  (feed/get-feed "" feed)
   (fn []
     [:div#opencola.search-page
      [search-header feed]
