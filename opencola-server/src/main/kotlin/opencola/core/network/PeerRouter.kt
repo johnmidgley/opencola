@@ -74,6 +74,9 @@ class PeerRouter(private val addressBook: AddressBook, private val eventBus: Eve
 
     fun broadcastMessage(path: String, message: Any){
         runBlocking {
+            if(peerIdToStatusMap.values.isNotEmpty())
+                logger.info { "Broadcasting new transaction notification" }
+
             peerIdToStatusMap.values.forEach {
                 if(listOf(Unknown, Online).contains(it.status) && it.peer.active) {
                     // TODO: Make batched, to limit simultaneous connections

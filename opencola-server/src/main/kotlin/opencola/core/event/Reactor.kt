@@ -22,6 +22,7 @@ interface Reactor {
     fun handleMessage(event: Event)
 }
 
+// TODO: Invert this by having the reactor subscribe to events vs. being plugged in to the event bus
 class MainReactor(
     private val authority: Authority,
     private val entityStore: EntityStore,
@@ -41,7 +42,9 @@ class MainReactor(
     }
 
     private fun updatePeerTransactions() {
-        logger.info { "Updating peer transactions" }
+        if(peerRouter.peers.isNotEmpty())
+            logger.info { "Updating peer transactions" }
+
         // TODO: Swap runBlocking with adding to peerExecutor
         runBlocking {
             peerRouter.peers
@@ -124,7 +127,6 @@ class MainReactor(
 
         if (signedTransaction.transaction.authorityId == authority.authorityId) {
             // Transaction originated locally, so inform peers
-            logger.info { "Broadcasting new transaction notification" }
             peerRouter.broadcastMessage(
                 "notifications",
                 PeerRouter.Notification(signedTransaction.transaction.authorityId, PeerRouter.Event.NewTransaction)
