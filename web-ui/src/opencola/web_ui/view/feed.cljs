@@ -76,12 +76,16 @@
         {authority-id :authorityId
          authority-name :authorityName 
          epoch-second :epochSecond 
-         text :value} comment-action]
+         text :value
+         comment-id :id} comment-action]
        [:div.item-comment 
        [:span.item-attribution 
         authority-name " " (format-time epoch-second) 
-        #_(if (= authority-id root-authority-id)
-          [:span " " [action-img "delete"] inline-divider [action-img "edit"]])
+        (if (= authority-id root-authority-id)
+          [:span " " 
+           [:span {:on-click #(feed/delete-comment feed! entity-id comment-id )} [action-img "delete"]] 
+           inline-divider 
+           [action-img "edit"]])
         ":"]
        [:div.item-comment-text text]]))
 
