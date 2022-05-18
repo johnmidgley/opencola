@@ -8,6 +8,7 @@
    [cljs-time.format :as f]
    [lambdaisland.uri :refer [uri]]
    [opencola.web-ui.config :as config]
+   [opencola.web-ui.view.search :as search]
    [opencola.web-ui.model.error :as error]
    [opencola.web-ui.model.feed :as feed]))
 
@@ -15,35 +16,8 @@
 
 (def inline-divider [:span.divider " | "])
 
-(defn get-feed [view-model query message]
-  (feed/get-feed 
-   query
-   view-model 
-   #(reset! message (when (not-empty query)
-                      (str (count (@view-model :results)) " results for '" query "'")))))
-
-(defn search-box [feed message]
-  (let [query (atom "")]
-    (fn []
-      [:div.search-box>input
-       {:type "text"
-        :value @query
-        :on-change #(reset! query (-> % .-target .-value))
-        :on-keyUp #(if (= (.-key %) "Enter")
-                     (get-feed feed @query message))}])))
-
-(defn search-status [message]
-  [:div.search-status @message]) 
-
-(defn search-header [feed]
-  (let [message (atom nil)]
-    (fn []
-      [:div.search-header 
-       [:img {:src "../img/pull-tab.png" :width 50 :height 50}]
-       "openCola"
-       [search-box feed message]
-       [search-status message]])))
-
+(defn get-feed [query feed!]
+  (feed/get-feed query feed!))
 
 (defn format-time [epoch-second]
   (f/unparse (f/formatter "yyyy-MM-dd hh:mm") (c/from-long (* epoch-second 1000))))
@@ -68,24 +42,24 @@
     (str (if (not= host "") "http://") host "/data/" data-id))) 
 
 
-(defn delete-control [feed entity-id]
-  [:span.delete-entity {:on-click #(feed/delete-entity feed entity-id)} (action-img "delete")])
+(defn delete-control [feed! entity-id]
+  [:span.delete-entity {:on-click #(feed/delete-entity feed! entity-id)} (action-img "delete")])
 
 
-(defn edit-control [editing?]
-  [:span.delete-entity {:on-click #(reset! editing? true)} (action-img "edit")])
+(defn edit-control [editing?!]
+  [:span.delete-entity {:on-click #(reset! editing?! true)} (action-img "edit")])
 
 
-(defn comment-control [feed entity-id expanded?]
-  (let [text (atom "")]
+(defn comment-control [feed! entity-id expanded?!]
+  (let [text! (atom "")]
     (fn []
-      (if @expanded?
+      (if @expanded?!
         [:div.comment
          [:textarea.comment-text-edit {:type "text"
-                                       :value @text
-                                       :on-change #(reset! text (-> % .-target .-value))}]
-        [:button {:on-click #(feed/add-comment feed entity-id expanded? @text)} "Save"]
-        [:button {:on-click #(reset! expanded? false)} "Cancel"]]))))
+                                       :value @text!
+                                       :on-change #(reset! text! (-> % .-target .-value))}]
+        [:button {:on-click #(feed/add-comment feed! entity-id expanded?! @text!)} "Save"]
+        [:button {:on-click #(reset! expanded?! false)} "Cancel"]]))))
 
 (defn action-summary [name toggle-fn actions]
   [:span {:on-click toggle-fn} (action-img name) " " (count actions)]) 
@@ -97,8 +71,8 @@
        (map #(merge activity-no-actions %) (:actions activity))))
    (:activities item)))
 
-(defn item-comment [feed entity-id comment-action]
-  (let [root-authority-id (:authorityId @feed)
+(defn item-comment [feed! entity-id comment-action]
+  (let [root-authority-id (:authorityId @feed!)
         {authority-id :authorityId
          authority-name :authorityName 
          epoch-second :epochSecond 
@@ -111,18 +85,18 @@
         ":"]
        [:div.item-comment-text text]]))
 
-(defn item-comments [preview-fn? expanded? comment-actions feed entity-id]
+(defn item-comments [preview-fn? expanded?! comment-actions feed! entity-id]
   (let [preview? (preview-fn?)
         comment-actions (if preview? (take 3 comment-actions) comment-actions)]
-    (if (or @expanded? (and preview? (not-empty comment-actions)))
+    (if (or @expanded?! (and preview? (not-empty comment-actions)))
       [:div.item-comments
        [:span 
-        {:on-click (fn [] (swap! expanded? #(not %)))}
+        {:on-click (fn [] (swap! expanded?! #(not %)))}
         "Comments "
-        [action-img (if @expanded? "collapse" "expand")]]
-       [comment-control feed entity-id expanded?] 
+        [action-img (if @expanded?! "collapse" "expand")]]
+       [comment-control feed! entity-id expanded?!] 
        (doall (for [comment-action comment-actions]
-                ^{:key comment-action} [item-comment feed entity-id comment-action]))])))
+                ^{:key comment-action} [item-comment feed! entity-id comment-action]))])))
 
 (defn item-save [save-action]
   (let [{authority-name :authorityName 
@@ -136,8 +110,8 @@
      [:a.action-link  {:href (data-url host data-id) :target "_blank"} [action-img "download"]]]))
  
 
-(defn item-saves [expanded? save-actions]
-  (if @expanded?
+(defn item-saves [expanded?! save-actions]
+  (if @expanded?!
     [:div.item-saves 
      "Saves:"
      (doall (for [save-action save-actions]
@@ -153,8 +127,8 @@
     [:div.item-tag
      [:span.item-attribution (str authority-name " " (format-time epoch-second))] " " (tag (:value tag-action))]))
 
-(defn item-list [name expanded? actions item-action]
-  (if @expanded?
+(defn item-list [name expanded?! actions item-action]
+  (if @expanded?!
     [(keyword (str "div.item-" (lower-case name)))
      [:div.list-header (str name ":")]
      (doall (for [action actions]
@@ -168,8 +142,8 @@
                          ^{:key action} [tag (:value action)])))]))
 
 
-(defn item-tags [preview-fn? expanded? actions]
-  (if @expanded?
+(defn item-tags [preview-fn? expanded?! actions]
+  (if @expanded?!
     [:div.item-tags
      [:div.list-header "Tags:"]
      (doall (for [action actions]
@@ -183,21 +157,21 @@
      [:span.item-attribution (str authority-name " " (format-time epoch-second))]]))
 
 ;; TODO: Templatize this - same for saves and comments
-(defn item-likes [expanded? like-actions]
-  (if (and @expanded?) 
+(defn item-likes [expanded?! like-actions]
+  (if (and @expanded?!) 
       [:div.item-likes 
        "Likes:"
        (doall (for [like-action like-actions]
                 ^{:key like-action} [item-like like-action]))]))
 
 
-(defn toggle-atom [atoms atom]
-  (doall(for [a atoms]
-          (if (not= a atom)
-            (reset! a false))))
-  (swap! atom #(not %)))
+(defn toggle-atom [atoms! atom!]
+  (doall(for [a! atoms!]
+          (if (not= a! atom!)
+            (reset! a! false))))
+  (swap! atom! #(not %)))
 
-(defn item-activities [feed item editing?]
+(defn item-activities [feed! item editing?!]
   (let [saves-expanded? (atom false)
         likes-expanded? (atom false)
         tags-expanded? (atom false)
@@ -212,15 +186,15 @@
          [action-summary "like" (partial toggle likes-expanded?) (:like actions-by-type)] inline-divider
          [action-summary "comment" (partial toggle comments-expanded?) (:comment actions-by-type)] inline-divider
          [action-summary "tag" (partial toggle tags-expanded?) (:tag actions-by-type)] inline-divider
-         [delete-control feed entity-id] inline-divider
-         [edit-control editing?] 
+         [delete-control feed! entity-id] inline-divider
+         [edit-control editing?!] 
          [item-saves saves-expanded? (:save actions-by-type)]
          [item-likes likes-expanded? (:like actions-by-type)]
-         [item-comments preview-fn? comments-expanded? (:comment actions-by-type) feed entity-id]
+         [item-comments preview-fn? comments-expanded? (:comment actions-by-type) feed! entity-id]
          [item-tags preview-fn? tags-expanded? (:tag actions-by-type)] ]))))
 
 
-(defn display-feed-item [feed item editing?]
+(defn display-feed-item [feed! item editing?!]
   (let [entity-id (:entityId item)
         summary (:summary item)
         item-uri (uri (:uri summary))
@@ -236,7 +210,7 @@
          [:a {:href (str item-uri) :taget "_blank"} [:img.item-img {:src (:imageUri summary)}]]]
         [:p.item-desc (:description summary)]]
        [item-tags-summary (:tag actions-by-type)]
-       [item-activities feed item editing?]])))
+       [item-activities feed! item editing?!]])))
 
 
 (defn authority-actions-of-type [authority-id type item]
@@ -260,83 +234,92 @@
      :tags (tags-as-string authority-id item)}))
 
 
-(defn name-edit-control [edit-item]
+(defn name-edit-control [edit-item!]
        [:div.item-name
         [:div.field-header "Name:"]
         [:input.item-link
          {:type "text"
-          :value (:name @edit-item)
-          :on-change #(swap! edit-item assoc-in [:name] (-> % .-target .-value))}]])
+          :value (:name @edit-item!)
+          :on-change #(swap! edit-item! assoc-in [:name] (-> % .-target .-value))}]])
 
-(defn image-uri-edit-control [edit-item]
+(defn image-uri-edit-control [edit-item!]
   [:div.item-uri-edit-control
    [:div.item-img-box 
-    [:img.item-img {:src (str (:imageUri @edit-item))}]]
+    [:img.item-img {:src (str (:imageUri @edit-item!))}]]
    [:div.item-image-url 
     [:div.field-header "Image URL:"]
     [:input.item-img-url
      {:type "text"
-      :value (:imageUri @edit-item)
-      :on-change #(swap! edit-item assoc-in [:imageUri] (-> % .-target .-value))}]]])
+      :value (:imageUri @edit-item!)
+      :on-change #(swap! edit-item! assoc-in [:imageUri] (-> % .-target .-value))}]]])
 
 
-(defn tags-edit-control [edit-item]
+(defn tags-edit-control [edit-item!]
   [:div.tags-edit-control
    [:div.field-header "Tags:"]
    [:input.tags-text
     {:type "text"
-     :value (:tags @edit-item)
-     :on-change #(swap! edit-item assoc-in [:tags] (-> % .-target .-value))}]])
+     :value (:tags @edit-item!)
+     :on-change #(swap! edit-item! assoc-in [:tags] (-> % .-target .-value))}]])
 
-(defn description-edit-control [edit-item]
+(defn description-edit-control [edit-item!]
   [:div.description-edit-control
        [:div.field-header "Description:"]
        [:p.item-desc [:textarea.item-desc-edit
                       {:type "text"
-                       :value (:description @edit-item)
-                       :on-change #(swap! edit-item assoc-in [:description] (-> % .-target .-value))}]]])
+                       :value (:description @edit-item!)
+                       :on-change #(swap! edit-item! assoc-in [:description] (-> % .-target .-value))}]]])
 
 
 ;; TODO: Use keys to get 
-(defn edit-feed-item [feed item editing?]
+(defn edit-feed-item [feed! item editing?!]
   (let [entity-id (:entityId item)
         summary (:summary item)
         item-uri (uri (:uri summary))
-        edit-item (atom (edit-item (:authorityId @feed) item))]
+        edit-item! (atom (edit-item (:authorityId @feed!) item))]
     (fn []
       [:div.feed-item
-       [name-edit-control edit-item]
-       [image-uri-edit-control edit-item]
-       [description-edit-control edit-item]
-       [tags-edit-control edit-item]
-       [:button {:on-click #(feed/update-entity feed editing? @edit-item)} "Save"] " "
-       [:button {:on-click #(reset! editing? false)} "Cancel"]])))
+       [name-edit-control edit-item!]
+       [image-uri-edit-control edit-item!]
+       [description-edit-control edit-item!]
+       [tags-edit-control edit-item!]
+       [:button {:on-click #(feed/update-entity feed! editing?! @edit-item!)} "Save"] " "
+       [:button {:on-click #(reset! editing?! false)} "Cancel"]])))
 
 
 
-(defn feed-item [feed item]
-  (let [editing? (atom false)]
+(defn feed-item [feed! item]
+  (let [editing?! (atom false)]
     (fn []
-      (if @editing? [edit-feed-item feed item editing?] [display-feed-item feed item editing?]))))
+      (if @editing?! [edit-feed-item feed! item editing?!] [display-feed-item feed! item editing?!]))))
 
 
-(defn feed-list [feed]
-  (if @feed
+(defn feed-status [feed!]
+  [:div.feed-status 
+   (let [query (:query @feed!)]
+     (when (not-empty query)
+       (str (count (:results @feed!)) " results for '" query "'")))])
+
+(defn feed-list [feed!]
+  (if @feed!
     [:div.feed
-     (let [results (:results @feed)]
+     [feed-status feed!]
+     (let [results (:results @feed!)]
        (doall (for [item results]
-                ^{:key item} [feed-item feed item])))]))
+                ^{:key item} [feed-item feed! item])))]))
 
-(defn request-error []
-  (if-let [e (error/get-error-message)]
+(defn feed-error [feed!]
+  (if-let [e (:error @feed!)]
     [:div.error e]))
 
-(def ^:private feed (atom {}))
+
+;; TODO: view model should be passed in from outside to avoid "Singleton"
+(def feed! (atom {}))
 
 (defn feed-page []
-  (feed/get-feed "" feed)
+  (feed/get-feed "" feed!)
   (fn []
-    [:div#opencola.search-page
-     [search-header feed]
-     [request-error]
-     [feed-list feed]]))
+    [:div#opencola.feed-page
+     [search/search-header #(get-feed % feed!)]
+     [feed-error feed!]
+     [feed-list feed!]]))
