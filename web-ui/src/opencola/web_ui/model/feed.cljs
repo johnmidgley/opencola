@@ -55,9 +55,12 @@
   (update-feed-item feed! (model-to-view-item model-item))
   (reset! editing?! false))
 
-(defn add-comment [feed! entity-id editing?! text]
+
+;; TODO: Change to update comment
+(defn add-comment [feed! entity-id comment-id text editing?!]
   (ajax/POST (str "entity/" entity-id "/comment") 
-             {:text text }
+             {:commentId comment-id
+              :text text}
              #(comment-handler feed! editing?! %)
              #(set-error-from-result feed! %)))
 

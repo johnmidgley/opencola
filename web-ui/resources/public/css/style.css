@@ -92,8 +92,8 @@ body {
    background-color: #EAEBE0;
    margin: 2px;
    border: 20px;
-   padding: 2px;
-   padding-left: 6px;
+   padding: 6px;
+   padding-right: 12px;
    border-radius: 6px;
    font-family: "Lucida Console", "Courier New", monospace;
 }
@@ -116,6 +116,7 @@ body {
 .comment-text-edit {
     width: 100%;
     height: 100px;
+    resize: vertical;
 }
 
 .action-img {

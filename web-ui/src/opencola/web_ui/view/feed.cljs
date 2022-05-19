@@ -50,35 +50,39 @@
   [:span.delete-entity {:on-click #(reset! editing?! true)} (action-img "edit")])
 
 
-(defn comment-control [feed! entity-id expanded?!]
-  (let [text! (atom "")]
+(defn comment-control [feed! entity-id comment-id text expanded?!]
+  (let [text! (atom text)]
     (fn []
       (if @expanded?!
-        [:div.comment
+        [:div.item-comment-text
          [:textarea.comment-text-edit {:type "text"
                                        :value @text!
                                        :on-change #(reset! text! (-> % .-target .-value))}]
-        [:button {:on-click #(feed/add-comment feed! entity-id expanded?! @text!)} "Save"] " "
-        [:button {:on-click #(reset! expanded?! false)} "Cancel"]]))))
+        [:button {:on-click #(feed/add-comment feed! entity-id comment-id @text! expanded?!)} "Save"] " "
+        [:button {:on-click #(reset! expanded?! false)} "Cancel"]
+        [:button.delete-button {:on-click #(feed/delete-comment feed! entity-id comment-id)} "Delete"]]))))
 
 (defn action-summary [name toggle-fn actions]
   [:span {:on-click toggle-fn} (action-img name) " " (count actions)]) 
 
 (defn item-comment [feed! entity-id comment-action]
-  (let [root-authority-id (:authorityId @feed!)
-        {authority-id :authorityId
-         authority-name :authorityName 
-         epoch-second :epochSecond 
-         text :value
-         comment-id :id} comment-action]
-       [:div.item-comment 
+(let [editing?! (atom false)]
+  (fn []
+    (let [root-authority-id (:authorityId @feed!)
+          {authority-id :authorityId
+           authority-name :authorityName 
+           epoch-second :epochSecond 
+           text :value
+           comment-id :id} comment-action]
+      [:div.item-comment 
        [:span.item-attribution 
-        authority-name " " (format-time epoch-second) 
+        authority-name " " (format-time epoch-second) " "
         (if (= authority-id root-authority-id)
-          [:span " " 
-           [:span {:on-click #(feed/delete-comment feed! entity-id comment-id)} [action-img "delete"]]])
+          [:span {:on-click #(reset! editing?! true)} [action-img "edit"]])
         ":"]
-       [:div.item-comment-text text]]))
+       (if @editing?!
+         [comment-control feed! entity-id comment-id text editing?!]
+         [:div.item-comment-text text])]))))
 
 (defn item-comments [preview-fn? expanded?! comment-actions feed! entity-id]
   (let [preview? (preview-fn?)
@@ -89,7 +93,7 @@
         {:on-click (fn [] (swap! expanded?! #(not %)))}
         "Comments "
         [action-img (if @expanded?! "collapse" "expand")]]
-       [comment-control feed! entity-id expanded?!] 
+       [comment-control feed! entity-id nil "" expanded?!] 
        (doall (for [comment-action comment-actions]
                 ^{:key comment-action} [item-comment feed! entity-id comment-action]))])))
 
