@@ -6,9 +6,29 @@
 (defn set-error-from-result [feed! {status :status text :status-text}]
   (reset! feed! {:error  (str "Error: " status ": " text)}))
 
-(defn get-feed [q feed!]
-  (ajax/GET (str "feed" "?q=" q) 
-            #(reset! feed! (assoc-in % [:query] q))
+(defn set-query [feed query]
+  (if query (assoc-in feed [:query] query)))
+
+(defn item-to-view-model [item]
+  (update item 
+          :activities
+          (fn [activities]
+            (->> activities
+                 (mapcat
+                  (fn [activity]
+                    (let [activity-no-actions (dissoc activity :actions)]
+                      (map #(merge activity-no-actions %) (:actions activity)))))
+                 (group-by #(keyword (:type %)))))))
+
+(defn feed-to-view-model [feed query]
+  (-> feed 
+      (update :results #(map item-to-view-model %))
+      (set-query query)))
+
+
+(defn get-feed [query feed!]
+  (ajax/GET (str "feed" "?q=" query) 
+            #(reset! feed! (feed-to-view-model % query))
             #(set-error-from-result feed! %)))
 
 (defn delete-entity-handler [feed! entity-id response]
@@ -39,10 +59,11 @@
 
 (defn update-feed-item [feed! item]
   (let [entity-id (:entityId item)
+        view-model (item-to-view-model item)
         updated-feed (update-in 
                       @feed! 
                       [:results]
-                      #(map (fn [i] (if (= entity-id (:entityId i)) item i)) %))]
+                      #(map (fn [i] (if (= entity-id (:entityId i)) view-model i)) %))]
     (reset! feed! updated-feed)))
 
 (defn update-item-error-handler [feed! response]

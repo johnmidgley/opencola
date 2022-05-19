@@ -64,13 +64,6 @@
 (defn action-summary [name toggle-fn actions]
   [:span {:on-click toggle-fn} (action-img name) " " (count actions)]) 
 
-(defn flatten-activity [item]
-  (mapcat
-   (fn [activity]
-     (let [activity-no-actions (dissoc activity :actions)]
-       (map #(merge activity-no-actions %) (:actions activity))))
-   (:activities item)))
-
 (defn item-comment [feed! entity-id comment-action]
   (let [root-authority-id (:authorityId @feed!)
         {authority-id :authorityId
@@ -184,26 +177,24 @@
         toggle (partial toggle-atom [saves-expanded? likes-expanded? tags-expanded? comments-expanded?])] 
     (fn [] 
       (let [entity-id (:entityId item)
-            actions-by-type (group-by #(keyword (:type %)) (flatten-activity item))]  
+            activities (:activities item)]  
         [:div.activities-summary
-         [action-summary "save" (partial toggle saves-expanded?) (:save actions-by-type)] inline-divider
-         [action-summary "like" (partial toggle likes-expanded?) (:like actions-by-type)] inline-divider
-         [action-summary "comment" (partial toggle comments-expanded?) (:comment actions-by-type)] inline-divider
-         [action-summary "tag" (partial toggle tags-expanded?) (:tag actions-by-type)] inline-divider
+         [action-summary "save" (partial toggle saves-expanded?) (:save activities)] inline-divider
+         [action-summary "like" (partial toggle likes-expanded?) (:like activities)] inline-divider
+         [action-summary "comment" (partial toggle comments-expanded?) (:comment activities)] inline-divider
+         [action-summary "tag" (partial toggle tags-expanded?) (:tag activities)] inline-divider
          [delete-control feed! entity-id] inline-divider
          [edit-control editing?!] 
-         [item-saves saves-expanded? (:save actions-by-type)]
-         [item-likes likes-expanded? (:like actions-by-type)]
-         [item-comments preview-fn? comments-expanded? (:comment actions-by-type) feed! entity-id]
-         [item-tags preview-fn? tags-expanded? (:tag actions-by-type)] ]))))
+         [item-saves saves-expanded? (:save activities)]
+         [item-likes likes-expanded? (:like activities)]
+         [item-comments preview-fn? comments-expanded? (:comment activities) feed! entity-id]
+         [item-tags preview-fn? tags-expanded? (:tag activities)] ]))))
 
 
 (defn display-feed-item [feed! item editing?!]
   (let [entity-id (:entityId item)
         summary (:summary item)
-        item-uri (uri (:uri summary))
-        activities (:activities item)
-        actions-by-type (group-by #(keyword (:type %)) (flatten-activity item))]
+        item-uri (uri (:uri summary))]
     (fn []
       [:div.feed-item
        [:div.item-name 
@@ -213,16 +204,12 @@
         [:div.item-img-box 
          [:a {:href (str item-uri) :taget "_blank"} [:img.item-img {:src (:imageUri summary)}]]]
         [:p.item-desc (:description summary)]]
-       [item-tags-summary (:tag actions-by-type)]
+       [item-tags-summary (-> item :activities :tag)]
        [item-activities feed! item editing?!]])))
 
 
 (defn authority-actions-of-type [authority-id type item]
-  (->> item 
-       flatten-activity
-       (group-by #(keyword (:type %)))
-       type
-       (filter #(= authority-id (:authorityId %)))))
+  (filter #(= authority-id (:authorityId %)) (-> item :activities type)))
 
 (defn tags-as-string [authority-id item]
   (string/join " " (map :value (authority-actions-of-type authority-id :tag item))))
@@ -230,7 +217,7 @@
 ;; TODO - Use https://clj-commons.org/camel-snake-kebab/
 (defn edit-item [authority-id item]
   (let [summary (:summary item)
-        tags (group-by #(keyword (:type %)) (flatten-activity item))] 
+        tags (-> item :activities :tag)] 
     {:entityId (:entityId item)
      :name (:name summary)
      :imageUri (:imageUri summary)
