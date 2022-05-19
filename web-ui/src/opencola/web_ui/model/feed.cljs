@@ -9,8 +9,8 @@
 (defn set-query [feed query]
   (if query (assoc-in feed [:query] query)))
 
-(defn item-to-view-model [item]
-  (update item 
+(defn model-to-view-item [model-item]
+  (update model-item 
           :activities
           (fn [activities]
             (->> activities
@@ -22,8 +22,17 @@
 
 (defn feed-to-view-model [feed query]
   (-> feed 
-      (update :results #(map item-to-view-model %))
+      (update :results #(map model-to-view-item %))
       (set-query query)))
+
+
+(defn update-feed-item [feed! view-item]
+  (let [entity-id (:entityId view-item)
+        updated-feed (update-in 
+                      @feed! 
+                      [:results]
+                      #(map (fn [i] (if (= entity-id (:entityId i)) view-item i)) %))]
+    (reset! feed! updated-feed)))
 
 
 (defn get-feed [query feed!]
@@ -42,13 +51,8 @@
 
 ;; TODO: Break out view and model here - feed should be controlled by model, but editing should be controlled
 ;; by view. 
-(defn comment-handler [feed! editing?! item]
-  (let [entity-id (:entityId item)
-        updated-feed (update-in 
-                      @feed! 
-                      [:results]
-                      #(map (fn [i] (if (= entity-id (:entityId i)) item i)) %))]
-    (reset! feed! updated-feed))
+(defn comment-handler [feed! editing?! model-item]
+  (update-feed-item feed! (model-to-view-item model-item))
   (reset! editing?! false))
 
 (defn add-comment [feed! entity-id editing?! text]
@@ -56,15 +60,6 @@
              {:text text }
              #(comment-handler feed! editing?! %)
              #(set-error-from-result feed! %)))
-
-(defn update-feed-item [feed! item]
-  (let [entity-id (:entityId item)
-        view-model (item-to-view-model item)
-        updated-feed (update-in 
-                      @feed! 
-                      [:results]
-                      #(map (fn [i] (if (= entity-id (:entityId i)) view-model i)) %))]
-    (reset! feed! updated-feed)))
 
 (defn update-item-error-handler [feed! response]
   (set-error-from-result feed! response))
@@ -75,10 +70,22 @@
   (ajax/POST 
    (str "/entity/" (:entityId item))
    item
-   #(do (update-feed-item feed! %)
+   #(do (update-feed-item feed! (model-to-view-item %))
         (reset! editing?! false))
    #(set-error-from-result feed! %)))
 
+(defn get-item [feed entity-id]
+  (->> feed :results (some #(if (= entity-id (:entityId %)) %))))
+
+(defn remove-comment [item comment-id]
+  (update-in item 
+             [:activities :comment]
+             (fn [comments]
+               (filterv #(not= comment-id (:id %)) comments))))
+
 (defn delete-comment [feed! entity-id comment-id]  
-  (let [item (->> @feed! :results (some #(if (= entity-id (:entityId %)) %)))]
-    (println item)))
+  (let [item (get-item @feed! entity-id)]
+    (ajax/DELETE
+     (str "/comment/" comment-id)
+     #(update-feed-item feed! (remove-comment item comment-id))
+     #(set-error-from-result feed! %))))

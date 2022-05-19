@@ -166,3 +166,7 @@ body {
     color: red;
 }
 
+.delete-button {
+    float: right;
+}
+

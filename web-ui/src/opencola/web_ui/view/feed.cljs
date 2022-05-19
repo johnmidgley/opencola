@@ -58,7 +58,7 @@
          [:textarea.comment-text-edit {:type "text"
                                        :value @text!
                                        :on-change #(reset! text! (-> % .-target .-value))}]
-        [:button {:on-click #(feed/add-comment feed! entity-id expanded?! @text!)} "Save"]
+        [:button {:on-click #(feed/add-comment feed! entity-id expanded?! @text!)} "Save"] " "
         [:button {:on-click #(reset! expanded?! false)} "Cancel"]]))))
 
 (defn action-summary [name toggle-fn actions]
@@ -76,9 +76,7 @@
         authority-name " " (format-time epoch-second) 
         (if (= authority-id root-authority-id)
           [:span " " 
-           [:span {:on-click #(feed/delete-comment feed! entity-id comment-id )} [action-img "delete"]] 
-           inline-divider 
-           [action-img "edit"]])
+           [:span {:on-click #(feed/delete-comment feed! entity-id comment-id)} [action-img "delete"]]])
         ":"]
        [:div.item-comment-text text]]))
 
@@ -183,7 +181,6 @@
          [action-summary "like" (partial toggle likes-expanded?) (:like activities)] inline-divider
          [action-summary "comment" (partial toggle comments-expanded?) (:comment activities)] inline-divider
          [action-summary "tag" (partial toggle tags-expanded?) (:tag activities)] inline-divider
-         [delete-control feed! entity-id] inline-divider
          [edit-control editing?!] 
          [item-saves saves-expanded? (:save activities)]
          [item-likes likes-expanded? (:like activities)]
@@ -275,7 +272,8 @@
        [description-edit-control edit-item!]
        [tags-edit-control edit-item!]
        [:button {:on-click #(feed/update-entity feed! editing?! @edit-item!)} "Save"] " "
-       [:button {:on-click #(reset! editing?! false)} "Cancel"]])))
+       [:button {:on-click #(reset! editing?! false)} "Cancel"] " "
+       [:button.delete-button {:on-click #(feed/delete-entity feed! entity-id)} "Delete"]])))
 
 
 

@@ -60,6 +60,13 @@ fun Application.configureRouting(application: app) {
             addComment(call, authority, entityStore, peerRouter)
         }
 
+        delete("/comment/{commentId}"){
+            val authority by injector.instance<Authority>()
+            val entityStore by injector.instance<EntityStore>()
+            // TODO: Remove call and parse comment id out here, so handlers don't need to know anything about ktor
+            deleteComment(call, authority, entityStore)
+        }
+
         get("/transactions/{authorityId}"){
             val entityStore by injector.instance<EntityStore>()
             val peerRouter by injector.instance<PeerRouter>()

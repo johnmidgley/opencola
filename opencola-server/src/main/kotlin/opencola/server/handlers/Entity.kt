@@ -136,3 +136,10 @@ suspend fun addComment(call: ApplicationCall, authority: Authority, entityStore:
         .firstOrNull()
         .nullOrElse { call.respond(it) }
 }
+
+suspend fun deleteComment(call: ApplicationCall, authority: Authority, entityStore: EntityStore) {
+    val commentId = Id.fromHexString(call.parameters["commentId"] ?: throw IllegalArgumentException("No commentId specified"))
+
+    entityStore.deleteEntity(authority.authorityId, commentId)
+    call.respond(HttpStatusCode.OK)
+}
