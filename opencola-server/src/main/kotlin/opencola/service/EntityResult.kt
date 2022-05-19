@@ -40,6 +40,7 @@ data class EntityResult(
 
     @Serializable
     data class Activity(
+        // TODO: Make Authority(id, name, host)
         val authorityId: String,
         val authorityName: String,
         val host: String,
