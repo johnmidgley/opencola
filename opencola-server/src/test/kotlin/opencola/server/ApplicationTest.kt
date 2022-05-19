@@ -57,7 +57,7 @@ class ApplicationTest {
                 assertEquals(authority.authorityId.toString(), activity.authorityId)
 
                 val actions = activity.actions
-                assertEquals(3, actions.size)
+                assertEquals(4, actions.size)
 
                 val trustAction = actions.single { it.type == "trust" }
                 assertEquals(entity.trust.toString(), trustAction.value)

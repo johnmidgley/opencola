@@ -104,9 +104,11 @@
          host :host} save-action]
     [:div.item-save 
      [:span.item-attribution (str authority-name " " (format-time epoch-second))] " "
-     [:a.action-link  {:href (str (data-url host data-id) "/0.html") :target "_blank"} [action-img "archive"]]
-     inline-divider
-     [:a.action-link  {:href (data-url host data-id) :target "_blank"} [action-img "download"]]]))
+     (if data-id
+       [:span
+        [:a.action-link  {:href (str (data-url host data-id) "/0.html") :target "_blank"} [action-img "archive"]]
+        inline-divider
+        [:a.action-link  {:href (data-url host data-id) :target "_blank"} [action-img "download"]]])]))
  
 
 (defn item-saves [expanded?! save-actions]

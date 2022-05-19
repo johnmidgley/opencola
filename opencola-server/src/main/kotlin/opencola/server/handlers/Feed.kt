@@ -62,6 +62,7 @@ fun getDataId(authorityId: Id, facts: List<Fact>) : Id?{
 
 fun factToAction(comments: Map<Id, CommentEntity>, fact: Fact) : Action? {
     return when(fact.attribute) {
+        Type.spec -> Action(ActionType.Save, null, null)
         DataId.spec -> Action(ActionType.Save, fact.decodeValue(), null)
         Trust.spec -> Action(ActionType.Trust, null, fact.decodeValue())
         Like.spec -> Action(ActionType.Like, null, fact.decodeValue())
@@ -72,6 +73,21 @@ fun factToAction(comments: Map<Id, CommentEntity>, fact: Fact) : Action? {
             Action(ActionType.Comment, commentId, comments.getValue(commentId).text)
         }
         else -> null
+    }
+}
+
+fun factsToActions(comments: Map<Id, CommentEntity>, facts: List<Fact>) : List<Action> {
+    val factsByAttribute = facts.groupBy { it.attribute }
+    val dataIdPresent = factsByAttribute[CoreAttribute.DataId.spec] != null
+
+    return factsByAttribute.flatMap { (attribute, facts) ->
+        if(dataIdPresent && attribute == Type.spec) {
+            // An item is "saved" when either it is created (new type property) or archived (new dataId)
+            // When a dataId is present, don't double count the type property
+            emptyList()
+        }
+        else
+            facts.mapNotNull { factToAction(comments, it) }
     }
 }
 
@@ -86,7 +102,8 @@ fun entityActivities(authority: Authority, entity: Entity, comments: Map<Id, Com
             Activity(
                 authority,
                 facts.first().epochSecond!!,
-                facts.mapNotNull { factToAction(comments, it) })
+                factsToActions(comments, facts)
+            )
         }
 }
 
