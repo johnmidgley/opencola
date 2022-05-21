@@ -48,6 +48,11 @@ data class EntityResult(
         val actions: List<Action>,
     ) {
         constructor(authority: Authority, epochSecond: Long, actions: List<Action>) :
-                this(authority.authorityId.toString(), authority.name!!, authority.uri!!.authority ?: "", epochSecond, actions)
+                this(
+                    authority.authorityId.toString(),
+                    authority.name!!,
+                    authority.uri!!.authority ?: "",
+                    epochSecond,
+                    actions)
     }
 }

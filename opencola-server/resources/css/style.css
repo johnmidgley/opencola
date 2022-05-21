@@ -15,6 +15,7 @@ body {
    padding: 10px;
    box-shadow: 5px 5px 5px 5px #EEEEEE;
    -webkit-box-shadow: 5px 5px 5px 5px #EEEEEE;
+   overflow: auto;
 }
 
 .item-img-box {
@@ -66,6 +67,9 @@ body {
     height: 100px;
 }
 
+.activities-summary {
+    padding-top: 5px;
+}
 
 .list-header {
     padding-top: 10px
@@ -76,7 +80,7 @@ body {
 }
 
 .item-comment {
-    padding-top: 10px
+    padding-top: 10px;
 }
 
 .item-saves {
@@ -90,9 +94,8 @@ body {
 .item-comment-text{
    /* outline: #dddddd dashed 1px; */
    background-color: #EAEBE0;
-   margin: 2px;
    border: 20px;
-   padding: 6px;
+   padding: 5px;
    padding-right: 12px;
    border-radius: 6px;
    font-family: "Lucida Console", "Courier New", monospace;
@@ -169,5 +172,13 @@ body {
 
 .delete-button {
     float: right;
+}
+
+.highlight {
+    border-bottom: 2px solid lightgrey;
+}
+
+.delete-button {
+    color: red;
 }
 

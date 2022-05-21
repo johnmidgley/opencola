@@ -25,13 +25,15 @@ suspend fun getEntity(call: ApplicationCall, authority: Authority, entityStore: 
 }
 
 // TODO - investigate delete and then re-add. It seems to "restore" all previous saves. Is this good or bad?
-suspend fun deleteEntity(call: ApplicationCall, authorityId: Id, entityStore: EntityStore) {
+suspend fun deleteEntity(call: ApplicationCall, authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter) {
     val stringId = call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified")
     val entityId = Id.fromHexString(stringId)
 
     logger.info { "Deleting $entityId" }
-    entityStore.deleteEntity(authorityId, entityId)
-    call.respond(HttpStatusCode.OK)
+    entityStore.deleteEntity(authority.authorityId, entityId)
+    getEntityResults(authority, entityStore, peerRouter, listOf(entityId))
+        .firstOrNull()
+        .nullOrElse { call.respond(it) }
 }
 
 @Serializable
@@ -40,6 +42,7 @@ data class UpdateEntityPayload(
     val name: String,
     val imageUri: String,
     val description: String,
+    val like: Boolean?,
     val tags: String,
 )
 
@@ -65,6 +68,7 @@ suspend fun updateEntity(call: ApplicationCall, authority: Authority, entityStor
     entity.name = updateEntityPayload.name
     entity.imageUri = imageUri
     entity.description = updateEntityPayload.description
+    entity.like = updateEntityPayload.like
 
     val tags = updateEntityPayload.tags.split(" ").filter { it.isNotBlank() }.toSet()
     entity.tags = tags
@@ -141,5 +145,17 @@ suspend fun deleteComment(call: ApplicationCall, authority: Authority, entitySto
     val commentId = Id.fromHexString(call.parameters["commentId"] ?: throw IllegalArgumentException("No commentId specified"))
 
     entityStore.deleteEntity(authority.authorityId, commentId)
-    call.respond(HttpStatusCode.OK)
+    call.respondText("{}")
+}
+
+suspend fun saveEntity(call: ApplicationCall, authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter) {
+    val entityId = Id.fromHexString(call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified"))
+
+    val entity = getOrCopyEntity(authority.authorityId, entityStore, entityId)
+        ?: throw IllegalArgumentException("Unable to save unknown entity: $entityId")
+
+    entityStore.updateEntities(entity)
+    getEntityResults(authority, entityStore, peerRouter, listOf(entityId))
+        .firstOrNull()
+        .nullOrElse { call.respond(it) }
 }

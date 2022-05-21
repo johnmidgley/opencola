@@ -74,7 +74,7 @@ class PeerRouter(private val addressBook: AddressBook, private val eventBus: Eve
 
     fun broadcastMessage(path: String, message: Any){
         runBlocking {
-            if(peerIdToStatusMap.values.isNotEmpty())
+            if(peerIdToStatusMap.values.any { it.peer.active })
                 logger.info { "Broadcasting new transaction notification" }
 
             peerIdToStatusMap.values.forEach {

@@ -8,12 +8,11 @@
   ;; TODO: Use url construction methods
   (str (config/get-service-url) path))
 
-
+;; TODO: Abstract common parameters (keywords?, format, response-format)
 (defn GET [path success-handler error-handler]
   (ajax/GET 
    (resolve-service-url path)
-   {
-    :keywords? true
+   {:keywords? true
     :response-format :json
     :handler success-handler
     :error-handler error-handler})) 
@@ -28,7 +27,19 @@
          :handler success-handler
          :error-handler error-handler}))
 
+(defn PUT [path body success-handler error-handler] 
+  (ajax/PUT (resolve-service-url path)
+        {:params body
+         :keywords? true
+         :format :json
+         :response-format :json
+         :handler success-handler
+         :error-handler error-handler}))
+
 (defn DELETE [path success-handler error-handler]
   (ajax/DELETE (resolve-service-url path) 
        {:handler success-handler
+        :keywords? true
+        :format :json
+        :response-format :json
         :error-handler error-handler}))

@@ -34,18 +34,19 @@
                       #(map (fn [i] (if (= entity-id (:entityId i)) view-item i)) %))]
     (reset! feed! updated-feed)))
 
+(defn delete-feed-item [feed! entity-id]
+  (swap! feed! update-in [:results] (fn [results] (remove #(= (:entityId %) entity-id) results))))
+
 
 (defn get-feed [query feed!]
   (ajax/GET (str "feed" "?q=" query) 
             #(reset! feed! (feed-to-view-model % query))
             #(set-error-from-result feed! %)))
 
-(defn delete-entity-handler [feed! entity-id response]
-  (swap! feed! update-in [:results] (fn [results] (remove #(= (:entityId %) entity-id) results))))
-
-(defn delete-entity [feed! entity-id]
+(defn delete-entity [feed! editing?! entity-id]
   (ajax/DELETE (str "entity/" entity-id) 
-               (partial delete-entity-handler feed! entity-id)
+               #(do (update-feed-item feed! (model-to-view-item %))
+                    (if editing?! (reset! editing?! false)))
                #(set-error-from-result feed! %))) 
 
 
@@ -70,11 +71,11 @@
 ;; TODO: editing?! should not be passed in here. Make it part of the actual view model, that gets
 ;; overwritten when reloaded from client. 
 (defn update-entity [feed! editing?! item] 
-  (ajax/POST 
+  (ajax/PUT 
    (str "/entity/" (:entityId item))
    item
    #(do (update-feed-item feed! (model-to-view-item %))
-        (reset! editing?! false))
+        (if editing?! (reset! editing?! false)))
    #(set-error-from-result feed! %)))
 
 (defn get-item [feed entity-id]
@@ -92,3 +93,17 @@
      (str "/comment/" comment-id)
      #(update-feed-item feed! (remove-comment item comment-id))
      #(set-error-from-result feed! %))))
+
+(defn save-entity [feed! view-item]
+  (ajax/POST 
+   (str "/entity/" (:entityId view-item))
+   nil
+   #(update-feed-item feed! (model-to-view-item %))
+   #(set-error-from-result feed! %))  )
+
+(defn like-entity [feed! view-item]
+  (ajax/PUT 
+   (str "/entity/" (:entityId view-item))
+   nil
+   #(update-feed-item feed! (model-to-view-item %))
+   #(set-error-from-result feed! %))  )

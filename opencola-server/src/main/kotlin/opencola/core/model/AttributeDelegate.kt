@@ -16,7 +16,7 @@ class AttributeDelegate<T>(val codec: ByteArrayCodec<T>, val resettable: Boolean
         if(!resettable && getValue(thisRef, property) != null)
              throw IllegalStateException("Attempt to reset a non resettable property: ${property.name}")
 
-        thisRef.setValue(property.name, value.ifNotNullOrElse( { Value(codec.encode(it as T)) }, { Value.emptyValue }))
+        thisRef.setValue(property.name, value.nullOrElse { Value(codec.encode(it as T)) })
     }
 }
 

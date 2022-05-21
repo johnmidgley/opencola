@@ -7,6 +7,7 @@ import java.util.*
 
 //TODO: When serialization is stable, migrate to custom format serialization
 // https://github.com/Kotlin/kotlinx.serialization/blob/master/docs/formats.md#custom-formats-experimental
+// Check out https://dwrensha.github.io/capnproto-java/index.html
 interface StreamSerializer<T> {
     // TODO: Should these just call the byte array codecs and wrap them with size markers?
     fun encode(stream: OutputStream, value: T)

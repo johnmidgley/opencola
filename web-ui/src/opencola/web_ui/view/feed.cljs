@@ -7,6 +7,7 @@
    [cljs-time.coerce :as c]
    [cljs-time.format :as f]
    [lambdaisland.uri :refer [uri]]
+   [cljs.reader :as reader]
    [opencola.web-ui.config :as config]
    [opencola.web-ui.view.search :as search]
    [opencola.web-ui.model.error :as error]
@@ -21,6 +22,25 @@
 
 (defn format-time [epoch-second]
   (f/unparse (f/formatter "yyyy-MM-dd hh:mm") (c/from-long (* epoch-second 1000))))
+
+(defn authority-actions-of-type [authority-id type item]
+  (filter #(= authority-id (:authorityId %)) (-> item :activities type)))
+
+(defn tags-as-string [authority-id item]
+  (string/join " " (map :value (authority-actions-of-type authority-id :tag item))))
+
+;; TODO - Use https://clj-commons.org/camel-snake-kebab/
+(defn edit-item [authority-id item]
+  (let [summary (:summary item)
+        likes (-> item :activities :like)
+        tags (-> item :activities :tag)] 
+    {:entityId (:entityId item)
+     :name (:name summary)
+     :imageUri (:imageUri summary)
+     :description (:description summary)
+     :like (some #(if (= authority-id (:authorityId %)) (reader/read-string (:value %))) likes)
+     :tags (tags-as-string authority-id item)}))
+
 
 (defn action-img [name]
   [:img.action-img {:src (str "../img/" name ".png") :alt name :title name}])
@@ -42,10 +62,6 @@
     (str (if (not= host "") "http://") host "/data/" data-id))) 
 
 
-(defn delete-control [feed! entity-id]
-  [:span.delete-entity {:on-click #(feed/delete-entity feed! entity-id)} (action-img "delete")])
-
-
 (defn edit-control [editing?!]
   [:span.delete-entity {:on-click #(reset! editing?! true)} (action-img "edit")])
 
@@ -54,16 +70,15 @@
   (let [text! (atom text)]
     (fn []
       (if @expanded?!
-        [:div.item-comment-text
-         [:textarea.comment-text-edit {:type "text"
-                                       :value @text!
-                                       :on-change #(reset! text! (-> % .-target .-value))}]
-        [:button {:on-click #(feed/add-comment feed! entity-id comment-id @text! expanded?!)} "Save"] " "
-        [:button {:on-click #(reset! expanded?! false)} "Cancel"]
-        [:button.delete-button {:on-click #(feed/delete-comment feed! entity-id comment-id)} "Delete"]]))))
-
-(defn action-summary [name toggle-fn actions]
-  [:span {:on-click toggle-fn} (action-img name) " " (count actions)]) 
+        [:div.item-comment
+         [:div.item-comment-text
+          [:textarea.comment-text-edit {:type "text"
+                                        :value @text!
+                                        :on-change #(reset! text! (-> % .-target .-value))}]
+          [:button {:on-click #(feed/add-comment feed! entity-id comment-id @text! expanded?!)} "Save"] " "
+          [:button {:on-click #(reset! expanded?! false)} "Cancel"]
+          (if comment-id
+            [:button.delete-button {:on-click #(feed/delete-comment feed! entity-id comment-id)} "Delete"])]]))))
 
 (defn item-comment [feed! entity-id comment-action]
 (let [editing?! (atom false)]
@@ -89,11 +104,8 @@
         comment-actions (if preview? (take 3 comment-actions) comment-actions)]
     (if (or @expanded?! (and preview? (not-empty comment-actions)))
       [:div.item-comments
-       [:span 
-        {:on-click (fn [] (swap! expanded?! #(not %)))}
-        "Comments "
-        [action-img (if @expanded?! "collapse" "expand")]]
-       [comment-control feed! entity-id nil "" expanded?!] 
+       [:span {:on-click (fn [] (swap! expanded?! #(not %)))} "Comments"]
+       #_[comment-control feed! entity-id nil "" expanded?!] 
        (doall (for [comment-action comment-actions]
                 ^{:key comment-action} [item-comment feed! entity-id comment-action]))])))
 
@@ -172,26 +184,52 @@
             (reset! a! false))))
   (swap! atom! #(not %)))
 
+(defn action-summary [feed! key action-expanded? activities on-click]
+  (let [authority-id (:authorityId @feed!)
+        actions (key activities)
+        expanded? (key action-expanded?)
+        highlight (some #(= authority-id (:authorityId %)) actions)]
+    [:span 
+     [:span {:class (if highlight "highlight") :on-click on-click} (action-img (name key))]
+     [:span {:on-click #(toggle-atom (map second action-expanded?) expanded?)} " " (count actions) 
+      (action-img (if @expanded? "hide" "show"))]])) 
+
+(defn save-item [feed! item]
+  (let [authority-id (:authorityId @feed!)
+        actions (-> item :activities :save)
+        saved? (some #(= authority-id (:authorityId %)) actions)]
+    (if (not saved?)
+      (feed/save-entity feed! item))))
+
+(defn like-item [feed! item]
+   (let [authority-id (:authorityId @feed!)
+         actions (-> item :activities :like)
+         edit-item (edit-item authority-id item)
+         like (some #(if (= authority-id (:authorityId %)) (reader/read-string (:value %))) actions)]
+     (feed/update-entity feed! nil (update-in edit-item [:like ] #(if % nil true)))))
+
 (defn item-activities [feed! item editing?!]
-  (let [saves-expanded? (atom false)
-        likes-expanded? (atom false)
-        tags-expanded? (atom false)
-        comments-expanded? (atom false)
-        preview-fn? (fn [] (every? #(not @%) [saves-expanded? likes-expanded? tags-expanded? comments-expanded?]))
-        toggle (partial toggle-atom [saves-expanded? likes-expanded? tags-expanded? comments-expanded?])] 
+  (let [action-expanded? (apply hash-map (mapcat #(vector % (atom false)) [:save :like :tag :comment]))
+        commenting? (atom false)
+        preview-fn? (fn [] (every? #(not @%) (map second action-expanded?)))] 
     (fn [] 
       (let [entity-id (:entityId item)
             activities (:activities item)]  
         [:div.activities-summary
-         [action-summary "save" (partial toggle saves-expanded?) (:save activities)] inline-divider
-         [action-summary "like" (partial toggle likes-expanded?) (:like activities)] inline-divider
-         [action-summary "comment" (partial toggle comments-expanded?) (:comment activities)] inline-divider
-         [action-summary "tag" (partial toggle tags-expanded?) (:tag activities)] inline-divider
+         [action-summary feed! :save action-expanded? activities #(save-item feed! item)]
+         inline-divider
+         [action-summary feed! :like action-expanded? activities #(like-item feed! item)] 
+         inline-divider
+         [action-summary feed! :comment action-expanded? activities #(swap! commenting? not)]
+         inline-divider
+         [action-summary feed! :tag action-expanded?  activities #(println "tag")] 
+         inline-divider
          [edit-control editing?!] 
-         [item-saves saves-expanded? (:save activities)]
-         [item-likes likes-expanded? (:like activities)]
-         [item-comments preview-fn? comments-expanded? (:comment activities) feed! entity-id]
-         [item-tags preview-fn? tags-expanded? (:tag activities)] ]))))
+         [comment-control feed! entity-id nil "" commenting?] 
+         [item-saves (:save action-expanded?) (:save activities)]
+         [item-likes (:like action-expanded?) (:like activities)]
+         [item-comments preview-fn? (:comment action-expanded?) (:comment activities) feed! entity-id]
+         [item-tags preview-fn? (:tag action-expanded?) (:tag activities)] ]))))
 
 
 (defn display-feed-item [feed! item editing?!]
@@ -209,23 +247,6 @@
         [:p.item-desc (:description summary)]]
        [item-tags-summary (-> item :activities :tag)]
        [item-activities feed! item editing?!]])))
-
-
-(defn authority-actions-of-type [authority-id type item]
-  (filter #(= authority-id (:authorityId %)) (-> item :activities type)))
-
-(defn tags-as-string [authority-id item]
-  (string/join " " (map :value (authority-actions-of-type authority-id :tag item))))
-
-;; TODO - Use https://clj-commons.org/camel-snake-kebab/
-(defn edit-item [authority-id item]
-  (let [summary (:summary item)
-        tags (-> item :activities :tag)] 
-    {:entityId (:entityId item)
-     :name (:name summary)
-     :imageUri (:imageUri summary)
-     :description (:description summary)
-     :tags (tags-as-string authority-id item)}))
 
 
 (defn name-edit-control [edit-item!]
@@ -267,10 +288,12 @@
 
 ;; TODO: Use keys to get 
 (defn edit-feed-item [feed! item editing?!]
-  (let [entity-id (:entityId item)
+  (let [authority-id (:authorityId @feed!)
+        entity-id (:entityId item)
         summary (:summary item)
         item-uri (uri (:uri summary))
-        edit-item! (atom (edit-item (:authorityId @feed!) item))]
+        edit-item! (atom (edit-item (:authorityId @feed!) item))
+        deletable? (some #(= authority-id (:authorityId %)) (-> item :activities :save))]
     (fn []
       [:div.feed-item
        [name-edit-control edit-item!]
@@ -279,7 +302,8 @@
        [tags-edit-control edit-item!]
        [:button {:on-click #(feed/update-entity feed! editing?! @edit-item!)} "Save"] " "
        [:button {:on-click #(reset! editing?! false)} "Cancel"] " "
-       [:button.delete-button {:on-click #(feed/delete-entity feed! entity-id)} "Delete"]])))
+       (if deletable?
+           [:button.delete-button {:on-click #(feed/delete-entity feed! editing?! entity-id)} "Delete"])])))
 
 
 

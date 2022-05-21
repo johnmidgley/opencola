@@ -1,20 +1,17 @@
 package opencola.core.storage
 
-import opencola.core.getActorEntity
 import opencola.core.TestApplication
 import opencola.core.config.getApplications
 import opencola.core.content.TextExtractor
 import opencola.core.event.EventBus
+import opencola.core.getActorEntity
 import opencola.core.model.*
 import opencola.core.security.Signator
-import opencola.core.storage.EntityStore.*
+import opencola.core.storage.EntityStore.TransactionOrder
 import org.kodein.di.instance
 import java.net.URI
 import java.time.Instant
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class EntityStoreTest {
     private val app = TestApplication.instance
@@ -243,5 +240,68 @@ class EntityStoreTest {
         val resource2 = entityStore.getEntity(authority.authorityId, resource.entityId) as? ResourceEntity
         assertNotNull(resource2)
         assertEquals(0, resource2.commentIds.count())
+    }
+
+    @Test
+    fun testSetAndNullFactsSimple(){
+        testSetAndNullProperties(getFreshSimpleEntityStore())
+    }
+
+    @Test
+    fun testSetAndNullFactsExposed() {
+        testSetAndNullProperties(getFreshExposeEntityStore())
+    }
+
+    private fun testSetAndNullProperties(entityStore: EntityStore) {
+        val resource = ResourceEntity(
+            authority.authorityId, URI("http://opencola.io/"), "Name", "Description",
+            "Text", URI("http://image.com"), 0.5F, setOf("hi"), true, .7F)
+
+        entityStore.updateEntities(resource)
+        val resource1 = entityStore.getEntity(authority.authorityId, resource.entityId) as? ResourceEntity
+        assertNotNull(resource1)
+        assertEquals(resource.authorityId, resource1.authorityId)
+        assertEquals(resource.entityId, resource1.entityId)
+        assertEquals(resource.uri, resource1.uri)
+        assertEquals(resource.name, resource1.name)
+        assertEquals(resource.description, resource1.description)
+        assertEquals(resource.text, resource1.text)
+        assertEquals(resource.imageUri, resource1.imageUri)
+        assertEquals(resource.trust, resource1.trust)
+        assertEquals(resource.tags, resource1.tags)
+        assertEquals(resource.like, resource1.like)
+        assertEquals(resource.rating, resource1.rating)
+
+        assertFails{ resource1.uri = URI("https://test") }
+        resource1.name = null
+        resource1.description = null
+        resource1.text = null
+        resource1.imageUri = null
+        resource1.trust = null
+        resource1.tags = emptySet()
+        resource1.like = null
+        resource1.rating = null
+        entityStore.updateEntities(resource1)
+
+        val resource2 = entityStore.getEntity(authority.authorityId, resource.entityId) as? ResourceEntity
+        assertNotNull(resource2)
+        assertEquals(resource.authorityId, resource2.authorityId)
+        assertEquals(resource.entityId, resource2.entityId)
+        assertEquals(resource.uri, resource2.uri)
+        assertNull(resource2.name)
+        assertNull(resource2.description)
+        assertNull(resource2.text)
+        assertNull(resource2.imageUri)
+        assertNull(resource2.trust)
+        assertEquals(emptySet(), resource1.tags)
+        assertNull(resource2.like)
+        assertNull(resource2.rating)
+
+        resource2.like = null
+        val transaction = entityStore.updateEntities(resource2)
+        // Nothing new set, so transaction shouldn't be created
+        assertNull(transaction)
+
+
     }
 }

@@ -136,10 +136,15 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
             MultiValueListItem(key, storableValue.bytes).toValue()
     }
 
-    private fun setValue(propertyName: String, key: UUID?, value: Value?): Fact {
+    private fun setValue(propertyName: String, key: UUID?, value: Value?): Fact? {
         val (attribute, currentFact) = getFact(propertyName, key, value)
 
-        if (currentFact != null) {
+        if(currentFact == null){
+            if(value == null)
+                // Setting null on a non-existing fact does nothing
+                return null
+        }
+        else {
             if (currentFact.value == value) {
                 // Fact has not changed, so no need to create a new one
                 return currentFact
@@ -180,11 +185,11 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         return null
     }
 
-    internal fun setValue(propertyName: String, value: Value?) : Fact {
+    internal fun setValue(propertyName: String, value: Value?) : Fact? {
         return setValue(propertyName, null, value)
     }
 
-    internal fun setMultiValue(propertyName: String, key: UUID, value: Value?) : Fact {
+    internal fun setMultiValue(propertyName: String, key: UUID, value: Value?) : Fact? {
         return setValue(propertyName, key, value)
     }
 
@@ -203,11 +208,11 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
     companion object Factory {
         private val logger = KotlinLogging.logger("Entity")
 
-        val attributeGroupingKey: (Fact) -> Any? = { fact ->
+        private val attributeGroupingKey: (Fact) -> Any? = { fact ->
             when (fact.attribute.type) {
-                SingleValue -> null
-                MultiValueSet -> fact.value
-                MultiValueList -> MultiValueListItem.keyOf(fact.value)
+                SingleValue -> fact.attribute
+                MultiValueSet -> Pair(fact.attribute, fact.value)
+                MultiValueList -> Pair(fact.attribute,MultiValueListItem.keyOf(fact.value))
             }
         }
 

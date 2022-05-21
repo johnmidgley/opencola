@@ -46,6 +46,9 @@ class EntityTest {
 
         entity.rating = rating
         assertEquals(rating, entity.rating)
+
+        entity.like = null
+        assertNull(entity.like)
     }
 
     @Test
@@ -83,4 +86,39 @@ class EntityTest {
         // then test here that setting a new value results in a new fact
     }
 
+    @Test
+    fun testNonRetractedFacts(){
+        val authorityId = Id.new()
+        val entityId = Id.new()
+
+        val fact0 = Fact(authorityId, entityId, CoreAttribute.Type.spec, Value("ResourceEntity".toByteArray()), Operation.Add, 0, 0)
+
+        // SingleValue Attribute
+        val fact1 = Fact(authorityId, entityId, CoreAttribute.DataId.spec, Value(Id.encode(Id.new())), Operation.Add, 1, 1)
+        val fact2 = Fact(authorityId, entityId, CoreAttribute.DataId.spec, Value(Id.encode(Id.new())), Operation.Retract, 2, 2)
+        val fact3 = Fact(authorityId, entityId, CoreAttribute.DataId.spec, Value(Id.encode(Id.new())), Operation.Add, 3, 3)
+        val fact4 = Fact(authorityId, entityId, CoreAttribute.DataId.spec, Value(Id.encode(Id.new())), Operation.Add, 4, 3)
+
+        // MultiValueSet
+        val fact5 = Fact(authorityId, entityId, CoreAttribute.Tags.spec, Value("tag1".toByteArray()), Operation.Add, 5, 5)
+        val fact6 = Fact(authorityId, entityId, CoreAttribute.Tags.spec, Value("tag2".toByteArray()), Operation.Add, 6, 6)
+        val fact7 = Fact(authorityId, entityId, CoreAttribute.Tags.spec, Value("tag1".toByteArray()), Operation.Retract, 7, 7)
+
+        val facts = listOf(fact0, fact1, fact2, fact3, fact4, fact5, fact6, fact7)
+
+        val entity = Entity.fromFacts(facts) as? ResourceEntity
+        assertNotNull(entity)
+        val currentFacts = entity.getCurrentFacts()
+        assertEquals(3, currentFacts.size)
+        assertContains(currentFacts, fact0)
+        assertContains(currentFacts, fact4)
+        assertContains(currentFacts, fact6)
+
+        val nonRetractedFacts = entity.getNonRetractedFacts()
+        assertEquals(4, nonRetractedFacts.size)
+        assertContains(nonRetractedFacts, fact0)
+        assertContains(nonRetractedFacts, fact3)
+        assertContains(nonRetractedFacts, fact4)
+        assertContains(nonRetractedFacts, fact6)
+    }
 }
