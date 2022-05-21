@@ -208,9 +208,25 @@
          like (some #(if (= authority-id (:authorityId %)) (reader/read-string (:value %))) actions)]
      (feed/update-entity feed! nil (update-in edit-item [:like ] #(if % nil true)))))
 
+
+;; TODO - Combing with tags-edit-control?
+(defn tags-control [feed! item tagging?!]
+  (let [edit-item!  (atom (edit-item (:authorityId @feed!) item))]
+    (fn []
+      (if @tagging?!
+        [:div.tags-edit-control
+         [:div.field-header "Tags:"]
+         [:input.tags-text
+          {:type "text"
+           :value (:tags @edit-item!)
+           :on-change #(swap! edit-item! assoc-in [:tags] (-> % .-target .-value))}]
+         [:button {:on-click #(feed/update-entity feed! tagging?! @edit-item!)} "Save"] " "
+         [:button {:on-click #(reset! tagging?! false)} "Cancel"] " "]))))
+
 (defn item-activities [feed! item editing?!]
   (let [action-expanded? (apply hash-map (mapcat #(vector % (atom false)) [:save :like :tag :comment]))
         commenting? (atom false)
+        tagging? (atom false)
         preview-fn? (fn [] (every? #(not @%) (map second action-expanded?)))] 
     (fn [] 
       (let [entity-id (:entityId item)
@@ -222,10 +238,11 @@
          inline-divider
          [action-summary feed! :comment action-expanded? activities #(swap! commenting? not)]
          inline-divider
-         [action-summary feed! :tag action-expanded?  activities #(println "tag")] 
+         [action-summary feed! :tag action-expanded?  activities #(swap! tagging? not)] 
          inline-divider
          [edit-control editing?!] 
-         [comment-control feed! entity-id nil "" commenting?] 
+         [comment-control feed! entity-id nil "" commenting?]
+         [tags-control feed! item tagging?]
          [item-saves (:save action-expanded?) (:save activities)]
          [item-likes (:like action-expanded?) (:like activities)]
          [item-comments preview-fn? (:comment action-expanded?) (:comment activities) feed! entity-id]
@@ -300,8 +317,6 @@
        [image-uri-edit-control edit-item!]
        [description-edit-control edit-item!]
        [tags-edit-control edit-item!]
-       [:button {:on-click #(feed/update-entity feed! editing?! @edit-item!)} "Save"] " "
-       [:button {:on-click #(reset! editing?! false)} "Cancel"] " "
        (if deletable?
            [:button.delete-button {:on-click #(feed/delete-entity feed! editing?! entity-id)} "Delete"])])))
 
