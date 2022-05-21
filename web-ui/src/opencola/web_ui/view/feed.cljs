@@ -39,7 +39,8 @@
      :imageUri (:imageUri summary)
      :description (:description summary)
      :like (some #(if (= authority-id (:authorityId %)) (reader/read-string (:value %))) likes)
-     :tags (tags-as-string authority-id item)}))
+     :tags (tags-as-string authority-id item)
+     :comment ""}))
 
 
 (defn action-img [name]
@@ -297,11 +298,20 @@
 (defn description-edit-control [edit-item!]
   [:div.description-edit-control
        [:div.field-header "Description:"]
-       [:p.item-desc [:textarea.item-desc-edit
-                      {:type "text"
-                       :value (:description @edit-item!)
-                       :on-change #(swap! edit-item! assoc-in [:description] (-> % .-target .-value))}]]])
+       [:div.item-desc 
+        [:textarea.item-desc-edit
+         {:type "text"
+          :value (:description @edit-item!)
+          :on-change #(swap! edit-item! assoc-in [:description] (-> % .-target .-value))}]]])
 
+(defn comment-edit-control [edit-item!]
+  [:div.comment-edit-control
+   [:div.field-header "Comment:"]
+   [:div
+    [:textarea.comment-text-edit 
+     {:type "text"
+      :value (:comment @edit-item!)
+      :on-change #(swap! edit-item! assoc-in [:comment] (-> % .-target .-value))}]]])
 
 ;; TODO: Use keys to get 
 (defn edit-feed-item [feed! item editing?!]
@@ -317,6 +327,9 @@
        [image-uri-edit-control edit-item!]
        [description-edit-control edit-item!]
        [tags-edit-control edit-item!]
+       [comment-edit-control edit-item!]
+       [:button {:on-click #(feed/update-entity feed! editing?! @edit-item!)} "Save"] " "
+       [:button {:on-click #(reset! editing?! false)} "Cancel"] " "
        (if deletable?
            [:button.delete-button {:on-click #(feed/delete-entity feed! editing?! entity-id)} "Delete"])])))
 

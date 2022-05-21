@@ -111,6 +111,10 @@ body {
 }
 
 
+.item-uri-edit-control {
+    margin-top: 10px;
+}
+
 .item-desc-edit {
     width: 100%;
     height: 200px;

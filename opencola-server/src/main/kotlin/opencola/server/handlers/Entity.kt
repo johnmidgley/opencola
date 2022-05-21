@@ -44,6 +44,7 @@ data class UpdateEntityPayload(
     val description: String,
     val like: Boolean?,
     val tags: String,
+    val comment: String,
 )
 
 suspend fun updateEntity(call: ApplicationCall, authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter){
@@ -73,7 +74,11 @@ suspend fun updateEntity(call: ApplicationCall, authority: Authority, entityStor
     val tags = updateEntityPayload.tags.split(" ").filter { it.isNotBlank() }.toSet()
     entity.tags = tags
 
-    entityStore.updateEntities(entity)
+    if(updateEntityPayload.comment.isNotBlank())
+        entityStore.updateEntities(entity, CommentEntity(authorityId, entity.entityId, updateEntityPayload.comment))
+    else
+        entityStore.updateEntities(entity)
+
     getEntityResult(authority, entityStore, peerRouter, entity.entityId)
         .nullOrElse { call.respond(it) }
 }
