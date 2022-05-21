@@ -106,7 +106,6 @@
     (if (or @expanded?! (and preview? (not-empty comment-actions)))
       [:div.item-comments
        [:span {:on-click (fn [] (swap! expanded?! #(not %)))} "Comments"]
-       #_[comment-control feed! entity-id nil "" expanded?!] 
        (doall (for [comment-action comment-actions]
                 ^{:key comment-action} [item-comment feed! entity-id comment-action]))])))
 
@@ -115,18 +114,20 @@
          epoch-second :epochSecond 
          data-id :id
          host :host} save-action]
-    [:div.item-save 
-     [:span.item-attribution (str authority-name " " (format-time epoch-second))] " "
-     (if data-id
-       [:span
-        [:a.action-link  {:href (str (data-url host data-id) "/0.html") :target "_blank"} [action-img "archive"]]
-        inline-divider
-        [:a.action-link  {:href (data-url host data-id) :target "_blank"} [action-img "download"]]])]))
+    [:tr.item-attribution
+     [:td authority-name " "]
+     [:td (format-time epoch-second)]
+     [:td
+      (if data-id
+        [:span
+         [:a.action-link  {:href (str (data-url host data-id) "/0.html") :target "_blank"} [action-img "archive"]]
+         inline-divider
+         [:a.action-link  {:href (data-url host data-id) :target "_blank"} [action-img "download"]]])]]))
  
 
 (defn item-saves [expanded?! save-actions]
   (if @expanded?!
-    [:div.item-saves 
+    [:table.item-saves 
      "Saves:"
      (doall (for [save-action save-actions]
               ^{:key save-action} [item-save save-action]))]))
@@ -135,18 +136,13 @@
   [:span.tag name])
 
 
-(defn item-tag [tag-action]
-  (let [{authority-name :authorityName
-         epoch-second :epochSecond} tag-action] 
-    [:div.item-tag
-     [:span.item-attribution (str authority-name " " (format-time epoch-second))] " " (tag (:value tag-action))]))
-
 (defn item-list [name expanded?! actions item-action]
   (if @expanded?!
     [(keyword (str "div.item-" (lower-case name)))
      [:div.list-header (str name ":")]
      (doall (for [action actions]
               ^{:key action} [item-action action]))]))
+
 
 (defn item-tags-summary [actions]
   (when (not-empty actions)
@@ -155,11 +151,20 @@
                 (doall (for [action actions]
                          ^{:key action} [tag (:value action)])))]))
 
+(defn item-tag [tag-action]
+  (let [{authority-name :authorityName
+         epoch-second :epochSecond} tag-action] 
+    [:tr.item-attribution
+     [:td authority-name]
+     [:td (format-time epoch-second)]
+     [:td (tag (:value tag-action))]]))
+
+
 
 (defn item-tags [preview-fn? expanded?! actions]
   (if @expanded?!
     [:div.item-tags
-     [:div.list-header "Tags:"]
+     [:table.list-header "Tags:"]
      (doall (for [action actions]
               ^{:key action} [item-tag action]))]))
 
@@ -167,13 +172,14 @@
 (defn item-like [like-action]
   (let [{authority-name :authorityName 
          epoch-second :epochSecond } like-action]
-    [:div.item-like 
-     [:span.item-attribution (str authority-name " " (format-time epoch-second))]]))
+    [:tr.item-attribution 
+     [:td (str authority-name)]
+     [:td (format-time epoch-second)]]))
 
 ;; TODO: Templatize this - same for saves and comments
 (defn item-likes [expanded?! like-actions]
   (if (and @expanded?!) 
-      [:div.item-likes 
+      [:table.item-likes 
        "Likes:"
        (doall (for [like-action like-actions]
                 ^{:key like-action} [item-like like-action]))]))
