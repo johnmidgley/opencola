@@ -158,8 +158,15 @@ body {
     padding: 3px;
     padding-left: 15px;
     padding-right: 15px;
-    border-radius: 20px;
-    //font-family: "Lucida ConsoleTimes", "Courier New", monospace;
+    border-radius: 15px;
+}
+
+.tag-cell {
+    padding: 3px;
+}
+
+td {
+    padding-right: 10px;
 }
 
 .tags {
@@ -184,5 +191,9 @@ body {
 
 .delete-button {
     color: red;
+}
+
+.tags-edit-control {
+    margin-top: 10px;
 }
 

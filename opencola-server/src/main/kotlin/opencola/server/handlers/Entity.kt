@@ -31,9 +31,14 @@ suspend fun deleteEntity(call: ApplicationCall, authority: Authority, entityStor
 
     logger.info { "Deleting $entityId" }
     entityStore.deleteEntity(authority.authorityId, entityId)
-    getEntityResults(authority, entityStore, peerRouter, listOf(entityId))
-        .firstOrNull()
-        .nullOrElse { call.respond(it) }
+    val entity = getEntityResults(authority, entityStore, peerRouter, listOf(entityId)).firstOrNull()
+
+    if(entity == null)
+        // Need to return something in JSON. Sending an {} means that the entity has been fully deleted (i.e. no other
+        // peers have the item, so this is a final delete)
+        call.respond("{}")
+    else
+        call.respond(entity)
 }
 
 @Serializable
