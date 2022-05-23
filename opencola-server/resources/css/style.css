@@ -6,6 +6,12 @@ body {
     margin-bottom: 20px;
 }
 
+.search-header:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
 .feed {
     border: 10px;
 }
@@ -20,13 +26,9 @@ body {
 
 .item-img-box {
     float: left;
-    //width: 150px;
-    height: 100px;
     overflow: hidden;
     margin-right: 10px;
     background: #F0F0F0;
-    margin-bottom: 10px;
-
 }
 
 /* Clear floats after the columns */
@@ -59,8 +61,12 @@ body {
 .item-link {
     color: darkblue;
     text-decoration: none;
-    font-size: 120%;
     width: 100%
+}
+
+.item-name {
+    font-size: 120%;
+    width: 100% 
 }
 
 .item-img {
@@ -197,3 +203,11 @@ td {
     margin-top: 10px;
 }
 
+.add-item {
+    float: right;
+    padding-top: 50px;
+}
+
+.new-post {
+    height: 25px;
+}

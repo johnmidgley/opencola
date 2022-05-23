@@ -45,8 +45,11 @@
 
 (defn delete-entity [feed! editing?! entity-id]
   (ajax/DELETE (str "entity/" entity-id) 
-               #(do (update-feed-item feed! (model-to-view-item %))
-                    (if editing?! (reset! editing?! false)))
+               (fn [model-item]
+                 (if (empty? model-item)
+                   (delete-feed-item feed! entity-id)
+                   (update-feed-item feed! (model-to-view-item model-item)))
+                 (if editing?! (reset! editing?! false)))
                #(set-error-from-result feed! %))) 
 
 

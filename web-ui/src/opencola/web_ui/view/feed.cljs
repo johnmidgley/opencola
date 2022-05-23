@@ -264,18 +264,34 @@
          [item-comments preview-fn? (:comment action-expanded?) (:comment activities) feed! entity-id]]))))
 
 
+(defn item-name [summary]
+  (let [item-uri (:uri summary)
+        host (:host (uri item-uri))
+        name (:name summary)]
+    (if (empty? item-uri)
+      [:div.item-name name]
+    [:div.item-name 
+     [:a.item-link {:href (str item-uri) :target "_blank"} name]
+     [:div.item-host host]])))
+
+(defn item-image [summary]
+  (let [item-uri (:uri summary)
+        image-uri (:imageUri summary)
+        img [:img.item-img {:src image-uri}] ]
+    [:div.item-img-box 
+     (if (empty? item-uri)
+       img
+       [:a {:href item-uri :target "_blank"} img])]))
+
 (defn display-feed-item [feed! item editing?!]
   (let [entity-id (:entityId item)
         summary (:summary item)
         item-uri (uri (:uri summary))]
     (fn []
       [:div.feed-item
-       [:div.item-name 
-        [:a.item-link {:href (str item-uri) :target "_blank"} (:name summary)]
-        [:div.item-host (:host item-uri)]]
+       [item-name summary]
        [:div.item-body 
-        [:div.item-img-box 
-         [:a {:href (str item-uri) :taget "_blank"} [:img.item-img {:src (:imageUri summary)}]]]
+        [item-image summary]
         [:p.item-desc (:description summary)]]
        [item-tags-summary (-> item :activities :tag)]
        [item-activities feed! item editing?!]])))
@@ -290,15 +306,17 @@
           :on-change #(swap! edit-item! assoc-in [:name] (-> % .-target .-value))}]])
 
 (defn image-uri-edit-control [edit-item!]
-  [:div.item-uri-edit-control
-   [:div.item-img-box 
-    [:img.item-img {:src (str (:imageUri @edit-item!))}]]
-   [:div.item-image-url 
-    [:div.field-header "Image URL:"]
-    [:input.item-img-url
-     {:type "text"
-      :value (:imageUri @edit-item!)
-      :on-change #(swap! edit-item! assoc-in [:imageUri] (-> % .-target .-value))}]]])
+  (let [image-uri (:imageUri @edit-item!)]
+    [:div.item-uri-edit-control
+     [:div.item-img-box 
+      (if (not (empty? image-uri))
+        [:img.item-img {:src image-uri}])]
+     [:div.item-image-url 
+      [:div.field-header "Image URL:"]
+      [:input.item-img-url
+       {:type "text"
+        :value (:imageUri @edit-item!)
+        :on-change #(swap! edit-item! assoc-in [:imageUri] (-> % .-target .-value))}]]]))
 
 
 (defn tags-edit-control [edit-item!]
@@ -392,9 +410,11 @@
 
 (defn feed-page []
   (feed/get-feed "" feed!)
-  (fn []
-    [:div#opencola.feed-page
-     [search/search-header #(get-feed % feed!)]
-     [feed-error feed!]
-     #_[edit-item-control (atom (edit-item)) #() #() nil]
-     [feed-list feed!]]))
+  (let [creating-post?! (atom false)]
+    (fn []
+      [:div#opencola.feed-page
+       [search/search-header #(get-feed % feed!) creating-post?!]
+       [feed-error feed!]
+       (if @creating-post?!
+         [edit-item-control (atom (edit-item)) #() #(reset! creating-post?! false) nil])
+       [feed-list feed!]])))
