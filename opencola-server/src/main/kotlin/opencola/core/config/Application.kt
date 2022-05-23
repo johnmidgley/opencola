@@ -60,6 +60,18 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
             return publicKey
         }
 
+        fun instance(applicationPath: Path, storagePath: Path) : Application {
+            if(!storagePath.exists()){
+                logger.info { "Creating storage path: $storagePath" }
+                storagePath.createDirectory()
+            }
+
+            val config = loadConfig(storagePath, "opencola-server.yaml")
+            val publicKey = getOrCreateRootPublicKey(storagePath, config.security)
+
+            return instance(applicationPath, storagePath, config, publicKey)
+        }
+
         fun instance(applicationPath: Path, storagePath: Path, config: Config, authorityPublicKey: PublicKey): Application {
             if(!storagePath.exists()){
                 storagePath.createDirectory()

@@ -3,6 +3,16 @@ package opencola.core.model
 import java.net.URI
 import java.security.PublicKey
 
-class Authority(publicKey: PublicKey, uri: URI? = null, imageUri: URI? = null, name: String? = null, description: String? = null,
-                trust: Float? = null, tags: Set<String>? = null, like: Boolean? = null, rating: Float? = null)
-    : ActorEntity(Id.ofPublicKey(publicKey), publicKey, uri, imageUri, name, description, trust, tags, like, rating)
+// TODO: Remove? Private keys are in keystore, so really no difference between an Authority and a regular Actor
+class Authority(
+    publicKey: PublicKey,
+    uri: URI? = null,
+    name: String? = null,
+    description: String? = null,
+    text: String? = null,
+    imageUri: URI? = null,
+    trust: Float? = null,
+    like: Boolean? = null,
+    rating: Float? = null,
+    tags: Set<String>? = null,
+) : ActorEntity(Id.ofPublicKey(publicKey), publicKey, uri, name, description, text, imageUri, trust, like, rating, tags)

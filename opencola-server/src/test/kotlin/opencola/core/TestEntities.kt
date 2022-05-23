@@ -10,12 +10,13 @@ fun getActorEntity(subjectId: Id) : ActorEntity {
         subjectId,
         generateKeyPair().public,
         URI("http://scatch.com"),
-        URI("http://scratch.com/favicon"),
         "Scratch",
         "Cool online programming!",
-        .75F,
-        listOf<String>("programming", "educational").toSet(),
-        true,
+        "",
+        URI("http://scratch.com/favicon"),
         .89F,
+        true,
+        .75F,
+        setOf("programming", "educational"),
     )
 }

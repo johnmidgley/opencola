@@ -55,14 +55,12 @@ class EntityTest {
     fun testComments(){
         val authorityId = Id.ofData("".toByteArray())
         val entity = ResourceEntity(authorityId, URI("https://test.com"))
-        val comment1 = CommentEntity(authorityId, entity.entityId,"comment1", true, .5f)
+        val comment1 = CommentEntity(authorityId, entity.entityId, "comment1")
 
         entity.commitFacts(0,0)
         val comment1Facts = comment1.commitFacts(1,1)
         assertEquals(comment1.authorityId, authorityId)
         assertEquals(comment1.text, "comment1")
-        assertEquals(comment1.like, true)
-        assertEquals(comment1.rating, .5f)
 
         val computedFact1 = computeEntityCommentIds(comment1Facts).single()
         assertEquals(computedFact1.authorityId, authorityId)

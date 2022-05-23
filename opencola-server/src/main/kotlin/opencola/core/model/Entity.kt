@@ -3,11 +3,21 @@ package opencola.core.model
 import mu.KotlinLogging
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.AttributeType.*
+import java.net.URI
 import java.util.*
 
 
 abstract class Entity(val authorityId: Id, val entityId: Id) {
     private var type by stringAttributeDelegate
+    var name by stringAttributeDelegate
+    var description by stringAttributeDelegate
+    var text by stringAttributeDelegate
+    var imageUri by imageUriAttributeDelegate
+    var trust by floatAttributeDelegate
+    var like by booleanAttributeDelegate
+    var rating by floatAttributeDelegate
+    var tags by tagsAttributeDelegate
+    val commentIds by MultiValueSetOfIdAttributeDelegate // Read only, computed property
 
     private var facts = emptyList<Fact>()
     fun getAllFacts(): List<Fact> {
@@ -25,6 +35,28 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
     init {
         if (type == null)
             type = this.javaClass.simpleName
+    }
+
+    constructor(
+        authorityId: Id,
+        entityId: Id,
+        name: String? = null,
+        description: String? = null,
+        text: String? = null,
+        imageUri: URI? = null,
+        trust: Float? = null,
+        like: Boolean? = null,
+        rating: Float? = null,
+        tags: Set<String>? = null,
+    ) : this(authorityId, entityId) {
+        this.name = name
+        this.description = description
+        this.text = text
+        this.imageUri = imageUri
+        this.trust = trust
+        this.like = like
+        this.rating = rating
+        tags.nullOrElse { this.tags = it }
     }
 
     constructor(facts: List<Fact>) : this(facts.first().authorityId, facts.first().entityId) {

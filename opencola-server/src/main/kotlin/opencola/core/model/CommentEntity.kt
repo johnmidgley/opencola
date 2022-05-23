@@ -1,24 +1,23 @@
 package opencola.core.model
 
-import opencola.core.extensions.nullOrElse
+import java.net.URI
 
 class CommentEntity : Entity {
     var parentId by nonResettableIdAttributeDelegate
-    var text by stringAttributeDelegate
-    var like by booleanAttributeDelegate
-    var rating by floatAttributeDelegate
 
     constructor(
         authorityId: Id,
         parentId: Id,
         text: String,
+        name: String? = null,
+        description: String? = null,
+        imageUri: URI? = null,
+        trust: Float? = null,
         like: Boolean? = null,
         rating: Float? = null,
-    ) : super(authorityId, Id.new()) {
+        tags: Set<String>? = null,
+    ) : super(authorityId, Id.new(), name, description, text, imageUri, trust, like, rating, tags) {
         this.parentId = parentId
-        this.text = text
-        like.nullOrElse { this.like = it }
-        rating.nullOrElse { this.rating = it }
     }
 
     constructor(facts: List<Fact>) : super(facts)
