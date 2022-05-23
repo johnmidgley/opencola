@@ -104,7 +104,7 @@ class EntityTest {
 
         val facts = listOf(fact0, fact1, fact2, fact3, fact4, fact5, fact6, fact7)
 
-        val entity = Entity.fromFacts(facts) as? ResourceEntity
+        val entity = Entity.fromFacts(facts)
         assertNotNull(entity)
         val currentFacts = entity.getCurrentFacts()
         assertEquals(3, currentFacts.size)

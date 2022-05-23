@@ -14,3 +14,7 @@ fun String.tryParseUri() : URI? {
         null
     }
 }
+
+fun String?.blankToNull() : String? {
+    return if(this.isNullOrBlank()) null else this
+}

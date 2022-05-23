@@ -293,6 +293,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
                 ResourceEntity::class.simpleName -> ResourceEntity(sortedFacts)
                 DataEntity::class.simpleName -> DataEntity(sortedFacts)
                 CommentEntity::class.simpleName -> CommentEntity(sortedFacts)
+                PostEntity::class.simpleName -> PostEntity(sortedFacts)
                 // TODO: Throw if not type?
                 else -> {
                     logger.error { "Found unknown type: $type" }

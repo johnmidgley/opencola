@@ -6,10 +6,13 @@ import io.ktor.request.*
 import io.ktor.response.*
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
+import opencola.core.extensions.blankToNull
+import opencola.core.extensions.ifNullOrElse
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.*
 import opencola.core.network.PeerRouter
 import opencola.core.storage.EntityStore
+import opencola.service.EntityResult
 import java.net.URI
 
 private val logger = KotlinLogging.logger("EntityHandler")
@@ -42,50 +45,53 @@ suspend fun deleteEntity(call: ApplicationCall, authority: Authority, entityStor
 }
 
 @Serializable
-data class UpdateEntityPayload(
-    val entityId: String,
-    val name: String,
-    val imageUri: String,
-    val description: String,
+data class EntityPayload(
+    val entityId: String?,
+    val name: String?,
+    val imageUri: String?,
+    val description: String?,
     val like: Boolean?,
-    val tags: String,
-    val comment: String,
+    val tags: String?,
+    val comment: String?,
 )
 
-suspend fun updateEntity(call: ApplicationCall, authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter){
-    val authorityId = authority.authorityId
-    val updateEntityPayload = call.receive<UpdateEntityPayload>()
-    logger.info { "Updating: $updateEntityPayload" }
+fun updateEntity(authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter, entity: Entity, entityPayload: EntityPayload): EntityResult? {
+    entity.name = entityPayload.name.blankToNull()
+    entity.imageUri = entityPayload.imageUri.blankToNull().nullOrElse {
+        val uri = URI(entityPayload.imageUri)
+        if (!uri.isAbsolute)
+            throw IllegalArgumentException("Image URI must be absolute")
+        uri
+    }
+    entity.description = entityPayload.description.blankToNull()
+    entity.like = entityPayload.like
+    entity.tags = entityPayload.tags
+        .blankToNull()
+        .ifNullOrElse(emptySet()) { it.split(" ").toSet() }
 
-    val entity = getOrCopyEntity(authorityId, entityStore, Id.fromHexString(updateEntityPayload.entityId)) as? ResourceEntity
+    entityPayload.comment.nullOrElse { comment ->
+        if (comment.isNotBlank())
+            entityStore.updateEntities(entity, CommentEntity(entity.authorityId, entity.entityId, comment))
+        else
+            entityStore.updateEntities(entity)
+    }
+
+    return getEntityResult(authority, entityStore, peerRouter, entity.entityId)
+}
+
+suspend fun updateEntity(call: ApplicationCall, authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter) {
+    val authorityId = authority.authorityId
+    val entityPayload = call.receive<EntityPayload>()
+    val entityId = Id.fromHexString(entityPayload.entityId ?: throw IllegalArgumentException("No entityId specified for update"))
+    logger.info { "Updating: $entityPayload" }
+
+    val entity = getOrCopyEntity(authorityId, entityStore, entityId)
     if(entity == null){
         call.respond(HttpStatusCode.Unauthorized)
         return
     }
 
-    val imageUri = updateEntityPayload.imageUri.nullOrElse {
-        if(it.isBlank()) null else URI(updateEntityPayload.imageUri)
-    }
-
-    if(imageUri != null && !imageUri.isAbsolute){
-        throw IllegalArgumentException("Image URI must be absolute")
-    }
-
-    entity.name = updateEntityPayload.name
-    entity.imageUri = imageUri
-    entity.description = updateEntityPayload.description
-    entity.like = updateEntityPayload.like
-
-    val tags = updateEntityPayload.tags.split(" ").filter { it.isNotBlank() }.toSet()
-    entity.tags = tags
-
-    if(updateEntityPayload.comment.isNotBlank())
-        entityStore.updateEntities(entity, CommentEntity(authorityId, entity.entityId, updateEntityPayload.comment))
-    else
-        entityStore.updateEntities(entity)
-
-    getEntityResult(authority, entityStore, peerRouter, entity.entityId)
-        .nullOrElse { call.respond(it) }
+    updateEntity(authority, entityStore, peerRouter, entity, entityPayload).nullOrElse { call.respond(it) }
 }
 
 fun getOrCopyEntity(authorityId : Id, entityStore: EntityStore, entityId: Id): Entity? {
@@ -168,4 +174,14 @@ suspend fun saveEntity(call: ApplicationCall, authority: Authority, entityStore:
     getEntityResults(authority, entityStore, peerRouter, listOf(entityId))
         .firstOrNull()
         .nullOrElse { call.respond(it) }
+}
+
+fun newPost(authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter, entityPayload: EntityPayload): EntityResult? {
+    val post = PostEntity(authority.authorityId)
+    return updateEntity(authority, entityStore, peerRouter, post, entityPayload)
+}
+
+suspend fun newPost(call: ApplicationCall, authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter) {
+    val entityPayload = call.receive<EntityPayload>()
+    newPost(authority, entityStore, peerRouter, entityPayload).nullOrElse { call.respond(it) }
 }

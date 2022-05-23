@@ -25,7 +25,6 @@
       (update :results #(map model-to-view-item %))
       (set-query query)))
 
-
 (defn update-feed-item [feed! view-item]
   (let [entity-id (:entityId view-item)
         updated-feed (update-in 
@@ -33,6 +32,9 @@
                       [:results]
                       #(map (fn [i] (if (= entity-id (:entityId i)) view-item i)) %))]
     (reset! feed! updated-feed)))
+
+(defn prepend-feed-item [feed! view-item]
+  (swap! feed! update-in [:results] #(into [view-item] %)))
 
 (defn delete-feed-item [feed! entity-id]
   (swap! feed! update-in [:results] (fn [results] (remove #(= (:entityId %) entity-id) results))))
@@ -102,11 +104,19 @@
    (str "/entity/" (:entityId view-item))
    nil
    #(update-feed-item feed! (model-to-view-item %))
-   #(set-error-from-result feed! %))  )
+   #(set-error-from-result feed! %)))
 
 (defn like-entity [feed! view-item]
   (ajax/PUT 
    (str "/entity/" (:entityId view-item))
    nil
    #(update-feed-item feed! (model-to-view-item %))
-   #(set-error-from-result feed! %))  )
+   #(set-error-from-result feed! %)))
+
+(defn new-post [feed! editing?! item]
+  (ajax/POST
+   (str "/post")
+   item
+   #(do (prepend-feed-item feed! (model-to-view-item %))
+        (if editing?! (reset! editing?! false)))
+   #(set-error-from-result feed! %)))

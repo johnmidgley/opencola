@@ -69,6 +69,13 @@ fun Application.configureRouting(application: app) {
             addComment(call, authority, entityStore, peerRouter)
         }
 
+        post("/post"){
+            val authority by injector.instance<Authority>()
+            val entityStore by injector.instance<EntityStore>()
+            val peerRouter by injector.instance<PeerRouter>()
+            newPost(call, authority, entityStore, peerRouter)
+        }
+
         delete("/comment/{commentId}"){
             val authority by injector.instance<Authority>()
             val entityStore by injector.instance<EntityStore>()

@@ -227,17 +227,17 @@ class EntityStoreTest {
         val comment = CommentEntity(authority.authorityId, resource.entityId, "Comment")
         entityStore.updateEntities(comment)
 
-        val comment1 = entityStore.getEntity(authority.authorityId, comment.entityId) as? CommentEntity
+        val comment1 = entityStore.getEntity(authority.authorityId, comment.entityId)
         assertNotNull(comment1)
         assertEquals(comment, comment1)
 
-        val resource1 = entityStore.getEntity(authority.authorityId, resource.entityId) as? ResourceEntity
+        val resource1 = entityStore.getEntity(authority.authorityId, resource.entityId)
         assertNotNull(resource1)
         assertEquals(1, resource1.commentIds.count())
         assertEquals(comment.entityId, resource1.commentIds.single())
 
         entityStore.deleteEntity(authority.authorityId, comment.entityId)
-        val resource2 = entityStore.getEntity(authority.authorityId, resource.entityId) as? ResourceEntity
+        val resource2 = entityStore.getEntity(authority.authorityId, resource.entityId)
         assertNotNull(resource2)
         assertEquals(0, resource2.commentIds.count())
     }
@@ -301,7 +301,5 @@ class EntityStoreTest {
         val transaction = entityStore.updateEntities(resource2)
         // Nothing new set, so transaction shouldn't be created
         assertNull(transaction)
-
-
     }
 }

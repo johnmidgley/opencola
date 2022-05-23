@@ -33,7 +33,8 @@
 ;; Be careful with like
 (defn edit-item 
   ([]
-   {:name ""
+   {:entityId ""
+    :name ""
     :imageUri ""
     :description ""
     :like nil
@@ -274,21 +275,23 @@
 (defn item-name [summary]
   (let [item-uri (:uri summary)
         host (:host (uri item-uri))
-        name (:name summary)]
-    (if (empty? item-uri)
-      [:div.item-name name]
-    [:div.item-name 
-     [:a.item-link {:href (str item-uri) :target "_blank"} name]
-     [:div.item-host host]])))
+        name (or (:name summary) (:hostName summary))]
+    (if (not (empty? name))
+      (if (empty? item-uri)
+        [:div.item-name name]
+        [:div.item-name 
+         [:a.item-link {:href (str item-uri) :target "_blank"} name]
+         [:div.item-host host]]))))
 
 (defn item-image [summary]
   (let [item-uri (:uri summary)
         image-uri (:imageUri summary)
-        img [:img.item-img {:src image-uri}] ]
-    [:div.item-img-box 
-     (if (empty? item-uri)
-       img
-       [:a {:href item-uri :target "_blank"} img])]))
+        img [:img.item-img {:src image-uri}]]
+    (if image-uri
+      [:div.item-img-box 
+       (if (empty? item-uri)
+         img
+         [:a {:href item-uri :target "_blank"} img])])))
 
 (defn display-feed-item [feed! item editing?!]
   (let [entity-id (:entityId item)
@@ -297,7 +300,7 @@
     (fn []
       [:div.feed-item
        [item-name summary]
-       [:div.item-body 
+       [:div.item-body
         [item-image summary]
         [:p.item-desc (:description summary)]]
        [item-tags-summary (-> item :activities :tag)]
@@ -423,5 +426,9 @@
        [search/search-header #(get-feed % feed!) creating-post?!]
        [feed-error feed!]
        (if @creating-post?!
-         [edit-item-control (atom (edit-item)) #() #(reset! creating-post?! false) nil])
+         (let [edit-item! (atom (edit-item))] 
+           [edit-item-control 
+            edit-item! 
+            #(feed/new-post feed! creating-post?! @edit-item!) 
+            #(reset! creating-post?! false) nil]))
        [feed-list feed!]])))

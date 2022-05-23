@@ -20,7 +20,7 @@ data class EntityResult(
     )
 
     @Serializable
-    data class Summary(val name: String?, val uri: String, val description: String?, val imageUri: String?)
+    data class Summary(val name: String?, val uri: String?, val description: String?, val imageUri: String?)
 
     enum class ActionType(){
         Save,

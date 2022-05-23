@@ -3,6 +3,7 @@ package opencola.server.handlers
 import io.ktor.application.*
 import io.ktor.response.*
 import kotlinx.serialization.Serializable
+import opencola.core.extensions.ifNullOrElse
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.*
 import opencola.core.model.CoreAttribute.*
@@ -27,7 +28,7 @@ fun getSummary(authorityId: Id, entities: List<Entity>): Summary {
 
     return Summary(
         entityAttributeAsString(entity, Name.spec),
-        entityAttributeAsString(entity, Uri.spec)!!,
+        entityAttributeAsString(entity, Uri.spec),
         entityAttributeAsString(entity, Description.spec),
         entityAttributeAsString(entity, ImageUri.spec),
     )
@@ -129,17 +130,14 @@ fun isEntityIsVisible(authorityId: Id, facts: Iterable<Fact>) : Boolean {
     val authorityToFacts = facts.groupBy { it.authorityId }
     val authorityFacts = authorityToFacts[authorityId] ?: authorityToFacts.values.firstOrNull() ?: return false
 
-    return when(val entity = Entity.fromFacts(authorityFacts)){
-        is ResourceEntity -> entity.authorityId != authorityId || entity.like != false
-        is ActorEntity -> entity.authorityId != authorityId || entity.like != false
-        else -> false
-    }
+    return Entity.fromFacts(authorityFacts).ifNullOrElse(false) { isEntityIsVisible(authorityId, it) }
 }
 
 fun isEntityIsVisible(authorityId: Id, entity: Entity) : Boolean {
     return when(entity){
         // TODO: This hides unliked entities in search results
         is ResourceEntity -> entity.authorityId != authorityId || entity.like != false
+        is PostEntity -> entity.authorityId != authorityId || entity.like != false
         is ActorEntity -> entity.authorityId != authorityId || entity.like != false
         else -> false
     }
@@ -167,7 +165,6 @@ fun getEntityIds(entityStore: EntityStore, searchIndex: SearchIndex, query: Stri
 
 fun getComments(entityStore: EntityStore, entities: Iterable<Entity>): Map<Id, CommentEntity> {
     val commentIds = entities
-        .mapNotNull { it as? ResourceEntity }
         .flatMap { it.commentIds }
         .toSet()
 

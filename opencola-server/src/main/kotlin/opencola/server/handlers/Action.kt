@@ -26,7 +26,7 @@ fun updateResource(authorityId: Id, entityStore: EntityStore, fileStore: FileSto
         val dataId = fileStore.write(pageBytes)
         val mimeType = textExtractor.getType(pageBytes)
         val resourceId = Id.ofUri(mhtmlPage.uri)
-        val entity = (entityStore.getEntity(authorityId, resourceId) ?: ResourceEntity( authorityId, mhtmlPage.uri)) as ResourceEntity
+        val entity = (entityStore.getEntity(authorityId, resourceId) ?: ResourceEntity(authorityId, mhtmlPage.uri)) as ResourceEntity
 
         // Add / update fields
         // TODO - Check if setting null writes a retraction when fields are null
@@ -111,7 +111,7 @@ suspend fun handlePostActionCall(call: ApplicationCall,
 suspend fun handleGetActionsCall(call: ApplicationCall, authorityId: Id, entityStore: EntityStore) {
     val stringUri = call.parameters["uri"] ?: throw IllegalArgumentException("No uri set")
     val entityId = Id.ofUri(URI(stringUri))
-    val entity = entityStore.getEntity(authorityId, entityId) as? ResourceEntity
+    val entity = entityStore.getEntity(authorityId, entityId)
 
     if (entity != null) {
         call.respond(Actions(true, entity.trust, entity.like, entity.rating))

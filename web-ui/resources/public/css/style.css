@@ -28,7 +28,6 @@ body {
     float: left;
     overflow: hidden;
     margin-right: 10px;
-    background: #F0F0F0;
 }
 
 /* Clear floats after the columns */
@@ -176,6 +175,7 @@ td {
 }
 
 .tags {
+    padding-top: 10px;
     padding-bottom: 10px;
 }
 
@@ -209,5 +209,5 @@ td {
 }
 
 .new-post {
-    height: 25px;
+    height: 20px;
 }

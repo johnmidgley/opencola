@@ -17,7 +17,7 @@
   [:div.search-header 
    [:img {:src "../img/pull-tab.png" :width 50 :height 50}]
    "openCola"
-   #_[:div.add-item 
+   [:div.add-item 
     {:on-click #(swap! creating-post?! not)}
     [:img.new-post {:src  "../img/new-post.png"}]]
    [search-box on-enter]])
