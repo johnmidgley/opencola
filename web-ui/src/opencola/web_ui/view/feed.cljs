@@ -30,12 +30,13 @@
   (string/join " " (map :value (authority-actions-of-type authority-id :tag item))))
 
 ;; TODO - Use https://clj-commons.org/camel-snake-kebab/
+;; Be careful with like
 (defn edit-item 
   ([]
    {:name ""
     :imageUri ""
     :description ""
-    :like false
+    :like nil
     :tags ""
     :comment ""})
   ([authority-id item]
@@ -135,10 +136,12 @@
 
 (defn item-saves [expanded?! save-actions]
   (if @expanded?!
-    [:table.item-saves 
-     "Saves:"
-     (doall (for [save-action save-actions]
-              ^{:key save-action} [item-save save-action]))]))
+    [:div.item-saves
+     [:div.list-header "Saves:"]
+     [:table
+      [:tbody
+       (doall (for [save-action save-actions]
+                ^{:key save-action} [item-save save-action]))]]]))
 
 (defn tag [name]
   [:span.tag name])
@@ -172,9 +175,11 @@
 (defn item-tags [expanded?! actions]
   (if @expanded?!
     [:div.item-tags
-     [:table.list-header "Tags:"]
-     (doall (for [action actions]
-              ^{:key action} [item-tag action]))]))
+     [:div.list-header "Tags:"]
+     [:table
+      [:tbody
+       (doall (for [action actions]
+                ^{:key action} [item-tag action]))]]]))
 
 
 (defn item-like [like-action]
@@ -187,10 +192,12 @@
 ;; TODO: Templatize this - same for saves and comments
 (defn item-likes [expanded?! like-actions]
   (if (and @expanded?!) 
-      [:table.item-likes 
-       "Likes:"
+    [:div.item-likes
+     [:div.list-header "Likes:"]
+     [:table
+      [:tbody
        (doall (for [like-action like-actions]
-                ^{:key like-action} [item-like like-action]))]))
+                ^{:key like-action} [item-like like-action]))]]]))
 
 
 (defn toggle-atom [atoms! atom!]
@@ -349,7 +356,7 @@
   [:div.like-edit-control
    [:span.field-header "Like: "]
    [:span {:class (if (:like @edit-item!) "highlight") 
-           :on-click #(swap! edit-item! update-in [:like] not)} 
+           :on-click (fn [] (swap! edit-item! update-in [:like] #(if % nil true)))} 
     (action-img "like")]])
 
 (defn edit-item-control [edit-item! on-save on-cancel on-delete]
