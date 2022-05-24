@@ -1,0 +1,15 @@
+#!/bin/bash
+
+if [[ -d ~/.opencola/storage ]]
+then
+echo "Storage already exists"
+else
+echo "Creating storage"
+mkdir -p ~/.opencola/storage
+cp -r ../opencola/storage/* ~/.opencola/storage 
+fi
+
+docker-compose up -d
+
+echo "OpenCola has started - configure docker to run at startup so you don't have to manually start OpenCola again"
+
