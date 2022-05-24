@@ -19,9 +19,9 @@ class EntityStoreTest {
     private val signator by app.injector.instance<Signator>()
     private val addressBook by app.injector.instance<AddressBook>()
     private val simpleEntityStorePath = app.storagePath.resolve("${TestApplication.testRunName}.txs")
-    private val getSimpleEntityStore = { SimpleEntityStore(simpleEntityStorePath, authority, eventBus, signator, addressBook) }
+    private val getSimpleEntityStore = { SimpleEntityStore(simpleEntityStorePath, authority, signator, addressBook, eventBus) }
     private val sqLiteEntityStorePath = app.storagePath.resolve("${TestApplication.testRunName}.db")
-    private val getSQLiteEntityStore = { ExposedEntityStore(SQLiteDB(sqLiteEntityStorePath).db, authority, eventBus, signator, addressBook)  }
+    private val getSQLiteEntityStore = { ExposedEntityStore(SQLiteDB(sqLiteEntityStorePath).db, authority, signator, addressBook, eventBus)  }
 
     // TODO: Remove these and switch to functions below
     init{
@@ -30,11 +30,11 @@ class EntityStoreTest {
     }
 
     private fun getFreshSimpleEntityStore(): SimpleEntityStore {
-        return SimpleEntityStore(TestApplication.getTmpFilePath(".txs"), authority, eventBus, signator, addressBook)
+        return SimpleEntityStore(TestApplication.getTmpFilePath(".txs"), authority, signator, addressBook, eventBus)
     }
 
     private fun getFreshExposeEntityStore(): ExposedEntityStore {
-        return ExposedEntityStore(SQLiteDB(TestApplication.getTmpFilePath(".db")).db, authority, eventBus, signator, addressBook)
+        return ExposedEntityStore(SQLiteDB(TestApplication.getTmpFilePath(".db")).db, authority, signator, addressBook, eventBus)
     }
 
     @Test

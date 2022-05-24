@@ -14,10 +14,10 @@ import kotlin.io.path.outputStream
 class SimpleEntityStore(
     val path: Path,
     authority: Authority,
-    eventBus: EventBus,
     signator: Signator,
     addressBook: AddressBook?,
-) : AbstractEntityStore(authority, eventBus, signator, addressBook) {
+    eventBus: EventBus?,
+    ) : AbstractEntityStore(authority, signator, addressBook, eventBus) {
     // TODO: Synchronize access
     private var transactions =
         if (!path.exists()) {
@@ -107,6 +107,6 @@ class SimpleEntityStore(
 
     override fun resetStore(): SimpleEntityStore {
         path.deleteIfExists()
-        return SimpleEntityStore(path, authority, eventBus, signator, addressBook)
+        return SimpleEntityStore(path, authority, signator, addressBook, eventBus)
     }
 }

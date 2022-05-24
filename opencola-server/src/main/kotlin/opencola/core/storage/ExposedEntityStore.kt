@@ -20,10 +20,10 @@ import java.io.ByteArrayInputStream
 class ExposedEntityStore(
     private val database: Database,
     authority: Authority,
-    eventBus: EventBus,
     signator: Signator,
-    addressBook: AddressBook? = null
-) : AbstractEntityStore(authority, eventBus, signator, addressBook) {
+    addressBook: AddressBook? = null,
+    eventBus: EventBus? = null,
+) : AbstractEntityStore(authority, signator, addressBook, eventBus) {
     // NOTE: Some databases may truncate the table name. This is an issue to the degree that it increases the
     // chances of collisions. Given the number of ids stored in a single DB, the chances of issue are exceedingly low.
     // This would likely be an issue only when storing data for large sets of users (millions to billions?)
@@ -180,7 +180,7 @@ class ExposedEntityStore(
             SchemaUtils.drop(facts, transactions)
         }
 
-        return ExposedEntityStore(database, authority, eventBus, signator, addressBook)
+        return ExposedEntityStore(database, authority, signator, addressBook, eventBus)
     }
 
     private fun factFromResultRow(resultRow: ResultRow): Fact {

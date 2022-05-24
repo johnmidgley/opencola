@@ -13,9 +13,9 @@ import java.security.PublicKey
 // TODO: Should support multiple authorities
 abstract class AbstractEntityStore(
     val authority: Authority,
-    val eventBus: EventBus,
     val signator: Signator,
     val addressBook: AddressBook?,
+    val eventBus: EventBus?,
     ) : EntityStore {
     // TODO: Assumes transaction has been validated. Cleanup?
     protected abstract fun persistTransaction(signedTransaction: SignedTransaction): Long
@@ -124,7 +124,7 @@ abstract class AbstractEntityStore(
         val allFacts = facts.plus(computedFacts(facts))
         val signedTransaction = Transaction.fromFacts(nextTransactionId, allFacts).sign(signator)
         val transactionOrdinal = persistTransaction(signedTransaction)
-        eventBus.sendMessage(Events.NewTransaction.toString(), SignedTransaction.encode(signedTransaction))
+        eventBus?.sendMessage(Events.NewTransaction.toString(), SignedTransaction.encode(signedTransaction))
 
         return Pair(signedTransaction, transactionOrdinal)
     }
@@ -157,7 +157,7 @@ abstract class AbstractEntityStore(
                 throw IllegalArgumentException("Transaction ${it.transaction.id} failed to validate from $transactionAuthorityId")
 
             persistTransaction(it)
-            eventBus.sendMessage(Events.NewTransaction.toString(), SignedTransaction.encode(it))
+            eventBus?.sendMessage(Events.NewTransaction.toString(), SignedTransaction.encode(it))
         }
     }
 }
