@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "Removing old dist"
-rm -rf opencola opencola*.tgz
+rm -rf opencola
 mkdir opencola
 
 echo "Running gradle installDist"
@@ -38,15 +38,6 @@ cp -r ../../storage/var-solr/data/configsets/ storage/var-solr/data/configsets
 cp ../../storage/var-solr/data/solr.xml storage/var-solr/data/
 cp ../../storage/var-solr/data/zoo.cfg storage/var-solr/data/
 fi
-echo "Creating tarball"
-cd ..
-tar -czf  "opencola-"`date +%s`".tgz" opencola
-# echo "Installing CLI"
-# rm -rf ~/.opencola/bin ~/.opencola/lib
-# mkdir -p ~/.opencola
-# cp -r opencola/server/bin opencola/server/lib ~/.opencola
-# cp ~/.opencola/bin/opencola-server ~/.opencola/bin/oc
-# sed -i '' "s/opencola.server.ApplicationKt/opencola.cli.OcKt/g" ~/.opencola/bin/oc
 echo "Done."
 
 

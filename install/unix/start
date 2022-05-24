@@ -9,7 +9,7 @@ mkdir -p ~/.opencola/storage
 cp -r ../opencola/storage/* ~/.opencola/storage 
 fi
 
-docker-compose up -d
+docker-compose up --build -d
 
 echo "OpenCola has started - configure docker to run at startup so you don't have to manually start OpenCola again"
 
