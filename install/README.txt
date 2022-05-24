@@ -1,29 +1,15 @@
-# NOTE: PRESEVE YOUR IDENTITY
-# When there's a breaking change to the DB or search index, you may need to delete your storage files. You can 
-# still keep you identity by saving a re-placing opencola/storage/authority.pub
-
-# Pre-run steps
-
-# Install Java 16
-# https://sdkman.io/
-
-curl -s "https://get.sdkman.io" | bash
-bash
-source sdkman-init.sh
-sdk list java
-sdk install java 16.0.2-zulu
-
-- Set JAVE_HOME to the install (i.e. ~/.sdkman/candidates/java/16.0.2-zulu)
-
 # Install Docker 
 
 https://www.docker.com/get-started
 
-# IF YOU'RE ON LINUX, you need to let docker have write access to the solr indexes / files
-cd storage
-sudo chown -R 8983:8983 var-solr
+To keep OpenCola running, even after a restart, you will want to have Docker run at login. To do this, open
+the docker control dashboard, click the gear icon at the top right and select "Start Docker Desktop when you log in".
 
-# Install extension
+NOTE: If you're running on Linux (or using a docker daemon without Docker Desktop), the docker daemon should start
+automatically, so this step isn't necessary.  
+
+
+# Install the Browser Extension
 
 - In a Chrome based browser (maybe works on Firefox?), got to extensions (e.g. brave://extensions/)
 - Select "Developer Mode"
@@ -33,13 +19,16 @@ sudo chown -R 8983:8983 var-solr
 - IF YOU'RE NOT RUNNING ON LOCALHOST - edit chrome/popup.js and replace localhost:7595 with yourhost:5795
 
 
-# You should now be ready to run. On Unix, just run
+# You should now be ready to run: 
+
+# To start on Unix (including MacOS)
+cd unix
 start
 
-# If you're on Windows, 
-server/bin/opencola-server.bat
+# On Windows
+...
 
-# To kill the docker network (on unix)
+# To stop OpenCola (which stops the docker image):
 stop
 
 
