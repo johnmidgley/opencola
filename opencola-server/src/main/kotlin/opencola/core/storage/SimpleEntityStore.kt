@@ -1,6 +1,5 @@
 package opencola.core.storage
 
-import opencola.core.content.TextExtractor
 import opencola.core.event.EventBus
 import opencola.core.model.*
 import opencola.core.security.Signator
@@ -15,12 +14,10 @@ import kotlin.io.path.outputStream
 class SimpleEntityStore(
     val path: Path,
     eventBus: EventBus,
-    fileStore: FileStore,
-    textExtractor: TextExtractor,
     addressBook: AddressBook,
     authority: Authority,
     signator: Signator
-) : AbstractEntityStore(authority, eventBus, fileStore, textExtractor, addressBook, signator) {
+) : AbstractEntityStore(authority, eventBus, addressBook, signator) {
     // TODO: Synchronize access
     private var transactions =
         if (!path.exists()) {
@@ -110,6 +107,6 @@ class SimpleEntityStore(
 
     override fun resetStore(): SimpleEntityStore {
         path.deleteIfExists()
-        return SimpleEntityStore(path, eventBus, fileStore, textExtractor, addressBook, authority, signator)
+        return SimpleEntityStore(path, eventBus, addressBook, authority, signator)
     }
 }

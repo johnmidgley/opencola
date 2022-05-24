@@ -15,8 +15,6 @@ import java.security.PublicKey
 abstract class AbstractEntityStore(
     val authority: Authority,
     val eventBus: EventBus,
-    val fileStore: FileStore,
-    val textExtractor: TextExtractor,
     val addressBook: AddressBook,
     protected val signator: Signator
 ) : EntityStore {

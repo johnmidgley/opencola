@@ -18,13 +18,11 @@ class EntityStoreTest {
     private val authority by app.injector.instance<Authority>()
     private val eventBus by app.injector.instance<EventBus>()
     private val signator by app.injector.instance<Signator>()
-    private val fileStore by app.injector.instance<FileStore>()
-    private val textExtractor by app.injector.instance<TextExtractor>()
     private val addressBook by app.injector.instance<AddressBook>()
     private val simpleEntityStorePath = app.storagePath.resolve("${TestApplication.testRunName}.txs")
-    private val getSimpleEntityStore = { SimpleEntityStore(simpleEntityStorePath, eventBus, fileStore, textExtractor, addressBook, authority, signator) }
+    private val getSimpleEntityStore = { SimpleEntityStore(simpleEntityStorePath, eventBus, addressBook, authority, signator) }
     private val sqLiteEntityStorePath = app.storagePath.resolve("${TestApplication.testRunName}.db")
-    private val getSQLiteEntityStore = { ExposedEntityStore(authority, eventBus, fileStore, textExtractor, addressBook, signator, SQLiteDB(sqLiteEntityStorePath).db) }
+    private val getSQLiteEntityStore = { ExposedEntityStore(authority, eventBus, addressBook, signator, SQLiteDB(sqLiteEntityStorePath).db) }
 
     // TODO: Remove these and switch to functions below
     init{
@@ -33,11 +31,11 @@ class EntityStoreTest {
     }
 
     private fun getFreshSimpleEntityStore(): SimpleEntityStore {
-        return SimpleEntityStore(TestApplication.getTmpFilePath(".txs"), eventBus, fileStore, textExtractor, addressBook, authority, signator)
+        return SimpleEntityStore(TestApplication.getTmpFilePath(".txs"), eventBus, addressBook, authority, signator)
     }
 
     private fun getFreshExposeEntityStore(): ExposedEntityStore {
-        return ExposedEntityStore(authority, eventBus, fileStore, textExtractor, addressBook, signator, SQLiteDB(TestApplication.getTmpFilePath(".db")).db)
+        return ExposedEntityStore(authority, eventBus, addressBook, signator, SQLiteDB(TestApplication.getTmpFilePath(".db")).db)
     }
 
     @Test
