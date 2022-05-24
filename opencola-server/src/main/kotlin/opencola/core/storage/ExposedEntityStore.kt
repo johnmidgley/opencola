@@ -18,12 +18,12 @@ import java.io.ByteArrayInputStream
 // TODO: Think about using SQLite - super simple and maybe better fit for local use.
 
 class ExposedEntityStore(
+    private val database: Database,
     authority: Authority,
     eventBus: EventBus,
-    addressBook: AddressBook,
     signator: Signator,
-    private val database: Database
-) : AbstractEntityStore(authority, eventBus, addressBook, signator) {
+    addressBook: AddressBook? = null
+) : AbstractEntityStore(authority, eventBus, signator, addressBook) {
     // NOTE: Some databases may truncate the table name. This is an issue to the degree that it increases the
     // chances of collisions. Given the number of ids stored in a single DB, the chances of issue are exceedingly low.
     // This would likely be an issue only when storing data for large sets of users (millions to billions?)
@@ -180,7 +180,7 @@ class ExposedEntityStore(
             SchemaUtils.drop(facts, transactions)
         }
 
-        return ExposedEntityStore(authority, eventBus, addressBook, signator, database)
+        return ExposedEntityStore(database, authority, eventBus, signator, addressBook)
     }
 
     private fun factFromResultRow(resultRow: ResultRow): Fact {

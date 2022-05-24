@@ -1,7 +1,6 @@
 package opencola.core.storage
 
 import mu.KotlinLogging
-import opencola.core.content.TextExtractor
 import opencola.core.event.EventBus
 import opencola.core.event.Events
 import opencola.core.extensions.ifNotNullOrElse
@@ -15,9 +14,9 @@ import java.security.PublicKey
 abstract class AbstractEntityStore(
     val authority: Authority,
     val eventBus: EventBus,
-    val addressBook: AddressBook,
-    protected val signator: Signator
-) : EntityStore {
+    val signator: Signator,
+    val addressBook: AddressBook?,
+    ) : EntityStore {
     // TODO: Assumes transaction has been validated. Cleanup?
     protected abstract fun persistTransaction(signedTransaction: SignedTransaction): Long
 
@@ -151,7 +150,7 @@ abstract class AbstractEntityStore(
     override fun addSignedTransactions(signedTransactions: List<SignedTransaction>) {
         signedTransactions.forEach {
             val transactionAuthorityId = it.transaction.authorityId
-            val publicKey = addressBook.getPublicKey(transactionAuthorityId)
+            val publicKey = addressBook?.getPublicKey(transactionAuthorityId)
                 ?: throw IllegalArgumentException("No public key for: $transactionAuthorityId - cannot persist transaction ${it.transaction.id}")
 
             if (!it.isValidTransaction(publicKey))

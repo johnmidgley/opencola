@@ -92,7 +92,7 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
                 bindSingleton { AddressBook(instance(), storagePath, config.network) }
                 bindSingleton { PeerRouter(instance(), instance()) }
                 bindSingleton { LuceneSearchIndex(authority.authorityId, storagePath.resolve("lucene")) }
-                bindSingleton { ExposedEntityStore(instance(), instance(), instance(), instance(), sqLiteDB) }
+                bindSingleton { ExposedEntityStore(sqLiteDB, instance(), instance(), instance(), instance()) }
                 bindSingleton { SearchService(instance(), instance(), instance()) }
                 // TODO: Add unit tests for MhtCache
                 // TODO: Get cache name from config

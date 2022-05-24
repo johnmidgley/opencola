@@ -2,7 +2,6 @@ package opencola.core.storage
 
 import opencola.core.TestApplication
 import opencola.core.config.getApplications
-import opencola.core.content.TextExtractor
 import opencola.core.event.EventBus
 import opencola.core.getActorEntity
 import opencola.core.model.*
@@ -20,9 +19,9 @@ class EntityStoreTest {
     private val signator by app.injector.instance<Signator>()
     private val addressBook by app.injector.instance<AddressBook>()
     private val simpleEntityStorePath = app.storagePath.resolve("${TestApplication.testRunName}.txs")
-    private val getSimpleEntityStore = { SimpleEntityStore(simpleEntityStorePath, eventBus, addressBook, authority, signator) }
+    private val getSimpleEntityStore = { SimpleEntityStore(simpleEntityStorePath, authority, eventBus, signator, addressBook) }
     private val sqLiteEntityStorePath = app.storagePath.resolve("${TestApplication.testRunName}.db")
-    private val getSQLiteEntityStore = { ExposedEntityStore(authority, eventBus, addressBook, signator, SQLiteDB(sqLiteEntityStorePath).db) }
+    private val getSQLiteEntityStore = { ExposedEntityStore(SQLiteDB(sqLiteEntityStorePath).db, authority, eventBus, signator, addressBook)  }
 
     // TODO: Remove these and switch to functions below
     init{
@@ -31,11 +30,11 @@ class EntityStoreTest {
     }
 
     private fun getFreshSimpleEntityStore(): SimpleEntityStore {
-        return SimpleEntityStore(TestApplication.getTmpFilePath(".txs"), eventBus, addressBook, authority, signator)
+        return SimpleEntityStore(TestApplication.getTmpFilePath(".txs"), authority, eventBus, signator, addressBook)
     }
 
     private fun getFreshExposeEntityStore(): ExposedEntityStore {
-        return ExposedEntityStore(authority, eventBus, addressBook, signator, SQLiteDB(TestApplication.getTmpFilePath(".db")).db)
+        return ExposedEntityStore(SQLiteDB(TestApplication.getTmpFilePath(".db")).db, authority, eventBus, signator, addressBook)
     }
 
     @Test
