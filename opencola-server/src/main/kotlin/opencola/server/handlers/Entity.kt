@@ -105,7 +105,16 @@ fun getOrCopyEntity(authorityId : Id, entityStore: EntityStore, entityId: Id): E
         is ResourceEntity -> {
             ResourceEntity(
                 authorityId,
-                existingEntity.uri!!,
+                existingEntity.uri!!, // TODO: Get rid of !! - make non nullable
+                existingEntity.name,
+                existingEntity.description,
+                existingEntity.text,
+                existingEntity.imageUri
+            )
+        }
+        is PostEntity -> {
+            PostEntity(authorityId,
+                existingEntity.entityId,
                 existingEntity.name,
                 existingEntity.description,
                 existingEntity.text,
