@@ -2,6 +2,7 @@ package opencola.core.security
 
 import opencola.core.model.Authority
 import org.junit.Test
+import java.net.URI
 import kotlin.io.path.createTempDirectory
 import kotlin.test.assertNotNull
 
@@ -13,7 +14,7 @@ class KeyStoreTest {
 
         val keyStore = KeyStore(keyStorePath, password)
         val keyPair = generateKeyPair()
-        val authority = Authority(keyPair.public)
+        val authority = Authority(keyPair.public, URI(""), "Test Authority")
         keyStore.addKey(authority.authorityId, keyPair)
 
         val keyStore1 = KeyStore(keyStorePath, password)

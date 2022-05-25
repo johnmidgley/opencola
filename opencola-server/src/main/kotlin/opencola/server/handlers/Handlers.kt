@@ -12,6 +12,7 @@ import opencola.core.extensions.nullOrElse
 import opencola.core.model.*
 import opencola.core.network.PeerRouter
 import opencola.core.network.PeerRouter.PeerStatus.Status.Online
+import opencola.core.storage.AddressBook
 import opencola.core.storage.EntityStore
 import opencola.core.storage.EntityStore.TransactionOrder
 import opencola.core.storage.MhtCache
@@ -88,9 +89,13 @@ suspend fun handleGetDataPartCall(call: ApplicationCall, authorityId: Id, mhtCac
 }
 
 // TODO - This should change to handlePeerEvent
-suspend fun handlePostNotifications(call: ApplicationCall, eventBus: EventBus) {
+suspend fun handlePostNotifications(call: ApplicationCall, addressBook: AddressBook, eventBus: EventBus) {
     val notification = call.receive<PeerRouter.Notification>()
     logger.info { "Received notification: $notification" }
+
+    addressBook.getAuthority(notification.peerId)
+        ?: throw IllegalArgumentException("Received notification from unknown peer: ${notification.peerId}")
+
     eventBus.sendMessage(Events.PeerNotification.toString(), notification.encode())
     call.respond(HttpStatusCode.OK)
 }

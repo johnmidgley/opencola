@@ -35,6 +35,7 @@ fun getSummary(authorityId: Id, entities: List<Entity>): Summary {
 }
 
 // TODO: generate this list once, vs creating Authorities for each activity
+// TODO: Get Authority from Address Book - don't need special logic for "You" / root authority
 fun getAuthority(id: Id, rootAuthority: Authority, peerRouter: PeerRouter): Authority? {
     return if (id == rootAuthority.authorityId)
         Authority(rootAuthority.publicKey!!, URI(""), name = "You")

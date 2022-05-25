@@ -9,6 +9,7 @@ import opencola.core.security.KeyStore
 import opencola.core.security.privateKeyFromBytes
 import opencola.core.security.publicKeyFromBytes
 import org.kodein.di.instance
+import java.net.URI
 import java.nio.file.Path
 import java.security.KeyPair
 import java.time.Instant
@@ -32,7 +33,7 @@ object TestApplication {
     }
 
     val instance by lazy {
-        val authority = Authority(authorityPublicKey)
+        val authority = Authority(authorityPublicKey, URI("http://test"), "Test Authority")
         val keyStore = KeyStore(
             storagePath.resolve(config.security.keystore.name),
             config.security.keystore.password
@@ -57,7 +58,17 @@ object TestApplication {
         return storagePath.resolve("${UUID.randomUUID()}$suffix")
     }
 
+    fun getTmpDirectory(suffix: String): Path {
+        return storagePath.resolve("${UUID.randomUUID()}$suffix").createDirectory()
+    }
+
     fun createStorageDirectory(name: String) : Path {
         return storagePath.resolve(name).createDirectory()
+    }
+
+    fun newApplication(): Application {
+        val applicationStoragePath = getTmpDirectory(".storage")
+        val publicKey = Application.getOrCreateRootPublicKey(applicationStoragePath, config.security)
+        return Application.instance(instance.applicationPath, applicationStoragePath, config, publicKey)
     }
 }

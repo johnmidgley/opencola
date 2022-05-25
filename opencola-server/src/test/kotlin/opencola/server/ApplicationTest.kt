@@ -19,6 +19,8 @@ import java.net.URI
 import java.net.URLEncoder
 import kotlinx.serialization.encodeToString
 import opencola.core.network.PeerRouter
+import opencola.core.security.generateKeyPair
+import opencola.core.storage.AddressBook
 import opencola.server.handlers.FeedResult
 import opencola.service.EntityResult
 
@@ -142,9 +144,10 @@ class ApplicationTest {
 
     @Test
     fun testPostNotification(){
-        // TODO: Don't rely on config.yaml - make peer node here
-        val peerId = Id.fromHexString(TestApplication.config.network.peers.first().id)
-        val notification = PeerRouter.Notification(peerId, PeerRouter.Event.NewTransaction)
+        val localAuthority by injector.instance<Authority>()
+        val addressBook by injector.instance<AddressBook>()
+        val peerAuthority = addressBook.putAuthority(Authority(localAuthority.authorityId, generateKeyPair().public, URI(""), "Test"))
+        val notification = PeerRouter.Notification(peerAuthority.authorityId, PeerRouter.Event.NewTransaction)
 
         withTestApplication({ configureRouting(application); configureContentNegotiation() }) {
             with(handleRequest(HttpMethod.Post, "/notifications"){

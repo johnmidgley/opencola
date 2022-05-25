@@ -20,6 +20,7 @@ import opencola.service.search.SearchService
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
 import org.kodein.di.instance
+import java.net.URI
 import java.nio.file.Path
 import java.security.PublicKey
 import kotlin.io.path.createDirectory
@@ -78,7 +79,7 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
             }
 
             // TODO: Change from authority to public key - they authority should come from the private store based on the private key
-            val authority = Authority(authorityPublicKey)
+            val authority = Authority(authorityPublicKey, URI("http://localhost"), "You")
             val keyStore = KeyStore(storagePath.resolve(config.security.keystore.name), config.security.keystore.password)
             val fileStore = LocalFileStore(storagePath.resolve("filestore"))
             val sqLiteDB = SQLiteDB(storagePath.resolve("${authority.authorityId}.db")).db

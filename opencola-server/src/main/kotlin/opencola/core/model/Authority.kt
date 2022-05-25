@@ -8,8 +8,8 @@ class Authority : ActorEntity {
     constructor(
         authorityId: Id,
         publicKey: PublicKey,
-        uri: URI? = null,
-        name: String? = null,
+        uri: URI,
+        name: String,
         description: String? = null,
         text: String? = null,
         imageUri: URI? = null,
@@ -21,8 +21,8 @@ class Authority : ActorEntity {
 
     constructor(
         publicKey: PublicKey,
-        uri: URI? = null,
-        name: String? = null,
+        uri: URI,
+        name: String,
         description: String? = null,
         text: String? = null,
         imageUri: URI? = null,

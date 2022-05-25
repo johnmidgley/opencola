@@ -22,7 +22,7 @@ class AddressBook(private val authority: Authority, storagePath: Path, signator:
     val peers: List<Peer>
         get() {
             return getAuthorities()
-                .map { Peer(it.entityId, it.publicKey!!, it.name!!, it.uri!!.authority, it.tags.contains(activeTag) ) }
+                .map { Peer(it.entityId, it.publicKey!!, it.name!!, it.uri?.authority ?: "", it.tags.contains(activeTag) ) }
         }
 
 
@@ -67,8 +67,9 @@ class AddressBook(private val authority: Authority, storagePath: Path, signator:
             }
     }
 
-    fun putAuthority(authority: Authority) {
+    fun putAuthority(authority: Authority) : Authority {
         entityStore.updateEntities(authority)
+        return authority
     }
 
     fun getAuthority(id: Id) : Authority? {

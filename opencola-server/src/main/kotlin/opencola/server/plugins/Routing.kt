@@ -11,6 +11,7 @@ import opencola.core.event.EventBus
 import opencola.core.model.Authority
 import opencola.core.network.PeerRouter
 import opencola.core.search.SearchIndex
+import opencola.core.storage.AddressBook
 import opencola.core.storage.EntityStore
 import opencola.core.storage.FileStore
 import opencola.core.storage.MhtCache
@@ -123,8 +124,10 @@ fun Application.configureRouting(application: app) {
         }
 
         post("/notifications"){
+            val addressBook by injector.instance<AddressBook>()
             val eventBus by injector.instance<EventBus>()
-            handlePostNotifications(call, eventBus)
+
+            handlePostNotifications(call, addressBook, eventBus)
         }
 
         get("/feed"){
