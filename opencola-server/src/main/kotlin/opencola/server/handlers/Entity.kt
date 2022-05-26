@@ -188,31 +188,41 @@ suspend fun saveEntity(call: ApplicationCall, authority: Authority, entityStore:
 }
 
 fun newResourceFromUrl(authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter, url: String) : EntityResult? {
-    val entity = getOrCopyEntity(authority.authorityId, entityStore, Id.ofUri(URI(url)))
-        ?: run {
-            val parser = HtmlParser(httpClient.get(url))
-            val resource = ResourceEntity(
-                authority.authorityId,
-                URI(url),
-                parser.parseTitle(),
-                parser.parseDescription(),
-                null,
-                parser.parseImageUri()
-            )
-            entityStore.updateEntities(resource)
-            resource
-        }
+    try {
+        val entity = getOrCopyEntity(authority.authorityId, entityStore, Id.ofUri(URI(url)))
+            ?: run {
+                // TODO: What if URL isn't html?
+                val parser = HtmlParser(httpClient.get(url))
+                val resource = ResourceEntity(
+                    authority.authorityId,
+                    URI(url),
+                    parser.parseTitle(),
+                    parser.parseDescription(),
+                    null,
+                    parser.parseImageUri()
+                )
+                entityStore.updateEntities(resource)
+                resource
+            }
 
-    return getEntityResult(authority, entityStore, peerRouter, entity.entityId)
+        return getEntityResult(authority, entityStore, peerRouter, entity.entityId)
+    }catch (e: Exception){
+        logger.error { e }
+    }
+
+    return null
 }
 
 fun newPost(authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter, entityPayload: EntityPayload): EntityResult? {
     val url = entityPayload.description?.trim()
 
-    return if(url != null && urlRegex.matchEntire(url) != null)
-        newResourceFromUrl(authority, entityStore, peerRouter, url)
-    else
-        updateEntity(authority, entityStore, peerRouter, PostEntity(authority.authorityId), entityPayload)
+    if(url != null && urlRegex.matchEntire(url) != null) {
+        val result = newResourceFromUrl(authority, entityStore, peerRouter, url)
+        if(result != null)
+            return result
+    }
+
+    return updateEntity(authority, entityStore, peerRouter, PostEntity(authority.authorityId), entityPayload)
 }
 
 suspend fun newPost(call: ApplicationCall, authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter) {

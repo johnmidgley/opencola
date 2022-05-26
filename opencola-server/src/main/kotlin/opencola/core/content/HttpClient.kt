@@ -10,6 +10,7 @@ val urlRegex = "^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@
 class HttpClient() {
     private val httpClient = HttpClient(CIO)
 
+    // TODO: This assumes html
     fun get(url: String) : String {
         return runBlocking {
             httpClient.get(url)
