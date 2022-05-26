@@ -9,13 +9,11 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import opencola.core.event.EventBus.Event
-import opencola.core.extensions.ifNotNullOrElse
 import opencola.core.model.*
 import opencola.core.network.PeerRouter
 import opencola.core.network.PeerRouter.PeerStatus.Status.*
 import opencola.core.search.SearchIndex
 import opencola.core.storage.EntityStore
-import opencola.server.handlers.TransactionsResponse
 import java.io.ByteArrayInputStream
 
 interface Reactor {
@@ -55,34 +53,20 @@ class MainReactor(
         }
     }
 
-    private fun getTransactionsUrl(peer: Peer, peerTransactionId: Id?): String {
-        return "http://${peer.host}/transactions/${peer.id}${peerTransactionId.ifNotNullOrElse({"/${it.toString()}"}, {""})}?peerId=${authority.authorityId}"
-    }
-
     private suspend fun requestTransactions(peer: Peer){
-        // TODO: Update getTransaction to take authorityId
-        logger.info { "Requesting transaction from: ${peer.name}" }
-
         try {
             var peerTransactionId = entityStore.getLastTransactionId(peer.id)
 
             // TODO - Config max batches
             // TODO: Set reasonable max batches and batch sizes
             for(batch in 1..10) {
-                val urlString = getTransactionsUrl(peer, peerTransactionId)
-                logger.info { "Requesting transactions - Batch $batch - $urlString" }
+                logger.info { "Requesting transactions from ${peer.name} - Batch $batch" }
 
                 //TODO - see implement PeerService.get(peer, path) to get rid of httpClient here
                 // plus no need to update peer status here
-                val transactionsResponse: TransactionsResponse =
-                    httpClient.get(urlString)
+                val transactionsResponse = peerRouter.getTransactions(authority, peer, peerTransactionId)
 
-                // Suppress notifications, otherwise will trigger another transactions request
-                // TODO: Seems a bit messy. Is there a cleaner way to handle switch to online
-                //  without having to specify suppression?
-                peerRouter.updateStatus(peer.id, Online, true)
-
-                if(transactionsResponse.transactions.isEmpty())
+                if(transactionsResponse == null || transactionsResponse.transactions.isEmpty())
                     break
 
                 entityStore.addSignedTransactions(transactionsResponse.transactions)

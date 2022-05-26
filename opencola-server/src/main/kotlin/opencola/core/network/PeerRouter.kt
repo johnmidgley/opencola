@@ -13,14 +13,17 @@ import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import opencola.core.event.EventBus
 import opencola.core.event.Events
+import opencola.core.extensions.ifNotNullOrElse
+import opencola.core.model.Authority
 import opencola.core.model.Id
 import opencola.core.model.Peer
-import opencola.core.network.PeerRouter.PeerStatus.*
+import opencola.core.network.PeerRouter.PeerStatus.Status
 import opencola.core.network.PeerRouter.PeerStatus.Status.*
 import opencola.core.serialization.StreamSerializer
 import opencola.core.serialization.readInt
 import opencola.core.serialization.writeInt
 import opencola.core.storage.AddressBook
+import opencola.server.handlers.TransactionsResponse
 import java.io.InputStream
 import java.io.OutputStream
 
@@ -99,11 +102,35 @@ class PeerRouter(private val addressBook: AddressBook, private val eventBus: Eve
         return previousStatus
     }
 
-    private suspend fun sendMessage(peerStatus: PeerStatus, path: String, message: Any){
-        val urlString = "http://${peerStatus.peer.host}/$path"
-        logger.info { "Sending $message to $urlString" }
-
+    suspend fun getTransactions(authority: Authority, peer: Peer, peerTransactionId: Id?): TransactionsResponse? {
         try {
+            val url = "http://${peer.host}/transactions/${peer.id}${peerTransactionId.ifNotNullOrElse({ "/${it}" },{ "" })}?peerId=${authority.authorityId}"
+            val response: TransactionsResponse = httpClient.get(url)
+
+            // Suppress notifications, otherwise will trigger another transactions request
+            // TODO: Seems a bit messy. Is there a cleaner way to handle switch to online
+            //  without having to specify suppression?
+            updateStatus(peer.id, Online, true)
+
+            return response
+        } catch (e: Exception) {
+            if(e is java.net.ConnectException)
+                logger.info { "${peer.name} appears to be offline." }
+            else
+                logger.error { e.message }
+            // TODO: This should depend on the error
+            updateStatus(peer.id, Offline)
+        }
+
+        return null
+    }
+
+    // TODO: Break this out by message. It's exposing to much that you can send a message to an arbitrary path
+    private suspend fun sendMessage(peerStatus: PeerStatus, path: String, message: Any) {
+        try {
+            val urlString = "http://${peerStatus.peer.host}/$path"
+            logger.info { "Sending $message to $urlString" }
+
             val response = httpClient.post<HttpStatement>(urlString) {
                 contentType(ContentType.Application.Json)
                 body = message
