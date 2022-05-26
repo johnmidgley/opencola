@@ -12,7 +12,6 @@ import opencola.core.search.SearchIndex
 import opencola.core.storage.EntityStore
 import opencola.service.EntityResult
 import opencola.service.EntityResult.*
-import java.net.URI
 
 @Serializable
 data class FeedResult(val authorityId: String, val pagingToken: String?, val results: List<EntityResult>) {
@@ -34,32 +33,10 @@ fun getSummary(authorityId: Id, entities: List<Entity>): Summary {
     )
 }
 
-// TODO: generate this list once, vs creating Authorities for each activity
-// TODO: Get Authority from Address Book - don't need special logic for "You" / root authority
-fun getAuthority(id: Id, rootAuthority: Authority, peerRouter: PeerRouter): Authority? {
-    return if (id == rootAuthority.authorityId)
-        Authority(rootAuthority.publicKey!!, URI(""), name = "You")
-    else
-        peerRouter.getPeer(id).nullOrElse { Authority(it.publicKey, URI("http://${it.host}"), name = it.name) }
-}
-
 fun getFact(facts: Iterable<Fact>, attribute: Attribute): Fact? {
     return facts
         .filter { it.operation != Operation.Retract }
         .lastOrNull { it.attribute == attribute }
-}
-
-fun getAttributeValueFromFact(facts: Iterable<Fact>, attribute: Attribute): Any? {
-    return getFact(facts, attribute).nullOrElse { attribute.codec.decode(it.value.bytes) }
-}
-
-fun getDataId(authorityId: Id, facts: List<Fact>) : Id?{
-    val dataIdAttribute = DataId.spec
-
-    return facts
-        .filter { it.authorityId == authorityId && it.operation != Operation.Retract }
-        .lastOrNull { it.attribute == dataIdAttribute }
-        .nullOrElse { dataIdAttribute.codec.decode(it.value.bytes) as Id }
 }
 
 fun factToAction(comments: Map<Id, CommentEntity>, fact: Fact) : Action? {
@@ -80,7 +57,7 @@ fun factToAction(comments: Map<Id, CommentEntity>, fact: Fact) : Action? {
 
 fun factsToActions(comments: Map<Id, CommentEntity>, facts: List<Fact>) : List<Action> {
     val factsByAttribute = facts.groupBy { it.attribute }
-    val dataIdPresent = factsByAttribute[CoreAttribute.DataId.spec] != null
+    val dataIdPresent = factsByAttribute[DataId.spec] != null
 
     return factsByAttribute.flatMap { (attribute, facts) ->
         if(dataIdPresent && attribute == Type.spec) {
@@ -94,7 +71,7 @@ fun factsToActions(comments: Map<Id, CommentEntity>, facts: List<Fact>) : List<A
 }
 
 fun entityActivities(authority: Authority, entity: Entity, comments: Map<Id, CommentEntity>): List<Activity> {
-    if (authority.authorityId != entity.authorityId) {
+    if (authority.entityId != entity.authorityId) {
         throw IllegalArgumentException("authorityId does not match entity")
     }
 
@@ -144,13 +121,6 @@ fun isEntityIsVisible(authorityId: Id, entity: Entity) : Boolean {
     }
 }
 
-fun getEntityFacts(entityStore: EntityStore, authorityId: Id, entityIds: Iterable<Id>): Map<Id, List<Fact>> {
-    return entityStore.getFacts(emptyList(), entityIds)
-        .groupBy { it.entityId }
-        .filter { isEntityIsVisible(authorityId, it.value) }
-        .toMap()
-}
-
 fun getEntityIds(entityStore: EntityStore, searchIndex: SearchIndex, query: String?): List<Id> {
     // TODO: This will generally result in an unpredictable number of entities, as single actions (lile, comment, etc.)
     //  take a transaction. Fix this by requesting transaction batches until no more or 100 entities have been reached
@@ -175,7 +145,7 @@ fun getComments(entityStore: EntityStore, entities: Iterable<Entity>): Map<Id, C
 }
 
 fun getEntityResults(authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter, entityIds: Iterable<Id>): List<EntityResult> {
-    val idToAuthority: (Id) -> Authority? = { id -> getAuthority(id, authority, peerRouter) }
+    val idToAuthority: (Id) -> Authority? = { id -> peerRouter.getPeer(id) }
     val entities = entityStore.getEntities(emptyList(), entityIds).filter { isEntityIsVisible(authority.authorityId, it) }
     val comments = getComments(entityStore, entities)
     val entitiesByEntityId = entities.groupBy { it.entityId }

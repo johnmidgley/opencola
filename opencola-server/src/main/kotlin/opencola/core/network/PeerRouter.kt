@@ -16,9 +16,7 @@ import opencola.core.event.Events
 import opencola.core.extensions.ifNotNullOrElse
 import opencola.core.model.Authority
 import opencola.core.model.Id
-import opencola.core.model.Peer
-import opencola.core.network.PeerRouter.PeerStatus.Status
-import opencola.core.network.PeerRouter.PeerStatus.Status.*
+import opencola.core.network.PeerRouter.PeerStatus.*
 import opencola.core.serialization.StreamSerializer
 import opencola.core.serialization.readInt
 import opencola.core.serialization.writeInt
@@ -26,23 +24,17 @@ import opencola.core.storage.AddressBook
 import opencola.server.handlers.TransactionsResponse
 import java.io.InputStream
 import java.io.OutputStream
+import java.util.concurrent.ConcurrentHashMap
 
 // TODO: Should respond to changes in address book
 class PeerRouter(private val addressBook: AddressBook, private val eventBus: EventBus) {
     private val logger = KotlinLogging.logger("PeerRouter")
-    private val peerIdToStatusMap = this.addressBook.peers.associate { Pair(it.id, PeerStatus(it)) }
-    val peers: List<Peer> get() { return peerIdToStatusMap.values.map { it.peer }}
+    private val peerStatuses = ConcurrentHashMap<Id, PeerStatus>()
 
-    fun getPeer(peerId: Id): Peer? {
-        return peerIdToStatusMap[peerId]?.peer
-    }
-
-    data class PeerStatus(val peer: Peer, var status: Status = if (peer.active) Unknown else Offline){
-        enum class Status{
-            Unknown,
-            Offline,
-            Online
-        }
+    enum class PeerStatus {
+        Unknown,
+        Offline,
+        Online,
     }
 
     enum class Event {
@@ -75,47 +67,58 @@ class PeerRouter(private val addressBook: AddressBook, private val eventBus: Eve
         }
     }
 
+    fun getPeer(peerId: Id) : Authority? {
+        return addressBook.getAuthority(peerId)
+    }
+
+    fun getPeers() : Set<Authority> {
+        return addressBook.getAuthorities(true)
+    }
+
     fun broadcastMessage(path: String, message: Any){
         runBlocking {
-            if(peerIdToStatusMap.values.any { it.peer.active })
+            val peers = addressBook.getAuthorities(true)
+            if(peers.isNotEmpty()) {
                 logger.info { "Broadcasting new transaction notification" }
 
-            peerIdToStatusMap.values.forEach {
-                if(listOf(Unknown, Online).contains(it.status) && it.peer.active) {
-                    // TODO: Make batched, to limit simultaneous connections
-                    async { sendMessage(it, path, message) }
+                peers.forEach {
+                    if (listOf(Unknown, Online).contains(peerStatuses.getOrDefault(it.entityId, Unknown))) {
+                        // TODO: Make batched, to limit simultaneous connections
+                        async { sendMessage(it, path, message) }
+                    }
                 }
             }
         }
     }
 
-    fun updateStatus(peerId: Id, status: Status, suppressNotifications: Boolean = false): Status {
+    fun updateStatus(peerId: Id, status: PeerStatus, suppressNotifications: Boolean = false): PeerStatus {
         logger.info { "Updating peer $peerId to $status" }
-        val peer = peerIdToStatusMap[peerId] ?: throw IllegalArgumentException("Attempt to update status for unknown peer: $peerId")
-        val previousStatus = peer.status
-        peer.status = status
+        addressBook.getAuthority(peerId) ?: throw IllegalArgumentException("Attempt to update status for unknown peer: $peerId")
+        peerStatuses.getOrDefault(peerId, Unknown).let { previousStatus ->
+            peerStatuses[peerId] = status
 
-        if(!suppressNotifications && status != previousStatus && status == Online){
-            eventBus.sendMessage(Events.PeerNotification.toString(), Notification(peerId, Event.Online).encode())
+            if (!suppressNotifications && status != previousStatus && status == Online) {
+                eventBus.sendMessage(Events.PeerNotification.toString(), Notification(peerId, Event.Online).encode())
+            }
+
+            return previousStatus
         }
-
-        return previousStatus
     }
 
-    suspend fun getTransactions(authority: Authority, peer: Peer, peerTransactionId: Id?): TransactionsResponse? {
+    suspend fun getTransactions(authority: Authority, peer: Authority, peerTransactionId: Id?): TransactionsResponse? {
         try {
-            if(!peer.active){
-                logger.warn { "Ignoring getTransactions for inactive peer: ${peer.id}" }
+            if(!addressBook.isAuthorityActive(peer)){
+                logger.warn { "Ignoring getTransactions for inactive peer: ${peer.entityId}" }
                 return null
             }
 
-            val url = "http://${peer.host}/transactions/${peer.id}${peerTransactionId.ifNotNullOrElse({ "/${it}" },{ "" })}?peerId=${authority.authorityId}"
+            val url = "${peer.uri}/transactions/${peer.entityId}${peerTransactionId.ifNotNullOrElse({ "/${it}" },{ "" })}?peerId=${authority.authorityId}"
             val response: TransactionsResponse = httpClient.get(url)
 
             // Suppress notifications, otherwise will trigger another transactions request
             // TODO: Seems a bit messy. Is there a cleaner way to handle switch to online
             //  without having to specify suppression?
-            updateStatus(peer.id, Online, true)
+            updateStatus(peer.entityId, Online, true)
 
             return response
         } catch (e: Exception) {
@@ -124,21 +127,21 @@ class PeerRouter(private val addressBook: AddressBook, private val eventBus: Eve
             else
                 logger.error { e.message }
             // TODO: This should depend on the error
-            updateStatus(peer.id, Offline)
+            updateStatus(peer.entityId, Offline)
         }
 
         return null
     }
 
     // TODO: Break this out by message. It's exposing to much that you can send a message to an arbitrary path
-    private suspend fun sendMessage(peerStatus: PeerStatus, path: String, message: Any) {
+    private suspend fun sendMessage(peer: Authority, path: String, message: Any) {
         try {
-            if(!peerStatus.peer.active) {
-                logger.warn { "Ignoring message to inactive peer: ${peerStatus.peer.id}" }
+            if(!addressBook.isAuthorityActive(peer)) {
+                logger.warn { "Ignoring message to inactive peer: ${peer.entityId}" }
                 return
             }
 
-            val urlString = "http://${peerStatus.peer.host}/$path"
+            val urlString = "${peer.uri}/$path"
             logger.info { "Sending $message to $urlString" }
 
             val response = httpClient.post<HttpStatement>(urlString) {
@@ -148,15 +151,15 @@ class PeerRouter(private val addressBook: AddressBook, private val eventBus: Eve
 
             logger.info { "Response: ${response.status}" }
 
-            peerStatus.status = Online
+            peerStatuses[peer.entityId] = Online
         }
         catch(e: java.net.ConnectException){
-            logger.info { "${peerStatus.peer.name} appears to be offline." }
-            peerStatus.status = Offline
+            logger.info { "${peer.name} appears to be offline." }
+            peerStatuses[peer.entityId] = Offline
         }
         catch (e: Exception){
             logger.error { e.message }
-            peerStatus.status = Offline
+            peerStatuses[peer.entityId] = Offline
         }
     }
 }

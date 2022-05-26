@@ -4,14 +4,12 @@ import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.features.json.*
 import io.ktor.client.features.json.serializer.*
-import io.ktor.client.request.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import opencola.core.event.EventBus.Event
 import opencola.core.model.*
 import opencola.core.network.PeerRouter
-import opencola.core.network.PeerRouter.PeerStatus.Status.*
 import opencola.core.search.SearchIndex
 import opencola.core.storage.EntityStore
 import java.io.ByteArrayInputStream
@@ -40,51 +38,42 @@ class MainReactor(
     }
 
     private fun updatePeerTransactions() {
-        if(peerRouter.peers.isNotEmpty())
+        val peers = peerRouter.getPeers()
+        if(peers.isNotEmpty()) {
             logger.info { "Updating peer transactions" }
 
-        // TODO: Swap runBlocking with adding to peerExecutor
-        runBlocking {
-            peerRouter.peers
-                .filter { it.active }
-                .forEach {
-                async { requestTransactions(it) }
+            // TODO: Swap runBlocking with adding to peerExecutor
+            runBlocking {
+                peers
+                    .forEach {
+                        async { requestTransactions(it.entityId) }
+                    }
             }
         }
     }
 
-    private suspend fun requestTransactions(peer: Peer){
-        try {
-            var peerTransactionId = entityStore.getLastTransactionId(peer.id)
+    private suspend fun requestTransactions(peer: Authority) {
+        var peerTransactionId = entityStore.getLastTransactionId(peer.entityId)
 
-            // TODO - Config max batches
-            // TODO: Set reasonable max batches and batch sizes
-            for(batch in 1..10) {
-                logger.info { "Requesting transactions from ${peer.name} - Batch $batch" }
+        // TODO - Config max batches
+        // TODO: Set reasonable max batches and batch sizes
+        for (batch in 1..10) {
+            logger.info { "Requesting transactions from ${peer.name} - Batch $batch" }
 
-                //TODO - see implement PeerService.get(peer, path) to get rid of httpClient here
-                // plus no need to update peer status here
-                val transactionsResponse = peerRouter.getTransactions(authority, peer, peerTransactionId)
+            //TODO - see implement PeerService.get(peer, path) to get rid of httpClient here
+            // plus no need to update peer status here
+            val transactionsResponse = peerRouter.getTransactions(authority, peer, peerTransactionId)
 
-                if(transactionsResponse == null || transactionsResponse.transactions.isEmpty())
-                    break
+            if (transactionsResponse == null || transactionsResponse.transactions.isEmpty())
+                break
 
-                entityStore.addSignedTransactions(transactionsResponse.transactions)
-                peerTransactionId = transactionsResponse.transactions.last().transaction.id
+            entityStore.addSignedTransactions(transactionsResponse.transactions)
+            peerTransactionId = transactionsResponse.transactions.last().transaction.id
 
-                if(peerTransactionId == transactionsResponse.currentTransactionId)
-                    break
-            }
+            if (peerTransactionId == transactionsResponse.currentTransactionId)
+                break
         }
-        catch(e: java.net.ConnectException){
-            logger.info { "${peer.name} appears to be offline." }
-            peerRouter.updateStatus(peer.id, Offline)
-        }
-        catch (e: Exception){
-            logger.error { e.message }
-            // TODO: This should depend on the error
-            peerRouter.updateStatus(peer.id, Offline)
-        }
+
         logger.info { "Completed requesting transactions from: ${peer.name}" }
     }
 

@@ -79,7 +79,7 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
             }
 
             // TODO: Change from authority to public key - they authority should come from the private store based on the private key
-            val authority = Authority(authorityPublicKey, URI("http://localhost"), "You")
+            val authority = Authority(authorityPublicKey, URI(""), "You")
             val keyStore = KeyStore(storagePath.resolve(config.security.keystore.name), config.security.keystore.password)
             val fileStore = LocalFileStore(storagePath.resolve("filestore"))
             val sqLiteDB = SQLiteDB(storagePath.resolve("${authority.authorityId}.db")).db

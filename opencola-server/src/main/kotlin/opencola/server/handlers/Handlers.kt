@@ -11,7 +11,7 @@ import opencola.core.event.Events
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.*
 import opencola.core.network.PeerRouter
-import opencola.core.network.PeerRouter.PeerStatus.Status.Online
+import opencola.core.network.PeerRouter.PeerStatus.Online
 import opencola.core.storage.AddressBook
 import opencola.core.storage.EntityStore
 import opencola.core.storage.EntityStore.TransactionOrder

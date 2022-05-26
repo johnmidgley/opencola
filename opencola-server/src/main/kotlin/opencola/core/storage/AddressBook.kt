@@ -2,10 +2,10 @@ package opencola.core.storage
 
 import mu.KotlinLogging
 import opencola.core.config.NetworkConfig
+import opencola.core.config.PeerConfig
 import opencola.core.extensions.hexStringToByteArray
 import opencola.core.model.Authority
 import opencola.core.model.Id
-import opencola.core.model.Peer
 import opencola.core.security.Signator
 import opencola.core.security.publicKeyFromBytes
 import java.net.URI
@@ -19,45 +19,38 @@ class AddressBook(private val authority: Authority, storagePath: Path, signator:
     private val activeTag = "active"
     private val entityStore = ExposedEntityStore(SQLiteDB(storagePath.resolve("address-book.db")).db, authority, signator)
 
-    val peers: List<Peer>
-        get() {
-            return getAuthorities()
-                .map { Peer(it.entityId, it.publicKey!!, it.name!!, it.uri?.authority ?: "", it.tags.contains(activeTag) ) }
-        }
-
-
     fun getPublicKey(authorityId: Id): PublicKey? {
         return if (authorityId == authority.authorityId)
             authority.publicKey
         else
-            peers.firstOrNull{ it.id == authorityId }?.publicKey
+            getAuthority(authorityId)?.publicKey
     }
 
     init {
-        val peers = networkConfig.peers.map {
-            // TODO: Remove Peer - just pass config
-            Peer(Id.fromHexString(it.id), publicKeyFromBytes(it.publicKey.hexStringToByteArray()), it.name, it.host, it.active)
-        }
-
         // TODO: Does something have to be updated here when public key is updatable?
         if(getAuthority(authority.authorityId) == null)
             updateAuthority(authority)
 
-        importPeers(peers)
+        importPeers(networkConfig.peers)
     }
 
-    private fun importPeers(peers: List<Peer>) {
+    private fun importPeers(peers: List<PeerConfig>) {
         peers
             .forEach {
                 logger.info { "Importing peer: $it" }
                 val uri = URI("http://${it.host}")
                 val tags = if (it.active) setOf(activeTag) else emptySet()
+                val peerAuthority = getAuthority(Id.fromHexString(it.id)) ?:
+                    Authority(authority.authorityId, publicKeyFromBytes(it.publicKey.hexStringToByteArray()), uri, it.name)
 
-                val peerAuthority = getAuthority(it.id) ?: Authority(authority.authorityId, it.publicKey, uri, it.name)
                 peerAuthority.name = it.name
                 peerAuthority.tags = tags
                 updateAuthority(peerAuthority)
             }
+    }
+
+    fun isAuthorityActive(authority: Authority) : Boolean {
+        return authority.tags.contains(activeTag)
     }
 
     fun updateAuthority(authority: Authority) : Authority {
