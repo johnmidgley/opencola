@@ -6,6 +6,9 @@ import io.ktor.request.*
 import io.ktor.response.*
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
+import opencola.core.content.HtmlParser
+import opencola.core.content.HttpClient
+import opencola.core.content.urlRegex
 import opencola.core.extensions.blankToNull
 import opencola.core.extensions.ifNullOrElse
 import opencola.core.extensions.nullOrElse
@@ -16,6 +19,7 @@ import opencola.service.EntityResult
 import java.net.URI
 
 private val logger = KotlinLogging.logger("EntityHandler")
+private val httpClient = HttpClient()
 
 suspend fun getEntity(call: ApplicationCall, authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter) {
     // TODO: Authority should be passed (and authenticated) in header
@@ -58,7 +62,7 @@ data class EntityPayload(
 fun updateEntity(authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter, entity: Entity, entityPayload: EntityPayload): EntityResult? {
     entity.name = entityPayload.name.blankToNull()
     entity.imageUri = entityPayload.imageUri.blankToNull().nullOrElse {
-        val uri = URI(entityPayload.imageUri)
+        val uri = URI(it)
         if (!uri.isAbsolute)
             throw IllegalArgumentException("Image URI must be absolute")
         uri
@@ -183,9 +187,32 @@ suspend fun saveEntity(call: ApplicationCall, authority: Authority, entityStore:
         .nullOrElse { call.respond(it) }
 }
 
+fun newResourceFromUrl(authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter, url: String) : EntityResult? {
+    val entity = getOrCopyEntity(authority.authorityId, entityStore, Id.ofUri(URI(url)))
+        ?: run {
+            val parser = HtmlParser(httpClient.get(url))
+            val resource = ResourceEntity(
+                authority.authorityId,
+                URI(url),
+                parser.parseTitle(),
+                parser.parseDescription(),
+                null,
+                parser.parseImageUri()
+            )
+            entityStore.updateEntities(resource)
+            resource
+        }
+
+    return getEntityResult(authority, entityStore, peerRouter, entity.entityId)
+}
+
 fun newPost(authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter, entityPayload: EntityPayload): EntityResult? {
-    val post = PostEntity(authority.authorityId)
-    return updateEntity(authority, entityStore, peerRouter, post, entityPayload)
+    val url = entityPayload.description?.trim()
+
+    return if(url != null && urlRegex.matchEntire(url) != null)
+        newResourceFromUrl(authority, entityStore, peerRouter, url)
+    else
+        updateEntity(authority, entityStore, peerRouter, PostEntity(authority.authorityId), entityPayload)
 }
 
 suspend fun newPost(call: ApplicationCall, authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter) {
