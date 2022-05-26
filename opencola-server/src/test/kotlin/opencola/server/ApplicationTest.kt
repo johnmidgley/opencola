@@ -102,6 +102,9 @@ class ApplicationTest {
     // TODO: Add tests for Like and trust that use this code
     fun testSavePageThenSearch(){
         val mhtPath = TestApplication.applicationPath.resolve("../sample-docs/Conway's Game of Life - Wikipedia.mht")
+        val application = TestApplication.newApplication()
+
+        // TODO:("This seems to spit a few errors when running with all tests")
 
         withTestApplication({ configureRouting(application); configureContentNegotiation() }) {
             with(handleRequest(HttpMethod.Post, "/action"){
@@ -133,6 +136,8 @@ class ApplicationTest {
             }) {
                 assertEquals(HttpStatusCode.Accepted, response.status())
             }
+
+            Thread.sleep(500)
 
             handleRequest(HttpMethod.Get, "/search?q=game").apply {
                 assertEquals(HttpStatusCode.OK, response.status())

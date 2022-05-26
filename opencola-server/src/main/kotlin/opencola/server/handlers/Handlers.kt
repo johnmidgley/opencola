@@ -45,7 +45,7 @@ suspend fun handleGetTransactionsCall(call: ApplicationCall, entityStore: Entity
     logger.info { "handleGetTransactionsCall authorityId: $authorityId, peerId: $peerId, transactionId: $transactionId" }
 
     if(peerRouter.getPeer(peerId) == null){
-        logger.error { "Attempt to request transactions from an unknown peer: $peerId" }
+        logger.error { "Unknown peer attempted to request transactions: $peerId" }
         call.respond(HttpStatusCode.Unauthorized)
         return
     }
