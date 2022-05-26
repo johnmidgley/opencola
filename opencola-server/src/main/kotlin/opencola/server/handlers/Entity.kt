@@ -69,12 +69,10 @@ fun updateEntity(authority: Authority, entityStore: EntityStore, peerRouter: Pee
         .blankToNull()
         .ifNullOrElse(emptySet()) { it.split(" ").toSet() }
 
-    entityPayload.comment.nullOrElse { comment ->
-        if (comment.isNotBlank())
-            entityStore.updateEntities(entity, CommentEntity(entity.authorityId, entity.entityId, comment))
-        else
-            entityStore.updateEntities(entity)
-    }
+    if(entityPayload.comment.isNullOrBlank())
+        entityStore.updateEntities(entity)
+    else
+        entityStore.updateEntities(entity, CommentEntity(entity.authorityId, entity.entityId, entityPayload.comment))
 
     return getEntityResult(authority, entityStore, peerRouter, entity.entityId)
 }

@@ -2,27 +2,30 @@ package opencola.server
 
 import io.ktor.http.*
 import io.ktor.http.content.*
-import kotlin.test.*
 import io.ktor.server.testing.*
 import io.ktor.utils.io.streams.*
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import opencola.core.TestApplication
-import opencola.server.plugins.configureContentNegotiation
-import opencola.server.plugins.configureRouting
-import opencola.service.search.SearchResults
-import java.io.File
-import kotlinx.serialization.decodeFromString
 import opencola.core.model.*
-import opencola.core.storage.EntityStore
-import org.kodein.di.instance
-import java.net.URI
-import java.net.URLEncoder
-import kotlinx.serialization.encodeToString
 import opencola.core.network.PeerRouter
 import opencola.core.security.generateKeyPair
 import opencola.core.storage.AddressBook
+import opencola.core.storage.EntityStore
+import opencola.server.handlers.EntityPayload
 import opencola.server.handlers.FeedResult
+import opencola.server.plugins.configureContentNegotiation
+import opencola.server.plugins.configureRouting
 import opencola.service.EntityResult
+import opencola.service.search.SearchResults
+import org.kodein.di.instance
+import java.io.File
+import java.net.URI
+import java.net.URLEncoder
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class ApplicationTest {
     private val application = TestApplication.instance
@@ -102,9 +105,6 @@ class ApplicationTest {
     // TODO: Add tests for Like and trust that use this code
     fun testSavePageThenSearch(){
         val mhtPath = TestApplication.applicationPath.resolve("../sample-docs/Conway's Game of Life - Wikipedia.mht")
-        val application = TestApplication.newApplication()
-
-        // TODO:("This seems to spit a few errors when running with all tests")
 
         withTestApplication({ configureRouting(application); configureContentNegotiation() }) {
             with(handleRequest(HttpMethod.Post, "/action"){
@@ -149,6 +149,8 @@ class ApplicationTest {
 
     @Test
     fun testPostNotification(){
+        // TODO: This seems to spit a few errors - should be fixed with PeerRouter updates
+
         val localAuthority by injector.instance<Authority>()
         val addressBook by injector.instance<AddressBook>()
         val peerAuthority = addressBook.putAuthority(Authority(localAuthority.authorityId, generateKeyPair().public, URI(""), "Test"))
@@ -207,7 +209,7 @@ class ApplicationTest {
         }
     }
 
-    // @Test
+    @Test
     fun testUpdateEntity(){
         val authority by injector.instance<Authority>()
         val entityStore by injector.instance<EntityStore>()
@@ -220,14 +222,18 @@ class ApplicationTest {
             URI("https://opencola.io/image.png")
         )
         entityStore.updateEntities(resourceEntity)
-        val entity = EntityResult(
-            resourceEntity.entityId,
-            EntityResult.Summary("Name1", "", "Description1", "https://opencola.io/image1.png"),
-            emptyList())
-
+        val entity = EntityPayload(
+            resourceEntity.entityId.toString(),
+            "Name1",
+            "https://opencola.io/image1.png",
+            "Description1",
+            true,
+            "tag",
+            null
+        )
 
         withTestApplication({ configureRouting(application); configureContentNegotiation() }) {
-            with(handleRequest(HttpMethod.Post, "/entity/${resourceEntity.entityId}"){
+            with(handleRequest(HttpMethod.Put, "/entity/${resourceEntity.entityId}"){
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                 setBody(Json.encodeToString(entity))
             }) {
@@ -235,9 +241,9 @@ class ApplicationTest {
                 val entityResult = Json.decodeFromString<EntityResult>(response.content!!)
 
                 assertEquals(entity.entityId, entityResult.entityId)
-                assertEquals(entity.summary.name, entityResult.summary.name)
-                assertEquals(entity.summary.description, entityResult.summary.description)
-                assertEquals(entity.summary.imageUri, entityResult.summary.imageUri)
+                assertEquals(entity.name, entityResult.summary.name)
+                assertEquals(entity.description, entityResult.summary.description)
+                assertEquals(entity.imageUri, entityResult.summary.imageUri)
             }
         }
     }
