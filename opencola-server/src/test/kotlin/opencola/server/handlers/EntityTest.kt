@@ -12,7 +12,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class EntityTest {
-    fun saveEntity(getEntity: (Id) -> Entity): Entity? {
+    fun saveEntity(getEntity: (Id) -> Entity): Entity {
         // Make a peer transaction that contains a resource
         val peerApplication = TestApplication.newApplication()
         val peerAuthority by peerApplication.injector.instance<Authority>()
@@ -26,7 +26,7 @@ class EntityTest {
         val localAuthority by injector.instance<Authority>()
         val localEntityStore by injector.instance<EntityStore>()
         val localAddressBook by injector.instance<AddressBook>()
-        localAddressBook.putAuthority(Authority(localAuthority.authorityId, peerAuthority.publicKey!!, peerAuthority.uri!!, peerAuthority.name!!))
+        localAddressBook.updateAuthority(Authority(localAuthority.authorityId, peerAuthority.publicKey!!, peerAuthority.uri!!, peerAuthority.name!!))
         localEntityStore.addSignedTransactions(listOf(peerTransaction))
         assertNull(localEntityStore.getEntity(localAuthority.authorityId, peerEntity.entityId))
 

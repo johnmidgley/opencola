@@ -56,7 +56,7 @@ class ApplicationTest {
                 // TODO: Can't use .equals, since returned entity has committed transaction ids.
                 // Make commit return the updated entity or implement a contentEquals that ignores transaction id
                 assertEquals(entity.entityId, Id.fromHexString(entityResult.entityId))
-                assertEquals(entity.uri, URI(entityResult.summary.uri))
+                assertEquals(entity.uri, URI(entityResult.summary.uri!!))
 
                 val activity = entityResult.activities.single()
                 assertEquals(authority.authorityId.toString(), activity.authorityId)
@@ -153,7 +153,7 @@ class ApplicationTest {
 
         val localAuthority by injector.instance<Authority>()
         val addressBook by injector.instance<AddressBook>()
-        val peerAuthority = addressBook.putAuthority(Authority(localAuthority.authorityId, generateKeyPair().public, URI(""), "Test"))
+        val peerAuthority = addressBook.updateAuthority(Authority(localAuthority.authorityId, generateKeyPair().public, URI(""), "Test"))
         val notification = PeerRouter.Notification(peerAuthority.authorityId, PeerRouter.Event.NewTransaction)
 
         withTestApplication({ configureRouting(application); configureContentNegotiation() }) {

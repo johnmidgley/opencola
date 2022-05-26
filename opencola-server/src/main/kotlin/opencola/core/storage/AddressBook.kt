@@ -41,7 +41,7 @@ class AddressBook(private val authority: Authority, storagePath: Path, signator:
 
         // TODO: Does something have to be updated here when public key is updatable?
         if(getAuthority(authority.authorityId) == null)
-            putAuthority(authority)
+            updateAuthority(authority)
 
         importPeers(peers)
     }
@@ -49,25 +49,18 @@ class AddressBook(private val authority: Authority, storagePath: Path, signator:
     private fun importPeers(peers: List<Peer>) {
         peers
             .forEach {
-                if (getAuthority(it.id) != null)
-                    logger.warn { "Ignoring existing peer: $it" }
-                else {
-                    logger.info { "Importing peer: $it" }
-                    val tags = if (it.active) setOf(activeTag) else null
-                    putAuthority(
-                        Authority(
-                            authority.authorityId,
-                            it.publicKey,
-                            URI("http://${it.host}"),
-                            it.name,
-                            tags = tags
-                        )
-                    )
-                }
+                logger.info { "Importing peer: $it" }
+                val uri = URI("http://${it.host}")
+                val tags = if (it.active) setOf(activeTag) else emptySet()
+
+                val peerAuthority = getAuthority(it.id) ?: Authority(authority.authorityId, it.publicKey, uri, it.name)
+                peerAuthority.name = it.name
+                peerAuthority.tags = tags
+                updateAuthority(peerAuthority)
             }
     }
 
-    fun putAuthority(authority: Authority) : Authority {
+    fun updateAuthority(authority: Authority) : Authority {
         entityStore.updateEntities(authority)
         return authority
     }

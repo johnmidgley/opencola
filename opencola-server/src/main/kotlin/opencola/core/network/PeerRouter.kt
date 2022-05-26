@@ -104,6 +104,11 @@ class PeerRouter(private val addressBook: AddressBook, private val eventBus: Eve
 
     suspend fun getTransactions(authority: Authority, peer: Peer, peerTransactionId: Id?): TransactionsResponse? {
         try {
+            if(!peer.active){
+                logger.warn { "Ignoring getTransactions for inactive peer: ${peer.id}" }
+                return null
+            }
+
             val url = "http://${peer.host}/transactions/${peer.id}${peerTransactionId.ifNotNullOrElse({ "/${it}" },{ "" })}?peerId=${authority.authorityId}"
             val response: TransactionsResponse = httpClient.get(url)
 
@@ -128,6 +133,11 @@ class PeerRouter(private val addressBook: AddressBook, private val eventBus: Eve
     // TODO: Break this out by message. It's exposing to much that you can send a message to an arbitrary path
     private suspend fun sendMessage(peerStatus: PeerStatus, path: String, message: Any) {
         try {
+            if(!peerStatus.peer.active) {
+                logger.warn { "Ignoring message to inactive peer: ${peerStatus.peer.id}" }
+                return
+            }
+
             val urlString = "http://${peerStatus.peer.host}/$path"
             logger.info { "Sending $message to $urlString" }
 
