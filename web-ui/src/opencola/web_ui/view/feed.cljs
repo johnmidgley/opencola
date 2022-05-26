@@ -309,7 +309,7 @@
 
 (defn name-edit-control [edit-item!]
        [:div.item-name
-        [:div.field-header "Name:"]
+        [:div.field-header "Title:"]
         [:input.item-link
          {:type "text"
           :value (:name @edit-item!)
