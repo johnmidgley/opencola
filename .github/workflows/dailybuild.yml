@@ -40,7 +40,7 @@ jobs:
     - name: Build with install script
       run: |
         ./install
-        rm *.tgz
+    #    rm *.tgz
 
     #step: get the date for the build packages
     - name: Get date for build outputs
