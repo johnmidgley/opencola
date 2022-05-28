@@ -3,7 +3,7 @@
    [reagent.dom :as rdom]
    [ajax.core :refer [GET]]))
 
-(defonce config (atom {}))
+(defonce config (atom nil))
 
 (defn get-config [success-handler error-handler]
   (GET "config.json" {:handler #(do (reset! config %)

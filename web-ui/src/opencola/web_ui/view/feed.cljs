@@ -9,6 +9,7 @@
    [lambdaisland.uri :refer [uri]]
    [cljs.reader :as reader]
    [opencola.web-ui.config :as config]
+   [opencola.web-ui.common :as common]
    [opencola.web-ui.view.search :as search]
    [opencola.web-ui.model.error :as error]
    [opencola.web-ui.model.feed :as feed]))
@@ -16,9 +17,6 @@
 ;; TODO: Look at https://github.com/Day8/re-com
 
 (def inline-divider [:span.divider " | "])
-
-(defn get-feed [query feed!]
-  (feed/get-feed query feed!))
 
 (defn format-time [epoch-second]
   (f/unparse (f/formatter "yyyy-MM-dd hh:mm") (c/from-long (* epoch-second 1000))))
@@ -201,12 +199,6 @@
                 ^{:key like-action} [item-like like-action]))]]]))
 
 
-(defn toggle-atom [atoms! atom!]
-  (doall(for [a! atoms!]
-          (if (not= a! atom!)
-            (reset! a! false))))
-  (swap! atom! #(not %)))
-
 (defn action-summary [feed! key action-expanded? activities on-click]
   (let [authority-id (:authorityId @feed!)
         actions (key activities)
@@ -214,7 +206,7 @@
         highlight (some #(= authority-id (:authorityId %)) actions)]
     [:span 
      [:span {:class (if highlight "highlight") :on-click on-click} (action-img (name key))]
-     [:span {:on-click #(toggle-atom (map second action-expanded?) expanded?)} " " (count actions) 
+     [:span {:on-click #(common/toggle-atom (map second action-expanded?) expanded?)} " " (count actions) 
       (action-img (if @expanded? "hide" "show"))]])) 
 
 (defn save-item [feed! item]
@@ -415,15 +407,11 @@
     [:div.error e]))
 
 
-;; TODO: view model should be passed in from outside to avoid "Singleton"
-(def feed! (atom {}))
-
-(defn feed-page []
-  (feed/get-feed "" feed!)
+(defn feed-page [feed! query! on-search]
   (let [creating-post?! (atom false)]
     (fn []
       [:div#opencola.feed-page
-       [search/search-header #(get-feed % feed!) creating-post?!]
+       [search/search-header query! on-search creating-post?!]
        [feed-error feed!]
        (if @creating-post?!
          (let [edit-item! (atom (edit-item))] 

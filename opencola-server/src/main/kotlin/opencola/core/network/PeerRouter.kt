@@ -92,8 +92,11 @@ class PeerRouter(private val addressBook: AddressBook, private val eventBus: Eve
     }
 
     fun updateStatus(peerId: Id, status: PeerStatus, suppressNotifications: Boolean = false): PeerStatus {
-        logger.info { "Updating peer $peerId to $status" }
-        addressBook.getAuthority(peerId) ?: throw IllegalArgumentException("Attempt to update status for unknown peer: $peerId")
+        val peer = addressBook.getAuthority(peerId)
+            ?: throw IllegalArgumentException("Attempt to update status for unknown peer: $peerId")
+
+        logger.info { "Updating peer ${peer.name} to $status" }
+
         peerStatuses.getOrDefault(peerId, Unknown).let { previousStatus ->
             peerStatuses[peerId] = status
 
