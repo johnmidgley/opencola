@@ -1,0 +1,13 @@
+services:
+  oc:
+    build: ..
+    ports:
+      - "5795:5795"
+    volumes:
+      # Volumes for windows machines
+      - "$APPDATA\\opencola\\storage\\:/opencola/storage"
+      
+      # Volumes for mac/*nix
+      #- ~/.opencola/storage/:/opencola/storage
+      
+    restart: unless-stopped
