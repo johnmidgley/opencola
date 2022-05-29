@@ -138,6 +138,9 @@ abstract class AbstractEntityStore(
     }
 
     private fun validateFacts(authorityId: Id, facts: List<Fact>) : List<Fact> {
+        // TODO: Since there are already "bad" facts out there, this will likely create an issue of blowing
+        //  up anybody that gets bad facts. Figure out how to fix. Likely need to rebuild transaction chain then
+        //  dis/reconnect to peers. Other option is to gracefully handle bad facts, but only from peers
         val transactionFactsByEntity = facts.groupBy { it.entityId }
         val existingEntities = getEntities(listOf(authorityId), transactionFactsByEntity.keys)
 

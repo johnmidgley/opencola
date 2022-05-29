@@ -1,7 +1,6 @@
 package opencola.core.storage
 
 import mu.KotlinLogging
-import opencola.core.config.Application
 import opencola.core.content.parseMime
 import opencola.core.content.splitMht
 import opencola.core.extensions.nullOrElse
@@ -28,7 +27,8 @@ class MhtCache(private val cachePath: Path, private val entityStore: EntityStore
         val entity = entityStore.getEntity(authorityId, entityId)
 
         return when (entity) {
-            is ResourceEntity -> entity.dataId.nullOrElse { entityStore.getEntity(authorityId, it) }
+            // TODO: This grabs an arbitrary dataId. Probably should grab most recent
+            is ResourceEntity -> entity.dataId.nullOrElse { entityStore.getEntity(authorityId, it.first()) }
             is DataEntity -> entity
             else -> null
         } as DataEntity?

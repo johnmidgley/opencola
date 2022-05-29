@@ -4,7 +4,7 @@ import java.net.URI
 
 open class ResourceEntity : Entity {
     var uri by uriAttributeDelegate
-    var dataId by idAttributeDelegate // TODO: Make this a multi-value
+    var dataId by MultiValueSetOfIdAttributeDelegate
 
     constructor(authorityId: Id,
                 uri: URI,

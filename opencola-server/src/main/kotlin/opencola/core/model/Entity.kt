@@ -28,10 +28,6 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         return currentFacts(facts)
     }
 
-    fun getNonRetractedFacts() : List<Fact> {
-        return nonRetractedFacts(facts)
-    }
-
     init {
         if (type == null)
             type = this.javaClass.simpleName

@@ -174,7 +174,7 @@ class ApplicationTest {
 
         val uri = URI("https://opencola.org/${Id.new()}")
         val entity = ResourceEntity(authority.authorityId, uri)
-        entity.dataId = Id.new()
+        entity.dataId = entity.dataId.plus(Id.new())
         entityStore.updateEntities(entity)
 
         entity.trust = 1.0F
@@ -200,7 +200,7 @@ class ApplicationTest {
                 assertEquals(entity.entityId.toString(), feedResult.results[0].entityId)
                 assertEquals(5, feedResult.results[0].activities.count())
                 assertEquals(uri.toString(), feedResult.results[0].summary.uri)
-                assertEquals(entity.dataId.toString(), feedResult.results[0].activities[0].actions[0].id)
+                assertEquals(entity.dataId.first().toString(), feedResult.results[0].activities[0].actions[0].id)
                 assertEquals(entity.trust.toString(), feedResult.results[0].activities[1].actions[0].value)
                 assertEquals(entity.like.toString(), feedResult.results[0].activities[2].actions[0].value)
                 assertEquals(entity.rating.toString(), feedResult.results[0].activities[3].actions[0].value)

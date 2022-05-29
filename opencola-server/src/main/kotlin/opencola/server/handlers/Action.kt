@@ -12,7 +12,6 @@ import opencola.core.extensions.nullOrElse
 import opencola.core.model.*
 import opencola.core.storage.EntityStore
 import opencola.core.storage.FileStore
-import opencola.service.EntityResult
 import org.apache.james.mime4j.message.DefaultMessageWriter
 import java.io.ByteArrayOutputStream
 import java.net.URI
@@ -30,7 +29,7 @@ fun updateResource(authorityId: Id, entityStore: EntityStore, fileStore: FileSto
 
         // Add / update fields
         // TODO - Check if setting null writes a retraction when fields are null
-        entity.dataId = dataId
+        entity.dataId = entity.dataId.plus(dataId)
         entity.name = mhtmlPage.title
         entity.text = mhtmlPage.text
         entity.description = mhtmlPage.description

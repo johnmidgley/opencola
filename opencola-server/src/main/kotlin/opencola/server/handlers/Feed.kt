@@ -75,7 +75,7 @@ fun entityActivities(authority: Authority, entity: Entity, comments: Map<Id, Com
         throw IllegalArgumentException("authorityId does not match entity")
     }
 
-    return entity.getNonRetractedFacts()
+    return entity.getCurrentFacts()
         .groupBy { it.transactionOrdinal }
         .map { (_, facts) ->
             Activity(
