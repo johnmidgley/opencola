@@ -158,8 +158,8 @@
   (when (not-empty actions)
     [:div.tags 
      (interpose " " 
-                (doall (for [action actions]
-                         ^{:key action} [tag (:value action)])))]))
+                (doall (for [name (distinct (map :value actions))]
+                         ^{:key name} [tag name])))]))
 
 (defn item-tag [tag-action]
   (let [{authority-name :authorityName
