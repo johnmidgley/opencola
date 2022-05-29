@@ -17,6 +17,9 @@ if exist "%programfiles(x86)%\ZeroTier\One\" (
     echo Install ZeroTier: https://www.zerotier.com/
 )
 
+:: Stop any running docker instances of oc
+docker compose -p opencola down
+
 :: Check if OpenCola storage dir already exists in the default location
 if exist "%appdata%\opencola" (
         echo OpenCola storage already exists.
@@ -26,12 +29,13 @@ if exist "%appdata%\opencola" (
 
     )
 echo Starting OpenCola with docker..
-docker compose up -d 
+docker compose -p opencola up --build -d 
 
-echo All done. Make sure to install the Chrome extension.
+echo All done. Make sure to install the Chrome extension in "opencola\chrome".
 
 :: opencola folder with chrome extension in it 
-start ..\opencola\chrome\
+:: start ..\opencola\chrome\
 
 :: Start default browser
+timeout /t 5 /nobreak
 start http://localhost:5795

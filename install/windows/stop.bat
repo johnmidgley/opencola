@@ -1,0 +1,3 @@
+:: stop oc container
+echo Stopping opencola...
+docker compose -p opencola down
