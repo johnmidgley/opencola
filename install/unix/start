@@ -9,7 +9,23 @@ mkdir -p ~/.opencola/storage
 cp -r ../opencola/storage/* ~/.opencola/storage 
 fi
 
-docker-compose up --build -d
+docker-compose --version 1>/dev/null
+if [ $? -ne 0 ] 
+then
+echo $'\e[31mUnable to execute docker-compose.\e[0m Is Docker installed?'
+exit 1
+fi
 
-echo "OpenCola has started - configure docker to run at startup so you don't have to manually start OpenCola again"
+docker-compose -p opencola up --build -d 1>/dev/null
+if [ $? -eq 0 ] 
+then
+echo  $'\e[0;32mOpenCola has started:\e[0m configure docker to run at startup so you do not have to manually start OpenCola again'
+else
+echo $'\e[31mUnable to start OpenCola.\e[0m Is docker running? Is the port already in use?'
+exit 2
+fi
+
+sleep 2
+open http://localhost:5795 2>/dev/null
+
 

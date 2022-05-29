@@ -1,14 +1,10 @@
 services:
   oc:
     build: ..
+    container_name: opencola-server
     ports:
       - "5795:5795"
     volumes:
-      # Volumes for windows machines
-      #- "$APPDATA\\opencola\\storage\\:/opencola/storage"
-      
-      # Volumes for mac/*nix
       - ~/.opencola/storage:/opencola/storage
-    #working_dir: /opencola/server
-    #run: /bin/sh start
     restart: unless-stopped
+
