@@ -32,6 +32,7 @@ enum class CoreAttribute(val spec: Attribute) {
             isIndexable = false
         )
     ),
+    // TODO: Make multi-value set
     DataId(
         Attribute(
             URI("opencola://attributes/dataId"),

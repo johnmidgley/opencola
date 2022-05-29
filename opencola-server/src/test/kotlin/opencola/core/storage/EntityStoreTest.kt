@@ -299,4 +299,49 @@ class EntityStoreTest {
         // Nothing new set, so transaction shouldn't be created
         assertNull(transaction)
     }
+
+
+    @Test
+    fun testDetectDuplicateFactSimple(){
+        testDetectDuplicateFacts(getFreshSimpleEntityStore())
+    }
+
+    @Test
+    fun testDetectDuplicateFactExposed() {
+        testDetectDuplicateFacts(getFreshExposeEntityStore())
+    }
+
+    private fun testDetectDuplicateFacts(entityStore: EntityStore){
+        val uri = URI("https://opencola")
+        val resource0 = ResourceEntity(authority.authorityId, uri)
+        entityStore.updateEntities(resource0)
+
+        // Test detection of creation of a duplicate entity
+        val resource1 = ResourceEntity(authority.authorityId, uri)
+        assertFails { entityStore.updateEntities(resource1) }
+
+        // Test detection of duplicate multi value set property
+        val resource3 = entityStore.getEntity(authority.authorityId, resource0.entityId)!!
+        val resource4 = entityStore.getEntity(authority.authorityId, resource0.entityId)!!
+        resource3.tags = setOf("this", "that")
+        entityStore.updateEntities(resource3)
+        resource4.tags = setOf("this")
+        assertFails { entityStore.updateEntities(resource4) }
+
+        // Test detection of duplicate single value property
+        val resource5 = entityStore.getEntity(authority.authorityId, resource0.entityId)!!
+        val resource6 = entityStore.getEntity(authority.authorityId, resource0.entityId)!!
+        resource5.like = true
+        entityStore.updateEntities(resource5)
+        resource6.like = true
+        assertFails { entityStore.updateEntities(resource6) }
+
+        // Test detection of nulling out property
+        val resource7 = entityStore.getEntity(authority.authorityId, resource0.entityId)!!
+        val resource8 = entityStore.getEntity(authority.authorityId, resource0.entityId)!!
+        resource7.like = null
+        entityStore.updateEntities(resource7)
+        resource8.like = null
+        assertFails { entityStore.updateEntities(resource8) }
+    }
 }

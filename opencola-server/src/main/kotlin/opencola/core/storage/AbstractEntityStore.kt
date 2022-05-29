@@ -7,7 +7,7 @@ import opencola.core.extensions.ifNotNullOrElse
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.*
 import opencola.core.security.Signator
-import opencola.core.storage.EntityStore.*
+import opencola.core.storage.EntityStore.TransactionOrder
 import java.security.PublicKey
 
 // TODO: Should support multiple authorities
@@ -114,15 +114,61 @@ abstract class AbstractEntityStore(
         }
     }
 
+    private fun validFact(facts: List<Fact>, fact: Fact): Boolean {
+        return when (fact.operation) {
+            // Don't allow superfluous adds
+            Operation.Add ->
+                !facts.any {
+                    it.authorityId == fact.authorityId
+                            && it.entityId == fact.entityId
+                            && it.attribute == fact.attribute
+                            && it.operation == fact.operation
+                            && it.value.bytes.contentEquals(fact.value.bytes)
+                }
+            Operation.Retract ->
+                // Don't allow superfluous retractions
+                facts.any {
+                    it.authorityId == fact.authorityId
+                            && it.entityId == fact.entityId
+                            && it.attribute == fact.attribute
+                            && it.operation == Operation.Add
+                            && (it.attribute.type == AttributeType.SingleValue || it.value.bytes.contentEquals(fact.value.bytes))
+                }
+        }
+    }
+
+    private fun validateFacts(authorityId: Id, facts: List<Fact>) : List<Fact> {
+        val transactionFactsByEntity = facts.groupBy { it.entityId }
+        val existingEntities = getEntities(listOf(authorityId), transactionFactsByEntity.keys)
+
+        existingEntities.forEach{ entity ->
+            val currentFacts = entity.getCurrentFacts()
+            val transactionsFacts = transactionFactsByEntity[entity.entityId]!!
+
+            if (transactionsFacts.any { !validFact(currentFacts, it) }){
+                throw IllegalArgumentException("Detected duplicate fact")
+            }
+        }
+
+        return facts
+    }
+
+    // TODO: !!! Clean up validation !!!
+
+    // DO NOT use this outside of persistTransaction
+    private fun getNextTransactionId(authorityId: Id) : Id {
+        return getSignedTransactions(listOf(authorityId), null, TransactionOrder.IdDescending, 1)
+            .firstOrNull()
+            .ifNotNullOrElse({ Id.ofData(SignedTransaction.encode(it)) }, { getFirstTransactionId(authorityId) })
+    }
+
+    // It is critical that this function is synchronized and not bypassed. It determines the next transaction
+    // id, which needs to be unique, and does a final consistency / conflict check that can't be done in the DB
     @Synchronized
     private fun persistTransaction(authorityId: Id, facts: List<Fact>) : Pair<SignedTransaction, Long> {
-        val nextTransactionId =
-            getSignedTransactions(listOf(authorityId), null, TransactionOrder.IdDescending, 1)
-                .firstOrNull()
-                .ifNotNullOrElse({ Id.ofData(SignedTransaction.encode(it)) }, { getFirstTransactionId(authorityId) })
-
-        val allFacts = facts.plus(computedFacts(facts))
-        val signedTransaction = Transaction.fromFacts(nextTransactionId, allFacts).sign(signator)
+        // TODO: Move validate to here
+        val allFacts = validateFacts(authorityId, facts.plus(computedFacts(facts)))
+        val signedTransaction = Transaction.fromFacts(getNextTransactionId(authorityId), allFacts).sign(signator)
         val transactionOrdinal = persistTransaction(signedTransaction)
         eventBus?.sendMessage(Events.NewTransaction.toString(), SignedTransaction.encode(signedTransaction))
 

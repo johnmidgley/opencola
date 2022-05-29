@@ -4,7 +4,7 @@ import java.net.URI
 
 open class ResourceEntity : Entity {
     var uri by uriAttributeDelegate
-    var dataId by idAttributeDelegate
+    var dataId by idAttributeDelegate // TODO: Make this a multi-value
 
     constructor(authorityId: Id,
                 uri: URI,
@@ -17,6 +17,8 @@ open class ResourceEntity : Entity {
                 like: Boolean? = null,
                 rating: Float? = null,
     ) : super(authorityId, Id.ofUri(uri), name, description, text, imageUri, trust, like, rating, tags){
+        if(!uri.isAbsolute)
+            throw IllegalArgumentException("Resource URIs must be absolute")
         this.uri = uri
     }
 
