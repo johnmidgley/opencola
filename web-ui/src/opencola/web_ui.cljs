@@ -6,6 +6,7 @@
    [opencola.web-ui.config :as config]
    [opencola.web-ui.common :as common]
    [opencola.web-ui.view.feed :as feed]
+   [opencola.web-ui.view.settings :as settings]
    [opencola.web-ui.model.feed :as model]
    [opencola.web-ui.model.error :as error]
    [secretary.core :as secretary :refer-macros [defroute]]
@@ -54,7 +55,7 @@
           (if @(:feed page-visible-atoms)
             [feed/feed-page feed! query! #(on-search % feed!)])
           (if @(:settings page-visible-atoms)
-            [:div.settings "SETTINGS"])
+            [settings/settings-page])
           (if @(:error page-visible-atoms)
             [:div.settings "404"])]))
 

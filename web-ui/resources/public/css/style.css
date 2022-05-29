@@ -203,11 +203,15 @@ td {
     margin-top: 10px;
 }
 
-.add-item {
+.header-actions {
     float: right;
     padding-top: 50px;
 }
 
-.new-post {
+.header-icon {
     height: 20px;
+}
+
+.divider {
+    height: 20px
 }

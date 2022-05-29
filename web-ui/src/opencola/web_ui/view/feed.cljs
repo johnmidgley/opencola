@@ -1,4 +1,4 @@
-(ns ^:figwheel-hooks opencola.web-ui.view.feed 
+(ns opencola.web-ui.view.feed 
   (:require
    [clojure.string :as string :refer [lower-case]]
    [goog.dom :as gdom]
@@ -15,8 +15,6 @@
    [opencola.web-ui.model.feed :as feed]))
 
 ;; TODO: Look at https://github.com/Day8/re-com
-
-(def inline-divider [:span.divider " | "])
 
 (defn format-time [epoch-second]
   (f/unparse (f/formatter "yyyy-MM-dd hh:mm") (c/from-long (* epoch-second 1000))))
@@ -129,7 +127,7 @@
       (if data-id
         [:span
          [:a.action-link  {:href (str (data-url host data-id) "/0.html") :target "_blank"} [action-img "archive"]]
-         inline-divider
+         common/inline-divider
          [:a.action-link  {:href (data-url host data-id) :target "_blank"} [action-img "download"]]])]]))
  
 
@@ -248,13 +246,13 @@
             activities (:activities item)]  
         [:div.activities-summary
          [action-summary feed! :save action-expanded? activities #(save-item feed! item)]
-         inline-divider
+         common/inline-divider
          [action-summary feed! :like action-expanded? activities #(like-item feed! item)] 
-         inline-divider
+         common/inline-divider
          [action-summary feed! :tag action-expanded?  activities #(swap! tagging? not)] 
-         inline-divider
+         common/inline-divider
          [action-summary feed! :comment action-expanded? activities #(swap! commenting? not)]
-         inline-divider
+         common/inline-divider
          [edit-control editing?!] 
          [tags-control feed! item tagging?]
          [comment-control feed! entity-id nil "" commenting?]
