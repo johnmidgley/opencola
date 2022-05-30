@@ -3,7 +3,6 @@ package opencola.server.handlers
 import io.ktor.application.*
 import io.ktor.response.*
 import kotlinx.serialization.Serializable
-import opencola.core.extensions.ifNullOrElse
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.*
 import opencola.core.model.CoreAttribute.*
@@ -31,12 +30,6 @@ fun getSummary(authorityId: Id, entities: List<Entity>): Summary {
         entityAttributeAsString(entity, Description.spec),
         entityAttributeAsString(entity, ImageUri.spec),
     )
-}
-
-fun getFact(facts: Iterable<Fact>, attribute: Attribute): Fact? {
-    return facts
-        .filter { it.operation != Operation.Retract }
-        .lastOrNull { it.attribute == attribute }
 }
 
 fun factToAction(comments: Map<Id, CommentEntity>, fact: Fact) : Action? {
@@ -104,13 +97,6 @@ fun activitiesByEntityId(idToAuthority: (Id) -> Authority?,
 
 // TODO - All items should be visible in search (i.e. even un-liked)
 // TODO - Add unit tests for items with multiple authorities and make sure remote authority items are returned
-fun isEntityIsVisible(authorityId: Id, facts: Iterable<Fact>) : Boolean {
-    val authorityToFacts = facts.groupBy { it.authorityId }
-    val authorityFacts = authorityToFacts[authorityId] ?: authorityToFacts.values.firstOrNull() ?: return false
-
-    return Entity.fromFacts(authorityFacts).ifNullOrElse(false) { isEntityIsVisible(authorityId, it) }
-}
-
 fun isEntityIsVisible(authorityId: Id, entity: Entity) : Boolean {
     return when(entity){
         // TODO: This hides unliked entities in search results
@@ -122,7 +108,7 @@ fun isEntityIsVisible(authorityId: Id, entity: Entity) : Boolean {
 }
 
 fun getEntityIds(entityStore: EntityStore, searchIndex: SearchIndex, query: String?): Set<Id> {
-    // TODO: This will generally result in an unpredictable number of entities, as single actions (lile, comment, etc.)
+    // TODO: This will generally result in an unpredictable number of entities, as single actions (like, comment, etc.)
     //  take a transaction. Fix this by requesting transaction batches until no more or 100 entities have been reached
     val entityIds =  if (query == null || query.trim().isEmpty()){
         val signedTransactions = entityStore.getSignedTransactions(emptyList(),null, EntityStore.TransactionOrder.TimeDescending,100) // TODO: Config limit

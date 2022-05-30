@@ -1,10 +1,7 @@
 package opencola.core.model
 
-import opencola.core.extensions.ifNotNullOrElse
 import opencola.core.extensions.nullOrElse
 import opencola.core.serialization.*
-import java.net.URI
-import java.security.PublicKey
 import kotlin.reflect.KProperty
 
 class AttributeDelegate<T>(val codec: ByteArrayCodec<T>, val resettable: Boolean = true) {
@@ -25,7 +22,6 @@ val nonResettableIdAttributeDelegate = AttributeDelegate(Id.Factory, false)
 val booleanAttributeDelegate = AttributeDelegate(BooleanByteArrayCodec)
 val floatAttributeDelegate = AttributeDelegate(FloatByteArrayCodec)
 val stringAttributeDelegate = AttributeDelegate(StringByteArrayCodec)
-val idAttributeDelegate = AttributeDelegate(Id.Factory)
 val uriAttributeDelegate = AttributeDelegate(UriByteArrayCodec, false)
 val imageUriAttributeDelegate = AttributeDelegate(UriByteArrayCodec)
 val tagsAttributeDelegate = MultiValueSetAttributeDelegate<String>(CoreAttribute.Tags.spec)

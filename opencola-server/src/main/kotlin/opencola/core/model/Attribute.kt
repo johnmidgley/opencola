@@ -20,6 +20,7 @@ enum class AttributeType {
 }
 
 @Serializable(with = Attribute.AttributeAsStringSerializer::class)
+// TODO: Make Attribute<T>
 data class Attribute(
     val name: String,
     val uri: URI,
