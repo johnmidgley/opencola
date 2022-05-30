@@ -49,12 +49,15 @@ jobs:
     #step: Run Gradle build
     - name: Build with gradlew installDist
       run: |
+        pwd
         cd ../opencola-server
         ./gradlew installDist
 
     #step: Package - copy distribution
     - name: Copy distribution
       run: | 
+        pwd
+        ls -la
         cd opencola
         cp ../scripts/* .
         cp ../README.txt .
