@@ -46,9 +46,9 @@ jobs:
     #    ./gradlew test
 
     #step: Run Gradle build
-    #- name: Build with gradlew installDist
-    #  run: |
-    #    ./gradlew installDist
+    - name: Build with gradlew installDist
+      run: |
+        ./gradlew installDist
 
     #step: Package - copy distribution
     #- name: Copy distribution
