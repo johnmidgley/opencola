@@ -39,11 +39,20 @@ jobs:
         java-version: '17'
         cache: 'gradle'
     
-    #step: Build
+    #step: Run Gradle tests
+    - name: Run Gradle tests
+      run: |
+        ./gradlew test
+
+    #step: Run Gradle build
     - name: Build with install script
       run: |
-        ./install
-        # rm *.tgz
+        cd ../opencola-server
+        ./gradlew installDist
+
+
+
+    #step: TODO copy files to correct locations according to current ./install script
 
     #step: get the date for the build packages
     #- name: Get date for build outputs
