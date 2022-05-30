@@ -48,6 +48,7 @@ jobs:
     #step: Run Gradle build
     - name: Build with gradlew installDist
       run: |
+        cd ../opencola-server
         ./gradlew installDist
 
     #step: Package - copy distribution
