@@ -54,9 +54,8 @@ jobs:
 
     #step: Package - copy distribution
     - name: Copy distribution
-      run: |
-        pwd
-        cd ../install/opencola
+      run: | 
+        cd opencola
         cp ../scripts/* .
         cp ../README.txt .
         mkdir server
