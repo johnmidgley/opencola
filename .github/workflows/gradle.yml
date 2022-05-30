@@ -42,6 +42,7 @@ jobs:
     #step: Run Gradle tests
     - name: Run Gradle tests
       run: |
+        pwd
         cd ../opencola-server
     #    ./gradlew test
 
@@ -54,6 +55,7 @@ jobs:
     #step: Package - copy distribution
     - name: Copy distribution
       run: |
+        pwd
         cd ../install/opencola
         cp ../scripts/* .
         cp ../README.txt .
