@@ -404,12 +404,18 @@
   (if-let [e (:error @feed!)]
     [:div.error e]))
 
+(defn header-actions [creating-post?!]
+   [:div.header-actions 
+    [:img.header-icon {:src  "../img/new-post.png" :on-click #(swap! creating-post?! not)}]
+    common/image-divider
+    [:img.header-icon {:src  "../img/settings.png" :on-click #(common/set-location "#/settings")}]])
+
 
 (defn feed-page [feed! query! on-search]
   (let [creating-post?! (atom false)]
     (fn []
       [:div#opencola.feed-page
-       [search/search-header query! on-search creating-post?!]
+       [search/search-header query! on-search (partial header-actions creating-post?!)]
        [feed-error feed!]
        (if @creating-post?!
          (let [edit-item! (atom (edit-item))] 
