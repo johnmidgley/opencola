@@ -42,7 +42,6 @@ jobs:
     #step: Run Gradle tests
     - name: Run Gradle tests
       run: |
-        pwd
         cd ../opencola-server
     #    ./gradlew test
 
@@ -56,7 +55,6 @@ jobs:
     #step: Package - copy distribution
     - name: Copy distribution
       run: | 
-        pwd
         mkdir opencola
         cd opencola
         cp ../scripts/* .
@@ -64,36 +62,33 @@ jobs:
         mkdir server
         cp -r ../../opencola-server/build/install/opencola-server/* server
     
-    # # step Package Copy config
-    #   - name: Copy config
-    #     run: |
-    #       #cp ../../opencola-server/opencola-server.yaml server
-    #       mkdir oc-network
-    #       cp ../../network/docker-compose.yml oc-network
-    
-    # #step Package Copy resources
-    #   - name: Copy resources
-    #     run: |
-    #       mkdir server/resources
-    #       cp -r ../../opencola-server/resources/* server/resources/
-    
-    # #step Package copy Chrome extension
-    #   - name: Copy Chrome extension
-    #     run: |
-    #       cp -r  ../../extension/chrome .
+    # step Package Copy config
+    - name: Copy config
+      run: |
+        #cp ../../opencola-server/opencola-server.yaml server
+        mkdir oc-network
+        cp ../../network/docker-compose.yml oc-network
 
-    # #step Package Create storage
-    #   - name: Create storage
-    #     run: |
-    #       mkdir -p storage/var-solr/data
-    #       cp ../../storage/opencola-server.yaml storage/
-    #       cp ../../storage/var-solr/log4j2.xml storage/var-solr/
-    #       cp -r ../../storage/var-solr/data/configsets/ storage/var-solr/data/configsets
-    #       cp ../../storage/var-solr/data/solr.xml storage/var-solr/data/
-    #       cp ../../storage/var-solr/data/zoo.cfg storage/var-solr/data/
-    
-    #step All finished
-    #    - name: All finished
+    #step Package Copy resources
+    - name: Copy resources
+      run: |
+        mkdir server/resources
+        cp -r ../../opencola-server/resources/* server/resources/
+
+    #step Package copy Chrome extension
+    - name: Copy Chrome extension
+      run: |
+        cp -r  ../../extension/chrome .
+
+    #step Package Create storage
+    - name: Create storage
+      run: |
+        mkdir -p storage/var-solr/data
+        cp ../../storage/opencola-server.yaml storage/
+        cp ../../storage/var-solr/log4j2.xml storage/var-solr/
+        cp -r ../../storage/var-solr/data/configsets/ storage/var-solr/data/configsets
+        cp ../../storage/var-solr/data/solr.xml storage/var-solr/data/
+        cp ../../storage/var-solr/data/zoo.cfg storage/var-solr/data/
 
     #step Package
     #  - name: 
