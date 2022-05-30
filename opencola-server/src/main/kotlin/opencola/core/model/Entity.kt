@@ -253,8 +253,27 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         }
 
         // Assumes facts have been sorted by transactionOrdinal
-        fun currentFacts(facts: Iterable<Fact>) : List<Fact> {
+        fun currentFacts(facts: List<Fact>) : List<Fact> {
+            if(facts.isEmpty()){
+                return emptyList()
+            }
+
+            if(facts.any{ it.transactionOrdinal == null }){
+                throw IllegalArgumentException("Can't compute current facts for facts that have not been committed")
+            }
+
+            val startOrdinalFact = facts.lastOrNull { it.attribute == CoreAttribute.Type.spec }
+            if(startOrdinalFact == null){
+                logger.error { "No type fact found for: ${facts.first().entityId}" }
+                return emptyList()
+            }
+
+            if(startOrdinalFact.operation == Operation.Retract){
+                return emptyList()
+            }
+
             return facts
+                .filter{ it.transactionOrdinal!! >= startOrdinalFact.transactionOrdinal!!}
                 .groupBy { it.attribute }
                 .flatMap { headAttributeFacts(it.key, it.value) }
                 .filter { it.operation != Operation.Retract }
