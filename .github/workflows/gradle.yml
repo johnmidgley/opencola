@@ -57,7 +57,7 @@ jobs:
     - name: Copy distribution
       run: | 
         pwd
-        ls -la
+        mkdir opencola
         cd opencola
         cp ../scripts/* .
         cp ../README.txt .
