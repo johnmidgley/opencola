@@ -62,7 +62,6 @@ jobs:
     #step Package - Copy config
     - name: Copy config
       run: |
-        #cp ../../opencola-server/opencola-server.yaml server
         mkdir oc-network
         cp ../../network/docker-compose.yml oc-network
     
