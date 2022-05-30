@@ -88,7 +88,7 @@ jobs:
     #       cp ../../storage/var-solr/data/zoo.cfg storage/var-solr/data/
     
     #step All finished
-        - name: All finished
+    #    - name: All finished
 
     #step Package
     #  - name: 
