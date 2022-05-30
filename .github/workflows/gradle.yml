@@ -46,18 +46,18 @@ jobs:
     #    ./gradlew test
 
     #step: Run Gradle build
-    - name: Build with gradlew installDist
-      run: |
-        ./gradlew installDist
+    #- name: Build with gradlew installDist
+    #  run: |
+    #    ./gradlew installDist
 
     #step: Package - copy distribution
-    - name: Copy distribution
-      run: |
-        cd ../install/opencola
-        cp ../scripts/* .
-        cp ../README.txt .
-        mkdir server
-        cp -r ../../opencola-server/build/install/opencola-server/* server
+    #- name: Copy distribution
+    #  run: |
+    #    cd ../install/opencola
+    #    cp ../scripts/* .
+    #    cp ../README.txt .
+    #    mkdir server
+    #    cp -r ../../opencola-server/build/install/opencola-server/* server
     
     # # step Package Copy config
     #   - name: Copy config
