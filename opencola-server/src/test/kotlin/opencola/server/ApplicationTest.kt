@@ -166,6 +166,14 @@ class ApplicationTest {
         }
     }
 
+    private fun getSingleActivity(feedResult: FeedResult, type: String): EntityResult.Activity {
+        return feedResult.results[0].activities.single { it.actions[0].type == type }
+    }
+
+    private fun getSingleActivityActionValue(feedResult: FeedResult, type: String): String? {
+        return getSingleActivity(feedResult, type).actions[0].value
+    }
+
     @Test
     fun testGetFeed(){
         val authority by injector.instance<Authority>()
@@ -200,11 +208,12 @@ class ApplicationTest {
                 assertEquals(entity.entityId.toString(), feedResult.results[0].entityId)
                 assertEquals(5, feedResult.results[0].activities.count())
                 assertEquals(uri.toString(), feedResult.results[0].summary.uri)
-                assertEquals(entity.dataId.first().toString(), feedResult.results[0].activities[0].actions[0].id)
-                assertEquals(entity.trust.toString(), feedResult.results[0].activities[1].actions[0].value)
-                assertEquals(entity.like.toString(), feedResult.results[0].activities[2].actions[0].value)
-                assertEquals(entity.rating.toString(), feedResult.results[0].activities[3].actions[0].value)
-                assertEquals(comment.text, feedResult.results[0].activities[4].actions[0].value)
+                feedResult.results[0].activities.single { it.actions[0].type == "comment" }.actions[0].value
+                assertEquals(entity.dataId.first().toString(), getSingleActivity(feedResult, "save").actions[0].id)
+                assertEquals(entity.trust.toString(), getSingleActivityActionValue(feedResult, "trust"))
+                assertEquals(entity.like.toString(), getSingleActivityActionValue(feedResult, "like"))
+                assertEquals(entity.rating.toString(), getSingleActivityActionValue(feedResult, "rate"))
+                assertEquals(comment.text, getSingleActivityActionValue(feedResult, "comment"))
             }
         }
     }
