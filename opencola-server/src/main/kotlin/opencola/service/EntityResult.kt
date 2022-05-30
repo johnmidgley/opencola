@@ -49,7 +49,7 @@ data class EntityResult(
     ) {
         constructor(authority: Authority, epochSecond: Long, actions: List<Action>) :
                 this(
-                    authority.authorityId.toString(),
+                    authority.entityId.toString(),
                     authority.name!!,
                     authority.uri!!.authority ?: "",
                     epochSecond,

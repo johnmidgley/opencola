@@ -1,6 +1,5 @@
 package opencola.core.storage
 
-import opencola.core.content.MhtmlPage
 import opencola.core.extensions.ifNotNullOrElse
 import opencola.core.model.*
 
@@ -17,7 +16,7 @@ interface EntityStore {
 
     // TODO: Replace getEntity with a call to getEntities
     fun getEntity(authorityId: Id, entityId: Id): Entity?
-    fun getEntities(authorityIds: Iterable<Id>, entityIds: Iterable<Id>) : List<Entity>
+    fun getEntities(authorityIds: Set<Id>, entityIds: Set<Id>) : List<Entity>
     fun deleteEntity(authorityId: Id, entityId: Id)
     fun updateEntities(vararg entities: Entity) : SignedTransaction?
     fun addSignedTransactions(signedTransactions: List<SignedTransaction>)

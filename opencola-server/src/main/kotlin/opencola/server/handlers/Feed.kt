@@ -121,7 +121,7 @@ fun isEntityIsVisible(authorityId: Id, entity: Entity) : Boolean {
     }
 }
 
-fun getEntityIds(entityStore: EntityStore, searchIndex: SearchIndex, query: String?): List<Id> {
+fun getEntityIds(entityStore: EntityStore, searchIndex: SearchIndex, query: String?): Set<Id> {
     // TODO: This will generally result in an unpredictable number of entities, as single actions (lile, comment, etc.)
     //  take a transaction. Fix this by requesting transaction batches until no more or 100 entities have been reached
     val entityIds =  if (query == null || query.trim().isEmpty()){
@@ -131,7 +131,7 @@ fun getEntityIds(entityStore: EntityStore, searchIndex: SearchIndex, query: Stri
         searchIndex.search(query).map { it.entityId }
     }
 
-    return entityIds.distinct()
+    return entityIds.toSet()
 }
 
 fun getComments(entityStore: EntityStore, entities: Iterable<Entity>): Map<Id, CommentEntity> {
@@ -139,14 +139,18 @@ fun getComments(entityStore: EntityStore, entities: Iterable<Entity>): Map<Id, C
         .flatMap { it.commentIds }
         .toSet()
 
-   return entityStore.getEntities(emptyList(), commentIds)
+    if(commentIds.isEmpty()){
+        return emptyMap()
+    }
+
+   return entityStore.getEntities(emptySet(), commentIds)
        .mapNotNull { it as? CommentEntity }
        .associateBy { it.entityId }
 }
 
-fun getEntityResults(authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter, entityIds: Iterable<Id>): List<EntityResult> {
+fun getEntityResults(authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter, entityIds: Set<Id>): List<EntityResult> {
     val idToAuthority: (Id) -> Authority? = { id -> peerRouter.getPeer(id) }
-    val entities = entityStore.getEntities(emptyList(), entityIds).filter { isEntityIsVisible(authority.authorityId, it) }
+    val entities = entityStore.getEntities(emptySet(), entityIds).filter { isEntityIsVisible(authority.authorityId, it) }
     val comments = getComments(entityStore, entities)
     val entitiesByEntityId = entities.groupBy { it.entityId }
     val activitiesByEntityId = activitiesByEntityId(idToAuthority, entities, comments)
@@ -164,7 +168,7 @@ fun getEntityResults(authority: Authority, entityStore: EntityStore, peerRouter:
 }
 
 fun getEntityResult(authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter, entityId: Id) : EntityResult? {
-    return getEntityResults(authority, entityStore, peerRouter, listOf(entityId)).firstOrNull()
+    return getEntityResults(authority, entityStore, peerRouter, setOf(entityId)).firstOrNull()
 }
 
 suspend fun handleGetFeed(

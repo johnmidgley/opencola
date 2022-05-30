@@ -66,7 +66,7 @@ class AddressBook(private val authority: Authority, storagePath: Path, signator:
     }
 
     fun getAuthorities(filterActive: Boolean = false) : Set<Authority> {
-        return entityStore.getEntities(emptyList(), emptyList())
+        return entityStore.getEntities(setOf(authority.authorityId), emptySet())
             .filterIsInstance<Authority>()
             .filter { !filterActive || it.tags.contains(activeTag)}
             .toSet()

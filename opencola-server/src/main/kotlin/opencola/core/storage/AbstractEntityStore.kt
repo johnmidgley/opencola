@@ -102,7 +102,11 @@ abstract class AbstractEntityStore(
         return signedTransaction
     }
 
-    override fun getEntities(authorityIds: Iterable<Id>, entityIds: Iterable<Id>): List<Entity> {
+    override fun getEntities(authorityIds: Set<Id>, entityIds: Set<Id>): List<Entity> {
+        if(authorityIds.isEmpty() && entityIds.isEmpty()){
+            throw IllegalArgumentException("Attempt to retrieve whole database (getEntities call with no authorityIds or entityIds)")
+        }
+
         return getFacts(authorityIds, entityIds)
             .groupBy { Pair(it.authorityId, it.entityId) }
             .mapNotNull { Entity.fromFacts(it.value) }
@@ -142,7 +146,7 @@ abstract class AbstractEntityStore(
         //  up anybody that gets bad facts. Figure out how to fix. Likely need to rebuild transaction chain then
         //  dis/reconnect to peers. Other option is to gracefully handle bad facts, but only from peers
         val transactionFactsByEntity = facts.groupBy { it.entityId }
-        val existingEntities = getEntities(listOf(authorityId), transactionFactsByEntity.keys)
+        val existingEntities = getEntities(setOf(authorityId), transactionFactsByEntity.keys)
 
         existingEntities.forEach{ entity ->
             val currentFacts = entity.getCurrentFacts()

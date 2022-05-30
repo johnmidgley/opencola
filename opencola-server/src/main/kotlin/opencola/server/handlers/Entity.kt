@@ -25,7 +25,7 @@ suspend fun getEntity(call: ApplicationCall, authority: Authority, entityStore: 
     // TODO: Authority should be passed (and authenticated) in header
     val stringId = call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified")
     val entityId = Id.fromHexString(stringId)
-    val entityResult = getEntityResults(authority, entityStore, peerRouter, listOf(entityId)).firstOrNull()
+    val entityResult = getEntityResults(authority, entityStore, peerRouter, setOf(entityId)).firstOrNull()
 
     if (entityResult != null)
         call.respond(entityResult)
@@ -38,7 +38,7 @@ suspend fun deleteEntity(call: ApplicationCall, authority: Authority, entityStor
 
     logger.info { "Deleting $entityId" }
     entityStore.deleteEntity(authority.authorityId, entityId)
-    val entity = getEntityResults(authority, entityStore, peerRouter, listOf(entityId)).firstOrNull()
+    val entity = getEntityResults(authority, entityStore, peerRouter, setOf(entityId)).firstOrNull()
 
     if(entity == null)
         // Need to return something in JSON. Sending an {} means that the entity has been fully deleted (i.e. no other
@@ -98,7 +98,7 @@ suspend fun updateEntity(call: ApplicationCall, authority: Authority, entityStor
 
 fun getOrCopyEntity(authorityId : Id, entityStore: EntityStore, entityId: Id): Entity? {
     val existingEntity = entityStore.getEntity(authorityId, entityId) ?:
-        entityStore.getEntities(emptyList(), listOf(entityId)).firstOrNull()
+        entityStore.getEntities(emptySet(), setOf(entityId)).firstOrNull()
 
     if(existingEntity == null || existingEntity.authorityId == authorityId )
         return existingEntity
@@ -163,7 +163,7 @@ suspend fun addComment(call: ApplicationCall, authority: Authority, entityStore:
     val comment = call.receive<PostCommentPayload>()
 
     addComment(authority, entityStore, entityId, comment.commentId.nullOrElse { Id.fromHexString(it) }, comment.text)
-    getEntityResults(authority, entityStore, peerRouter, listOf(entityId))
+    getEntityResults(authority, entityStore, peerRouter, setOf(entityId))
         .firstOrNull()
         .nullOrElse { call.respond(it) }
 }
@@ -182,7 +182,7 @@ suspend fun saveEntity(call: ApplicationCall, authority: Authority, entityStore:
         ?: throw IllegalArgumentException("Unable to save unknown entity: $entityId")
 
     entityStore.updateEntities(entity)
-    getEntityResults(authority, entityStore, peerRouter, listOf(entityId))
+    getEntityResults(authority, entityStore, peerRouter, setOf(entityId))
         .firstOrNull()
         .nullOrElse { call.respond(it) }
 }
