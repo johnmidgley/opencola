@@ -40,9 +40,9 @@ jobs:
         cache: 'gradle'
     
     #step: Run Gradle tests
-    #- name: Run Gradle tests
-    #  run: |
-    #    cd ../opencola-server
+    - name: Run Gradle tests
+      run: |
+        cd ../opencola-server
     #    ./gradlew test
 
     #step: Run Gradle build
