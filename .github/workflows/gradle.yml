@@ -42,12 +42,12 @@ jobs:
     #step: Run Gradle tests
     - name: Run Gradle tests
       run: |
+        cd ../opencola-server
         ./gradlew test
 
     #step: Run Gradle build
     - name: Build with install script
       run: |
-        cd ../opencola-server
         ./gradlew installDist
 
 
