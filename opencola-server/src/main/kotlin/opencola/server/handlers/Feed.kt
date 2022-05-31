@@ -135,6 +135,10 @@ fun getComments(entityStore: EntityStore, entities: Iterable<Entity>): Map<Id, C
 }
 
 fun getEntityResults(authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter, entityIds: Set<Id>): List<EntityResult> {
+    if(entityIds.isEmpty()){
+        return emptyList()
+    }
+
     val idToAuthority: (Id) -> Authority? = { id -> peerRouter.getPeer(id) }
     val entities = entityStore.getEntities(emptySet(), entityIds).filter { isEntityIsVisible(authority.authorityId, it) }
     val comments = getComments(entityStore, entities)
