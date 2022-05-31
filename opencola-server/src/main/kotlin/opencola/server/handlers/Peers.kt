@@ -1,9 +1,9 @@
 package opencola.server.handlers
 
 import kotlinx.serialization.Serializable
-import opencola.core.extensions.toHexString
 import opencola.core.model.Authority
 import opencola.core.model.Id
+import opencola.core.security.encode
 import opencola.core.storage.AddressBook
 import java.net.URI
 import java.security.PublicKey
@@ -21,7 +21,7 @@ data class Peer(
             this(
                 id.toString(),
                 name,
-                publicKey.encoded.toHexString(),
+                publicKey.encode(),
                 address.toString(),
                 imageUri?.toString(),
                 isActive
@@ -39,7 +39,6 @@ fun getPeers(authority: Authority, addressBook: AddressBook): PeersResult {
         // TODO: Make name, public key and uri required for authority
         Peer(it.entityId, it.name!!, it.publicKey!!, it.uri!!, it.imageUri, addressBook.isAuthorityActive(it))
     }
-        return PeersResult(authority, null, peers)
 
-    TODO("base64 ids")
+    return PeersResult(authority, null, peers)
 }

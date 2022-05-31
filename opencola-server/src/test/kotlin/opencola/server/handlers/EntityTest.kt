@@ -12,7 +12,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class EntityTest {
-    fun saveEntity(getEntity: (Id) -> Entity): Entity {
+    private fun saveEntity(getEntity: (Id) -> Entity): Entity {
         // Make a peer transaction that contains a resource
         val peerApplication = TestApplication.newApplication()
         val peerAuthority by peerApplication.injector.instance<Authority>()

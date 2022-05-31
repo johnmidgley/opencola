@@ -24,7 +24,7 @@ private val httpClient = HttpClient()
 suspend fun getEntity(call: ApplicationCall, authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter) {
     // TODO: Authority should be passed (and authenticated) in header
     val stringId = call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified")
-    val entityId = Id.fromHexString(stringId)
+    val entityId = Id.decode(stringId)
     val entityResult = getEntityResults(authority, entityStore, peerRouter, setOf(entityId)).firstOrNull()
 
     if (entityResult != null)
@@ -34,7 +34,7 @@ suspend fun getEntity(call: ApplicationCall, authority: Authority, entityStore: 
 // TODO - investigate delete and then re-add. It seems to "restore" all previous saves. Is this good or bad?
 suspend fun deleteEntity(call: ApplicationCall, authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter) {
     val stringId = call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified")
-    val entityId = Id.fromHexString(stringId)
+    val entityId = Id.decode(stringId)
 
     logger.info { "Deleting $entityId" }
     entityStore.deleteEntity(authority.authorityId, entityId)
@@ -84,7 +84,7 @@ fun updateEntity(authority: Authority, entityStore: EntityStore, peerRouter: Pee
 suspend fun updateEntity(call: ApplicationCall, authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter) {
     val authorityId = authority.authorityId
     val entityPayload = call.receive<EntityPayload>()
-    val entityId = Id.fromHexString(entityPayload.entityId ?: throw IllegalArgumentException("No entityId specified for update"))
+    val entityId = Id.decode(entityPayload.entityId ?: throw IllegalArgumentException("No entityId specified for update"))
     logger.info { "Updating: $entityPayload" }
 
     val entity = getOrCopyEntity(authorityId, entityStore, entityId)
@@ -159,24 +159,24 @@ fun addComment(
 data class PostCommentPayload(val commentId: String? = null, val text: String)
 
 suspend fun addComment(call: ApplicationCall, authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter) {
-    val entityId = Id.fromHexString(call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified"))
+    val entityId = Id.decode(call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified"))
     val comment = call.receive<PostCommentPayload>()
 
-    addComment(authority, entityStore, entityId, comment.commentId.nullOrElse { Id.fromHexString(it) }, comment.text)
+    addComment(authority, entityStore, entityId, comment.commentId.nullOrElse { Id.decode(it) }, comment.text)
     getEntityResults(authority, entityStore, peerRouter, setOf(entityId))
         .firstOrNull()
         .nullOrElse { call.respond(it) }
 }
 
 suspend fun deleteComment(call: ApplicationCall, authority: Authority, entityStore: EntityStore) {
-    val commentId = Id.fromHexString(call.parameters["commentId"] ?: throw IllegalArgumentException("No commentId specified"))
+    val commentId = Id.decode(call.parameters["commentId"] ?: throw IllegalArgumentException("No commentId specified"))
 
     entityStore.deleteEntity(authority.authorityId, commentId)
     call.respondText("{}")
 }
 
 suspend fun saveEntity(call: ApplicationCall, authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter) {
-    val entityId = Id.fromHexString(call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified"))
+    val entityId = Id.decode(call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified"))
 
     val entity = getOrCopyEntity(authority.authorityId, entityStore, entityId)
         ?: throw IllegalArgumentException("Unable to save unknown entity: $entityId")

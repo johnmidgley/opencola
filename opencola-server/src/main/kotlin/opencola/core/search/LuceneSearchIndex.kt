@@ -1,7 +1,6 @@
 package opencola.core.search
 
 import mu.KotlinLogging
-import opencola.core.extensions.nullOrElse
 import opencola.core.extensions.recursiveDelete
 import opencola.core.extensions.toHexString
 import opencola.core.model.CoreAttribute.values
@@ -110,8 +109,8 @@ class LuceneSearchIndex(val authorityId: Id, private val storagePath: Path) : Ab
 
             return scoreDocs.map {
                 val document = indexSearcher.doc(it.doc)
-                val authorityId = Id.fromHexString(document.get("authorityId"))
-                val entityId = Id.fromHexString(document.get("entityId"))
+                val authorityId = Id.decode(document.get("authorityId"))
+                val entityId = Id.decode(document.get("entityId"))
                 val name = document.get("name")
                 val description = document.get("description")
                 SearchResult(authorityId, entityId, name, description)

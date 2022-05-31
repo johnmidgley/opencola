@@ -4,7 +4,6 @@ import com.lordcodes.turtle.shellRun
 import mu.KotlinLogging
 import opencola.core.config.SolrConfig
 import opencola.core.extensions.logErrorAndThrow
-import opencola.core.extensions.nullOrElse
 import opencola.core.extensions.toHexString
 import opencola.core.model.CoreAttribute
 import opencola.core.model.Entity
@@ -112,8 +111,8 @@ class SolrSearchIndex(val authorityId: Id, val config: SolrConfig) : AbstractSea
 
         return queryResponse.results.map{
             SearchResult(
-                Id.fromHexString(it.getFieldValue("authorityId").toString()),
-                Id.fromHexString(it.getFieldValue("entityId").toString()),
+                Id.decode(it.getFieldValue("authorityId").toString()),
+                Id.decode(it.getFieldValue("entityId").toString()),
                 it.getFieldValue(CoreAttribute.Name.spec.name)?.toString(),
                 it.getFieldValue(CoreAttribute.Description.spec.name)?.toString(),
             )

@@ -1,6 +1,5 @@
 package opencola.core.security
 
-import opencola.core.extensions.nullOrElse
 import opencola.core.extensions.toHexString
 import opencola.core.model.Id
 import java.nio.file.Path

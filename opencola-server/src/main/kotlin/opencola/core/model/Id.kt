@@ -1,8 +1,8 @@
 package opencola.core.model
 
 import kotlinx.serialization.Serializable
-import opencola.core.security.sha256
 import opencola.core.extensions.hexStringToByteArray
+import opencola.core.security.sha256
 import opencola.core.extensions.toByteArray
 import opencola.core.extensions.toHexString
 import opencola.core.serialization.ByteArrayCodec
@@ -30,8 +30,12 @@ data class Id(private val bytes: ByteArray) {
         assert(bytes.size == idLengthInBytes) { "Invalid id - size = ${bytes.size} but should be $idLengthInBytes" }
     }
 
-    override fun toString(): String {
+    fun encode(): String {
         return bytes.toHexString()
+    }
+
+    override fun toString(): String {
+        return encode()
     }
 
     // Add tests for hashcode and equals for all domain objects
@@ -47,8 +51,8 @@ data class Id(private val bytes: ByteArray) {
     }
 
     companion object Factory : ByteArrayCodec<Id>, StreamSerializer<Id> {
-        fun fromHexString(idAsHexString: String) : Id {
-            return Id(idAsHexString.hexStringToByteArray())
+        fun decode(value: String): Id {
+            return Id(value.hexStringToByteArray())
         }
 
         fun ofPublicKey(publicKey: PublicKey) : Id {

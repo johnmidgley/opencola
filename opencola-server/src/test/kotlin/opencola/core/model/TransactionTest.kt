@@ -2,7 +2,6 @@ package opencola.core.model
 
 import opencola.core.TestApplication
 import opencola.core.extensions.toHexString
-import opencola.core.security.KEY_ALGO
 import opencola.core.security.SIGNATURE_ALGO
 import opencola.core.security.Signator
 import opencola.core.security.sha256

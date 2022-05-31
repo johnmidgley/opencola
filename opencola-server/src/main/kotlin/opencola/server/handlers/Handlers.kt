@@ -38,9 +38,9 @@ data class TransactionsResponse(
 // current chain should be propagated to other peers
 suspend fun handleGetTransactionsCall(call: ApplicationCall, entityStore: EntityStore, peerRouter: PeerRouter) {
     val authorityId =
-        Id.fromHexString(call.parameters["authorityId"] ?: throw IllegalArgumentException("No authorityId set"))
-    val peerId = Id.fromHexString(call.parameters["peerId"] ?: throw IllegalArgumentException("No peerId set"))
-    val transactionId = call.parameters["mostRecentTransactionId"].nullOrElse { Id.fromHexString(it) }
+        Id.decode(call.parameters["authorityId"] ?: throw IllegalArgumentException("No authorityId set"))
+    val peerId = Id.decode(call.parameters["peerId"] ?: throw IllegalArgumentException("No peerId set"))
+    val transactionId = call.parameters["mostRecentTransactionId"].nullOrElse { Id.decode(it) }
 
     logger.info { "handleGetTransactionsCall authorityId: $authorityId, peerId: $peerId, transactionId: $transactionId" }
 
@@ -66,7 +66,7 @@ suspend fun handleGetTransactionsCall(call: ApplicationCall, entityStore: Entity
 
 suspend fun handleGetDataCall(call: ApplicationCall, mhtCache: MhtCache, authorityId: Id) {
     val stringId = call.parameters["id"] ?: throw IllegalArgumentException("No id set")
-    val entityId = Id.fromHexString(stringId)
+    val entityId = Id.decode(stringId)
 
     val data = mhtCache.getData(authorityId, entityId)
 
@@ -81,7 +81,7 @@ suspend fun handleGetDataPartCall(call: ApplicationCall, authorityId: Id, mhtCac
     val stringId = call.parameters["id"] ?: throw IllegalArgumentException("No id set")
     val partName = call.parameters["partName"] ?: throw IllegalArgumentException("No partName set")
 
-    val bytes = mhtCache.getDataPart(authorityId, Id.fromHexString(stringId), partName)
+    val bytes = mhtCache.getDataPart(authorityId, Id.decode(stringId), partName)
     if (bytes != null) {
         val contentType = ContentType.fromFilePath(partName).firstOrNull()
         call.respondBytes(bytes, contentType = contentType)

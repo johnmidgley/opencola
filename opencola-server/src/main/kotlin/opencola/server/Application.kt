@@ -11,8 +11,8 @@ import opencola.core.config.Application
 import opencola.core.config.loadConfig
 import opencola.core.event.EventBus
 import opencola.core.event.Events
-import opencola.core.extensions.toHexString
 import opencola.core.model.Id
+import opencola.core.security.encode
 import opencola.server.plugins.configureContentNegotiation
 import opencola.server.plugins.configureHTTP
 import opencola.server.plugins.configureRouting
@@ -58,7 +58,7 @@ fun main(args: Array<String>) {
 
     val application = Application.instance(applicationPath, storagePath, config, publicKey)
     application.logger.info("Authority: ${Id.ofPublicKey(publicKey)}")
-    application.logger.info("Public Key : ${publicKey.encoded.toHexString()}")
+    application.logger.info("Public Key : ${publicKey.encode()}")
 
     // TODO: Make sure entityService starts as soon as server is up, so that transactions can be received
     getServer(application).start(wait = true)

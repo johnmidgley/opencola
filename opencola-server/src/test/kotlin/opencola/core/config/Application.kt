@@ -1,7 +1,7 @@
 package opencola.core.config
 
-import opencola.core.extensions.toHexString
 import opencola.core.model.Id
+import opencola.core.security.encode
 import java.nio.file.Path
 import kotlin.io.path.createDirectory
 
@@ -33,7 +33,7 @@ fun getApplications(
                 val (_, peerConfig, key) = configTuples[it]
                 PeerConfig(
                     Id.ofPublicKey(key).toString(),
-                    key.encoded.toHexString(),
+                    key.encode(),
                     peerConfig.name,
                     "${peerConfig.server.host}:${peerConfig.server.port}"
                 )

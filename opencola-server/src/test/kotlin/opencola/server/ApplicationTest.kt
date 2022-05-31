@@ -55,7 +55,7 @@ class ApplicationTest {
                 val entityResult = Json.decodeFromString<EntityResult>(response.content!!)
                 // TODO: Can't use .equals, since returned entity has committed transaction ids.
                 // Make commit return the updated entity or implement a contentEquals that ignores transaction id
-                assertEquals(entity.entityId, Id.fromHexString(entityResult.entityId))
+                assertEquals(entity.entityId, Id.decode(entityResult.entityId))
                 assertEquals(entity.uri, URI(entityResult.summary.uri!!))
 
                 val activity = entityResult.activities.single()

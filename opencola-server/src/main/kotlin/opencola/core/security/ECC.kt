@@ -1,5 +1,7 @@
 package opencola.core.security
 
+import opencola.core.extensions.hexStringToByteArray
+import opencola.core.extensions.toHexString
 import java.security.*
 import java.security.spec.ECGenParameterSpec
 import java.security.spec.PKCS8EncodedKeySpec
@@ -44,8 +46,20 @@ fun publicKeyFromBytes(bytes: ByteArray) : PublicKey {
     return getKeyFactory().generatePublic(X509EncodedKeySpec(bytes))
 }
 
+fun PublicKey.encode() : String {
+    return this.encoded.toHexString()
+}
+
+fun decodePublicKey(value: String) : PublicKey {
+    return publicKeyFromBytes(value.hexStringToByteArray())
+}
+
 fun privateKeyFromBytes(bytes: ByteArray) : PrivateKey {
     return getKeyFactory().generatePrivate(PKCS8EncodedKeySpec(bytes))
+}
+
+fun decodePrivateKey(value: String) : PrivateKey {
+    return privateKeyFromBytes(value.hexStringToByteArray())
 }
 
 fun calculateDate(hoursInFuture: Int) : Date {

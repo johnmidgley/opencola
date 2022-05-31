@@ -3,11 +3,10 @@ package opencola.core.storage
 import mu.KotlinLogging
 import opencola.core.config.NetworkConfig
 import opencola.core.config.PeerConfig
-import opencola.core.extensions.hexStringToByteArray
 import opencola.core.model.Authority
 import opencola.core.model.Id
 import opencola.core.security.Signator
-import opencola.core.security.publicKeyFromBytes
+import opencola.core.security.decodePublicKey
 import java.net.URI
 import java.nio.file.Path
 import java.security.PublicKey
@@ -40,8 +39,8 @@ class AddressBook(private val authority: Authority, storagePath: Path, signator:
                 logger.info { "Importing peer: $it" }
                 val uri = URI("http://${it.host}")
                 val tags = if (it.active) setOf(activeTag) else emptySet()
-                val peerAuthority = getAuthority(Id.fromHexString(it.id)) ?:
-                    Authority(authority.authorityId, publicKeyFromBytes(it.publicKey.hexStringToByteArray()), uri, it.name)
+                val peerAuthority = getAuthority(Id.decode(it.id)) ?:
+                    Authority(authority.authorityId, decodePublicKey(it.publicKey), uri, it.name)
 
                 peerAuthority.name = it.name
                 peerAuthority.tags = tags

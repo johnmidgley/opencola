@@ -5,16 +5,11 @@ import opencola.core.content.TextExtractor
 import opencola.core.event.EventBus
 import opencola.core.event.MainReactor
 import opencola.core.event.Reactor
-import opencola.core.extensions.hexStringToByteArray
-import opencola.core.extensions.toHexString
 import opencola.core.model.Authority
 import opencola.core.model.Id
-import opencola.core.security.KeyStore
-import opencola.core.security.Signator
-import opencola.core.security.generateKeyPair
-import opencola.core.security.publicKeyFromBytes
 import opencola.core.network.PeerRouter
 import opencola.core.search.LuceneSearchIndex
+import opencola.core.security.*
 import opencola.core.storage.*
 import opencola.service.search.SearchService
 import org.kodein.di.DI
@@ -42,7 +37,7 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
             val authorityPubPath = storagePath.resolve(publicKeyFile)
             val keyStore = KeyStore(storagePath.resolve(securityConfig.keystore.name), securityConfig.keystore.password)
             val publicKey =  if (authorityPubPath.exists()) {
-                val publicKey = publicKeyFromBytes(authorityPubPath.readText().hexStringToByteArray())
+                val publicKey = decodePublicKey(authorityPubPath.readText())
                 val privateKey = keyStore.getPrivateKey(Id.ofPublicKey(publicKey))
                 if(privateKey != null)
                     logger.info { "Found private key in store" }
@@ -54,7 +49,7 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
                 logger.info { "Key file $publicKeyFile doesn't exist. Creating new KeyPair" }
                 val keyPair = generateKeyPair()
                 keyStore.addKey(Id.ofPublicKey(keyPair.public), keyPair)
-                authorityPubPath.writeText(keyPair.public.encoded.toHexString())
+                authorityPubPath.writeText(keyPair.public.encode())
                 keyPair.public
             }
 
