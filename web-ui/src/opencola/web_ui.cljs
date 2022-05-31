@@ -8,6 +8,7 @@
    [opencola.web-ui.view.feed :as feed]
    [opencola.web-ui.view.settings :as settings]
    [opencola.web-ui.model.feed :as model]
+   [opencola.web-ui.model.settings :as settings-model]
    [opencola.web-ui.model.error :as error]
    [secretary.core :as secretary :refer-macros [defroute]]
    [goog.events :as events])
@@ -17,6 +18,7 @@
 (def page-visible-atoms (apply hash-map (mapcat #(vector % (atom false)) [:feed :settings :error])))
 (def query! (atom ""))
 (def feed! (atom {}))
+(def peers! (atom {}))
 
 (defn page-visible? [page]
   @(page page-visible-atoms))
@@ -38,6 +40,8 @@
     (set-page :feed)))
 
 (defroute "/settings" []
+  (if @config/config
+    (settings-model/get-peers peers!))
   (set-page :settings))
 
 (defroute "*" []
@@ -55,7 +59,7 @@
           (if @(:feed page-visible-atoms)
             [feed/feed-page feed! query! #(on-search % feed!)])
           (if @(:settings page-visible-atoms)
-            [settings/settings-page query! #(on-search % feed!)])
+            [settings/settings-page query! #(on-search % feed!) peers!])
           (if @(:error page-visible-atoms)
             [:div.settings "404"])]))
 
@@ -71,7 +75,9 @@
 ;; this is particularly helpful for testing this ns without launching the app
 #_(mount-app-element)
 (config/get-config #(do (mount-app-element)
-                        (model/get-feed @query! feed!)) 
+                        ;; TODO: Figure out a better way to do this. Maybe handle in the AJAX layer?
+                        (model/get-feed @query! feed!)
+                        (settings-model/get-peers peers!)) 
                    error/error-handler)
 
 ;; specify reload hook with ^:after-load metadata

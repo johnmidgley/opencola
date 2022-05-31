@@ -4,7 +4,7 @@ import io.ktor.routing.*
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.http.content.*
-import io.ktor.request.*
+import io.ktor.response.*
 import mu.KotlinLogging
 import opencola.core.content.TextExtractor
 import opencola.core.event.EventBus
@@ -16,7 +16,6 @@ import opencola.core.storage.EntityStore
 import opencola.core.storage.FileStore
 import opencola.core.storage.MhtCache
 import opencola.server.handlers.*
-import opencola.service.EntityResult
 import opencola.service.search.SearchService
 import org.kodein.di.instance
 import opencola.core.config.Application as app
@@ -137,6 +136,13 @@ fun Application.configureRouting(application: app) {
             val searchIndex by injector.instance<SearchIndex>()
             val peerRouter by injector.instance<PeerRouter>() // TODO: Should really be general address book, or from entity store
             handleGetFeed(call, authority, entityStore, searchIndex, peerRouter)
+        }
+
+        get("/peers") {
+            val authority by injector.instance<Authority>()
+            val addressBook by injector.instance<AddressBook>()
+
+            call.respond(getPeers(authority, addressBook))
         }
 
         static(""){
