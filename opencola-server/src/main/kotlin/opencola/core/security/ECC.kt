@@ -54,8 +54,7 @@ fun decodePublicKey(value: String) : PublicKey {
     return publicKeyFromBytes(
         when(value.length){
             182 -> value.hexStringToByteArray()
-            124 -> Base58.decode(value)
-            else -> throw IllegalArgumentException("Unknown public key encoding length: ${value.length}")
+            else -> Base58.decode(value)
         }
     )
 }

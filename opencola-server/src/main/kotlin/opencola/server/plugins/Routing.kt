@@ -4,11 +4,13 @@ import io.ktor.routing.*
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.http.content.*
+import io.ktor.request.*
 import io.ktor.response.*
 import mu.KotlinLogging
 import opencola.core.content.TextExtractor
 import opencola.core.event.EventBus
 import opencola.core.model.Authority
+import opencola.core.model.Id
 import opencola.core.network.PeerRouter
 import opencola.core.search.SearchIndex
 import opencola.core.storage.AddressBook
@@ -143,6 +145,23 @@ fun Application.configureRouting(application: app) {
             val addressBook by injector.instance<AddressBook>()
 
             call.respond(getPeers(authority, addressBook))
+        }
+
+        put("/peers") {
+            val authority by injector.instance<Authority>()
+            val addressBook by injector.instance<AddressBook>()
+            val peer = call.receive<Peer>()
+
+            updatePeer(authority, addressBook, peer)
+            call.respond("{}")
+        }
+
+        delete("/peers/{peerId}") {
+            val peerId = Id.decode(call.parameters["peerId"] ?: throw IllegalArgumentException("No id set"))
+            val addressBook by injector.instance<AddressBook>()
+
+            deletePeer(addressBook, peerId)
+            call.respond("{}")
         }
 
         static(""){

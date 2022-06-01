@@ -14,6 +14,5 @@
 ;; TODO: Clear error on any successful call
 ; Generic error handler that sets error message
 (defn error-handler [{:keys [status status-text]}]
-  (println "Error")
   (set-error-message (str "Error: " status ": " status-text)))
 

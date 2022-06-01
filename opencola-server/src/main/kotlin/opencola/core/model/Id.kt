@@ -55,8 +55,7 @@ data class Id(private val bytes: ByteArray) {
             return decode(
                 when (value.length) {
                     64 -> hex(value)
-                    44 -> Base58.decode(value)
-                    else -> throw IllegalArgumentException("Unknown Id encoding length: ${value.length}")
+                    else -> Base58.decode(value)
                 }
             )
         }

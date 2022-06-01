@@ -215,3 +215,50 @@ td {
 .divider {
     height: 20px
 }
+
+.peer-item {
+   margin-bottom: 20px;
+   padding: 10px;
+   box-shadow: 5px 5px 5px 5px #EEEEEE;
+   -webkit-box-shadow: 5px 5px 5px 5px #EEEEEE;
+   overflow: auto;
+}
+
+.peer-img-box {
+    float: left;
+}
+
+.peer-img {
+    width: 100px;
+}
+
+.peer-info {
+    padding-left: 100px;
+}
+
+.peer-value {
+    width: 100%;
+}
+
+.peer-table {
+    width: 100%
+}
+
+.edit-peer{
+    padding-left: 30px;
+}
+
+.id{
+    font-family: "Lucida Console", "Courier New", monospace;
+    font-size: 13px;
+}
+
+.key {
+    font-family: "Lucida Console", "Courier New", monospace;
+    font-size: 13px;
+}
+
+.uri {
+    font-family: "Lucida Console", "Courier New", monospace;
+    font-size: 13px;
+}

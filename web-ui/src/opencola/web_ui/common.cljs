@@ -1,8 +1,11 @@
 (ns opencola.web-ui.common
-  #_(:require ))
+  (:require
+   [goog.string :as gstring]
+   [opencola.web-ui.model.error :as error]))
 
 (def inline-divider [:span.divider " | "])
 (def image-divider [:img.divider {:src "../img/divider.png"}])
+(def nbsp (gstring/unescapeEntities "&nbsp;"))
 
 (defn toggle-atom [atoms! atom!]
   (doall(for [a! atoms!]
@@ -18,5 +21,12 @@
 
 (defn set-location [path]
   (set! (.. js/window -location) path))
+
+(defn action-img [name]
+  [:img.action-img {:src (str "../img/" name ".png") :alt name :title name}])
+
+(defn error-message []
+  (if-let [e (error/get-error-message)]
+    [:div.error e]))
 
 

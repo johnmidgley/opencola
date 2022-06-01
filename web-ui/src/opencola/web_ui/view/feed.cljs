@@ -9,7 +9,7 @@
    [lambdaisland.uri :refer [uri]]
    [cljs.reader :as reader]
    [opencola.web-ui.config :as config]
-   [opencola.web-ui.common :as common]
+   [opencola.web-ui.common :as common :refer [action-img]]
    [opencola.web-ui.view.search :as search]
    [opencola.web-ui.model.error :as error]
    [opencola.web-ui.model.feed :as feed]))
@@ -49,9 +49,6 @@
       :comment ""})))
 
 
-(defn action-img [name]
-  [:img.action-img {:src (str "../img/" name ".png") :alt name :title name}])
-
 (defn action-item [action]
   [:span.action-item (action-img (:type action))
    (when-let [value (:value action)] 
@@ -70,7 +67,7 @@
 
 
 (defn edit-control [editing?!]
-  [:span.delete-entity {:on-click #(reset! editing?! true)} (action-img "edit")])
+  [:span.edit-entity {:on-click #(reset! editing?! true)} (action-img "edit")])
 
 
 (defn comment-control [feed! entity-id comment-id text expanded?!]
@@ -396,9 +393,8 @@
   (if @feed!
     [:div.feed
      [feed-status feed!]
-     (let [results (:results @feed!)]
-       (doall (for [item results]
-                ^{:key item} [feed-item feed! item])))]))
+     (doall (for [item  (:results @feed!)]
+              ^{:key item} [feed-item feed! item]))]))
 
 (defn feed-error [feed!]
   (if-let [e (:error @feed!)]

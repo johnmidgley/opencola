@@ -59,7 +59,7 @@
           (if @(:feed page-visible-atoms)
             [feed/feed-page feed! query! #(on-search % feed!)])
           (if @(:settings page-visible-atoms)
-            [settings/settings-page query! #(on-search % feed!) peers!])
+            [settings/settings-page peers! query! #(on-search % feed!)])
           (if @(:error page-visible-atoms)
             [:div.settings "404"])]))
 

@@ -3,7 +3,7 @@ package opencola.core.model
 import java.net.URI
 
 open class ResourceEntity : Entity {
-    var uri by uriAttributeDelegate
+    var uri by nonResettableUriAttributeDelegate
     var dataId by MultiValueSetOfIdAttributeDelegate
 
     constructor(authorityId: Id,

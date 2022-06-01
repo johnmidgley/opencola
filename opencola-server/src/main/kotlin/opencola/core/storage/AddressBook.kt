@@ -70,4 +70,11 @@ class AddressBook(private val authority: Authority, storagePath: Path, signator:
             .filter { !filterActive || it.tags.contains(activeTag)}
             .toSet()
     }
+
+    fun deleteAuthority(id: Id) {
+        if(id == authority.authorityId)
+            throw IllegalArgumentException("Can't delete root authority from address book.")
+
+        entityStore.deleteEntity(authority.authorityId, id)
+    }
 }
