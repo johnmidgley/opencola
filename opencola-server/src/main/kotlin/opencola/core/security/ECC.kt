@@ -1,7 +1,7 @@
 package opencola.core.security
 
+import opencola.core.content.Base58
 import opencola.core.extensions.hexStringToByteArray
-import opencola.core.extensions.toHexString
 import java.security.*
 import java.security.spec.ECGenParameterSpec
 import java.security.spec.PKCS8EncodedKeySpec
@@ -47,12 +47,19 @@ fun publicKeyFromBytes(bytes: ByteArray) : PublicKey {
 }
 
 fun PublicKey.encode() : String {
-    return this.encoded.toHexString()
+    return Base58.encode(this.encoded)
 }
 
 fun decodePublicKey(value: String) : PublicKey {
-    return publicKeyFromBytes(value.hexStringToByteArray())
+    return publicKeyFromBytes(
+        when(value.length){
+            182 -> value.hexStringToByteArray()
+            124 -> Base58.decode(value)
+            else -> throw IllegalArgumentException("Unknown public key encoding length: ${value.length}")
+        }
+    )
 }
+
 
 fun privateKeyFromBytes(bytes: ByteArray) : PrivateKey {
     return getKeyFactory().generatePrivate(PKCS8EncodedKeySpec(bytes))

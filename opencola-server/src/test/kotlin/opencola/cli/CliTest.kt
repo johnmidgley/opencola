@@ -1,37 +1,48 @@
 package opencola.cli
 
 import opencola.core.TestApplication
+import opencola.core.config.Application
 import opencola.core.model.Authority
 import opencola.core.model.ResourceEntity
-import opencola.core.storage.EntityStore
+import opencola.core.security.Signator
+import opencola.core.storage.AddressBook
 import opencola.core.storage.EntityStore.TransactionOrder
+import opencola.core.storage.ExposedEntityStore
 import org.junit.Test
 import org.kodein.di.instance
 import java.net.URI
 import kotlin.test.assertContentEquals
+import kotlin.test.assertEquals
 
 class CliTest {
+    private fun getTmpEntityStore(application: Application): ExposedEntityStore {
+        val authority by application.injector.instance<Authority>()
+        val signator by application.injector.instance<Signator>()
+        val addressBook by application.injector.instance<AddressBook>()
+        val db = Application.getEntityStoreDB(authority, TestApplication.getTmpDirectory("entity-store"))
+        return ExposedEntityStore(db, authority, signator, addressBook)
+
+    }
     @Test
     fun testExportImportRoundTrip(){
         val application = TestApplication.instance
         val authority by application.injector.instance<Authority>()
-        val entityStore by application.injector.instance<EntityStore>()
 
+        val entityStore0 = getTmpEntityStore(application)
         val resources = (0 until 5).map {
             ResourceEntity(authority.authorityId, URI("https://$it"))
         }
+        resources.forEach{ entityStore0.updateEntities(it) }
 
-        entityStore.resetStore()
-        resources.forEach{ entityStore.updateEntities(it) }
-        val transactions0 = entityStore.getSignedTransactions(emptyList(), null, TransactionOrder.IdAscending, 100)
+        val transactions0 = entityStore0.getSignedTransactions(emptyList(), null, TransactionOrder.IdAscending, 100)
+        assertEquals(5, transactions0.count())
+        val exportPath = TestApplication.getTmpFilePath(".txs")
+        exportTransactions(entityStore0, listOf(exportPath.toString()))
 
-        val exportPath0 = TestApplication.getTmpFilePath(".txs")
-        exportTransactions(application, listOf(exportPath0.toString()))
-
-        entityStore.resetStore()
-        importTransactions(application, listOf(exportPath0.toString()))
-        val transactions1 = entityStore.getSignedTransactions(emptyList(), null, TransactionOrder.IdAscending, 100)
-
+        val entityStore1 = getTmpEntityStore(application)
+        assertEquals(0, entityStore1.getSignedTransactions(emptyList(), null, TransactionOrder.IdAscending, 100).count())
+        importTransactions(entityStore1, listOf(exportPath.toString()))
+        val transactions1 = entityStore1.getSignedTransactions(emptyList(), null, TransactionOrder.IdAscending, 100)
         assertContentEquals(transactions0, transactions1)
     }
 }

@@ -3,8 +3,8 @@ package opencola.core.model
 import io.ktor.util.*
 import kotlinx.serialization.Serializable
 import opencola.core.content.Base58
-import opencola.core.security.sha256
 import opencola.core.extensions.toByteArray
+import opencola.core.security.sha256
 import opencola.core.serialization.ByteArrayCodec
 import opencola.core.serialization.StreamSerializer
 import java.io.InputStream
@@ -52,10 +52,13 @@ data class Id(private val bytes: ByteArray) {
 
     companion object Factory : ByteArrayCodec<Id>, StreamSerializer<Id> {
         fun decode(value: String): Id {
-            return if(value.length == 64)
-                decode(hex(value))
-            else
-                decode(Base58.decode(value))
+            return decode(
+                when (value.length) {
+                    64 -> hex(value)
+                    44 -> Base58.decode(value)
+                    else -> throw IllegalArgumentException("Unknown Id encoding length: ${value.length}")
+                }
+            )
         }
 
         fun ofPublicKey(publicKey: PublicKey) : Id {

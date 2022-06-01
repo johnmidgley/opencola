@@ -17,9 +17,7 @@ fun printUsage(){
     println("Usage: oc TASK COMMAND [ARGS] ")
 }
 
-fun exportTransactions(application: Application, args: List<String>){
-    val entityStore by application.injector.instance<EntityStore>()
-
+fun exportTransactions(entityStore: EntityStore, args: List<String>){
     if(args.count() != 1){
         println("export transactions should have exactly 1 argument - filename")
         return
@@ -61,13 +59,12 @@ private fun transactionsFromPath(path: Path): Sequence<SignedTransaction> {
     }
 }
 
-fun importTransactions(application: Application, args: List<String>){
+fun importTransactions(entityStore: EntityStore, args: List<String>){
         if(args.count() != 1){
         println("import transactions should have exactly 1 argument - filename")
         return
     }
 
-    val entityStore by application.injector.instance<EntityStore>()
     transactionsFromPath(Path(args.first())).forEach {
         println("Reading: ${it.transaction.id}")
         entityStore.addSignedTransactions(listOf(it))
@@ -75,11 +72,12 @@ fun importTransactions(application: Application, args: List<String>){
 }
 
 fun transactions(application: Application, args: Iterable<String>){
+    val entityStore by application.injector.instance<EntityStore>()
     val commandArgs = args.drop(1)
 
     when(val command = args.first()){
-        "export" -> exportTransactions(application, commandArgs)
-        "import" -> importTransactions(application, commandArgs)
+        "export" -> exportTransactions(entityStore, commandArgs)
+        "import" -> importTransactions(entityStore, commandArgs)
         else -> println("Unknown transaction command: $command")
     }
 

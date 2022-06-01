@@ -67,7 +67,7 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
             return instance(applicationPath, storagePath, config, publicKey)
         }
 
-        private fun getEntityStoreDB(authority: Authority, storagePath: Path): Database {
+        fun getEntityStoreDB(authority: Authority, storagePath: Path): Database {
             val path = storagePath.resolve("entity-store.db")
 
             if(!path.exists()){
