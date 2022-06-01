@@ -2,11 +2,9 @@ package opencola.core.search
 
 import mu.KotlinLogging
 import opencola.core.extensions.recursiveDelete
-import opencola.core.extensions.toHexString
 import opencola.core.model.CoreAttribute.values
 import opencola.core.model.Entity
 import opencola.core.model.Id
-import opencola.core.security.sha256
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.document.Document
 import org.apache.lucene.document.Field
@@ -55,10 +53,6 @@ class LuceneSearchIndex(val authorityId: Id, private val storagePath: Path) : Ab
                 writer.addDocument(it)
             }
         }
-    }
-
-    private fun getDocId(authorityId: Id, entityId: Id): String {
-        return sha256("${authorityId}:${entityId}").toHexString()
     }
 
     // TODO: Make var-arg entity, so multiple docs can be indexed at once

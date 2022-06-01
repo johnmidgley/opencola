@@ -4,11 +4,9 @@ import com.lordcodes.turtle.shellRun
 import mu.KotlinLogging
 import opencola.core.config.SolrConfig
 import opencola.core.extensions.logErrorAndThrow
-import opencola.core.extensions.toHexString
 import opencola.core.model.CoreAttribute
 import opencola.core.model.Entity
 import opencola.core.model.Id
-import opencola.core.security.sha256
 import org.apache.solr.client.solrj.impl.HttpSolrClient
 import org.apache.solr.client.solrj.request.CoreAdminRequest
 import org.apache.solr.common.SolrInputDocument
@@ -117,10 +115,6 @@ class SolrSearchIndex(val authorityId: Id, val config: SolrConfig) : AbstractSea
                 it.getFieldValue(CoreAttribute.Description.spec.name)?.toString(),
             )
         }.toList()
-    }
-
-    private fun getDocId(authorityId: Id, entityId: Id): String {
-        return sha256("${authorityId}:${entityId}").toHexString()
     }
 
     // TODO - This is fine for now, but what happens when you index the same doc (i.e. ref.to) from another user?
