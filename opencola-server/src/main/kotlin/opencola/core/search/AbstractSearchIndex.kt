@@ -10,7 +10,7 @@ import opencola.core.security.sha256
 
 abstract class AbstractSearchIndex : SearchIndex {
     protected fun getDocId(authorityId: Id, entityId: Id): String {
-        // For some reason this doesn't work if base58 is used. Are there restrictions on doc ids?
+        // For some reason this doesn't work if base58 is used (testLuceneRepeatIndexing fails). Are there restrictions on doc ids?
         return sha256("${authorityId}:${entityId}").toHexString()
     }
 

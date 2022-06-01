@@ -5,6 +5,7 @@ import opencola.core.content.TextExtractor
 import opencola.core.event.EventBus
 import opencola.core.event.MainReactor
 import opencola.core.event.Reactor
+import opencola.core.extensions.toHexString
 import opencola.core.model.Authority
 import opencola.core.model.Id
 import opencola.core.network.PeerRouter
@@ -12,16 +13,14 @@ import opencola.core.search.LuceneSearchIndex
 import opencola.core.security.*
 import opencola.core.storage.*
 import opencola.service.search.SearchService
+import org.jetbrains.exposed.sql.Database
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
 import org.kodein.di.instance
 import java.net.URI
 import java.nio.file.Path
 import java.security.PublicKey
-import kotlin.io.path.createDirectory
-import kotlin.io.path.exists
-import kotlin.io.path.readText
-import kotlin.io.path.writeText
+import kotlin.io.path.*
 
 class Application(val applicationPath: Path, val storagePath: Path, val config: Config, val injector: DI) {
     val logger = KotlinLogging.logger("opencola.${config.name}")
@@ -68,6 +67,21 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
             return instance(applicationPath, storagePath, config, publicKey)
         }
 
+        private fun getEntityStoreDB(authority: Authority, storagePath: Path): Database {
+            val path = storagePath.resolve("entity-store.db")
+
+            if(!path.exists()){
+                val legacyAuthorityId = Id.encode(authority.authorityId).toHexString()
+                val legacyPath = storagePath.resolve("$legacyAuthorityId.db")
+                if(legacyPath.exists()){
+                    logger.warn { "Moving legacy database." }
+                    legacyPath.moveTo(path)
+                }
+            }
+
+            return SQLiteDB(path).db
+        }
+
         fun instance(applicationPath: Path, storagePath: Path, config: Config, authorityPublicKey: PublicKey): Application {
             if(!storagePath.exists()){
                 storagePath.createDirectory()
@@ -77,7 +91,7 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
             val authority = Authority(authorityPublicKey, URI(""), "You")
             val keyStore = KeyStore(storagePath.resolve(config.security.keystore.name), config.security.keystore.password)
             val fileStore = LocalFileStore(storagePath.resolve("filestore"))
-            val sqLiteDB = SQLiteDB(storagePath.resolve("${authority.authorityId}.db")).db
+            val entityStoreDB = getEntityStoreDB(authority, storagePath)
 
             val injector = DI {
                 bindSingleton { authority }
@@ -88,7 +102,7 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
                 bindSingleton { AddressBook(instance(), storagePath, instance(), config.network) }
                 bindSingleton { PeerRouter(instance(), instance()) }
                 bindSingleton { LuceneSearchIndex(authority.authorityId, storagePath.resolve("lucene")) }
-                bindSingleton { ExposedEntityStore(sqLiteDB, instance(), instance(), instance(), instance()) }
+                bindSingleton { ExposedEntityStore(entityStoreDB, instance(), instance(), instance(), instance()) }
                 bindSingleton { SearchService(instance(), instance(), instance()) }
                 // TODO: Add unit tests for MhtCache
                 // TODO: Get cache name from config

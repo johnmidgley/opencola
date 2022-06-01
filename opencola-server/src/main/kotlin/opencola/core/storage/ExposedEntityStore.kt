@@ -1,7 +1,7 @@
 package opencola.core.storage
 
-import opencola.core.content.TextExtractor
 import opencola.core.event.EventBus
+import opencola.core.extensions.toHexString
 import opencola.core.model.*
 import opencola.core.security.Signator
 import opencola.core.storage.EntityStore.TransactionOrder
@@ -29,7 +29,7 @@ class ExposedEntityStore(
     // This would likely be an issue only when storing data for large sets of users (millions to billions?)
     // TODO: Magic numbers (32, 128) should come from config
     // TODO: Normalize attribute
-    private class Facts(authorityId: Id) : LongIdTable("fct-${authorityId}") {
+    private class Facts(authorityId: Id) : LongIdTable("fct-${Id.encode(authorityId).toHexString()}") {
         val authorityId = binary("authorityId", 32).index()
         val entityId = binary("entityId", 32).index()
         val attribute = text("attribute")
@@ -40,7 +40,7 @@ class ExposedEntityStore(
     }
 
     // LongIdTable has implicit, autoincrement long id field
-    private class Transactions(authorityId: Id) : LongIdTable("txs-${authorityId}") {
+    private class Transactions(authorityId: Id) : LongIdTable("txs-${Id.encode(authorityId).toHexString()}") {
         val transactionId = binary("transactionId", 32).uniqueIndex()
         val authorityId = binary("authorityId", 32)
         val epochSecond = long("epochSecond").index()

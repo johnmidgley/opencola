@@ -1,10 +1,10 @@
 package opencola.core.model
 
+import io.ktor.util.*
 import kotlinx.serialization.Serializable
-import opencola.core.extensions.hexStringToByteArray
+import opencola.core.content.Base58
 import opencola.core.security.sha256
 import opencola.core.extensions.toByteArray
-import opencola.core.extensions.toHexString
 import opencola.core.serialization.ByteArrayCodec
 import opencola.core.serialization.StreamSerializer
 import java.io.InputStream
@@ -31,7 +31,7 @@ data class Id(private val bytes: ByteArray) {
     }
 
     fun encode(): String {
-        return bytes.toHexString()
+        return Base58.encode(bytes)
     }
 
     override fun toString(): String {
@@ -52,7 +52,10 @@ data class Id(private val bytes: ByteArray) {
 
     companion object Factory : ByteArrayCodec<Id>, StreamSerializer<Id> {
         fun decode(value: String): Id {
-            return Id(value.hexStringToByteArray())
+            return if(value.length == 64)
+                decode(hex(value))
+            else
+                decode(Base58.decode(value))
         }
 
         fun ofPublicKey(publicKey: PublicKey) : Id {
@@ -70,7 +73,7 @@ data class Id(private val bytes: ByteArray) {
         }
 
         fun new() : Id {
-            return Id.ofData(UUID.randomUUID().toByteArray())
+            return ofData(UUID.randomUUID().toByteArray())
         }
 
         override fun encode(value: Id): ByteArray {
