@@ -4,6 +4,7 @@ import io.ktor.util.*
 import kotlinx.serialization.Serializable
 import opencola.core.content.Base58
 import opencola.core.extensions.toByteArray
+import opencola.core.extensions.toHexString
 import opencola.core.security.sha256
 import opencola.core.serialization.ByteArrayCodec
 import opencola.core.serialization.StreamSerializer
@@ -32,6 +33,10 @@ data class Id(private val bytes: ByteArray) {
 
     fun encode(): String {
         return Base58.encode(bytes)
+    }
+
+    fun legacyEncode() : String {
+        return bytes.toHexString()
     }
 
     override fun toString(): String {

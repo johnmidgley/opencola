@@ -51,7 +51,7 @@ class LocalFileStoreTest{
         assertEquals(id2, id)
 
         // This time, read from input stream
-        val data2 = localFileStore.getInputStream(id).use { it.readAllBytes() }
+        val data2 = localFileStore.getInputStream(id).use { it!!.readAllBytes() }
         assert(data.contentEquals(data2))
     }
 

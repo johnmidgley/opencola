@@ -71,8 +71,7 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
             val path = storagePath.resolve("entity-store.db")
 
             if(!path.exists()){
-                val legacyAuthorityId = Id.encode(authority.authorityId).toHexString()
-                val legacyPath = storagePath.resolve("$legacyAuthorityId.db")
+                val legacyPath = storagePath.resolve("${authority.authorityId.legacyEncode()}.db")
                 if(legacyPath.exists()){
                     logger.warn { "Moving legacy database." }
                     legacyPath.moveTo(path)

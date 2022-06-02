@@ -15,31 +15,43 @@ class LocalFileStore(private val root: Path) : FileStore {
         }
     }
 
-    // TODO: This creates a directory structure when just checking for existence. Consider breaking up
-    private fun getPath(dataId: Id): Path {
+    private fun getPath(dataIdString: String, createDirectory: Boolean = false): Path {
         // Organize datafiles like git
-        val dataIdString = dataId.toString()
         val directory = Path(root.pathString, dataIdString.substring(0,directoryPrefixLength))
 
-        if(!directory.exists()){
+        if(!directory.exists() && createDirectory){
             directory.createDirectory()
         }
 
         return Path(directory.pathString, dataIdString.substring(2))
     }
 
+    private fun getPath(dataId: Id, createDirectory: Boolean = false) : Path {
+        val dataIdString = dataId.toString()
+        val path = getPath(dataIdString, createDirectory)
+
+        if(!createDirectory && !path.exists()){
+            // This is a read, so check by legacy hex id, and move if exists
+            val legacyPath = getPath(dataId.legacyEncode())
+            if(legacyPath.exists())
+                legacyPath.moveTo(getPath(dataIdString, true))
+        }
+
+        return path
+    }
+
     override fun exists(dataId: Id) : Boolean {
         return getPath(dataId).exists()
     }
 
-    override fun getInputStream(dataId: Id): InputStream {
+    override fun getInputStream(dataId: Id): InputStream? {
         // TODO: Check options
-        return getPath(dataId).inputStream()
+        return getPath(dataId).let { if(it.exists()) it.inputStream() else null }
     }
 
-    override fun read(dataId: Id): ByteArray {
+    override fun read(dataId: Id): ByteArray? {
         getInputStream(dataId).use {
-            return it.readAllBytes()
+            return it?.readAllBytes()
         }
     }
 
@@ -51,7 +63,7 @@ class LocalFileStore(private val root: Path) : FileStore {
         }
 
         // TODO: Check all uses of streams to make sure properly disposed (i.e. within use
-        getPath(dataId).outputStream().use {
+        getPath(dataId, true).outputStream().use {
             it.write(bytes)
         }
 

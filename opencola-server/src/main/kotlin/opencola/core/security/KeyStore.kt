@@ -33,7 +33,7 @@ class KeyStore(val path: Path, password: String) : SecurityProviderDependent() {
     }
 
     private fun getLegacyKey(id: Id) : KeyStore.Entry? {
-        val entry = store.getEntry(Id.encode(id).toHexString(), protectionParameter)
+        val entry = store.getEntry(id.legacyEncode(), protectionParameter)
 
         if(entry != null){
             logger.warn { "Updating legacy KeyStore" }

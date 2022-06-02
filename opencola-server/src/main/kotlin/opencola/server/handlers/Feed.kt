@@ -139,7 +139,7 @@ fun getEntityResults(authority: Authority, entityStore: EntityStore, peerRouter:
         return emptyList()
     }
 
-    val idToAuthority: (Id) -> Authority? = { id -> peerRouter.getPeer(id) }
+    val idToAuthority: (Id) -> Authority? = { id -> if(id == authority.authorityId) authority else peerRouter.getPeer(id) }
     val entities = entityStore.getEntities(emptySet(), entityIds).filter { isEntityIsVisible(authority.authorityId, it) }
     val comments = getComments(entityStore, entities)
     val entitiesByEntityId = entities.groupBy { it.entityId }
