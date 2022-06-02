@@ -404,7 +404,7 @@
    [:div.header-actions 
     [:img.header-icon {:src  "../img/new-post.png" :on-click #(swap! creating-post?! not)}]
     common/image-divider
-    [:img.header-icon {:src  "../img/settings.png" :on-click #(common/set-location "#/settings")}]])
+    [:img.header-icon {:src  "../img/peers.png" :on-click #(common/set-location "#/peers")}]])
 
 
 (defn feed-page [feed! query! on-search]

@@ -1,4 +1,4 @@
-(ns opencola.web-ui.model.settings 
+(ns opencola.web-ui.model.peer
   (:require
    [opencola.web-ui.ajax :as ajax]
    [opencola.web-ui.model.error :as error]))

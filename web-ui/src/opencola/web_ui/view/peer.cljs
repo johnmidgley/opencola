@@ -1,8 +1,8 @@
-(ns opencola.web-ui.view.settings 
+(ns opencola.web-ui.view.peer 
   (:require
    [reagent.core :as reagent :refer [atom]]
    [opencola.web-ui.common :as common :refer [action-img]]
-   [opencola.web-ui.model.settings :as model]
+   [opencola.web-ui.model.peer :as model]
    [opencola.web-ui.view.search :as search]
    [opencola.web-ui.model.error :as error]
    [cljs.pprint :as pprint]))
@@ -66,7 +66,7 @@
      (doall (for [peer (:results @peers!)]
               ^{:key peer} [peer-item peers! peer]))]))
 
-(defn settings-page [peers! query! on-search!]
+(defn peer-page [peers! query! on-search!]
   (let [adding-peer?! (atom false)]
     (fn []
       [:div.settings-page
