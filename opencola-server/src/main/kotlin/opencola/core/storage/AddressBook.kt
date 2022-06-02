@@ -58,10 +58,7 @@ class AddressBook(private val authority: Authority, storagePath: Path, signator:
     }
 
     fun getAuthority(id: Id) : Authority? {
-        return if(id == authority.authorityId)
-            authority
-        else
-            entityStore.getEntity(authority.authorityId, id) as Authority?
+        return entityStore.getEntity(authority.authorityId, id) as Authority?
     }
 
     fun getAuthorities(filterActive: Boolean = false) : Set<Authority> {

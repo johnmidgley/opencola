@@ -46,6 +46,7 @@
             [:tr [:td.peer-name [action-img "user"]] [:td [peer-value p! :name @editing?!]]]
             [:tr [:td.peer-id [action-img "id"]] [:td [:span.id (:id peer)]]]
             [:tr [:td.peer-public-key [action-img "key"]] [:td [:span.key [peer-value p! :publicKey @editing?!]]]]
+            [:tr [:td.peer-address [action-img "link"]] [:td [:span.uri [peer-value p! :address @editing?!]]]]
             [:tr [:td.peer-img-uri [action-img "photo"]] [:td [:span.uri [peer-value p! :imageUri @editing?!]]]]
             [:tr [:td.peer-acitve [action-img "refresh"]] [:td [peer-active p! editing?!]]]]]]
          (if @editing?!
