@@ -221,7 +221,7 @@ td {
    padding: 10px;
    box-shadow: 5px 5px 5px 5px #EEEEEE;
    -webkit-box-shadow: 5px 5px 5px 5px #EEEEEE;
-   overflow: auto;
+   overflow: hidden;
 }
 
 .peer-img-box {
@@ -232,17 +232,22 @@ td {
     width: 100px;
 }
 
+.peer-field {
+    width: 0px;
+}
+
 .peer-info {
+    position: relative;
+    left: -40px;
+    padding-right: 20px;
     padding-left: 100px;
+    width: 100%;
 }
 
 .peer-value {
     width: 100%;
 }
 
-.peer-table {
-    width: 100%
-}
 
 .edit-peer{
     padding-left: 30px;

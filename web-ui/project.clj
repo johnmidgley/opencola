@@ -12,7 +12,8 @@
                  [cljs-ajax "0.8.4"]
                  [com.andrewmcveigh/cljs-time "0.5.2"]
                  [lambdaisland/uri "1.13.95"]
-                 [clj-commons/secretary "1.2.4"]]
+                 [clj-commons/secretary "1.2.4"]
+                 [mvxcvi/alphabase "2.1.1"]]
 
   :source-paths ["src"]
 
