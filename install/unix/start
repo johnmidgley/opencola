@@ -7,7 +7,7 @@ then
 echo "Storage already exists"
 else
 echo "Creating storage"
-mkdir -p $OPENCOLA_HOME~/
+mkdir -p $OPENCOLA_HOME/storage
 cp -r ../opencola/storage/* $OPENCOLA_HOME/storage 
 fi
 
