@@ -5,6 +5,6 @@ services:
     ports:
       - "5795:5795"
     volumes:
-      - ~/.opencola/storage:/opencola/storage
+      - $OPENCOLA_HOME/storage:/opencola/storage
     restart: unless-stopped
 
