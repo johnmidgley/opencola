@@ -2,6 +2,15 @@ val ktor_version: String by project
 val kotlin_version: String by project
 val logback_version: String by project
 
+/*
+
+DOCS
+********************************************************
+https://docs.gradle.org/current/userguide/userguide.html
+********************************************************
+
+*/
+
 plugins {
     application
     kotlin("jvm") version "1.6.10"
@@ -18,6 +27,10 @@ application {
 
 repositories {
     mavenCentral()
+    flatDir{
+        name = "localRepository"
+        dirs("${project.rootDir}/../lib")
+    }
 }
 
 // https://thelyfsoshort.io/kotlin-reflection-shadow-jars-minimize-9bd74964c74
@@ -69,6 +82,9 @@ dependencies {
     implementation("org.apache.lucene:lucene-core:9.1.0")
     implementation("org.apache.lucene:lucene-queryparser:9.1.0")
     implementation("org.jetbrains.kotlinx:kotlinx-cli:0.3.4")
+
+    implementation("com.zerotier.sockets:libzt-1.8.4")
+    implementation("com.github.edouardswiac:zerotier-api-java:0.6.2")
 
     testImplementation("io.ktor:ktor-server-tests:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
