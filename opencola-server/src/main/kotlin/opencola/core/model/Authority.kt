@@ -4,7 +4,10 @@ import java.net.URI
 import java.security.PublicKey
 
 // TODO: Remove? Private keys are in keystore, so really no difference between an Authority and a regular Actor
-class Authority : ActorEntity {
+class Authority : Entity {
+    var uri by uriAttributeDelegate
+    var publicKey by publicKeyAttributeDelegate
+
     constructor(
         authorityId: Id,
         publicKey: PublicKey,
@@ -17,7 +20,10 @@ class Authority : ActorEntity {
         like: Boolean? = null,
         rating: Float? = null,
         tags: Set<String>? = null,
-    ) : super(authorityId, publicKey, uri, name, description, text, imageUri, trust, like, rating, tags)
+    ) : super(authorityId, Id.ofPublicKey(publicKey), name, description, text, imageUri, trust, like, rating, tags) {
+        this.uri = uri
+        this.publicKey = publicKey
+    }
 
     constructor(
         publicKey: PublicKey,

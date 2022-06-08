@@ -17,7 +17,7 @@ class EntityTest {
         val tags = listOf("this", "that").toSet()
         val rating = .37F
 
-        val entity = ActorEntity(Id.ofPublicKey(publicKey), publicKey)
+        val entity = Authority(publicKey, URI("https://authority"), "Name" )
         entity.uri = uri
         assertEquals(uri, entity.uri)
 

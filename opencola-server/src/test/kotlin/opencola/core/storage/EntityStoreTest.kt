@@ -3,7 +3,7 @@ package opencola.core.storage
 import opencola.core.TestApplication
 import opencola.core.config.getApplications
 import opencola.core.event.EventBus
-import opencola.core.getActorEntity
+import opencola.core.getAuthorityEntity
 import opencola.core.model.*
 import opencola.core.security.Signator
 import opencola.core.storage.EntityStore.TransactionOrder
@@ -49,7 +49,7 @@ class EntityStoreTest {
 
     private fun testEntityStore(authority: Authority, getEntityStore: ()-> EntityStore) {
         val store = getEntityStore()
-        val entity = getActorEntity(authority.entityId)
+        val entity = getAuthorityEntity(authority.entityId)
         store.updateEntities(entity)
 
         val store2 = getEntityStore()
@@ -81,16 +81,16 @@ class EntityStoreTest {
 
     private fun testUpdateAfterReload(authority: Authority, getEntityStore: ()-> EntityStore){
         val store = getEntityStore()
-        val entity = getActorEntity(authority.entityId)
+        val entity = getAuthorityEntity(authority.entityId)
         store.updateEntities(entity)
 
         val store1 = getEntityStore()
-        val entity1 = store1.getEntity(authority.authorityId, entity.entityId) as ActorEntity
+        val entity1 = store1.getEntity(authority.authorityId, entity.entityId) as Authority
         entity1.name = "new name"
         store.updateEntities(entity1)
 
         val store2 = getEntityStore()
-        val entity2 = store2.getEntity(authority.authorityId, entity.entityId) as ActorEntity
+        val entity2 = store2.getEntity(authority.authorityId, entity.entityId) as Authority
         assertEquals(entity2.name, "new name")
     }
 

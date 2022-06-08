@@ -2,11 +2,11 @@ package opencola.core
 
 import opencola.core.security.generateKeyPair
 import opencola.core.model.Id
-import opencola.core.model.ActorEntity
+import opencola.core.model.Authority
 import java.net.URI
 
-fun getActorEntity(subjectId: Id) : ActorEntity {
-    return ActorEntity(
+fun getAuthorityEntity(subjectId: Id) : Authority {
+    return Authority(
         subjectId,
         generateKeyPair().public,
         URI("http://scatch.com"),

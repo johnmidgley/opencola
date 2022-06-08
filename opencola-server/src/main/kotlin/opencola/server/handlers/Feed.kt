@@ -102,7 +102,6 @@ fun isEntityIsVisible(authorityId: Id, entity: Entity) : Boolean {
         // TODO: This hides unliked entities in search results
         is ResourceEntity -> entity.authorityId != authorityId || entity.like != false
         is PostEntity -> entity.authorityId != authorityId || entity.like != false
-        is ActorEntity -> entity.authorityId != authorityId || entity.like != false
         else -> false
     }
 }
