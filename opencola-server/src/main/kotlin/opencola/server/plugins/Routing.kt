@@ -11,6 +11,7 @@ import opencola.core.content.TextExtractor
 import opencola.core.event.EventBus
 import opencola.core.model.Authority
 import opencola.core.model.Id
+import opencola.core.network.NetworkNode
 import opencola.core.network.PeerRouter
 import opencola.core.search.SearchIndex
 import opencola.core.security.Encryptor
@@ -151,10 +152,11 @@ fun Application.configureRouting(application: app) {
         put("/peers") {
             val authority by injector.instance<Authority>()
             val addressBook by injector.instance<AddressBook>()
+            val networkNode by injector.instance<NetworkNode>()
             val encryptor by injector.instance<Encryptor>()
             val peer = call.receive<Peer>()
 
-            updatePeer(authority, addressBook, encryptor, peer)
+            updatePeer(authority, addressBook, networkNode,encryptor, peer)
             call.respond("{}")
         }
 

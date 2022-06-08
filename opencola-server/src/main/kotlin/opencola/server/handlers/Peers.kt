@@ -5,6 +5,7 @@ import mu.KotlinLogging
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.Authority
 import opencola.core.model.Id
+import opencola.core.network.NetworkNode
 import opencola.core.security.Encryptor
 import opencola.core.security.decodePublicKey
 import opencola.core.security.encode
@@ -69,7 +70,7 @@ fun deletePeer(addressBook: AddressBook, peerId: Id){
 }
 
 // TODO: Should be changed to updateAuthority, because root is updated here too.
-fun updatePeer(authority: Authority, addressBook: AddressBook, encryptor: Encryptor, peer: Peer){
+fun updatePeer(authority: Authority, addressBook: AddressBook, networkNode: NetworkNode, encryptor: Encryptor, peer: Peer){
     logger.info { "Updating Peer: $peer"}
 
     val updateAuthority = peer.toAuthority(authority.authorityId)
@@ -92,6 +93,10 @@ fun updatePeer(authority: Authority, addressBook: AddressBook, encryptor: Encryp
 
         if(peer.networkToken != redactedNetworkToken) {
             // TODO: Test token with ZT before saving
+            if(!networkNode.isNetworkTokenValid(peer.networkToken)){
+                throw IllegalArgumentException("Network token provided is not valid: ${peer.networkToken}")
+            }
+
             peerAuthority.networkToken = encryptor.encrypt(authority.authorityId, peer.networkToken.toByteArray())
         }
     }

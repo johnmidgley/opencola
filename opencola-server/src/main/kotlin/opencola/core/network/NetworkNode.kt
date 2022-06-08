@@ -1,21 +1,46 @@
 package opencola.core.network
 
+import com.github.edouardswiac.zerotier.ZTServiceImpl
 import com.zerotier.sockets.ZeroTierEventListener
 import com.zerotier.sockets.ZeroTierNative
 import com.zerotier.sockets.ZeroTierNode
 import mu.KotlinLogging
 import opencola.core.extensions.hexStringToByteArray
-import opencola.core.security.KeyStore
+import opencola.core.model.Id
+import opencola.core.security.Encryptor
 import opencola.core.serialization.LongByteArrayCodec
+import opencola.core.storage.AddressBook
+import org.apache.commons.math3.analysis.function.Add
 import java.nio.file.Path
 
-private val logger = KotlinLogging.logger("Node")
+private val logger = KotlinLogging.logger("NetworkNode")
 
-class NetworkNode(private val storagePath: Path, keyStore: KeyStore) {
+class NetworkNode(private val storagePath: Path, private val authorityId: Id, private val addressBook: AddressBook, private val encryptor: Encryptor) {
     // TODO: Make install script put the platform dependent version of libzt in the right place. On mac, it needs to be
     //  put in ~/Library/Java/Extensions/ (or try /Library/Java/Extensions/ globally)
     //  Need to figure out where it goes on Linux / Windows
     private val node = ZeroTierNode()
+
+    init {
+        if(getAuthToken() == null){
+            logger.warn { "No network token specified. Cannot manage peer connections." }
+        }
+    }
+
+    private fun getAuthToken() : String? {
+        return addressBook.getAuthority(authorityId)?.networkToken?.let { String(encryptor.decrypt(authorityId, it)) }
+    }
+
+    fun isNetworkTokenValid(networkToken: String) : Boolean {
+        try {
+            ZTServiceImpl(networkToken).networks
+        }catch(e: Exception){
+            logger.debug { e }
+            return false
+        }
+
+        return true
+    }
 
     fun start() {
         node.initFromStorage(storagePath.toString())
@@ -30,7 +55,6 @@ class NetworkNode(private val storagePath: Path, keyStore: KeyStore) {
 
     fun connect(address: String){
         val id = LongByteArrayCodec.decode(address.hexStringToByteArray())
-        // val id = address.toLong(16)
         node.join(id)
     }
 

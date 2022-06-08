@@ -5,9 +5,9 @@ import opencola.core.content.TextExtractor
 import opencola.core.event.EventBus
 import opencola.core.event.MainReactor
 import opencola.core.event.Reactor
-import opencola.core.extensions.toHexString
 import opencola.core.model.Authority
 import opencola.core.model.Id
+import opencola.core.network.NetworkNode
 import opencola.core.network.PeerRouter
 import opencola.core.search.LuceneSearchIndex
 import opencola.core.security.*
@@ -101,6 +101,7 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
                 bindSingleton { Encryptor(instance()) }
                 bindSingleton { AddressBook(instance(), storagePath, instance(), config.network) }
                 bindSingleton { PeerRouter(instance(), instance()) }
+                bindSingleton { NetworkNode(storagePath.resolve("network"), authority.authorityId, instance(), instance()) }
                 bindSingleton { LuceneSearchIndex(authority.authorityId, storagePath.resolve("lucene")) }
                 bindSingleton { ExposedEntityStore(entityStoreDB, instance(), instance(), instance(), instance()) }
                 bindSingleton { SearchService(instance(), instance(), instance()) }
