@@ -131,7 +131,16 @@ enum class CoreAttribute(val spec: Attribute) {
             isIndexable = false,
             computeEntityCommentIds
         )
+    ),
+    NetworkToken(
+        Attribute(
+            URI("opencola://attributes/networkToken"),
+            AttributeType.SingleValue,
+            BytesByteArrayCodec as ByteArrayCodec<Any>,
+            isIndexable = false,
+        )
     )
+
 }
 
 private val attributesByName = CoreAttribute.values().associateBy { it.spec.name }

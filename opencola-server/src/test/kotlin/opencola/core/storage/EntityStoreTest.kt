@@ -86,12 +86,14 @@ class EntityStoreTest {
 
         val store1 = getEntityStore()
         val entity1 = store1.getEntity(authority.authorityId, entity.entityId) as Authority
-        entity1.name = "new name"
+        val newName = "new name".also{ entity1.name = it }
+        val networkToken = "token".toByteArray().also { entity1.networkToken = it}
         store.updateEntities(entity1)
 
         val store2 = getEntityStore()
         val entity2 = store2.getEntity(authority.authorityId, entity.entityId) as Authority
-        assertEquals(entity2.name, "new name")
+        assertEquals(entity2.name, newName)
+        assertContentEquals(entity2.networkToken, networkToken)
     }
 
     @Test

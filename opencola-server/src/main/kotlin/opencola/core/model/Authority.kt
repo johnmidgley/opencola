@@ -7,6 +7,7 @@ import java.security.PublicKey
 class Authority : Entity {
     var uri by uriAttributeDelegate
     var publicKey by publicKeyAttributeDelegate
+    var networkToken by byteArrayAttributeDelegate
 
     constructor(
         authorityId: Id,

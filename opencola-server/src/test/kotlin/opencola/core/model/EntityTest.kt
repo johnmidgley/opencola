@@ -16,6 +16,7 @@ class EntityTest {
         val trust = .75F
         val tags = listOf("this", "that").toSet()
         val rating = .37F
+        val networkToken = "networkToken".toByteArray()
 
         val entity = Authority(publicKey, URI("https://authority"), "Name" )
         entity.uri = uri
@@ -47,6 +48,9 @@ class EntityTest {
 
         entity.like = null
         assertNull(entity.like)
+
+        entity.networkToken = networkToken
+        assertContentEquals(networkToken, entity.networkToken)
     }
 
     @Test

@@ -27,7 +27,7 @@ val uriAttributeDelegate = AttributeDelegate(UriByteArrayCodec)
 val imageUriAttributeDelegate = AttributeDelegate(UriByteArrayCodec)
 val tagsAttributeDelegate = MultiValueSetAttributeDelegate<String>(CoreAttribute.Tags.spec)
 val publicKeyAttributeDelegate = AttributeDelegate(PublicKeyByteArrayCodec)
-
+val byteArrayAttributeDelegate = AttributeDelegate(BytesByteArrayCodec)
 
 class MultiValueSetAttributeDelegate<T> (val attribute: Attribute) {
     operator fun getValue(thisRef: Entity, property: KProperty<*>): Set<T> {
