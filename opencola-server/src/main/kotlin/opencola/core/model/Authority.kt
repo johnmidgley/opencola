@@ -11,7 +11,7 @@ class Authority : Entity {
 
     constructor(
         authorityId: Id,
-        publicKey: PublicKey,
+        publicKey: PublicKey, // TODO: Id should not depend on public key, since public key may change
         uri: URI,
         name: String,
         description: String? = null,

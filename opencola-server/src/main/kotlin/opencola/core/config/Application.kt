@@ -98,6 +98,7 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
                 bindSingleton { fileStore }
                 bindSingleton { TextExtractor() }
                 bindSingleton { Signator(instance()) }
+                bindSingleton { Encryptor(instance()) }
                 bindSingleton { AddressBook(instance(), storagePath, instance(), config.network) }
                 bindSingleton { PeerRouter(instance(), instance()) }
                 bindSingleton { LuceneSearchIndex(authority.authorityId, storagePath.resolve("lucene")) }

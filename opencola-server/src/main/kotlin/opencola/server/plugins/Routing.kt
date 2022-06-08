@@ -13,6 +13,7 @@ import opencola.core.model.Authority
 import opencola.core.model.Id
 import opencola.core.network.PeerRouter
 import opencola.core.search.SearchIndex
+import opencola.core.security.Encryptor
 import opencola.core.storage.AddressBook
 import opencola.core.storage.EntityStore
 import opencola.core.storage.FileStore
@@ -150,9 +151,10 @@ fun Application.configureRouting(application: app) {
         put("/peers") {
             val authority by injector.instance<Authority>()
             val addressBook by injector.instance<AddressBook>()
+            val encryptor by injector.instance<Encryptor>()
             val peer = call.receive<Peer>()
 
-            updatePeer(authority, addressBook, peer)
+            updatePeer(authority, addressBook, encryptor, peer)
             call.respond("{}")
         }
 
