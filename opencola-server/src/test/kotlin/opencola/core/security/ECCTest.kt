@@ -3,7 +3,7 @@ package opencola.core.security
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class ECCTest {
+class ECCTest : SecurityProviderDependent() {
     @Test
     fun testPublicKeyEncoding(){
         val kp = generateKeyPair()
@@ -20,5 +20,16 @@ class ECCTest {
         // assertEquals(signature, signature1, "Signatures don't match")
         assert(isValidSignature(public, data, signature))
         assert(isValidSignature(public1, data, signature))
+    }
+
+    @Test
+    fun testEncryptDecrypt() {
+        val keyPair = generateKeyPair()
+        val data = "This is a test string to be encrypted and then decrypted"
+
+        val encrypted = encrypt(keyPair.public, data.toByteArray())
+        val decrypted = String(decrypt(keyPair.private, encrypted))
+
+        assertEquals(data, decrypted)
     }
 }

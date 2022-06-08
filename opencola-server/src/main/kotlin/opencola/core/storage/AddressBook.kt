@@ -48,6 +48,7 @@ class AddressBook(private val authority: Authority, storagePath: Path, signator:
             }
     }
 
+    // TODO: Move to Authority
     fun isAuthorityActive(authority: Authority) : Boolean {
         return authority.tags.contains(activeTag)
     }

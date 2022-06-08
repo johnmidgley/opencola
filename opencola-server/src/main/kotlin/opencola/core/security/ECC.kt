@@ -2,11 +2,16 @@ package opencola.core.security
 
 import opencola.core.content.Base58
 import opencola.core.extensions.hexStringToByteArray
+import opencola.core.serialization.readByteArray
+import opencola.core.serialization.writeByteArray
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.security.*
 import java.security.spec.ECGenParameterSpec
 import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.X509EncodedKeySpec
 import java.util.*
+import javax.crypto.Cipher
 
 
 // https://metamug.com/article/security/sign-verify-digital-signature-ecdsa-java.html
@@ -14,6 +19,7 @@ import java.util.*
 const val SPEC = "secp256r1" // "secp256k1"
 const val SIGNATURE_ALGO = "SHA3-256withECDSA" // "SHA256withECDSA"
 const val KEY_ALGO = "EC"
+const val ENCRYPTION_TRANSFORMATION = "ECIESwithAES-CBC"
 
 fun generateKeyPair() : KeyPair {
     val ecSpec = ECGenParameterSpec(SPEC)
@@ -27,6 +33,27 @@ fun sign(privateKey: PrivateKey, data: ByteArray): ByteArray {
     ecdsaSign.initSign(privateKey)
     ecdsaSign.update(data)
     return ecdsaSign.sign()
+}
+
+fun encrypt(publicKey: PublicKey, bytes: ByteArray) : ByteArray {
+    return ByteArrayOutputStream().use{
+        val cipher = Cipher.getInstance(ENCRYPTION_TRANSFORMATION).also { it.init(Cipher.ENCRYPT_MODE, publicKey) }
+        it.writeByteArray(cipher.parameters.encoded)
+        it.writeByteArray(cipher.doFinal(bytes))
+        it.toByteArray()
+    }
+}
+
+fun decrypt(privateKey: PrivateKey, bytes: ByteArray) : ByteArray {
+    ByteArrayInputStream(bytes).use{ stream ->
+        val encodedParameters = stream.readByteArray()
+        val cipherBytes = stream.readByteArray()
+        val params = AlgorithmParameters.getInstance("IES").also { it.init(encodedParameters) }
+
+        return Cipher.getInstance(ENCRYPTION_TRANSFORMATION)
+            .also { it.init(Cipher.DECRYPT_MODE, privateKey, params) }
+            .doFinal(cipherBytes)
+    }
 }
 
 fun isValidSignature(publicKey: PublicKey, data: ByteArray, signature: ByteArray): Boolean {
@@ -58,7 +85,6 @@ fun decodePublicKey(value: String) : PublicKey {
         }
     )
 }
-
 
 fun privateKeyFromBytes(bytes: ByteArray) : PrivateKey {
     return getKeyFactory().generatePrivate(PKCS8EncodedKeySpec(bytes))
