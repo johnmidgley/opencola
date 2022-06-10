@@ -4,14 +4,14 @@ import io.ktor.client.*
 import io.ktor.client.features.json.*
 import io.ktor.client.features.json.serializer.*
 import io.ktor.client.request.*
+import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import kotlinx.serialization.json.Json as KotlinJson
 
 // Json Serialization docs: https://github.com/Kotlin/kotlinx.serialization/blob/master/docs/json.md#json-configuration
 
-class Client {
-    private val basePath = "https://my.zerotier.com/api/v1"
-    private val authToken = ""
+class Client(private val authToken: String,
+             private val basePath: String = "https://my.zerotier.com/api/v1") {
     private val httpClient = HttpClient {
         install(JsonFeature) {
             // TODO: isLenient and ignoreUnknownKeys should be false in integration tests
@@ -32,4 +32,18 @@ class Client {
         return httpGet("network")
     }
 
+    suspend fun getNetwork(id: String) : Network {
+        return httpGet("network/$id")
+    }
+
+    suspend fun createNetwork(network: Network) : Network {
+        // TODO: Abstract out post request
+        return httpClient.post("$basePath/network") {
+            headers {
+                append(Authorization, "Bearer $authToken")
+            }
+            contentType(ContentType.Application.Json)
+            body = network
+        }
+    }
 }

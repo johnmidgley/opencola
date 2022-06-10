@@ -13,12 +13,4 @@ class NetworkNodeTest {
         val networkNode by TestApplication.instance.injector.instance<NetworkNode>()
         assertFalse(networkNode.isNetworkTokenValid(""))
     }
-
-    //@Test
-    fun testZT(){
-        var ztClient = Client()
-
-        val networks = runBlocking { ztClient.getNetworks() }
-        println(networks)
-    }
 }
