@@ -1,14 +1,15 @@
 package opencola.core.network
 
-import kotlinx.coroutines.runBlocking
 import opencola.core.network.zerotier.*
 import org.junit.Test
 import java.time.Instant
+import kotlin.test.assertNotNull
 
-const val authToken = ""
 class ZeroTierClientTest {
-    // @Test
-    fun testCreateNetwork() {
+    private val authToken = ""
+    private val zeroTierClient = Client(authToken)
+
+    private fun createNetwork() : Network {
         val epochSecond = Instant.now().epochSecond
         val networkConfig = NetworkConfig.forCreate(
             name = "Test Network: $epochSecond ",
@@ -19,58 +20,31 @@ class ZeroTierClientTest {
         )
         val network = Network.forCreate(networkConfig, "Test Description")
         val zeroTierClient = Client(authToken)
-        val response = runBlocking{ zeroTierClient.createNetwork(network) }
-        println(response)
+        return zeroTierClient.createNetwork(network)
     }
 
-    // @Test
-    fun testGetNetworks(){
-        val zeroTierClient = Client(authToken)
-        val networks = runBlocking { zeroTierClient.getNetworks() }
-        println(networks)
-    }
-
-    // @Test
-    fun testGetNetwork(){
-        val zeroTierClient = Client(authToken)
-        val network = runBlocking { zeroTierClient.getNetwork("") }
-        println(network)
-    }
-
-    // @Test
-    fun testDeleteNetwork(){
-        val zeroTierClient = Client(authToken)
-        val response = runBlocking { zeroTierClient.deleteNetwork("") }
-        println(response)
-    }
-
-    // @Test
-    fun testAddNetworkMember(){
-        val zeroTierClient = Client(authToken)
+    private fun addNetworkMember(networkId: String, memberId: String) : Member {
         val memberConfig = MemberConfig.forCreate(authorized = true)
         val member = Member.forCreate("Test Name", memberConfig)
-        val response = runBlocking { zeroTierClient.addNetworkMember("", "", member) }
-        println(response)
+        return zeroTierClient.addNetworkMember(networkId, memberId, member)
     }
 
     // @Test
-    fun testGetNetworkMembers(){
-        val zeroTierClient = Client(authToken)
-        val response = runBlocking { zeroTierClient.getNetworkMembers("") }
-        println(response)
-    }
+    fun testZeroTierClient() {
+        val network = createNetwork()
+        val networkId = network.id!!
+        assertNotNull(networkId)
+        // Can't compare network from getNetwork with one from getNetworks - clock param changes for each call.
+        zeroTierClient.getNetwork(networkId)
+        zeroTierClient.getNetworks().single { it.id == networkId }
+        val memberId = "0ff4ab2f61"
+        addNetworkMember(networkId, memberId)
+        zeroTierClient.getNetworkMember(networkId, memberId)
+        zeroTierClient.getNetworkMembers(networkId).single { it.nodeId == memberId }
+        zeroTierClient.deleteNetworkMember(networkId, memberId)
+        zeroTierClient.getNetworkMembers(networkId).none { it.nodeId == memberId }
+        zeroTierClient.deleteNetwork(networkId)
+        zeroTierClient.getNetworks().none { it.id == networkId }
 
-    // @Test
-    fun testGetNetworkMember() {
-        val zeroTierClient = Client(authToken)
-        val response = runBlocking { zeroTierClient.getNetworkMember("", "") }
-        println(response)
-    }
-
-    // @Test
-    fun testDeleteNetworkMember(){
-        val zeroTierClient = Client(authToken)
-        val response = runBlocking { zeroTierClient.deleteNetworkMember("", "") }
-        println(response)
     }
 }
