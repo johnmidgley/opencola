@@ -38,6 +38,16 @@ class Client(private val authToken: String,
         }
     }
 
+    private suspend inline fun <reified T> httpDelete(path: String) : T {
+        return httpClient.delete("$basePath/$path") {
+            headers { appendAuthorizationHeader(this) }
+        }
+    }
+
+    suspend fun createNetwork(network: Network) : Network {
+        return httpPost("network", network)
+    }
+
     suspend fun getNetworks() : List<Network> {
         return httpGet("network")
     }
@@ -46,11 +56,23 @@ class Client(private val authToken: String,
         return httpGet("network/$networkId")
     }
 
-    suspend fun createNetwork(network: Network) : Network {
-        return httpPost("network", network)
+    suspend fun deleteNetwork(networkId: String) {
+        return httpDelete("network/$networkId")
+    }
+
+    suspend fun addNetworkMember(networkId: String, memberId: String, member: Member) : Member {
+        return httpPost("network/$networkId/member/$memberId", member)
     }
 
     suspend fun getNetworkMembers(networkId: String) : List<Member> {
         return httpGet("network/$networkId/member")
+    }
+
+    suspend fun getNetworkMember(networkId: String, memberId: String) : Member {
+        return httpGet("network/$networkId/member/$memberId")
+    }
+
+    suspend fun deleteNetworkMember(networkId: String, memberId: String) {
+        return httpDelete("network/$networkId/member/$memberId")
     }
 }
