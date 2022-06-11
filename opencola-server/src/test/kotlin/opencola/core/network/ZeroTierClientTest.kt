@@ -7,22 +7,29 @@ import opencola.core.network.zerotier.NetworkConfig
 import org.junit.Test
 import java.time.Instant
 
-const val authToken = "znhaCRXBPK4kachnteYJWrHtVV1Q0gl7"
+const val authToken = ""
 class ZeroTierClientTest {
-    @Test
+    // @Test
     fun testGetNetworks(){
-        var ztClient = Client(authToken)
-        val networks = runBlocking { ztClient.getNetworks() }
+        var zeroTierClient = Client(authToken)
+        val networks = runBlocking { zeroTierClient.getNetworks() }
         println(networks)
     }
 
-    @Test
+    // @Test
     fun testCreateNetwork() {
         val epochSecond = Instant.now().epochSecond
         val networkConfig = NetworkConfig.forCreate(name = "Test Network: $epochSecond ", private = true)
         val network = Network.forCreate(networkConfig, "Test Description")
         val zeroTierClient = Client(authToken)
         val response = runBlocking{ zeroTierClient.createNetwork(network) }
+        println(response)
+    }
+
+    // @Test
+    fun testGetNetworkMembers(){
+        val zeroTierClient = Client(authToken)
+        val response = runBlocking { zeroTierClient.getNetworkMembers("c7c8172af10fb06c") }
         println(response)
     }
 }

@@ -113,3 +113,74 @@ data class IPV6AssignMode(
     val zt: Boolean?,
 )
 
+@Serializable
+data class Member(
+    val id: String? = null,
+    val clock: Long? = null,
+    val networkId: String? = null,
+    val nodeId: String? = null,
+    // deprecated val controllerId: String? = null,
+    val hidden: Boolean? = null,
+    val name: String? = null,
+    val description: String? = null,
+    val config: MemberConfig? = null,
+    val lastOnline: Long? = null,
+    val physicalAddress: String? = null,
+    val clientVersion: String? = null,
+    val protocolVersion: String? = null,
+    val supportsRulesEngine: Boolean? = null,
+) {
+    companion object Factory {
+        fun forCreate(
+            name: String,
+            config: MemberConfig,
+            hidden: Boolean? = null,
+            description: String? = null,
+        ) : Member {
+            return Member(
+                name = name,
+                config = config,
+                hidden = hidden,
+                description = description
+            )
+        }
+    }
+}
+
+@Serializable
+data class MemberConfig(
+    val activeBridge: Boolean? = null,
+    val authorized: Boolean? = null,
+    val capabilities: List<Int>? = null,
+    val creationTime: Long? = null,
+    val id: String? = null,
+    val identity: String? = null,
+    val ipAssignments: List<String>? = null,
+    val lastAuthorizedTime: Long? = null,
+    val lastDeauthorizedTime: Long? = null,
+    val noAutoAssignIps: Boolean? = null,
+    val revision: Int? = null,
+    val tags: List<List<String>>? = null,
+    val vMajor: Int? = null,
+    val vMinor: Int? = null,
+    val vRev: Int? = null,
+    val vProto: Int? = null,
+){
+    companion object Factory {
+        fun forCreate(
+            activeBridge: Boolean? = null,
+            authorized: Boolean? = null,
+            capabilities: List<Int>? = null,
+            ipAssignments: List<String>? = null,
+            noAutoAssignIps: Boolean? = null,
+        ): MemberConfig {
+            return MemberConfig(
+                activeBridge = activeBridge,
+                authorized = authorized,
+                capabilities = capabilities,
+                ipAssignments = ipAssignments,
+                noAutoAssignIps = noAutoAssignIps
+            )
+        }
+    }
+}

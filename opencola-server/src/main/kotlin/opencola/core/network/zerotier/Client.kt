@@ -20,11 +20,21 @@ class Client(private val authToken: String,
         }
     }
 
+    private fun appendAuthorizationHeader(headers: HeadersBuilder) {
+        headers.append(Authorization, "Bearer $authToken")
+    }
+
     private suspend inline fun <reified T> httpGet(path: String) : T {
         return httpClient.get("$basePath/$path") {
-            headers {
-                append(Authorization, "Bearer $authToken")
-            }
+            headers { appendAuthorizationHeader(this) }
+        }
+    }
+
+    private suspend inline fun <reified T> httpPost(path: String, body: Any) : T {
+        return httpClient.post("$basePath/$path") {
+            headers { appendAuthorizationHeader(this) }
+            contentType(ContentType.Application.Json)
+            this.body = body
         }
     }
 
@@ -32,18 +42,15 @@ class Client(private val authToken: String,
         return httpGet("network")
     }
 
-    suspend fun getNetwork(id: String) : Network {
-        return httpGet("network/$id")
+    suspend fun getNetwork(networkId: String) : Network {
+        return httpGet("network/$networkId")
     }
 
     suspend fun createNetwork(network: Network) : Network {
-        // TODO: Abstract out post request
-        return httpClient.post("$basePath/network") {
-            headers {
-                append(Authorization, "Bearer $authToken")
-            }
-            contentType(ContentType.Application.Json)
-            body = network
-        }
+        return httpPost("network", network)
+    }
+
+    suspend fun getNetworkMembers(networkId: String) : List<Member> {
+        return httpGet("network/$networkId/member")
     }
 }
