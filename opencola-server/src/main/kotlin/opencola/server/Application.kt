@@ -12,6 +12,7 @@ import opencola.core.config.loadConfig
 import opencola.core.event.EventBus
 import opencola.core.event.Events
 import opencola.core.model.Id
+import opencola.core.network.NetworkNode
 import opencola.core.security.encode
 import opencola.server.plugins.configureContentNegotiation
 import opencola.server.plugins.configureHTTP

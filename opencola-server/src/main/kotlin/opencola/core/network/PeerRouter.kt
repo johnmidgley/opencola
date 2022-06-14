@@ -79,11 +79,12 @@ class PeerRouter(private val addressBook: AddressBook, private val eventBus: Eve
         runBlocking {
             val peers = addressBook.getAuthorities(true)
             if(peers.isNotEmpty()) {
-                logger.info { "Broadcasting new transaction notification" }
+                logger.info { "Broadcasting message: $message" }
 
                 peers.forEach {
                     if (listOf(Unknown, Online).contains(peerStatuses.getOrDefault(it.entityId, Unknown))) {
                         // TODO: Make batched, to limit simultaneous connections
+                        @Suppress("DeferredResultUnused")
                         async { sendMessage(it, path, message) }
                     }
                 }

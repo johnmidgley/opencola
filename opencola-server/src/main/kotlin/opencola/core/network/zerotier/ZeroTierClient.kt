@@ -11,8 +11,8 @@ import kotlinx.serialization.json.Json as KotlinJson
 
 // Json Serialization docs: https://github.com/Kotlin/kotlinx.serialization/blob/master/docs/json.md#json-configuration
 
-class Client(private val authToken: String,
-             private val basePath: String = "https://my.zerotier.com/api/v1") {
+class ZeroTierClient(private val authToken: String,
+                     private val rootPath: String = "https://my.zerotier.com/api/v1") {
     private val httpClient = HttpClient {
         install(JsonFeature) {
             // TODO: isLenient and ignoreUnknownKeys should be false in integration tests
@@ -27,7 +27,7 @@ class Client(private val authToken: String,
 
     private inline fun <reified T> httpGet(path: String) : T {
         return runBlocking {
-            httpClient.get("$basePath/$path") {
+            httpClient.get("$rootPath/$path") {
                 headers { appendAuthorizationHeader(this) }
             }
         }
@@ -35,7 +35,7 @@ class Client(private val authToken: String,
 
     private inline fun <reified T> httpPost(path: String, body: Any) : T {
         return runBlocking {
-            httpClient.post("$basePath/$path") {
+            httpClient.post("$rootPath/$path") {
                 headers { appendAuthorizationHeader(this) }
                 contentType(ContentType.Application.Json)
                 this.body = body
@@ -45,7 +45,7 @@ class Client(private val authToken: String,
 
     private inline fun <reified T> httpDelete(path: String) : T {
         return runBlocking {
-            httpClient.delete("$basePath/$path") {
+            httpClient.delete("$rootPath/$path") {
                 headers { appendAuthorizationHeader(this) }
             }
         }

@@ -1,13 +1,12 @@
 package opencola.core.network
 
 import opencola.core.network.zerotier.*
-import org.junit.Test
 import java.time.Instant
 import kotlin.test.assertNotNull
 
 class ZeroTierClientTest {
     private val authToken = ""
-    private val zeroTierClient = Client(authToken)
+    private val zeroTierClient = ZeroTierClient(authToken)
 
     private fun createNetwork() : Network {
         val epochSecond = Instant.now().epochSecond
@@ -19,7 +18,7 @@ class ZeroTierClientTest {
             // ipAssignmentPools = listOf(IPRange("10.243.0.1", "10.243.255.254"))
         )
         val network = Network.forCreate(networkConfig, "Test Description")
-        val zeroTierClient = Client(authToken)
+        val zeroTierClient = ZeroTierClient(authToken)
         return zeroTierClient.createNetwork(network)
     }
 

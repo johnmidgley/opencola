@@ -84,7 +84,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-cli:0.3.4")
 
     implementation("com.zerotier.sockets:libzt-1.8.4")
-    implementation("com.github.edouardswiac:zerotier-api-java:0.6.2")
 
     testImplementation("io.ktor:ktor-server-tests:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
