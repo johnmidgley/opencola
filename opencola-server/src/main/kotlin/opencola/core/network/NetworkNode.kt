@@ -51,9 +51,13 @@ class NetworkNode(private val storagePath: Path, private val authorityId: Id, pr
         return true
     }
 
+    private fun getNetworkName(): String {
+        return "root:$authorityId"
+    }
+
     private fun createNodeNetwork(zeroTierClient: ZeroTierClient, authority: Authority) : Network {
         val networkConfig = NetworkConfig.forCreate(
-            name = "root:$authorityId",
+            name = getNetworkName(),
             private = true,
             // TODO: Figure out how this should be set. Just use ipv6? Is it even needed?
             // routes = listOf(Route("172.27.0.0/16")),
@@ -70,21 +74,29 @@ class NetworkNode(private val storagePath: Path, private val authorityId: Id, pr
             throw RuntimeException("Unable to create root network")
         }
 
+        zeroTierClient.addNetworkMember(createdNetwork.id, getId(), authorityToMember(authority))
+
         return createdNetwork
+    }
+
+    private fun getOrCreateNodeNetwork(zeroTierClient: ZeroTierClient, authority: Authority) : Network {
+        val networkName = getNetworkName()
+        val networks = zeroTierClient.getNetworks().filter { it.config?.name == networkName }
+
+        if(networks.size > 1) {
+            throw IllegalStateException("Multiple networks exist with the root name: $networkName. Fix at ZT Central")
+        }
+
+        return networks.singleOrNull() ?: createNodeNetwork(zeroTierClient, authority)
     }
 
     private fun initNodeNetwork(zeroTierClient: ZeroTierClient) {
         val authority = addressBook.getAuthority(authorityId)
             ?: throw IllegalStateException("Root authority not found in address book")
 
-        if(authority.uri == null || authority.uri.toString().isBlank()) {
-            logger.info { "No address found for root authority - creating network" }
-            val networkId = createNodeNetwork(zeroTierClient, authority).id!!
-            val nodeId = node.id.toString(16)
-            zeroTierClient.addNetworkMember(networkId, nodeId, authorityToMember(authority))
-            authority.uri = ZeroTierAddress(networkId, nodeId).toURI()
-            addressBook.updateAuthority(authority)
-        }
+        val network = getOrCreateNodeNetwork(zeroTierClient, authority)
+        authority.uri = ZeroTierAddress(network.id, getId()).toURI()
+        addressBook.updateAuthority(authority)
     }
 
     fun start() {
@@ -116,36 +128,81 @@ class NetworkNode(private val storagePath: Path, private val authorityId: Id, pr
         )
     }
 
-    fun addPeer(peer: Authority){
+    fun getInviteToken() : InviteToken {
+        val authority = addressBook.getAuthority(authorityId)
+            ?: throw IllegalStateException("Root authority not found - can't generate invite token")
+        return InviteToken.fromAuthority(authority)
+    }
+
+    fun addPeer(inviteToken: InviteToken){
+        logger.info { "Adding peer: $inviteToken" }
+        val peer = inviteToken.toAuthority(authorityId)
+
+        val peerAuthority = addressBook.getAuthority(peer.entityId)
+        if(peerAuthority != null){
+            // TODO - Should we delete and re-add? Update the address?
+            logger.info { "Peer already exists - ignoring "}
+            return
+        }
+
         addressBook.updateAuthority(peer)
-        val address = peer.uri ?: return
-        val ztAddress = ZeroTierAddress.fromURI(address) ?: return
+        val ztAddress = peer.uri?.let { ZeroTierAddress.fromURI(it) } ?: return
 
         if(ztAddress.networkId != null){
             // When a network Id is specified, we must join the peer's network to communicate. The peer should grant
             // this node access to the network on their end
+            logger.info { "Joining network: ${ztAddress.networkId}" }
             joinNetwork(ztAddress.networkId)
         } else if (ztAddress.nodeId != null) {
             // No network was specified, so we must authorize the peer on this node's network
             val networkId = addressBook
                 .getAuthority(authorityId)?.uri.nullOrElse { ZeroTierAddress.fromURI(it) }?.networkId ?:
-                throw IllegalArgumentException("Can't add a ZT peer without a ZT address with network for the root authority. Check peer settings")
+                throw IllegalArgumentException("Cannot manage peers without a root networkId. Check peer settings")
 
+            logger.info { "Adding peer to local node network" }
             zeroTierClient().addNetworkMember(networkId, ztAddress.nodeId, authorityToMember(peer))
         }
     }
 
-    fun joinNetwork(address: String){
+    private fun removePeer(peerId: Id){
+        logger.info { "Removing peer: $peerId" }
+        val peer = addressBook.getAuthority(peerId)
+
+        if(peer == null){
+            logger.info { "No peer found - ignoring" }
+            return
+        }
+
+        val zeroTierAddress =  peer.uri?.let { ZeroTierAddress.fromURI(it) }
+        if(zeroTierAddress != null) {
+            if (zeroTierAddress.networkId != null) {
+                // When we connected, we joined the peer's network, so we need to now leave it
+                leaveNetwork(zeroTierAddress.networkId)
+            } else if (zeroTierAddress.nodeId != null) {
+                // Remove the peer from our network
+                val networkId = addressBook
+                    .getAuthority(authorityId)?.uri.nullOrElse { ZeroTierAddress.fromURI(it) }?.networkId
+                    ?: throw IllegalArgumentException("Cannot manage peers without a root networkId. Check peer settings")
+
+                zeroTierClient().deleteNetworkMember(networkId, zeroTierAddress.nodeId)
+            }
+        }
+
+        // TODO: Should this delete by default or merely mark as inactive? Really depends on the user intention
+        addressBook.deleteAuthority(peerId)
+    }
+
+    private fun joinNetwork(address: String){
         val id = LongByteArrayCodec.decode(address.hexStringToByteArray())
         node.join(id)
     }
 
-    fun leaveNetwork(address: String) {
+    private fun leaveNetwork(address: String) {
         val id = LongByteArrayCodec.decode(address.hexStringToByteArray())
         node.leave(id)
     }
 
-    fun getId(): String {
+    private fun getId(): String {
         return node.id.toString(16)
     }
 }

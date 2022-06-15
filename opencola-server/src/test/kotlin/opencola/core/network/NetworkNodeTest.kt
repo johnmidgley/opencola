@@ -32,6 +32,14 @@ class NetworkNodeTest {
         addressBook.updateAuthority(authority)
     }
 
+    private fun setRootAuthorityName(instance: Application, name: String){
+        val rootAuthority by instance.injector.instance<Authority>()
+        val addressBook by instance.injector.instance<AddressBook>()
+        val authority = addressBook.getAuthority(rootAuthority.authorityId)!!
+        authority.name = name
+        addressBook.updateAuthority(authority)
+    }
+
     // Get or create an application instance that will live across test runs. This avoids hammering ZeroTier when
     // just testing communication between nodes.
     private fun getPersistentApplication(num: Int): Application {
@@ -42,6 +50,9 @@ class NetworkNodeTest {
             val configPath = TestApplication.applicationPath.resolve("../test/storage").resolve("opencola-test.yaml")
             configPath.copyTo(storagePath.resolve("opencola-server.yaml"))
         }
+
+        val instance = Application.instance(TestApplication.applicationPath, storagePath).also { setNetworkToken(it) }
+        setRootAuthorityName(instance, "Application $num")
 
         return Application.instance(TestApplication.applicationPath, storagePath).also { setNetworkToken(it) }
     }
@@ -65,9 +76,18 @@ class NetworkNodeTest {
         return application
     }
 
+
+
     // @Test
     fun testLibZTSockets(){
         val app0 = startApplicationNode(0)
         val app1 = startApplicationNode(1)
+
+        val app0NetworkNode by app0.injector.instance<NetworkNode>()
+        val app1NetworkNode by app1.injector.instance<NetworkNode>()
+
+        val inviteToken = app0NetworkNode.getInviteToken()
+        app1NetworkNode.addPeer(inviteToken)
+
     }
 }

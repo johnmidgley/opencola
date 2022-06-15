@@ -82,6 +82,7 @@ fun updatePeer(authority: Authority, addressBook: AddressBook, networkNode: Netw
 
     peerAuthority.name = updateAuthority.name
     peerAuthority.publicKey = updateAuthority.publicKey
+    // TODO: Updating the URI could trigger network shifts. Call addPeer?
     peerAuthority.uri = updateAuthority.uri
     peerAuthority.imageUri = updateAuthority.imageUri
     peerAuthority.tags = updateAuthority.tags

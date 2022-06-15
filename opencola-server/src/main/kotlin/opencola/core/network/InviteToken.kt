@@ -1,6 +1,7 @@
 package opencola.core.network
 
 import opencola.core.content.Base58
+import opencola.core.model.Authority
 import opencola.core.model.Id
 import opencola.core.security.Signator
 import opencola.core.security.isValidSignature
@@ -20,6 +21,11 @@ data class InviteToken(
     val imageUri: URI,
     val tokenId: String = UUID.randomUUID().toString(),
     val epochSecond: Long = Instant.now().epochSecond) {
+
+    fun toAuthority(rootAuthorityId: Id) : Authority {
+        val image = imageUri.let { if (it.toString().isBlank()) null else imageUri }
+        return Authority(rootAuthorityId, publicKey, address, name, imageUri = image)
+    }
 
     fun encode(signator: Signator) : String {
         val body =  ByteArrayOutputStream().use{
@@ -55,6 +61,16 @@ data class InviteToken(
                     it.readLong(),
                 )
             }
+        }
+
+        fun fromAuthority(authority: Authority): InviteToken {
+            return InviteToken(
+                authority.authorityId,
+                authority.name ?: "",
+                authority.publicKey!!,
+                authority.uri ?: throw IllegalArgumentException("Can't create InviteToken for authority with now address (uri)"),
+                authority.imageUri ?: URI("")
+            )
         }
 
         fun decode(token: String) : InviteToken {
