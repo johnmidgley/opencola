@@ -2,6 +2,7 @@ package opencola.core.serialization
 
 import java.io.InputStream
 import java.io.OutputStream
+import java.net.URI
 import java.util.*
 
 fun OutputStream.writeInt(value: Int){
@@ -36,4 +37,20 @@ fun OutputStream.writeByteArray(byteArray: ByteArray){
 
 fun InputStream.readByteArray() : ByteArray{
     return readNBytes(IntByteArrayCodec.decode(readNBytes(Int.SIZE_BYTES)))
+}
+
+fun OutputStream.writeString(string: String){
+    writeByteArray(string.toByteArray())
+}
+
+fun InputStream.readString() : String {
+    return String(readByteArray())
+}
+
+fun OutputStream.writeUri(uri: URI){
+    writeString(uri.toString())
+}
+
+fun InputStream.readUri() : URI {
+    return URI(readString())
 }

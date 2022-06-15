@@ -102,6 +102,11 @@ class NetworkNode(private val storagePath: Path, private val authorityId: Id, pr
         logger.info { "Started: ${node.id.toString(16)}" }
     }
 
+    fun stop() {
+        logger.info { "Stopping." }
+        node.stop()
+    }
+
     private fun authorityToMember(authority: Authority): Member {
         return Member.forCreate(
             authority.name ?: authority.entityId.toString(),
