@@ -9,13 +9,17 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.net.URI
 import java.security.PublicKey
+import java.time.Instant
+import java.util.*
 
 data class InviteToken(
-    private val authorityId: Id,
-    private val name: String,
-    private val publicKey: PublicKey,
-    private val address: URI,
-    private val imageUri: URI) {
+    val authorityId: Id,
+    val name: String,
+    val publicKey: PublicKey,
+    val address: URI,
+    val imageUri: URI,
+    val tokenId: String = UUID.randomUUID().toString(),
+    val epochSecond: Long = Instant.now().epochSecond) {
 
     fun encode(signator: Signator) : String {
         val body =  ByteArrayOutputStream().use{
@@ -24,6 +28,8 @@ data class InviteToken(
             it.writeByteArray(PublicKeyByteArrayCodec.encode(publicKey))
             it.writeUri(address)
             it.writeUri(imageUri)
+            it.writeString(tokenId)
+            it.writeLong(epochSecond)
             it.toByteArray()
         }
         val signature = signator.signBytes(authorityId, body)
@@ -44,7 +50,9 @@ data class InviteToken(
                     it.readString(),
                     PublicKeyByteArrayCodec.decode(it.readByteArray()),
                     it.readUri(),
-                    it.readUri()
+                    it.readUri(),
+                    it.readString(),
+                    it.readLong(),
                 )
             }
         }
