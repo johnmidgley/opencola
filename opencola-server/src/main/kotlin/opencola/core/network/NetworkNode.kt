@@ -134,35 +134,73 @@ class NetworkNode(private val storagePath: Path, private val authorityId: Id, pr
         return InviteToken.fromAuthority(authority)
     }
 
-    fun addPeer(inviteToken: InviteToken){
-        logger.info { "Adding peer: $inviteToken" }
-        val peer = inviteToken.toAuthority(authorityId)
+    private fun addZeroTierPeer(peer: Authority){
+        val zeroTierAddress = peer.uri?.let { ZeroTierAddress.fromURI(it) } ?: return
+        val zeroTierClient = getAuthToken()?.let { ZeroTierClient(it) }
 
-        val peerAuthority = addressBook.getAuthority(peer.entityId)
-        if(peerAuthority != null){
-            // TODO - Should we delete and re-add? Update the address?
-            logger.info { "Peer already exists - ignoring "}
-            return
+        if(zeroTierAddress.nodeId == null){
+            throw IllegalArgumentException("Can't add peer with no nodeId: $zeroTierAddress")
         }
 
-        addressBook.updateAuthority(peer)
-        val ztAddress = peer.uri?.let { ZeroTierAddress.fromURI(it) } ?: return
+        if(zeroTierAddress.networkId == null && zeroTierClient == null) {
+            throw IllegalArgumentException("Can't add peer with that has no network without having a local network")
+        }
 
-        if(ztAddress.networkId != null){
-            // When a network Id is specified, we must join the peer's network to communicate. The peer should grant
+        if(zeroTierAddress.networkId != null){
+            // When a networkId is specified, we must join the peer's network to communicate. The peer should grant
             // this node access to the network on their end
-            logger.info { "Joining network: ${ztAddress.networkId}" }
-            joinNetwork(ztAddress.networkId)
-        } else if (ztAddress.nodeId != null) {
-            // No network was specified, so we must authorize the peer on this node's network
-            val networkId = addressBook
-                .getAuthority(authorityId)?.uri.nullOrElse { ZeroTierAddress.fromURI(it) }?.networkId ?:
-                throw IllegalArgumentException("Cannot manage peers without a root networkId. Check peer settings")
+            logger.info { "Joining network: ${zeroTierAddress.networkId}" }
+            joinNetwork(zeroTierAddress.networkId)
+        }
+
+        if (zeroTierClient != null) {
+            // Allow the peer node onto our network
+            val networkId =
+                addressBook.getAuthority(authorityId)?.uri.nullOrElse { ZeroTierAddress.fromURI(it) }?.networkId ?:
+                throw IllegalArgumentException("Unable to determine local network id to add peer to. Check peer settings")
 
             logger.info { "Adding peer to local node network" }
-            zeroTierClient().addNetworkMember(networkId, ztAddress.nodeId, authorityToMember(peer))
+            zeroTierClient.addNetworkMember(networkId, zeroTierAddress.nodeId, authorityToMember(peer))
         }
     }
+
+    fun addPeer(inviteToken: InviteToken){
+        logger.info { "Adding peer: $inviteToken" }
+        val existingPeer = addressBook.getAuthority(inviteToken.authorityId)
+
+        if(existingPeer != null) {
+            logger.info { "Found existing peer - updating" }
+            if(existingPeer.uri != inviteToken.address) {
+                // Since address is being updated, remove zero tier connection for old address
+                removeZeroTierPeer(existingPeer)
+            }
+
+            existingPeer.name = inviteToken.name
+            existingPeer.publicKey = inviteToken.publicKey
+            existingPeer.uri = inviteToken.address
+            existingPeer.imageUri = inviteToken.imageUri
+        }
+
+        val peer = existingPeer ?: inviteToken.toAuthority(authorityId)
+        addZeroTierPeer(peer)
+        addressBook.updateAuthority(peer)
+    }
+
+    private fun removeZeroTierPeer(peer: Authority) {
+        val zeroTierAddress = peer.uri?.let { ZeroTierAddress.fromURI(it) } ?: return
+        if (zeroTierAddress.networkId != null) {
+            // When we connected, we joined the peer's network, so we need to now leave it
+            leaveNetwork(zeroTierAddress.networkId)
+        } else if (zeroTierAddress.nodeId != null) {
+            // Remove the peer from our network
+            val networkId = addressBook
+                .getAuthority(authorityId)?.uri.nullOrElse { ZeroTierAddress.fromURI(it) }?.networkId
+                ?: throw IllegalArgumentException("Cannot manage peers without a root networkId. Check peer settings")
+
+            zeroTierClient().deleteNetworkMember(networkId, zeroTierAddress.nodeId)
+        }
+    }
+
 
     private fun removePeer(peerId: Id){
         logger.info { "Removing peer: $peerId" }
@@ -173,22 +211,7 @@ class NetworkNode(private val storagePath: Path, private val authorityId: Id, pr
             return
         }
 
-        val zeroTierAddress =  peer.uri?.let { ZeroTierAddress.fromURI(it) }
-        if(zeroTierAddress != null) {
-            if (zeroTierAddress.networkId != null) {
-                // When we connected, we joined the peer's network, so we need to now leave it
-                leaveNetwork(zeroTierAddress.networkId)
-            } else if (zeroTierAddress.nodeId != null) {
-                // Remove the peer from our network
-                val networkId = addressBook
-                    .getAuthority(authorityId)?.uri.nullOrElse { ZeroTierAddress.fromURI(it) }?.networkId
-                    ?: throw IllegalArgumentException("Cannot manage peers without a root networkId. Check peer settings")
-
-                zeroTierClient().deleteNetworkMember(networkId, zeroTierAddress.nodeId)
-            }
-        }
-
-        // TODO: Should this delete by default or merely mark as inactive? Really depends on the user intention
+        removeZeroTierPeer(peer)
         addressBook.deleteAuthority(peerId)
     }
 
