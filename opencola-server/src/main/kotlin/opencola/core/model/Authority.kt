@@ -40,4 +40,8 @@ class Authority : Entity {
     ) : this(Id.ofPublicKey(publicKey), publicKey, uri, name, description, text, imageUri, trust, like, rating, tags)
 
     constructor(facts: List<Fact>) : super(facts)
+
+    override fun toString(): String {
+        return "id: $entityId, name: $name, uri: $uri"
+    }
 }
