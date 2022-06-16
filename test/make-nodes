@@ -1,0 +1,16 @@
+#!/bin/bash
+pushd ../install
+./install
+popd
+rm -rf node0 node1
+mkdir node0 node1
+cp -r ../install/opencola/storage/* node0
+cp -r ../install/opencola/storage/* node1
+
+pushd node0
+sed -i '' "s/5795/6001/g" opencola-server.yaml
+popd
+pushd node1
+sed -i '' "s/5795/6002/g" opencola-server.yaml
+popd
+

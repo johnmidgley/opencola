@@ -1,0 +1,4 @@
+#!/bin/bash
+cd $1
+../../install/opencola/server/bin/opencola-server -s . -a ../../install/opencola/server
+cd ..
