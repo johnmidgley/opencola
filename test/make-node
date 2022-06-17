@@ -1,0 +1,13 @@
+#!/bin/bash
+# make-node name port
+pushd ../install
+./install
+popd
+rm -rf $1
+mkdir $1
+cp -r ../install/opencola/storage/* $1
+pushd $1
+sed -i '' "s/5795/$2/g" opencola-server.yaml
+popd
+
+

@@ -2,10 +2,6 @@ package opencola.core.network
 
 import opencola.core.TestApplication
 import opencola.core.config.Application
-import opencola.core.extensions.nullOrElse
-import opencola.core.extensions.runCommand
-import opencola.core.extensions.startProcess
-import opencola.core.io.MultiStreamReader
 import opencola.core.model.Authority
 import opencola.core.network.zerotier.ZeroTierClient
 import opencola.core.security.Encryptor
@@ -14,8 +10,8 @@ import opencola.server.PeerTest
 import org.junit.Test
 import org.kodein.di.instance
 import java.io.File
-import java.lang.Thread.sleep
 import java.nio.file.Path
+import kotlin.io.path.*
 import kotlin.io.path.copyTo
 import kotlin.io.path.exists
 import kotlin.test.assertEquals
@@ -134,35 +130,20 @@ class NetworkNodeTest : PeerTest() {
         assertAuthoritiesAreSame(authority1, app0peer1)
     }
 
-    private val workingDir = File("../test")
+    private val nodeDir = Path("../test")
+    private val basePort = 5750
 
-    private fun makeNodes() {
-        "./make-nodes".runCommand(workingDir)
-    }
-
-    private fun startNode(num: Int): Process? {
-        return "./start-node node$num".startProcess(workingDir)
-    }
-
-    fun stopNodes(){
-        val ps = "ps -eaf"
-            .runCommand()
-            .filter { it.contains("../../install/opencola/server") }
-            .map { line -> line.split(" ").filter { it.isNotBlank() }[1] }
-            .forEach{
-                "kill $it".runCommand()
-            }
+    private fun getNode(num: Int): TestNode {
+        return TestNode(nodeDir, "node$num", basePort + num)
     }
 
     // @Test
     fun testZtLibPeers() {
-        val process = startNode(0)!!
+        TestNode.stopAllNodes()
+        val node0 = getNode(0).start()
 
-        MultiStreamReader(listOf(Pair("STD", process.inputStream), Pair("ERR",process.errorStream))).use { reader ->
-            while(process.isAlive)
-                reader.readLine().nullOrElse { println(it) } ?: sleep(50)
-        }
+        // setNetworkToken(0)
 
-        process.destroy()
+        node0.stop()
     }
 }
