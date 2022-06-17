@@ -1,5 +1,6 @@
 package opencola.core.network
 
+import mu.KotlinLogging
 import opencola.core.extensions.runCommand
 import opencola.core.extensions.startProcess
 import opencola.core.io.JsonHttpClient
@@ -7,23 +8,31 @@ import opencola.core.io.MultiStreamReader
 import opencola.server.handlers.Peer
 import opencola.server.handlers.PeersResult
 import java.nio.file.Path
+import java.time.Instant
 
 class TestNode(private val nodePath: Path, val name: String, val port: Int) {
+    private val logger = KotlinLogging.logger("TestNode")
     private val jsonHttpClient = JsonHttpClient()
     private val host = "http://0.0.0.0"
     private var process: Process? = null
 
-    private fun makeNode() {
+    fun make() {
+        logger.info { "Making $name" }
         "./make-node $name $port".runCommand(nodePath)
     }
 
     private fun blockUntilNodeReady(){
+        val startTime = Instant.now().epochSecond
         var isReady = false
+        logger.info("Waiting until node is ready")
 
         while(!isReady){
+            if (Instant.now().epochSecond - startTime > 10){
+                throw RuntimeException("Node start timeout")
+            }
+
             try {
-                println("Checking if node is ready.")
-                val result: String = jsonHttpClient.get("$host:$port")
+                jsonHttpClient.get<String>("$host:$port")
                 isReady = true
             } catch (e: Exception){
                 Thread.sleep(100)
@@ -32,6 +41,7 @@ class TestNode(private val nodePath: Path, val name: String, val port: Int) {
     }
 
     fun start(): TestNode {
+        logger.info { "Starting $name" }
         process = "./start-node $name".startProcess(nodePath)!!
 
         MultiStreamReader(listOf(Pair("STD", process!!.inputStream), Pair("ERR",process!!.errorStream))).use { reader ->
@@ -47,6 +57,7 @@ class TestNode(private val nodePath: Path, val name: String, val port: Int) {
         }
 
         blockUntilNodeReady()
+        logger.info("Node $name is ready")
         return this
     }
 
