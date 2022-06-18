@@ -11,7 +11,8 @@ import java.io.ByteArrayOutputStream
 import java.net.URI
 import java.security.PublicKey
 import java.time.Instant
-import java.util.*
+
+val emptyByteArray = "".toByteArray()
 
 data class InviteToken(
     val authorityId: Id,
@@ -19,8 +20,9 @@ data class InviteToken(
     val publicKey: PublicKey,
     val address: URI,
     val imageUri: URI,
-    val tokenId: String = UUID.randomUUID().toString(),
-    val epochSecond: Long = Instant.now().epochSecond) {
+    val tokenId: Id = Id.new(),
+    val epochSecond: Long = Instant.now().epochSecond,
+    val body: ByteArray = emptyByteArray) {
 
     fun toAuthority(rootAuthorityId: Id) : Authority {
         val image = imageUri.let { if (it.toString().isBlank()) null else imageUri }
@@ -28,24 +30,55 @@ data class InviteToken(
     }
 
     fun encode(signator: Signator) : String {
-        val body =  ByteArrayOutputStream().use{
+        val token =  ByteArrayOutputStream().use{
             Id.encode(it, authorityId)
             it.writeString(name)
             it.writeByteArray(PublicKeyByteArrayCodec.encode(publicKey))
             it.writeUri(address)
             it.writeUri(imageUri)
-            it.writeString(tokenId)
+            Id.encode(it, tokenId)
             it.writeLong(epochSecond)
+            it.writeByteArray(body)
             it.toByteArray()
         }
-        val signature = signator.signBytes(authorityId, body)
-        val message = ByteArrayOutputStream().use {
-            it.writeByteArray(body)
+        val signature = signator.signBytes(authorityId, token)
+        val signedToken = ByteArrayOutputStream().use {
+            it.writeByteArray(token)
             it.writeByteArray(signature)
             it.toByteArray()
         }
 
-        return Base58.encode(message)
+        return Base58.encode(signedToken)
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as InviteToken
+
+        if (authorityId != other.authorityId) return false
+        if (name != other.name) return false
+        if (publicKey != other.publicKey) return false
+        if (address != other.address) return false
+        if (imageUri != other.imageUri) return false
+        if (tokenId != other.tokenId) return false
+        if (epochSecond != other.epochSecond) return false
+        if (!body.contentEquals(other.body)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = authorityId.hashCode()
+        result = 31 * result + name.hashCode()
+        result = 31 * result + publicKey.hashCode()
+        result = 31 * result + address.hashCode()
+        result = 31 * result + imageUri.hashCode()
+        result = 31 * result + tokenId.hashCode()
+        result = 31 * result + epochSecond.hashCode()
+        result = 31 * result + body.contentHashCode()
+        return result
     }
 
     companion object Factory {
@@ -57,8 +90,9 @@ data class InviteToken(
                     PublicKeyByteArrayCodec.decode(it.readByteArray()),
                     it.readUri(),
                     it.readUri(),
-                    it.readString(),
+                    Id.decode(it),
                     it.readLong(),
+                    it.readByteArray(),
                 )
             }
         }
@@ -75,14 +109,14 @@ data class InviteToken(
 
         fun decode(token: String) : InviteToken {
             try {
-                val message = Base58.decode(token)
+                val signedToken = Base58.decode(token)
 
-                return ByteArrayInputStream(message).use {
-                    val body = it.readByteArray()
+                return ByteArrayInputStream(signedToken).use {
+                    val token = it.readByteArray()
                     val signature = it.readByteArray()
-                    val inviteToken = toInviteToken(body)
+                    val inviteToken = toInviteToken(token)
 
-                    if (!isValidSignature(inviteToken.publicKey, body, signature))
+                    if (!isValidSignature(inviteToken.publicKey, token, signature))
                         throw IllegalArgumentException("Invalid signature found in InviteToken.")
 
                     inviteToken

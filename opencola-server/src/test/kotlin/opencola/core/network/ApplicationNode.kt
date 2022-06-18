@@ -51,6 +51,7 @@ class ApplicationNode(private val application: Application) : Node {
             if (!storagePath.exists()) {
                 File(storagePath.toString()).mkdirs()
                 val configPath = TestApplication.applicationPath.resolve("../test/storage").resolve("opencola-test.yaml")
+                // TODO: Should update port
                 configPath.copyTo(storagePath.resolve("opencola-server.yaml"))
             }
 
@@ -60,15 +61,13 @@ class ApplicationNode(private val application: Application) : Node {
             return ApplicationNode(instance)
         }
 
-        // Get or create an application instance that will live across test runs. This avoids hammering ZeroTier when
-        // just testing communication between nodes.
-        private fun getPersistentNode(num: Int): Node {
-            val storagePath = TestApplication.applicationPath.resolve("../test/storage/persistent/application-$num")
-            return getNode(storagePath, num.toString())
-        }
+        fun getNode(num: Int, persistent: Boolean = false): Node {
+            val storagePath =
+                if(persistent)
+                    TestApplication.applicationPath.resolve("../test/storage/persistent/application-$num")
+                else
+                    TestApplication.storagePath.resolve("application-$num")
 
-        fun getNode(num: Int): Node {
-            val storagePath = TestApplication.storagePath.resolve("application-$num")
             return getNode(storagePath, num.toString())
         }
     }
