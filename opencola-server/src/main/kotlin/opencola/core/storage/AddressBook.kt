@@ -1,5 +1,6 @@
 package opencola.core.storage
 
+import io.ktor.util.collections.*
 import mu.KotlinLogging
 import opencola.core.config.NetworkConfig
 import opencola.core.config.PeerConfig
@@ -17,6 +18,7 @@ class AddressBook(private val authority: Authority, storagePath: Path, signator:
 
     private val activeTag = "active"
     private val entityStore = ExposedEntityStore(SQLiteDB(storagePath.resolve("address-book.db")).db, authority, signator)
+    private val updateHandlers = ConcurrentList<(Authority) -> Unit>()
 
     fun getPublicKey(authorityId: Id): PublicKey? {
         return if (authorityId == authority.authorityId)
@@ -53,8 +55,25 @@ class AddressBook(private val authority: Authority, storagePath: Path, signator:
         return authority.tags.contains(activeTag)
     }
 
+    fun addUpdateHandler(handler: (Authority) -> Unit){
+        updateHandlers.add(handler)
+    }
+
+    fun removeUpdateHandler(handler: (Authority) -> Unit){
+        updateHandlers.remove(handler)
+    }
+
     fun updateAuthority(authority: Authority) : Authority {
         entityStore.updateEntities(authority)
+
+        updateHandlers.forEach{
+            try {
+                it(authority)
+            } catch (e: Exception){
+                logger.error { "Error calling update handler: $e" }
+            }
+        }
+
         return authority
     }
 

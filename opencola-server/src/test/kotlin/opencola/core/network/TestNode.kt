@@ -42,10 +42,10 @@ class TestNode(private val nodePath: Path, val name: String, val port: Int) {
 
     fun start(): TestNode {
         logger.info { "Starting $name" }
-        process = "./start-node $name".startProcess(nodePath)!!
+        val process = "./start-node $name".startProcess(nodePath)!!.also { this.process == process }
 
-        MultiStreamReader(listOf(Pair("STD", process!!.inputStream), Pair("ERR",process!!.errorStream))).use { reader ->
-            while (process!!.isAlive) {
+        MultiStreamReader(listOf(Pair("STD", process.inputStream), Pair("ERR", process.errorStream))).use { reader ->
+            while (process.isAlive) {
                 val line = reader.readLine()
                 if (line != null) {
                     println(line)

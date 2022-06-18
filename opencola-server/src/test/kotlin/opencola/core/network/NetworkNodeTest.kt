@@ -7,6 +7,10 @@ import opencola.core.network.zerotier.ZeroTierClient
 import opencola.core.security.Encryptor
 import opencola.core.storage.AddressBook
 import opencola.server.PeerTest
+import opencola.server.getServer
+import opencola.server.handlers.Peer
+import opencola.server.handlers.getPeers
+import opencola.server.handlers.updatePeer
 import org.junit.Test
 import org.kodein.di.instance
 import java.io.File
@@ -53,10 +57,10 @@ class NetworkNodeTest : PeerTest() {
             configPath.copyTo(storagePath.resolve("opencola-server.yaml"))
         }
 
-        val instance = Application.instance(TestApplication.applicationPath, storagePath).also { setNetworkToken(it) }
+        val instance = Application.instance(TestApplication.applicationPath, storagePath)
         setRootAuthorityName(instance, "Application $name")
 
-        return Application.instance(TestApplication.applicationPath, storagePath).also { setNetworkToken(it) }
+        return instance
     }
 
     // Get or create an application instance that will live across test runs. This avoids hammering ZeroTier when
@@ -71,7 +75,7 @@ class NetworkNodeTest : PeerTest() {
         return getApplication(storagePath, num.toString())
     }
 
-    private fun startApplicationNode(num: Int): Application {
+    private fun startPersistentApplicationNode(num: Int): Application {
         val application = getPersistentApplication(num)
         val networkNode by application.injector.instance<NetworkNode>()
         networkNode.start()
@@ -137,13 +141,27 @@ class NetworkNodeTest : PeerTest() {
         return TestNode(nodeDir, "node$num", basePort + num)
     }
 
+    private fun setNetworkToken(app: Application, token: String) {
+        val peer = getPeers(app.inject(), app.inject())
+            .let{ result -> result.results.single { it.id == result.authorityId }}
+        val peer1 = Peer(peer.id, peer.name, peer.publicKey, peer.address, peer.imageUri, peer.isActive, token)
+        updatePeer(app.inject(), app.inject(), app.inject(), app.inject(), peer1)
+    }
+
     // @Test
     fun testZtLibPeers() {
         TestNode.stopAllNodes()
+
+        // Start a peer in another process - needed to have a distinct libzt node address
         val node0 = getNode(0).start()
 
-        // setNetworkToken(0)
+        // Directly interact with a local "node" (easier for debugging than having both nodes in outside processes)
+        val app = getPersistentApplication(0)
+        val networkNode = app.inject<NetworkNode>().also { it.start() }
+        setNetworkToken(app, ztAuthToken)
 
+
+        networkNode.stop()
         node0.stop()
     }
 }

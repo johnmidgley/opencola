@@ -25,6 +25,11 @@ import kotlin.io.path.*
 class Application(val applicationPath: Path, val storagePath: Path, val config: Config, val injector: DI) {
     val logger = KotlinLogging.logger("opencola.${config.name}")
 
+    inline fun <reified T : Any> inject() : T {
+        val instance by injector.instance<T>()
+        return instance
+    }
+
     companion object Global {
         // TODO: Remove - create loggers by component / namespace
         val logger = KotlinLogging.logger("opencola.init")

@@ -21,23 +21,23 @@ class NetworkNode(private val storagePath: Path, private val authorityId: Id, pr
     //  put in ~/Library/Java/Extensions/ (or try /Library/Java/Extensions/ globally)
     //  Need to figure out where it goes on Linux / Windows
     private val node = ZeroTierNode()
+    private var authority: Authority? = null
+    private var authToken: String? = null
+    private var zeroTierClient: ZeroTierClient? = null
 
-    init {
-        if(getAuthToken() == null){
-            logger.warn { "No network token specified. Cannot manage peer connections." }
-        }
+    private fun setAuthority(authority: Authority) {
+        val initRequired = this.authority == null || !authority.networkToken.contentEquals(authority.networkToken) || authority.uri != authority.uri
+        this.authority = authority
+        authToken = authority.networkToken.nullOrElse { String(encryptor.decrypt(authorityId, it)) }
+        zeroTierClient = authToken.nullOrElse { ZeroTierClient(it) }
+
+        if(initRequired)
+            initNodeNetwork()
     }
 
-    private fun getAuthToken() : String? {
-        return addressBook.getAuthority(authorityId)?.networkToken?.let { String(encryptor.decrypt(authorityId, it)) }
-    }
-
-    private fun zeroTierClient(): ZeroTierClient {
-        // We create the client on each use, because the authToken is mutable
-        val authToken = getAuthToken()
-            ?: throw IllegalStateException("Can't provide a ZeroTierClient without an authToken. Set the root user's network token in peer settings.")
-
-        return ZeroTierClient(authToken)
+    private val addressUpdateHandler : (Authority) -> Unit = { peer ->
+        if(peer.entityId == authorityId)
+            setAuthority(peer)
     }
 
     fun isNetworkTokenValid(networkToken: String) : Boolean {
@@ -55,7 +55,9 @@ class NetworkNode(private val storagePath: Path, private val authorityId: Id, pr
         return "root:$authorityId"
     }
 
-    private fun createNodeNetwork(zeroTierClient: ZeroTierClient, authority: Authority) : Network {
+    private fun createNodeNetwork() : Network {
+        val authority = authority!!
+        val zeroTierClient = zeroTierClient!!
         val networkConfig = NetworkConfig.forCreate(
             name = getNetworkName(),
             private = true,
@@ -79,22 +81,21 @@ class NetworkNode(private val storagePath: Path, private val authorityId: Id, pr
         return createdNetwork
     }
 
-    private fun getOrCreateNodeNetwork(zeroTierClient: ZeroTierClient, authority: Authority) : Network {
+    private fun getOrCreateNodeNetwork() : Network {
         val networkName = getNetworkName()
-        val networks = zeroTierClient.getNetworks().filter { it.config?.name == networkName }
+        val networks = zeroTierClient!!.getNetworks().filter { it.config?.name == networkName }
 
         if(networks.size > 1) {
             throw IllegalStateException("Multiple networks exist with the root name: $networkName. Fix at ZT Central")
         }
 
-        return networks.singleOrNull() ?: createNodeNetwork(zeroTierClient, authority)
+        return networks.singleOrNull() ?: createNodeNetwork()
     }
 
-    private fun initNodeNetwork(zeroTierClient: ZeroTierClient) {
-        val authority = addressBook.getAuthority(authorityId)
-            ?: throw IllegalStateException("Root authority not found in address book")
-
-        val network = getOrCreateNodeNetwork(zeroTierClient, authority)
+    private fun initNodeNetwork() {
+        zeroTierClient.nullOrElse { logger.info { "Not network client found - skipping init" } } ?: return
+        val authority = authority!!
+        val network = getOrCreateNodeNetwork()
         authority.uri = ZeroTierAddress(network.id, getId()).toURI()
         addressBook.updateAuthority(authority)
     }
@@ -110,14 +111,19 @@ class NetworkNode(private val storagePath: Path, private val authorityId: Id, pr
             ZeroTierNative.zts_util_delay(50);
         }
 
-        initNodeNetwork(zeroTierClient())
+        authority = addressBook.getAuthority(authorityId)
+            ?: throw IllegalArgumentException("Root authority not in AddressBook: $authorityId")
+        initNodeNetwork()
+        addressBook.addUpdateHandler(addressUpdateHandler)
         logger.info { "Started: ${node.id.toString(16)}" }
     }
 
     fun stop() {
         logger.info { "Stopping." }
+        addressBook.removeUpdateHandler(addressUpdateHandler)
         node.stop()
     }
+
 
     private fun authorityToMember(authority: Authority): Member {
         return Member.forCreate(
@@ -136,7 +142,6 @@ class NetworkNode(private val storagePath: Path, private val authorityId: Id, pr
 
     private fun addZeroTierPeer(peer: Authority){
         val zeroTierAddress = peer.uri?.let { ZeroTierAddress.fromURI(it) } ?: return
-        val zeroTierClient = getAuthToken()?.let { ZeroTierClient(it) }
 
         if(zeroTierAddress.nodeId == null){
             throw IllegalArgumentException("Can't add peer with no nodeId: $zeroTierAddress")
@@ -160,7 +165,7 @@ class NetworkNode(private val storagePath: Path, private val authorityId: Id, pr
                 throw IllegalArgumentException("Unable to determine local network id to add peer to. Check peer settings")
 
             logger.info { "Adding peer to local node network" }
-            zeroTierClient.addNetworkMember(networkId, zeroTierAddress.nodeId, authorityToMember(peer))
+            zeroTierClient!!.addNetworkMember(networkId, zeroTierAddress.nodeId, authorityToMember(peer))
         }
     }
 
@@ -197,10 +202,9 @@ class NetworkNode(private val storagePath: Path, private val authorityId: Id, pr
                 .getAuthority(authorityId)?.uri.nullOrElse { ZeroTierAddress.fromURI(it) }?.networkId
                 ?: throw IllegalArgumentException("Cannot manage peers without a root networkId. Check peer settings")
 
-            zeroTierClient().deleteNetworkMember(networkId, zeroTierAddress.nodeId)
+            zeroTierClient!!.deleteNetworkMember(networkId, zeroTierAddress.nodeId)
         }
     }
-
 
     private fun removePeer(peerId: Id){
         logger.info { "Removing peer: $peerId" }
