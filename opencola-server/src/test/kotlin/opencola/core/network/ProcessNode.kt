@@ -9,14 +9,15 @@ import opencola.server.handlers.Peer
 import opencola.server.handlers.PeersResult
 import java.nio.file.Path
 import java.time.Instant
+import kotlin.io.path.Path
 
-class TestNode(private val nodePath: Path, val name: String, val port: Int) {
+class ProcessNode(private val nodePath: Path, val name: String, val port: Int) : Node {
     private val logger = KotlinLogging.logger("TestNode")
     private val jsonHttpClient = JsonHttpClient()
     private val host = "http://0.0.0.0"
     private var process: Process? = null
 
-    fun make() {
+    override fun make() {
         logger.info { "Making $name" }
         "./make-node $name $port".runCommand(nodePath)
     }
@@ -40,11 +41,11 @@ class TestNode(private val nodePath: Path, val name: String, val port: Int) {
         }
     }
 
-    fun start(): TestNode {
+    override fun start(): Node {
         logger.info { "Starting $name" }
         val process = "./start-node $name".startProcess(nodePath)!!.also { this.process == process }
 
-        MultiStreamReader(listOf(Pair("STD", process.inputStream), Pair("ERR", process.errorStream))).use { reader ->
+        MultiStreamReader(listOf(Pair(name, process.inputStream), Pair(name, process.errorStream))).use { reader ->
             while (process.isAlive) {
                 val line = reader.readLine()
                 if (line != null) {
@@ -61,26 +62,29 @@ class TestNode(private val nodePath: Path, val name: String, val port: Int) {
         return this
     }
 
-    fun stop() {
+    override fun stop() {
         if(process != null)
             process!!.destroy()
     }
 
-    private fun setNetworkToken(peer: Peer, networkToken: String): Peer {
-        return Peer(peer.id, peer.name, peer.publicKey, peer.address, peer.imageUri, peer.isActive, networkToken)
-    }
-
-    private fun setNetworkToken(token: String){
+    override fun setNetworkToken(token: String){
         val peersPath = "$host:$port/peers"
         val peersResult: PeersResult = jsonHttpClient.get(peersPath)
         val authorityId = peersResult.authorityId
 
         val authority = peersResult.results.first{ it.id == authorityId }
-        val peer = setNetworkToken(authority, token)
+        val peer = Peer(authority.id, authority.name, authority.publicKey, authority.address, authority.imageUri, authority.isActive, token)
         jsonHttpClient.put(peersPath, peer)
     }
 
     companion object Factory {
+        private val nodeDir = Path("../test")
+        private const val basePort = 5750
+
+        fun getNode(num: Int): ProcessNode {
+            return ProcessNode(nodeDir, "node$num", basePort + num)
+        }
+
         fun stopAllNodes(){
             "ps -eaf"
                 .runCommand()
