@@ -7,6 +7,7 @@ import io.ktor.client.features.json.serializer.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
+import java.net.URI
 
 class JsonHttpClient {
     val httpClient = HttpClient(CIO) {
@@ -15,14 +16,14 @@ class JsonHttpClient {
         }
     }
 
-     inline fun <reified T> get(path: String) : T {
+     inline fun <reified T> get(uri: URI) : T {
          // Yes - seems horrible to hide suspend calls, but otherwise the code is infected and much harder to debug
-        return runBlocking { httpClient.get(path) }
+        return runBlocking { httpClient.get(uri.toString()) }
     }
 
-    fun put(path: String, value: Any) {
+    fun put(uri: URI, value: Any) {
         return runBlocking {
-            httpClient.put(path) {
+            httpClient.put(uri.toString()) {
                 contentType(ContentType.Application.Json)
                 body = value
             }

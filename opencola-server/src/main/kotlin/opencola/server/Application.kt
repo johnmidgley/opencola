@@ -17,14 +17,13 @@ import opencola.core.security.encode
 import opencola.server.plugins.configureContentNegotiation
 import opencola.server.plugins.configureHTTP
 import opencola.server.plugins.configureRouting
-import org.kodein.di.instance
 import kotlin.io.path.Path
 
 private val logger = KotlinLogging.logger("opencola")
 
 fun onServerStarted(application: Application){
-    val eventBus by application.injector.instance<EventBus>()
-    eventBus.sendMessage(Events.NodeStarted.toString())
+    application.inject<NetworkNode>().start()
+    application.inject<EventBus>().sendMessage(Events.NodeStarted.toString())
 }
 
 fun getServer(application: Application): NettyApplicationEngine {

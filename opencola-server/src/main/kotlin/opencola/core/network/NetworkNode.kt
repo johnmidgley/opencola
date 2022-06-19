@@ -26,7 +26,8 @@ class NetworkNode(private val storagePath: Path, private val authorityId: Id, pr
     private var zeroTierClient: ZeroTierClient? = null
 
     private fun setAuthority(authority: Authority) {
-        val initRequired = this.authority == null || !authority.networkToken.contentEquals(authority.networkToken) || authority.uri != authority.uri
+        val thisAuthority = this.authority
+        val initRequired = thisAuthority == null || !authority.networkToken.contentEquals(thisAuthority.networkToken) || authority.uri != thisAuthority.uri
         this.authority = authority
         authToken = authority.networkToken.nullOrElse { String(encryptor.decrypt(authorityId, it)) }
         zeroTierClient = authToken.nullOrElse { ZeroTierClient(it) }
@@ -81,7 +82,9 @@ class NetworkNode(private val storagePath: Path, private val authorityId: Id, pr
         return createdNetwork
     }
 
-    private fun getOrCreateNodeNetwork() : Network {
+    private fun getOrCreateNodeNetwork() : Network? {
+        zeroTierClient ?: return null
+
         val networkName = getNetworkName()
         val networks = zeroTierClient!!.getNetworks().filter { it.config?.name == networkName }
 
@@ -93,10 +96,10 @@ class NetworkNode(private val storagePath: Path, private val authorityId: Id, pr
     }
 
     private fun initNodeNetwork() {
-        zeroTierClient.nullOrElse { logger.info { "Not network client found - skipping init" } } ?: return
+        val networkId = getOrCreateNodeNetwork()?.id
         val authority = authority!!
-        val network = getOrCreateNodeNetwork()
-        authority.uri = ZeroTierAddress(network.id, getId()).toURI()
+        // TODO: Let user opt to configure manually? (i.e. disable zeroTier in the app?)
+        authority.uri = ZeroTierAddress(networkId, getId()).toURI()
         addressBook.updateAuthority(authority)
     }
 

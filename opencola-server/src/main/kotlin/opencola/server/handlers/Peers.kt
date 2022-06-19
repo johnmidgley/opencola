@@ -7,6 +7,7 @@ import opencola.core.model.Authority
 import opencola.core.model.Id
 import opencola.core.network.NetworkNode
 import opencola.core.security.Encryptor
+import opencola.core.security.Signator
 import opencola.core.security.decodePublicKey
 import opencola.core.security.encode
 import opencola.core.storage.AddressBook
@@ -103,4 +104,8 @@ fun updatePeer(authority: Authority, addressBook: AddressBook, networkNode: Netw
     }
 
     addressBook.updateAuthority(peerAuthority)
+}
+
+fun getToken(networkNode: NetworkNode, signator: Signator): String {
+    return networkNode.getInviteToken().encode(signator)
 }

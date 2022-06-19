@@ -149,6 +149,10 @@ fun Application.configureRouting(application: app) {
             call.respond(getPeers(authority, addressBook))
         }
 
+        get("/peers/token") {
+            call.respond(getToken(application.inject(), application.inject()))
+        }
+
         put("/peers") {
             val authority by injector.instance<Authority>()
             val addressBook by injector.instance<AddressBook>()

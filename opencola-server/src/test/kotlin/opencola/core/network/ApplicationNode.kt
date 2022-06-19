@@ -6,9 +6,7 @@ import opencola.core.config.Application
 import opencola.core.model.Authority
 import opencola.core.storage.AddressBook
 import opencola.server.getServer
-import opencola.server.handlers.Peer
-import opencola.server.handlers.getPeers
-import opencola.server.handlers.updatePeer
+import opencola.server.handlers.*
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.copyTo
@@ -37,6 +35,15 @@ class ApplicationNode(private val application: Application) : Node {
         val peer1 = Peer(peer.id, peer.name, peer.publicKey, peer.address, peer.imageUri, peer.isActive, token)
         updatePeer(app.inject(), app.inject(), app.inject(), app.inject(), peer1)
     }
+
+    override fun getInviteToken(): String {
+        return getToken(application.inject(), application.inject())
+    }
+
+    override fun getPeers(): PeersResult {
+        return getPeers(application.inject(), application.inject())
+    }
+
 
     companion object Factory {
         private fun setRootAuthorityName(instance: Application, name: String){

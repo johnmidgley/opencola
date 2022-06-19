@@ -7,6 +7,7 @@ import opencola.core.io.JsonHttpClient
 import opencola.core.io.MultiStreamReader
 import opencola.server.handlers.Peer
 import opencola.server.handlers.PeersResult
+import java.net.URI
 import java.nio.file.Path
 import java.time.Instant
 import kotlin.io.path.Path
@@ -15,6 +16,7 @@ class ProcessNode(private val nodePath: Path, val name: String, val port: Int) :
     private val logger = KotlinLogging.logger("TestNode")
     private val jsonHttpClient = JsonHttpClient()
     private val host = "http://0.0.0.0"
+    private val serviceUri = URI("$host:$port/")
     private var process: Process? = null
 
     override fun make() {
@@ -33,7 +35,7 @@ class ProcessNode(private val nodePath: Path, val name: String, val port: Int) :
             }
 
             try {
-                jsonHttpClient.get<String>("$host:$port")
+                jsonHttpClient.get<String>(serviceUri)
                 isReady = true
             } catch (e: Exception){
                 Thread.sleep(100)
@@ -68,13 +70,21 @@ class ProcessNode(private val nodePath: Path, val name: String, val port: Int) :
     }
 
     override fun setNetworkToken(token: String){
-        val peersPath = "$host:$port/peers"
-        val peersResult: PeersResult = jsonHttpClient.get(peersPath)
+        val peersUri = serviceUri.resolve("/peers")
+        val peersResult: PeersResult = jsonHttpClient.get(peersUri)
         val authorityId = peersResult.authorityId
 
         val authority = peersResult.results.first{ it.id == authorityId }
         val peer = Peer(authority.id, authority.name, authority.publicKey, authority.address, authority.imageUri, authority.isActive, token)
-        jsonHttpClient.put(peersPath, peer)
+        jsonHttpClient.put(peersUri, peer)
+    }
+
+    override fun getInviteToken(): String {
+        return jsonHttpClient.get(serviceUri.resolve("/peers/token"))
+    }
+
+    override fun getPeers(): PeersResult {
+        return jsonHttpClient.get(serviceUri.resolve("/peers"))
     }
 
     companion object Factory {
