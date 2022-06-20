@@ -7,6 +7,7 @@ import kotlin.io.path.createDirectory
 
 private var serverNum = 0
 
+// TODO: Replace this with method use for testing NetworkNode
 fun getApplications(
     applicationPath: Path,
     storagePath: Path,
@@ -42,7 +43,7 @@ fun getApplications(
         Application.instance(
             applicationPath,
             storagePath,
-            config.setNetwork(NetworkConfig(peerConfigs)),
+            config.setNetwork(NetworkConfig(false, peerConfigs)),
             publicKey
         )
     }

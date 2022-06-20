@@ -13,10 +13,17 @@ import opencola.core.security.Encryptor
 import opencola.core.serialization.LongByteArrayCodec
 import opencola.core.storage.AddressBook
 import java.nio.file.Path
+import opencola.core.config.NetworkConfig as OpenColaNetworkConfig
 
 private val logger = KotlinLogging.logger("NetworkNode")
 
-class NetworkNode(private val storagePath: Path, private val authorityId: Id, private val addressBook: AddressBook, private val encryptor: Encryptor) {
+class NetworkNode(
+    private val config: OpenColaNetworkConfig,
+    private val storagePath: Path,
+    private val authorityId: Id,
+    private val addressBook: AddressBook,
+    private val encryptor: Encryptor
+) {
     // TODO: Make install script put the platform dependent version of libzt in the right place. On mac, it needs to be
     //  put in ~/Library/Java/Extensions/ (or try /Library/Java/Extensions/ globally)
     //  Need to figure out where it goes on Linux / Windows
@@ -30,10 +37,13 @@ class NetworkNode(private val storagePath: Path, private val authorityId: Id, pr
         val initRequired = thisAuthority == null || !authority.networkToken.contentEquals(thisAuthority.networkToken) || authority.uri != thisAuthority.uri
         this.authority = authority
         authToken = authority.networkToken.nullOrElse { String(encryptor.decrypt(authorityId, it)) }
-        zeroTierClient = authToken.nullOrElse { ZeroTierClient(it) }
 
-        if(initRequired)
-            initNodeNetwork()
+        if(config.zeroIntegrationTierEnabled) {
+            zeroTierClient = authToken.nullOrElse { ZeroTierClient(it) }
+
+            if (initRequired)
+                initNodeNetwork()
+        }
     }
 
     private val addressUpdateHandler : (Authority) -> Unit = { peer ->
@@ -56,6 +66,7 @@ class NetworkNode(private val storagePath: Path, private val authorityId: Id, pr
         return "root:$authorityId"
     }
 
+    // TODO: Should probably abstract out a NetworkProvider, and have ZeroTier be one type.
     private fun createNodeNetwork() : Network {
         val authority = authority!!
         val zeroTierClient = zeroTierClient!!
@@ -96,35 +107,42 @@ class NetworkNode(private val storagePath: Path, private val authorityId: Id, pr
     }
 
     private fun initNodeNetwork() {
-        val networkId = getOrCreateNodeNetwork()?.id
-        val authority = authority!!
-        // TODO: Let user opt to configure manually? (i.e. disable zeroTier in the app?)
-        authority.uri = ZeroTierAddress(networkId, getId()).toURI()
-        addressBook.updateAuthority(authority)
+        if(config.zeroIntegrationTierEnabled) {
+            val networkId = getOrCreateNodeNetwork()?.id
+            val authority = authority!!
+            authority.uri = ZeroTierAddress(networkId, getId()).toURI()
+            addressBook.updateAuthority(authority)
+        }
     }
 
     fun start() {
-        logger.info { "Starting..." }
-        node.initFromStorage(storagePath.toString())
-        node.initSetEventHandler(MyZeroTierEventListener())
-        node.start()
+        if(config.zeroIntegrationTierEnabled) {
+            logger.info { "Starting ZeroTier node..." }
+            node.initFromStorage(storagePath.toString())
+            node.initSetEventHandler(MyZeroTierEventListener())
+            node.start()
 
-        while (!node.isOnline) {
-            // TODO: Break infinite loop
-            ZeroTierNative.zts_util_delay(50);
+            while (!node.isOnline) {
+                // TODO: Break infinite loop
+                ZeroTierNative.zts_util_delay(50);
+            }
+
+            authority = addressBook.getAuthority(authorityId)
+                ?: throw IllegalArgumentException("Root authority not in AddressBook: $authorityId")
+            initNodeNetwork()
+            addressBook.addUpdateHandler(addressUpdateHandler)
+
+            logger.info { "Started: ${node.id.toString(16)}" }
         }
-
-        authority = addressBook.getAuthority(authorityId)
-            ?: throw IllegalArgumentException("Root authority not in AddressBook: $authorityId")
-        initNodeNetwork()
-        addressBook.addUpdateHandler(addressUpdateHandler)
-        logger.info { "Started: ${node.id.toString(16)}" }
     }
 
     fun stop() {
-        logger.info { "Stopping." }
-        addressBook.removeUpdateHandler(addressUpdateHandler)
-        node.stop()
+        if(config.zeroIntegrationTierEnabled) {
+            logger.info { "Stopping ZeroTier node." }
+            addressBook.removeUpdateHandler(addressUpdateHandler)
+            node.stop()
+            logger.info { "Stopped: ${node.id.toString(16)}" }
+        }
     }
 
 
@@ -144,31 +162,34 @@ class NetworkNode(private val storagePath: Path, private val authorityId: Id, pr
     }
 
     private fun addZeroTierPeer(peer: Authority){
-        val zeroTierAddress = peer.uri?.let { ZeroTierAddress.fromURI(it) } ?: return
+        if(config.zeroIntegrationTierEnabled) {
+            val zeroTierAddress = peer.uri?.let { ZeroTierAddress.fromURI(it) } ?: return
 
-        if(zeroTierAddress.nodeId == null){
-            throw IllegalArgumentException("Can't add peer with no nodeId: $zeroTierAddress")
-        }
+            if (zeroTierAddress.nodeId == null) {
+                throw IllegalArgumentException("Can't add peer with no nodeId: $zeroTierAddress")
+            }
 
-        if(zeroTierAddress.networkId == null && zeroTierClient == null) {
-            throw IllegalArgumentException("Can't add peer with that has no network without having a local network")
-        }
+            if (zeroTierAddress.networkId == null && zeroTierClient == null) {
+                throw IllegalArgumentException("Can't add peer with that has no network without having a local network")
+            }
 
-        if(zeroTierAddress.networkId != null){
-            // When a networkId is specified, we must join the peer's network to communicate. The peer should grant
-            // this node access to the network on their end
-            logger.info { "Joining network: ${zeroTierAddress.networkId}" }
-            joinNetwork(zeroTierAddress.networkId)
-        }
+            if (zeroTierAddress.networkId != null) {
+                // When a networkId is specified, we must join the peer's network to communicate. The peer should grant
+                // this node access to the network on their end
+                logger.info { "Joining network: ${zeroTierAddress.networkId}" }
+                joinNetwork(zeroTierAddress.networkId)
+            }
 
-        if (zeroTierClient != null) {
-            // Allow the peer node onto our network
-            val networkId =
-                addressBook.getAuthority(authorityId)?.uri.nullOrElse { ZeroTierAddress.fromURI(it) }?.networkId ?:
-                throw IllegalArgumentException("Unable to determine local network id to add peer to. Check peer settings")
+            val zeroTierClient = this.zeroTierClient
+            if (zeroTierClient != null) {
+                // Allow the peer node onto our network
+                val networkId =
+                    addressBook.getAuthority(authorityId)?.uri.nullOrElse { ZeroTierAddress.fromURI(it) }?.networkId
+                        ?: throw IllegalArgumentException("Unable to determine local network id to add peer to. Check peer settings")
 
-            logger.info { "Adding peer to local node network" }
-            zeroTierClient!!.addNetworkMember(networkId, zeroTierAddress.nodeId, authorityToMember(peer))
+                logger.info { "Adding peer to local node network" }
+                zeroTierClient.addNetworkMember(networkId, zeroTierAddress.nodeId, authorityToMember(peer))
+            }
         }
     }
 
@@ -195,17 +216,19 @@ class NetworkNode(private val storagePath: Path, private val authorityId: Id, pr
     }
 
     private fun removeZeroTierPeer(peer: Authority) {
-        val zeroTierAddress = peer.uri?.let { ZeroTierAddress.fromURI(it) } ?: return
-        if (zeroTierAddress.networkId != null) {
-            // When we connected, we joined the peer's network, so we need to now leave it
-            leaveNetwork(zeroTierAddress.networkId)
-        } else if (zeroTierAddress.nodeId != null) {
-            // Remove the peer from our network
-            val networkId = addressBook
-                .getAuthority(authorityId)?.uri.nullOrElse { ZeroTierAddress.fromURI(it) }?.networkId
-                ?: throw IllegalArgumentException("Cannot manage peers without a root networkId. Check peer settings")
+        if(config.zeroIntegrationTierEnabled) {
+            val zeroTierAddress = peer.uri?.let { ZeroTierAddress.fromURI(it) } ?: return
+            if (zeroTierAddress.networkId != null) {
+                // When we connected, we joined the peer's network, so we need to now leave it
+                leaveNetwork(zeroTierAddress.networkId)
+            } else if (zeroTierAddress.nodeId != null) {
+                // Remove the peer from our network
+                val networkId = addressBook
+                    .getAuthority(authorityId)?.uri.nullOrElse { ZeroTierAddress.fromURI(it) }?.networkId
+                    ?: throw IllegalArgumentException("Cannot manage peers without a root networkId. Check peer settings")
 
-            zeroTierClient!!.deleteNetworkMember(networkId, zeroTierAddress.nodeId)
+                zeroTierClient!!.deleteNetworkMember(networkId, zeroTierAddress.nodeId)
+            }
         }
     }
 

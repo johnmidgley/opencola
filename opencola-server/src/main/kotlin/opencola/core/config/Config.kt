@@ -12,7 +12,7 @@ data class SecurityConfig(val keystore: KeystoreConfig)
 data class SolrConfig(val baseUrl: String, val connectionTimeoutMillis: Int, val socketTimeoutMillis: Int)
 data class SearchConfig(val solr: SolrConfig?)
 data class PeerConfig(val id: String, val publicKey: String, val name: String, val host: String, val active: Boolean = true)
-data class NetworkConfig(val peers: List<PeerConfig> = emptyList())
+data class NetworkConfig(val zeroIntegrationTierEnabled: Boolean = false, val peers: List<PeerConfig> = emptyList())
 
 
 data class Config(val name: String,
@@ -24,7 +24,6 @@ data class Config(val name: String,
                   ){
     fun setName(name: String): Config {
         return Config(name, eventBus, server, security, search, network, )
-
     }
 
     fun setServer(server: ServerConfig): Config {

@@ -102,7 +102,7 @@ data class InviteToken(
                 authority.authorityId,
                 authority.name ?: "",
                 authority.publicKey!!,
-                authority.uri ?: throw IllegalArgumentException("Can't create InviteToken for authority with now address (uri)"),
+                authority.uri ?: throw IllegalArgumentException("Can't create InviteToken for authority with no address (uri)"),
                 authority.imageUri ?: URI("")
             )
         }
