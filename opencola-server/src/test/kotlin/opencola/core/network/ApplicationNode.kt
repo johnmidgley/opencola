@@ -2,7 +2,7 @@ package opencola.core.network
 
 import io.ktor.server.netty.*
 import opencola.core.TestApplication
-import opencola.core.config.Application
+import opencola.core.config.*
 import opencola.core.model.Authority
 import opencola.core.storage.AddressBook
 import opencola.server.getServer
@@ -46,6 +46,9 @@ class ApplicationNode(private val application: Application) : Node {
 
 
     companion object Factory {
+        // TODO: Move to interface or base class
+        private const val basePort = 5750
+
         private fun setRootAuthorityName(instance: Application, name: String){
             val rootAuthority = instance.inject<Authority>()
             val addressBook = instance.inject<AddressBook>()
@@ -54,28 +57,37 @@ class ApplicationNode(private val application: Application) : Node {
             addressBook.updateAuthority(authority)
         }
 
-        private fun getNode(storagePath: Path, name: String): Node {
+        // TODO: Move to interface or base class
+        fun getBaseConfig(): Config {
+            val configPath = TestApplication.applicationPath.resolve("../test/storage").resolve("opencola-test.yaml")
+            return loadConfig(configPath)
+        }
+
+        private fun getNode(storagePath: Path, name: String, port: Int, config: Config? = null): Node {
             if (!storagePath.exists()) {
                 File(storagePath.toString()).mkdirs()
                 val configPath = TestApplication.applicationPath.resolve("../test/storage").resolve("opencola-test.yaml")
-                // TODO: Should update port
                 configPath.copyTo(storagePath.resolve("opencola-server.yaml"))
             }
 
-            val instance = Application.instance(TestApplication.applicationPath, storagePath)
-            setRootAuthorityName(instance, "Application $name")
+            val configToUse = (config ?: loadConfig(storagePath.resolve("opencola-server.yaml"))).let{
+                it.setServer(ServerConfig(it.server.host, port))
+            }
+
+            val instance = Application.instance(TestApplication.applicationPath, storagePath, configToUse)
+            setRootAuthorityName(instance, name)
 
             return ApplicationNode(instance)
         }
 
-        fun getNode(num: Int, persistent: Boolean = false): Node {
+        fun getNode(num: Int, persistent: Boolean = false, config: Config? = null): Node {
             val storagePath =
                 if(persistent)
                     TestApplication.applicationPath.resolve("../test/storage/persistent/application-$num")
                 else
                     TestApplication.storagePath.resolve("application-$num")
 
-            return getNode(storagePath, num.toString())
+            return getNode(storagePath, "Node: $num", basePort + num, config)
         }
     }
 }

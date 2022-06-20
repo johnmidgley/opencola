@@ -48,7 +48,7 @@ object TestApplication {
     }
 
     val config by lazy {
-        loadConfig(applicationPath.resolve("../test/storage"), "opencola-test.yaml")
+        loadConfig(applicationPath.resolve("../test/storage/opencola-test.yaml"))
     }
 
     fun getTmpFilePath(suffix: String): Path {

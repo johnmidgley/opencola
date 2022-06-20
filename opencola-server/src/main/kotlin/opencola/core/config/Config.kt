@@ -14,29 +14,33 @@ data class SearchConfig(val solr: SolrConfig?)
 data class PeerConfig(val id: String, val publicKey: String, val name: String, val host: String, val active: Boolean = true)
 data class NetworkConfig(val zeroIntegrationTierEnabled: Boolean = false, val peers: List<PeerConfig> = emptyList())
 
+data class Config(
+    val name: String,
+    val eventBus: EventBusConfig,
+    val server: ServerConfig,
+    val security: SecurityConfig,
+    val search: SearchConfig,
+    val network: NetworkConfig,
+)
 
-data class Config(val name: String,
-                  val eventBus: EventBusConfig,
-                  val server: ServerConfig,
-                  val security: SecurityConfig,
-                  val search: SearchConfig,
-                  val network: NetworkConfig,
-                  ){
-    fun setName(name: String): Config {
-        return Config(name, eventBus, server, security, search, network, )
-    }
-
-    fun setServer(server: ServerConfig): Config {
-        return Config(name, eventBus, server, security, search, network)
-    }
-
-    fun setNetwork(network: NetworkConfig): Config {
-        return Config(name, eventBus, server, security, search, network)
-    }
+fun Config.setName(name: String): Config {
+    return Config(name, eventBus, server, security, search, network)
 }
 
-fun loadConfig(storagePath: Path, name: String): Config {
-    return ConfigLoader().loadConfigOrThrow(storagePath.resolve(name))
+fun Config.setServer(server: ServerConfig): Config {
+    return Config(name, eventBus, server, security, search, network)
+}
+
+fun Config.setNetwork(network: NetworkConfig): Config {
+    return Config(name, eventBus, server, security, search, network)
+}
+
+fun Config.setZeroTierIntegration(enabled: Boolean): Config {
+    return setNetwork(NetworkConfig(enabled, this.network.peers))
+}
+
+fun loadConfig(configPath: Path): Config {
+    return ConfigLoader().loadConfigOrThrow(configPath)
 }
 
 

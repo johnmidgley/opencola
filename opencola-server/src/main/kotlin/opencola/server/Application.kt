@@ -53,7 +53,7 @@ fun main(args: Array<String>) {
     logger.info { "Application path: $applicationPath" }
     logger.info { "Storage path: $storagePath" }
 
-    val config = loadConfig(storagePath, "opencola-server.yaml")
+    val config = loadConfig(storagePath.resolve("opencola-server.yaml"))
     val publicKey = Application.getOrCreateRootPublicKey(storagePath, config.security)
 
     val application = Application.instance(applicationPath, storagePath, config, publicKey)

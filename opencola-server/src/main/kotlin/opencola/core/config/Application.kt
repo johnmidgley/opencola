@@ -17,6 +17,7 @@ import org.jetbrains.exposed.sql.Database
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
 import org.kodein.di.instance
+import java.io.File
 import java.net.URI
 import java.nio.file.Path
 import java.security.PublicKey
@@ -60,18 +61,6 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
             return publicKey
         }
 
-        fun instance(applicationPath: Path, storagePath: Path) : Application {
-            if(!storagePath.exists()){
-                logger.info { "Creating storage path: $storagePath" }
-                storagePath.createDirectory()
-            }
-
-            val config = loadConfig(storagePath, "opencola-server.yaml")
-            val publicKey = getOrCreateRootPublicKey(storagePath, config.security)
-
-            return instance(applicationPath, storagePath, config, publicKey)
-        }
-
         fun getEntityStoreDB(authority: Authority, storagePath: Path): Database {
             val path = storagePath.resolve("entity-store.db")
 
@@ -88,7 +77,7 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
 
         fun instance(applicationPath: Path, storagePath: Path, config: Config, authorityPublicKey: PublicKey): Application {
             if(!storagePath.exists()){
-                storagePath.createDirectory()
+                File(storagePath.toString()).mkdirs()
             }
 
             // TODO: Change from authority to public key - they authority should come from the private store based on the private key
@@ -123,6 +112,12 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
             eventBus.start(reactor)
 
             return Application(applicationPath, storagePath, config, injector)
+        }
+
+        fun instance(applicationPath: Path, storagePath: Path, config: Config? = null) : Application {
+            val config = config ?: loadConfig(storagePath.resolve("opencola-server.yaml"))
+            val publicKey = getOrCreateRootPublicKey(storagePath, config.security)
+            return instance(applicationPath, storagePath, config, publicKey)
         }
     }
 }
