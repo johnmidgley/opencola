@@ -16,8 +16,8 @@ class InviteTokenTest {
         val signator by injector.instance<Signator>()
 
         val inviteToken = InviteToken(authority.entityId, "Test Name", authority.publicKey!!, authority.uri!!, URI("https://Test"))
-        val token = inviteToken.encode(signator)
-        val inviteToken1 = InviteToken.decode(token)
+        val token = inviteToken.encodeBase58(signator)
+        val inviteToken1 = InviteToken.decodeBase58(token)
         assertEquals(inviteToken, inviteToken1)
     }
 }

@@ -1,6 +1,5 @@
 package opencola.core.serialization
 
-import opencola.core.content.Base58
 import opencola.core.model.Id
 import opencola.core.security.generateKeyPair
 import org.junit.Test

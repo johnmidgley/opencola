@@ -21,7 +21,16 @@ class JsonHttpClient {
         return runBlocking { httpClient.get(uri.toString()) }
     }
 
-    fun put(uri: URI, value: Any) {
+    inline fun <reified T> post(uri: URI, value: Any) : T {
+        return runBlocking {
+            httpClient.post(uri.toString()) {
+                contentType(ContentType.Application.Json)
+                body = value
+            }
+        }
+    }
+
+    inline fun <reified T> put(uri: URI, value: Any) : T {
         return runBlocking {
             httpClient.put(uri.toString()) {
                 contentType(ContentType.Application.Json)

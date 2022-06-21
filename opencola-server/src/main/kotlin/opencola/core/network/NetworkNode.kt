@@ -12,6 +12,8 @@ import opencola.core.network.zerotier.*
 import opencola.core.security.Encryptor
 import opencola.core.serialization.LongByteArrayCodec
 import opencola.core.storage.AddressBook
+import opencola.server.handlers.Peer
+import opencola.server.handlers.redactedNetworkToken
 import java.nio.file.Path
 import opencola.core.config.NetworkConfig as OpenColaNetworkConfig
 
@@ -119,7 +121,7 @@ class NetworkNode(
         if(config.zeroIntegrationTierEnabled) {
             logger.info { "Starting ZeroTier node..." }
             node.initFromStorage(storagePath.toString())
-            node.initSetEventHandler(MyZeroTierEventListener())
+            node.initSetEventHandler(OCZeroTierEventListener())
             node.start()
 
             while (!node.isOnline) {
@@ -145,7 +147,6 @@ class NetworkNode(
         }
     }
 
-
     private fun authorityToMember(authority: Authority): Member {
         return Member.forCreate(
             authority.name ?: authority.entityId.toString(),
@@ -161,8 +162,26 @@ class NetworkNode(
         return InviteToken.fromAuthority(authority)
     }
 
+    fun inviteTokenToPeer(inviteToken: String) : Peer {
+        val decodedInviteToken = InviteToken.decodeBase58(inviteToken)
+        val imageUri = if(decodedInviteToken.imageUri.toString().isBlank()) null else decodedInviteToken.imageUri
+
+        if(decodedInviteToken.authorityId == authorityId)
+            throw IllegalArgumentException("You can't invite yourself (┛ಠ_ಠ)┛彡┻━┻")
+
+        return Peer(
+            decodedInviteToken.authorityId,
+            decodedInviteToken.name,
+            decodedInviteToken.publicKey,
+            decodedInviteToken.address,
+            imageUri,
+            true,
+            null,
+        )
+    }
+
     private fun addZeroTierPeer(peer: Authority){
-        if(config.zeroIntegrationTierEnabled) {
+        if(config.zeroIntegrationTierEnabled && peer.entityId != authorityId) {
             val zeroTierAddress = peer.uri?.let { ZeroTierAddress.fromURI(it) } ?: return
 
             if (zeroTierAddress.nodeId == null) {
@@ -193,24 +212,48 @@ class NetworkNode(
         }
     }
 
-    fun addPeer(inviteToken: InviteToken){
-        logger.info { "Adding peer: $inviteToken" }
-        val existingPeer = addressBook.getAuthority(inviteToken.authorityId)
+    fun updatePeer(peer: Peer) {
+        logger.info { "Updating peer: $peer" }
 
-        if(existingPeer != null) {
+        val peerAuthority = peer.toAuthority(authorityId, encryptor)
+        val existingPeerAuthority = addressBook.getAuthority(peerAuthority.entityId)
+
+        if(existingPeerAuthority != null) {
             logger.info { "Found existing peer - updating" }
-            if(existingPeer.uri != inviteToken.address) {
-                // Since address is being updated, remove zero tier connection for old address
-                removeZeroTierPeer(existingPeer)
+
+            if(existingPeerAuthority.publicKey != peerAuthority.publicKey){
+                throw NotImplementedError("Updating publicKey is not currently implemented")
             }
 
-            existingPeer.name = inviteToken.name
-            existingPeer.publicKey = inviteToken.publicKey
-            existingPeer.uri = inviteToken.address
-            existingPeer.imageUri = inviteToken.imageUri
+            if(existingPeerAuthority.uri != peerAuthority.uri) {
+                // Since address is being updated, remove zero tier connection for old address
+                removeZeroTierPeer(existingPeerAuthority)
+            }
+
+            // TODO: Should there be a general way to do this? Add an update method to Entity or Authority?
+            existingPeerAuthority.name = peerAuthority.name
+            existingPeerAuthority.publicKey = peerAuthority.publicKey
+            existingPeerAuthority.uri = peerAuthority.uri
+            existingPeerAuthority.imageUri = peerAuthority.imageUri
+            existingPeerAuthority.tags = peerAuthority.tags
+            existingPeerAuthority.networkToken = peerAuthority.networkToken
         }
 
-        val peer = existingPeer ?: inviteToken.toAuthority(authorityId)
+        if(peer.networkToken != null){
+            if(peerAuthority.entityId != authorityId){
+                throw IllegalArgumentException("Attempt to set networkToken for non root authority")
+            }
+
+            if(peer.networkToken != redactedNetworkToken) {
+                if(!isNetworkTokenValid(peer.networkToken)){
+                    throw IllegalArgumentException("Network token provided is not valid: ${peer.networkToken}")
+                }
+
+                peerAuthority.networkToken = encryptor.encrypt(authorityId, peer.networkToken.toByteArray())
+            }
+        }
+
+        val peer = existingPeerAuthority ?: peerAuthority
         addZeroTierPeer(peer)
         addressBook.updateAuthority(peer)
     }
@@ -260,7 +303,7 @@ class NetworkNode(
     }
 }
 
-internal class MyZeroTierEventListener : ZeroTierEventListener {
+internal class OCZeroTierEventListener : ZeroTierEventListener {
     override fun onZeroTierEvent(id: Long, eventCode: Int) {
         if (eventCode == ZeroTierNative.ZTS_EVENT_NODE_UP) {
             logger.info("EVENT_NODE_UP")

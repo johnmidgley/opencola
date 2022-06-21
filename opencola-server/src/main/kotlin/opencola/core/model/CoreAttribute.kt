@@ -140,7 +140,6 @@ enum class CoreAttribute(val spec: Attribute) {
             isIndexable = false,
         )
     )
-
 }
 
 private val attributesByName = CoreAttribute.values().associateBy { it.spec.name }

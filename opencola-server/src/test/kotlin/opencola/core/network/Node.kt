@@ -1,7 +1,7 @@
 package opencola.core.network
 
+import opencola.server.handlers.Peer
 import opencola.server.handlers.PeersResult
-import kotlin.io.path.Path
 
 interface Node {
     fun make()
@@ -9,5 +9,7 @@ interface Node {
     fun stop()
     fun setNetworkToken(token: String)
     fun getInviteToken() : String
+    fun postInviteToken(token: String) : Peer
     fun getPeers() : PeersResult
+    fun updatePeer(peer: Peer)
 }

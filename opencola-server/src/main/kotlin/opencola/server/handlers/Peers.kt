@@ -15,7 +15,7 @@ import java.net.URI
 import java.security.PublicKey
 
 private val logger = KotlinLogging.logger("PeerHandler")
-private const val redactedNetworkToken = "##########"
+const val redactedNetworkToken = "##########"
 
 @Serializable
 data class Peer(
@@ -38,15 +38,17 @@ data class Peer(
                 networkToken,
             )
 
-    fun toAuthority(authorityId: Id) : Authority {
+    fun toAuthority(authorityId: Id, encryptor: Encryptor) : Authority {
         return Authority(
             authorityId,
             decodePublicKey(publicKey),
             URI(address),
             name,
             imageUri = imageUri.nullOrElse { URI(it) },
-            tags = if(isActive) setOf("active") else null
-        )
+        ).also { authority ->
+            authority.setActive(true)
+            authority.networkToken = networkToken.nullOrElse { encryptor.encrypt(authorityId, it.toByteArray()) }
+        }
     }
 }
 
@@ -59,7 +61,15 @@ data class PeersResult(val authorityId: String, val pagingToken: String?, val re
 fun getPeers(authority: Authority, addressBook: AddressBook): PeersResult {
     val peers = addressBook.getAuthorities().map {
         // TODO: Make name, public key and uri required for authority
-        Peer(it.entityId, it.name!!, it.publicKey!!, it.uri!!, it.imageUri, addressBook.isAuthorityActive(it), it.networkToken.nullOrElse { redactedNetworkToken })
+        Peer(
+            it.entityId,
+            it.name!!,
+            it.publicKey!!,
+            it.uri!!,
+            it.imageUri,
+            addressBook.isAuthorityActive(it),
+            it.networkToken.nullOrElse { redactedNetworkToken },
+        )
     }
 
     return PeersResult(authority, null, peers)
@@ -70,42 +80,15 @@ fun deletePeer(addressBook: AddressBook, peerId: Id){
     addressBook.deleteAuthority(peerId)
 }
 
-// TODO: Should be changed to updateAuthority, because root is updated here too.
-fun updatePeer(authority: Authority, addressBook: AddressBook, networkNode: NetworkNode, encryptor: Encryptor, peer: Peer){
-    logger.info { "Updating Peer: $peer"}
-
-    val updateAuthority = peer.toAuthority(authority.authorityId)
-    val peerAuthority = addressBook.getAuthority(Id.decode(peer.id)) ?: updateAuthority
-
-    if(updateAuthority.publicKey != peerAuthority.publicKey){
-        throw NotImplementedError("Updating publicKey is not currently implemented")
-    }
-
-    peerAuthority.name = updateAuthority.name
-    peerAuthority.publicKey = updateAuthority.publicKey
-    // TODO: Updating the URI could trigger network shifts. Call addPeer?
-    peerAuthority.uri = updateAuthority.uri
-    peerAuthority.imageUri = updateAuthority.imageUri
-    peerAuthority.tags = updateAuthority.tags
-
-    if(peer.networkToken != null){
-        if(updateAuthority.entityId != authority.authorityId){
-            throw IllegalArgumentException("Attempt to set networkToken for not root authority")
-        }
-
-        if(peer.networkToken != redactedNetworkToken) {
-            // TODO: Test token with ZT before saving
-            if(!networkNode.isNetworkTokenValid(peer.networkToken)){
-                throw IllegalArgumentException("Network token provided is not valid: ${peer.networkToken}")
-            }
-
-            peerAuthority.networkToken = encryptor.encrypt(authority.authorityId, peer.networkToken.toByteArray())
-        }
-    }
-
-    addressBook.updateAuthority(peerAuthority)
+fun updatePeer(networkNode: NetworkNode, peer: Peer){
+    networkNode.updatePeer(peer)
 }
 
 fun getToken(networkNode: NetworkNode, signator: Signator): String {
-    return networkNode.getInviteToken().encode(signator)
+    return networkNode.getInviteToken().encodeBase58(signator)
 }
+
+fun inviteTokenToPeer(networkNode: NetworkNode, token: String): Peer {
+    return networkNode.inviteTokenToPeer(token)
+}
+

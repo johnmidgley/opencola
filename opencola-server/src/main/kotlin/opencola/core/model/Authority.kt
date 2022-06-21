@@ -9,6 +9,7 @@ class Authority : Entity {
     var publicKey by publicKeyAttributeDelegate
     var networkToken by byteArrayAttributeDelegate
 
+    // TODO - Remove optional parameters. Object is mutable so .also{} serves the same purpose without the mess and maintenance
     constructor(
         authorityId: Id,
         publicKey: PublicKey, // TODO: Id should not depend on public key, since public key may change
@@ -43,5 +44,19 @@ class Authority : Entity {
 
     override fun toString(): String {
         return "id: $entityId, name: $name, uri: $uri"
+    }
+
+    // TODO: Make all code locations use this
+    private val activeTag = "active"
+
+    fun setActive(active: Boolean) {
+        tags = if(active)
+            tags.plus(activeTag)
+        else
+            tags.minus(activeTag)
+    }
+
+    fun getActive() : Boolean {
+        return tags.contains(activeTag)
     }
 }

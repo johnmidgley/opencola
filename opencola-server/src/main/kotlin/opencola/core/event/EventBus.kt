@@ -93,6 +93,12 @@ class EventBus(private val storagePath: Path, config: EventBusConfig) {
         if(reactor == null){
             throw IllegalStateException("Attempt to sendMessage without having set a reactor")
         }
+
+        if(executorService.isShutdown) {
+            logger.warn("Unable to process message $name - executor has shut down")
+            return
+        }
+
         addMessageToStore(name, data, 1)
         executorService.execute { processMessages() }
     }

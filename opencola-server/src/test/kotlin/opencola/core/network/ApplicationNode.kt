@@ -3,6 +3,7 @@ package opencola.core.network
 import io.ktor.server.netty.*
 import opencola.core.TestApplication
 import opencola.core.config.*
+import opencola.core.event.EventBus
 import opencola.core.model.Authority
 import opencola.core.storage.AddressBook
 import opencola.server.getServer
@@ -12,8 +13,8 @@ import java.nio.file.Path
 import kotlin.io.path.copyTo
 import kotlin.io.path.exists
 
-class ApplicationNode(private val application: Application) : Node {
-    var server: NettyApplicationEngine? = null
+class ApplicationNode(val application: Application) : Node {
+    private var server: NettyApplicationEngine? = null
 
     override fun make() {
         // Nothing to do
@@ -25,6 +26,8 @@ class ApplicationNode(private val application: Application) : Node {
     }
 
     override fun stop() {
+        application.inject<NetworkNode>().stop()
+        application.inject<EventBus>().stop()
         server?.stop(1000, 1000)
     }
 
@@ -33,17 +36,24 @@ class ApplicationNode(private val application: Application) : Node {
         val peer = getPeers(app.inject(), app.inject())
             .let { result -> result.results.single { it.id == result.authorityId } }
         val peer1 = Peer(peer.id, peer.name, peer.publicKey, peer.address, peer.imageUri, peer.isActive, token)
-        updatePeer(app.inject(), app.inject(), app.inject(), app.inject(), peer1)
+        updatePeer(app.inject(), peer1)
     }
 
     override fun getInviteToken(): String {
         return getToken(application.inject(), application.inject())
     }
 
+    override fun postInviteToken(token: String): Peer {
+        return inviteTokenToPeer(application.inject(), token)
+    }
+
     override fun getPeers(): PeersResult {
         return getPeers(application.inject(), application.inject())
     }
 
+    override fun updatePeer(peer: Peer) {
+        updatePeer(application.inject(), peer)
+    }
 
     companion object Factory {
         // TODO: Move to interface or base class
@@ -63,7 +73,7 @@ class ApplicationNode(private val application: Application) : Node {
             return loadConfig(configPath)
         }
 
-        private fun getNode(storagePath: Path, name: String, port: Int, config: Config? = null): Node {
+        private fun getNode(storagePath: Path, name: String, port: Int, config: Config? = null): ApplicationNode {
             if (!storagePath.exists()) {
                 File(storagePath.toString()).mkdirs()
                 val configPath = TestApplication.applicationPath.resolve("../test/storage").resolve("opencola-test.yaml")
@@ -80,7 +90,7 @@ class ApplicationNode(private val application: Application) : Node {
             return ApplicationNode(instance)
         }
 
-        fun getNode(num: Int, persistent: Boolean = false, config: Config? = null): Node {
+        fun getNode(num: Int, persistent: Boolean = false, config: Config? = null): ApplicationNode {
             val storagePath =
                 if(persistent)
                     TestApplication.applicationPath.resolve("../test/storage/persistent/application-$num")

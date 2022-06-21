@@ -1,5 +1,5 @@
 
-package opencola.core.content
+package opencola.core.serialization
 import java.util.*
 
 /* Adapted from https://github.com/bitcoinj/bitcoinj/blob/master/core/src/main/java/org/bitcoinj/core/Base58.java

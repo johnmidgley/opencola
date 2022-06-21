@@ -76,15 +76,23 @@ class ProcessNode(private val nodePath: Path, val name: String, val port: Int) :
 
         val authority = peersResult.results.first{ it.id == authorityId }
         val peer = Peer(authority.id, authority.name, authority.publicKey, authority.address, authority.imageUri, authority.isActive, token)
-        jsonHttpClient.put(peersUri, peer)
+        jsonHttpClient.put<Unit>(peersUri, peer)
     }
 
     override fun getInviteToken(): String {
         return jsonHttpClient.get(serviceUri.resolve("/peers/token"))
     }
 
+    override fun postInviteToken(token: String): Peer {
+        return jsonHttpClient.post(serviceUri.resolve("/peers/token"), token)
+    }
+
     override fun getPeers(): PeersResult {
         return jsonHttpClient.get(serviceUri.resolve("/peers"))
+    }
+
+    override fun updatePeer(peer: Peer) {
+        jsonHttpClient.put<Unit>(serviceUri.resolve("/peers"), peer)
     }
 
     companion object Factory {

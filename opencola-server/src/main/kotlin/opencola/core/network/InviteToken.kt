@@ -1,8 +1,9 @@
 package opencola.core.network
 
-import opencola.core.content.Base58
+import opencola.core.serialization.Base58
 import opencola.core.model.Authority
 import opencola.core.model.Id
+import opencola.core.network.zerotier.ZeroTierAddress
 import opencola.core.security.Signator
 import opencola.core.security.isValidSignature
 import opencola.core.serialization.*
@@ -24,13 +25,13 @@ data class InviteToken(
     val epochSecond: Long = Instant.now().epochSecond,
     val body: ByteArray = emptyByteArray) {
 
-    fun toAuthority(rootAuthorityId: Id) : Authority {
+    fun toAuthority(rootAuthorityId: Id): Authority {
         val image = imageUri.let { if (it.toString().isBlank()) null else imageUri }
         return Authority(rootAuthorityId, publicKey, address, name, imageUri = image)
     }
 
-    fun encode(signator: Signator) : String {
-        val token =  ByteArrayOutputStream().use{
+    fun encode(signator: Signator): ByteArray {
+        val token = ByteArrayOutputStream().use {
             Id.encode(it, authorityId)
             it.writeString(name)
             it.writeByteArray(PublicKeyByteArrayCodec.encode(publicKey))
@@ -48,7 +49,11 @@ data class InviteToken(
             it.toByteArray()
         }
 
-        return Base58.encode(signedToken)
+        return signedToken
+    }
+
+    fun encodeBase58(signator: Signator): String {
+        return Base58.encode(encode(signator))
     }
 
     override fun equals(other: Any?): Boolean {
@@ -97,21 +102,35 @@ data class InviteToken(
             }
         }
 
+        private fun validateAddress(address: URI?): URI {
+            if (address == null) {
+                throw IllegalArgumentException("Invalid null address")
+            } else if (address.scheme.startsWith("http")) {
+                if (!address.isAbsolute)
+                    throw IllegalArgumentException("http(s) addresses must be absolute")
+            } else if (address.scheme == "zt") {
+                ZeroTierAddress.fromURI(address) ?: throw IllegalArgumentException("Invalid ZeroTier address: $address")
+            } else
+                throw IllegalArgumentException("Invalid host address $address")
+
+            return address
+        }
+
         fun fromAuthority(authority: Authority): InviteToken {
+            val address = validateAddress(authority.uri)
+
             return InviteToken(
                 authority.authorityId,
                 authority.name ?: "",
                 authority.publicKey!!,
-                authority.uri ?: throw IllegalArgumentException("Can't create InviteToken for authority with no address (uri)"),
+                address,
                 authority.imageUri ?: URI("")
             )
         }
 
-        fun decode(token: String) : InviteToken {
+        fun decode(value: ByteArray): InviteToken {
             try {
-                val signedToken = Base58.decode(token)
-
-                return ByteArrayInputStream(signedToken).use {
+                return ByteArrayInputStream(value).use {
                     val token = it.readByteArray()
                     val signature = it.readByteArray()
                     val inviteToken = toInviteToken(token)
@@ -124,6 +143,10 @@ data class InviteToken(
             } catch (e: Exception) {
                 throw IllegalArgumentException("Invalid Invite Token. Request a new one.", e)
             }
+        }
+
+        fun decodeBase58(token: String): InviteToken {
+            return decode(Base58.decode(token))
         }
     }
 }

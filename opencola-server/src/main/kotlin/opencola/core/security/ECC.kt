@@ -1,6 +1,6 @@
 package opencola.core.security
 
-import opencola.core.content.Base58
+import opencola.core.serialization.Base58
 import opencola.core.extensions.hexStringToByteArray
 import opencola.core.serialization.readByteArray
 import opencola.core.serialization.writeByteArray
