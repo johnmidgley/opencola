@@ -33,6 +33,7 @@ class NetworkNodeTest : PeerTest() {
         zeroTierClient.getNetworks().forEach{
             zeroTierClient.deleteNetwork(it.id!!)
         }
+        assert(zeroTierClient.getNetworks().isEmpty())
     }
 
     private fun assertAuthoritiesAreSame(authority0: Authority, authority1: Authority){
@@ -48,7 +49,7 @@ class NetworkNodeTest : PeerTest() {
         return ApplicationNode.getNode(num, config = config)
     }
 
-    @Test
+    // @Test
     fun testEnableZeroTierIntegration() {
         getApplicationNode(0, false).also {
             it.start()
@@ -179,50 +180,17 @@ class NetworkNodeTest : PeerTest() {
     // @Test
     fun testZtLibPeers() {
         ProcessNode.stopAllNodes()
-        deleteAllNetworks()
-        assert(zeroTierClient.getNetworks().isEmpty())
+        // deleteAllNetworks()
 
-        // Create Node
-        val node0 = getApplicationNode(0, true).start()
-
-        // Verify authority address without network token
-        val authority0 = node0.getPeers().results.single()
-        val ztAddress0 = ZeroTierAddress.fromURI(URI(authority0.address))!!
-        assert(ztAddress0.networkId == null)
-        assertNotNull(ztAddress0.nodeId)
-
-        // Add token, which should trigger a network creation
+        // Start nodes
+        val node0 = getApplicationNode(0, true).also { it.make(); it.start() }
         node0.setNetworkToken(ztAuthToken)
-        val network0 = zeroTierClient.getNetworks().single()
 
-        // Verify authority address with network token
-        val authority1 = node0.getPeers().results.single()
-        val ztAddress1 = ZeroTierAddress.fromURI(URI(authority1.address))!!
-        assertNotNull(ztAddress1.networkId)
-        assertNotNull(ztAddress1.nodeId)
-        assertEquals(network0.id, ztAddress1.networkId)
+        val node1 = ProcessNode.getNode(1).also { it.make(); it.start() }
+        node1.setNetworkToken(ztAuthToken)
 
-        // Verify that authority is part of the network
-        val member0 = zeroTierClient.getNetworkMember(ztAddress1.networkId!!, ztAddress1.nodeId!!)
-        assertNotNull(member0.name)
-
-        val inviteToken1 = InviteToken.decodeBase58(node0.getInviteToken())
-        val ztAddress2 = ZeroTierAddress.fromURI(inviteToken1.address)!!
-        assertNotNull(ztAddress2.networkId)
-        assertNotNull(ztAddress2.nodeId)
-        assertEquals(network0.id, ztAddress2.networkId)
-
-        node0.stop()
-
-        // Create second node to accept invite
-        val node1 = ApplicationNode.getNode(1).start()
-        val authority2 = node1.getPeers().results.single()
-        val ztAddress3 = ZeroTierAddress.fromURI(URI(authority2.address))!!
-        assertNotEquals(ztAddress3.nodeId, ztAddress2.nodeId)
-
-        // Accept invite
-
-
-
+        // Connect nodes
+        node0.updatePeer(node0.postInviteToken(node1.getInviteToken()))
+        node1.updatePeer(node1.postInviteToken(node0.getInviteToken()))
     }
 }
