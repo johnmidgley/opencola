@@ -64,18 +64,22 @@ class AddressBook(private val authority: Authority, storagePath: Path, signator:
     }
 
     fun updateAuthority(authority: Authority) : Authority {
-        entityStore.updateEntities(authority)
-        val updatedAuthority = entityStore.getEntity(authority.authorityId, authority.entityId) as Authority
+        if(entityStore.updateEntities(authority) != null) {
+            val updatedAuthority = entityStore.getEntity(authority.authorityId, authority.entityId) as Authority
 
-        updateHandlers.forEach{
-            try {
-                it(updatedAuthority)
-            } catch (e: Exception){
-                logger.error { "Error calling update handler: $e" }
+            updateHandlers.forEach {
+                try {
+                    it(updatedAuthority)
+                } catch (e: Exception) {
+                    logger.error { "Error calling update handler: $e" }
+                }
             }
+
+            return updatedAuthority
         }
 
-        return updatedAuthority
+        // Nothing changed
+        return authority
     }
 
     fun getAuthority(id: Id) : Authority? {
