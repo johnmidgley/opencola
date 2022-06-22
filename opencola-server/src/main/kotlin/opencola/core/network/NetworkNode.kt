@@ -40,7 +40,7 @@ class NetworkNode(
         this.authority = authority
         authToken = authority.networkToken.nullOrElse { String(encryptor.decrypt(authorityId, it)) }
 
-        if(config.zeroIntegrationTierEnabled) {
+        if(config.zeroTierProviderEnabled) {
             zeroTierClient = authToken.nullOrElse { ZeroTierClient(it) }
 
             if (initRequired)
@@ -109,7 +109,7 @@ class NetworkNode(
     }
 
     private fun initNodeNetwork() {
-        if(config.zeroIntegrationTierEnabled) {
+        if(config.zeroTierProviderEnabled) {
             val networkId = getOrCreateNodeNetwork()?.id
             val authority = authority!!
             authority.uri = ZeroTierAddress(networkId, getId()).toURI()
@@ -118,7 +118,7 @@ class NetworkNode(
     }
 
     fun start() {
-        if(config.zeroIntegrationTierEnabled) {
+        if(config.zeroTierProviderEnabled) {
             logger.info { "Starting ZeroTier node..." }
             node.initFromStorage(storagePath.toString())
             node.initSetEventHandler(OCZeroTierEventListener())
@@ -139,7 +139,7 @@ class NetworkNode(
     }
 
     fun stop() {
-        if(config.zeroIntegrationTierEnabled) {
+        if(config.zeroTierProviderEnabled) {
             logger.info { "Stopping ZeroTier node." }
             addressBook.removeUpdateHandler(addressUpdateHandler)
             node.stop()
@@ -181,7 +181,7 @@ class NetworkNode(
     }
 
     private fun addZeroTierPeer(peer: Authority){
-        if(config.zeroIntegrationTierEnabled && peer.entityId != authorityId) {
+        if(config.zeroTierProviderEnabled && peer.entityId != authorityId) {
             val zeroTierAddress = peer.uri?.let { ZeroTierAddress.fromURI(it) } ?: return
 
             if (zeroTierAddress.nodeId == null) {
@@ -259,7 +259,7 @@ class NetworkNode(
     }
 
     private fun removeZeroTierPeer(peer: Authority) {
-        if(config.zeroIntegrationTierEnabled) {
+        if(config.zeroTierProviderEnabled) {
             val zeroTierAddress = peer.uri?.let { ZeroTierAddress.fromURI(it) } ?: return
             if (zeroTierAddress.networkId != null) {
                 // When we connected, we joined the peer's network, so we need to now leave it
