@@ -8,3 +8,6 @@ inline fun <T : Any, R> T?.ifNullOrElse(ifNullValue: R, elseLambda: (T) -> R)
 
 inline fun <T : Any, R> T?.nullOrElse(ifNotNullLambda: (T) -> R)
         = let { if(it == null) null else ifNotNullLambda(it) }
+
+inline fun <T> T?.ifNullAlso(ifNullLambda: () -> Unit)
+        = let { if(it == null) { ifNullLambda(); it } else it }

@@ -65,16 +65,17 @@ class AddressBook(private val authority: Authority, storagePath: Path, signator:
 
     fun updateAuthority(authority: Authority) : Authority {
         entityStore.updateEntities(authority)
+        val updatedAuthority = entityStore.getEntity(authority.authorityId, authority.entityId) as Authority
 
         updateHandlers.forEach{
             try {
-                it(authority)
+                it(updatedAuthority)
             } catch (e: Exception){
                 logger.error { "Error calling update handler: $e" }
             }
         }
 
-        return authority
+        return updatedAuthority
     }
 
     fun getAuthority(id: Id) : Authority? {
