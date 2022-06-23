@@ -3,26 +3,40 @@ package opencola.core.network.zerotier
 import com.zerotier.sockets.ZeroTierNative
 import com.zerotier.sockets.ZeroTierNode
 import mu.KotlinLogging
+import opencola.core.extensions.hexStringToByteArray
+import opencola.core.extensions.nullOrElse
 import opencola.core.model.Authority
 import opencola.core.network.NetworkProvider
-import opencola.core.storage.AddressBook
+import opencola.core.serialization.LongByteArrayCodec
 import java.net.URI
 import java.nio.file.Path
 
-class ZeroTierNetworkProvider(val storagePath: Path, val addressBook: AddressBook) : NetworkProvider {
+class ZeroTierNetworkProvider(
+    val storagePath: Path,
+    val authority: Authority,
+) : NetworkProvider {
     private val logger = KotlinLogging.logger("ZeroTierNetworkProvider")
-    val node = ZeroTierNode()
-    var networkId: String? = null
-    var authority: Authority? = null
-    var authToken: String? = null
-    var zeroTierClient: ZeroTierClient? = null
+    private val node = ZeroTierNode()
+    private var networkId: String? = null
+    private var authToken: String? = null
+    private var zeroTierClient: ZeroTierClient? = null
 
     private fun getNodeId(): String {
         return node.id.toString(16)
     }
 
     private fun getNetworkName(): String {
-        return "root:${authority!!.entityId}"
+        return "root:${authority.entityId}"
+    }
+
+    private fun joinNetwork(address: String){
+        val id = LongByteArrayCodec.decode(address.hexStringToByteArray())
+        node.join(id)
+    }
+
+    private fun leaveNetwork(address: String) {
+        val id = LongByteArrayCodec.decode(address.hexStringToByteArray())
+        node.leave(id)
     }
 
     private fun authorityToMember(authority: Authority): Member {
@@ -35,8 +49,7 @@ class ZeroTierNetworkProvider(val storagePath: Path, val addressBook: AddressBoo
     }
 
     private fun createNodeNetwork() : Network {
-        val authority = authority!!
-        val zeroTierClient = zeroTierClient!!
+        val zeroTierClient = zeroTierClient ?: throw IllegalStateException("Can't create network without zeroTierClient")
         val networkConfig = NetworkConfig.forCreate(
             name = getNetworkName(),
             private = true,
@@ -56,28 +69,22 @@ class ZeroTierNetworkProvider(val storagePath: Path, val addressBook: AddressBoo
         }
 
         zeroTierClient.addNetworkMember(createdNetwork.id, getNodeId(), authorityToMember(authority))
+        networkId = createdNetwork.id
 
         return createdNetwork
     }
 
     private fun getOrCreateNodeNetwork() : Network? {
-        zeroTierClient ?: return null
+        val zeroTierClient = zeroTierClient ?: return null
 
         val networkName = getNetworkName()
-        val networks = zeroTierClient!!.getNetworks().filter { it.config?.name == networkName }
+        val networks = zeroTierClient.getNetworks().filter { it.config?.name == networkName }
 
         if(networks.size > 1) {
             throw IllegalStateException("Multiple networks exist with the root name: $networkName. Fix at ZT Central")
         }
 
         return networks.singleOrNull() ?: createNodeNetwork()
-    }
-
-    fun initNodeNetwork() {
-        val networkId = getOrCreateNodeNetwork()?.id
-        val authority = authority!!
-        authority.uri = ZeroTierAddress(networkId, getNodeId()).toURI()
-        addressBook.updateAuthority(authority)
     }
 
     override fun start() {
@@ -91,14 +98,14 @@ class ZeroTierNetworkProvider(val storagePath: Path, val addressBook: AddressBoo
             ZeroTierNative.zts_util_delay(50);
         }
 
-        networkId = getOrCreateNodeNetwork()?.id
-
-        // initNodeNetwork()
+        getOrCreateNodeNetwork()
         logger.info { "Started: ${node.id.toString(16)}" }
     }
 
     override fun stop() {
-        TODO("Not yet implemented")
+        logger.info { "Stopping ${node.id.toString(16)}..." }
+        node.stop()
+        logger.info { "Stopped" }
     }
 
     override fun getAddress(): URI {
@@ -116,19 +123,59 @@ class ZeroTierNetworkProvider(val storagePath: Path, val addressBook: AddressBoo
         return true
     }
 
-    override fun setNetworkToken(token: String) {
+    override fun setNetworkToken(token: String?) {
         if (authToken != token) {
             authToken = token
-            zeroTierClient = ZeroTierClient(token)
-            networkId = getOrCreateNodeNetwork()?.id
+            zeroTierClient = token.nullOrElse { ZeroTierClient(it) }
+            getOrCreateNodeNetwork()
         }
     }
 
     override fun updatePeer(peer: Authority) {
-        TODO("Not yet implemented")
+        if(peer.entityId != authority.entityId) {
+            val zeroTierAddress = peer.uri?.let { ZeroTierAddress.fromURI(it) } ?: return
+
+            if (zeroTierAddress.nodeId == null) {
+                throw IllegalArgumentException("Can't add peer with no nodeId: $zeroTierAddress")
+            }
+
+            if (zeroTierAddress.networkId == null && zeroTierClient == null) {
+                throw IllegalArgumentException("Can't add peer with that has no network without having a local network")
+            }
+
+            if (zeroTierAddress.networkId != null) {
+                // When a networkId is specified, we must join the peer's network to communicate. The peer should grant
+                // this node access to the network on their end
+                logger.info { "Joining network: ${zeroTierAddress.networkId}" }
+                joinNetwork(zeroTierAddress.networkId)
+            }
+
+            val zeroTierClient = zeroTierClient
+            val networkId = networkId
+            if (zeroTierClient != null && networkId != null) {
+                // Allow the peer node onto our network
+                logger.info { "Adding peer to local node network: ${authority.name}" }
+                zeroTierClient.addNetworkMember(networkId, zeroTierAddress.nodeId, authorityToMember(peer))
+            } else
+                logger.warn { "Local network does not exist - unable to add peer" }
+        }
     }
 
+    // TODO: Test
     override fun removePeer(peer: Authority) {
-        TODO("Not yet implemented")
+        val zeroTierAddress = peer.uri?.let { ZeroTierAddress.fromURI(it) } ?: return
+        if (zeroTierAddress.networkId != null) {
+            // When we connected, we joined the peer's network, so we need to now leave it
+            leaveNetwork(zeroTierAddress.networkId)
+        } else if (zeroTierAddress.nodeId != null) {
+            // Remove the peer from our network
+            val zeroTierClient = zeroTierClient
+            val networkId = networkId
+
+            if(zeroTierClient != null && networkId != null)
+                zeroTierClient.deleteNetworkMember(networkId, zeroTierAddress.nodeId)
+            else
+                logger.warn { "Local network does not exist - unable to remove peer" }
+        }
     }
 }

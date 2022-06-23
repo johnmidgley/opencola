@@ -8,7 +8,7 @@ interface NetworkProvider {
     fun stop()
     fun getAddress() : URI
     fun isNetworkTokenValid(token: String) : Boolean
-    fun setNetworkToken(token: String)
+    fun setNetworkToken(token: String?)
     fun updatePeer(peer: Authority)
     fun removePeer(peer: Authority)
 }

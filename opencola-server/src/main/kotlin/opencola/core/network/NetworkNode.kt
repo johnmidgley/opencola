@@ -26,20 +26,22 @@ class NetworkNode(
     //  put in ~/Library/Java/Extensions/ (or try /Library/Java/Extensions/ globally)
     //  Need to figure out where it goes on Linux / Windows
     private var authority: Authority? = null // TODO: Make not nullable
-    private val zeroTierNetworkProvider = ZeroTierNetworkProvider(storagePath, addressBook)
+
+    // TODO - Make nullable and only set when enabled (Search for all config.zeroTierProviderEnabled)
+    private val zeroTierNetworkProvider = ZeroTierNetworkProvider(
+        storagePath,
+        addressBook.getAuthority(authorityId) ?: throw IllegalStateException("Root authority not in AddressBook"),
+    )
 
     private fun setAuthority(authority: Authority) {
-        val thisAuthority = this.authority
-        val initRequired = thisAuthority == null || !authority.networkToken.contentEquals(thisAuthority.networkToken) || authority.uri != thisAuthority.uri
         this.authority = authority
-        zeroTierNetworkProvider.authToken = authority.networkToken.nullOrElse { String(encryptor.decrypt(authorityId, it)) }
 
         if(config.zeroTierProviderEnabled) {
-            zeroTierNetworkProvider.zeroTierClient = zeroTierNetworkProvider.authToken.nullOrElse { ZeroTierClient(it) }
+            val authToken = authority.networkToken.nullOrElse { String(encryptor.decrypt(authorityId, it)) }
 
-            if (initRequired) {
-                zeroTierNetworkProvider.initNodeNetwork()
-            }
+            zeroTierNetworkProvider.setNetworkToken(authToken)
+            authority.uri = zeroTierNetworkProvider.getAddress()
+            this.authority = addressBook.updateAuthority(authority)
         }
     }
 
@@ -58,7 +60,6 @@ class NetworkNode(
         val authority = addressBook.getAuthority(authorityId)
             ?: throw IllegalArgumentException("Root authority not in AddressBook: $authorityId")
         this.authority = authority
-        zeroTierNetworkProvider.authority = authority
 
         if(config.zeroTierProviderEnabled) {
             zeroTierNetworkProvider.start()
@@ -71,21 +72,12 @@ class NetworkNode(
     }
 
     fun stop() {
+        logger.info { "Stopping..." }
+        addressBook.removeUpdateHandler(addressUpdateHandler)
         if(config.zeroTierProviderEnabled) {
-            logger.info { "Stopping ZeroTier node." }
-            addressBook.removeUpdateHandler(addressUpdateHandler)
-            zeroTierNetworkProvider.node.stop()
-            logger.info { "Stopped: ${zeroTierNetworkProvider.node.id.toString(16)}" }
+            zeroTierNetworkProvider.stop()
         }
-    }
-
-    private fun authorityToMember(authority: Authority): Member {
-        return Member.forCreate(
-            authority.name ?: authority.entityId.toString(),
-            MemberConfig.forCreate(authorized = true),
-            hidden = false,
-            description = "OpenCola Id: ${authority.entityId}"
-        )
+        logger.info { "Stopped" }
     }
 
     fun getInviteToken() : InviteToken {
@@ -112,38 +104,6 @@ class NetworkNode(
         )
     }
 
-    private fun addZeroTierPeer(peer: Authority){
-        if(config.zeroTierProviderEnabled && peer.entityId != authorityId) {
-            val zeroTierAddress = peer.uri?.let { ZeroTierAddress.fromURI(it) } ?: return
-
-            if (zeroTierAddress.nodeId == null) {
-                throw IllegalArgumentException("Can't add peer with no nodeId: $zeroTierAddress")
-            }
-
-            if (zeroTierAddress.networkId == null && zeroTierNetworkProvider.zeroTierClient == null) {
-                throw IllegalArgumentException("Can't add peer with that has no network without having a local network")
-            }
-
-            if (zeroTierAddress.networkId != null) {
-                // When a networkId is specified, we must join the peer's network to communicate. The peer should grant
-                // this node access to the network on their end
-                logger.info { "Joining network: ${zeroTierAddress.networkId}" }
-                joinNetwork(zeroTierAddress.networkId)
-            }
-
-            val zeroTierClient = this.zeroTierNetworkProvider.zeroTierClient
-            if (zeroTierClient != null) {
-                // Allow the peer node onto our network
-                val networkId =
-                    addressBook.getAuthority(authorityId)?.uri.nullOrElse { ZeroTierAddress.fromURI(it) }?.networkId
-                        ?: throw IllegalArgumentException("Unable to determine local network id to add peer to. Check peer settings")
-
-                logger.info { "Adding peer to local node network" }
-                zeroTierClient.addNetworkMember(networkId, zeroTierAddress.nodeId, authorityToMember(peer))
-            }
-        }
-    }
-
     fun updatePeer(peer: Peer) {
         logger.info { "Updating peer: $peer" }
 
@@ -159,7 +119,7 @@ class NetworkNode(
 
             if(existingPeerAuthority.uri != peerAuthority.uri) {
                 // Since address is being updated, remove zero tier connection for old address
-                removeZeroTierPeer(existingPeerAuthority)
+                if (config.zeroTierProviderEnabled) zeroTierNetworkProvider.removePeer(existingPeerAuthority)
             }
 
             // TODO: Should there be a general way to do this? Add an update method to Entity or Authority?
@@ -186,25 +146,8 @@ class NetworkNode(
         }
 
         val peer = existingPeerAuthority ?: peerAuthority
-        addZeroTierPeer(peer)
+        if(config.zeroTierProviderEnabled) zeroTierNetworkProvider.updatePeer(peer)
         addressBook.updateAuthority(peer)
-    }
-
-    private fun removeZeroTierPeer(peer: Authority) {
-        if(config.zeroTierProviderEnabled) {
-            val zeroTierAddress = peer.uri?.let { ZeroTierAddress.fromURI(it) } ?: return
-            if (zeroTierAddress.networkId != null) {
-                // When we connected, we joined the peer's network, so we need to now leave it
-                leaveNetwork(zeroTierAddress.networkId)
-            } else if (zeroTierAddress.nodeId != null) {
-                // Remove the peer from our network
-                val networkId = addressBook
-                    .getAuthority(authorityId)?.uri.nullOrElse { ZeroTierAddress.fromURI(it) }?.networkId
-                    ?: throw IllegalArgumentException("Cannot manage peers without a root networkId. Check peer settings")
-
-                zeroTierNetworkProvider.zeroTierClient!!.deleteNetworkMember(networkId, zeroTierAddress.nodeId)
-            }
-        }
     }
 
     private fun removePeer(peerId: Id){
@@ -216,21 +159,7 @@ class NetworkNode(
             return
         }
 
-        removeZeroTierPeer(peer)
+        if(config.zeroTierProviderEnabled) zeroTierNetworkProvider.removePeer(peer)
         addressBook.deleteAuthority(peerId)
-    }
-
-    private fun joinNetwork(address: String){
-        val id = LongByteArrayCodec.decode(address.hexStringToByteArray())
-        zeroTierNetworkProvider.node.join(id)
-    }
-
-    private fun leaveNetwork(address: String) {
-        val id = LongByteArrayCodec.decode(address.hexStringToByteArray())
-        zeroTierNetworkProvider.node.leave(id)
-    }
-
-    private fun getId(): String {
-        return zeroTierNetworkProvider.node.id.toString(16)
     }
 }
