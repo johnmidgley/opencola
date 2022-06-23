@@ -63,13 +63,14 @@ class AddressBook(private val authority: Authority, storagePath: Path, signator:
         updateHandlers.remove(handler)
     }
 
-    fun updateAuthority(authority: Authority) : Authority {
+    fun updateAuthority(authority: Authority, suppressUpdateHandler: ((Authority) -> Unit)? = null) : Authority {
         if(entityStore.updateEntities(authority) != null) {
             val updatedAuthority = entityStore.getEntity(authority.authorityId, authority.entityId) as Authority
 
             updateHandlers.forEach {
                 try {
-                    it(updatedAuthority)
+                    if(it != suppressUpdateHandler)
+                        it(updatedAuthority)
                 } catch (e: Exception) {
                     logger.error { "Error calling update handler: $e" }
                 }

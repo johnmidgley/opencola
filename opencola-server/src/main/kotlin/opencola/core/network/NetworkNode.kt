@@ -1,13 +1,11 @@
 package opencola.core.network
 
 import mu.KotlinLogging
-import opencola.core.extensions.hexStringToByteArray
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.Authority
 import opencola.core.model.Id
 import opencola.core.network.zerotier.*
 import opencola.core.security.Encryptor
-import opencola.core.serialization.LongByteArrayCodec
 import opencola.core.storage.AddressBook
 import opencola.server.handlers.Peer
 import opencola.server.handlers.redactedNetworkToken
@@ -25,58 +23,69 @@ class NetworkNode(
     // TODO: Make install script put the platform dependent version of libzt in the right place. On mac, it needs to be
     //  put in ~/Library/Java/Extensions/ (or try /Library/Java/Extensions/ globally)
     //  Need to figure out where it goes on Linux / Windows
-    private var authority: Authority? = null // TODO: Make not nullable
 
     // TODO - Make nullable and only set when enabled (Search for all config.zeroTierProviderEnabled)
-    private val zeroTierNetworkProvider = ZeroTierNetworkProvider(
-        storagePath,
-        addressBook.getAuthority(authorityId) ?: throw IllegalStateException("Root authority not in AddressBook"),
-    )
+    private var zeroTierNetworkProvider: ZeroTierNetworkProvider? = null
 
-    private fun setAuthority(authority: Authority) {
-        this.authority = authority
 
+    init {
         if(config.zeroTierProviderEnabled) {
-            val authToken = authority.networkToken.nullOrElse { String(encryptor.decrypt(authorityId, it)) }
+            val authority = addressBook.getAuthority(authorityId)
+                ?: throw IllegalStateException("Root authority not in AddressBook")
 
-            zeroTierNetworkProvider.setNetworkToken(authToken)
-            authority.uri = zeroTierNetworkProvider.getAddress()
-            this.authority = addressBook.updateAuthority(authority)
+            zeroTierNetworkProvider = ZeroTierNetworkProvider(storagePath, authority)
         }
     }
 
-    private val addressUpdateHandler : (Authority) -> Unit = { peer ->
-        if(peer.entityId == authorityId)
-            setAuthority(peer)
+    // Only meant to be called from peerUpdateHandler
+    private fun updateAuthToken(authority: Authority) {
+        if(authority.entityId != authorityId){
+            logger.warn { "Attempt to set auth token for non root authority" }
+            return
+        }
+
+        zeroTierNetworkProvider.nullOrElse {
+            val authToken = authority.networkToken.nullOrElse { String(encryptor.decrypt(authorityId, it)) }
+            it.setNetworkToken(authToken)
+            authority.uri = it.getAddress()
+
+            // Avoid update recursion
+            addressBook.updateAuthority(authority, suppressUpdateHandler = peerUpdateHandler)
+        }
+    }
+
+    private val peerUpdateHandler : (Authority) -> Unit = { peer ->
+        if(peer.entityId == authorityId) {
+            updateAuthToken(peer)
+        }
     }
 
     fun isNetworkTokenValid(networkToken: String) : Boolean {
+        val zeroTierNetworkProvider = zeroTierNetworkProvider
+            ?: throw java.lang.IllegalStateException("ZeroTier Network Provider is not enabled = can't validate token")
         return zeroTierNetworkProvider.isNetworkTokenValid(networkToken)
     }
 
     fun start() {
         logger.info { "Starting..." }
-        // TODO: Set during construction
-        val authority = addressBook.getAuthority(authorityId)
-            ?: throw IllegalArgumentException("Root authority not in AddressBook: $authorityId")
-        this.authority = authority
 
-        if(config.zeroTierProviderEnabled) {
-            zeroTierNetworkProvider.start()
-            authority.uri = zeroTierNetworkProvider.getAddress()
-            this.authority = addressBook.updateAuthority(authority)
+        zeroTierNetworkProvider.nullOrElse {
+            val authority = addressBook.getAuthority(authorityId)
+                ?: throw IllegalArgumentException("Root authority not in AddressBook: $authorityId")
+
+            it.start()
+            authority.uri = it.getAddress()
+            addressBook.updateAuthority(authority)
         }
 
-        addressBook.addUpdateHandler(addressUpdateHandler)
+        addressBook.addUpdateHandler(peerUpdateHandler)
         logger.info { "Started" }
     }
 
     fun stop() {
         logger.info { "Stopping..." }
-        addressBook.removeUpdateHandler(addressUpdateHandler)
-        if(config.zeroTierProviderEnabled) {
-            zeroTierNetworkProvider.stop()
-        }
+        addressBook.removeUpdateHandler(peerUpdateHandler)
+        zeroTierNetworkProvider.nullOrElse { it.stop() }
         logger.info { "Stopped" }
     }
 
@@ -119,7 +128,7 @@ class NetworkNode(
 
             if(existingPeerAuthority.uri != peerAuthority.uri) {
                 // Since address is being updated, remove zero tier connection for old address
-                if (config.zeroTierProviderEnabled) zeroTierNetworkProvider.removePeer(existingPeerAuthority)
+                zeroTierNetworkProvider.nullOrElse { it.removePeer(existingPeerAuthority) }
             }
 
             // TODO: Should there be a general way to do this? Add an update method to Entity or Authority?
@@ -146,7 +155,7 @@ class NetworkNode(
         }
 
         val peer = existingPeerAuthority ?: peerAuthority
-        if(config.zeroTierProviderEnabled) zeroTierNetworkProvider.updatePeer(peer)
+        zeroTierNetworkProvider.nullOrElse { it.updatePeer(peer) }
         addressBook.updateAuthority(peer)
     }
 
@@ -159,7 +168,7 @@ class NetworkNode(
             return
         }
 
-        if(config.zeroTierProviderEnabled) zeroTierNetworkProvider.removePeer(peer)
+        zeroTierNetworkProvider.nullOrElse { it.removePeer(peer) }
         addressBook.deleteAuthority(peerId)
     }
 }
