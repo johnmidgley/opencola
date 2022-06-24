@@ -1,18 +1,25 @@
 package opencola.core.network.zerotier
 
-import com.zerotier.sockets.ZeroTierNative
-import com.zerotier.sockets.ZeroTierNode
+import com.zerotier.sockets.*
 import mu.KotlinLogging
+import opencola.core.config.ZeroTierConfig
 import opencola.core.extensions.hexStringToByteArray
 import opencola.core.extensions.nullOrElse
+import opencola.core.extensions.shutdownWithTimout
 import opencola.core.model.Authority
 import opencola.core.network.NetworkProvider
 import opencola.core.serialization.LongByteArrayCodec
+import java.io.DataInputStream
+import java.io.DataOutputStream
 import java.net.URI
 import java.nio.file.Path
+import java.util.concurrent.Executors
+import kotlin.math.log
+
 
 class ZeroTierNetworkProvider(
     val storagePath: Path,
+    val config: ZeroTierConfig,
     val authority: Authority,
 ) : NetworkProvider {
     private val logger = KotlinLogging.logger("ZeroTierNetworkProvider")
@@ -20,6 +27,13 @@ class ZeroTierNetworkProvider(
     private var networkId: String? = null
     private var authToken: String? = null
     private var zeroTierClient: ZeroTierClient? = null
+    private val executorService = Executors.newFixedThreadPool(5)
+    private var started: Boolean = false
+
+    init {
+        if(!config.providerEnabled)
+            throw IllegalStateException("Attempt to instantiate ZeroTierNetworkProvider when not enabled in config")
+    }
 
     private fun getNodeId(): String {
         return node.id.toString(16)
@@ -87,6 +101,25 @@ class ZeroTierNetworkProvider(
         return networks.singleOrNull() ?: createNodeNetwork()
     }
 
+    private fun handleConnection(socket: ZeroTierSocket) {
+        val inputStream: ZeroTierInputStream = socket.inputStream
+        val dataInputStream = DataInputStream(inputStream)
+        val message = dataInputStream.readUTF()
+        println("RX: $message")
+        socket.close()
+    }
+
+    private fun listenForConnections() {
+        logger.info { "Listening for connections" }
+        val listener = ZeroTierServerSocket(config.port)
+
+        while(started){
+            handleConnection(listener.accept())
+        }
+
+        listener.close()
+    }
+
     override fun start() {
         logger.info { "Starting..." }
         node.initFromStorage(storagePath.toString())
@@ -99,17 +132,21 @@ class ZeroTierNetworkProvider(
         }
 
         getOrCreateNodeNetwork()
+        started = true
+        // executorService.execute { listenForConnections() }
         logger.info { "Started: ${node.id.toString(16)}" }
     }
 
     override fun stop() {
         logger.info { "Stopping ${node.id.toString(16)}..." }
+        started = false
         node.stop()
+        executorService.shutdownWithTimout(1000)
         logger.info { "Stopped" }
     }
 
     override fun getAddress(): URI {
-        return ZeroTierAddress(networkId, getNodeId()).toURI()
+        return ZeroTierAddress(networkId, getNodeId(), config.port).toURI()
     }
 
     override fun isNetworkTokenValid(token: String): Boolean {
@@ -177,5 +214,31 @@ class ZeroTierNetworkProvider(
             else
                 logger.warn { "Local network does not exist - unable to remove peer" }
         }
+    }
+
+    fun sendMessage(peer: Authority, message: String) {
+        val zeroTierAddress = peer.uri?.let { ZeroTierAddress.fromURI(it) }
+
+        if(zeroTierAddress == null) {
+            logger.error { "No ZT address to send message to: uri: ${authority.uri}" }
+            return
+        }
+
+        val nodeId = zeroTierAddress.nodeId?.let{
+            LongByteArrayCodec.decode(it.hexStringToByteArray())
+        }
+
+        if(nodeId == null){
+            logger.error { "Unable to determine nodeId to send message: $zeroTierAddress" }
+            return
+        }
+
+        val address = node.getIPv6Address(nodeId).toString()
+        // TODO: Add port to zeroTierAddress
+        val socket = ZeroTierSocket(address, config.port)
+        val outputStream = socket.outputStream;
+        val dataOutputStream = DataOutputStream(outputStream);
+        dataOutputStream.writeUTF(message);
+        socket.close()
     }
 }

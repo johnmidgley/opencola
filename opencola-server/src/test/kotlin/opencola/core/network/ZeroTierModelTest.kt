@@ -15,7 +15,7 @@ class ZeroTierModelTest {
     @Test
     fun testNetworkModel(){
         val jsonString = loadSampleJson("zero-tier-networks.json")
-        val json = Json{ coerceInputValues = true; isLenient = true; ignoreUnknownKeys = true; explicitNulls = false}
+        val json = Json{ coerceInputValues = true; isLenient = true; ignoreUnknownKeys = true }
         val networks: List<Network> = json.decodeFromString(jsonString)
         println(networks)
     }

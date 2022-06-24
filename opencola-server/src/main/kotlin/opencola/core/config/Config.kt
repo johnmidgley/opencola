@@ -12,7 +12,8 @@ data class SecurityConfig(val keystore: KeystoreConfig)
 data class SolrConfig(val baseUrl: String, val connectionTimeoutMillis: Int, val socketTimeoutMillis: Int)
 data class SearchConfig(val solr: SolrConfig?)
 data class PeerConfig(val id: String, val publicKey: String, val name: String, val host: String, val active: Boolean = true)
-data class NetworkConfig(val zeroTierProviderEnabled: Boolean = false, val peers: List<PeerConfig> = emptyList())
+data class ZeroTierConfig(val providerEnabled: Boolean = false, val port: Int = 5796)
+data class NetworkConfig(val zeroTierConfig: ZeroTierConfig = ZeroTierConfig(), val peers: List<PeerConfig> = emptyList())
 
 data class Config(
     val name: String,
@@ -35,8 +36,8 @@ fun Config.setNetwork(network: NetworkConfig): Config {
     return Config(name, eventBus, server, security, search, network)
 }
 
-fun Config.setZeroTierIntegration(enabled: Boolean): Config {
-    return setNetwork(NetworkConfig(enabled, this.network.peers))
+fun Config.setZeroTierConfig(zeroTierConfig: ZeroTierConfig): Config {
+    return setNetwork(NetworkConfig(zeroTierConfig, this.network.peers))
 }
 
 fun loadConfig(configPath: Path): Config {

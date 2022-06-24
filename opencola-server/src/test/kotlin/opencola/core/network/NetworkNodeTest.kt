@@ -1,7 +1,8 @@
 package opencola.core.network
 
 import opencola.core.TestApplication
-import opencola.core.config.setZeroTierIntegration
+import opencola.core.config.ZeroTierConfig
+import opencola.core.config.setZeroTierConfig
 import opencola.core.io.readStdOut
 import opencola.core.model.Authority
 import opencola.core.network.zerotier.ZeroTierAddress
@@ -45,7 +46,7 @@ class NetworkNodeTest : PeerTest() {
     }
 
     private fun getApplicationNode(num: Int, zeroTierIntegrationEnabled: Boolean): ApplicationNode {
-        val config = ApplicationNode.getBaseConfig().setZeroTierIntegration(zeroTierIntegrationEnabled)
+        val config = ApplicationNode.getBaseConfig().setZeroTierConfig(ZeroTierConfig(zeroTierIntegrationEnabled))
         return ApplicationNode.getNode(num, config = config)
     }
 

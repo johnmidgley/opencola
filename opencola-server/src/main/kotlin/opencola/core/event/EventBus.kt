@@ -4,6 +4,7 @@ package opencola.core.event
 import mu.KotlinLogging
 import opencola.core.config.EventBusConfig
 import opencola.core.extensions.nullOrElse
+import opencola.core.extensions.shutdownWithTimout
 import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.statements.api.ExposedBlob
@@ -13,7 +14,6 @@ import java.nio.file.Path
 import java.sql.Connection
 import java.time.Instant
 import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 
 class EventBus(private val storagePath: Path, config: EventBusConfig) {
     private val logger = KotlinLogging.logger("MessageBus")
@@ -139,13 +139,6 @@ class EventBus(private val storagePath: Path, config: EventBusConfig) {
 
     // TODO: Call this on dispose / finalize?
     fun stop() {
-        executorService.shutdown()
-        try {
-            if (!executorService.awaitTermination(800, TimeUnit.MILLISECONDS)) {
-                executorService.shutdownNow()
-            }
-        } catch (e: InterruptedException) {
-            executorService.shutdownNow()
-        }
+        executorService.shutdownWithTimout(800)
     }
 }

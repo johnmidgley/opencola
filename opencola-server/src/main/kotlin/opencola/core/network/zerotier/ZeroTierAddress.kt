@@ -4,16 +4,20 @@ import opencola.core.extensions.hexStringToByteArray
 import opencola.core.extensions.nullOrElse
 import java.net.URI
 
-data class ZeroTierAddress(val networkId: String?, val nodeId: String?, val root: URI = defaultRoot) {
+data class ZeroTierAddress(val networkId: String?, val nodeId: String?, val port: Int?, val root: URI = defaultRoot) {
 
     init {
         // Validate ids are hex values that fit in Longs
         networkId.nullOrElse { it.hexStringToByteArray().size <= 16 }
         nodeId.nullOrElse { it.hexStringToByteArray().size <= 16 }
+
+        if(nodeId != null && port == null){
+            throw IllegalArgumentException("Port must be provided for nodeId")
+        }
     }
 
     fun toURI() : URI {
-        return URI("zt:${root}#${networkId ?: ""}:${nodeId ?: ""}")
+        return URI("zt:${root}#${networkId ?: ""}:${nodeId ?: ""}:${port ?: ""}")
     }
 
     companion object Factory {
@@ -26,11 +30,12 @@ data class ZeroTierAddress(val networkId: String?, val nodeId: String?, val root
             val root = URI(uri.schemeSpecificPart)
             val fragments = uri.fragment.split(":")
 
-            if(fragments.size != 2){
+            if(fragments.size != 3){
                 throw IllegalArgumentException("Invalid ZeroTier fragment: ${uri.fragment}. Must be of form {networkId?:nodeId?}")
             }
 
-            return ZeroTierAddress(fragments[0].ifBlank { null } , fragments[1].ifBlank { null }, root)
+            val port = fragments[2].ifBlank { null }.nullOrElse { it.toInt() }
+            return ZeroTierAddress(fragments[0].ifBlank { null }, fragments[1].ifBlank { null }, port, root)
         }
     }
 }

@@ -43,7 +43,7 @@ fun getApplications(
         Application.instance(
             applicationPath,
             storagePath,
-            config.setNetwork(NetworkConfig(false, peerConfigs)),
+            config.setNetwork(NetworkConfig(ZeroTierConfig(), peerConfigs)),
             publicKey
         )
     }

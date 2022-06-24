@@ -29,11 +29,11 @@ class NetworkNode(
 
 
     init {
-        if(config.zeroTierProviderEnabled) {
+        if(config.zeroTierConfig.providerEnabled) {
             val authority = addressBook.getAuthority(authorityId)
                 ?: throw IllegalStateException("Root authority not in AddressBook")
 
-            zeroTierNetworkProvider = ZeroTierNetworkProvider(storagePath, authority)
+            zeroTierNetworkProvider = ZeroTierNetworkProvider(storagePath, config.zeroTierConfig, authority)
         }
     }
 
@@ -154,9 +154,9 @@ class NetworkNode(
             }
         }
 
-        val peer = existingPeerAuthority ?: peerAuthority
-        zeroTierNetworkProvider.nullOrElse { it.updatePeer(peer) }
-        addressBook.updateAuthority(peer)
+        val peerToUpdate = existingPeerAuthority ?: peerAuthority
+        zeroTierNetworkProvider.nullOrElse { it.updatePeer(peerToUpdate) }
+        addressBook.updateAuthority(peerToUpdate)
     }
 
     private fun removePeer(peerId: Id){
