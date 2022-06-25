@@ -46,7 +46,8 @@ class MainReactor(
             runBlocking {
                 peers
                     .forEach {
-                        async { requestTransactions(it.entityId) }
+                        if(it.entityId != authority.entityId)
+                            async { requestTransactions(it.entityId) }
                     }
             }
         }

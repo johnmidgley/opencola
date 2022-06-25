@@ -7,21 +7,23 @@ import opencola.core.io.JsonHttpClient
 import opencola.core.io.MultiStreamReader
 import opencola.server.handlers.Peer
 import opencola.server.handlers.PeersResult
+import opencola.server.handlers.TokenRequest
 import java.net.URI
 import java.nio.file.Path
 import java.time.Instant
+import java.util.concurrent.Executors
 import kotlin.io.path.Path
 
-class ProcessNode(private val nodePath: Path, val name: String, val port: Int) : Node {
-    private val logger = KotlinLogging.logger("TestNode")
+class ProcessNode(private val nodePath: Path, val name: String, val serverPort: Int, val ztPort: Int) : Node {
+    private val logger = KotlinLogging.logger("ProcessNode")
     private val jsonHttpClient = JsonHttpClient()
     private val host = "http://0.0.0.0"
-    private val serviceUri = URI("$host:$port/")
+    private val serviceUri = URI("$host:$serverPort/")
     private var process: Process? = null
 
     override fun make() {
         logger.info { "Making $name" }
-        "./make-node $name $port".runCommand(nodePath)
+        "./make-node $name $serverPort $ztPort".runCommand(nodePath)
     }
 
     private fun blockUntilNodeReady(){
@@ -43,22 +45,34 @@ class ProcessNode(private val nodePath: Path, val name: String, val port: Int) :
         }
     }
 
+    private fun readFromProcessUntil(process: Process, reader: MultiStreamReader, until: (String) -> Boolean){
+        while (process.isAlive) {
+            val line = reader.readLine()
+            if (line != null) {
+                println(line)
+                if (until(line))
+                    break
+            } else
+                Thread.sleep(50)
+        }
+    }
+
+    private fun echoProcessOutputInBackground(process: Process, reader: MultiStreamReader) {
+        val executorService = Executors.newSingleThreadExecutor()
+        executorService.execute{ readFromProcessUntil(process, reader) { false } }
+    }
+
+    private fun blockOnProcessOutputUntil(process: Process, until: (String) -> Boolean) {
+        val reader = MultiStreamReader(listOf(Pair(name, process.inputStream), Pair(name, process.errorStream)))
+        readFromProcessUntil(process, reader, until)
+        echoProcessOutputInBackground(process, reader)
+    }
+
     override fun start(): Node {
         logger.info { "Starting $name" }
         val process = "./start-node $name".startProcess(nodePath)!!.also { this.process == process }
 
-        MultiStreamReader(listOf(Pair(name, process.inputStream), Pair(name, process.errorStream))).use { reader ->
-            while (process.isAlive) {
-                val line = reader.readLine()
-                if (line != null) {
-                    println(line)
-                    if (line.contains("MainReactor: NodeStarted"))
-                        break
-                } else
-                    Thread.sleep(50)
-            }
-        }
-
+        blockOnProcessOutputUntil(process){ it.contains("MainReactor: NodeStarted") }
         blockUntilNodeReady()
         logger.info("Node $name is ready")
         return this
@@ -84,7 +98,7 @@ class ProcessNode(private val nodePath: Path, val name: String, val port: Int) :
     }
 
     override fun postInviteToken(token: String): Peer {
-        return jsonHttpClient.post(serviceUri.resolve("/peers/token"), token)
+        return jsonHttpClient.post(serviceUri.resolve("/peers/token"), TokenRequest(token))
     }
 
     override fun getPeers(): PeersResult {
@@ -97,10 +111,11 @@ class ProcessNode(private val nodePath: Path, val name: String, val port: Int) :
 
     companion object Factory {
         private val nodeDir = Path("../test")
-        private const val basePort = 5750
+        private const val baseServerPort = 5750
+
 
         fun getNode(num: Int): ProcessNode {
-            return ProcessNode(nodeDir, "node$num", basePort + num)
+            return ProcessNode(nodeDir, "node-$num", baseServerPort + num, baseZtPort + num)
         }
 
         fun stopAllNodes(){

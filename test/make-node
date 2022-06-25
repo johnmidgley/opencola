@@ -3,11 +3,15 @@
 pushd ../install
 ./install
 popd
+pushd storage/persistent
 rm -rf $1
 mkdir $1
-cp -r ../install/opencola/storage/* $1
+cp -r ../../../install/opencola/storage/* $1
 pushd $1
 sed -i '' "s/5795/$2/g" opencola-server.yaml
+sed -i '' "s/5796/$3/g" opencola-server.yaml
+sed -i '' "s/providerEnabled: false/providerEnabled: true/g" opencola-server.yaml
+popd
 popd
 
 

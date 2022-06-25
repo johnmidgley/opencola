@@ -14,7 +14,10 @@ import opencola.server.handlers.Peer
 import org.junit.Test
 import org.kodein.di.instance
 import java.net.URI
-import kotlin.test.*
+import kotlin.test.assertEquals
+import kotlin.test.assertFails
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 
 
 class NetworkNodeTest : PeerTest() {
@@ -45,9 +48,9 @@ class NetworkNodeTest : PeerTest() {
         assertEquals(authority0.imageUri, authority1.imageUri)
     }
 
-    private fun getApplicationNode(num: Int, zeroTierIntegrationEnabled: Boolean): ApplicationNode {
-        val config = ApplicationNode.getBaseConfig().setZeroTierConfig(ZeroTierConfig(zeroTierIntegrationEnabled))
-        return ApplicationNode.getNode(num, config = config)
+    private fun getApplicationNode(num: Int, zeroTierIntegrationEnabled: Boolean, persistent: Boolean = false): ApplicationNode {
+        val config = ApplicationNode.getBaseConfig().setZeroTierConfig(ZeroTierConfig(zeroTierIntegrationEnabled, baseZtPort + num))
+        return ApplicationNode.getNode(num, persistent, config)
     }
 
     // @Test
@@ -178,20 +181,57 @@ class NetworkNodeTest : PeerTest() {
         testInviteWithZTNodes(true)
     }
 
-    // @Test
-    fun testZtLibPeers() {
-        ProcessNode.stopAllNodes()
-        // deleteAllNetworks()
+    private fun makeAndConnectNode0andNode1(): Pair<Node, Node> {
+        deleteAllNetworks()
 
         // Start nodes
-        val node0 = getApplicationNode(0, true).also { it.make(); it.start() }
+        // TODO: Switch getApplicationNode to be a factory member of ApplicationNode, like ProcessNode does
+        val node0 = ProcessNode.getNode(0).also { it.make(); it.start() }
         node0.setNetworkToken(ztAuthToken)
 
+        // TODO: Add persistent flag to getNode constructor
         val node1 = ProcessNode.getNode(1).also { it.make(); it.start() }
         node1.setNetworkToken(ztAuthToken)
 
         // Connect nodes
+        println("Adding peer node-1 to node-0")
         node0.updatePeer(node0.postInviteToken(node1.getInviteToken()))
+        println("Adding peer node-0 to node-1")
         node1.updatePeer(node1.postInviteToken(node0.getInviteToken()))
+
+        val node0Peers = node0.getPeers()
+        val node0AuthorityId = node0Peers.authorityId
+        val node1Peers = node1.getPeers()
+        val node1AuthorityId = node1Peers.authorityId
+
+        assertNotNull(node0Peers.results.single{ it.id == node1AuthorityId } )
+        assertNotNull(node1Peers.results.single{ it.id == node0AuthorityId } )
+
+        return Pair(node0, node1)
+    }
+
+    // @Test
+    fun testZtLibPeers() {
+        ProcessNode.stopAllNodes()
+        val createNodes = false
+
+        val (node0, node1) = if(createNodes) {
+            makeAndConnectNode0andNode1()
+            return
+        }
+        else
+            Pair(
+                getApplicationNode(0, zeroTierIntegrationEnabled = true, persistent = true).also { it.start() },
+                ProcessNode.getNode(1).also { it.start() }
+            )
+
+        val node0Application = node0 as ApplicationNode
+        val node0Authority = node0.application.inject<Authority>()
+        val addressBook = node0Application.application.inject<AddressBook>()
+        val peer1 = addressBook.getAuthorities().single{ it.entityId != node0Authority.entityId }
+        val networkNode0 = node0Application.application.inject<NetworkNode>()
+        networkNode0.sendMessage(peer1, "Hello!!")
+
+        println("Done")
     }
 }

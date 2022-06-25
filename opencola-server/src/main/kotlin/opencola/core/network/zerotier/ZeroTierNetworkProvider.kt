@@ -4,7 +4,6 @@ import com.zerotier.sockets.*
 import mu.KotlinLogging
 import opencola.core.config.ZeroTierConfig
 import opencola.core.extensions.hexStringToByteArray
-import opencola.core.extensions.nullOrElse
 import opencola.core.extensions.shutdownWithTimout
 import opencola.core.model.Authority
 import opencola.core.network.NetworkProvider
@@ -13,28 +12,28 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.net.URI
 import java.nio.file.Path
+import java.time.Instant
 import java.util.concurrent.Executors
-import kotlin.math.log
 
 
 class ZeroTierNetworkProvider(
-    val storagePath: Path,
-    val config: ZeroTierConfig,
-    val authority: Authority,
+    private val storagePath: Path,
+    private val config: ZeroTierConfig,
+    private val authority: Authority,
+    authToken: String
 ) : NetworkProvider {
-    private val logger = KotlinLogging.logger("ZeroTierNetworkProvider")
     private val node = ZeroTierNode()
     private var networkId: String? = null
-    private var authToken: String? = null
-    private var zeroTierClient: ZeroTierClient? = null
+    private var zeroTierClient: ZeroTierClient? = ZeroTierClient(authToken)
     private val executorService = Executors.newFixedThreadPool(5)
-    private var started: Boolean = false
+    private var running: Boolean = false
 
     init {
         if(!config.providerEnabled)
             throw IllegalStateException("Attempt to instantiate ZeroTierNetworkProvider when not enabled in config")
     }
 
+    // TODO: Clean up Ids = when strings vs. Longs
     private fun getNodeId(): String {
         return node.id.toString(16)
     }
@@ -43,14 +42,16 @@ class ZeroTierNetworkProvider(
         return "root:${authority.entityId}"
     }
 
-    private fun joinNetwork(address: String){
-        val id = LongByteArrayCodec.decode(address.hexStringToByteArray())
-        node.join(id)
+    private fun stringIdToLongId(id: String) : Long {
+        return LongByteArrayCodec.decode(id.hexStringToByteArray())
     }
 
-    private fun leaveNetwork(address: String) {
-        val id = LongByteArrayCodec.decode(address.hexStringToByteArray())
-        node.leave(id)
+    private fun joinNetwork(id: String){
+        node.join(stringIdToLongId(id))
+    }
+
+    private fun leaveNetwork(id: String) {
+        node.leave(stringIdToLongId(id))
     }
 
     private fun authorityToMember(authority: Authority): Member {
@@ -68,9 +69,9 @@ class ZeroTierNetworkProvider(
             name = getNetworkName(),
             private = true,
             // TODO: Figure out how this should be set. Just use ipv6? Is it even needed?
-            // routes = listOf(Route("172.27.0.0/16")),
-            // v4AssignMode = IPV4AssignMode(true),
-            // ipAssignmentPools = listOf(IPRange("10.243.0.1", "10.243.255.254"))
+            routes = listOf(Route("10.0.0.0/8")),
+            v4AssignMode = IPV4AssignMode(true),
+            ipAssignmentPools = listOf(IPRange("10.0.0.0", "10.255.255.255"))
         )
         val network = Network.forCreate(
             networkConfig,
@@ -83,7 +84,7 @@ class ZeroTierNetworkProvider(
         }
 
         zeroTierClient.addNetworkMember(createdNetwork.id, getNodeId(), authorityToMember(authority))
-        networkId = createdNetwork.id
+        joinNetwork(createdNetwork.id)
 
         return createdNetwork
     }
@@ -98,23 +99,47 @@ class ZeroTierNetworkProvider(
             throw IllegalStateException("Multiple networks exist with the root name: $networkName. Fix at ZT Central")
         }
 
-        return networks.singleOrNull() ?: createNodeNetwork()
+        return (networks.singleOrNull() ?: createNodeNetwork()).also { networkId = it.id }
     }
 
     private fun handleConnection(socket: ZeroTierSocket) {
+        logger.info { "Socket Connected!" }
         val inputStream: ZeroTierInputStream = socket.inputStream
         val dataInputStream = DataInputStream(inputStream)
         val message = dataInputStream.readUTF()
-        println("RX: $message")
+        logger.info("RX: $message")
         socket.close()
     }
 
+    private fun waitUntilNetworkReady() {
+        logger.info { "Waiting for network $networkId to be ready"  }
+        val networkId = networkId?.let { stringIdToLongId(it) }
+            ?: throw java.lang.IllegalStateException("No network available. A ZT networkToken must be set")
+
+        val startTime = Instant.now().epochSecond
+
+        // TODO: Config timeout
+        while (!node.isNetworkTransportReady(networkId) && Instant.now().epochSecond - startTime < 10) {
+            ZeroTierNative.zts_util_delay(50);
+        }
+
+        if(running && !node.isNetworkTransportReady(networkId)){
+            throw RuntimeException("Transport layer timed out")
+        }
+    }
+
     private fun listenForConnections() {
-        logger.info { "Listening for connections" }
+        waitUntilNetworkReady()
+        logger.info { "Listening for connections - port: ${config.port}" }
+
         val listener = ZeroTierServerSocket(config.port)
 
-        while(started){
-            handleConnection(listener.accept())
+        while(running) {
+            try {
+                handleConnection(listener.accept())
+            } catch (e: Exception) {
+                logger.error { "Unhandled exception while listening for connections: $e" }
+            }
         }
 
         listener.close()
@@ -132,40 +157,25 @@ class ZeroTierNetworkProvider(
         }
 
         getOrCreateNodeNetwork()
-        started = true
-        // executorService.execute { listenForConnections() }
+        running = true
+        executorService.execute { listenForConnections() }
         logger.info { "Started: ${node.id.toString(16)}" }
     }
 
     override fun stop() {
         logger.info { "Stopping ${node.id.toString(16)}..." }
-        started = false
+        running = false
         node.stop()
         executorService.shutdownWithTimout(1000)
         logger.info { "Stopped" }
     }
 
+    private fun getZeroTierAddress() : ZeroTierAddress {
+        return ZeroTierAddress(networkId, getNodeId(), config.port)
+    }
+
     override fun getAddress(): URI {
-        return ZeroTierAddress(networkId, getNodeId(), config.port).toURI()
-    }
-
-    override fun isNetworkTokenValid(token: String): Boolean {
-        try {
-            ZeroTierClient(token).getNetworks()
-        } catch (e: Exception) {
-            logger.debug { e }
-            return false
-        }
-
-        return true
-    }
-
-    override fun setNetworkToken(token: String?) {
-        if (authToken != token) {
-            authToken = token
-            zeroTierClient = token.nullOrElse { ZeroTierClient(it) }
-            getOrCreateNodeNetwork()
-        }
+        return getZeroTierAddress().toURI()
     }
 
     override fun updatePeer(peer: Authority) {
@@ -225,7 +235,8 @@ class ZeroTierNetworkProvider(
         }
 
         val nodeId = zeroTierAddress.nodeId?.let{
-            LongByteArrayCodec.decode(it.hexStringToByteArray())
+            it.toLong(16)
+            // LongByteArrayCodec.decode(it.hexStringToByteArray())
         }
 
         if(nodeId == null){
@@ -233,12 +244,33 @@ class ZeroTierNetworkProvider(
             return
         }
 
-        val address = node.getIPv6Address(nodeId).toString()
-        // TODO: Add port to zeroTierAddress
-        val socket = ZeroTierSocket(address, config.port)
+        if(zeroTierAddress.port == null){
+            logger.error { "No port specified in peer address" }
+            return
+        }
+
+        zeroTierAddress.port
+        val address = node.getIPv4Address(nodeId).hostAddress
+        val socket = ZeroTierSocket(address, zeroTierAddress.port)
         val outputStream = socket.outputStream;
         val dataOutputStream = DataOutputStream(outputStream);
         dataOutputStream.writeUTF(message);
         socket.close()
+    }
+
+    companion object Factory {
+        private val logger = KotlinLogging.logger("ZeroTierNetworkProvider")
+
+        fun isNetworkTokenValid(token: String): Boolean {
+            try {
+                ZeroTierClient(token).getNetworks()
+            } catch (e: Exception) {
+                logger.debug { e }
+                return false
+            }
+
+            return true
+        }
+
     }
 }

@@ -111,6 +111,7 @@ class PeerRouter(private val addressBook: AddressBook, private val eventBus: Eve
 
     suspend fun getTransactions(authority: Authority, peer: Authority, peerTransactionId: Id?): TransactionsResponse? {
         try {
+            // TODO: Should not allow getTransactions for local authority
             if(!addressBook.isAuthorityActive(peer)){
                 logger.warn { "Ignoring getTransactions for inactive peer: ${peer.entityId}" }
                 return null

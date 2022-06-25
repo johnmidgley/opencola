@@ -93,9 +93,9 @@ class ApplicationNode(val application: Application) : Node {
         fun getNode(num: Int, persistent: Boolean = false, config: Config? = null): ApplicationNode {
             val storagePath =
                 if(persistent)
-                    TestApplication.applicationPath.resolve("../test/storage/persistent/application-$num")
+                    TestApplication.applicationPath.resolve("../test/storage/persistent/node-$num")
                 else
-                    TestApplication.storagePath.resolve("application-$num")
+                    TestApplication.storagePath.resolve("node-$num")
 
             return getNode(storagePath, "Node: $num", basePort + num, config)
         }

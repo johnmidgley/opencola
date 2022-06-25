@@ -98,9 +98,9 @@ fun Application.configureRouting(app: app) {
             call.respond(getToken(app.inject(), app.inject()))
         }
 
-        post("/peers/token/") {
-            val inviteToken = call.receive<String>()
-            call.respond(inviteTokenToPeer(app.inject(), inviteToken))
+        post("/peers/token") {
+            val tokenRequest = call.receive<TokenRequest>()
+            call.respond(inviteTokenToPeer(app.inject(), tokenRequest.token))
         }
 
         put("/peers") {
