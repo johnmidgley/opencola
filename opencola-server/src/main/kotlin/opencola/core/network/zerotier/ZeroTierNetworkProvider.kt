@@ -3,13 +3,13 @@ package opencola.core.network.zerotier
 import com.zerotier.sockets.*
 import mu.KotlinLogging
 import opencola.core.config.ZeroTierConfig
-import opencola.core.extensions.hexStringToByteArray
+import opencola.core.extensions.nullOrElse
 import opencola.core.extensions.shutdownWithTimout
 import opencola.core.model.Authority
 import opencola.core.network.NetworkProvider
-import opencola.core.serialization.LongByteArrayCodec
 import java.io.DataInputStream
 import java.io.DataOutputStream
+import java.math.BigInteger
 import java.net.URI
 import java.nio.file.Path
 import java.time.Instant
@@ -43,7 +43,8 @@ class ZeroTierNetworkProvider(
     }
 
     private fun stringIdToLongId(id: String) : Long {
-        return LongByteArrayCodec.decode(id.hexStringToByteArray())
+        return BigInteger(id, 16).toLong()
+        // return LongByteArrayCodec.decode(id.hexStringToByteArray())
     }
 
     private fun joinNetwork(id: String){
@@ -99,7 +100,16 @@ class ZeroTierNetworkProvider(
             throw IllegalStateException("Multiple networks exist with the root name: $networkName. Fix at ZT Central")
         }
 
-        return (networks.singleOrNull() ?: createNodeNetwork()).also { networkId = it.id }
+        val network = (networks.singleOrNull() ?: createNodeNetwork()).also { networkId = it.id }
+
+        networkId.nullOrElse {
+            val longNetworkId = BigInteger(it, 16).toLong()
+            while (!node.isNetworkTransportReady(longNetworkId)) {
+                ZeroTierNative.zts_util_delay(50)
+            }
+        }
+
+        return network
     }
 
     private fun handleConnection(socket: ZeroTierSocket) {
@@ -130,7 +140,8 @@ class ZeroTierNetworkProvider(
 
     private fun listenForConnections() {
         waitUntilNetworkReady()
-        logger.info { "Listening for connections - port: ${config.port}" }
+        val addr4 = node.getIPv4Address(stringIdToLongId(networkId!!));
+        logger.info { "Listening for connections - $addr4 port: ${config.port}" }
 
         val listener = ZeroTierServerSocket(config.port)
 
@@ -156,7 +167,10 @@ class ZeroTierNetworkProvider(
             ZeroTierNative.zts_util_delay(50);
         }
 
-        getOrCreateNodeNetwork()
+        val network = getOrCreateNodeNetwork()
+        val networkId = BigInteger(network!!.id!!,16).toLong()
+        val ip4Address = node.getIPv4Address(networkId)
+        logger.info { "Network started with ip: ${ip4Address.hostAddress}"}
         running = true
         executorService.execute { listenForConnections() }
         logger.info { "Started: ${node.id.toString(16)}" }
@@ -226,7 +240,42 @@ class ZeroTierNetworkProvider(
         }
     }
 
+    private fun getRemoteAddress(zeroTierAddress: ZeroTierAddress) : String? {
+        val zeroTierClient = this.zeroTierClient
+        val networkId = this.networkId
+
+        if(zeroTierClient == null || networkId == null) {
+            logger.error { "zeroTierClient AND networkId not set" }
+            return null
+        }
+
+        val nodeId = zeroTierAddress.nodeId?.let{
+            // TODO: Move text <-> long conversions to ZeroTierAddress
+            it.toLong(16)
+            // LongByteArrayCodec.decode(it.hexStringToByteArray())
+        }
+
+        if(nodeId == null){
+            logger.error { "Unable to determine nodeId to send message: $zeroTierAddress" }
+            return null
+        }
+
+        if(zeroTierAddress.port == null){
+            logger.error { "No port specified in peer address" }
+            return null
+        }
+
+        return node.getIPv4Address(nodeId).hostAddress.let {
+            if(it == "127.0.0.1")
+                zeroTierClient.getNetworkMember(networkId, zeroTierAddress.nodeId).config?.ipAssignments?.firstOrNull()
+            else
+                it
+        }
+    }
+
     fun sendMessage(peer: Authority, message: String) {
+        logger.info { "Sending message: ${authority.name} - $message" }
+
         val zeroTierAddress = peer.uri?.let { ZeroTierAddress.fromURI(it) }
 
         if(zeroTierAddress == null) {
@@ -234,23 +283,14 @@ class ZeroTierNetworkProvider(
             return
         }
 
-        val nodeId = zeroTierAddress.nodeId?.let{
-            it.toLong(16)
-            // LongByteArrayCodec.decode(it.hexStringToByteArray())
-        }
-
-        if(nodeId == null){
-            logger.error { "Unable to determine nodeId to send message: $zeroTierAddress" }
+        if(zeroTierAddress.port == null) {
+            logger.error { "No port specified in zeroTierAddress: $zeroTierAddress" }
             return
         }
 
-        if(zeroTierAddress.port == null){
-            logger.error { "No port specified in peer address" }
-            return
-        }
+        val address = getRemoteAddress(zeroTierAddress) ?: return
 
-        zeroTierAddress.port
-        val address = node.getIPv4Address(nodeId).hostAddress
+        logger.info { "Remote Address: $address" }
         val socket = ZeroTierSocket(address, zeroTierAddress.port)
         val outputStream = socket.outputStream;
         val dataOutputStream = DataOutputStream(outputStream);
