@@ -59,6 +59,7 @@ class ZeroTierClient(private val authToken: String,
         return httpGet("network")
     }
 
+    // TODO: Change ids to ZeroTierIds
     fun getNetwork(networkId: String) : Network {
         return httpGet("network/$networkId")
     }

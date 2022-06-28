@@ -23,9 +23,9 @@ class ZeroTierNetworkProvider(
     authToken: String
 ) : NetworkProvider {
     private val node = ZeroTierNode()
-    private var networkId: String? = null
+    private var networkId: ZeroTierId? = null
     private var zeroTierClient: ZeroTierClient? = ZeroTierClient(authToken)
-    private val executorService = Executors.newFixedThreadPool(5)
+    private val executorService = Executors.newFixedThreadPool(5) // TODO: Config
     private var running: Boolean = false
 
     init {
@@ -36,6 +36,11 @@ class ZeroTierNetworkProvider(
     // TODO: Clean up Ids = when strings vs. Longs
     private fun getNodeId(): String {
         return node.id.toString(16)
+    }
+
+    private fun expectNetworkId() : ZeroTierId {
+        return networkId
+            ?: throw IllegalStateException("Network id not present when expected. Is a ZeroTier auth token present in root peer settings?")
     }
 
     private fun getNetworkName(): String {
@@ -100,11 +105,15 @@ class ZeroTierNetworkProvider(
             throw IllegalStateException("Multiple networks exist with the root name: $networkName. Fix at ZT Central")
         }
 
-        val network = (networks.singleOrNull() ?: createNodeNetwork()).also { networkId = it.id }
+        val network = networks.singleOrNull() ?: createNodeNetwork()
+
+        if(network.id == null)
+            throw RuntimeException("Unable to determine networkId")
+
+        val networkId = ZeroTierId(network.id).also { this.networkId = it }
 
         networkId.nullOrElse {
-            val longNetworkId = BigInteger(it, 16).toLong()
-            while (!node.isNetworkTransportReady(longNetworkId)) {
+            while (!node.isNetworkTransportReady(networkId.toLong())) {
                 ZeroTierNative.zts_util_delay(50)
             }
         }
@@ -123,9 +132,7 @@ class ZeroTierNetworkProvider(
 
     private fun waitUntilNetworkReady() {
         logger.info { "Waiting for network $networkId to be ready"  }
-        val networkId = networkId?.let { stringIdToLongId(it) }
-            ?: throw java.lang.IllegalStateException("No network available. A ZT networkToken must be set")
-
+        val networkId = expectNetworkId().toLong()
         val startTime = Instant.now().epochSecond
 
         // TODO: Config timeout
@@ -140,8 +147,8 @@ class ZeroTierNetworkProvider(
 
     private fun listenForConnections() {
         waitUntilNetworkReady()
-        val addr4 = node.getIPv4Address(stringIdToLongId(networkId!!));
-        logger.info { "Listening for connections - $addr4 port: ${config.port}" }
+        val address = node.getIPv4Address(expectNetworkId().toLong());
+        logger.info { "Listening for connections - $address port: ${config.port}" }
 
         val listener = ZeroTierServerSocket(config.port)
 
@@ -167,9 +174,8 @@ class ZeroTierNetworkProvider(
             ZeroTierNative.zts_util_delay(50);
         }
 
-        val network = getOrCreateNodeNetwork()
-        val networkId = BigInteger(network!!.id!!,16).toLong()
-        val ip4Address = node.getIPv4Address(networkId)
+        getOrCreateNodeNetwork()
+        val ip4Address = node.getIPv4Address(expectNetworkId().toLong())
         logger.info { "Network started with ip: ${ip4Address.hostAddress}"}
         running = true
         executorService.execute { listenForConnections() }
@@ -185,7 +191,7 @@ class ZeroTierNetworkProvider(
     }
 
     private fun getZeroTierAddress() : ZeroTierAddress {
-        return ZeroTierAddress(networkId, getNodeId(), config.port)
+        return ZeroTierAddress(expectNetworkId().toString(), getNodeId(), config.port)
     }
 
     override fun getAddress(): URI {
@@ -216,7 +222,7 @@ class ZeroTierNetworkProvider(
             if (zeroTierClient != null && networkId != null) {
                 // Allow the peer node onto our network
                 logger.info { "Adding peer to local node network: ${authority.name}" }
-                zeroTierClient.addNetworkMember(networkId, zeroTierAddress.nodeId, authorityToMember(peer))
+                zeroTierClient.addNetworkMember(expectNetworkId().toString(), zeroTierAddress.nodeId, authorityToMember(peer))
             } else
                 logger.warn { "Local network does not exist - unable to add peer" }
         }
@@ -234,7 +240,7 @@ class ZeroTierNetworkProvider(
             val networkId = networkId
 
             if(zeroTierClient != null && networkId != null)
-                zeroTierClient.deleteNetworkMember(networkId, zeroTierAddress.nodeId)
+                zeroTierClient.deleteNetworkMember(expectNetworkId().toString(), zeroTierAddress.nodeId)
             else
                 logger.warn { "Local network does not exist - unable to remove peer" }
         }
@@ -242,7 +248,6 @@ class ZeroTierNetworkProvider(
 
     private fun getRemoteAddress(zeroTierAddress: ZeroTierAddress) : String? {
         val zeroTierClient = this.zeroTierClient
-        val networkId = this.networkId
 
         if(zeroTierClient == null || networkId == null) {
             logger.error { "zeroTierClient AND networkId not set" }
@@ -267,7 +272,11 @@ class ZeroTierNetworkProvider(
 
         return node.getIPv4Address(nodeId).hostAddress.let {
             if(it == "127.0.0.1")
-                zeroTierClient.getNetworkMember(networkId, zeroTierAddress.nodeId).config?.ipAssignments?.firstOrNull()
+                zeroTierClient
+                    .getNetworkMember(expectNetworkId().toString(), zeroTierAddress.nodeId)
+                    .config
+                    ?.ipAssignments
+                    ?.firstOrNull()
             else
                 it
         }

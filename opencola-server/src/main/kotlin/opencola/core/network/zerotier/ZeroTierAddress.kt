@@ -4,6 +4,7 @@ import opencola.core.extensions.hexStringToByteArray
 import opencola.core.extensions.nullOrElse
 import java.net.URI
 
+// TODO: Ids should be ZeroTierIds
 data class ZeroTierAddress(val networkId: String?, val nodeId: String?, val port: Int?, val root: URI = defaultRoot) {
 
     init {

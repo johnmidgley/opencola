@@ -1,6 +1,5 @@
-package opencola.core.network
+package opencola.core.network.zerotier
 
-import opencola.core.network.zerotier.*
 import java.time.Instant
 import kotlin.test.assertNotNull
 

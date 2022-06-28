@@ -225,11 +225,10 @@ class NetworkNodeTest : PeerTest() {
                 ProcessNode.getNode(1).also { it.start() }
             )
 
-        val node0Application = node0 as ApplicationNode
         val node0Authority = node0.application.inject<Authority>()
-        val addressBook = node0Application.application.inject<AddressBook>()
+        val addressBook = node0.application.inject<AddressBook>()
         val peer1 = addressBook.getAuthorities().single{ it.entityId != node0Authority.entityId }
-        val networkNode0 = node0Application.application.inject<NetworkNode>()
+        val networkNode0 = node0.application.inject<NetworkNode>()
         networkNode0.sendMessage(peer1, "Hello!!")
 
         println("Done")

@@ -1,8 +1,7 @@
-package opencola.core.network
+package opencola.core.network.zerotier
 
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import opencola.core.network.zerotier.Network
 import org.junit.Test
 import kotlin.io.path.Path
 import kotlin.io.path.readText
