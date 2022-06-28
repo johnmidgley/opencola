@@ -1,4 +1,7 @@
 #!/bin/bash
+pushd ../install
+./install
+popd
 pushd storage/persistent/$1
 ../../../../install/opencola/server/bin/opencola-server -s . -a ../../../../install/opencola/server
 popd

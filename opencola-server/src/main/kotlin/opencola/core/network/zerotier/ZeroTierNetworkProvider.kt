@@ -1,6 +1,9 @@
 package opencola.core.network.zerotier
 
-import com.zerotier.sockets.*
+import com.zerotier.sockets.ZeroTierNative
+import com.zerotier.sockets.ZeroTierNode
+import com.zerotier.sockets.ZeroTierServerSocket
+import com.zerotier.sockets.ZeroTierSocket
 import mu.KotlinLogging
 import opencola.core.config.ZeroTierConfig
 import opencola.core.extensions.nullOrElse
@@ -122,12 +125,13 @@ class ZeroTierNetworkProvider(
     }
 
     private fun handleConnection(socket: ZeroTierSocket) {
-        logger.info { "Socket Connected!" }
-        val inputStream: ZeroTierInputStream = socket.inputStream
-        val dataInputStream = DataInputStream(inputStream)
-        val message = dataInputStream.readUTF()
-        logger.info("RX: $message")
-        socket.close()
+        try {
+            logger.info { "Socket Connected" }
+            DataInputStream(socket.inputStream).use { logger.info("Received: ${it.readUTF()}") }
+            DataOutputStream(socket.outputStream).use { it.writeUTF("OK") }
+        } finally {
+            socket.close()
+        }
     }
 
     private fun waitUntilNetworkReady() {
@@ -149,12 +153,11 @@ class ZeroTierNetworkProvider(
         waitUntilNetworkReady()
         val address = node.getIPv4Address(expectNetworkId().toLong());
         logger.info { "Listening for connections - $address port: ${config.port}" }
-
         val listener = ZeroTierServerSocket(config.port)
 
         while(running) {
             try {
-                handleConnection(listener.accept())
+                listener.accept().also { executorService.execute { handleConnection(it) } }
             } catch (e: Exception) {
                 logger.error { "Unhandled exception while listening for connections: $e" }
             }
@@ -298,13 +301,15 @@ class ZeroTierNetworkProvider(
         }
 
         val address = getRemoteAddress(zeroTierAddress) ?: return
-
         logger.info { "Remote Address: $address" }
         val socket = ZeroTierSocket(address, zeroTierAddress.port)
-        val outputStream = socket.outputStream;
-        val dataOutputStream = DataOutputStream(outputStream);
-        dataOutputStream.writeUTF(message);
-        socket.close()
+
+        try {
+            DataOutputStream(socket.outputStream).use { it.writeUTF(message) }
+            DataInputStream(socket.inputStream).use { logger.info { "Response: ${it.readUTF()}" } }
+        } finally {
+            socket.close()
+        }
     }
 
     companion object Factory {
@@ -317,9 +322,7 @@ class ZeroTierNetworkProvider(
                 logger.debug { e }
                 return false
             }
-
             return true
         }
-
     }
 }
