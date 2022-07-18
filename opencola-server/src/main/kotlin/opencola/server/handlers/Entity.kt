@@ -198,7 +198,7 @@ fun newResourceFromUrl(authority: Authority, entityStore: EntityStore, peerRoute
                     URI(url),
                     parser.parseTitle(),
                     parser.parseDescription(),
-                    null,
+                    null, // TODO: Grab proper text
                     parser.parseImageUri()
                 )
                 entityStore.updateEntities(resource)
