@@ -167,7 +167,7 @@ class NetworkNode(
     }
 
     fun sendMessage(peer: Authority, message: String) {
-        zeroTierNetworkProvider!!.sendMessage(peer, message)
+        zeroTierNetworkProvider!!.sendRequest(peer, Request(authorityId, "POST", "/test", message.toByteArray()))
     }
 
 }

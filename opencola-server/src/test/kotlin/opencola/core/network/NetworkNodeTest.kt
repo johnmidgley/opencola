@@ -182,7 +182,7 @@ class NetworkNodeTest : PeerTest() {
     }
 
     private fun makeAndConnectNode0andNode1(): Pair<Node, Node> {
-        deleteAllNetworks()
+        // deleteAllNetworks()
 
         // Start nodes
         // TODO: Switch getApplicationNode to be a factory member of ApplicationNode, like ProcessNode does
@@ -230,6 +230,8 @@ class NetworkNodeTest : PeerTest() {
         val peer1 = addressBook.getAuthorities().single{ it.entityId != node0Authority.entityId }
         val networkNode0 = node0.application.inject<NetworkNode>()
         networkNode0.sendMessage(peer1, "Hello!!")
+
+        Thread.sleep(1000)
 
         println("Done")
     }

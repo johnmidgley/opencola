@@ -4,12 +4,19 @@ import com.zerotier.sockets.ZeroTierNative
 import com.zerotier.sockets.ZeroTierNode
 import com.zerotier.sockets.ZeroTierServerSocket
 import com.zerotier.sockets.ZeroTierSocket
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.decodeFromString
 import mu.KotlinLogging
 import opencola.core.config.ZeroTierConfig
 import opencola.core.extensions.nullOrElse
 import opencola.core.extensions.shutdownWithTimout
 import opencola.core.model.Authority
 import opencola.core.network.NetworkProvider
+import opencola.core.network.Request
+import opencola.core.serialization.readString
+import opencola.core.serialization.writeByteArray
+import opencola.core.serialization.writeString
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.math.BigInteger
@@ -127,8 +134,11 @@ class ZeroTierNetworkProvider(
     private fun handleConnection(socket: ZeroTierSocket) {
         try {
             logger.info { "Socket Connected" }
-            DataInputStream(socket.inputStream).use { logger.info("Received: ${it.readUTF()}") }
-            DataOutputStream(socket.outputStream).use { it.writeUTF("OK") }
+            DataInputStream(socket.inputStream).use {
+                val request = Json.decodeFromString<Request>(it.readString())
+                logger.info { "String $request" }
+            }
+            DataOutputStream(socket.outputStream).use { it.writeString("OK") }
         } finally {
             socket.close()
         }
@@ -249,6 +259,36 @@ class ZeroTierNetworkProvider(
         }
     }
 
+    override fun sendRequest(peer: Authority, request: Request) {
+        logger.info { "Sending request: ${authority.name} - $request" }
+
+        val zeroTierAddress = peer.uri?.let { ZeroTierAddress.fromURI(it) }
+
+        if (zeroTierAddress == null) {
+            logger.error { "No ZT address to send message to: uri: ${authority.uri}" }
+            return
+        }
+
+        if (zeroTierAddress.port == null) {
+            logger.error { "No port specified in zeroTierAddress: $zeroTierAddress" }
+            return
+        }
+
+        val address = getRemoteAddress(zeroTierAddress) ?: return
+        logger.info { "Remote Address: $address" }
+        val socket = ZeroTierSocket(address, zeroTierAddress.port)
+
+        try {
+            val message = Json.encodeToString(request)
+            logger.info { "Sending: $message" }
+            DataOutputStream(socket.outputStream).use { it.writeString(message) }
+            DataInputStream(socket.inputStream).use { logger.info { "Response: ${it.readString()}" } }
+        } finally {
+            socket.close()
+        }
+    }
+
+
     private fun getRemoteAddress(zeroTierAddress: ZeroTierAddress) : String? {
         val zeroTierClient = this.zeroTierClient
 
@@ -282,33 +322,6 @@ class ZeroTierNetworkProvider(
                     ?.firstOrNull()
             else
                 it
-        }
-    }
-
-    fun sendMessage(peer: Authority, message: String) {
-        logger.info { "Sending message: ${authority.name} - $message" }
-
-        val zeroTierAddress = peer.uri?.let { ZeroTierAddress.fromURI(it) }
-
-        if(zeroTierAddress == null) {
-            logger.error { "No ZT address to send message to: uri: ${authority.uri}" }
-            return
-        }
-
-        if(zeroTierAddress.port == null) {
-            logger.error { "No port specified in zeroTierAddress: $zeroTierAddress" }
-            return
-        }
-
-        val address = getRemoteAddress(zeroTierAddress) ?: return
-        logger.info { "Remote Address: $address" }
-        val socket = ZeroTierSocket(address, zeroTierAddress.port)
-
-        try {
-            DataOutputStream(socket.outputStream).use { it.writeUTF(message) }
-            DataInputStream(socket.inputStream).use { logger.info { "Response: ${it.readUTF()}" } }
-        } finally {
-            socket.close()
         }
     }
 
