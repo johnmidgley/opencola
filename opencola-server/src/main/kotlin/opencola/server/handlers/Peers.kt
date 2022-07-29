@@ -46,7 +46,7 @@ data class Peer(
             name,
             imageUri = imageUri.nullOrElse { URI(it) },
         ).also { authority ->
-            authority.setActive(true)
+            authority.setActive(isActive)
             authority.networkToken = networkToken.nullOrElse { encryptor.encrypt(authorityId, it.toByteArray()) }
         }
     }
@@ -78,17 +78,17 @@ fun getPeers(authority: Authority, addressBook: AddressBook): PeersResult {
     return PeersResult(authority, null, peers)
 }
 
-fun deletePeer(addressBook: AddressBook, peerId: Id){
+fun deletePeer(addressBook: AddressBook, peerId: Id) {
     logger.info { "Deleting Peer: $peerId" }
     addressBook.deleteAuthority(peerId)
 }
 
-fun updatePeer(networkNode: NetworkNode, peer: Peer){
+fun updatePeer(networkNode: NetworkNode, peer: Peer) {
     networkNode.updatePeer(peer)
 }
 
-fun getToken(networkNode: NetworkNode, signator: Signator): String {
-    return networkNode.getInviteToken().encodeBase58(signator)
+fun getToken(networkNode: NetworkNode, signator: Signator): TokenRequest {
+    return TokenRequest(networkNode.getInviteToken().encodeBase58(signator))
 }
 
 fun inviteTokenToPeer(networkNode: NetworkNode, token: String): Peer {

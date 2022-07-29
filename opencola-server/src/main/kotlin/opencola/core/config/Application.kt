@@ -81,7 +81,7 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
             }
 
             // TODO: Change from authority to public key - they authority should come from the private store based on the private key
-            val authority = Authority(authorityPublicKey, URI(""), "You")
+            val authority = Authority(authorityPublicKey, URI("http://${config.server.host}:${config.server.port}"), "You")
             val keyStore = KeyStore(storagePath.resolve(config.security.keystore.name), config.security.keystore.password)
             val fileStore = LocalFileStore(storagePath.resolve("filestore"))
             val entityStoreDB = getEntityStoreDB(authority, storagePath)
@@ -93,9 +93,9 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
                 bindSingleton { TextExtractor() }
                 bindSingleton { Signator(instance()) }
                 bindSingleton { Encryptor(instance()) }
-                bindSingleton { AddressBook(instance(), storagePath, instance(), config.network) }
+                bindSingleton { AddressBook(instance(), storagePath, instance(), config.server, config.network) }
                 bindSingleton { PeerRouter(instance(), instance()) }
-                bindSingleton { NetworkNode(config.network, storagePath.resolve("network"), authority.authorityId, instance(), instance()) }
+                bindSingleton { NetworkNode(config.network, storagePath.resolve("network"), authority.authorityId, instance(), instance(), instance()) }
                 bindSingleton { LuceneSearchIndex(authority.authorityId, storagePath.resolve("lucene")) }
                 bindSingleton { ExposedEntityStore(entityStoreDB, instance(), instance(), instance(), instance()) }
                 bindSingleton { SearchService(instance(), instance(), instance()) }
@@ -115,9 +115,9 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
         }
 
         fun instance(applicationPath: Path, storagePath: Path, config: Config? = null) : Application {
-            val config = config ?: loadConfig(storagePath.resolve("opencola-server.yaml"))
-            val publicKey = getOrCreateRootPublicKey(storagePath, config.security)
-            return instance(applicationPath, storagePath, config, publicKey)
+            val appConfig = config ?: loadConfig(storagePath.resolve("opencola-server.yaml"))
+            val publicKey = getOrCreateRootPublicKey(storagePath, appConfig.security)
+            return instance(applicationPath, storagePath, appConfig, publicKey)
         }
     }
 }

@@ -1,14 +1,14 @@
 package opencola.core.network
 
 import opencola.core.TestApplication
-import opencola.core.config.ZeroTierConfig
-import opencola.core.config.setZeroTierConfig
 import opencola.core.io.readStdOut
 import opencola.core.model.Authority
+import opencola.core.model.ResourceEntity
 import opencola.core.network.zerotier.ZeroTierAddress
 import opencola.core.network.zerotier.ZeroTierClient
 import opencola.core.security.encode
 import opencola.core.storage.AddressBook
+import opencola.core.storage.EntityStore
 import opencola.server.PeerTest
 import opencola.server.handlers.Peer
 import org.junit.Test
@@ -48,9 +48,35 @@ class NetworkNodeTest : PeerTest() {
         assertEquals(authority0.imageUri, authority1.imageUri)
     }
 
-    private fun getApplicationNode(num: Int, zeroTierIntegrationEnabled: Boolean, persistent: Boolean = false): ApplicationNode {
-        val config = ApplicationNode.getBaseConfig().setZeroTierConfig(ZeroTierConfig(zeroTierIntegrationEnabled, baseZtPort + num))
-        return ApplicationNode.getNode(num, persistent, config)
+    private fun addPeer(applicationNode: ApplicationNode , peerApplicationNode: ApplicationNode) {
+        val inviteToken = peerApplicationNode.getInviteToken()
+        val networkNode = applicationNode.application.inject<NetworkNode>()
+        networkNode.updatePeer(networkNode.inviteTokenToPeer(inviteToken))
+    }
+
+    @Test
+    fun testHttpConnectAndReplicate(){
+        val application0 = getApplicationNode(0, zeroTierIntegrationEnabled = false).also { it.start() }
+        val authority0 = application0.application.inject<Authority>()
+        val resource0 = ResourceEntity(authority0.entityId, URI("https://resource0"), "Resource0")
+        val entityStore0 = application0.application.inject<EntityStore>().also { it.updateEntities(resource0) }
+
+        val application1 = getApplicationNode(1, zeroTierIntegrationEnabled = false).also { it.start() }
+        val authority1 = application1.application.inject<Authority>()
+        val resource1 = ResourceEntity(authority1.entityId, URI("https://resource1"), "Resource1")
+        val entityStore1 = application1.application.inject<EntityStore>().also { it.updateEntities(resource1) }
+
+        addPeer(application0, application1)
+        readStdOut { line -> line.contains("Completed requesting transactions from") }
+        addPeer(application1, application0)
+
+        // Connection should trigger two index operations from transaction sharing
+        readStdOut { line -> line.contains("LuceneSearchIndex: Indexing") }
+        readStdOut { line -> line.contains("LuceneSearchIndex: Indexing") }
+
+        // Check that resources replicated as expected
+        assertEquals(entityStore0.getEntity(resource1.authorityId, resource1.entityId)?.name, resource1.name)
+        assertEquals(entityStore1.getEntity(resource0.authorityId, resource0.entityId)?.name, resource0.name)
     }
 
     // @Test

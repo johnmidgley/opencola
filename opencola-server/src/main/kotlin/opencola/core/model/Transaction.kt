@@ -26,6 +26,7 @@ data class Transaction(val id: Id,
         // This is probably not the right way to serialize. Likely should create a serializer / provider that can be
         // configured to serialize in an appropriate format.
         // TODO: Validate transaction
+        // TODO: Ooops = Switch to signing hash - much faster
         return SignedTransaction(this, SIGNATURE_ALGO, signator.signBytes(authorityId, Transaction.encode(this)))
     }
 

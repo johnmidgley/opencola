@@ -1,6 +1,8 @@
 package opencola.core.network
 
 import mu.KotlinLogging
+import opencola.core.event.EventBus
+import opencola.core.event.Events
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.Authority
 import opencola.core.model.Id
@@ -18,7 +20,8 @@ class NetworkNode(
     private val storagePath: Path,
     private val authorityId: Id,
     private val addressBook: AddressBook,
-    private val encryptor: Encryptor
+    private val encryptor: Encryptor,
+    private val eventBus: EventBus,
 ) {
     private val logger = KotlinLogging.logger("NetworkNode")
     // TODO: Make install script put the platform dependent version of libzt in the right place. On mac, it needs to be
@@ -151,6 +154,14 @@ class NetworkNode(
         val peerToUpdate = existingPeerAuthority ?: peerAuthority
         zeroTierNetworkProvider.nullOrElse { it.updatePeer(peerToUpdate) }
         addressBook.updateAuthority(peerToUpdate)
+
+        if(existingPeerAuthority == null)
+            // New peer has been added - request transactions
+            eventBus.sendMessage(
+                Events.PeerNotification.toString(), PeerRouter.Notification(
+                    peerAuthority.entityId,
+                    PeerRouter.Event.Online
+                ).encode())
     }
 
     private fun removePeer(peerId: Id){

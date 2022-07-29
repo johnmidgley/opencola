@@ -2,7 +2,7 @@
   (:require
    [clojure.string :as string]
    [reagent.core :as reagent :refer [atom]]
-   [opencola.web-ui.common :as common :refer [action-img]]
+   [opencola.web-ui.common :as common :refer [action-img nbsp]]
    [opencola.web-ui.model.peer :as model]
    [opencola.web-ui.view.search :as search]
    [opencola.web-ui.model.error :as error]
@@ -37,44 +37,26 @@
         kvs (map (fn [[k v]] [(keyword k) (if (= k "isActive") (to-boolean v) v)]) pairs)]
     (into {:isActive false} kvs)))
 
-(defn update-token [peer!]
-  (swap! peer! assoc-in [:token] (peer-to-token @peer!)))
-
 (defn peer-value [peer! key editing?]
   [:div.peer-value
    [:input.peer-value
     {:type "text"
      :disabled (not editing?)
      :value (key @peer!)
-     :on-change #(do
-                   (swap! peer! assoc-in [key] (-> % .-target .-value))
-                   (update-token peer!))}]])
+     :on-change #(swap! peer! assoc-in [key] (-> % .-target .-value))}]])
 
 (defn peer-active [peer! editing?]
   [:input
    {:type "checkbox"
     :disabled (not editing?)
     :checked (:isActive @peer!)
-    :on-change #(do
-                  (swap! peer! assoc-in [:isActive] (-> % .-target .-checked))
-                  (update-token peer!))}])
+    :on-change #(swap! peer! assoc-in [:isActive] (-> % .-target .-checked))}])
 
-
-(defn peer-token [peer! editing?]
-  [:div.peer-value
-   [:input.peer-value
-    {:type "text"
-     :disabled (not editing?)
-     :value (:token @peer!)
-     :on-change #(let [token  (-> % .-target .-value)
-                       peer (assoc-in (token-to-peer token) [:token] token)]
-                   (reset! peer! peer))}]])
 
 (defn peer-item [peers! peer adding-peer?!]
   (let [creating? adding-peer?!
         editing?! (atom creating?)
-        original-peer (assoc-in peer [:token] (peer-to-token peer)) 
-        p! (atom original-peer)]
+        p! (atom peer)]
     (fn []
       (let [image-uri (:imageUri @p!)]
         [:div.peer-item
@@ -101,17 +83,16 @@
              [:td [:span.uri [peer-value p! :imageUri @editing?!]]]]
             [:tr 
              [:td.peer-field [action-img "refresh"]] 
-             [:td [peer-active p! @editing?!]]]
-            [:tr 
-             [:td.peer-field [action-img "token"]] 
-             [:td [peer-token p! creating?]]]]]]
+             [:td [peer-active p! @editing?!]]]]]]
          (if @editing?!
            [:div
-            [:button {:on-click #(do
-                                   (model/update-peer peers! (dissoc @p! :token))
-                                   (if adding-peer?! (reset! adding-peer?! false)))} "Save"] " "
+            [:button
+             {:disabled (and (not adding-peer?!) (= @p! peer)) 
+              :on-click #(do
+                           (model/update-peer peers! @p!)
+                           (if adding-peer?! (reset! adding-peer?! false)))} "Save"] " "
             [:button {:on-click  #(do
-                                    (reset! p! original-peer)
+                                    (reset! p! peer)
                                     (if adding-peer?! (reset! adding-peer?! false))
                                     (reset! editing?! false))} "Cancel"] " "
             (if (not creating?)
@@ -120,10 +101,47 @@
             [:button {:on-click #(reset! editing?! true)} "Edit"]])]))))
 
 
+(defn add-peer-item [peers! adding-peer?!]
+  (let [send-token! (atom "Loading...")
+        receive-token! (atom "")
+        peer! (atom nil)]
+    (model/get-invite-token send-token!)
+    (fn []
+      (if @peer!
+        [peer-item peers! @peer! adding-peer?!]
+        [:div.peer-item 
+         [:div.peer-img-box
+          [:img.peer-img 
+           {:src "../img/user.png"}]]
+         [:div.peer-info
+          [:table.peer-info
+           [:tbody
+            [:tr
+             [:td [:div.no-wrap "Give this token to your peer:"]]
+             [:td {:width "100%"}
+              [:input.peer-value
+               {:type "text"
+                :disabled true
+                :value @send-token!}]]]
+            [:tr
+             [:td [:div.no-wrap "Enter token from peer:"]]
+             [:td
+              [:input.peer-value
+               {:type "text"
+                :value @receive-token!
+                :on-change #(reset! receive-token! (-> % .-target .-value))}]]]
+            [:tr
+             [:td [:button {:on-click 
+                            (fn [] 
+                              (model/token-to-peer @receive-token! #(reset! peer! %)
+                                                   #_(model/update-peer peers! %))
+                              #_(reset! adding-peer?! false))} 
+                   "Add"]]]]]]]))))
+
 (defn peer-list [peers! adding-peer?!]
   (if @peers!
     [:div.peers 
-     (if @adding-peer?! [peer-item peers! {:isActive false} adding-peer?!])
+     (if @adding-peer?! [add-peer-item peers! adding-peer?!])
      
      (doall (for [peer (:results @peers!)]
               ^{:key peer} [peer-item peers! peer]))]))

@@ -6,7 +6,7 @@
 
 (defn search-box [query! on-enter]
   (fn []
-    [:div.search-box>input
+    [:div.search-box>input.search-input
      {:type "text"
       :value @query!
       :on-change #(reset! query! (-> % .-target .-value))
@@ -15,9 +15,11 @@
 
 (defn search-header [query! on-enter header-actions]
   [:div.search-header 
-   [:img {:src "../img/pull-tab.png" :width 50 :height 50 :on-click #(common/set-location "") }]
-   "openCola"
    [header-actions]
-   [search-box query! on-enter]])
+   [:table
+    [:tbody
+     [:tr
+      [:td [:img {:src "../img/pull-tab.png" :width 50 :height 50 :on-click #(common/set-location "") }]]
+      [:td [search-box query! on-enter]]]]]])
 
 

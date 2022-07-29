@@ -205,7 +205,7 @@ td {
 
 .header-actions {
     float: right;
-    padding-top: 50px;
+    padding-top: 15px;
 }
 
 .header-icon {
@@ -266,4 +266,16 @@ td {
 .uri {
     font-family: "Lucida Console", "Courier New", monospace;
     font-size: 13px;
+}
+
+.search-box {
+    padding-bottom: 7px;
+}
+
+.search-input {
+    width: 200px;
+}
+
+.no-wrap {
+    white-space: nowrap;
 }

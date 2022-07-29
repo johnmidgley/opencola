@@ -38,6 +38,7 @@ class PeerRouter(private val addressBook: AddressBook, private val eventBus: Eve
     }
 
     enum class Event {
+        Added,
         Online,
         NewTransaction
     }

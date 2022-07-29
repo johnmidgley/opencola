@@ -5,6 +5,10 @@ import io.ktor.server.netty.*
 import mu.KotlinLogging
 import opencola.core.TestApplication
 import opencola.core.config.Application
+import opencola.core.config.ZeroTierConfig
+import opencola.core.config.setZeroTierConfig
+import opencola.core.network.ApplicationNode
+import opencola.core.network.baseZtPort
 
 open class PeerTest {
     protected val logger = KotlinLogging.logger("PeerTransactionTest")
@@ -28,5 +32,10 @@ open class PeerTest {
         while(!started){
             Thread.sleep(100)
         }
+    }
+
+    protected fun getApplicationNode(num: Int, zeroTierIntegrationEnabled: Boolean, persistent: Boolean = false): ApplicationNode {
+        val config = ApplicationNode.getBaseConfig().setZeroTierConfig(ZeroTierConfig(zeroTierIntegrationEnabled, baseZtPort + num))
+        return ApplicationNode.getNode(num, persistent, config)
     }
 }

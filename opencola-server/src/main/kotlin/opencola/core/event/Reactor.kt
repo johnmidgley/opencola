@@ -135,7 +135,8 @@ class MainReactor(
         logger.info { "Handling notification for peer ${notification.peerId} event: ${notification.event}" }
 
         when(notification.event){
-            PeerRouter.Event.Online -> { requestTransactions(notification.peerId) }
+            PeerRouter.Event.Added -> requestTransactions(notification.peerId)
+            PeerRouter.Event.Online -> requestTransactions(notification.peerId)
             PeerRouter.Event.NewTransaction -> requestTransactions(notification.peerId)
         }
     }

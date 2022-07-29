@@ -4,6 +4,7 @@ import io.ktor.util.collections.*
 import mu.KotlinLogging
 import opencola.core.config.NetworkConfig
 import opencola.core.config.PeerConfig
+import opencola.core.config.ServerConfig
 import opencola.core.model.Authority
 import opencola.core.model.Id
 import opencola.core.security.Signator
@@ -12,8 +13,8 @@ import java.net.URI
 import java.nio.file.Path
 import java.security.PublicKey
 
-// TODO: Back by entity store
-class AddressBook(private val authority: Authority, storagePath: Path, signator: Signator, networkConfig: NetworkConfig) {
+// TODO: Move ServerConfig to NetworkConfig?
+class AddressBook(private val authority: Authority, storagePath: Path, signator: Signator, serverConfig: ServerConfig, networkConfig: NetworkConfig) {
     val logger = KotlinLogging.logger("AddressBook")
 
     private val activeTag = "active"
@@ -29,8 +30,14 @@ class AddressBook(private val authority: Authority, storagePath: Path, signator:
 
     init {
         // TODO: Does something have to be updated here when public key is updatable?
-        if(getAuthority(authority.authorityId) == null)
-            updateAuthority(authority)
+        val addressBookAuthority = getAuthority(authority.authorityId) ?: updateAuthority(authority)
+
+        if(addressBookAuthority.uri.toString().isBlank()) {
+            // Fallback to local server address.
+            // TODO: Is there a better place for this?
+            addressBookAuthority.uri = URI("http://${serverConfig.host}:${serverConfig.port}")
+            updateAuthority(addressBookAuthority)
+        }
 
         importPeers(networkConfig.peers)
     }
