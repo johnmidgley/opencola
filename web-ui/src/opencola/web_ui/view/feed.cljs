@@ -250,7 +250,7 @@
          common/inline-divider
          [action-summary feed! :comment action-expanded? activities #(swap! commenting? not)]
          common/inline-divider
-         [edit-control editing?!] 
+         [edit-control editing?!]
          [tags-control feed! item tagging?]
          [comment-control feed! entity-id nil "" commenting?]
          [item-saves (:save action-expanded?) (:save activities)]
@@ -272,7 +272,7 @@
 
 (defn item-image [summary]
   (let [item-uri (:uri summary)
-        image-uri (:imageUri summary)
+        image-uri (or (:imageUri summary) (and (not item-uri) (:postedByImageUri summary)))
         img [:img.item-img {:src image-uri}]]
     (if image-uri
       [:div.item-img-box 
@@ -291,6 +291,7 @@
         [item-image summary]
         [:p.item-desc (:description summary)]]
        [item-tags-summary (-> item :activities :tag)]
+       [:div.posted-by "Posted by: " (:postedBy summary)]
        [item-activities feed! item editing?!]])))
 
 

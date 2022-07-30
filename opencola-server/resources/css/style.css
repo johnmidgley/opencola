@@ -279,3 +279,10 @@ td {
 .no-wrap {
     white-space: nowrap;
 }
+
+.posted-by {
+   font-size: 14px;
+   color: grey;
+   padding-top: 5px;
+   padding-bottom: 5px;
+}

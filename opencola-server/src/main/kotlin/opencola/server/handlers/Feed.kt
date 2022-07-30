@@ -21,14 +21,24 @@ fun entityAttributeAsString(entity: Entity, attribute: Attribute) : String? {
     return entity.getValue(attribute.name).nullOrElse { attribute.codec.decode(it.bytes).toString() }
 }
 
-fun getSummary(authorityId: Id, entities: List<Entity>): Summary {
+fun getPostedById(entities: List<Entity>) : Id {
+    return entities.minByOrNull {
+        it.getAllFacts().minByOrNull {
+                fact -> fact.epochSecond!! }!!.epochSecond!!
+    } !!.authorityId
+}
+
+fun getSummary(authorityId: Id, entities: List<Entity>, idToAuthority: (Id) -> Authority?): Summary {
     val entity = entities.minByOrNull { if (it.authorityId == authorityId) 0 else 1 } !!
+    val postedByAuthority = idToAuthority(getPostedById(entities))
 
     return Summary(
         entityAttributeAsString(entity, Name.spec),
         entityAttributeAsString(entity, Uri.spec),
         entityAttributeAsString(entity, Description.spec),
         entityAttributeAsString(entity, ImageUri.spec),
+        if (postedByAuthority?.entityId == authorityId) "You" else postedByAuthority?.name,
+        postedByAuthority?.imageUri?.toString()
     )
 }
 
@@ -133,12 +143,22 @@ fun getComments(entityStore: EntityStore, entities: Iterable<Entity>): Map<Id, C
        .associateBy { it.entityId }
 }
 
+fun getAuthority(rootAuthorityId: Id, peerRouter: PeerRouter, authorityId: Id): Authority? {
+    return peerRouter.getPeer(authorityId).nullOrElse {
+        it.also {
+            if (it.entityId == rootAuthorityId) {
+                it.name = "You"
+            }
+        }
+    }
+}
+
 fun getEntityResults(authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter, entityIds: Set<Id>): List<EntityResult> {
     if(entityIds.isEmpty()){
         return emptyList()
     }
 
-    val idToAuthority: (Id) -> Authority? = { id -> if(id == authority.authorityId) authority else peerRouter.getPeer(id) }
+    val idToAuthority: (Id) -> Authority? = { id -> getAuthority(authority.entityId, peerRouter, id) }
     val entities = entityStore.getEntities(emptySet(), entityIds).filter { isEntityIsVisible(authority.authorityId, it) }
     val comments = getComments(entityStore, entities)
     val entitiesByEntityId = entities.groupBy { it.entityId }
@@ -150,7 +170,7 @@ fun getEntityResults(authority: Authority, entityStore: EntityStore, peerRouter:
                 val entitiesForId = entitiesByEntityId[it]!!
                 EntityResult(
                     it,
-                    getSummary(authority.authorityId, entitiesForId),
+                    getSummary(authority.authorityId, entitiesForId, idToAuthority),
                     activitiesByEntityId[it]!!
                 )
             }

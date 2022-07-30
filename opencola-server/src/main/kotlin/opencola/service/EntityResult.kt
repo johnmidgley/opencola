@@ -20,9 +20,9 @@ data class EntityResult(
     )
 
     @Serializable
-    data class Summary(val name: String?, val uri: String?, val description: String?, val imageUri: String?)
+    data class Summary(val name: String?, val uri: String?, val description: String?, val imageUri: String?, val postedBy: String?, val postedByImageUri: String?)
 
-    enum class ActionType(){
+    enum class ActionType() {
         Save,
         Trust,
         Like,
