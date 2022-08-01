@@ -94,7 +94,7 @@ class ProcessNode(private val nodePath: Path, val name: String, val serverPort: 
     }
 
     override fun getInviteToken(): String {
-        return jsonHttpClient.get(serviceUri.resolve("/peers/token"))
+        return jsonHttpClient.get<TokenRequest>(serviceUri.resolve("/peers/token")).token
     }
 
     override fun postInviteToken(token: String): Peer {

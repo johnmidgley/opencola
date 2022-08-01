@@ -43,6 +43,7 @@ class NetworkNode(
         }
 
         val authToken = getAuthToken(authority)
+        // TODO: Stopping seems unnecessary
         zeroTierNetworkProvider.nullOrElse { it.stop() }
 
         if (authToken != null) {
