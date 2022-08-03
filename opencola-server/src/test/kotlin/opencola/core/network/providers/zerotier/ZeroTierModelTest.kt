@@ -1,4 +1,4 @@
-package opencola.core.network.zerotier
+package opencola.core.network.providers.zerotier
 
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json

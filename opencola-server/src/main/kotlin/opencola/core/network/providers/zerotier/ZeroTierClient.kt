@@ -1,4 +1,4 @@
-package opencola.core.network.zerotier
+package opencola.core.network.providers.zerotier
 
 import io.ktor.client.*
 import io.ktor.client.features.json.*

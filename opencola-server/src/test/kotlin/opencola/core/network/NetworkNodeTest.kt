@@ -4,8 +4,8 @@ import opencola.core.TestApplication
 import opencola.core.io.readStdOut
 import opencola.core.model.Authority
 import opencola.core.model.ResourceEntity
-import opencola.core.network.zerotier.ZeroTierAddress
-import opencola.core.network.zerotier.ZeroTierClient
+import opencola.core.network.providers.zerotier.ZeroTierAddress
+import opencola.core.network.providers.zerotier.ZeroTierClient
 import opencola.core.security.encode
 import opencola.core.storage.AddressBook
 import opencola.core.storage.EntityStore
@@ -255,7 +255,10 @@ class NetworkNodeTest : PeerTest() {
         val addressBook = node0.application.inject<AddressBook>()
         val peer1 = addressBook.getAuthorities().single{ it.entityId != node0Authority.entityId }
         val networkNode0 = node0.application.inject<NetworkNode>()
-        networkNode0.sendMessage(peer1, "Hello!!")
+        val response = networkNode0.sendRequest(peer1, Request.Method.POST, "/test", "Hello".toByteArray())
+
+        assertNotNull(response)
+        println("Response: $response")
 
         Thread.sleep(1000)
 

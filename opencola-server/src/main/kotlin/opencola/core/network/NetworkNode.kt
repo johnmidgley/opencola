@@ -6,7 +6,7 @@ import opencola.core.event.Events
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.Authority
 import opencola.core.model.Id
-import opencola.core.network.zerotier.*
+import opencola.core.network.providers.zerotier.*
 import opencola.core.security.Encryptor
 import opencola.core.storage.AddressBook
 import opencola.server.handlers.Peer
@@ -43,7 +43,6 @@ class NetworkNode(
         }
 
         val authToken = getAuthToken(authority)
-        // TODO: Stopping seems unnecessary
         zeroTierNetworkProvider.nullOrElse { it.stop() }
 
         if (authToken != null) {
@@ -178,8 +177,9 @@ class NetworkNode(
         addressBook.deleteAuthority(peerId)
     }
 
-    fun sendMessage(peer: Authority, message: String) {
-        zeroTierNetworkProvider!!.sendRequest(peer, Request(authorityId, "POST", "/test", message.toByteArray()))
+    fun sendRequest(peer: Authority, method: Request.Method, path: String, body: ByteArray) : Response? {
+        // TODO: Dispatch based on peer provider
+        return zeroTierNetworkProvider!!.sendRequest(peer, Request(authorityId, method, path, body))
     }
 
 }

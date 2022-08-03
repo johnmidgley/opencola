@@ -1,4 +1,4 @@
-package opencola.core.network.zerotier
+package opencola.core.network.providers.zerotier
 
 import org.junit.Test
 import java.net.URI

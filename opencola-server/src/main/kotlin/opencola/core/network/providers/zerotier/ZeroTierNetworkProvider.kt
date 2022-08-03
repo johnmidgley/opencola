@@ -1,4 +1,4 @@
-package opencola.core.network.zerotier
+package opencola.core.network.providers.zerotier
 
 import com.zerotier.sockets.ZeroTierNative
 import com.zerotier.sockets.ZeroTierNode
@@ -14,8 +14,8 @@ import opencola.core.extensions.shutdownWithTimout
 import opencola.core.model.Authority
 import opencola.core.network.NetworkProvider
 import opencola.core.network.Request
+import opencola.core.network.Response
 import opencola.core.serialization.readString
-import opencola.core.serialization.writeByteArray
 import opencola.core.serialization.writeString
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -138,7 +138,9 @@ class ZeroTierNetworkProvider(
                 val request = Json.decodeFromString<Request>(it.readString())
                 logger.info { "String $request" }
             }
-            DataOutputStream(socket.outputStream).use { it.writeString("OK") }
+
+            val response = Json.encodeToString(Response(200, "OK", null))
+            DataOutputStream(socket.outputStream).use { it.write(response.toByteArray()) }
         } finally {
             socket.close()
         }
@@ -259,33 +261,43 @@ class ZeroTierNetworkProvider(
         }
     }
 
-    override fun sendRequest(peer: Authority, request: Request) {
+    override fun sendRequest(peer: Authority, request: Request) : Response? {
         logger.info { "Sending request: ${authority.name} - $request" }
+
+        if(authority.entityId == peer.entityId){
+            logger.warn { "Attempt to send request to self" }
+            return null
+        }
 
         val zeroTierAddress = peer.uri?.let { ZeroTierAddress.fromURI(it) }
 
         if (zeroTierAddress == null) {
             logger.error { "No ZT address to send message to: uri: ${authority.uri}" }
-            return
+            return null
         }
 
         if (zeroTierAddress.port == null) {
             logger.error { "No port specified in zeroTierAddress: $zeroTierAddress" }
-            return
+            return null
         }
 
-        val address = getRemoteAddress(zeroTierAddress) ?: return
+        val address = getRemoteAddress(zeroTierAddress) ?: return null
         logger.info { "Remote Address: $address" }
         val socket = ZeroTierSocket(address, zeroTierAddress.port)
 
         try {
+            // TODO: What should encoding be? Capn Proto?
             val message = Json.encodeToString(request)
             logger.info { "Sending: $message" }
             DataOutputStream(socket.outputStream).use { it.writeString(message) }
-            DataInputStream(socket.inputStream).use { logger.info { "Response: ${it.readString()}" } }
+            DataInputStream(socket.inputStream).use { return Json.decodeFromString<Response>(String(it.readAllBytes())) }
+        } catch (e: Exception){
+            logger.error { e }
         } finally {
             socket.close()
         }
+
+        return null
     }
 
 

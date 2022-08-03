@@ -3,7 +3,7 @@ package opencola.core.network
 import opencola.core.serialization.Base58
 import opencola.core.model.Authority
 import opencola.core.model.Id
-import opencola.core.network.zerotier.ZeroTierAddress
+import opencola.core.network.providers.zerotier.ZeroTierAddress
 import opencola.core.security.Signator
 import opencola.core.security.isValidSignature
 import opencola.core.serialization.*

@@ -1,4 +1,4 @@
-package opencola.core.network.zerotier
+package opencola.core.network.providers.zerotier
 
 import opencola.core.extensions.hexStringToByteArray
 import opencola.core.extensions.nullOrElse

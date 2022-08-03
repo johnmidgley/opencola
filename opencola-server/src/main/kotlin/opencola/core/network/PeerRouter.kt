@@ -118,7 +118,19 @@ class PeerRouter(private val addressBook: AddressBook, private val eventBus: Eve
                 return null
             }
 
-            val url = "${peer.uri}/transactions/${peer.entityId}${peerTransactionId.ifNotNullOrElse({ "/${it}" },{ "" })}?peerId=${authority.authorityId}"
+            val peerUri = peer.uri
+
+            if(peerUri == null){
+                logger.warn { "Ignoring peer without uri: ${peer.entityId}" }
+                return null
+            }
+
+            if(peerUri.scheme != "http"){
+                logger.warn { "Ignoring non http peer: $peerUri" }
+                return null
+            }
+
+            val url = "${peerUri}/transactions/${peer.entityId}${peerTransactionId.ifNotNullOrElse({ "/${it}" },{ "" })}?peerId=${authority.authorityId}"
             val response: TransactionsResponse = httpClient.get(url)
 
             // Suppress notifications, otherwise will trigger another transactions request

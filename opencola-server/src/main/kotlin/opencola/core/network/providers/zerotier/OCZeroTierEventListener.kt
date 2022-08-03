@@ -1,4 +1,4 @@
-package opencola.core.network.zerotier
+package opencola.core.network.providers.zerotier
 
 import com.zerotier.sockets.ZeroTierEventListener
 import com.zerotier.sockets.ZeroTierNative
