@@ -1,14 +1,17 @@
 package opencola.server.plugins
 
-import io.ktor.routing.*
+import io.ktor.application.*
 import io.ktor.application.Application
-import io.ktor.application.call
+import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.request.*
 import io.ktor.response.*
+import io.ktor.routing.*
 import mu.KotlinLogging
+import opencola.core.extensions.nullOrElse
 import opencola.core.model.Authority
 import opencola.core.model.Id
+import opencola.core.network.PeerRouter
 import opencola.server.handlers.*
 import opencola.core.config.Application as app
 
@@ -52,12 +55,22 @@ fun Application.configureRouting(app: app) {
             deleteComment(call, app.inject(), app.inject())
         }
 
-        get("/transactions/{authorityId}"){
-            handleGetTransactionsCall(call, app.inject(), app.inject())
+        suspend fun getTransactions(call: ApplicationCall) {
+            val authorityId =
+                Id.decode(call.parameters["authorityId"] ?: throw IllegalArgumentException("No authorityId set"))
+            val peerId = Id.decode(call.parameters["peerId"] ?: throw IllegalArgumentException("No peerId set"))
+            val transactionId = call.parameters["mostRecentTransactionId"].nullOrElse { Id.decode(it) }
+            val numTransactions = call.parameters["numTransactions"].nullOrElse { it.toInt() }
+
+            call.respond(handleGetTransactionsCall(app.inject(), app.inject(), authorityId, peerId, transactionId, numTransactions))
         }
 
-        get("/transactions/{authorityId}/{mostRecentTransactionId}"){
-            handleGetTransactionsCall(call, app.inject(), app.inject())
+        get("/transactions/{authorityId}") {
+            getTransactions(call)
+        }
+
+        get("/transactions/{authorityId}/{mostRecentTransactionId}") {
+            getTransactions(call)
         }
 
         get("/data/{id}"){
@@ -81,8 +94,10 @@ fun Application.configureRouting(app: app) {
             handleGetActionsCall(call, authority.authorityId, app.inject())
         }
 
-        post("/notifications"){
-            handlePostNotifications(call, app.inject(), app.inject())
+        post("/notifications") {
+            val notification = call.receive<PeerRouter.Notification>()
+            handlePostNotification(app.inject(), app.inject(), notification)
+            call.respond(HttpStatusCode.OK)
         }
 
         get("/feed"){

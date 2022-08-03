@@ -12,6 +12,7 @@ import opencola.core.network.PeerRouter
 import opencola.core.search.LuceneSearchIndex
 import opencola.core.security.*
 import opencola.core.storage.*
+import opencola.server.NetworkRequestRouter
 import opencola.service.search.SearchService
 import org.jetbrains.exposed.sql.Database
 import org.kodein.di.DI
@@ -95,7 +96,8 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
                 bindSingleton { Encryptor(instance()) }
                 bindSingleton { AddressBook(instance(), storagePath, instance(), config.server, config.network) }
                 bindSingleton { PeerRouter(instance(), instance()) }
-                bindSingleton { NetworkNode(config.network, storagePath.resolve("network"), authority.authorityId, instance(), instance(), instance()) }
+                bindSingleton { NetworkRequestRouter(instance(), instance(), instance(), instance()) }
+                bindSingleton { NetworkNode(config.network, storagePath.resolve("network"), authority.authorityId, instance(),instance(), instance(), instance()) }
                 bindSingleton { LuceneSearchIndex(authority.authorityId, storagePath.resolve("lucene")) }
                 bindSingleton { ExposedEntityStore(entityStoreDB, instance(), instance(), instance(), instance()) }
                 bindSingleton { SearchService(instance(), instance(), instance()) }

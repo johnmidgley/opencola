@@ -9,6 +9,7 @@ import opencola.core.model.Id
 import opencola.core.network.providers.zerotier.*
 import opencola.core.security.Encryptor
 import opencola.core.storage.AddressBook
+import opencola.server.NetworkRequestRouter
 import opencola.server.handlers.Peer
 import opencola.server.handlers.redactedNetworkToken
 import java.nio.file.Path
@@ -19,6 +20,7 @@ class NetworkNode(
     private val config: OpenColaNetworkConfig,
     private val storagePath: Path,
     private val authorityId: Id,
+    private val requestRouter: RequestRouter,
     private val addressBook: AddressBook,
     private val encryptor: Encryptor,
     private val eventBus: EventBus,
@@ -177,9 +179,14 @@ class NetworkNode(
         addressBook.deleteAuthority(peerId)
     }
 
-    fun sendRequest(peer: Authority, method: Request.Method, path: String, body: ByteArray) : Response? {
+
+    fun sendRequest(peer: Authority, request: Request) : Response? {
         // TODO: Dispatch based on peer provider
-        return zeroTierNetworkProvider!!.sendRequest(peer, Request(authorityId, method, path, body))
+        if(request.from != authorityId){
+            throw IllegalArgumentException("Cannot send request from a non local authority: ${request.from}")
+        }
+
+        return zeroTierNetworkProvider!!.sendRequest(peer, request)
     }
 
 }

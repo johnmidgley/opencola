@@ -255,7 +255,8 @@ class NetworkNodeTest : PeerTest() {
         val addressBook = node0.application.inject<AddressBook>()
         val peer1 = addressBook.getAuthorities().single{ it.entityId != node0Authority.entityId }
         val networkNode0 = node0.application.inject<NetworkNode>()
-        val response = networkNode0.sendRequest(peer1, Request.Method.POST, "/test", "Hello".toByteArray())
+        val request = Request(node0Authority.entityId, Request.Method.POST, "/test", mapOf("p1" to "v1"), "Hello".toByteArray())
+        val response = networkNode0.sendRequest(peer1, request)
 
         assertNotNull(response)
         println("Response: $response")

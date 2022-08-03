@@ -36,32 +36,31 @@ data class TransactionsResponse(
 //TODO: This should return transactions until the root transaction, not all transactions for the authority in the
 // store, as the user a peer may have deleted their store, which creates a new HEAD. Only the transaction for the
 // current chain should be propagated to other peers
-suspend fun handleGetTransactionsCall(call: ApplicationCall, entityStore: EntityStore, peerRouter: PeerRouter) {
-    val authorityId =
-        Id.decode(call.parameters["authorityId"] ?: throw IllegalArgumentException("No authorityId set"))
-    val peerId = Id.decode(call.parameters["peerId"] ?: throw IllegalArgumentException("No peerId set"))
-    val transactionId = call.parameters["mostRecentTransactionId"].nullOrElse { Id.decode(it) }
-
+fun handleGetTransactionsCall(entityStore: EntityStore,
+                                      peerRouter: PeerRouter,
+                                      authorityId : Id, // Id of user transactions are being requested for
+                                      peerId: Id, // Id of user making request
+                                      transactionId : Id?,
+                                      numTransactions: Int?,
+) : TransactionsResponse {
     logger.info { "handleGetTransactionsCall authorityId: $authorityId, peerId: $peerId, transactionId: $transactionId" }
 
     if(peerRouter.getPeer(peerId) == null){
-        logger.error { "Unknown peer attempted to request transactions: $peerId" }
-        call.respond(HttpStatusCode.Unauthorized)
-        return
+        throw RuntimeException("Unknown peer attempted to request transactions: $peerId")
     }
 
     val extra = (if (transactionId == null) 0 else 1)
-    val numTransactions = (call.parameters["numTransactions"].nullOrElse { it.toInt() } ?: 10) + extra
+    val totalNumTransactions = (numTransactions ?: 10) + extra
     val currentTransactionId = entityStore.getLastTransactionId(authorityId)
     val transactions = entityStore.getSignedTransactions(
         authorityId,
         transactionId,
         TransactionOrder.IdAscending,
-        numTransactions
+        totalNumTransactions
     ).drop(extra)
 
     peerRouter.updateStatus(peerId, Online)
-    call.respond(TransactionsResponse(transactionId, currentTransactionId, transactions.toList()))
+    return TransactionsResponse(transactionId, currentTransactionId, transactions.toList())
 }
 
 suspend fun handleGetDataCall(call: ApplicationCall, mhtCache: MhtCache, authorityId: Id) {
@@ -94,14 +93,12 @@ suspend fun handleGetDataPartCall(call: ApplicationCall, authorityId: Id, mhtCac
 }
 
 // TODO - This should change to handlePeerEvent
-suspend fun handlePostNotifications(call: ApplicationCall, addressBook: AddressBook, eventBus: EventBus) {
-    val notification = call.receive<PeerRouter.Notification>()
+fun handlePostNotification(addressBook: AddressBook, eventBus: EventBus, notification: PeerRouter.Notification) {
     logger.info { "Received notification: $notification" }
 
     addressBook.getAuthority(notification.peerId)
         ?: throw IllegalArgumentException("Received notification from unknown peer: ${notification.peerId}")
 
     eventBus.sendMessage(Events.PeerNotification.toString(), notification.encode())
-    call.respond(HttpStatusCode.OK)
 }
 
