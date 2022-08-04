@@ -19,10 +19,17 @@ class NetworkRequestRouter(
 ) : RequestRouter(
     listOf(
         Route(
+            GET,
+            "/ping"
+        ) { Response(200, "Pong") },
+        Route(
             POST,
             "/notifications"
         ) { request ->
-            handlePostNotification(addressBook, eventBus, request.decodeBody())
+            val notification = request.decodeBody<PeerRouter.Notification>()
+                ?: throw IllegalArgumentException("Body must contain Notification")
+
+            handlePostNotification(addressBook, eventBus, notification)
             Response(200)
         },
 
@@ -36,7 +43,7 @@ class NetworkRequestRouter(
 
             val authorityId =
                 Id.decode(request.params["authorityId"] ?: throw IllegalArgumentException("No authorityId set"))
-            val peerId = Id.decode( request.params["peerid"] ?: throw IllegalArgumentException("No peerId set"))
+            val peerId = request.from
             val transactionId = request.params["mostRecentTransactionId"].nullOrElse { Id.decode(it) }
             val numTransactions = request.params["numTransactions"].nullOrElse { it.toInt() }
 

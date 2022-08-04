@@ -9,7 +9,6 @@ import opencola.core.model.Id
 import opencola.core.network.providers.zerotier.*
 import opencola.core.security.Encryptor
 import opencola.core.storage.AddressBook
-import opencola.server.NetworkRequestRouter
 import opencola.server.handlers.Peer
 import opencola.server.handlers.redactedNetworkToken
 import java.nio.file.Path
@@ -20,7 +19,7 @@ class NetworkNode(
     private val config: OpenColaNetworkConfig,
     private val storagePath: Path,
     private val authorityId: Id,
-    private val requestRouter: RequestRouter,
+    private val router: RequestRouter,
     private val addressBook: AddressBook,
     private val encryptor: Encryptor,
     private val eventBus: EventBus,
@@ -48,7 +47,7 @@ class NetworkNode(
         zeroTierNetworkProvider.nullOrElse { it.stop() }
 
         if (authToken != null) {
-            zeroTierNetworkProvider = ZeroTierNetworkProvider(storagePath, config.zeroTierConfig, authority, authToken)
+            zeroTierNetworkProvider = ZeroTierNetworkProvider(storagePath, config.zeroTierConfig, authority, router, authToken)
             zeroTierNetworkProvider!!.start()
             authority.uri = zeroTierNetworkProvider!!.getAddress()
 

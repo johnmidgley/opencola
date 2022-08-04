@@ -14,6 +14,7 @@ import opencola.core.extensions.shutdownWithTimout
 import opencola.core.model.Authority
 import opencola.core.network.NetworkProvider
 import opencola.core.network.Request
+import opencola.core.network.RequestRouter
 import opencola.core.network.Response
 import opencola.core.serialization.readString
 import opencola.core.serialization.writeString
@@ -30,7 +31,8 @@ class ZeroTierNetworkProvider(
     private val storagePath: Path,
     private val config: ZeroTierConfig,
     private val authority: Authority,
-    authToken: String
+    private val router: RequestRouter,
+    authToken: String,
 ) : NetworkProvider {
     private val node = ZeroTierNode()
     private var networkId: ZeroTierId? = null
@@ -137,10 +139,9 @@ class ZeroTierNetworkProvider(
             DataInputStream(socket.inputStream).use {
                 val request = Json.decodeFromString<Request>(it.readString())
                 logger.info { "String $request" }
+                val response = Json.encodeToString(router.handlerRequest(request))
+                DataOutputStream(socket.outputStream).use { out -> out.write(response.toByteArray()) }
             }
-
-            val response = Json.encodeToString(Response(200, "OK", null))
-            DataOutputStream(socket.outputStream).use { it.write(response.toByteArray()) }
         } finally {
             socket.close()
         }
@@ -153,7 +154,7 @@ class ZeroTierNetworkProvider(
 
         // TODO: Config timeout
         while (!node.isNetworkTransportReady(networkId) && Instant.now().epochSecond - startTime < 10) {
-            ZeroTierNative.zts_util_delay(50);
+            ZeroTierNative.zts_util_delay(50)
         }
 
         if(running && !node.isNetworkTransportReady(networkId)){
@@ -163,7 +164,7 @@ class ZeroTierNetworkProvider(
 
     private fun listenForConnections() {
         waitUntilNetworkReady()
-        val address = node.getIPv4Address(expectNetworkId().toLong());
+        val address = node.getIPv4Address(expectNetworkId().toLong())
         logger.info { "Listening for connections - $address port: ${config.port}" }
         val listener = ZeroTierServerSocket(config.port)
 
@@ -186,7 +187,7 @@ class ZeroTierNetworkProvider(
 
         while (!node.isOnline) {
             // TODO: Break infinite loop
-            ZeroTierNative.zts_util_delay(50);
+            ZeroTierNative.zts_util_delay(50)
         }
 
         getOrCreateNodeNetwork()
@@ -309,11 +310,7 @@ class ZeroTierNetworkProvider(
             return null
         }
 
-        val nodeId = zeroTierAddress.nodeId?.let{
-            // TODO: Move text <-> long conversions to ZeroTierAddress
-            it.toLong(16)
-            // LongByteArrayCodec.decode(it.hexStringToByteArray())
-        }
+        val nodeId = zeroTierAddress.nodeId?.toLong(16)
 
         if(nodeId == null){
             logger.error { "Unable to determine nodeId to send message: $zeroTierAddress" }

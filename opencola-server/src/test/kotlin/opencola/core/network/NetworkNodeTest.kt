@@ -4,6 +4,7 @@ import opencola.core.TestApplication
 import opencola.core.io.readStdOut
 import opencola.core.model.Authority
 import opencola.core.model.ResourceEntity
+import opencola.core.network.Request.Method.*
 import opencola.core.network.providers.zerotier.ZeroTierAddress
 import opencola.core.network.providers.zerotier.ZeroTierClient
 import opencola.core.security.encode
@@ -241,7 +242,7 @@ class NetworkNodeTest : PeerTest() {
         ProcessNode.stopAllNodes()
         val createNodes = false
 
-        val (node0, node1) = if(createNodes) {
+        val (node0, _) = if(createNodes) {
             makeAndConnectNode0andNode1()
             return
         }
@@ -255,12 +256,19 @@ class NetworkNodeTest : PeerTest() {
         val addressBook = node0.application.inject<AddressBook>()
         val peer1 = addressBook.getAuthorities().single{ it.entityId != node0Authority.entityId }
         val networkNode0 = node0.application.inject<NetworkNode>()
-        val request = Request(node0Authority.entityId, Request.Method.POST, "/test", mapOf("p1" to "v1"), "Hello".toByteArray())
+
+        // val request = Request(node0Authority.entityId, GET, "/ping")
+
+//        val request = Request(node0Authority.entityId, GET, "/transactions", mapOf("authorityId" to "5BLZBd3f1rWTYKax26h2DVZeo9j1UsBL2cHZLnmpSMmo"))
+//        val response = networkNode0.sendRequest(peer1, request)
+//        println("Body: ${response?.decodeBody<TransactionsResponse>()}")
+
+        val notification = PeerRouter.Notification(node0Authority.entityId, PeerRouter.Event.NewTransaction)
+        val request = request(node0Authority.entityId, POST, "/notifications", null, notification)
         val response = networkNode0.sendRequest(peer1, request)
 
         assertNotNull(response)
         println("Response: $response")
-
         Thread.sleep(1000)
 
         println("Done")
