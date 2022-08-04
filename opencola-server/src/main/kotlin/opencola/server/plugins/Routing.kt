@@ -62,7 +62,7 @@ fun Application.configureRouting(app: app) {
             val transactionId = call.parameters["mostRecentTransactionId"].nullOrElse { Id.decode(it) }
             val numTransactions = call.parameters["numTransactions"].nullOrElse { it.toInt() }
 
-            call.respond(handleGetTransactionsCall(app.inject(), app.inject(), authorityId, peerId, transactionId, numTransactions))
+            call.respond(handleGetTransactionsCall(app.inject(), app.inject(), app.inject(), authorityId, peerId, transactionId, numTransactions))
         }
 
         get("/transactions/{authorityId}") {

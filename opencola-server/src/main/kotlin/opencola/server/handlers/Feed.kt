@@ -6,8 +6,8 @@ import kotlinx.serialization.Serializable
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.*
 import opencola.core.model.CoreAttribute.*
-import opencola.core.network.PeerRouter
 import opencola.core.search.SearchIndex
+import opencola.core.storage.AddressBook
 import opencola.core.storage.EntityStore
 import opencola.service.EntityResult
 import opencola.service.EntityResult.*
@@ -143,8 +143,8 @@ fun getComments(entityStore: EntityStore, entities: Iterable<Entity>): Map<Id, C
        .associateBy { it.entityId }
 }
 
-fun getAuthority(rootAuthorityId: Id, peerRouter: PeerRouter, authorityId: Id): Authority? {
-    return peerRouter.getPeer(authorityId).nullOrElse {
+fun getAuthority(rootAuthorityId: Id, addressBook: AddressBook, authorityId: Id): Authority? {
+    return addressBook.getAuthority(authorityId).nullOrElse {
         it.also {
             if (it.entityId == rootAuthorityId) {
                 it.name = "You"
@@ -153,12 +153,12 @@ fun getAuthority(rootAuthorityId: Id, peerRouter: PeerRouter, authorityId: Id): 
     }
 }
 
-fun getEntityResults(authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter, entityIds: Set<Id>): List<EntityResult> {
+fun getEntityResults(authority: Authority, entityStore: EntityStore, addressBook: AddressBook, entityIds: Set<Id>): List<EntityResult> {
     if(entityIds.isEmpty()){
         return emptyList()
     }
 
-    val idToAuthority: (Id) -> Authority? = { id -> getAuthority(authority.entityId, peerRouter, id) }
+    val idToAuthority: (Id) -> Authority? = { id -> getAuthority(authority.entityId, addressBook, id) }
     val entities = entityStore.getEntities(emptySet(), entityIds).filter { isEntityIsVisible(authority.authorityId, it) }
     val comments = getComments(entityStore, entities)
     val entitiesByEntityId = entities.groupBy { it.entityId }
@@ -176,8 +176,8 @@ fun getEntityResults(authority: Authority, entityStore: EntityStore, peerRouter:
             }
 }
 
-fun getEntityResult(authority: Authority, entityStore: EntityStore, peerRouter: PeerRouter, entityId: Id) : EntityResult? {
-    return getEntityResults(authority, entityStore, peerRouter, setOf(entityId)).firstOrNull()
+fun getEntityResult(authority: Authority, entityStore: EntityStore, addressBook: AddressBook, entityId: Id) : EntityResult? {
+    return getEntityResults(authority, entityStore, addressBook, setOf(entityId)).firstOrNull()
 }
 
 suspend fun handleGetFeed(
@@ -185,7 +185,7 @@ suspend fun handleGetFeed(
     authority: Authority,
     entityStore: EntityStore,
     searchIndex: SearchIndex,
-    peerRouter: PeerRouter
+    addressBook: AddressBook,
 ) {
     // TODO: Look for startTransactionId in call (For paging)
     val entityIds = getEntityIds(entityStore, searchIndex, call.parameters["q"])
@@ -193,6 +193,6 @@ suspend fun handleGetFeed(
     call.respond(FeedResult(
         authority.authorityId,
         null,
-        getEntityResults(authority, entityStore, peerRouter, entityIds)
+        getEntityResults(authority, entityStore, addressBook, entityIds)
     ))
 }

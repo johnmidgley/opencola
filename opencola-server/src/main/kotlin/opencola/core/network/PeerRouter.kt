@@ -68,14 +68,6 @@ class PeerRouter(private val addressBook: AddressBook, private val eventBus: Eve
         }
     }
 
-    fun getPeer(peerId: Id) : Authority? {
-        return addressBook.getAuthority(peerId)
-    }
-
-    fun getPeers() : Set<Authority> {
-        return addressBook.getAuthorities(true)
-    }
-
     fun broadcastMessage(path: String, message: Any){
         runBlocking {
             val peers = addressBook.getAuthorities(true)

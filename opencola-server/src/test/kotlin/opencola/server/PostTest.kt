@@ -3,6 +3,7 @@ package opencola.server
 import opencola.core.TestApplication
 import opencola.core.model.Authority
 import opencola.core.network.PeerRouter
+import opencola.core.storage.AddressBook
 import opencola.core.storage.EntityStore
 import opencola.server.handlers.EntityPayload
 import opencola.server.handlers.newPost
@@ -20,9 +21,9 @@ class PostTest {
     fun testNewPost() {
         val authority by app.injector.instance<Authority>()
         val entityStore by app.injector.instance<EntityStore>()
-        val peerRouter by app.injector.instance<PeerRouter>()
+        val addressBook by app.injector.instance<AddressBook>()
         val entityPayload = EntityPayload("", "Name", "https://image.com", "description", true, "tag", "comment")
-        val result = newPost(authority, entityStore, peerRouter, entityPayload)
+        val result = newPost(authority, entityStore, addressBook, entityPayload)
 
         assertNotNull(result)
 

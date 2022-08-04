@@ -104,7 +104,7 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
                 // TODO: Add unit tests for MhtCache
                 // TODO: Get cache name from config
                 bindSingleton { MhtCache(storagePath.resolve("mht-cache"), instance(), instance()) }
-                bindSingleton { MainReactor(instance(), instance(), instance(), instance()) }
+                bindSingleton { MainReactor(instance(), instance(), instance(), instance(), instance()) }
                 bindSingleton { EventBus(storagePath, config.eventBus) }
             }
 

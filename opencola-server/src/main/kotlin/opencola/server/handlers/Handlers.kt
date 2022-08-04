@@ -2,13 +2,11 @@ package opencola.server.handlers
 
 import io.ktor.application.*
 import io.ktor.http.*
-import io.ktor.request.*
 import io.ktor.response.*
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import opencola.core.event.EventBus
 import opencola.core.event.Events
-import opencola.core.extensions.nullOrElse
 import opencola.core.model.*
 import opencola.core.network.PeerRouter
 import opencola.core.network.PeerRouter.PeerStatus.Online
@@ -36,16 +34,18 @@ data class TransactionsResponse(
 //TODO: This should return transactions until the root transaction, not all transactions for the authority in the
 // store, as the user a peer may have deleted their store, which creates a new HEAD. Only the transaction for the
 // current chain should be propagated to other peers
-fun handleGetTransactionsCall(entityStore: EntityStore,
-                                      peerRouter: PeerRouter,
-                                      authorityId : Id, // Id of user transactions are being requested for
-                                      peerId: Id, // Id of user making request
-                                      transactionId : Id?,
-                                      numTransactions: Int?,
-) : TransactionsResponse {
+fun handleGetTransactionsCall(
+    entityStore: EntityStore,
+    peerRouter: PeerRouter,
+    addressBook: AddressBook,
+    authorityId: Id, // Id of user transactions are being requested for
+    peerId: Id, // Id of user making request
+    transactionId: Id?,
+    numTransactions: Int?,
+): TransactionsResponse {
     logger.info { "handleGetTransactionsCall authorityId: $authorityId, peerId: $peerId, transactionId: $transactionId" }
 
-    if(peerRouter.getPeer(peerId) == null){
+    if(addressBook.getAuthority(peerId) == null){
         throw RuntimeException("Unknown peer attempted to request transactions: $peerId")
     }
 

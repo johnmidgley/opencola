@@ -49,13 +49,14 @@ class NetworkRequestRouter(
 
             val transactionResponse =
                 handleGetTransactionsCall(
-                entityStore,
-                peerRouter,
-                authorityId,
-                peerId,
-                transactionId,
-                numTransactions
-            )
+                    entityStore,
+                    peerRouter,
+                    addressBook,
+                    authorityId,
+                    peerId,
+                    transactionId,
+                    numTransactions
+                )
 
             response(200, "OK", transactionResponse)
         }

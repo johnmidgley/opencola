@@ -94,6 +94,7 @@ class AddressBook(private val authority: Authority, storagePath: Path, signator:
         return entityStore.getEntity(authority.authorityId, id) as Authority?
     }
 
+    // TODO: Make isActive be a property of Authority and remove filter here (caller can do it)
     fun getAuthorities(filterActive: Boolean = false) : Set<Authority> {
         return entityStore.getEntities(setOf(authority.authorityId), emptySet())
             .filterIsInstance<Authority>()

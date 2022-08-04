@@ -11,6 +11,7 @@ import opencola.core.event.EventBus.Event
 import opencola.core.model.*
 import opencola.core.network.PeerRouter
 import opencola.core.search.SearchIndex
+import opencola.core.storage.AddressBook
 import opencola.core.storage.EntityStore
 import java.io.ByteArrayInputStream
 
@@ -23,7 +24,8 @@ class MainReactor(
     private val authority: Authority,
     private val entityStore: EntityStore,
     private val searchIndex: SearchIndex,
-    private val peerRouter: PeerRouter
+    private val peerRouter: PeerRouter,
+    private val addressBook: AddressBook,
 ) : Reactor {
     private val logger = KotlinLogging.logger("MainReactor")
     private val httpClient = HttpClient(CIO) {
@@ -38,7 +40,8 @@ class MainReactor(
     }
 
     private fun updatePeerTransactions() {
-        val peers = peerRouter.getPeers()
+        val peers = addressBook.getAuthorities(filterActive = true)
+
         if(peers.isNotEmpty()) {
             logger.info { "Updating peer transactions" }
 
@@ -83,7 +86,7 @@ class MainReactor(
         // chain to existing ones, which can happen if a peer deletes their store). If this happens, inform the user
         // and ask if "abandoned" transactions should be deleted.
         // TODO: Catch / handle this error and return appropriate forbidden / not authorized status
-        val peer = peerRouter.getPeer(peerId)
+        val peer = addressBook.getAuthority(peerId)
             ?: throw IllegalArgumentException("Attempt to request transactions for unknown peer: $peerId ")
 
 
