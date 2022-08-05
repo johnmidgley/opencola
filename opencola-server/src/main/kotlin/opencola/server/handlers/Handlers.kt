@@ -8,8 +8,9 @@ import mu.KotlinLogging
 import opencola.core.event.EventBus
 import opencola.core.event.Events
 import opencola.core.model.*
-import opencola.core.network.PeerRouter
-import opencola.core.network.PeerRouter.PeerStatus.Online
+import opencola.core.network.NetworkNode
+import opencola.core.network.NetworkNode.*
+import opencola.core.network.NetworkNode.PeerStatus.*
 import opencola.core.storage.AddressBook
 import opencola.core.storage.EntityStore
 import opencola.core.storage.EntityStore.TransactionOrder
@@ -36,7 +37,7 @@ data class TransactionsResponse(
 // current chain should be propagated to other peers
 fun handleGetTransactionsCall(
     entityStore: EntityStore,
-    peerRouter: PeerRouter,
+    networkNode: NetworkNode,
     addressBook: AddressBook,
     authorityId: Id, // Id of user transactions are being requested for
     peerId: Id, // Id of user making request
@@ -59,7 +60,8 @@ fun handleGetTransactionsCall(
         totalNumTransactions
     ).drop(extra)
 
-    peerRouter.updateStatus(peerId, Online)
+    // TODO: This shouldn't be done here. NetworkNode should set this when reciving calls
+    networkNode.updateStatus(peerId, Online)
     return TransactionsResponse(transactionId, currentTransactionId, transactions.toList())
 }
 
@@ -93,7 +95,7 @@ suspend fun handleGetDataPartCall(call: ApplicationCall, authorityId: Id, mhtCac
 }
 
 // TODO - This should change to handlePeerEvent
-fun handlePostNotification(addressBook: AddressBook, eventBus: EventBus, notification: PeerRouter.Notification) {
+fun handlePostNotification(addressBook: AddressBook, eventBus: EventBus, notification: Notification) {
     logger.info { "Received notification: $notification" }
 
     addressBook.getAuthority(notification.peerId)

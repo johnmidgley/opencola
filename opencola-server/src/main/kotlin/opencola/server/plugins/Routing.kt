@@ -11,7 +11,8 @@ import mu.KotlinLogging
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.Authority
 import opencola.core.model.Id
-import opencola.core.network.PeerRouter
+import opencola.core.network.NetworkNode
+import opencola.core.network.NetworkNode.*
 import opencola.server.handlers.*
 import opencola.core.config.Application as app
 
@@ -95,7 +96,7 @@ fun Application.configureRouting(app: app) {
         }
 
         post("/notifications") {
-            val notification = call.receive<PeerRouter.Notification>()
+            val notification = call.receive<Notification>()
             handlePostNotification(app.inject(), app.inject(), notification)
             call.respond(HttpStatusCode.OK)
         }

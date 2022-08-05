@@ -17,7 +17,6 @@ class ZeroTierIdTest {
         val networkId = "d3ecf5726d5f15f6"
         val zeroTierNetworkId = ZeroTierId(networkId)
 
-        val l = zeroTierNetworkId.toLong().toString(16)
         assertEquals(networkId, zeroTierNetworkId.toString())
         assertEquals(networkId, ZeroTierId(zeroTierNetworkId.toLong()).toString())
         assertEquals(networkId, ZeroTierId(BigInteger(networkId, 16)).toString())

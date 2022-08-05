@@ -9,7 +9,8 @@ import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import opencola.core.event.EventBus.Event
 import opencola.core.model.*
-import opencola.core.network.PeerRouter
+import opencola.core.network.NetworkNode
+import opencola.core.network.NetworkNode.Event.*
 import opencola.core.search.SearchIndex
 import opencola.core.storage.AddressBook
 import opencola.core.storage.EntityStore
@@ -24,7 +25,7 @@ class MainReactor(
     private val authority: Authority,
     private val entityStore: EntityStore,
     private val searchIndex: SearchIndex,
-    private val peerRouter: PeerRouter,
+    private val networkNode: NetworkNode,
     private val addressBook: AddressBook,
 ) : Reactor {
     private val logger = KotlinLogging.logger("MainReactor")
@@ -66,7 +67,7 @@ class MainReactor(
 
             //TODO - see implement PeerService.get(peer, path) to get rid of httpClient here
             // plus no need to update peer status here
-            val transactionsResponse = peerRouter.getTransactions(authority, peer, peerTransactionId)
+            val transactionsResponse = networkNode.getTransactions(authority, peer, peerTransactionId)
 
             if (transactionsResponse == null || transactionsResponse.transactions.isEmpty())
                 break
@@ -104,9 +105,9 @@ class MainReactor(
 
         if (signedTransaction.transaction.authorityId == authority.authorityId) {
             // Transaction originated locally, so inform peers
-            peerRouter.broadcastMessage(
+            networkNode.broadcastMessage(
                 "notifications",
-                PeerRouter.Notification(signedTransaction.transaction.authorityId, PeerRouter.Event.NewTransaction)
+                NetworkNode.Notification(signedTransaction.transaction.authorityId, NewTransaction)
             )
         }
     }
@@ -134,13 +135,13 @@ class MainReactor(
     }
 
     private fun handlePeerNotification(event: Event){
-        val notification = ByteArrayInputStream(event.data).use { PeerRouter.Notification.decode(it) }
+        val notification = ByteArrayInputStream(event.data).use { NetworkNode.Notification.decode(it) }
         logger.info { "Handling notification for peer ${notification.peerId} event: ${notification.event}" }
 
         when(notification.event){
-            PeerRouter.Event.Added -> requestTransactions(notification.peerId)
-            PeerRouter.Event.Online -> requestTransactions(notification.peerId)
-            PeerRouter.Event.NewTransaction -> requestTransactions(notification.peerId)
+            Added -> requestTransactions(notification.peerId)
+            Online -> requestTransactions(notification.peerId)
+            NewTransaction -> requestTransactions(notification.peerId)
         }
     }
 

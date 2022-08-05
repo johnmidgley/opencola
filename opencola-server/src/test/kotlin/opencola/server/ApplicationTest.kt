@@ -9,7 +9,9 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import opencola.core.TestApplication
 import opencola.core.model.*
-import opencola.core.network.PeerRouter
+import opencola.core.network.NetworkNode
+import opencola.core.network.NetworkNode.*
+import opencola.core.network.NetworkNode.Event.*
 import opencola.core.security.generateKeyPair
 import opencola.core.storage.AddressBook
 import opencola.core.storage.EntityStore
@@ -154,7 +156,7 @@ class ApplicationTest {
         val localAuthority by injector.instance<Authority>()
         val addressBook by injector.instance<AddressBook>()
         val peerAuthority = addressBook.updateAuthority(Authority(localAuthority.authorityId, generateKeyPair().public, URI(""), "Test"))
-        val notification = PeerRouter.Notification(peerAuthority.authorityId, PeerRouter.Event.NewTransaction)
+        val notification = Notification(peerAuthority.authorityId, NewTransaction)
 
         withTestApplication({ configureRouting(application); configureContentNegotiation() }) {
             with(handleRequest(HttpMethod.Post, "/notifications"){

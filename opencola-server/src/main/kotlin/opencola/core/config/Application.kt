@@ -8,7 +8,6 @@ import opencola.core.event.Reactor
 import opencola.core.model.Authority
 import opencola.core.model.Id
 import opencola.core.network.NetworkNode
-import opencola.core.network.PeerRouter
 import opencola.core.network.RequestRouter
 import opencola.core.search.LuceneSearchIndex
 import opencola.core.security.*
@@ -96,7 +95,6 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
                 bindSingleton { Signator(instance()) }
                 bindSingleton { Encryptor(instance()) }
                 bindSingleton { AddressBook(instance(), storagePath, instance(), config.server, config.network) }
-                bindSingleton { PeerRouter(instance(), instance()) }
                 bindSingleton { RequestRouter() }
                 bindSingleton { NetworkNode(config.network, storagePath.resolve("network"), authority.authorityId, instance(),instance(), instance(), instance()) }
                 bindSingleton { LuceneSearchIndex(authority.authorityId, storagePath.resolve("lucene")) }

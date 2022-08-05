@@ -4,6 +4,8 @@ import opencola.core.TestApplication
 import opencola.core.io.readStdOut
 import opencola.core.model.Authority
 import opencola.core.model.ResourceEntity
+import opencola.core.network.NetworkNode.*
+import opencola.core.network.NetworkNode.Event.*
 import opencola.core.network.Request.Method.*
 import opencola.core.network.providers.zerotier.ZeroTierAddress
 import opencola.core.network.providers.zerotier.ZeroTierClient
@@ -267,9 +269,9 @@ class NetworkNodeTest : PeerTest() {
         val transactionsResponse = networkNode0.sendRequest(peer1, transactionsRequest)
         assertNotNull(transactionsResponse)
         println("Response: $transactionsResponse")
-        println("Body: ${transactionsResponse?.decodeBody<TransactionsResponse>()}")
+        println("Body: ${transactionsResponse.decodeBody<TransactionsResponse>()}")
 
-        val notification = PeerRouter.Notification(node0Authority.entityId, PeerRouter.Event.NewTransaction)
+        val notification = Notification(node0Authority.entityId, NewTransaction)
         val notificationRequest = request(node0Authority.entityId, POST, "/notifications", null, notification)
         val notificationResponse = networkNode0.sendRequest(peer1, notificationRequest)
         assertNotNull(notificationResponse)

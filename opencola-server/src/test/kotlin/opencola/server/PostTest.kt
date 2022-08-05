@@ -2,7 +2,6 @@ package opencola.server
 
 import opencola.core.TestApplication
 import opencola.core.model.Authority
-import opencola.core.network.PeerRouter
 import opencola.core.storage.AddressBook
 import opencola.core.storage.EntityStore
 import opencola.server.handlers.EntityPayload
