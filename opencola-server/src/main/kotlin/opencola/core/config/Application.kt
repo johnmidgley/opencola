@@ -9,10 +9,11 @@ import opencola.core.model.Authority
 import opencola.core.model.Id
 import opencola.core.network.NetworkNode
 import opencola.core.network.PeerRouter
+import opencola.core.network.RequestRouter
 import opencola.core.search.LuceneSearchIndex
 import opencola.core.security.*
 import opencola.core.storage.*
-import opencola.server.NetworkRequestRouter
+import opencola.server.setNetworkRouting
 import opencola.service.search.SearchService
 import org.jetbrains.exposed.sql.Database
 import org.kodein.di.DI
@@ -96,7 +97,7 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
                 bindSingleton { Encryptor(instance()) }
                 bindSingleton { AddressBook(instance(), storagePath, instance(), config.server, config.network) }
                 bindSingleton { PeerRouter(instance(), instance()) }
-                bindSingleton { NetworkRequestRouter(instance(), instance(), instance(), instance()) }
+                bindSingleton { RequestRouter() }
                 bindSingleton { NetworkNode(config.network, storagePath.resolve("network"), authority.authorityId, instance(),instance(), instance(), instance()) }
                 bindSingleton { LuceneSearchIndex(authority.authorityId, storagePath.resolve("lucene")) }
                 bindSingleton { ExposedEntityStore(entityStoreDB, instance(), instance(), instance(), instance()) }
@@ -113,7 +114,7 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
 
             eventBus.start(reactor)
 
-            return Application(applicationPath, storagePath, config, injector)
+            return Application(applicationPath, storagePath, config, injector).also { setNetworkRouting(it) }
         }
 
         fun instance(applicationPath: Path, storagePath: Path, config: Config? = null) : Application {

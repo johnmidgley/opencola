@@ -1,23 +1,18 @@
 package opencola.server
 
-import opencola.core.event.EventBus
+import opencola.core.config.Application
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.Id
 import opencola.core.network.*
 import opencola.core.network.Request.Method.GET
 import opencola.core.network.Request.Method.POST
-import opencola.core.storage.AddressBook
-import opencola.core.storage.EntityStore
 import opencola.server.handlers.handleGetTransactionsCall
 import opencola.server.handlers.handlePostNotification
 
-class NetworkRequestRouter(
-    addressBook: AddressBook,
-    eventBus: EventBus,
-    entityStore: EntityStore,
-    peerRouter: PeerRouter,
-) : RequestRouter(
-    listOf(
+fun setNetworkRouting(app: Application) {
+    val requestRouter = app.inject<RequestRouter>()
+
+    requestRouter.routes = listOf(
         Route(
             GET,
             "/ping"
@@ -29,7 +24,7 @@ class NetworkRequestRouter(
             val notification = request.decodeBody<PeerRouter.Notification>()
                 ?: throw IllegalArgumentException("Body must contain Notification")
 
-            handlePostNotification(addressBook, eventBus, notification)
+            handlePostNotification(app.inject(), app.inject(), notification)
             Response(200)
         },
 
@@ -37,7 +32,7 @@ class NetworkRequestRouter(
             GET,
             "/transactions"
         ) { request ->
-            if(request.params == null){
+            if (request.params == null) {
                 throw IllegalArgumentException("/transactions call requires parameters")
             }
 
@@ -47,11 +42,12 @@ class NetworkRequestRouter(
             val transactionId = request.params["mostRecentTransactionId"].nullOrElse { Id.decode(it) }
             val numTransactions = request.params["numTransactions"].nullOrElse { it.toInt() }
 
+
             val transactionResponse =
                 handleGetTransactionsCall(
-                    entityStore,
-                    peerRouter,
-                    addressBook,
+                    app.inject(),
+                    app.inject(),
+                    app.inject(),
                     authorityId,
                     peerId,
                     transactionId,
@@ -61,6 +57,6 @@ class NetworkRequestRouter(
             response(200, "OK", transactionResponse)
         }
     )
-)
+}
 
 

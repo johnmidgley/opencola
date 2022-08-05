@@ -12,6 +12,7 @@ import opencola.core.storage.AddressBook
 import opencola.core.storage.EntityStore
 import opencola.server.PeerTest
 import opencola.server.handlers.Peer
+import opencola.server.handlers.TransactionsResponse
 import org.junit.Test
 import org.kodein.di.instance
 import java.net.URI
@@ -257,19 +258,25 @@ class NetworkNodeTest : PeerTest() {
         val peer1 = addressBook.getAuthorities().single{ it.entityId != node0Authority.entityId }
         val networkNode0 = node0.application.inject<NetworkNode>()
 
-        // val request = Request(node0Authority.entityId, GET, "/ping")
+        val pingRequest = Request(node0Authority.entityId, GET, "/ping")
+        val pingResponse = networkNode0.sendRequest(peer1, pingRequest)
+        assertNotNull(pingResponse)
+        println("Response: $pingResponse")
 
-//        val request = Request(node0Authority.entityId, GET, "/transactions", mapOf("authorityId" to "5BLZBd3f1rWTYKax26h2DVZeo9j1UsBL2cHZLnmpSMmo"))
-//        val response = networkNode0.sendRequest(peer1, request)
-//        println("Body: ${response?.decodeBody<TransactionsResponse>()}")
+        val transactionsRequest = Request(node0Authority.entityId, GET, "/transactions", mapOf("authorityId" to "5BLZBd3f1rWTYKax26h2DVZeo9j1UsBL2cHZLnmpSMmo"))
+        val transactionsResponse = networkNode0.sendRequest(peer1, transactionsRequest)
+        assertNotNull(transactionsResponse)
+        println("Response: $transactionsResponse")
+        println("Body: ${transactionsResponse?.decodeBody<TransactionsResponse>()}")
 
         val notification = PeerRouter.Notification(node0Authority.entityId, PeerRouter.Event.NewTransaction)
-        val request = request(node0Authority.entityId, POST, "/notifications", null, notification)
-        val response = networkNode0.sendRequest(peer1, request)
+        val notificationRequest = request(node0Authority.entityId, POST, "/notifications", null, notification)
+        val notificationResponse = networkNode0.sendRequest(peer1, notificationRequest)
+        assertNotNull(notificationResponse)
+        println("Response: $notificationResponse")
 
-        assertNotNull(response)
-        println("Response: $response")
-        Thread.sleep(1000)
+        // Sleep to let any background IO drain
+        Thread.sleep(500)
 
         println("Done")
     }

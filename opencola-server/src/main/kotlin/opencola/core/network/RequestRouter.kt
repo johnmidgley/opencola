@@ -4,8 +4,10 @@ import mu.KotlinLogging
 
 class Route(val method: Request.Method, val path: String, val handler: (Request) -> Response)
 
-abstract class RequestRouter(private val routes: List<Route>) {
+// TODO: This should be wrapped by a RequestRouter that marks nodes as online upon successful request
+class RequestRouter {
     private val logger = KotlinLogging.logger("RequestRouter")
+    var routes: List<Route> = emptyList()
 
     fun handlerRequest(request: Request) : Response {
         val handler = routes.firstOrNull { it.method == request.method && it.path == request.path }?.handler
