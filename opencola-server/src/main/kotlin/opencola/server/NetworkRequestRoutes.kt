@@ -33,15 +33,15 @@ fun setNetworkRouting(app: Application) {
             GET,
             "/transactions"
         ) { request ->
-            if (request.params == null) {
+            if (request.parameters == null) {
                 throw IllegalArgumentException("/transactions call requires parameters")
             }
 
             val authorityId =
-                Id.decode(request.params["authorityId"] ?: throw IllegalArgumentException("No authorityId set"))
+                Id.decode(request.parameters["authorityId"] ?: throw IllegalArgumentException("No authorityId set"))
             val peerId = request.from
-            val transactionId = request.params["mostRecentTransactionId"].nullOrElse { Id.decode(it) }
-            val numTransactions = request.params["numTransactions"].nullOrElse { it.toInt() }
+            val transactionId = request.parameters["mostRecentTransactionId"].nullOrElse { Id.decode(it) }
+            val numTransactions = request.parameters["numTransactions"].nullOrElse { it.toInt() }
 
 
             val transactionResponse =
@@ -55,7 +55,7 @@ fun setNetworkRouting(app: Application) {
                     numTransactions
                 )
 
-            response(200, "OK", transactionResponse)
+            response(200, "OK", null, transactionResponse)
         }
     )
 }

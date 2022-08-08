@@ -62,6 +62,7 @@ class AddressBook(private val authority: Authority, storagePath: Path, signator:
         return authority.tags.contains(activeTag)
     }
 
+    // TODO: Change update handler to be (previousAuthority?, currentAuthority?) so it can generically handle add, update, delete
     fun addUpdateHandler(handler: (Authority) -> Unit){
         updateHandlers.add(handler)
     }

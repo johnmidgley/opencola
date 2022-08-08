@@ -12,12 +12,10 @@ import opencola.core.config.ZeroTierConfig
 import opencola.core.extensions.nullOrElse
 import opencola.core.extensions.shutdownWithTimout
 import opencola.core.model.Authority
-import opencola.core.network.NetworkProvider
-import opencola.core.network.Request
-import opencola.core.network.RequestRouter
-import opencola.core.network.Response
+import opencola.core.network.*
 import opencola.core.serialization.readString
 import opencola.core.serialization.writeString
+import opencola.core.storage.AddressBook
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.math.BigInteger
@@ -31,9 +29,10 @@ class ZeroTierNetworkProvider(
     private val storagePath: Path,
     private val config: ZeroTierConfig,
     private val authority: Authority,
+    private val addressBook: AddressBook,
     private val router: RequestRouter,
     authToken: String,
-) : NetworkProvider {
+) : AbstractNetworkProvider(addressBook) {
     private val node = ZeroTierNode()
     private var networkId: ZeroTierId? = null
     private var zeroTierClient: ZeroTierClient? = ZeroTierClient(authToken)
@@ -139,7 +138,7 @@ class ZeroTierNetworkProvider(
             DataInputStream(socket.inputStream).use {
                 val request = Json.decodeFromString<Request>(it.readString())
                 logger.info { "String $request" }
-                val response = Json.encodeToString(router.handlerRequest(request))
+                val response = Json.encodeToString(router.handleRequest(request))
                 DataOutputStream(socket.outputStream).use { out -> out.write(response.toByteArray()) }
             }
         } finally {

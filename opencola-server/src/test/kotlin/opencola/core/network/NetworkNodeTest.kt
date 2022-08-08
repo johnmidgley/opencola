@@ -27,6 +27,7 @@ import kotlin.test.assertNotNull
 class NetworkNodeTest : PeerTest() {
     private val ztAuthToken = "THx5SAwGhzwiWSXUWfDjv073qF8u3mz0"
     private val zeroTierClient = ZeroTierClient(ztAuthToken)
+
     // @Test
     fun testInvalidToken(){
         val networkNode by TestApplication.instance.injector.instance<NetworkNode>()
@@ -61,26 +62,31 @@ class NetworkNodeTest : PeerTest() {
     @Test
     fun testHttpConnectAndReplicate(){
         val application0 = getApplicationNode(0, zeroTierIntegrationEnabled = false).also { it.start() }
-        val authority0 = application0.application.inject<Authority>()
-        val resource0 = ResourceEntity(authority0.entityId, URI("https://resource0"), "Resource0")
-        val entityStore0 = application0.application.inject<EntityStore>().also { it.updateEntities(resource0) }
 
-        val application1 = getApplicationNode(1, zeroTierIntegrationEnabled = false).also { it.start() }
-        val authority1 = application1.application.inject<Authority>()
-        val resource1 = ResourceEntity(authority1.entityId, URI("https://resource1"), "Resource1")
-        val entityStore1 = application1.application.inject<EntityStore>().also { it.updateEntities(resource1) }
+        try {
+            val authority0 = application0.application.inject<Authority>()
+            val resource0 = ResourceEntity(authority0.entityId, URI("https://resource0"), "Resource0")
+            val entityStore0 = application0.application.inject<EntityStore>().also { it.updateEntities(resource0) }
 
-        addPeer(application0, application1)
-        readStdOut { line -> line.contains("Completed requesting transactions from") }
-        addPeer(application1, application0)
+            val application1 = getApplicationNode(1, zeroTierIntegrationEnabled = false).also { it.start() }
+            val authority1 = application1.application.inject<Authority>()
+            val resource1 = ResourceEntity(authority1.entityId, URI("https://resource1"), "Resource1")
+            val entityStore1 = application1.application.inject<EntityStore>().also { it.updateEntities(resource1) }
 
-        // Connection should trigger two index operations from transaction sharing
-        readStdOut { line -> line.contains("LuceneSearchIndex: Indexing") }
-        readStdOut { line -> line.contains("LuceneSearchIndex: Indexing") }
+            addPeer(application0, application1)
+            readStdOut { line -> line.contains("Completed requesting transactions from") }
+            addPeer(application1, application0)
 
-        // Check that resources replicated as expected
-        assertEquals(entityStore0.getEntity(resource1.authorityId, resource1.entityId)?.name, resource1.name)
-        assertEquals(entityStore1.getEntity(resource0.authorityId, resource0.entityId)?.name, resource0.name)
+            // Connection should trigger two index operations from transaction sharing
+            readStdOut { line -> line.contains("LuceneSearchIndex: Indexing") }
+            readStdOut { line -> line.contains("LuceneSearchIndex: Indexing") }
+
+            // Check that resources replicated as expected
+            assertEquals(entityStore0.getEntity(resource1.authorityId, resource1.entityId)?.name, resource1.name)
+            assertEquals(entityStore1.getEntity(resource0.authorityId, resource0.entityId)?.name, resource0.name)
+        } finally {
+            application0.stop()
+        }
     }
 
     // @Test
@@ -272,7 +278,7 @@ class NetworkNodeTest : PeerTest() {
         println("Body: ${transactionsResponse.decodeBody<TransactionsResponse>()}")
 
         val notification = Notification(node0Authority.entityId, NewTransaction)
-        val notificationRequest = request(node0Authority.entityId, POST, "/notifications", null, notification)
+        val notificationRequest = request(node0Authority.entityId, POST, "/notifications", null, null, notification)
         val notificationResponse = networkNode0.sendRequest(peer1, notificationRequest)
         assertNotNull(notificationResponse)
         println("Response: $notificationResponse")

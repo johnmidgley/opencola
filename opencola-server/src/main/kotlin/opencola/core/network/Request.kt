@@ -13,7 +13,8 @@ data class Request(
     val from: Id,
     val method: Method,
     val path: String,
-    val params: Map<String, String>? = null,
+    val headers: Map<String, String>? = null,
+    val parameters: Map<String, String>? = null,
     val body: ByteArray? = null,
 ) {
     enum class Method {
@@ -34,7 +35,8 @@ data class Request(
 inline fun <reified T> request(from: Id,
                                method: Request.Method,
                                path: String,
-                               params: Map<String, String>? = null,
+                               headers: Map<String, String>? = null,
+                               parameters: Map<String, String>? = null,
                                body: T) : Request {
-    return Request(from, method, path, params, Json.encodeToString(body).toByteArray())
+    return Request(from, method, path, headers, parameters, Json.encodeToString(body).toByteArray())
 }

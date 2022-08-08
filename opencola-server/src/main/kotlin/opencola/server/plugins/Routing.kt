@@ -11,8 +11,9 @@ import mu.KotlinLogging
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.Authority
 import opencola.core.model.Id
-import opencola.core.network.NetworkNode
 import opencola.core.network.NetworkNode.*
+import opencola.core.network.Request
+import opencola.core.network.providers.http.HttpNetworkProvider
 import opencola.server.handlers.*
 import opencola.core.config.Application as app
 
@@ -129,6 +130,13 @@ fun Application.configureRouting(app: app) {
             val peerId = Id.decode(call.parameters["peerId"] ?: throw IllegalArgumentException("No id set"))
             deletePeer(app.inject(), peerId)
             call.respond("{}")
+        }
+
+        post("/networkNode") {
+            val httpNetworkProvider = app.inject<HttpNetworkProvider>()
+            val request = call.receive<Request>()
+            val response = httpNetworkProvider.handleRequest(request)
+            call.respond(response)
         }
 
         static(""){

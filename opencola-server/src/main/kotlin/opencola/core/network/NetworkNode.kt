@@ -44,6 +44,17 @@ class NetworkNode(
     private val eventBus: EventBus,
 ) {
     private val logger = KotlinLogging.logger("NetworkNode")
+    private val providers = ConcurrentHashMap<String, NetworkProvider>()
+
+    fun setProvider(scheme: String, provider: NetworkProvider?) {
+        // TODO: Call setRequestHandler with wrapped RequestRouter, so that peer status can be properly get up to date
+        if(provider == null)
+            providers.remove(scheme)
+        else
+            providers[scheme] = provider
+    }
+
+    // TODO: Move to AddressBook
     private val peerStatuses = ConcurrentHashMap<Id, PeerStatus>()
 
     enum class PeerStatus {
@@ -195,6 +206,7 @@ class NetworkNode(
     //  Need to figure out where it goes on Linux / Windows
 
     // TODO - Make nullable and only set when enabled (Search for all config.zeroTierProviderEnabled)
+    // TODO: Move to "zt" in providers
     private var zeroTierNetworkProvider: ZeroTierNetworkProvider? = null
 
     private fun getAuthToken(authority: Authority) : String? {
@@ -212,7 +224,7 @@ class NetworkNode(
         zeroTierNetworkProvider.nullOrElse { it.stop() }
 
         if (authToken != null) {
-            zeroTierNetworkProvider = ZeroTierNetworkProvider(storagePath, config.zeroTierConfig, authority, router, authToken)
+            zeroTierNetworkProvider = ZeroTierNetworkProvider(storagePath, config.zeroTierConfig, authority, addressBook, router, authToken)
             zeroTierNetworkProvider!!.start()
             authority.uri = zeroTierNetworkProvider!!.getAddress()
 
@@ -276,6 +288,8 @@ class NetworkNode(
         )
     }
 
+    // TODO: Should not be here. Peer is a client API class. Something else should map to Authority and do the update,
+    //  then those that rely on updates (Providers) should subscribe to addressBook changes
     fun updatePeer(peer: Peer) {
         logger.info { "Updating peer: $peer" }
 
@@ -343,13 +357,21 @@ class NetworkNode(
     }
 
 
+    // TODO - peer should be Authority or peerId?
     fun sendRequest(peer: Authority, request: Request) : Response? {
         // TODO: Dispatch based on peer provider
         if(request.from != authorityId){
             throw IllegalArgumentException("Cannot send request from a non local authority: ${request.from}")
         }
 
-        return zeroTierNetworkProvider!!.sendRequest(peer, request)
+        val peerUri = peer.uri ?: throw IllegalArgumentException("Can't sendRequest to peer with no uri")
+
+        if(peerUri.scheme == "zt")
+            return zeroTierNetworkProvider!!.sendRequest(peer, request)
+
+        val provider = providers[peerUri.scheme] ?: throw IllegalStateException("No provider found for scheme: ${peerUri.scheme}")
+
+        return provider.sendRequest(peer, request)
     }
 
 }
