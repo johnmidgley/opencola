@@ -73,11 +73,14 @@ class NetworkNode(
     }
 
     fun setProvider(scheme: String, provider: NetworkProvider?) {
+        providers[scheme]?.stop()
+
         if(provider == null)
             providers.remove(scheme)
         else {
             provider.setRequestHandler(requestHandler)
             providers[scheme] = provider
+            provider.start()
         }
     }
 

@@ -20,7 +20,8 @@ import java.net.URI
 
 class HttpNetworkProvider(serverConfig: ServerConfig, addressBook: AddressBook) : AbstractNetworkProvider(addressBook) {
     private val logger = KotlinLogging.logger("HttpNetworkProvider")
-    val serverAddress = URI("http://${serverConfig.host}:${serverConfig.port}")
+    var started = false
+    private val serverAddress = URI("http://${serverConfig.host}:${serverConfig.port}")
 
     private val httpClient = HttpClient(CIO) {
         install(JsonFeature){
@@ -29,11 +30,11 @@ class HttpNetworkProvider(serverConfig: ServerConfig, addressBook: AddressBook) 
     }
 
     override fun start() {
-        // Nothing to do
+        started = true
     }
 
     override fun stop() {
-        // Nothing to do
+        started = false
     }
 
     override fun getAddress(): URI {
@@ -50,12 +51,9 @@ class HttpNetworkProvider(serverConfig: ServerConfig, addressBook: AddressBook) 
 
     // Caller (Network Node) should check if peer is active
     override fun sendRequest(peer: Authority, request: Request) : Response? {
-        try {
-//            if(!addressBook.isAuthorityActive(peer)) {
-//                logger.warn { "Ignoring message to inactive peer: ${peer.entityId}" }
-//                return
-//            }
+        if (!started) IllegalStateException("Provider is not started - can't sendRequest")
 
+        try {
             val urlString = "${peer.uri}/networkNode"
             logger.info { "Sending request $request" }
 
@@ -70,22 +68,19 @@ class HttpNetworkProvider(serverConfig: ServerConfig, addressBook: AddressBook) 
                 logger.info { "Response: $response" }
                 response
             }
-
-            // peerStatuses[peer.entityId] = NetworkNode.PeerStatus.Online
         }
         catch(e: java.net.ConnectException){
             logger.info { "${peer.name} appears to be offline." }
-            // peerStatuses[peer.entityId] = NetworkNode.PeerStatus.Offline
         }
         catch (e: Exception){
             logger.error { e.message }
-            // peerStatuses[peer.entityId] = NetworkNode.PeerStatus.Offline
         }
 
         return null
     }
 
     fun handleRequest(request: Request) : Response {
+        if (!started) IllegalStateException("Provider is not started - can't handleRequest")
         val handler = this.handler ?: throw IllegalStateException("Call to handleRequest when handler has not been set")
         return handler(request)
     }
