@@ -16,6 +16,8 @@ class LinePartitionedOutputStream : OutputStream() {
         }
     }
 
+    // TODO: Add a timeout here - likely need to set a timer callback that sets a "timedOut" flag and puts
+    //  sentry value on the queue. getLine should then throw an exception on timedOut being set or the sentry value
     fun getLine() : String {
         return queue.take()
     }
