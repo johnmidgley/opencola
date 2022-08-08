@@ -5,10 +5,6 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.features.json.*
 import io.ktor.client.features.json.serializer.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import kotlinx.coroutines.async
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import opencola.core.event.EventBus
@@ -44,23 +40,50 @@ class NetworkNode(
     private val eventBus: EventBus,
 ) {
     private val logger = KotlinLogging.logger("NetworkNode")
-    private val providers = ConcurrentHashMap<String, NetworkProvider>()
-
-    fun setProvider(scheme: String, provider: NetworkProvider?) {
-        // TODO: Call setRequestHandler with wrapped RequestRouter, so that peer status can be properly get up to date
-        if(provider == null)
-            providers.remove(scheme)
-        else
-            providers[scheme] = provider
-    }
-
-    // TODO: Move to AddressBook
     private val peerStatuses = ConcurrentHashMap<Id, PeerStatus>()
 
     enum class PeerStatus {
         Unknown,
         Offline,
         Online,
+    }
+
+    // TODO: This should be private and updated based on calls / responses
+    fun updateStatus(peerId: Id, status: PeerStatus, suppressNotifications: Boolean = false): PeerStatus {
+        val peer = addressBook.getAuthority(peerId)
+            ?: throw IllegalArgumentException("Attempt to update status for unknown peer: $peerId")
+
+        logger.info { "Updating peer ${peer.name} to $status" }
+
+        peerStatuses.getOrDefault(peerId, Unknown).let { previousStatus ->
+            peerStatuses[peerId] = status
+
+            if (!suppressNotifications && status != previousStatus && status == Online) {
+                eventBus.sendMessage(Events.PeerNotification.toString(), Notification(peerId, Event.Online).encode())
+            }
+
+            return previousStatus
+        }
+    }
+
+    private val providers = ConcurrentHashMap<String, NetworkProvider>()
+
+    private val requestHandler: (Request) -> Response = { request ->
+        val response = router.handleRequest(request)
+
+        // Since we received a request, the peer must be online
+        updateStatus(request.from, Online)
+
+        response
+    }
+
+    fun setProvider(scheme: String, provider: NetworkProvider?) {
+        if(provider == null)
+            providers.remove(scheme)
+        else {
+            provider.setRequestHandler(requestHandler)
+            providers[scheme] = provider
+        }
     }
 
     enum class Event {
@@ -95,40 +118,22 @@ class NetworkNode(
         }
     }
 
-    fun broadcastMessage(path: String, message: Any){
-        runBlocking {
-            val peers = addressBook.getAuthorities(true)
-            if(peers.isNotEmpty()) {
-                logger.info { "Broadcasting message: $message" }
+    fun broadcastRequest(request: Request) {
+        val peers = addressBook.getAuthorities(true)
+        if (peers.isNotEmpty()) {
+            logger.info { "Broadcasting request: $request" }
 
-                peers.forEach {
-                    if (listOf(Unknown, Online).contains(peerStatuses.getOrDefault(it.entityId, Unknown))) {
-                        // TODO: Make batched, to limit simultaneous connections
-                        @Suppress("DeferredResultUnused")
-                        async { sendMessage(it, path, message) }
-                    }
+            // TODO: This is currently called in the background from the event bus, so ok, but
+            //  should switch to making these requests from a pool of peer threads
+            peers.forEach { peer ->
+                if (listOf(Unknown, Online).contains(peerStatuses.getOrDefault(peer.entityId, Unknown))) {
+                    // TODO: Make batched, to limit simultaneous connections
+                    sendRequest(peer, request)
                 }
             }
         }
     }
 
-    // TODO: This should be private and updated based on calls / responses
-    fun updateStatus(peerId: Id, status: PeerStatus, suppressNotifications: Boolean = false): PeerStatus {
-        val peer = addressBook.getAuthority(peerId)
-            ?: throw IllegalArgumentException("Attempt to update status for unknown peer: $peerId")
-
-        logger.info { "Updating peer ${peer.name} to $status" }
-
-        peerStatuses.getOrDefault(peerId, Unknown).let { previousStatus ->
-            peerStatuses[peerId] = status
-
-            if (!suppressNotifications && status != previousStatus && status == Online) {
-                eventBus.sendMessage(Events.PeerNotification.toString(), Notification(peerId, Event.Online).encode())
-            }
-
-            return previousStatus
-        }
-    }
 
     suspend fun getTransactions(authority: Authority, peer: Authority, peerTransactionId: Id?): TransactionsResponse? {
         try {
@@ -169,36 +174,6 @@ class NetworkNode(
         }
 
         return null
-    }
-
-    // TODO: Break this out by message. It's exposing to much that you can send a message to an arbitrary path
-    private suspend fun sendMessage(peer: Authority, path: String, message: Any) {
-        try {
-            if(!addressBook.isAuthorityActive(peer)) {
-                logger.warn { "Ignoring message to inactive peer: ${peer.entityId}" }
-                return
-            }
-
-            val urlString = "${peer.uri}/$path"
-            logger.info { "Sending $message to $urlString" }
-
-            val response = httpClient.post<HttpStatement>(urlString) {
-                contentType(ContentType.Application.Json)
-                body = message
-            }.execute()
-
-            logger.info { "Response: ${response.status}" }
-
-            peerStatuses[peer.entityId] = Online
-        }
-        catch(e: java.net.ConnectException){
-            logger.info { "${peer.name} appears to be offline." }
-            peerStatuses[peer.entityId] = Offline
-        }
-        catch (e: Exception){
-            logger.error { e.message }
-            peerStatuses[peer.entityId] = Offline
-        }
     }
 
     // TODO: Make install script put the platform dependent version of libzt in the right place. On mac, it needs to be

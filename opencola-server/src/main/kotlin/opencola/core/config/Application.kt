@@ -114,7 +114,10 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
 
             eventBus.start(reactor)
 
-            return Application(applicationPath, storagePath, config, injector).also { setNetworkRouting(it) }
+            return Application(applicationPath, storagePath, config, injector).also {
+                it.inject<NetworkNode>().setProvider("http", it.inject<HttpNetworkProvider>())
+                setNetworkRouting(it)
+            }
         }
 
         fun instance(applicationPath: Path, storagePath: Path, config: Config? = null) : Application {

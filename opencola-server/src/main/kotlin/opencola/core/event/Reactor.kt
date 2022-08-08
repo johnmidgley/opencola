@@ -11,6 +11,8 @@ import opencola.core.event.EventBus.Event
 import opencola.core.model.*
 import opencola.core.network.NetworkNode
 import opencola.core.network.NetworkNode.Event.*
+import opencola.core.network.Request
+import opencola.core.network.request
 import opencola.core.search.SearchIndex
 import opencola.core.storage.AddressBook
 import opencola.core.storage.EntityStore
@@ -105,10 +107,17 @@ class MainReactor(
 
         if (signedTransaction.transaction.authorityId == authority.authorityId) {
             // Transaction originated locally, so inform peers
-            networkNode.broadcastMessage(
-                "notifications",
+
+            val request = request(
+                authority.authorityId,
+                Request.Method.POST,
+                "/notifications",
+                null,
+                null,
                 NetworkNode.Notification(signedTransaction.transaction.authorityId, NewTransaction)
             )
+
+            networkNode.broadcastRequest(request)
         }
     }
 
