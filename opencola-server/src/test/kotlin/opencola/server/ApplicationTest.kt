@@ -9,9 +9,9 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import opencola.core.TestApplication
 import opencola.core.model.*
-import opencola.core.network.NetworkNode
 import opencola.core.network.NetworkNode.*
-import opencola.core.network.NetworkNode.Event.*
+import opencola.core.network.Notification
+import opencola.core.network.PeerEvent.*
 import opencola.core.security.generateKeyPair
 import opencola.core.storage.AddressBook
 import opencola.core.storage.EntityStore

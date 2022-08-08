@@ -4,8 +4,7 @@ import opencola.core.TestApplication
 import opencola.core.io.readStdOut
 import opencola.core.model.Authority
 import opencola.core.model.ResourceEntity
-import opencola.core.network.NetworkNode.*
-import opencola.core.network.NetworkNode.Event.*
+import opencola.core.network.PeerEvent.*
 import opencola.core.network.Request.Method.*
 import opencola.core.network.providers.zerotier.ZeroTierAddress
 import opencola.core.network.providers.zerotier.ZeroTierClient

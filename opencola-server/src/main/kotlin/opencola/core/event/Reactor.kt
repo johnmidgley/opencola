@@ -1,16 +1,13 @@
 package opencola.core.event
 
-import io.ktor.client.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.features.json.*
-import io.ktor.client.features.json.serializer.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import opencola.core.event.EventBus.Event
 import opencola.core.model.*
 import opencola.core.network.NetworkNode
-import opencola.core.network.NetworkNode.Event.*
+import opencola.core.network.Notification
+import opencola.core.network.PeerEvent.*
 import opencola.core.network.Request
 import opencola.core.network.request
 import opencola.core.search.SearchIndex
@@ -32,11 +29,6 @@ class MainReactor(
     private val addressBook: AddressBook,
 ) : Reactor {
     private val logger = KotlinLogging.logger("MainReactor")
-    private val httpClient = HttpClient(CIO) {
-        install(JsonFeature){
-            serializer = KotlinxSerializer()
-        }
-    }
 
     private fun handleNodeStarted(event: Event){
         logger.info { event.name }
@@ -97,12 +89,9 @@ class MainReactor(
         val peer = addressBook.getAuthority(peerId)
             ?: throw IllegalArgumentException("Attempt to request transactions for unknown peer: $peerId ")
 
-
         // TODO: This blocks startup. Make fully async (and/or handle startup with event bus)
         // TODO: Remove all runBlocking - replace with appropriate executor
-        runBlocking {
-            async { requestTransactions(peer) }
-        }
+         requestTransactions(peer)
     }
 
     private fun handleNewTransaction(event: Event){
@@ -119,7 +108,7 @@ class MainReactor(
                 "/notifications",
                 null,
                 null,
-                NetworkNode.Notification(signedTransaction.transaction.authorityId, NewTransaction)
+                Notification(signedTransaction.transaction.authorityId, NewTransaction)
             )
 
             networkNode.broadcastRequest(request)
@@ -149,7 +138,7 @@ class MainReactor(
     }
 
     private fun handlePeerNotification(event: Event){
-        val notification = ByteArrayInputStream(event.data).use { NetworkNode.Notification.decode(it) }
+        val notification = ByteArrayInputStream(event.data).use { Notification.decode(it) }
         logger.info { "Handling notification for peer ${notification.peerId} event: ${notification.event}" }
 
         when(notification.event){

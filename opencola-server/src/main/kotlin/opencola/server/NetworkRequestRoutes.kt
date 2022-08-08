@@ -4,7 +4,7 @@ import opencola.core.config.Application
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.Id
 import opencola.core.network.*
-import opencola.core.network.NetworkNode.Notification
+import opencola.core.network.Notification
 import opencola.core.network.Request.Method.GET
 import opencola.core.network.Request.Method.POST
 import opencola.server.handlers.handleGetTransactionsCall

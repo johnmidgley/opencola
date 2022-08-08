@@ -11,7 +11,7 @@ import mu.KotlinLogging
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.Authority
 import opencola.core.model.Id
-import opencola.core.network.NetworkNode.*
+import opencola.core.network.Notification
 import opencola.core.network.Request
 import opencola.core.network.providers.http.HttpNetworkProvider
 import opencola.server.handlers.*

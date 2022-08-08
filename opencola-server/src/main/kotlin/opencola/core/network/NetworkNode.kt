@@ -1,10 +1,5 @@
 package opencola.core.network
 
-import io.ktor.client.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.features.json.*
-import io.ktor.client.features.json.serializer.*
-import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import opencola.core.event.EventBus
 import opencola.core.event.Events
@@ -14,14 +9,9 @@ import opencola.core.model.Id
 import opencola.core.network.NetworkNode.PeerStatus.*
 import opencola.core.network.providers.zerotier.ZeroTierNetworkProvider
 import opencola.core.security.Encryptor
-import opencola.core.serialization.StreamSerializer
-import opencola.core.serialization.readInt
-import opencola.core.serialization.writeInt
 import opencola.core.storage.AddressBook
 import opencola.server.handlers.Peer
 import opencola.server.handlers.redactedNetworkToken
-import java.io.InputStream
-import java.io.OutputStream
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.forEach
@@ -43,7 +33,7 @@ class NetworkNode(
     private val logger = KotlinLogging.logger("NetworkNode")
     private val peerStatuses = ConcurrentHashMap<Id, PeerStatus>()
 
-    enum class PeerStatus {
+    private enum class PeerStatus {
         Unknown,
         Offline,
         Online,
@@ -64,7 +54,7 @@ class NetworkNode(
             peerStatuses[peerId] = status
 
             if (!suppressNotifications && status != previousStatus && status == Online) {
-                eventBus.sendMessage(Events.PeerNotification.toString(), Notification(peerId, Event.Online).encode())
+                eventBus.sendMessage(Events.PeerNotification.toString(), Notification(peerId, PeerEvent.Online).encode())
             }
 
             return previousStatus
@@ -88,38 +78,6 @@ class NetworkNode(
         else {
             provider.setRequestHandler(requestHandler)
             providers[scheme] = provider
-        }
-    }
-
-    enum class Event {
-        Added,
-        Online,
-        NewTransaction
-    }
-
-    @Serializable
-    data class Notification(val peerId: Id, val event: Event)  {
-        fun encode() : ByteArray {
-            return Factory.encode(this)
-        }
-
-        companion object Factory : StreamSerializer<Notification> {
-            override fun encode(stream: OutputStream, value: Notification) {
-                Id.encode(stream, value.peerId)
-                stream.writeInt(value.event.ordinal)
-            }
-
-            override fun decode(stream: InputStream): Notification {
-                // TODO: Could throw exception
-                return Notification(Id.decode(stream), Event.values()[stream.readInt()])
-            }
-        }
-    }
-
-    // TODO: Move to HTTPNetworkProvider
-    private val httpClient = HttpClient(CIO) {
-        install(JsonFeature){
-            serializer = KotlinxSerializer()
         }
     }
 
@@ -277,7 +235,7 @@ class NetworkNode(
             // New peer has been added - request transactions
             eventBus.sendMessage(
                 Events.PeerNotification.toString(),
-                Notification(peerAuthority.entityId, Event.Online).encode()
+                Notification(peerAuthority.entityId, PeerEvent.Online).encode()
             )
     }
 
