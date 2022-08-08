@@ -16,6 +16,7 @@ import opencola.core.network.request
 import opencola.core.search.SearchIndex
 import opencola.core.storage.AddressBook
 import opencola.core.storage.EntityStore
+import opencola.server.handlers.TransactionsResponse
 import java.io.ByteArrayInputStream
 
 interface Reactor {
@@ -59,25 +60,29 @@ class MainReactor(
         }
     }
 
-    private suspend fun requestTransactions(peer: Authority) {
-        var peerTransactionId = entityStore.getLastTransactionId(peer.entityId)
+    private fun requestTransactions(peer: Authority) {
+        var mostRecentTransactionId = entityStore.getLastTransactionId(peer.entityId)
 
         // TODO - Config max batches
         // TODO: Set reasonable max batches and batch sizes
         for (batch in 1..10) {
             logger.info { "Requesting transactions from ${peer.name} - Batch $batch" }
+            val baseParams = mapOf("authorityId" to peer.entityId.toString())
+            val params = if(mostRecentTransactionId == null)
+                baseParams
+            else
+                baseParams.plus(Pair("mostRecentTransactionId", mostRecentTransactionId.toString()))
 
-            //TODO - see implement PeerService.get(peer, path) to get rid of httpClient here
-            // plus no need to update peer status here
-            val transactionsResponse = networkNode.getTransactions(authority, peer, peerTransactionId)
+            val request = Request(authority.entityId, Request.Method.GET, "/transactions", null, params)
+            val transactionsResponse = networkNode.sendRequest(peer.entityId, request)?.decodeBody<TransactionsResponse>()
 
             if (transactionsResponse == null || transactionsResponse.transactions.isEmpty())
                 break
 
             entityStore.addSignedTransactions(transactionsResponse.transactions)
-            peerTransactionId = transactionsResponse.transactions.last().transaction.id
+            mostRecentTransactionId = transactionsResponse.transactions.last().transaction.id
 
-            if (peerTransactionId == transactionsResponse.currentTransactionId)
+            if (mostRecentTransactionId == transactionsResponse.currentTransactionId)
                 break
         }
 

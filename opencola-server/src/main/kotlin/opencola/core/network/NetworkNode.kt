@@ -4,12 +4,10 @@ import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.features.json.*
 import io.ktor.client.features.json.serializer.*
-import io.ktor.client.request.*
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import opencola.core.event.EventBus
 import opencola.core.event.Events
-import opencola.core.extensions.ifNotNullOrElse
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.Authority
 import opencola.core.model.Id
@@ -21,12 +19,15 @@ import opencola.core.serialization.readInt
 import opencola.core.serialization.writeInt
 import opencola.core.storage.AddressBook
 import opencola.server.handlers.Peer
-import opencola.server.handlers.TransactionsResponse
 import opencola.server.handlers.redactedNetworkToken
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.collections.forEach
+import kotlin.collections.isNotEmpty
+import kotlin.collections.listOf
+import kotlin.collections.set
 import opencola.core.config.NetworkConfig as OpenColaNetworkConfig
 
 
@@ -49,9 +50,13 @@ class NetworkNode(
     }
 
     // TODO: This should be private and updated based on calls / responses
-    fun updateStatus(peerId: Id, status: PeerStatus, suppressNotifications: Boolean = false): PeerStatus {
+    private fun updateStatus(peerId: Id, status: PeerStatus, suppressNotifications: Boolean = false): PeerStatus {
         val peer = addressBook.getAuthority(peerId)
-            ?: throw IllegalArgumentException("Attempt to update status for unknown peer: $peerId")
+
+        if(peer == null) {
+            logger.warn("Attempt to update status for unknown peer: $peerId")
+            return Unknown
+        }
 
         logger.info { "Updating peer ${peer.name} to $status" }
 
@@ -132,48 +137,6 @@ class NetworkNode(
                 }
             }
         }
-    }
-
-
-    suspend fun getTransactions(authority: Authority, peer: Authority, peerTransactionId: Id?): TransactionsResponse? {
-        try {
-            // TODO: Should not allow getTransactions for local authority
-            if(!addressBook.isAuthorityActive(peer)){
-                logger.warn { "Ignoring getTransactions for inactive peer: ${peer.entityId}" }
-                return null
-            }
-
-            val peerUri = peer.uri
-
-            if(peerUri == null){
-                logger.warn { "Ignoring peer without uri: ${peer.entityId}" }
-                return null
-            }
-
-            if(peerUri.scheme != "http"){
-                logger.warn { "Ignoring non http peer: $peerUri" }
-                return null
-            }
-
-            val url = "${peerUri}/transactions/${peer.entityId}${peerTransactionId.ifNotNullOrElse({ "/${it}" },{ "" })}?peerId=${authority.authorityId}"
-            val response: TransactionsResponse = httpClient.get(url)
-
-            // Suppress notifications, otherwise will trigger another transactions request
-            // TODO: Seems a bit messy. Is there a cleaner way to handle switch to online
-            //  without having to specify suppression?
-            updateStatus(peer.entityId, Online, true)
-
-            return response
-        } catch (e: Exception) {
-            if(e is java.net.ConnectException)
-                logger.info { "${peer.name} appears to be offline." }
-            else
-                logger.error { e.message }
-            // TODO: This should depend on the error
-            updateStatus(peer.entityId, Offline)
-        }
-
-        return null
     }
 
     // TODO: Make install script put the platform dependent version of libzt in the right place. On mac, it needs to be
@@ -331,22 +294,50 @@ class NetworkNode(
         addressBook.deleteAuthority(peerId)
     }
 
-
     // TODO - peer should be Authority or peerId?
-    fun sendRequest(peer: Authority, request: Request) : Response? {
+    private fun sendRequest(peer: Authority, request: Request) : Response? {
         // TODO: Dispatch based on peer provider
         if(request.from != authorityId){
             throw IllegalArgumentException("Cannot send request from a non local authority: ${request.from}")
         }
 
-        val peerUri = peer.uri ?: throw IllegalArgumentException("Can't sendRequest to peer with no uri")
+        val peerUri = peer.uri
+        if(peerUri == null) {
+            logger.warn { "Ignoring peer without uri: ${peer.entityId}" }
+            return null
+        }
 
         if(peerUri.scheme == "zt")
             return zeroTierNetworkProvider!!.sendRequest(peer, request)
 
         val provider = providers[peerUri.scheme] ?: throw IllegalStateException("No provider found for scheme: ${peerUri.scheme}")
+        val response = provider.sendRequest(peer, request)
 
-        return provider.sendRequest(peer, request)
+        // TODO: This is really bad. If we successfully get transactions when the user was in an offline/unknown state,
+        //  setting their state to online would trigger another transactions request, which we want to avoid. Doing it
+        //  this way is super ugly. Figure out a better way
+        val suppressNotifications = request.path == "/transactions"
+
+        if(suppressNotifications)
+            logger.warn { "Suppressing notifications" }
+
+        if (response == null || response.status < 400)
+            // Don't update status for calls that made it to a peer but result in an error. In particular, this
+            // avoids a peer transition from offline to online when a call fails for authorization reasons
+            updateStatus(peer.entityId, if (response == null) Offline else Online, suppressNotifications)
+
+        return response
+    }
+
+    // TODO - peer should be Authority or peerId?
+    fun sendRequest(peerId: Id, request: Request) : Response? {
+        val peer = addressBook.getAuthority(peerId)
+        if(peer == null){
+            logger.warn { "Attempt to send request to unknown peer" }
+            return null
+        }
+
+        return sendRequest(peer, request)
     }
 
 }

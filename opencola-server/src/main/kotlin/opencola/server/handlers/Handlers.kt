@@ -8,9 +8,7 @@ import mu.KotlinLogging
 import opencola.core.event.EventBus
 import opencola.core.event.Events
 import opencola.core.model.*
-import opencola.core.network.NetworkNode
 import opencola.core.network.NetworkNode.*
-import opencola.core.network.NetworkNode.PeerStatus.*
 import opencola.core.storage.AddressBook
 import opencola.core.storage.EntityStore
 import opencola.core.storage.EntityStore.TransactionOrder
@@ -37,7 +35,6 @@ data class TransactionsResponse(
 // current chain should be propagated to other peers
 fun handleGetTransactionsCall(
     entityStore: EntityStore,
-    networkNode: NetworkNode,
     addressBook: AddressBook,
     authorityId: Id, // Id of user transactions are being requested for
     peerId: Id, // Id of user making request
@@ -60,8 +57,6 @@ fun handleGetTransactionsCall(
         totalNumTransactions
     ).drop(extra)
 
-    // TODO: This shouldn't be done here. NetworkNode should set this when reciving calls
-    networkNode.updateStatus(peerId, Online)
     return TransactionsResponse(transactionId, currentTransactionId, transactions.toList())
 }
 

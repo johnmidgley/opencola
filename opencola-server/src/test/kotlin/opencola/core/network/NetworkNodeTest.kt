@@ -267,19 +267,19 @@ class NetworkNodeTest : PeerTest() {
         val networkNode0 = node0.application.inject<NetworkNode>()
 
         val pingRequest = Request(node0Authority.entityId, GET, "/ping")
-        val pingResponse = networkNode0.sendRequest(peer1, pingRequest)
+        val pingResponse = networkNode0.sendRequest(peer1.entityId, pingRequest)
         assertNotNull(pingResponse)
         println("Response: $pingResponse")
 
         val transactionsRequest = Request(node0Authority.entityId, GET, "/transactions", mapOf("authorityId" to "5BLZBd3f1rWTYKax26h2DVZeo9j1UsBL2cHZLnmpSMmo"))
-        val transactionsResponse = networkNode0.sendRequest(peer1, transactionsRequest)
+        val transactionsResponse = networkNode0.sendRequest(peer1.entityId, transactionsRequest)
         assertNotNull(transactionsResponse)
         println("Response: $transactionsResponse")
         println("Body: ${transactionsResponse.decodeBody<TransactionsResponse>()}")
 
         val notification = Notification(node0Authority.entityId, NewTransaction)
         val notificationRequest = request(node0Authority.entityId, POST, "/notifications", null, null, notification)
-        val notificationResponse = networkNode0.sendRequest(peer1, notificationRequest)
+        val notificationResponse = networkNode0.sendRequest(peer1.entityId, notificationRequest)
         assertNotNull(notificationResponse)
         println("Response: $notificationResponse")
 

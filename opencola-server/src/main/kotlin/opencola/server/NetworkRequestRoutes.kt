@@ -48,7 +48,6 @@ fun setNetworkRouting(app: Application) {
                 handleGetTransactionsCall(
                     app.inject(),
                     app.inject(),
-                    app.inject(),
                     authorityId,
                     peerId,
                     transactionId,

@@ -57,6 +57,7 @@ fun Application.configureRouting(app: app) {
             deleteComment(call, app.inject(), app.inject())
         }
 
+        // TODO: Think about checking for no extra parameters
         suspend fun getTransactions(call: ApplicationCall) {
             val authorityId =
                 Id.decode(call.parameters["authorityId"] ?: throw IllegalArgumentException("No authorityId set"))
@@ -64,7 +65,7 @@ fun Application.configureRouting(app: app) {
             val transactionId = call.parameters["mostRecentTransactionId"].nullOrElse { Id.decode(it) }
             val numTransactions = call.parameters["numTransactions"].nullOrElse { it.toInt() }
 
-            call.respond(handleGetTransactionsCall(app.inject(), app.inject(), app.inject(), authorityId, peerId, transactionId, numTransactions))
+            call.respond(handleGetTransactionsCall(app.inject(), app.inject(), authorityId, peerId, transactionId, numTransactions))
         }
 
         get("/transactions/{authorityId}") {
