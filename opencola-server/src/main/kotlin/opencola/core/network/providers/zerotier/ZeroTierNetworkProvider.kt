@@ -24,6 +24,9 @@ import java.nio.file.Path
 import java.time.Instant
 import java.util.concurrent.Executors
 
+// TODO: Make install script put the platform dependent version of libzt in the right place. On mac, it needs to be
+//  put in ~/Library/Java/Extensions/ (or try /Library/Java/Extensions/ globally)
+//  Need to figure out where it goes on Linux / Windows
 
 class ZeroTierNetworkProvider(
     private val storagePath: Path,

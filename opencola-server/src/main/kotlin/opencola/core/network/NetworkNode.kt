@@ -98,10 +98,6 @@ class NetworkNode(
         }
     }
 
-    // TODO: Make install script put the platform dependent version of libzt in the right place. On mac, it needs to be
-    //  put in ~/Library/Java/Extensions/ (or try /Library/Java/Extensions/ globally)
-    //  Need to figure out where it goes on Linux / Windows
-
     private fun getAuthToken(authority: Authority) : String? {
         return authority.networkToken.nullOrElse { String(encryptor.decrypt(authorityId, it)) }
     }
@@ -155,12 +151,6 @@ class NetworkNode(
         addressBook.removeUpdateHandler(peerUpdateHandler)
         providers.values.forEach{ it.stop() }
         logger.info { "Stopped" }
-    }
-
-    fun getInviteToken() : InviteToken {
-        val authority = addressBook.getAuthority(authorityId)
-            ?: throw IllegalStateException("Root authority not found - can't generate invite token")
-        return InviteToken.fromAuthority(authority)
     }
 
     fun inviteTokenToPeer(inviteToken: String) : Peer {

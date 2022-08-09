@@ -5,6 +5,7 @@ import mu.KotlinLogging
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.Authority
 import opencola.core.model.Id
+import opencola.core.network.InviteToken
 import opencola.core.network.NetworkNode
 import opencola.core.security.Encryptor
 import opencola.core.security.Signator
@@ -87,9 +88,12 @@ fun updatePeer(networkNode: NetworkNode, peer: Peer) {
     networkNode.updatePeer(peer)
 }
 
-fun getToken(networkNode: NetworkNode, signator: Signator): TokenRequest {
-    return TokenRequest(networkNode.getInviteToken().encodeBase58(signator))
+fun getInviteToken(authorityId: Id, addressBook: AddressBook, signator: Signator): String {
+    val authority = addressBook.getAuthority(authorityId)
+        ?: throw IllegalStateException("Root authority not found - can't generate invite token")
+    return InviteToken.fromAuthority(authority).encodeBase58(signator)
 }
+
 
 fun inviteTokenToPeer(networkNode: NetworkNode, token: String): Peer {
     return networkNode.inviteTokenToPeer(token)

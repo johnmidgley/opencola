@@ -3,6 +3,9 @@ package opencola.core.network
 import opencola.core.TestApplication
 import opencola.core.model.Authority
 import opencola.core.security.Signator
+import opencola.core.storage.AddressBook
+import opencola.server.handlers.getInviteToken
+import opencola.server.handlers.inviteTokenToPeer
 import org.junit.Test
 import org.kodein.di.instance
 import java.net.URI
@@ -24,11 +27,10 @@ class InviteTokenTest {
     }
 
     @Test
-    fun testInviteTokenFromNetworkNode() {
-        val networkNode = TestApplication.instance.inject<NetworkNode>()
-        val authority = TestApplication.instance.inject<Authority>()
-
-        val token = networkNode.getInviteToken()
-        assertEquals(authority.publicKey, token.publicKey)
+    fun testInviteTokenFromPeerHandler() {
+        val app = TestApplication.instance
+        val authority = app.inject<Authority>()
+        val inviteToken = InviteToken.decodeBase58(getInviteToken(authority.entityId, app.inject(), app.inject()))
+        assertEquals(authority.publicKey, inviteToken.publicKey)
     }
 }
