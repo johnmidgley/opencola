@@ -153,24 +153,6 @@ class NetworkNode(
         logger.info { "Stopped" }
     }
 
-    fun inviteTokenToPeer(inviteToken: String) : Peer {
-        val decodedInviteToken = InviteToken.decodeBase58(inviteToken)
-        val imageUri = if(decodedInviteToken.imageUri.toString().isBlank()) null else decodedInviteToken.imageUri
-
-        if(decodedInviteToken.authorityId == authorityId)
-            throw IllegalArgumentException("You can't invite yourself (┛ಠ_ಠ)┛彡┻━┻")
-
-        return Peer(
-            decodedInviteToken.authorityId,
-            decodedInviteToken.name,
-            decodedInviteToken.publicKey,
-            decodedInviteToken.address,
-            imageUri,
-            true,
-            null,
-        )
-    }
-
     // TODO: Should not be here. Peer is a client API class. Something else should map to Authority and do the update,
     //  then those that rely on updates (Providers) should subscribe to addressBook changes
     fun updatePeer(peer: Peer) {

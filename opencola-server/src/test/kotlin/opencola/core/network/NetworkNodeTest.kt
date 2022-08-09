@@ -15,6 +15,7 @@ import opencola.core.storage.EntityStore
 import opencola.server.PeerTest
 import opencola.server.handlers.Peer
 import opencola.server.handlers.TransactionsResponse
+import opencola.server.handlers.inviteTokenToPeer
 import org.junit.Test
 import org.kodein.di.instance
 import java.net.URI
@@ -56,7 +57,8 @@ class NetworkNodeTest : PeerTest() {
     private fun addPeer(applicationNode: ApplicationNode , peerApplicationNode: ApplicationNode) {
         val inviteToken = peerApplicationNode.getInviteToken()
         val networkNode = applicationNode.application.inject<NetworkNode>()
-        networkNode.updatePeer(networkNode.inviteTokenToPeer(inviteToken))
+        val authority = applicationNode.application.inject<Authority>()
+        networkNode.updatePeer(inviteTokenToPeer(authority.entityId, inviteToken))
     }
 
     @Test

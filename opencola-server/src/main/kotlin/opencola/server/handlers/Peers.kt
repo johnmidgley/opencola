@@ -94,8 +94,21 @@ fun getInviteToken(authorityId: Id, addressBook: AddressBook, signator: Signator
     return InviteToken.fromAuthority(authority).encodeBase58(signator)
 }
 
+fun inviteTokenToPeer(authorityId: Id, inviteToken: String): Peer {
+    val decodedInviteToken = InviteToken.decodeBase58(inviteToken)
+    val imageUri = if(decodedInviteToken.imageUri.toString().isBlank()) null else decodedInviteToken.imageUri
 
-fun inviteTokenToPeer(networkNode: NetworkNode, token: String): Peer {
-    return networkNode.inviteTokenToPeer(token)
+    if(decodedInviteToken.authorityId == authorityId)
+        throw IllegalArgumentException("You can't invite yourself (┛ಠ_ಠ)┛彡┻━┻")
+
+    return Peer(
+        decodedInviteToken.authorityId,
+        decodedInviteToken.name,
+        decodedInviteToken.publicKey,
+        decodedInviteToken.address,
+        imageUri,
+        true,
+        null,
+    )
 }
 
