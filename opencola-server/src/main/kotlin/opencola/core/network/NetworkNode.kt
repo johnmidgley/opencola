@@ -73,10 +73,8 @@ class NetworkNode(
     }
 
     fun setProvider(scheme: String, provider: NetworkProvider?) {
-        providers[scheme]?.stop()
-
         if(provider == null)
-            providers.remove(scheme)
+            providers.remove(scheme)?.stop()
         else {
             provider.setRequestHandler(requestHandler)
             providers[scheme] = provider
@@ -104,10 +102,6 @@ class NetworkNode(
     //  put in ~/Library/Java/Extensions/ (or try /Library/Java/Extensions/ globally)
     //  Need to figure out where it goes on Linux / Windows
 
-    // TODO - Make nullable and only set when enabled (Search for all config.zeroTierProviderEnabled)
-    // TODO: Move to "zt" in providers
-    private var zeroTierNetworkProvider: ZeroTierNetworkProvider? = null
-
     private fun getAuthToken(authority: Authority) : String? {
         return authority.networkToken.nullOrElse { String(encryptor.decrypt(authorityId, it)) }
     }
@@ -120,12 +114,12 @@ class NetworkNode(
         }
 
         val authToken = getAuthToken(authority)
-        zeroTierNetworkProvider.nullOrElse { it.stop() }
+        setProvider("zt", null)
 
         if (authToken != null) {
-            zeroTierNetworkProvider = ZeroTierNetworkProvider(storagePath, config.zeroTierConfig, authority, addressBook, router, authToken)
-            zeroTierNetworkProvider!!.start()
-            authority.uri = zeroTierNetworkProvider!!.getAddress()
+            val provider = ZeroTierNetworkProvider(storagePath, config.zeroTierConfig, authority, addressBook, router, authToken)
+            setProvider("zt", provider)
+            authority.uri = provider.getAddress()
 
             // Avoid update recursion
             addressBook.updateAuthority(authority, suppressUpdateHandler = peerUpdateHandler)
@@ -159,7 +153,7 @@ class NetworkNode(
     fun stop() {
         logger.info { "Stopping..." }
         addressBook.removeUpdateHandler(peerUpdateHandler)
-        zeroTierNetworkProvider.nullOrElse { it.stop() }
+        providers.values.forEach{ it.stop() }
         logger.info { "Stopped" }
     }
 
@@ -204,7 +198,7 @@ class NetworkNode(
 
             if(existingPeerAuthority.uri != peerAuthority.uri) {
                 // Since address is being updated, remove zero tier connection for old address
-                zeroTierNetworkProvider.nullOrElse { it.removePeer(existingPeerAuthority) }
+                existingPeerAuthority.uri?.let { providers[it.scheme]?.removePeer(existingPeerAuthority) }
             }
 
             // TODO: Should there be a general way to do this? Add an update method to Entity or Authority?
@@ -231,7 +225,7 @@ class NetworkNode(
         }
 
         val peerToUpdate = existingPeerAuthority ?: peerAuthority
-        zeroTierNetworkProvider.nullOrElse { it.updatePeer(peerToUpdate) }
+        peerToUpdate.uri?.let { providers[it.scheme]?.updatePeer(peerToUpdate) }
         addressBook.updateAuthority(peerToUpdate)
 
         if (existingPeerAuthority == null)
@@ -251,7 +245,7 @@ class NetworkNode(
             return
         }
 
-        zeroTierNetworkProvider.nullOrElse { it.removePeer(peer) }
+        peer.uri?.let { providers[it.scheme]?.removePeer(peer) }
         addressBook.deleteAuthority(peerId)
     }
 
@@ -267,9 +261,6 @@ class NetworkNode(
             logger.warn { "Ignoring peer without uri: ${peer.entityId}" }
             return null
         }
-
-        if(peerUri.scheme == "zt")
-            return zeroTierNetworkProvider!!.sendRequest(peer, request)
 
         val provider = providers[peerUri.scheme] ?: throw IllegalStateException("No provider found for scheme: ${peerUri.scheme}")
         val response = provider.sendRequest(peer, request)
@@ -300,5 +291,4 @@ class NetworkNode(
 
         return sendRequest(peer, request)
     }
-
 }
