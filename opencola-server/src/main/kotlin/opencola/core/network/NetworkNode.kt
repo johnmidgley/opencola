@@ -39,8 +39,7 @@ class NetworkNode(
         Online,
     }
 
-    // TODO: This should be private and updated based on calls / responses
-    private fun updateStatus(peerId: Id, status: PeerStatus, suppressNotifications: Boolean = false): PeerStatus {
+    private fun updatePeerStatus(peerId: Id, status: PeerStatus, suppressNotifications: Boolean = false): PeerStatus {
         val peer = addressBook.getAuthority(peerId)
 
         if(peer == null) {
@@ -67,7 +66,7 @@ class NetworkNode(
         val response = router.handleRequest(request)
 
         // Since we received a request, the peer must be online
-        updateStatus(request.from, Online)
+        updatePeerStatus(request.from, Online)
 
         response
     }
@@ -204,7 +203,7 @@ class NetworkNode(
             // New peer has been added - request transactions
             eventBus.sendMessage(
                 Events.PeerNotification.toString(),
-                Notification(peerAuthority.entityId, PeerEvent.Online).encode()
+                Notification(peerAuthority.entityId, PeerEvent.Added).encode()
             )
     }
 
@@ -248,7 +247,7 @@ class NetworkNode(
         if (response == null || response.status < 400)
             // Don't update status for calls that made it to a peer but result in an error. In particular, this
             // avoids a peer transition from offline to online when a call fails for authorization reasons
-            updateStatus(peer.entityId, if (response == null) Offline else Online, suppressNotifications)
+            updatePeerStatus(peer.entityId, if (response == null) Offline else Online, suppressNotifications)
 
         return response
     }
