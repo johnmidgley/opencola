@@ -1,8 +1,5 @@
 #!/bin/bash
 # make-node name port
-pushd ../install
-./install
-popd
 pushd storage/persistent
 rm -rf $1
 mkdir $1

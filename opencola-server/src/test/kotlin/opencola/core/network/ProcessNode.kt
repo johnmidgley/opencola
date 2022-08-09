@@ -45,34 +45,11 @@ class ProcessNode(private val nodePath: Path, val name: String, val serverPort: 
         }
     }
 
-    private fun readFromProcessUntil(process: Process, reader: MultiStreamReader, until: (String) -> Boolean){
-        while (process.isAlive) {
-            val line = reader.readLine()
-            if (line != null) {
-                println(line)
-                if (until(line))
-                    break
-            } else
-                Thread.sleep(50)
-        }
-    }
-
-    private fun echoProcessOutputInBackground(process: Process, reader: MultiStreamReader) {
-        val executorService = Executors.newSingleThreadExecutor()
-        executorService.execute{ readFromProcessUntil(process, reader) { false } }
-    }
-
-    private fun blockOnProcessOutputUntil(process: Process, until: (String) -> Boolean) {
-        val reader = MultiStreamReader(listOf(Pair(name, process.inputStream), Pair(name, process.errorStream)))
-        readFromProcessUntil(process, reader, until)
-        echoProcessOutputInBackground(process, reader)
-    }
-
     override fun start(): Node {
         logger.info { "Starting $name" }
         val process = "./start-node $name".startProcess(nodePath)!!.also { this.process == process }
 
-        blockOnProcessOutputUntil(process){ it.contains("MainReactor: NodeStarted") }
+        blockOnProcessOutputUntil(process, name){ it.contains("MainReactor: NodeStarted") }
         blockUntilNodeReady()
         logger.info("Node $name is ready")
         return this
@@ -110,12 +87,49 @@ class ProcessNode(private val nodePath: Path, val name: String, val serverPort: 
     }
 
     companion object Factory {
+        private val logger = KotlinLogging.logger("ProcessNode")
         private val nodeDir = Path("../test")
         private const val baseServerPort = 5750
+        private var built = false
 
+        init {
+            build()
+        }
 
         fun getNode(num: Int): ProcessNode {
             return ProcessNode(nodeDir, "node-$num", baseServerPort + num, baseZtPort + num)
+        }
+
+        // TODO: Make extension methods on process?
+        private fun readFromProcessUntil(process: Process, reader: MultiStreamReader, until: (String) -> Boolean){
+            while (process.isAlive) {
+                val line = reader.readLine()
+                if (line != null) {
+                    println(line)
+                    if (until(line))
+                        break
+                } else
+                    Thread.sleep(50)
+            }
+        }
+
+        private fun echoProcessOutputInBackground(process: Process, reader: MultiStreamReader) {
+            val executorService = Executors.newSingleThreadExecutor()
+            executorService.execute{ readFromProcessUntil(process, reader) { false } }
+        }
+
+        private fun blockOnProcessOutputUntil(process: Process, prefix: String, until: (String) -> Boolean) {
+            val reader = MultiStreamReader(listOf(Pair(prefix, process.inputStream), Pair(prefix, process.errorStream)))
+            readFromProcessUntil(process, reader, until)
+            echoProcessOutputInBackground(process, reader)
+        }
+
+        private fun build() {
+            if(!built) {
+                logger.info { "Building code" }
+                "./build".runCommand(nodeDir, printOutput = true)
+            }
+            built = true
         }
 
         fun stopAllNodes(){

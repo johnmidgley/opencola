@@ -4,8 +4,9 @@ import opencola.core.TestApplication
 import opencola.core.io.readStdOut
 import opencola.core.model.Authority
 import opencola.core.model.ResourceEntity
-import opencola.core.network.PeerEvent.*
-import opencola.core.network.Request.Method.*
+import opencola.core.network.PeerEvent.NewTransaction
+import opencola.core.network.Request.Method.GET
+import opencola.core.network.Request.Method.POST
 import opencola.core.network.providers.zerotier.ZeroTierAddress
 import opencola.core.network.providers.zerotier.ZeroTierClient
 import opencola.core.security.encode
@@ -248,43 +249,59 @@ class NetworkNodeTest : PeerTest() {
     // @Test
     fun testZtLibPeers() {
         ProcessNode.stopAllNodes()
-        val createNodes = false
+        deleteAllNetworks()
+        val createNodes = true
 
-        val (node0, _) = if(createNodes) {
-            makeAndConnectNode0andNode1()
-            return
+        if (createNodes) {
+            makeAndConnectNode0andNode1().also {
+                it.first.stop()
+                it.second.stop()
+            }
         }
-        else
-            Pair(
-                getApplicationNode(0, zeroTierIntegrationEnabled = true, persistent = true).also { it.start() },
-                ProcessNode.getNode(1).also { it.start() }
+
+        ProcessNode.stopAllNodes()
+
+        val (node0, _) = Pair(
+            getApplicationNode(0, zeroTierIntegrationEnabled = true, persistent = true).also { it.start() },
+            ProcessNode.getNode(1).also { it.start() }
+        )
+
+        try {
+            val node0Authority = node0.application.inject<Authority>()
+            val addressBook = node0.application.inject<AddressBook>()
+            val peer1 = addressBook.getAuthorities().single { it.entityId != node0Authority.entityId }
+            val networkNode0 = node0.application.inject<NetworkNode>()
+
+            val pingRequest = Request(node0Authority.entityId, GET, "/ping")
+            val pingResponse = networkNode0.sendRequest(peer1.entityId, pingRequest)
+            assertNotNull(pingResponse)
+            println("Response: $pingResponse")
+
+            val transactionsRequest = Request(
+                node0Authority.entityId,
+                GET,
+                "/transactions",
+                null,
+                mapOf("authorityId" to "5BLZBd3f1rWTYKax26h2DVZeo9j1UsBL2cHZLnmpSMmo")
             )
+            val transactionsResponse = networkNode0.sendRequest(peer1.entityId, transactionsRequest)
+            assertNotNull(transactionsResponse)
+            println("Response: $transactionsResponse")
+            println("Body: ${transactionsResponse.decodeBody<TransactionsResponse>()}")
 
-        val node0Authority = node0.application.inject<Authority>()
-        val addressBook = node0.application.inject<AddressBook>()
-        val peer1 = addressBook.getAuthorities().single{ it.entityId != node0Authority.entityId }
-        val networkNode0 = node0.application.inject<NetworkNode>()
+            val notification = Notification(node0Authority.entityId, NewTransaction)
+            val notificationRequest = request(node0Authority.entityId, POST, "/notifications", null, null, notification)
+            val notificationResponse = networkNode0.sendRequest(peer1.entityId, notificationRequest)
+            assertNotNull(notificationResponse)
+            println("Response: $notificationResponse")
 
-        val pingRequest = Request(node0Authority.entityId, GET, "/ping")
-        val pingResponse = networkNode0.sendRequest(peer1.entityId, pingRequest)
-        assertNotNull(pingResponse)
-        println("Response: $pingResponse")
+            // Sleep to let any background IO drain
+            Thread.sleep(1000)
 
-        val transactionsRequest = Request(node0Authority.entityId, GET, "/transactions", mapOf("authorityId" to "5BLZBd3f1rWTYKax26h2DVZeo9j1UsBL2cHZLnmpSMmo"))
-        val transactionsResponse = networkNode0.sendRequest(peer1.entityId, transactionsRequest)
-        assertNotNull(transactionsResponse)
-        println("Response: $transactionsResponse")
-        println("Body: ${transactionsResponse.decodeBody<TransactionsResponse>()}")
+            println("Done")
+        } catch (e: Exception) {
+            println(e)
+        }
 
-        val notification = Notification(node0Authority.entityId, NewTransaction)
-        val notificationRequest = request(node0Authority.entityId, POST, "/notifications", null, null, notification)
-        val notificationResponse = networkNode0.sendRequest(peer1.entityId, notificationRequest)
-        assertNotNull(notificationResponse)
-        println("Response: $notificationResponse")
-
-        // Sleep to let any background IO drain
-        Thread.sleep(500)
-
-        println("Done")
     }
 }
