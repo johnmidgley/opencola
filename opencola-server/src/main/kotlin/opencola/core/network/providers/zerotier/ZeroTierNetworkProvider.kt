@@ -32,10 +32,9 @@ class ZeroTierNetworkProvider(
     private val storagePath: Path,
     private val config: ZeroTierConfig,
     private val authority: Authority,
-    private val addressBook: AddressBook,
     private val router: RequestRouter,
     authToken: String,
-) : AbstractNetworkProvider(addressBook) {
+) : AbstractNetworkProvider() {
     private val node = ZeroTierNode()
     private var networkId: ZeroTierId? = null
     private var zeroTierClient: ZeroTierClient? = ZeroTierClient(authToken)
@@ -216,7 +215,7 @@ class ZeroTierNetworkProvider(
         return getZeroTierAddress().toURI()
     }
 
-    override fun updatePeer(peer: Authority) {
+    override fun addPeer(peer: Authority) {
         if(peer.entityId != authority.entityId) {
             val zeroTierAddress = peer.uri?.let { ZeroTierAddress.fromURI(it) } ?: return
 

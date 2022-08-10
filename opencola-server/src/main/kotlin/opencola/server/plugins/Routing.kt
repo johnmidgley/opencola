@@ -120,7 +120,7 @@ fun Application.configureRouting(app: app) {
 
         post("/peers/token") {
             val tokenRequest = call.receive<TokenRequest>()
-            call.respond(inviteTokenToPeer(app.inject(), tokenRequest.token))
+            call.respond(inviteTokenToPeer(app.inject<Authority>().entityId, tokenRequest.token))
         }
 
         put("/peers") {

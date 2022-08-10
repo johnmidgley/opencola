@@ -18,7 +18,7 @@ import opencola.core.storage.AddressBook
 import java.lang.IllegalStateException
 import java.net.URI
 
-class HttpNetworkProvider(serverConfig: ServerConfig, addressBook: AddressBook) : AbstractNetworkProvider(addressBook) {
+class HttpNetworkProvider(serverConfig: ServerConfig) : AbstractNetworkProvider() {
     private val logger = KotlinLogging.logger("HttpNetworkProvider")
     var started = false
     private val serverAddress = URI("http://${serverConfig.host}:${serverConfig.port}")
@@ -41,7 +41,7 @@ class HttpNetworkProvider(serverConfig: ServerConfig, addressBook: AddressBook) 
         return serverAddress
     }
 
-    override fun updatePeer(peer: Authority) {
+    override fun addPeer(peer: Authority) {
         // Nothing to do
     }
 
@@ -51,7 +51,7 @@ class HttpNetworkProvider(serverConfig: ServerConfig, addressBook: AddressBook) 
 
     // Caller (Network Node) should check if peer is active
     override fun sendRequest(peer: Authority, request: Request) : Response? {
-        if (!started) IllegalStateException("Provider is not started - can't sendRequest")
+        if (!started) throw IllegalStateException("Provider is not started - can't sendRequest")
 
         try {
             val urlString = "${peer.uri}/networkNode"
@@ -80,7 +80,7 @@ class HttpNetworkProvider(serverConfig: ServerConfig, addressBook: AddressBook) 
     }
 
     fun handleRequest(request: Request) : Response {
-        if (!started) IllegalStateException("Provider is not started - can't handleRequest")
+        if (!started) throw IllegalStateException("Provider is not started - can't handleRequest")
         val handler = this.handler ?: throw IllegalStateException("Call to handleRequest when handler has not been set")
         return handler(request)
     }

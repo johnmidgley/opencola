@@ -11,16 +11,15 @@ interface NetworkProvider {
     // TODO: Needed?
     fun getAddress() : URI
 
-    // TODO: Move address book into provider and remove these peer methods
-    fun updatePeer(peer: Authority)
+    // If a peer URI changes with the same provider, it will result in removePeer(oldPeer) addPeer(newPeer)
+    fun addPeer(peer: Authority)
     fun removePeer(peer: Authority)
 
-    // TODO: Should authority be Id?
     fun sendRequest(peer: Authority, request: Request): Response?
     fun setRequestHandler(handler: (Request) -> Response)
 }
 
-abstract class AbstractNetworkProvider(private val addressBook: AddressBook) : NetworkProvider {
+abstract class AbstractNetworkProvider : NetworkProvider {
     var handler: ((Request) -> Response)? = null
 
     override fun setRequestHandler(handler: (Request) -> Response) {

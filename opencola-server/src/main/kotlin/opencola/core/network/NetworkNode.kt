@@ -112,7 +112,7 @@ class NetworkNode(
         setProvider("zt", null)
 
         if (authToken != null) {
-            val provider = ZeroTierNetworkProvider(storagePath, config.zeroTierConfig, authority, addressBook, router, authToken)
+            val provider = ZeroTierNetworkProvider(storagePath, config.zeroTierConfig, authority, router, authToken)
             setProvider("zt", provider)
             authority.uri = provider.getAddress()
 
@@ -122,8 +122,21 @@ class NetworkNode(
     }
 
     private val peerUpdateHandler : (Authority?, Authority?) -> Unit = { previousAuthority, currentAuthority ->
+        // TODO: Move this.
         if(currentAuthority?.entityId == authorityId) {
             setAuthToken(currentAuthority)
+        }
+
+        if(previousAuthority?.uri != currentAuthority?.uri) {
+            previousAuthority?.uri?.let {
+                providers[it.scheme]?.removePeer(previousAuthority) ?:
+                    logger.warn { "No provider for scheme: ${it.scheme} - can't remove peer with uri $it" }
+            }
+
+            currentAuthority?.uri?.let {
+                providers[it.scheme]?.addPeer(currentAuthority) ?:
+                    logger.warn { "No provider for scheme: ${it.scheme} - can't add peer with uri $it" }
+            }
         }
     }
 
@@ -167,11 +180,6 @@ class NetworkNode(
                 throw NotImplementedError("Updating publicKey is not currently implemented")
             }
 
-            if(existingPeerAuthority.uri != peerAuthority.uri) {
-                // Since address is being updated, remove zero tier connection for old address
-                existingPeerAuthority.uri?.let { providers[it.scheme]?.removePeer(existingPeerAuthority) }
-            }
-
             // TODO: Should there be a general way to do this? Add an update method to Entity or Authority?
             existingPeerAuthority.name = peerAuthority.name
             existingPeerAuthority.publicKey = peerAuthority.publicKey
@@ -196,7 +204,6 @@ class NetworkNode(
         }
 
         val peerToUpdate = existingPeerAuthority ?: peerAuthority
-        peerToUpdate.uri?.let { providers[it.scheme]?.updatePeer(peerToUpdate) }
         addressBook.updateAuthority(peerToUpdate)
 
         if (existingPeerAuthority == null)

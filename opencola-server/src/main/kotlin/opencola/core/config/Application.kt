@@ -97,7 +97,7 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
                 bindSingleton { Encryptor(instance()) }
                 bindSingleton { AddressBook(instance(), storagePath, instance(), config.server, config.network) }
                 bindSingleton { RequestRouter() }
-                bindSingleton { HttpNetworkProvider(config.server, instance()) }
+                bindSingleton { HttpNetworkProvider(config.server) }
                 bindSingleton { NetworkNode(config.network, storagePath.resolve("network"), authority.authorityId, instance(),instance(), instance(), instance()) }
                 bindSingleton { LuceneSearchIndex(authority.authorityId, storagePath.resolve("lucene")) }
                 bindSingleton { ExposedEntityStore(entityStoreDB, instance(), instance(), instance(), instance()) }
