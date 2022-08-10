@@ -246,7 +246,7 @@ class NetworkNodeTest : PeerTest() {
         return Pair(node0, node1)
     }
 
-    @Test
+    // @Test
     fun testZtLibPeers() {
         ProcessNode.stopAllNodes()
         deleteAllNetworks()
