@@ -36,7 +36,7 @@ class ApplicationNode(val application: Application) : Node {
         val peer = getPeers(app.inject(), app.inject())
             .let { result -> result.results.single { it.id == result.authorityId } }
         val peer1 = Peer(peer.id, peer.name, peer.publicKey, peer.address, peer.imageUri, peer.isActive, token)
-        updatePeer(app.inject(), peer1)
+        updatePeer(peer1)
     }
 
     override fun getInviteToken(): String {
@@ -52,7 +52,7 @@ class ApplicationNode(val application: Application) : Node {
     }
 
     override fun updatePeer(peer: Peer) {
-        updatePeer(application.inject(), peer)
+        updatePeer(application.inject<Authority>().entityId, application.inject(), application.inject(), application.inject(), peer)
     }
 
     companion object Factory {

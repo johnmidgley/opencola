@@ -2,11 +2,15 @@ package opencola.server.handlers
 
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
+import opencola.core.event.EventBus
+import opencola.core.event.Events
 import opencola.core.extensions.nullOrElse
 import opencola.core.model.Authority
 import opencola.core.model.Id
 import opencola.core.network.InviteToken
-import opencola.core.network.NetworkNode
+import opencola.core.network.Notification
+import opencola.core.network.PeerEvent
+import opencola.core.network.providers.zerotier.ZeroTierNetworkProvider
 import opencola.core.security.Encryptor
 import opencola.core.security.Signator
 import opencola.core.security.decodePublicKey
@@ -84,8 +88,64 @@ fun deletePeer(addressBook: AddressBook, peerId: Id) {
     addressBook.deleteAuthority(peerId)
 }
 
-fun updatePeer(networkNode: NetworkNode, peer: Peer) {
-    networkNode.updatePeer(peer)
+fun updatePeer(authorityId: Id, addressBook: AddressBook, encryptor: Encryptor, eventBus: EventBus, peer: Peer) {
+    logger.info { "Updating peer: $peer" }
+
+    val peerAuthority = peer.toAuthority(authorityId, encryptor)
+    val existingPeerAuthority = addressBook.getAuthority(peerAuthority.entityId)
+
+    if(existingPeerAuthority != null) {
+        logger.info { "Found existing peer - updating" }
+
+        if(existingPeerAuthority.publicKey != peerAuthority.publicKey){
+            throw NotImplementedError("Updating publicKey is not currently implemented")
+        }
+
+        // TODO: Should there be a general way to do this? Add an update method to Entity or Authority?
+        existingPeerAuthority.name = peerAuthority.name
+        existingPeerAuthority.publicKey = peerAuthority.publicKey
+        existingPeerAuthority.uri = peerAuthority.uri
+        existingPeerAuthority.imageUri = peerAuthority.imageUri
+        existingPeerAuthority.tags = peerAuthority.tags
+        existingPeerAuthority.networkToken = peerAuthority.networkToken
+    }
+
+    if(peer.networkToken != null){
+        if(peerAuthority.entityId != authorityId){
+            throw IllegalArgumentException("Attempt to set networkToken for non root authority")
+        }
+
+        if(peer.networkToken != redactedNetworkToken) {
+            if(!ZeroTierNetworkProvider.isNetworkTokenValid(peer.networkToken)){
+                throw IllegalArgumentException("Network token provided is not valid: ${peer.networkToken}")
+            }
+
+            peerAuthority.networkToken = encryptor.encrypt(authorityId, peer.networkToken.toByteArray())
+        }
+    }
+
+    val peerToUpdate = existingPeerAuthority ?: peerAuthority
+    addressBook.updateAuthority(peerToUpdate)
+
+    // TODO: Move out of here - doesn't belong
+    if (existingPeerAuthority == null)
+    // New peer has been added - request transactions
+        eventBus.sendMessage(
+            Events.PeerNotification.toString(),
+            Notification(peerAuthority.entityId, PeerEvent.Added).encode()
+        )
+}
+
+private fun removePeer(peerId: Id, addressBook: AddressBook) {
+    logger.info { "Removing peer: $peerId" }
+    val peer = addressBook.getAuthority(peerId)
+
+    if(peer == null){
+        logger.info { "No peer found - ignoring" }
+        return
+    }
+
+    addressBook.deleteAuthority(peerId)
 }
 
 fun getInviteToken(authorityId: Id, addressBook: AddressBook, signator: Signator): String {

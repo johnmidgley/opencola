@@ -97,6 +97,7 @@ class NetworkNode(
         }
     }
 
+    // TODO: Move these AuthToken functions out of here. Should happen in peer handler.
     private fun getAuthToken(authority: Authority) : String? {
         return authority.networkToken.nullOrElse { String(encryptor.decrypt(authorityId, it)) }
     }
@@ -140,10 +141,6 @@ class NetworkNode(
         }
     }
 
-    fun isNetworkTokenValid(networkToken: String) : Boolean {
-        return ZeroTierNetworkProvider.isNetworkTokenValid(networkToken)
-    }
-
     fun start() {
         logger.info { "Starting..." }
 
@@ -163,68 +160,6 @@ class NetworkNode(
         addressBook.removeUpdateHandler(peerUpdateHandler)
         providers.values.forEach{ it.stop() }
         logger.info { "Stopped" }
-    }
-
-    // TODO: Should not be here. Peer is a client API class. Something else should map to Authority and do the update,
-    //  then those that rely on updates (Providers) should subscribe to addressBook changes
-    fun updatePeer(peer: Peer) {
-        logger.info { "Updating peer: $peer" }
-
-        val peerAuthority = peer.toAuthority(authorityId, encryptor)
-        val existingPeerAuthority = addressBook.getAuthority(peerAuthority.entityId)
-
-        if(existingPeerAuthority != null) {
-            logger.info { "Found existing peer - updating" }
-
-            if(existingPeerAuthority.publicKey != peerAuthority.publicKey){
-                throw NotImplementedError("Updating publicKey is not currently implemented")
-            }
-
-            // TODO: Should there be a general way to do this? Add an update method to Entity or Authority?
-            existingPeerAuthority.name = peerAuthority.name
-            existingPeerAuthority.publicKey = peerAuthority.publicKey
-            existingPeerAuthority.uri = peerAuthority.uri
-            existingPeerAuthority.imageUri = peerAuthority.imageUri
-            existingPeerAuthority.tags = peerAuthority.tags
-            existingPeerAuthority.networkToken = peerAuthority.networkToken
-        }
-
-        if(peer.networkToken != null){
-            if(peerAuthority.entityId != authorityId){
-                throw IllegalArgumentException("Attempt to set networkToken for non root authority")
-            }
-
-            if(peer.networkToken != redactedNetworkToken) {
-                if(!isNetworkTokenValid(peer.networkToken)){
-                    throw IllegalArgumentException("Network token provided is not valid: ${peer.networkToken}")
-                }
-
-                peerAuthority.networkToken = encryptor.encrypt(authorityId, peer.networkToken.toByteArray())
-            }
-        }
-
-        val peerToUpdate = existingPeerAuthority ?: peerAuthority
-        addressBook.updateAuthority(peerToUpdate)
-
-        if (existingPeerAuthority == null)
-            // New peer has been added - request transactions
-            eventBus.sendMessage(
-                Events.PeerNotification.toString(),
-                Notification(peerAuthority.entityId, PeerEvent.Added).encode()
-            )
-    }
-
-    private fun removePeer(peerId: Id){
-        logger.info { "Removing peer: $peerId" }
-        val peer = addressBook.getAuthority(peerId)
-
-        if(peer == null){
-            logger.info { "No peer found - ignoring" }
-            return
-        }
-
-        peer.uri?.let { providers[it.scheme]?.removePeer(peer) }
-        addressBook.deleteAuthority(peerId)
     }
 
     // TODO - peer should be Authority or peerId?

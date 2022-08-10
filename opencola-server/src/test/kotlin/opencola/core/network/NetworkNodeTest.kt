@@ -1,6 +1,5 @@
 package opencola.core.network
 
-import opencola.core.TestApplication
 import opencola.core.io.readStdOut
 import opencola.core.model.Authority
 import opencola.core.model.ResourceEntity
@@ -9,6 +8,7 @@ import opencola.core.network.Request.Method.GET
 import opencola.core.network.Request.Method.POST
 import opencola.core.network.providers.zerotier.ZeroTierAddress
 import opencola.core.network.providers.zerotier.ZeroTierClient
+import opencola.core.network.providers.zerotier.ZeroTierNetworkProvider
 import opencola.core.security.encode
 import opencola.core.storage.AddressBook
 import opencola.core.storage.EntityStore
@@ -17,7 +17,6 @@ import opencola.server.handlers.Peer
 import opencola.server.handlers.TransactionsResponse
 import opencola.server.handlers.inviteTokenToPeer
 import org.junit.Test
-import org.kodein.di.instance
 import java.net.URI
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
@@ -31,8 +30,7 @@ class NetworkNodeTest : PeerTest() {
 
     // @Test
     fun testInvalidToken(){
-        val networkNode by TestApplication.instance.injector.instance<NetworkNode>()
-        assertFalse(networkNode.isNetworkTokenValid(""))
+        assertFalse(ZeroTierNetworkProvider.isNetworkTokenValid(""))
     }
 
     // Get or create an application instance that will live across test runs. This avoids hammering ZeroTier when
@@ -56,9 +54,9 @@ class NetworkNodeTest : PeerTest() {
 
     private fun addPeer(applicationNode: ApplicationNode , peerApplicationNode: ApplicationNode) {
         val inviteToken = peerApplicationNode.getInviteToken()
-        val networkNode = applicationNode.application.inject<NetworkNode>()
-        val authority = applicationNode.application.inject<Authority>()
-        networkNode.updatePeer(inviteTokenToPeer(authority.entityId, inviteToken))
+        val authorityId = applicationNode.application.inject<Authority>().entityId
+        val peer = inviteTokenToPeer(authorityId, inviteToken)
+        applicationNode.updatePeer(peer)
     }
 
     @Test
@@ -248,7 +246,7 @@ class NetworkNodeTest : PeerTest() {
         return Pair(node0, node1)
     }
 
-    // @Test
+    @Test
     fun testZtLibPeers() {
         ProcessNode.stopAllNodes()
         deleteAllNetworks()

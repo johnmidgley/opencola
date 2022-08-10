@@ -125,7 +125,7 @@ fun Application.configureRouting(app: app) {
 
         put("/peers") {
             val peer = call.receive<Peer>()
-            updatePeer(app.inject(), peer)
+            updatePeer(app.inject<Authority>().entityId, app.inject(), app.inject(), app.inject(), peer)
             call.respond("{}")
         }
 
