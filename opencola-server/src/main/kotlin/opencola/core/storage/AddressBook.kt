@@ -19,7 +19,7 @@ class AddressBook(private val authority: Authority, storagePath: Path, signator:
 
     private val activeTag = "active"
     private val entityStore = ExposedEntityStore(SQLiteDB(storagePath.resolve("address-book.db")).db, authority, signator)
-    private val updateHandlers = ConcurrentList<(Authority) -> Unit>()
+    private val updateHandlers = ConcurrentList<(Authority?, Authority?) -> Unit>()
 
     fun getPublicKey(authorityId: Id): PublicKey? {
         return if (authorityId == authority.authorityId)
@@ -62,29 +62,35 @@ class AddressBook(private val authority: Authority, storagePath: Path, signator:
         return authority.tags.contains(activeTag)
     }
 
-    // TODO: Change update handler to be (previousAuthority?, currentAuthority?) so it can generically handle add, update, delete
-    fun addUpdateHandler(handler: (Authority) -> Unit){
+    fun addUpdateHandler(handler: (Authority?, Authority?) -> Unit){
         updateHandlers.add(handler)
     }
 
-    fun removeUpdateHandler(handler: (Authority) -> Unit){
+    fun removeUpdateHandler(handler: (Authority?, Authority?) -> Unit){
         updateHandlers.remove(handler)
     }
 
-    fun updateAuthority(authority: Authority, suppressUpdateHandler: ((Authority) -> Unit)? = null) : Authority {
-        if(entityStore.updateEntities(authority) != null) {
-            val updatedAuthority = entityStore.getEntity(authority.authorityId, authority.entityId) as Authority
-
-            updateHandlers.forEach {
-                try {
-                    if(it != suppressUpdateHandler)
-                        it(updatedAuthority)
-                } catch (e: Exception) {
-                    logger.error { "Error calling update handler: $e" }
-                }
+    private fun callUpdateHandlers(previousAuthority: Authority?,
+                                   currentAuthority: Authority?,
+                                   suppressUpdateHandler: ((Authority?, Authority?) -> Unit)? = null) {
+        updateHandlers.forEach {
+            try {
+                if(it != suppressUpdateHandler)
+                    it(previousAuthority, currentAuthority)
+            } catch (e: Exception) {
+                logger.error { "Error calling update handler: $e" }
             }
+        }
+    }
 
-            return updatedAuthority
+    fun updateAuthority(authority: Authority,
+                        suppressUpdateHandler: ((Authority?, Authority?) -> Unit)? = null) : Authority {
+        val previousAuthority = entityStore.getEntity(authority.authorityId, authority.entityId) as Authority?
+
+        if(entityStore.updateEntities(authority) != null) {
+            val currentAuthority = entityStore.getEntity(authority.authorityId, authority.entityId) as Authority
+            callUpdateHandlers(previousAuthority, currentAuthority, suppressUpdateHandler)
+            return currentAuthority
         }
 
         // Nothing changed
@@ -107,6 +113,8 @@ class AddressBook(private val authority: Authority, storagePath: Path, signator:
         if(id == authority.authorityId)
             throw IllegalArgumentException("Can't delete root authority from address book.")
 
+        val previousAuthority = entityStore.getEntity(authority.authorityId, authority.entityId) as Authority
+        callUpdateHandlers(previousAuthority, null)
         entityStore.deleteEntity(authority.authorityId, id)
     }
 }

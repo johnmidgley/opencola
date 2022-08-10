@@ -121,9 +121,9 @@ class NetworkNode(
         }
     }
 
-    private val peerUpdateHandler : (Authority) -> Unit = { peer ->
-        if(peer.entityId == authorityId) {
-            setAuthToken(peer)
+    private val peerUpdateHandler : (Authority?, Authority?) -> Unit = { previousAuthority, currentAuthority ->
+        if(currentAuthority?.entityId == authorityId) {
+            setAuthToken(currentAuthority)
         }
     }
 
