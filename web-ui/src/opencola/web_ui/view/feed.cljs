@@ -14,6 +14,7 @@
    [opencola.web-ui.model.error :as error]
    [opencola.web-ui.model.feed :as feed]))
 
+
 ;; TODO: Look at https://github.com/Day8/re-com
 
 (defn format-time [epoch-second]
@@ -94,14 +95,14 @@
            text :value
            comment-id :id} comment-action]
       [:div.item-comment 
-       [:span.item-attribution 
+       [:div.item-attribution 
         authority-name " " (format-time epoch-second) " "
         (if (= authority-id root-authority-id)
           [:span {:on-click #(reset! editing?! true)} [action-img "edit"]])
         ":"]
        (if @editing?!
          [comment-control feed! entity-id comment-id text editing?!]
-         [:div.item-comment-text text])]))))
+         [common/md->component {:class "item-comment-text"} text])]))))
 
 (defn item-comments [preview-fn? expanded?! comment-actions feed! entity-id]
   (let [preview? (preview-fn?)
@@ -289,7 +290,7 @@
        [item-name summary]
        [:div.item-body
         [item-image summary]
-        [:p.item-desc (:description summary)]]
+        [common/md->component {:class "item-desc"}  (:description summary)]]
        [item-tags-summary (-> item :activities :tag)]
        [:div.posted-by "Posted by: " (:postedBy summary)]
        [item-activities feed! item editing?!]])))
@@ -325,14 +326,11 @@
      :value (:tags @edit-item!)
      :on-change #(swap! edit-item! assoc-in [:tags] (-> % .-target .-value))}]])
 
-(defn description-edit-control [edit-item!]
+(defn description-edit-control [edit-item! state!]
   [:div.description-edit-control
        [:div.field-header "Description:"]
        [:div.item-desc 
-        [:textarea.item-desc-edit
-         {:type "text"
-          :value (:description @edit-item!)
-          :on-change #(swap! edit-item! assoc-in [:description] (-> % .-target .-value))}]]])
+        [common/simple-mde (str (:entityId @edit-item!) "-desc") (:description @edit-item!) state!]]])
 
 (defn comment-edit-control [edit-item!]
   [:div.comment-edit-control
@@ -352,17 +350,20 @@
 
 (defn edit-item-control [edit-item! on-save on-cancel on-delete]
    (fn []
-      [:div.feed-item
-       [name-edit-control edit-item!]
-       [image-uri-edit-control edit-item!]
-       [description-edit-control edit-item!]
-       [like-edit-control edit-item!]
-       [tags-edit-control edit-item!]
-       [comment-edit-control edit-item!]
-       [:button {:on-click on-save} "Save"] " "
-       [:button {:on-click on-cancel} "Cancel"] " "
-       (if on-delete
-           [:button.delete-button {:on-click on-delete} "Delete"])]))
+     (let [description-state! (atom nil)]
+       [:div.feed-item
+        [name-edit-control edit-item!]
+        [image-uri-edit-control edit-item!]
+        [description-edit-control edit-item! description-state!]
+        [like-edit-control edit-item!]
+        [tags-edit-control edit-item!]
+        [comment-edit-control edit-item!]
+        [:button {:on-click (fn []
+                              (swap! edit-item! assoc-in [:description] (.value @description-state!))
+                              (on-save)) } "Save"] " "
+        [:button {:on-click on-cancel} "Cancel"] " "
+        (if on-delete
+          [:button.delete-button {:on-click on-delete} "Delete"])])))
 
 ;; TODO: Use keys to get 
 (defn edit-feed-item [feed! item editing?!]
@@ -415,9 +416,9 @@
        [search/search-header query! on-search (partial header-actions creating-post?!)]
        [feed-error feed!]
        (if @creating-post?!
-         (let [edit-item! (atom (edit-item))] 
-           [edit-item-control 
-            edit-item! 
-            #(feed/new-post feed! creating-post?! @edit-item!) 
+         (let [edit-item! (atom (edit-item))]
+           [edit-item-control
+            edit-item!
+            #(feed/new-post feed! creating-post?! @edit-item!)
             #(reset! creating-post?! false) nil]))
        [feed-list feed!]])))

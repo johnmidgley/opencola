@@ -13,7 +13,9 @@
                  [com.andrewmcveigh/cljs-time "0.5.2"]
                  [lambdaisland/uri "1.13.95"]
                  [clj-commons/secretary "1.2.4"]
-                 [mvxcvi/alphabase "2.1.1"]]
+                 [mvxcvi/alphabase "2.1.1"]
+                 [cljsjs/simplemde "1.11.2-0"] ; https://cljsjs.github.io/ & https://github.com/sparksuite/simplemde-markdown-editor
+                 [markdown-to-hiccup "0.6.2"]]
 
   :source-paths ["src"]
 

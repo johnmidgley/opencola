@@ -99,10 +99,10 @@ body {
 .item-comment-text{
    /* outline: #dddddd dashed 1px; */
    background-color: #EAEBE0;
-   border: 20px;
-   padding: 5px;
+   padding: 1px;
+   padding-left: 8px;
    padding-right: 12px;
-   border-radius: 6px;
+   border-radius: 10px;
    font-family: "Lucida Console", "Courier New", monospace;
 }
 
@@ -113,6 +113,7 @@ body {
 .item-attribution {
     font-size: 14px;
     color: grey;
+    margin-bottom: 5px;
 }
 
 
