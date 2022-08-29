@@ -14,7 +14,6 @@ import opencola.core.storage.AddressBook
 import opencola.core.storage.EntityStore
 import opencola.server.PeerTest
 import opencola.server.handlers.Peer
-import opencola.server.handlers.TransactionsResponse
 import opencola.server.handlers.inviteTokenToPeer
 import org.junit.Test
 import java.net.URI

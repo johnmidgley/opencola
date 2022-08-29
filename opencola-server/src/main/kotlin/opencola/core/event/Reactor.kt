@@ -5,15 +5,11 @@ import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import opencola.core.event.EventBus.Event
 import opencola.core.model.*
-import opencola.core.network.NetworkNode
-import opencola.core.network.Notification
+import opencola.core.network.*
 import opencola.core.network.PeerEvent.*
-import opencola.core.network.Request
-import opencola.core.network.request
 import opencola.core.search.SearchIndex
 import opencola.core.storage.AddressBook
 import opencola.core.storage.EntityStore
-import opencola.server.handlers.TransactionsResponse
 import java.io.ByteArrayInputStream
 
 interface Reactor {

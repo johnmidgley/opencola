@@ -13,6 +13,8 @@ import opencola.core.model.Authority
 import opencola.core.model.Id
 import opencola.core.network.Notification
 import opencola.core.network.Request
+import opencola.core.network.handleGetTransactions
+import opencola.core.network.handleNotification
 import opencola.core.network.providers.http.HttpNetworkProvider
 import opencola.server.handlers.*
 import opencola.core.config.Application as app
@@ -65,7 +67,7 @@ fun Application.configureRouting(app: app) {
             val transactionId = call.parameters["mostRecentTransactionId"].nullOrElse { Id.decode(it) }
             val numTransactions = call.parameters["numTransactions"].nullOrElse { it.toInt() }
 
-            call.respond(handleGetTransactionsCall(app.inject(), app.inject(), authorityId, peerId, transactionId, numTransactions))
+            call.respond(handleGetTransactions(app.inject(), app.inject(), authorityId, peerId, transactionId, numTransactions))
         }
 
         get("/transactions/{authorityId}") {
@@ -99,7 +101,7 @@ fun Application.configureRouting(app: app) {
 
         post("/notifications") {
             val notification = call.receive<Notification>()
-            handlePostNotification(app.inject(), app.inject(), notification)
+            handleNotification(app.inject(), app.inject(), notification)
             call.respond(HttpStatusCode.OK)
         }
 

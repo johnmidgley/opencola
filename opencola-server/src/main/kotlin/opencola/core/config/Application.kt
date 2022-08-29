@@ -9,11 +9,11 @@ import opencola.core.model.Authority
 import opencola.core.model.Id
 import opencola.core.network.NetworkNode
 import opencola.core.network.RequestRouter
+import opencola.core.network.getDefaultRoutes
 import opencola.core.network.providers.http.HttpNetworkProvider
 import opencola.core.search.LuceneSearchIndex
 import opencola.core.security.*
 import opencola.core.storage.*
-import opencola.server.setNetworkRouting
 import opencola.core.search.SearchService
 import org.jetbrains.exposed.sql.Database
 import org.kodein.di.DI
@@ -96,7 +96,7 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
                 bindSingleton { Signator(instance()) }
                 bindSingleton { Encryptor(instance()) }
                 bindSingleton { AddressBook(instance(), storagePath, instance(), config.server, config.network) }
-                bindSingleton { RequestRouter() }
+                bindSingleton { RequestRouter(getDefaultRoutes(instance(), instance(), instance())) }
                 bindSingleton { HttpNetworkProvider(config.server) }
                 bindSingleton { NetworkNode(config.network, storagePath.resolve("network"), authority.authorityId, instance(),instance(), instance(), instance()) }
                 bindSingleton { LuceneSearchIndex(authority.authorityId, storagePath.resolve("lucene")) }
@@ -116,7 +116,6 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
 
             return Application(applicationPath, storagePath, config, injector).also {
                 it.inject<NetworkNode>().setProvider("http", it.inject<HttpNetworkProvider>())
-                setNetworkRouting(it)
             }
         }
 
