@@ -14,15 +14,7 @@ import java.net.URI
 import java.security.PublicKey
 import java.util.*
 
-// TODO: Make all classes data classes
-// TODO: Fact, SubjectiveFact, FactStore<T: Fact> - for both objective and subjective facts
-// TODO: Custom field serializers - doesn't seem possible
-
 // TODO: This is really just a typed value with specialized constructors. Why can't they share serialization code when they have the same properties and one derives from the other?
-// Maybe aggregate rather than derive?
-// TODO: Make data class
-// TODO: Is 16 bytes sufficient?
-// TODO: length should come from MessageDigest provider
 private val idLengthInBytes = sha256("").size
 
 @Serializable
