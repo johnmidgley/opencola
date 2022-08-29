@@ -25,8 +25,11 @@ fun Application.configureRouting(app: app) {
     val logger = KotlinLogging.logger("opencola.init")
 
     routing {
-        get("/search"){
-            handleGetSearchCall(call, app.inject())
+        get("/search") {
+            val query = call.request.queryParameters["q"]
+                ?: throw IllegalArgumentException("No query (q) specified in parameters")
+
+            call.respond(handleSearch(app.inject(), app.inject(), app.inject(), query))
         }
 
         get("/entity/{entityId}"){

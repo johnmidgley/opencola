@@ -14,7 +14,6 @@ import opencola.core.network.providers.http.HttpNetworkProvider
 import opencola.core.search.LuceneSearchIndex
 import opencola.core.security.*
 import opencola.core.storage.*
-import opencola.core.search.SearchService
 import org.jetbrains.exposed.sql.Database
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
@@ -101,7 +100,6 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
                 bindSingleton { NetworkNode(config.network, storagePath.resolve("network"), authority.authorityId, instance(),instance(), instance(), instance()) }
                 bindSingleton { LuceneSearchIndex(authority.authorityId, storagePath.resolve("lucene")) }
                 bindSingleton { ExposedEntityStore(entityStoreDB, instance(), instance(), instance(), instance()) }
-                bindSingleton { SearchService(instance(), instance(), instance()) }
                 // TODO: Add unit tests for MhtCache
                 // TODO: Get cache name from config
                 bindSingleton { MhtCache(storagePath.resolve("mht-cache"), instance(), instance()) }

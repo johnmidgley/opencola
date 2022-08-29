@@ -9,7 +9,6 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import opencola.core.TestApplication
 import opencola.core.model.*
-import opencola.core.network.NetworkNode.*
 import opencola.core.network.Notification
 import opencola.core.network.PeerEvent.*
 import opencola.core.security.generateKeyPair
@@ -17,10 +16,10 @@ import opencola.core.storage.AddressBook
 import opencola.core.storage.EntityStore
 import opencola.server.handlers.EntityPayload
 import opencola.server.handlers.FeedResult
+import opencola.server.handlers.SearchResults
 import opencola.server.plugins.configureContentNegotiation
 import opencola.server.plugins.configureRouting
 import opencola.service.EntityResult
-import opencola.service.search.SearchResults
 import org.kodein.di.instance
 import java.io.File
 import java.net.URI

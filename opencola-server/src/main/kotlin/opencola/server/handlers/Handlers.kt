@@ -3,25 +3,11 @@ package opencola.server.handlers
 import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.response.*
-import kotlinx.serialization.Serializable
 import mu.KotlinLogging
-import opencola.core.event.EventBus
-import opencola.core.event.Events
 import opencola.core.model.*
-import opencola.core.network.Notification
-import opencola.core.storage.AddressBook
-import opencola.core.storage.EntityStore
-import opencola.core.storage.EntityStore.TransactionOrder
 import opencola.core.storage.MhtCache
-import opencola.core.search.SearchService
 
 private val logger = KotlinLogging.logger("Handler")
-
-suspend fun handleGetSearchCall(call: ApplicationCall, searchService: SearchService) {
-    val query =
-        call.request.queryParameters["q"] ?: throw IllegalArgumentException("No query (q) specified in parameters")
-    call.respond(searchService.search(query))
-}
 
 suspend fun handleGetDataCall(call: ApplicationCall, mhtCache: MhtCache, authorityId: Id) {
     val stringId = call.parameters["id"] ?: throw IllegalArgumentException("No id set")

@@ -3,7 +3,7 @@ package opencola.server
 import opencola.core.model.Authority
 import opencola.core.model.ResourceEntity
 import opencola.core.storage.EntityStore
-import opencola.core.search.SearchService
+import opencola.server.handlers.handleSearch
 import org.junit.Test
 import org.kodein.di.instance
 import java.lang.Thread.sleep
@@ -26,8 +26,7 @@ class PeerTransactionTest : PeerTest() {
         // Verify retrieval of transaction on startup via search
         startServer(server1)
         sleep(1000) // TODO Bad - after event bus is implemented, trigger off events, rather than waiting for sync
-        val searchService1 by application1.injector.instance<SearchService>()
-        val results0 = searchService1.search("stuff")
+        val results0 = handleSearch(application1.inject(), application1.inject(), application1.inject(), "stuff")
         assert(results0.matches.size == 1)
         assert(results0.matches[0].name == resource0.name)
 
@@ -35,13 +34,13 @@ class PeerTransactionTest : PeerTest() {
         val resource1 = ResourceEntity(authority0.authorityId, URI("http://www.opencola.org/page"), "document 2", text = "other stuff")
         entityStore0.updateEntities(resource1)
         sleep(1000)
-        val results1 = searchService1.search("other")
+        val results1 = handleSearch(application1.inject(), application1.inject(), application1.inject(), "other")
         assert(results1.matches.size == 1)
         assert(results1.matches[0].name == resource1.name)
 
         entityStore0.deleteEntity(authority0.authorityId, resource1.entityId)
         sleep(1000)
-        val results2 = searchService1.search("other")
+        val results2 = handleSearch(application1.inject(), application1.inject(), application1.inject(), "other")
         assert(results2.matches.isEmpty())
 
         server0.stop(1000,1000)
@@ -82,8 +81,7 @@ class PeerTransactionTest : PeerTest() {
         sleep(2000)
 
         logger.info { "Searching ${application1.config.name}" }
-        val searchService1 by application1.injector.instance<SearchService>()
-        val results0 = searchService1.search("stuff")
+        val results0 = handleSearch(application1.inject(), application1.inject(), application1.inject(), "stuff")
         assert(results0.matches.size == 1)
         assert(results0.matches[0].name == resource0.name)
 
