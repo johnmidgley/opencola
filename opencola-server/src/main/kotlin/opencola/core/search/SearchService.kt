@@ -1,10 +1,10 @@
-package opencola.service.search
+package opencola.core.search
 
-import opencola.core.config.Application
 import opencola.core.model.Authority
 import opencola.core.model.ResourceEntity
-import opencola.core.search.SearchIndex
 import opencola.core.storage.EntityStore
+import opencola.service.search.SearchResult
+import opencola.service.search.SearchResults
 
 class SearchService(val authority: Authority, val entityStore: EntityStore, private val searchIndex: SearchIndex) {
     fun search(query: String): SearchResults {

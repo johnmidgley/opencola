@@ -14,7 +14,7 @@ import opencola.core.search.LuceneSearchIndex
 import opencola.core.security.*
 import opencola.core.storage.*
 import opencola.server.setNetworkRouting
-import opencola.service.search.SearchService
+import opencola.core.search.SearchService
 import org.jetbrains.exposed.sql.Database
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton

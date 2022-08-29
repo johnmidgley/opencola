@@ -13,7 +13,7 @@ import opencola.core.storage.AddressBook
 import opencola.core.storage.EntityStore
 import opencola.core.storage.EntityStore.TransactionOrder
 import opencola.core.storage.MhtCache
-import opencola.service.search.SearchService
+import opencola.core.search.SearchService
 
 private val logger = KotlinLogging.logger("Handler")
 

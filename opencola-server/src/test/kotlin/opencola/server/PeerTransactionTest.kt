@@ -3,7 +3,7 @@ package opencola.server
 import opencola.core.model.Authority
 import opencola.core.model.ResourceEntity
 import opencola.core.storage.EntityStore
-import opencola.service.search.SearchService
+import opencola.core.search.SearchService
 import org.junit.Test
 import org.kodein.di.instance
 import java.lang.Thread.sleep
