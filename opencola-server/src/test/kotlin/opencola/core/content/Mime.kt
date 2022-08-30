@@ -1,5 +1,6 @@
 package opencola.core.content
 
+import io.opencola.core.content.parseMime
 import org.apache.james.mime4j.dom.Message
 import java.nio.file.Path
 import kotlin.io.path.inputStream

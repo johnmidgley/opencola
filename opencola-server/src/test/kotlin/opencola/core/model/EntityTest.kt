@@ -1,6 +1,7 @@
 package opencola.core.model
 
-import opencola.core.security.generateKeyPair
+import io.opencola.core.model.*
+import io.opencola.core.security.generateKeyPair
 import java.net.URI
 import kotlin.test.*
 

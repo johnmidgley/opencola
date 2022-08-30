@@ -4,9 +4,9 @@ import io.ktor.application.*
 import io.ktor.server.netty.*
 import mu.KotlinLogging
 import opencola.core.TestApplication
-import opencola.core.config.Application
-import opencola.core.config.ZeroTierConfig
-import opencola.core.config.setZeroTierConfig
+import io.opencola.core.config.Application
+import io.opencola.core.config.ZeroTierConfig
+import io.opencola.core.config.setZeroTierConfig
 import opencola.core.network.ApplicationNode
 import opencola.core.network.baseZtPort
 

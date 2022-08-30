@@ -2,13 +2,13 @@ package opencola.server.handlers
 
 import io.ktor.application.*
 import io.ktor.response.*
+import io.opencola.core.model.*
 import kotlinx.serialization.Serializable
 import opencola.core.extensions.nullOrElse
-import opencola.core.model.*
-import opencola.core.model.CoreAttribute.*
-import opencola.core.search.SearchIndex
-import opencola.core.storage.AddressBook
-import opencola.core.storage.EntityStore
+import io.opencola.core.model.CoreAttribute.*
+import io.opencola.core.search.SearchIndex
+import io.opencola.core.storage.AddressBook
+import io.opencola.core.storage.EntityStore
 import opencola.service.EntityResult
 import opencola.service.EntityResult.*
 

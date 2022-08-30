@@ -1,7 +1,8 @@
 package opencola.core.serialization
 
-import opencola.core.model.Id
-import opencola.core.security.generateKeyPair
+import io.opencola.core.model.Id
+import io.opencola.core.security.generateKeyPair
+import io.opencola.core.serialization.Base58
 import org.junit.Test
 import kotlin.test.assertContentEquals
 

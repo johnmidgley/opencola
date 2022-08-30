@@ -1,9 +1,9 @@
 package opencola.server
 
 import opencola.core.TestApplication
-import opencola.core.model.Authority
-import opencola.core.storage.AddressBook
-import opencola.core.storage.EntityStore
+import io.opencola.core.model.Authority
+import io.opencola.core.storage.AddressBook
+import io.opencola.core.storage.EntityStore
 import opencola.server.handlers.EntityPayload
 import opencola.server.handlers.newPost
 import opencola.service.EntityResult

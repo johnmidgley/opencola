@@ -2,8 +2,8 @@ package opencola.service
 
 import kotlinx.serialization.Serializable
 import opencola.core.extensions.nullOrElse
-import opencola.core.model.Authority
-import opencola.core.model.Id
+import io.opencola.core.model.Authority
+import io.opencola.core.model.Id
 
 @Serializable
 // TODO - Replace Search Result

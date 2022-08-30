@@ -1,5 +1,6 @@
 package opencola.core.network.providers.zerotier
 
+import io.opencola.core.network.providers.zerotier.Network
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.junit.Test

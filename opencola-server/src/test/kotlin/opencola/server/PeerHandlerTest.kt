@@ -5,11 +5,11 @@ import io.ktor.server.testing.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import opencola.core.TestApplication
-import opencola.core.model.Authority
-import opencola.core.model.Id
-import opencola.core.security.Encryptor
-import opencola.core.security.generateKeyPair
-import opencola.core.storage.AddressBook
+import io.opencola.core.model.Authority
+import io.opencola.core.model.Id
+import io.opencola.core.security.Encryptor
+import io.opencola.core.security.generateKeyPair
+import io.opencola.core.storage.AddressBook
 import opencola.server.handlers.Peer
 import opencola.server.plugins.configureContentNegotiation
 import opencola.server.plugins.configureRouting

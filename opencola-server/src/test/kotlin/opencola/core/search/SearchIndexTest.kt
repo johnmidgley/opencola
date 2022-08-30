@@ -1,11 +1,12 @@
 package opencola.core.search
 
-import opencola.core.content.MhtmlPage
-import opencola.core.content.TextExtractor
-import opencola.core.content.parseMime
+import io.opencola.core.content.MhtmlPage
+import io.opencola.core.content.TextExtractor
+import io.opencola.core.content.parseMime
 import opencola.core.extensions.nullOrElse
-import opencola.core.model.Id
-import opencola.core.model.ResourceEntity
+import io.opencola.core.model.Id
+import io.opencola.core.model.ResourceEntity
+import io.opencola.core.search.SearchIndex
 import java.net.URI
 import kotlin.io.path.Path
 import kotlin.io.path.inputStream

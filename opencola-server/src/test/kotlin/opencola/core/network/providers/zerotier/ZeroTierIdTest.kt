@@ -1,5 +1,6 @@
 package opencola.core.network.providers.zerotier
 
+import io.opencola.core.network.providers.zerotier.ZeroTierId
 import org.junit.Test
 import java.math.BigInteger
 import kotlin.test.assertEquals

@@ -5,19 +5,23 @@ import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.request.*
 import io.ktor.response.*
-import opencola.core.content.MhtmlPage
-import opencola.core.content.TextExtractor
-import opencola.core.content.parseMhtml
+import io.opencola.core.content.MhtmlPage
+import io.opencola.core.content.TextExtractor
+import io.opencola.core.content.parseMhtml
+import io.opencola.core.model.Actions
+import io.opencola.core.model.DataEntity
+import io.opencola.core.model.Id
+import io.opencola.core.model.ResourceEntity
 import opencola.core.extensions.nullOrElse
-import opencola.core.model.*
-import opencola.core.storage.EntityStore
-import opencola.core.storage.FileStore
+import io.opencola.core.storage.EntityStore
+import io.opencola.core.storage.FileStore
 import org.apache.james.mime4j.message.DefaultMessageWriter
 import java.io.ByteArrayOutputStream
 import java.net.URI
 
 fun updateResource(authorityId: Id, entityStore: EntityStore, fileStore: FileStore, textExtractor: TextExtractor,
-                   mhtmlPage: MhtmlPage, actions: Actions): ResourceEntity {
+                   mhtmlPage: MhtmlPage, actions: Actions
+): ResourceEntity {
     val writer = DefaultMessageWriter()
     ByteArrayOutputStream().use { outputStream ->
         writer.writeMessage(mhtmlPage.message, outputStream)
@@ -68,7 +72,8 @@ suspend fun handlePostActionCall(call: ApplicationCall,
                                  authorityId: Id,
                                  entityStore: EntityStore,
                                  fileStore: FileStore,
-                                 textExtractor: TextExtractor) {
+                                 textExtractor: TextExtractor
+) {
     val multipart = call.receiveMultipart()
     var action: String? = null
     var value: String? = null

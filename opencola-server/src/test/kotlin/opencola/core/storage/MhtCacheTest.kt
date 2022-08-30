@@ -1,11 +1,14 @@
 package opencola.core.storage
 
 import opencola.core.TestApplication
-import opencola.core.content.MhtmlPage
-import opencola.core.content.TextExtractor
-import opencola.core.content.parseMime
-import opencola.core.model.Actions
-import opencola.core.model.Authority
+import io.opencola.core.content.MhtmlPage
+import io.opencola.core.content.TextExtractor
+import io.opencola.core.content.parseMime
+import io.opencola.core.model.Actions
+import io.opencola.core.model.Authority
+import io.opencola.core.storage.EntityStore
+import io.opencola.core.storage.FileStore
+import io.opencola.core.storage.MhtCache
 import opencola.server.handlers.updateResource
 import org.junit.Test
 import org.kodein.di.instance

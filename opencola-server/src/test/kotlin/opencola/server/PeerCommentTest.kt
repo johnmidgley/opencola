@@ -1,8 +1,8 @@
 package opencola.server
 
-import opencola.core.model.Authority
-import opencola.core.model.ResourceEntity
-import opencola.core.storage.EntityStore
+import io.opencola.core.model.Authority
+import io.opencola.core.model.ResourceEntity
+import io.opencola.core.storage.EntityStore
 import opencola.server.handlers.addComment
 import org.junit.Test
 import org.kodein.di.instance

@@ -1,6 +1,8 @@
 package opencola.core.content
 
-import opencola.core.model.Id
+import io.opencola.core.content.MhtmlPage
+import io.opencola.core.content.parseMime
+import io.opencola.core.model.Id
 import org.apache.james.mime4j.message.DefaultMessageWriter
 import java.net.URI
 import java.nio.file.Path

@@ -1,11 +1,10 @@
 package opencola.core.network
 
 import opencola.core.TestApplication
-import opencola.core.model.Authority
-import opencola.core.security.Signator
-import opencola.core.storage.AddressBook
+import io.opencola.core.model.Authority
+import io.opencola.core.network.InviteToken
+import io.opencola.core.security.Signator
 import opencola.server.handlers.getInviteToken
-import opencola.server.handlers.inviteTokenToPeer
 import org.junit.Test
 import org.kodein.di.instance
 import java.net.URI

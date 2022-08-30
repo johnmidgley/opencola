@@ -1,11 +1,12 @@
 package opencola.core.network.providers.http
 
-import opencola.core.model.Authority
-import opencola.core.model.Id
-import opencola.core.network.Request
+import io.opencola.core.model.Authority
+import io.opencola.core.model.Id
+import io.opencola.core.network.providers.http.HttpNetworkProvider
+import io.opencola.core.network.Request
 import opencola.server.PeerTest
-import opencola.core.network.RequestRouter
-import opencola.core.network.Response
+import io.opencola.core.network.RequestRouter
+import io.opencola.core.network.Response
 import org.junit.Test
 import kotlin.test.assertNotNull
 

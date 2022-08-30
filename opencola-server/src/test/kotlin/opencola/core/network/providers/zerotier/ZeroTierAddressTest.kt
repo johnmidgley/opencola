@@ -1,5 +1,6 @@
 package opencola.core.network.providers.zerotier
 
+import io.opencola.core.network.providers.zerotier.ZeroTierAddress
 import org.junit.Test
 import java.net.URI
 import kotlin.test.assertEquals

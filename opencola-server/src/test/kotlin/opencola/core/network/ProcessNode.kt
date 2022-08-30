@@ -1,10 +1,10 @@
 package opencola.core.network
 
 import mu.KotlinLogging
-import opencola.core.extensions.runCommand
-import opencola.core.extensions.startProcess
-import opencola.core.io.JsonHttpClient
-import opencola.core.io.MultiStreamReader
+import io.opencola.core.extensions.runCommand
+import io.opencola.core.extensions.startProcess
+import io.opencola.core.io.JsonHttpClient
+import io.opencola.core.io.MultiStreamReader
 import opencola.server.handlers.Peer
 import opencola.server.handlers.PeersResult
 import opencola.server.handlers.TokenRequest

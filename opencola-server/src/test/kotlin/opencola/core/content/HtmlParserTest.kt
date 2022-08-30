@@ -1,5 +1,6 @@
 package opencola.core.content
 
+import io.opencola.core.content.HtmlParser
 import org.junit.Test
 import java.net.URI
 import kotlin.io.path.Path

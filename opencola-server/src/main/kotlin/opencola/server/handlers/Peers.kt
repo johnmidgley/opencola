@@ -2,20 +2,20 @@ package opencola.server.handlers
 
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
-import opencola.core.event.EventBus
-import opencola.core.event.Events
+import io.opencola.core.event.EventBus
+import io.opencola.core.event.Events
 import opencola.core.extensions.nullOrElse
-import opencola.core.model.Authority
-import opencola.core.model.Id
-import opencola.core.network.InviteToken
-import opencola.core.network.Notification
-import opencola.core.network.PeerEvent
-import opencola.core.network.providers.zerotier.ZeroTierNetworkProvider
-import opencola.core.security.Encryptor
-import opencola.core.security.Signator
-import opencola.core.security.decodePublicKey
-import opencola.core.security.encode
-import opencola.core.storage.AddressBook
+import io.opencola.core.model.Authority
+import io.opencola.core.model.Id
+import io.opencola.core.network.InviteToken
+import io.opencola.core.network.Notification
+import io.opencola.core.network.PeerEvent
+import io.opencola.core.network.providers.zerotier.ZeroTierNetworkProvider
+import io.opencola.core.security.Encryptor
+import io.opencola.core.security.Signator
+import io.opencola.core.security.decodePublicKey
+import io.opencola.core.security.encode
+import io.opencola.core.storage.AddressBook
 import java.net.URI
 import java.security.PublicKey
 

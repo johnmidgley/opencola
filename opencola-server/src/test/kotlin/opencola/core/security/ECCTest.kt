@@ -1,5 +1,6 @@
 package opencola.core.security
 
+import io.opencola.core.security.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

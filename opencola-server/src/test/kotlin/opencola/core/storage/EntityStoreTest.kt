@@ -2,11 +2,15 @@ package opencola.core.storage
 
 import opencola.core.TestApplication
 import opencola.core.config.getApplications
-import opencola.core.event.EventBus
+import io.opencola.core.event.EventBus
+import io.opencola.core.model.Authority
+import io.opencola.core.model.CommentEntity
+import io.opencola.core.model.Entity
+import io.opencola.core.model.ResourceEntity
 import opencola.core.getAuthorityEntity
-import opencola.core.model.*
-import opencola.core.security.Signator
-import opencola.core.storage.EntityStore.TransactionOrder
+import io.opencola.core.security.Signator
+import io.opencola.core.storage.*
+import io.opencola.core.storage.EntityStore.TransactionOrder
 import org.kodein.di.instance
 import java.net.URI
 import java.time.Instant

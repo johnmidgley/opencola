@@ -1,6 +1,6 @@
 package opencola.core.security
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider
+import io.opencola.core.security.SecurityProviderDependent
 import java.security.Security
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec

@@ -1,5 +1,6 @@
 package opencola.core.content
 
+import io.opencola.core.content.splitMht
 import org.junit.Test
 import kotlin.io.path.*
 import kotlin.test.assertEquals

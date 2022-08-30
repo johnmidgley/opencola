@@ -1,14 +1,7 @@
 package opencola.core.serialization
 
-import kotlinx.serialization.*
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.protobuf.ProtoBuf
-import opencola.core.TestApplication
-import opencola.core.model.*
+import io.opencola.core.serialization.UUIDByteArrayCodecCodec
 import org.junit.Test
-import org.kodein.di.instance
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
 import java.util.*
 import kotlin.test.assertEquals
 

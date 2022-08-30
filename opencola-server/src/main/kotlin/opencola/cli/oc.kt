@@ -1,17 +1,13 @@
 package opencola.cli
 
-import opencola.core.config.Application
-import opencola.core.config.loadConfig
-import opencola.core.model.Id
-import opencola.core.model.SignedTransaction
-import opencola.core.storage.EntityStore
+import io.opencola.core.config.Application
+import io.opencola.core.model.SignedTransaction
+import io.opencola.core.storage.EntityStore
 import org.kodein.di.instance
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
-import com.lordcodes.turtle.shellRun
-import java.io.File
 
 fun printUsage(){
     println("Usage: oc TASK COMMAND [ARGS] ")

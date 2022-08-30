@@ -1,10 +1,12 @@
 package opencola.core
 
-import opencola.core.config.Application
-import opencola.core.config.loadConfig
-import opencola.core.model.Authority
-import opencola.core.search.SearchIndex
-import opencola.core.security.*
+import io.opencola.core.config.Application
+import io.opencola.core.config.loadConfig
+import io.opencola.core.model.Authority
+import io.opencola.core.search.SearchIndex
+import io.opencola.core.security.KeyStore
+import io.opencola.core.security.decodePrivateKey
+import io.opencola.core.security.decodePublicKey
 import org.kodein.di.instance
 import java.net.URI
 import java.nio.file.Path

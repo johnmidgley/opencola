@@ -9,15 +9,15 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import mu.KotlinLogging
 import opencola.core.extensions.nullOrElse
-import opencola.core.model.Authority
-import opencola.core.model.Id
-import opencola.core.network.Notification
-import opencola.core.network.Request
-import opencola.core.network.handleGetTransactions
-import opencola.core.network.handleNotification
-import opencola.core.network.providers.http.HttpNetworkProvider
+import io.opencola.core.model.Authority
+import io.opencola.core.model.Id
+import io.opencola.core.network.Notification
+import io.opencola.core.network.Request
+import io.opencola.core.network.handleGetTransactions
+import io.opencola.core.network.handleNotification
+import io.opencola.core.network.providers.http.HttpNetworkProvider
 import opencola.server.handlers.*
-import opencola.core.config.Application as app
+import io.opencola.core.config.Application as app
 
 // TODO: All routes should authenticate caller and authorize activity. Right now everything is open
 fun Application.configureRouting(app: app) {

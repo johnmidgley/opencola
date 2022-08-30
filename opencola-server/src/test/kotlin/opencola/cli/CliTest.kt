@@ -1,13 +1,13 @@
 package opencola.cli
 
 import opencola.core.TestApplication
-import opencola.core.config.Application
-import opencola.core.model.Authority
-import opencola.core.model.ResourceEntity
-import opencola.core.security.Signator
-import opencola.core.storage.AddressBook
-import opencola.core.storage.EntityStore.TransactionOrder
-import opencola.core.storage.ExposedEntityStore
+import io.opencola.core.config.Application
+import io.opencola.core.model.Authority
+import io.opencola.core.model.ResourceEntity
+import io.opencola.core.security.Signator
+import io.opencola.core.storage.AddressBook
+import io.opencola.core.storage.EntityStore.TransactionOrder
+import io.opencola.core.storage.ExposedEntityStore
 import org.junit.Test
 import org.kodein.di.instance
 import java.net.URI

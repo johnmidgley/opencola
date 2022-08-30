@@ -1,9 +1,10 @@
 package opencola.server.handlers
 
+import io.opencola.core.model.*
 import opencola.core.TestApplication
 import opencola.core.model.*
-import opencola.core.storage.AddressBook
-import opencola.core.storage.EntityStore
+import io.opencola.core.storage.AddressBook
+import io.opencola.core.storage.EntityStore
 import org.junit.Test
 import org.kodein.di.instance
 import java.net.URI

@@ -6,15 +6,15 @@ import io.ktor.request.*
 import io.ktor.response.*
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
-import opencola.core.content.HtmlParser
-import opencola.core.content.HttpClient
-import opencola.core.content.urlRegex
-import opencola.core.extensions.blankToNull
+import io.opencola.core.content.HtmlParser
+import io.opencola.core.content.HttpClient
+import io.opencola.core.content.urlRegex
+import io.opencola.core.model.*
+import io.opencola.core.extensions.blankToNull
 import opencola.core.extensions.ifNullOrElse
 import opencola.core.extensions.nullOrElse
-import opencola.core.model.*
-import opencola.core.storage.AddressBook
-import opencola.core.storage.EntityStore
+import io.opencola.core.storage.AddressBook
+import io.opencola.core.storage.EntityStore
 import opencola.service.EntityResult
 import java.net.URI
 

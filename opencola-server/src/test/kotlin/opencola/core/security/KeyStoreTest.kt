@@ -1,6 +1,10 @@
 package opencola.core.security
 
-import opencola.core.model.Authority
+import io.opencola.core.model.Authority
+import io.opencola.core.security.KeyStore
+import io.opencola.core.security.generateKeyPair
+import io.opencola.core.security.isValidSignature
+import io.opencola.core.security.sign
 import org.junit.Test
 import java.net.URI
 import kotlin.io.path.createTempDirectory

@@ -1,11 +1,12 @@
 package opencola.core.network
 
 import io.ktor.server.netty.*
+import io.opencola.core.config.*
 import opencola.core.TestApplication
-import opencola.core.config.*
-import opencola.core.event.EventBus
-import opencola.core.model.Authority
-import opencola.core.storage.AddressBook
+import io.opencola.core.event.EventBus
+import io.opencola.core.model.Authority
+import io.opencola.core.network.NetworkNode
+import io.opencola.core.storage.AddressBook
 import opencola.server.getServer
 import opencola.server.handlers.*
 import java.io.File

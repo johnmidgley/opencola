@@ -3,9 +3,9 @@ package opencola.server.handlers
 import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.response.*
+import io.opencola.core.model.Id
 import mu.KotlinLogging
-import opencola.core.model.*
-import opencola.core.storage.MhtCache
+import io.opencola.core.storage.MhtCache
 
 private val logger = KotlinLogging.logger("Handler")
 
