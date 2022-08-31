@@ -3,13 +3,17 @@ package io.opencola.relay.client
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
 import io.opencola.core.security.sign
+import io.opencola.core.serialization.writeByteArray
 import io.opencola.relay.readSizedByteArray
 import io.opencola.relay.writeSizedByteArray
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withTimeout
+import java.io.ByteArrayOutputStream
 import java.io.Closeable
 import java.io.IOException
 import java.security.KeyPair
+import java.security.PublicKey
 
 // From: https://subscription.packtpub.com/book/programming/9781801815727/10/ch10lvl1sec78/deferred-value
 //suspend fun valueAsync(): Deferred<String> = coroutineScope {
@@ -57,13 +61,27 @@ class Connection(private val socket: Socket, private val keyPair: KeyPair) : Clo
         }
     }
 
+    suspend fun send(publicKey: PublicKey, bytes: ByteArray) {
+        // TODO: Use Capnproto
+        ByteArrayOutputStream().use {
+            it.writeByteArray(publicKey.encoded)
+            it.writeByteArray(bytes)
+
+            withTimeout(10000) {
+                writeChannel.writeSizedByteArray(it.toByteArray())
+            }
+        }
+    }
+
     suspend fun writeLine(value: String) {
         if (!authenticated || socket.isClosed || writeChannel.isClosedForWrite) {
             throw IOException("Client is not in a writable state")
         }
 
         connectionMutex.withLock {
-            writeChannel.writeStringUtf8("$value\n")
+            withTimeout(10000) {
+                writeChannel.writeStringUtf8("$value\n")
+            }
         }
     }
 
@@ -73,7 +91,9 @@ class Connection(private val socket: Socket, private val keyPair: KeyPair) : Clo
         }
 
         connectionMutex.withLock {
-            return readChannel.readUTF8Line()
+            return withTimeout(10000) {
+                readChannel.readUTF8Line()
+            }
         }
     }
 

@@ -37,7 +37,8 @@ class RelayConnection(private val socket: Socket) : Closeable {
                 if (status != 0)
                     throw RuntimeException("Client failed to authenticate: ${socket.remoteAddress}")
             }
-        } catch (e: Exception){
+        } catch (e: Exception) {
+            // TODO: Fix anti-pattern of catch all. Coroutines can be canceled, and this stops propagation.
             // TODO: Log
             close()
         }

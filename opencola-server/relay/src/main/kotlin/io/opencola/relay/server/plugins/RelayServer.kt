@@ -5,24 +5,26 @@ import io.ktor.network.sockets.*
 import io.opencola.relay.RelayConnection
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-class RelayServer(private val port: Int, private val onStarted: () -> Unit = {}) {
+class RelayServer(private val port: Int) {
     private val selectorManager = ActorSelectorManager(Dispatchers.IO)
     private val serverSocket = aSocket(selectorManager).tcp().bind(port = port)
+    private var started = false
 
-    suspend fun run() = coroutineScope {
+    fun isStarted() : Boolean {
+        return started
+    }
+
+    suspend fun run() = coroutineScope() {
         try {
             println("Relay Server listening at ${serverSocket.localAddress}")
-            onStarted()
-            while (true) {
+            started = true
+            while (isActive) {
                 val socket = serverSocket.accept()
                 println("Accepted ${socket.remoteAddress}")
-                launch {
-                    RelayConnection(socket).use {
-                        it.start()
-                    }
-                }
+                launch { RelayConnection(socket).use { it.start() } }
             }
         } finally {
             serverSocket.close()

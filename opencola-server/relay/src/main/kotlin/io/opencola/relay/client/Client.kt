@@ -2,16 +2,24 @@ package io.opencola.relay.client
 
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
-import io.ktor.utils.io.*
+import io.opencola.core.security.encrypt
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.sync.Mutex
 import java.io.Closeable
-import java.io.IOException
 import java.security.KeyPair
 import java.security.PublicKey
 
 class Client(private val connection: Connection, private val keyPair: KeyPair) : Closeable {
+
+    suspend fun send(publicKey: PublicKey, bytes: ByteArray) : ByteArray? {
+        val encryptedBytes = encrypt(publicKey, bytes)
+        connection.send(publicKey, encryptedBytes)
+
+        return null
+    }
+
     suspend fun writeLine(value: String) {
+
+
         connection.writeLine(value)
     }
 
