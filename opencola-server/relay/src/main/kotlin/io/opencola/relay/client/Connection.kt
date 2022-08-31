@@ -9,6 +9,23 @@ import java.io.Closeable
 import java.io.IOException
 import java.security.KeyPair
 
+// From: https://subscription.packtpub.com/book/programming/9781801815727/10/ch10lvl1sec78/deferred-value
+//suspend fun valueAsync(): Deferred<String> = coroutineScope {
+//    val deferred = CompletableDeferred<String>()
+//    launch {
+//        delay(100)
+//        if (Random.nextBoolean()) {
+//            deferred.complete("OK")
+//        }
+//        else {
+//            deferred.completeExceptionally(
+//                RuntimeException()
+//            )
+//        }
+//    }
+//    deferred
+//}
+
 class Connection(private val socket: Socket) : Closeable {
     private var authenticated = false
     private val readChannel = socket.openReadChannel()

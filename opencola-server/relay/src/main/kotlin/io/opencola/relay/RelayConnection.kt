@@ -5,6 +5,8 @@ import io.ktor.utils.io.*
 import io.opencola.core.security.isValidSignature
 import io.opencola.core.security.publicKeyFromBytes
 import io.opencola.core.security.sign
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import opencola.core.extensions.toByteArray
 import java.io.Closeable
 import java.util.*
@@ -14,22 +16,27 @@ import java.util.*
 class RelayConnection(private val socket: Socket) : Closeable {
     private val readChannel = socket.openReadChannel()
     private val writeChannel = socket.openWriteChannel(autoFlush = true)
+    private val connectionMutex = Mutex()
 
     private suspend fun authenticate() {
         try {
-            val encodedPublicKey = readChannel.readSizedByteArray()
-            val publicKey = publicKeyFromBytes(encodedPublicKey)
+            connectionMutex.withLock {
+                val encodedPublicKey = readChannel.readSizedByteArray()
+                val publicKey = publicKeyFromBytes(encodedPublicKey)
 
-            // Send challenge
-            // TODO: Use secure random bit generation
-            val challenge = UUID.randomUUID().toByteArray()
-            writeChannel.writeSizedByteArray(challenge)
+                // Send challenge
+                // TODO: Use secure random bit generation
+                val challenge = UUID.randomUUID().toByteArray()
+                writeChannel.writeSizedByteArray(challenge)
 
-            // Read signed challenge
-            val challengeSignature = readChannel.readSizedByteArray()
+                // Read signed challenge
+                val challengeSignature = readChannel.readSizedByteArray()
 
-            val status = if(isValidSignature(publicKey, challenge, challengeSignature)) 0 else -1
-            writeChannel.writeInt(status)
+                val status = if (isValidSignature(publicKey, challenge, challengeSignature)) 0 else -1
+                writeChannel.writeInt(status)
+                if (status != 0)
+                    throw RuntimeException("Client failed to authenticate: ${socket.remoteAddress}")
+            }
         } catch (e: Exception){
             // TODO: Log
             close()
