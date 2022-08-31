@@ -5,6 +5,8 @@ import io.ktor.utils.io.*
 import io.opencola.core.security.sign
 import io.opencola.relay.readSizedByteArray
 import io.opencola.relay.writeSizedByteArray
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.io.Closeable
 import java.io.IOException
 import java.security.KeyPair
@@ -26,42 +28,53 @@ import java.security.KeyPair
 //    deferred
 //}
 
-class Connection(private val socket: Socket) : Closeable {
-    private var authenticated = false
+class Connection(private val socket: Socket, private val keyPair: KeyPair) : Closeable {
     private val readChannel = socket.openReadChannel()
     private val writeChannel = socket.openWriteChannel(autoFlush = true)
+    // TODO: Make finer grained?
+    private val connectionMutex = Mutex()
+    private var authenticated = false
 
-    suspend fun authenticate(keyPair: KeyPair) {
-        // Send public key
-        writeChannel.writeSizedByteArray(keyPair.public.encoded)
+    suspend fun authenticate() {
+        if(!authenticated) {
+            connectionMutex.withLock {
+                // Send public key
+                writeChannel.writeSizedByteArray(keyPair.public.encoded)
 
-        // Read challenge
-        val challengeBytes = readChannel.readSizedByteArray()
+                // Read challenge
+                val challengeBytes = readChannel.readSizedByteArray()
 
-        // Sign challenge and send back
-        writeChannel.writeSizedByteArray(sign(keyPair.private, challengeBytes))
+                // Sign challenge and send back
+                writeChannel.writeSizedByteArray(sign(keyPair.private, challengeBytes))
 
-        val authenticationResponse = readChannel.readInt()
-        if(authenticationResponse != 0) {
-            throw RuntimeException("Unable to authenticate connection: $authenticationResponse")
+                val authenticationResponse = readChannel.readInt()
+                if (authenticationResponse != 0) {
+                    throw RuntimeException("Unable to authenticate connection: $authenticationResponse")
+                }
+
+                authenticated = true
+            }
         }
-
-        authenticated = true
     }
 
     suspend fun writeLine(value: String) {
-        if(!authenticated || socket.isClosed || writeChannel.isClosedForWrite){
+        if (!authenticated || socket.isClosed || writeChannel.isClosedForWrite) {
             throw IOException("Client is not in a writable state")
         }
 
-        writeChannel.writeStringUtf8("$value\n")
+        connectionMutex.withLock {
+            writeChannel.writeStringUtf8("$value\n")
+        }
     }
 
     suspend fun readLine(): String? {
         if(!authenticated || socket.isClosed || readChannel.isClosedForRead){
             throw IOException("Client is not in a readable state")
         }
-        return readChannel.readUTF8Line()
+
+        connectionMutex.withLock {
+            return readChannel.readUTF8Line()
+        }
     }
 
     override fun close() {

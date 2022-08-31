@@ -29,7 +29,7 @@ class ConnectionTest {
     fun testConnection() {
         val keyPair = generateKeyPair()
         runBlocking {
-            val client = Client("0.0.0.0", defaultPort, keyPair).also { it.connect() }
+            val client = Client.connect("0.0.0.0", defaultPort, keyPair)
             client.writeLine("hi")
             println("Response: ${client.readLine()}")
         }
