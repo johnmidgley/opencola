@@ -2,7 +2,7 @@ package io.opencola.relay
 
 import io.opencola.core.security.generateKeyPair
 import io.opencola.relay.client.Client
-import io.opencola.relay.server.runRelayServer
+import io.opencola.relay.server.plugins.RelayServer
 import kotlinx.coroutines.runBlocking
 import java.util.concurrent.Executors
 import kotlin.test.Test
@@ -15,7 +15,9 @@ class ConnectionTest {
         var started = false
 
         executorService.execute{
-            runRelayServer(defaultPort) { started = true }
+            runBlocking {
+                RelayServer(defaultPort) { started = true }.run()
+            }
         }
 
         while(!started){
@@ -26,7 +28,6 @@ class ConnectionTest {
     @Test
     fun testConnection() {
         val keyPair = generateKeyPair()
-
         runBlocking {
             val client = Client("0.0.0.0", defaultPort, keyPair).also { it.connect() }
             client.writeLine("hi")
