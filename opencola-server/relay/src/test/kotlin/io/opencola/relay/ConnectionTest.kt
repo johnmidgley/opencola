@@ -5,7 +5,6 @@ import io.opencola.relay.client.Client
 import io.opencola.relay.server.RelayServer
 import kotlinx.coroutines.*
 import kotlin.test.Test
-import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
 class ConnectionTest {
@@ -13,18 +12,22 @@ class ConnectionTest {
 
     @Test
     fun testConnection() {
-        val keyPair = generateKeyPair()
+        val keyPair0 = generateKeyPair()
+        val keyPair1 = generateKeyPair()
+
         runBlocking {
             val relayServer = RelayServer(defaultPort)
             val serverJob = launch { relayServer.run() }
             while(!relayServer.isStarted()){ delay(50) }
 
-            val client = Client("0.0.0.0", defaultPort, keyPair).also { it.connect() }
+            val client0 = Client("0.0.0.0", defaultPort, keyPair0).also { it.connect() }
             val message = "hello"
-            val controlResponse = String(client.sendControlMessage(1, message.toByteArray())!!)
+            val controlResponse = String(client0.sendControlMessage(1, message.toByteArray())!!)
             assertEquals(message, controlResponse)
 
-            val peerResponse = client.sendMessage(keyPair.public, "hello".toByteArray())
+            val client1 = Client("0.0.0.0", defaultPort, keyPair1).also { it.connect() }
+
+            val peerResponse = client0.sendMessage(keyPair1.public, "hello".toByteArray())
             assertEquals(0, peerResponse!!.size)
 
             serverJob.cancel()

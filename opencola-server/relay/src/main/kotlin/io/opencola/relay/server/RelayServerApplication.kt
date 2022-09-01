@@ -4,6 +4,8 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.opencola.relay.server.plugins.configureRouting
 import io.opencola.relay.server.plugins.configureSockets
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 fun startWebServer(){
@@ -17,6 +19,6 @@ fun main() {
     startWebServer()
 
     runBlocking {
-        RelayServer(5796).run()
+        launch(Dispatchers.Default) { RelayServer(5796).run() }
     }
 }

@@ -8,6 +8,8 @@ import io.opencola.core.security.initProvider
 import io.opencola.core.security.sign
 import io.opencola.relay.common.Connection
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import mu.KotlinLogging
@@ -74,10 +76,20 @@ class Client(private val hostname: String, private val port: Int, private val ke
         val encryptedBytes = encrypt(publicKey, bytes)
 
         return getConnection().transact("Sending peer message") {
-            // TODO: Have server generate session key, so public key can be encrypted in transport too
             it.writeSizedByteArray(publicKey.encoded)
             it.writeSizedByteArray(encryptedBytes)
             it.readSizedByteArray()
+        }
+    }
+
+    // NOTE: This is the only place reads should occur, outside authentication
+    suspend fun listen() = coroutineScope {
+        while (isActive) {
+            try {
+
+            } catch (e: Exception) {
+                logger.error { "e" }
+            }
         }
     }
 

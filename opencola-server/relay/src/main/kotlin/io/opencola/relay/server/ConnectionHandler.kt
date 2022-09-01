@@ -30,6 +30,7 @@ internal class ConnectionHandler(
         connection.writeSizedByteArray(data)
     }
 
+    // NOTE: This is the only place (outside of authentication) that any reads should occur.
     suspend fun run() {
         while (true) {
             try {
