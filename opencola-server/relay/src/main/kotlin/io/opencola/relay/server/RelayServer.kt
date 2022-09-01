@@ -2,6 +2,7 @@ package io.opencola.relay.server
 
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
+import io.opencola.core.model.Id
 import io.opencola.core.security.initProvider
 import io.opencola.core.security.isValidSignature
 import io.opencola.core.security.publicKeyFromBytes
@@ -57,7 +58,7 @@ class RelayServer(port: Int) {
     }
 
     private val handlePeerMessage: suspend (PublicKey, ByteArray) -> ByteArray = { publicKey, data ->
-        logger.info { "Received message for: $publicKey" }
+        logger.info { "Received message for: ${Id.ofPublicKey(publicKey)}" }
         val connectionHandler = connectionHandlers[publicKey]
 
         if(connectionHandler == null){
@@ -74,16 +75,16 @@ class RelayServer(port: Int) {
                 logger.info("Relay Server listening at ${serverSocket.localAddress}")
                 started = true
                 while (isActive) {
-                    logger.info { "Waiting for connections" }
                     val socket = serverSocket.accept()
                     logger.info("Accepted ${socket.remoteAddress}")
                     val connection = Connection(socket)
                     val publicKey = authenticate(connection)
 
                     if (publicKey != null) {
+                        logger.info { "Connection Authenticated for: ${Id.ofPublicKey(publicKey)}" }
                         val connectionHandler = ConnectionHandler(connection, handlePeerMessage)
                         connectionHandlers[publicKey] = connectionHandler
-                        launch { connectionHandler.use { it.start() } }
+                        launch { connectionHandler.use { it.run() } }
                     }
                 }
             }

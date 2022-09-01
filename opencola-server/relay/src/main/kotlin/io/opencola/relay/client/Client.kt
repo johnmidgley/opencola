@@ -42,29 +42,14 @@ class Client(private val hostname: String, private val port: Int, private val ke
 
     private suspend fun getConnection() : Connection {
         return connectionMutex.withLock {
-            if (_connection == null) {
+            if (_connection == null || !_connection!!.isReady()) {
                 logger.info { "Creating Connection" }
                 _connection = Connection(aSocket(selectorManager).tcp().connect(hostname, port = port)).also {
                     authenticate(it)
                 }
             }
 
-            // TODO: Make sure connection is still alive before returning
             _connection!!
-        }
-    }
-
-    // TODO: Use this pattern on server too
-    private suspend inline fun <reified T> transact(name: String, block: (Connection) -> T) : T? {
-        try {
-            getConnection().let {
-                connectionMutex.withLock {
-                    return block(it)
-                }
-            }
-        } catch (e: Exception) {
-            logger.error { "Error in transaction $name: $e" }
-            return null
         }
     }
 
@@ -75,7 +60,7 @@ class Client(private val hostname: String, private val port: Int, private val ke
 
     // TODO: Should be private
     suspend fun sendControlMessage(code: Int, data: ByteArray): ByteArray? {
-        return transact("Sending control message") {
+        return getConnection().transact("Sending control message") {
             // Empty ByteArray (empty receiver) means control message
             it.writeSizedByteArray(emptyByteArray)
             it.writeInt(code)
@@ -87,7 +72,7 @@ class Client(private val hostname: String, private val port: Int, private val ke
     suspend fun sendMessage(publicKey: PublicKey, bytes: ByteArray): ByteArray? {
         val encryptedBytes = encrypt(publicKey, bytes)
 
-        return transact("Sending peer message") {
+        return getConnection().transact("Sending peer message") {
             // TODO: Have server generate session key, so public key can be encrypted in transport too
             it.writeSizedByteArray(publicKey.encoded)
             it.writeSizedByteArray(encryptedBytes)

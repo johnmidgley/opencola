@@ -7,14 +7,16 @@ import mu.KotlinLogging
 import java.io.Closeable
 import java.security.PublicKey
 
-class ConnectionHandler(private val connection: Connection,
-                        private val handlePeerMessage: suspend (PublicKey, ByteArray) -> ByteArray) : Closeable {
+internal class ConnectionHandler(
+    private val connection: Connection,
+    private val handlePeerMessage: suspend (PublicKey, ByteArray) -> ByteArray
+) : Closeable {
     private val logger = KotlinLogging.logger("RelayConnection")
 
     private fun handleControlMessage(code: Int, data: ByteArray): ByteArray {
-        return when(code){
+        return when (code) {
             // Echo data back
-            1 ->  {
+            1 -> {
                 logger.info { "Handling Echo" }
                 data
             }
@@ -28,19 +30,20 @@ class ConnectionHandler(private val connection: Connection,
         connection.writeSizedByteArray(data)
     }
 
-    suspend fun start() {
+    suspend fun run() {
         while (true) {
             try {
                 val recipient = connection.readSizedByteArray()
 
-                val result = if (recipient.isEmpty())
-                    handleControlMessage(connection.readInt(), connection.readSizedByteArray())
-                else
-                    handlePeerMessage(publicKeyFromBytes(recipient), connection.readSizedByteArray())
+                connection.transact {
+                    val result = if (recipient.isEmpty())
+                        handleControlMessage(it.readInt(), it.readSizedByteArray())
+                    else
+                        handlePeerMessage(publicKeyFromBytes(recipient), it.readSizedByteArray())
 
-                connection.writeSizedByteArray(result)
-            }
-            catch (e: CancellationException) {
+                    it.writeSizedByteArray(result)
+                }
+            } catch (e: CancellationException) {
                 return
             } catch (e: Exception) {
                 logger.error("${e.stackTrace}")
