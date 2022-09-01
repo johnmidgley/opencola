@@ -1,8 +1,7 @@
-package io.opencola.relay.server.plugins
+package io.opencola.relay.server
 
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
-import io.opencola.relay.RelayConnection
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
@@ -24,7 +23,7 @@ class RelayServer(private val port: Int) {
             while (isActive) {
                 val socket = serverSocket.accept()
                 println("Accepted ${socket.remoteAddress}")
-                launch { RelayConnection(socket).use { it.start() } }
+                launch { ConnectionHandler(socket).use { it.start() } }
             }
         } finally {
             serverSocket.close()

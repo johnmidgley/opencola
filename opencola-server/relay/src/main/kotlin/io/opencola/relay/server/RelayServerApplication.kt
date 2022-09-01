@@ -2,7 +2,6 @@ package io.opencola.relay.server
 
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import io.opencola.relay.server.plugins.RelayServer
 import io.opencola.relay.server.plugins.configureRouting
 import io.opencola.relay.server.plugins.configureSockets
 import kotlinx.coroutines.runBlocking
@@ -13,8 +12,6 @@ fun startWebServer(){
         configureRouting()
     }.start()
 }
-
-
 
 fun main() {
     startWebServer()

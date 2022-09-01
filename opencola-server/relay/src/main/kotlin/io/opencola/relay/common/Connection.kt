@@ -1,11 +1,8 @@
-package io.opencola.relay.client
+package io.opencola.relay.common
 
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
-import kotlinx.coroutines.withTimeout
 import java.io.Closeable
-import java.io.IOException
-import java.security.KeyPair
 
 // From: https://subscription.packtpub.com/book/programming/9781801815727/10/ch10lvl1sec78/deferred-value
 //suspend fun valueAsync(): Deferred<String> = coroutineScope {

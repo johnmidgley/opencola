@@ -2,7 +2,7 @@ package io.opencola.relay
 
 import io.opencola.core.security.generateKeyPair
 import io.opencola.relay.client.Client
-import io.opencola.relay.server.plugins.RelayServer
+import io.opencola.relay.server.RelayServer
 import kotlinx.coroutines.*
 import kotlin.test.Test
 import kotlin.test.assertEquals

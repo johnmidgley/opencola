@@ -1,8 +1,10 @@
-package io.opencola.relay
+package io.opencola.relay.server
 
 import io.ktor.network.sockets.*
 import io.opencola.core.security.isValidSignature
 import io.opencola.core.security.publicKeyFromBytes
+import io.opencola.relay.readSizedByteArray
+import io.opencola.relay.writeSizedByteArray
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import mu.KotlinLogging
@@ -12,7 +14,7 @@ import java.util.*
 
 
 // TODO: Multiplex connection?
-class RelayConnection(private val socket: Socket) : Closeable {
+class ConnectionHandler(private val socket: Socket) : Closeable {
     private val logger = KotlinLogging.logger("RelayConnection")
     private val readChannel = socket.openReadChannel()
     private val writeChannel = socket.openWriteChannel(autoFlush = true)
