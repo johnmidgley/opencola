@@ -29,7 +29,7 @@ dependencies {
     implementation(project(":core"))
 
     // Logging
-    implementation("io.github.microutils:kotlin-logging:2.1.21")
+    implementation("io.github.microutils:kotlin-logging:2.1.23")
     implementation("ch.qos.logback:logback-core:$logback_version")
     implementation("ch.qos.logback:logback-classic:$logback_version")
 
