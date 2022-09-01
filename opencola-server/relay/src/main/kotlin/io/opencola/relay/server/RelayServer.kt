@@ -58,6 +58,13 @@ class RelayServer(port: Int) {
 
     private val handlerPeerMessage: suspend (PublicKey, ByteArray) -> ByteArray = { publicKey, data ->
         logger.info { "Received message for: $publicKey" }
+        val connectionHandler = connectionHandlers[publicKey]
+
+        if(connectionHandler == null){
+            logger.info { "Received message for peer that is not connected" }
+            // TODO: Signal back to client
+        }
+
         ByteArray(0)
     }
 

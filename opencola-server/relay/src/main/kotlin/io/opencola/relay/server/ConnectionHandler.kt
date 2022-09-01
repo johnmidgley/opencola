@@ -1,6 +1,5 @@
 package io.opencola.relay.server
 
-import io.ktor.network.sockets.*
 import io.opencola.core.security.publicKeyFromBytes
 import io.opencola.relay.common.Connection
 import kotlinx.coroutines.CancellationException
@@ -21,6 +20,12 @@ class ConnectionHandler(private val connection: Connection,
             }
             else -> "ERROR".toByteArray()
         }
+    }
+
+    suspend fun deliverMessage(from: PublicKey, data: ByteArray) {
+        // TODO: UNSAFE
+        connection.writeSizedByteArray(from.encoded)
+        connection.writeSizedByteArray(data)
     }
 
     suspend fun start() {
