@@ -42,7 +42,7 @@ class Client(private val hostname: String, private val port: Int, private val ke
         return connectionMutex.withLock {
             if (_connection == null) {
                 logger.info { "Creating Connection" }
-                _connection = Connection(aSocket(selectorManager).tcp().connect(hostname, port = port), keyPair).also {
+                _connection = Connection(aSocket(selectorManager).tcp().connect(hostname, port = port)).also {
                     authenticate(it)
                 }
             }

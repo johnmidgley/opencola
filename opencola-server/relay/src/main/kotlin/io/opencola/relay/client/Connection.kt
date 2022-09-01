@@ -24,7 +24,7 @@ import java.security.KeyPair
 //    deferred
 //}
 
-class Connection(private val socket: Socket, private val keyPair: KeyPair) : Closeable {
+class Connection(private val socket: Socket) : Closeable {
     private val readChannel = socket.openReadChannel()
     private val writeChannel = socket.openWriteChannel(autoFlush = true)
 
