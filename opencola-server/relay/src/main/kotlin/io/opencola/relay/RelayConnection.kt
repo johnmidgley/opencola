@@ -1,12 +1,11 @@
 package io.opencola.relay
 
 import io.ktor.network.sockets.*
-import io.ktor.utils.io.*
 import io.opencola.core.security.isValidSignature
 import io.opencola.core.security.publicKeyFromBytes
-import io.opencola.core.security.sign
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import mu.KotlinLogging
 import opencola.core.extensions.toByteArray
 import java.io.Closeable
 import java.util.*
@@ -14,6 +13,7 @@ import java.util.*
 
 // TODO: Multiplex connection?
 class RelayConnection(private val socket: Socket) : Closeable {
+    private val logger = KotlinLogging.logger("RelayConnection")
     private val readChannel = socket.openReadChannel()
     private val writeChannel = socket.openWriteChannel(autoFlush = true)
     private val connectionMutex = Mutex()
@@ -44,13 +44,29 @@ class RelayConnection(private val socket: Socket) : Closeable {
         }
     }
 
+    private suspend fun handleControlMessage() {
+        when(readChannel.readInt()){
+            // Echo data back
+            1 ->  {
+                logger.info { "Handling Echo" }
+                writeChannel.writeSizedByteArray(readChannel.readSizedByteArray())
+            }
+            else -> writeChannel.writeSizedByteArray("ERROR".toByteArray())
+        }
+    }
+
     suspend fun start() {
         try {
             authenticate()
 
             while (true) {
-                val line = readChannel.readUTF8Line()
-                writeChannel.writeStringUtf8("$line back\n")
+                // val line = readChannel.readUTF8Line()
+                // writeChannel.writeStringUtf8("$line back\n")
+                val recipient = readChannel.readSizedByteArray()
+
+                if(recipient.isEmpty()) {
+                    handleControlMessage()
+                }
             }
         } catch (e: Throwable) {
             println("Exception: $e")

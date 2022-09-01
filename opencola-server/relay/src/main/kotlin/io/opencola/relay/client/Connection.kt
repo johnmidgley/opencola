@@ -41,25 +41,8 @@ class Connection(private val socket: Socket, private val keyPair: KeyPair) : Clo
         return readChannel.readInt()
     }
 
-    suspend fun writeLine(value: String) {
-        if (socket.isClosed || writeChannel.isClosedForWrite) {
-            throw IOException("Client is not in a writable state")
-        }
-
-        withTimeout(10000) {
-            writeChannel.writeStringUtf8("$value\n")
-        }
-    }
-
-    suspend fun readLine(): String? {
-        if (socket.isClosed || readChannel.isClosedForRead) {
-            throw IOException("Client is not in a readable state")
-        }
-
-        return withTimeout(10000) {
-            readChannel.readUTF8Line()
-        }
-
+    suspend fun writeInt(i: Int) {
+        writeChannel.writeInt(i)
     }
 
     override fun close() {

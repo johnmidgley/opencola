@@ -13,7 +13,7 @@ import java.security.KeyPair
 import java.security.PublicKey
 
 class Client(private val hostname: String, private val port: Int, private val keyPair: KeyPair) : Closeable {
-    private val logger = KotlinLogging.logger("opencola.relay.client")
+    private val logger = KotlinLogging.logger("Client")
 
     // Not to be touched directly. Access by calling getConnections, which will ensure it's opened and ready
     private var _connection: Connection? = null
@@ -47,6 +47,7 @@ class Client(private val hostname: String, private val port: Int, private val ke
                 }
             }
 
+            // TODO: Make sure connection is still alive before returning
             _connection!!
         }
     }
@@ -61,12 +62,15 @@ class Client(private val hostname: String, private val port: Int, private val ke
         return null
     }
 
-    suspend fun writeLine(value: String) {
-        getConnection().writeLine(value)
-    }
-
-    suspend fun readLine(): String? {
-        return getConnection().readLine()
+    // TODO: Should be private
+    suspend fun sendControlMessage(code: Int, data: ByteArray) : ByteArray {
+        getConnection().let {
+            // Empty ByteArray (empty receiver) means control message
+            it.writeSizedByteArray(emptyByteArray)
+            it.writeInt(code)
+            it.writeSizedByteArray(data)
+            return it.readSizedByteArray()
+        }
     }
 
     override fun close() {
@@ -76,5 +80,6 @@ class Client(private val hostname: String, private val port: Int, private val ke
 
     companion object {
         private val selectorManager = ActorSelectorManager(Dispatchers.IO)
+        private val emptyByteArray = ByteArray(0)
     }
 }
