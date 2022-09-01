@@ -2,6 +2,7 @@ package io.opencola.relay.client
 
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
+import io.opencola.core.model.Id
 import io.opencola.core.security.encrypt
 import io.opencola.core.security.initProvider
 import io.opencola.core.security.sign
@@ -43,7 +44,7 @@ class Client(private val hostname: String, private val port: Int, private val ke
     private suspend fun getConnection() : Connection {
         return connectionMutex.withLock {
             if (_connection == null || !_connection!!.isReady()) {
-                logger.info { "Creating Connection" }
+                logger.info { "Creating Connection for: ${Id.ofPublicKey(keyPair.public)}" }
                 _connection = Connection(aSocket(selectorManager).tcp().connect(hostname, port = port)).also {
                     authenticate(it)
                 }
