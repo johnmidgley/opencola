@@ -2,8 +2,7 @@ package io.opencola.relay.server
 
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
-import io.opencola.core.model.Id
-import io.opencola.core.network.NetworkNode
+import io.opencola.core.security.initProvider
 import io.opencola.core.security.isValidSignature
 import io.opencola.core.security.publicKeyFromBytes
 import kotlinx.coroutines.Dispatchers
@@ -17,7 +16,7 @@ import java.security.PublicKey
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
-class RelayServer(private val port: Int) {
+class RelayServer(port: Int) {
     private val logger = KotlinLogging.logger("RelayServer")
     private val selectorManager = ActorSelectorManager(Dispatchers.IO)
     private val serverSocket = aSocket(selectorManager).tcp().bind(port = port)
@@ -57,27 +56,36 @@ class RelayServer(private val port: Int) {
         return null
     }
 
-    suspend fun run() = coroutineScope() {
-        try {
-            logger.info("Relay Server listening at ${serverSocket.localAddress}")
-            started = true
-            while (isActive) {
-                logger.info { "Waiting for connections" }
-                val socket = serverSocket.accept()
-                logger.info("Accepted ${socket.remoteAddress}")
-                val connection = Connection(socket)
-                val publicKey = authenticate(connection)
+    private val handlerPeerMessage: suspend (PublicKey, ByteArray) -> ByteArray = { publicKey, data ->
+        logger.info { "Received message for: $publicKey" }
+        ByteArray(0)
+    }
 
-                if(publicKey != null) {
-                    val connectionHandler = ConnectionHandler(connection)
-                    connectionHandlers[publicKey] = connectionHandler
-                    launch { connectionHandler.use { it.start() } }
+    suspend fun run() = coroutineScope() {
+        selectorManager.use {
+            serverSocket.use {
+                logger.info("Relay Server listening at ${serverSocket.localAddress}")
+                started = true
+                while (isActive) {
+                    logger.info { "Waiting for connections" }
+                    val socket = serverSocket.accept()
+                    logger.info("Accepted ${socket.remoteAddress}")
+                    val connection = Connection(socket)
+                    val publicKey = authenticate(connection)
+
+                    if (publicKey != null) {
+                        val connectionHandler = ConnectionHandler(connection, handlerPeerMessage)
+                        connectionHandlers[publicKey] = connectionHandler
+                        launch { connectionHandler.use { it.start() } }
+                    }
                 }
             }
-        } finally {
-            serverSocket.close()
-            selectorManager.close()
         }
     }
 
+    companion object {
+        init {
+            initProvider()
+        }
+    }
 }

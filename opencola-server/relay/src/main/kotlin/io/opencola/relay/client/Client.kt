@@ -3,6 +3,7 @@ package io.opencola.relay.client
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.opencola.core.security.encrypt
+import io.opencola.core.security.initProvider
 import io.opencola.core.security.sign
 import io.opencola.relay.common.Connection
 import kotlinx.coroutines.Dispatchers
@@ -53,24 +54,49 @@ class Client(private val hostname: String, private val port: Int, private val ke
         }
     }
 
+    // TODO: Use this pattern on server too
+    private suspend inline fun <reified T> transact(block: (Connection) ->T) : T {
+        getConnection().let{
+            connectionMutex.withLock {
+                return block(it)
+            }
+        }
+    }
+
     // This needs to be called before messages can be received from peers. Requests automatically open connections too.
     suspend fun connect() {
         getConnection()
     }
 
-    suspend fun send(publicKey: PublicKey, bytes: ByteArray) : ByteArray? {
-        val encryptedBytes = encrypt(publicKey, bytes)
-        return null
+    // TODO: Should be private
+    suspend fun sendControlMessage(code: Int, data: ByteArray): ByteArray? {
+        return transact {
+            try {
+                // Empty ByteArray (empty receiver) means control message
+                it.writeSizedByteArray(emptyByteArray)
+                it.writeInt(code)
+                it.writeSizedByteArray(data)
+                it.readSizedByteArray()
+            } catch (e: Exception) {
+                logger.error { "Error sending control message: $e" }
+                null
+            }
+        }
     }
 
-    // TODO: Should be private
-    suspend fun sendControlMessage(code: Int, data: ByteArray) : ByteArray {
-        getConnection().let {
-            // Empty ByteArray (empty receiver) means control message
-            it.writeSizedByteArray(emptyByteArray)
-            it.writeInt(code)
-            it.writeSizedByteArray(data)
-            return it.readSizedByteArray()
+    suspend fun sendMessage(publicKey: PublicKey, bytes: ByteArray) : ByteArray? {
+        val encryptedBytes = encrypt(publicKey, bytes)
+
+        return transact {
+            try {
+                // TODO: Have server generate session key, so public key can be encrypted in transport too
+                it.writeSizedByteArray(publicKey.encoded)
+                it.writeSizedByteArray(encryptedBytes)
+                it.readSizedByteArray()
+            } catch (e: Exception) {
+                logger.error { "Error sending message: $e" }
+                null
+            }
         }
     }
 
@@ -80,6 +106,10 @@ class Client(private val hostname: String, private val port: Int, private val ke
     }
 
     companion object {
+        init{
+            initProvider()
+        }
+
         private val selectorManager = ActorSelectorManager(Dispatchers.IO)
         private val emptyByteArray = ByteArray(0)
     }

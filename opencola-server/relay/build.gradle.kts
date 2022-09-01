@@ -33,6 +33,9 @@ dependencies {
     implementation("ch.qos.logback:logback-core:$logback_version")
     implementation("ch.qos.logback:logback-classic:$logback_version")
 
+    // Security
+    implementation("org.bouncycastle:bcprov-jdk15on:1.70")
+
     // Ktor Server
     implementation("io.ktor:ktor-server-core:$ktor_version")
     implementation("io.ktor:ktor-server-netty:$ktor_version")
