@@ -15,14 +15,14 @@ data class Header(val sessionId: UUID, val to: PublicKey, val messageType: Messa
         override fun encode(stream: OutputStream, value: Header) {
             stream.writeByteArray(value.sessionId.toByteArray())
             stream.writeByteArray(value.to.encoded)
-            stream.writeInt(value.messageType.ordinal)
+            stream.write(value.messageType.ordinal)
         }
 
         override fun decode(stream: InputStream): Header {
             return Header(
                 UUIDByteArrayCodecCodec.decode(stream.readByteArray()),
                 publicKeyFromBytes(stream.readByteArray()),
-                MessageType.values()[stream.readInt()]
+                MessageType.values()[stream.read()]
             )
         }
     }

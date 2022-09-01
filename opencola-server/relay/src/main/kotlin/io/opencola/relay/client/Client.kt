@@ -61,17 +61,6 @@ class Client(private val hostname: String, private val port: Int, private val ke
         getConnection()
     }
 
-    // TODO: Should be private
-    suspend fun sendControlMessage(code: Int, data: ByteArray): ByteArray? {
-        return getConnection().transact("Sending control message") {
-            // Empty ByteArray (empty receiver) means control message
-            it.writeSizedByteArray(emptyByteArray)
-            it.writeInt(code)
-            it.writeSizedByteArray(data)
-            it.readSizedByteArray()
-        }
-    }
-
     suspend fun sendMessage(publicKey: PublicKey, bytes: ByteArray): ByteArray? {
         val encryptedBytes = encrypt(publicKey, bytes)
 

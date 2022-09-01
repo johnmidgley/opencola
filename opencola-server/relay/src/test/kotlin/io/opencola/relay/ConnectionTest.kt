@@ -21,10 +21,6 @@ class ConnectionTest {
             while(!relayServer.isStarted()){ delay(50) }
 
             val client0 = Client("0.0.0.0", defaultPort, keyPair0).also { it.connect() }
-            val message = "hello"
-            val controlResponse = String(client0.sendControlMessage(1, message.toByteArray())!!)
-            assertEquals(message, controlResponse)
-
             val client1 = Client("0.0.0.0", defaultPort, keyPair1).also { it.connect() }
 
             val peerResponse = client0.sendMessage(keyPair1.public, "hello".toByteArray())

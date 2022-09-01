@@ -45,20 +45,20 @@ class Connection(private val socket: Socket) : Closeable {
         }
     }
 
-    suspend fun writeSizedByteArray(byteArray: ByteArray) {
+    internal suspend fun writeSizedByteArray(byteArray: ByteArray) {
         writeChannel.writeInt(byteArray.size)
         writeChannel.writeFully(byteArray)
     }
 
-    suspend fun readSizedByteArray() : ByteArray {
+    internal suspend fun readSizedByteArray() : ByteArray {
         return ByteArray(readChannel.readInt()).also { readChannel.readFully(it, 0, it.size) }
     }
 
-    suspend fun readInt() : Int {
+    internal suspend fun readInt() : Int {
         return readChannel.readInt()
     }
 
-    suspend fun writeInt(i: Int) {
+    internal suspend fun writeInt(i: Int) {
         writeChannel.writeInt(i)
     }
 
