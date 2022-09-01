@@ -8,7 +8,7 @@ import java.io.Closeable
 import java.security.PublicKey
 
 class ConnectionHandler(private val connection: Connection,
-                        private val handlerPeerMessage: suspend (PublicKey, ByteArray) -> ByteArray) : Closeable {
+                        private val handlePeerMessage: suspend (PublicKey, ByteArray) -> ByteArray) : Closeable {
     private val logger = KotlinLogging.logger("RelayConnection")
 
     private fun handleControlMessage(code: Int, data: ByteArray): ByteArray {
@@ -36,7 +36,7 @@ class ConnectionHandler(private val connection: Connection,
                 val result = if (recipient.isEmpty())
                     handleControlMessage(connection.readInt(), connection.readSizedByteArray())
                 else
-                    handlerPeerMessage(publicKeyFromBytes(recipient), connection.readSizedByteArray())
+                    handlePeerMessage(publicKeyFromBytes(recipient), connection.readSizedByteArray())
 
                 connection.writeSizedByteArray(result)
             }

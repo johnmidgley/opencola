@@ -56,7 +56,7 @@ class RelayServer(port: Int) {
         return null
     }
 
-    private val handlerPeerMessage: suspend (PublicKey, ByteArray) -> ByteArray = { publicKey, data ->
+    private val handlePeerMessage: suspend (PublicKey, ByteArray) -> ByteArray = { publicKey, data ->
         logger.info { "Received message for: $publicKey" }
         val connectionHandler = connectionHandlers[publicKey]
 
@@ -81,7 +81,7 @@ class RelayServer(port: Int) {
                     val publicKey = authenticate(connection)
 
                     if (publicKey != null) {
-                        val connectionHandler = ConnectionHandler(connection, handlerPeerMessage)
+                        val connectionHandler = ConnectionHandler(connection, handlePeerMessage)
                         connectionHandlers[publicKey] = connectionHandler
                         launch { connectionHandler.use { it.start() } }
                     }
