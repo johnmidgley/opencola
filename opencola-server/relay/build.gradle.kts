@@ -28,9 +28,14 @@ repositories {
 dependencies {
     implementation(project(":core"))
 
+    // Logging
+    implementation("io.github.microutils:kotlin-logging:2.1.21")
+    implementation("ch.qos.logback:logback-core:$logback_version")
+    implementation("ch.qos.logback:logback-classic:$logback_version")
+
+    // Ktor Server
     implementation("io.ktor:ktor-server-core:$ktor_version")
     implementation("io.ktor:ktor-server-netty:$ktor_version")
-    implementation("ch.qos.logback:logback-classic:$logback_version")
 
     testImplementation("io.ktor:ktor-server-tests:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")

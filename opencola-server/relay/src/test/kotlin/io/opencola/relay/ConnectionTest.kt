@@ -17,7 +17,7 @@ class ConnectionTest {
             val serverJob = launch() { relayServer.run() }
             while(!relayServer.isStarted()){ delay(50) }
 
-            val client = Client.connect("0.0.0.0", defaultPort, keyPair)
+            val client = Client("0.0.0.0", defaultPort, keyPair)
             client.writeLine("hi")
             println("Response: ${client.readLine()}")
             serverJob.cancel()
