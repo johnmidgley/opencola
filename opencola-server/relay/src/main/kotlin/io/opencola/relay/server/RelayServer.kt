@@ -59,6 +59,7 @@ class RelayServer(port: Int) {
     }
 
     private val handleMessage: suspend (ByteArray) -> Unit = { message ->
+        // TODO: Disallow sending messages to self
         val envelope = MessageEnvelope.decode(message)
         val connection = connectionHandlers[envelope.to]
 

@@ -23,6 +23,10 @@ import java.time.Duration
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
+private fun PublicKey.asId() : Id {
+    return Id.ofPublicKey(this)
+}
+
 class Client(private val hostname: String, private val port: Int, private val keyPair: KeyPair) : Closeable {
     private val logger = KotlinLogging.logger("Client")
 
@@ -85,13 +89,15 @@ class Client(private val hostname: String, private val port: Int, private val ke
         getConnection()
     }
 
-    private suspend fun respondToMessage(messageHeader: Header, body: ByteArray) {
+    suspend fun respondToMessage(messageHeader: Header, body: ByteArray) {
+        logger.info("Responding from ${keyPair.public.asId()} to ${messageHeader.from.asId()}")
         val responseMessage = Message(Header(keyPair.public, messageHeader.sessionId), body)
         val envelope = MessageEnvelope(messageHeader.from, responseMessage)
         getConnection().writeSizedByteArray(MessageEnvelope.encode(envelope))
     }
 
     suspend fun sendMessage(to: PublicKey, body: ByteArray ): ByteArray? {
+        logger.info { "Sending message from ${keyPair.public.asId()} to ${to.asId()}" }
         val message = Message(Header(keyPair.public, UUID.randomUUID()), body)
         val envelope = MessageEnvelope(to, message)
         val deferredResult = CompletableDeferred<ByteArray?>()
@@ -109,7 +115,24 @@ class Client(private val hostname: String, private val port: Int, private val ke
         }
     }
 
-    private val handleMessage: suspend (ByteArray) -> Unit = { payload ->
+//    private val handleMessage: suspend (ByteArray) -> Unit = { payload ->
+//        try {
+//            val message = Message.decode(decrypt(keyPair.private, payload))
+//            val sessionResult = sessions[message.header.sessionId]
+//
+//            if(sessionResult != null) {
+//                sessions.remove(message.header.sessionId)
+//                sessionResult.complete(message.body)
+//            } else {
+//                // TODO: Use handler passed into client for this
+//                respondToMessage(message.header, message.body)
+//            }
+//        } catch(e: Exception){
+//            logger.error { "Exception in handleMessage: $e" }
+//        }
+//    }
+
+    private suspend fun handleMessage(payload: ByteArray, handler: suspend (ByteArray) -> ByteArray) {
         try {
             val message = Message.decode(decrypt(keyPair.private, payload))
             val sessionResult = sessions[message.header.sessionId]
@@ -119,7 +142,7 @@ class Client(private val hostname: String, private val port: Int, private val ke
                 sessionResult.complete(message.body)
             } else {
                 // TODO: Use handler passed into client for this
-                respondToMessage(message.header, message.body)
+                respondToMessage(message.header, handler(message.body))
             }
         } catch(e: Exception){
             logger.error { "Exception in handleMessage: $e" }
@@ -127,10 +150,10 @@ class Client(private val hostname: String, private val port: Int, private val ke
     }
 
     // NOTE: This is the only place reads should occur, outside authentication
-    suspend fun listen() = coroutineScope {
+    suspend fun listen(messageHandler: suspend (ByteArray) -> ByteArray) = coroutineScope {
         while(isActive && open){
             try {
-                getConnection().listen(handleMessage)
+                getConnection().listen{ payload -> handleMessage(payload, messageHandler) }
             } catch (e: CancellationException) {
                 return@coroutineScope
             } catch (e: Exception) {
@@ -151,6 +174,5 @@ class Client(private val hostname: String, private val port: Int, private val ke
         }
 
         private val selectorManager = ActorSelectorManager(Dispatchers.IO)
-        private val emptyByteArray = ByteArray(0)
     }
 }

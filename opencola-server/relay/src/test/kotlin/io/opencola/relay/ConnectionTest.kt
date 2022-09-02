@@ -4,6 +4,7 @@ import io.opencola.core.security.generateKeyPair
 import io.opencola.relay.client.Client
 import io.opencola.relay.server.RelayServer
 import kotlinx.coroutines.*
+import opencola.core.extensions.append
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -25,13 +26,13 @@ class ConnectionTest {
             val client1 = Client("0.0.0.0", defaultPort, keyPair1).also { it.connect() }
 
             val clientJob = launch {
-                launch { client0.listen() }
-                launch { client1.listen() }
+                launch { client0.listen { "client0".toByteArray() } }
+                launch { client1.listen { payload -> payload.append(" client1".toByteArray()) } }
             }
 
             val peerResponse = client0.sendMessage(keyPair1.public, "hello".toByteArray())
             assertNotNull(peerResponse)
-            assertEquals("hello", String(peerResponse))
+            assertEquals("hello client1", String(peerResponse))
 
             clientJob.cancel()
             serverJob.cancel()
