@@ -23,9 +23,15 @@ class ConnectionTest {
             val client0 = Client("0.0.0.0", defaultPort, keyPair0).also { it.connect() }
             val client1 = Client("0.0.0.0", defaultPort, keyPair1).also { it.connect() }
 
+            val clientJob = launch {
+                launch { client0.listen() }
+                launch { client1.listen() }
+            }
+
             val peerResponse = client0.sendMessage(keyPair1.public, "hello".toByteArray())
             assertEquals(0, peerResponse!!.size)
 
+            clientJob.cancel()
             serverJob.cancel()
         }
     }

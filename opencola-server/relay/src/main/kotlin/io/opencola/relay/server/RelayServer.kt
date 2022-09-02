@@ -69,10 +69,9 @@ class RelayServer(port: Int) {
             // TODO: Signal back to client
         } else {
             logger.info { "Message is to connected peer" }
+            // connection.writeSizedByteArray(envelope.message)
         }
     }
-
-
 
     suspend fun run() = coroutineScope() {
         selectorManager.use {

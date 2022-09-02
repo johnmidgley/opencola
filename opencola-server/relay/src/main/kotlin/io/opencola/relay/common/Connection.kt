@@ -54,6 +54,7 @@ class Connection(private val socket: Socket) : Closeable {
 
     override fun close() {
         socket.close()
+        listening = false
     }
 
     suspend fun listen(handleMessage: suspend (ByteArray) -> Unit) = coroutineScope {
@@ -62,7 +63,7 @@ class Connection(private val socket: Socket) : Closeable {
         else
             listening = true
 
-        while (isActive) {
+        while (isActive && listening && isReady()) {
             try {
                 handleMessage(readSizedByteArray())
             } catch(e: CancellationException) {
