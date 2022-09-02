@@ -1,5 +1,6 @@
 package io.opencola.core.serialization
 
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
@@ -17,6 +18,12 @@ interface StreamSerializer<T> {
         return ByteArrayOutputStream().use {
             encode(it, value)
             it.toByteArray()
+        }
+    }
+
+    fun decode(bytes: ByteArray) : T {
+        return ByteArrayInputStream(bytes).use {
+            decode(it)
         }
     }
 }

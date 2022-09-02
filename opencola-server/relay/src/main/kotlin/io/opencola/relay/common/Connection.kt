@@ -2,6 +2,9 @@ package io.opencola.relay.common
 
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import mu.KotlinLogging
@@ -28,6 +31,8 @@ class Connection(private val socket: Socket) : Closeable {
     private val logger = KotlinLogging.logger("Connection")
     private val readChannel = socket.openReadChannel()
     private val writeChannel = socket.openWriteChannel(autoFlush = true)
+    private var listening = false
+
     internal val connectionMutex = Mutex()
 
     fun isReady(): Boolean {
@@ -64,5 +69,28 @@ class Connection(private val socket: Socket) : Closeable {
 
     override fun close() {
         socket.close()
+    }
+
+    // NOTE: This is the only place reads should occur, outside authentication
+    suspend fun listen(handleMessage: (ByteArray) -> Unit) = coroutineScope {
+        if(listening) {
+            throw IllegalStateException("Connection is already listening")
+        }
+
+        listening = true
+
+        logger.info { "Connection Listening" }
+
+        while (isActive) {
+            try {
+                val message = readSizedByteArray()
+                logger.info { "Got message" }
+                handleMessage(message)
+            } catch(e: CancellationException){
+                return@coroutineScope
+            } catch (e: Exception) {
+                logger.error { "$e" }
+            }
+        }
     }
 }
