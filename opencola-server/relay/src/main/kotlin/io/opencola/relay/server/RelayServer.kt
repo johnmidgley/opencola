@@ -22,7 +22,7 @@ class RelayServer(port: Int) {
     private val logger = KotlinLogging.logger("RelayServer")
     private val selectorManager = ActorSelectorManager(Dispatchers.IO)
     private val serverSocket = aSocket(selectorManager).tcp().bind(port = port)
-    private val connectionHandlers = ConcurrentHashMap<PublicKey, Connection>()
+    private val connections = ConcurrentHashMap<PublicKey, Connection>()
     private var started = false
 
     fun isStarted() : Boolean {
@@ -58,16 +58,11 @@ class RelayServer(port: Int) {
         return null
     }
 
-    private val handleMessage: suspend (ByteArray) -> Unit = { message ->
-        // TODO: Disallow sending messages to self
-        val envelope = MessageEnvelope.decode(message)
-        val connection = connectionHandlers[envelope.to]
+    private suspend fun handleMessage(from: PublicKey, payload: ByteArray) {
+        val envelope = MessageEnvelope.decode(payload)
 
-        if(connection == null) {
-            logger.info { "Received message for peer that is not connected" }
-            // TODO: Signal back to client
-        } else {
-            connection.writeSizedByteArray(envelope.message)
+        if (from != envelope.to) {
+            connections[envelope.to]?.writeSizedByteArray(envelope.message)
         }
     }
 
@@ -83,8 +78,8 @@ class RelayServer(port: Int) {
 
                     if (publicKey != null) {
                         logger.info { "Connection Authenticated for: ${Id.ofPublicKey(publicKey)}" }
-                        connectionHandlers[publicKey] = connection
-                        launch { connection.use { it.listen(handleMessage) } }
+                        connections[publicKey] = connection
+                        launch { connection.use { it.listen { payload -> handleMessage(publicKey, payload) } } }
                     }
                 }
             }
