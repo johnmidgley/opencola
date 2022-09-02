@@ -26,7 +26,7 @@ class Client(private val hostname: String, private val port: Int, private val ke
     private var _connection: Connection? = null
     private val connectionMutex = Mutex() // TODO: Not needed anymore, is it?
 
-    private val sessions = ConcurrentHashMap<UUID, Deferred<ByteArray>>()
+    private val sessions = ConcurrentHashMap<UUID, Deferred<ByteArray?>>()
 
     // Should only be called once, right after connection to server
     private suspend fun authenticate(connection: Connection) {
@@ -69,28 +69,26 @@ class Client(private val hostname: String, private val port: Int, private val ke
         getConnection()
     }
 
-    suspend fun sendMessage(publicKey: PublicKey, bytes: ByteArray): ByteArray? {
-        val encryptedBytes = encrypt(publicKey, bytes)
-
-        return getConnection().transact("Sending peer message") {
-            it.writeSizedByteArray(publicKey.encoded)
-            it.writeSizedByteArray(encryptedBytes)
-            it.readSizedByteArray()
-        }
-    }
-
-    suspend fun sendMessage1(to: PublicKey, body: ByteArray): ByteArray? {
+    suspend fun sendMessage(to: PublicKey, body: ByteArray): ByteArray? {
         val message = Message(keyPair.public, UUID.randomUUID(), body)
         val envelope = MessageEnvelope(to, message)
 
         logger.info { "Client sending message" }
-        val result = CompletableDeferred<ByteArray>()
-        sessions[message.sessionId] = result
+        val deferredResult = CompletableDeferred<ByteArray?>()
+        sessions[message.sessionId] = deferredResult
         getConnection().writeSizedByteArray(MessageEnvelope.encode(envelope))
 
         logger.info { "Client waiting for response" }
-        // TODO: Timeout
-        return result.await()
+
+        return emptyByteArray
+
+//        return try {
+//            withTimeout(5000) {
+//                deferredResult.await()
+//            }
+//        } catch (e: TimeoutCancellationException) {
+//            null
+//        }
     }
 
     // NOTE: This is the only place reads should occur, outside authentication

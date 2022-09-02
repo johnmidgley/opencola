@@ -1,7 +1,9 @@
 package io.opencola.relay.server
 
+import io.opencola.core.model.Id
 import io.opencola.core.security.publicKeyFromBytes
 import io.opencola.relay.common.Connection
+import io.opencola.relay.common.MessageEnvelope
 import kotlinx.coroutines.CancellationException
 import mu.KotlinLogging
 import java.io.Closeable
@@ -13,37 +15,12 @@ internal class ConnectionHandler(
 ) : Closeable {
     private val logger = KotlinLogging.logger("RelayConnection")
 
-    private fun handleControlMessage(code: Int, data: ByteArray): ByteArray {
-        return when (code) {
-            // Echo data back
-            1 -> {
-                logger.info { "Handling Echo" }
-                data
-            }
-            else -> "ERROR".toByteArray()
-        }
-    }
-
-    suspend fun deliverMessage(from: PublicKey, data: ByteArray) {
-        // TODO: UNSAFE
-        connection.writeSizedByteArray(from.encoded)
-        connection.writeSizedByteArray(data)
-    }
-
     // NOTE: This is the only place (outside of authentication) that any reads should occur.
     suspend fun run() {
         while (true) {
             try {
-                val recipient = connection.readSizedByteArray()
-
-                connection.transact {
-                    val result = if (recipient.isEmpty())
-                        handleControlMessage(it.readInt(), it.readSizedByteArray())
-                    else
-                        handlePeerMessage(publicKeyFromBytes(recipient), it.readSizedByteArray())
-
-                    it.writeSizedByteArray(result)
-                }
+                val envelope = MessageEnvelope.decode(connection.readSizedByteArray())
+                logger.info { "Received message to: ${Id.ofPublicKey(envelope.to)}" }
             } catch (e: CancellationException) {
                 return
             } catch (e: Exception) {
