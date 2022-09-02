@@ -3,9 +3,11 @@ package io.opencola.relay.client
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.opencola.core.model.Id
+import io.opencola.core.security.decrypt
 import io.opencola.core.security.initProvider
 import io.opencola.core.security.sign
 import io.opencola.relay.common.Connection
+import io.opencola.relay.common.Header
 import io.opencola.relay.common.Message
 import io.opencola.relay.common.MessageEnvelope
 import kotlinx.coroutines.*
@@ -27,7 +29,7 @@ class Client(private val hostname: String, private val port: Int, private val ke
     // Not to be touched directly. Access by calling getConnections, which will ensure it's opened and ready
     private var _connection: Connection? = null
     private val connectionMutex = Mutex() // TODO: Not needed anymore, is it?
-    private val sessions = ConcurrentHashMap<UUID, Deferred<ByteArray?>>()
+    private val sessions = ConcurrentHashMap<UUID, CompletableDeferred<ByteArray?>>()
     private var open = true
     private var connectionFailures = 0
 
@@ -46,8 +48,6 @@ class Client(private val hostname: String, private val port: Int, private val ke
         if (authenticationResponse != 0) {
             throw RuntimeException("Unable to authenticate connection: $authenticationResponse")
         }
-
-        logger.info { "Connection authenticated" }
     }
 
     private suspend fun getConnection() : Connection {
@@ -85,37 +85,51 @@ class Client(private val hostname: String, private val port: Int, private val ke
         getConnection()
     }
 
-    suspend fun sendMessage(to: PublicKey, body: ByteArray): ByteArray? {
-        val message = Message(keyPair.public, UUID.randomUUID(), body)
-        val envelope = MessageEnvelope(to, message)
-
-        logger.info { "Client sending message" }
-        val deferredResult = CompletableDeferred<ByteArray?>()
-        sessions[message.sessionId] = deferredResult
+    private suspend fun respondToMessage(messageHeader: Header, body: ByteArray) {
+        val responseMessage = Message(Header(keyPair.public, messageHeader.sessionId), body)
+        val envelope = MessageEnvelope(messageHeader.from, responseMessage)
         getConnection().writeSizedByteArray(MessageEnvelope.encode(envelope))
-
-        logger.info { "Client waiting for response" }
-
-        return emptyByteArray
-
-//        return try {
-//            withTimeout(5000) {
-//                deferredResult.await()
-//            }
-//        } catch (e: TimeoutCancellationException) {
-//            null
-//        }
     }
 
-    private val handleMessage: (ByteArray) -> Unit = { message ->
-        logger.info { "Received message!" }
+    suspend fun sendMessage(to: PublicKey, body: ByteArray ): ByteArray? {
+        val message = Message(Header(keyPair.public, UUID.randomUUID()), body)
+        val envelope = MessageEnvelope(to, message)
+        val deferredResult = CompletableDeferred<ByteArray?>()
+
+        sessions[message.header.sessionId] = deferredResult
+        getConnection().writeSizedByteArray(MessageEnvelope.encode(envelope))
+
+        return try {
+            // TODO: Configure timeout
+            withTimeout(5000) {
+                deferredResult.await()
+            }
+        } catch (e: TimeoutCancellationException) {
+            null
+        }
+    }
+
+    private val handleMessage: suspend (ByteArray) -> Unit = { payload ->
+        try {
+            val message = Message.decode(decrypt(keyPair.private, payload))
+            val sessionResult = sessions[message.header.sessionId]
+
+            if(sessionResult != null) {
+                sessions.remove(message.header.sessionId)
+                sessionResult.complete(message.body)
+            } else {
+                // TODO: Use handler passed into client for this
+                respondToMessage(message.header, message.body)
+            }
+        } catch(e: Exception){
+            logger.error { "Exception in handleMessage: $e" }
+        }
     }
 
     // NOTE: This is the only place reads should occur, outside authentication
     suspend fun listen() = coroutineScope {
         while(isActive && open){
             try {
-                logger.info { "Client in listen mode" }
                 getConnection().listen(handleMessage)
             } catch (e: CancellationException) {
                 return@coroutineScope

@@ -62,14 +62,11 @@ class RelayServer(port: Int) {
         val envelope = MessageEnvelope.decode(message)
         val connection = connectionHandlers[envelope.to]
 
-        logger.info { "Received message to: ${Id.ofPublicKey(envelope.to)}" }
-
         if(connection == null) {
             logger.info { "Received message for peer that is not connected" }
             // TODO: Signal back to client
         } else {
-            logger.info { "Message is to connected peer" }
-            // connection.writeSizedByteArray(envelope.message)
+            connection.writeSizedByteArray(envelope.message)
         }
     }
 
@@ -80,7 +77,6 @@ class RelayServer(port: Int) {
                 started = true
                 while (isActive) {
                     val socket = serverSocket.accept()
-                    logger.info("Accepted ${socket.remoteAddress}")
                     val connection = Connection(socket)
                     val publicKey = authenticate(connection)
 

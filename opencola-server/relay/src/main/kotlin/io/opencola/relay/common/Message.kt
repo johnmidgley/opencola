@@ -1,28 +1,25 @@
 package io.opencola.relay.common
 
-import io.opencola.core.security.publicKeyFromBytes
 import io.opencola.core.serialization.StreamSerializer
-import io.opencola.core.serialization.UUIDByteArrayCodecCodec
 import io.opencola.core.serialization.readByteArray
 import io.opencola.core.serialization.writeByteArray
-import opencola.core.extensions.toByteArray
 import java.io.InputStream
 import java.io.OutputStream
-import java.security.PublicKey
-import java.util.*
 
-class Message(val from: PublicKey, val sessionId: UUID, val body: ByteArray) {
+class Message(val header: Header, val body: ByteArray) {
+    override fun toString(): String {
+        return "Message(header=$header, body=${body.size} bytes)"
+    }
+
     companion object : StreamSerializer<Message> {
         override fun encode(stream: OutputStream, value: Message) {
-            stream.writeByteArray(value.from.encoded)
-            stream.writeByteArray(value.sessionId.toByteArray())
+            Header.encode(stream, value.header)
             stream.writeByteArray(value.body)
         }
 
         override fun decode(stream: InputStream): Message {
             return Message(
-                publicKeyFromBytes(stream.readByteArray()),
-                UUIDByteArrayCodecCodec.decode(stream.readByteArray()),
+                Header.decode(stream),
                 stream.readByteArray())
         }
     }

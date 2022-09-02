@@ -6,6 +6,7 @@ import io.opencola.relay.server.RelayServer
 import kotlinx.coroutines.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class ConnectionTest {
     private val defaultPort = 5796
@@ -29,7 +30,8 @@ class ConnectionTest {
             }
 
             val peerResponse = client0.sendMessage(keyPair1.public, "hello".toByteArray())
-            assertEquals(0, peerResponse!!.size)
+            assertNotNull(peerResponse)
+            assertEquals("hello", String(peerResponse))
 
             clientJob.cancel()
             serverJob.cancel()
