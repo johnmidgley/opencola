@@ -115,23 +115,6 @@ class Client(private val hostname: String, private val port: Int, private val ke
         }
     }
 
-//    private val handleMessage: suspend (ByteArray) -> Unit = { payload ->
-//        try {
-//            val message = Message.decode(decrypt(keyPair.private, payload))
-//            val sessionResult = sessions[message.header.sessionId]
-//
-//            if(sessionResult != null) {
-//                sessions.remove(message.header.sessionId)
-//                sessionResult.complete(message.body)
-//            } else {
-//                // TODO: Use handler passed into client for this
-//                respondToMessage(message.header, message.body)
-//            }
-//        } catch(e: Exception){
-//            logger.error { "Exception in handleMessage: $e" }
-//        }
-//    }
-
     private suspend fun handleMessage(payload: ByteArray, handler: suspend (ByteArray) -> ByteArray) {
         try {
             val message = Message.decode(decrypt(keyPair.private, payload))
@@ -151,9 +134,10 @@ class Client(private val hostname: String, private val port: Int, private val ke
 
     // NOTE: This is the only place reads should occur, outside authentication
     suspend fun listen(messageHandler: suspend (ByteArray) -> ByteArray) = coroutineScope {
-        while(isActive && open){
+        while(isActive && open) {
             try {
-                getConnection().listen{ payload -> handleMessage(payload, messageHandler) }
+                // TODO: Problem here if you call listen more than once - gets into infinite loop
+                getConnection().listen { payload -> handleMessage(payload, messageHandler) }
             } catch (e: CancellationException) {
                 return@coroutineScope
             } catch (e: Exception) {
