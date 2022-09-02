@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import opencola.core.extensions.toByteArray
 import io.opencola.relay.common.Connection
+import io.opencola.relay.common.MessageEnvelope
 import java.security.PublicKey
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -21,7 +22,7 @@ class RelayServer(port: Int) {
     private val logger = KotlinLogging.logger("RelayServer")
     private val selectorManager = ActorSelectorManager(Dispatchers.IO)
     private val serverSocket = aSocket(selectorManager).tcp().bind(port = port)
-    private val connectionHandlers = ConcurrentHashMap<PublicKey, ConnectionHandler>()
+    private val connectionHandlers = ConcurrentHashMap<PublicKey, Connection>()
     private var started = false
 
     fun isStarted() : Boolean {
@@ -57,17 +58,21 @@ class RelayServer(port: Int) {
         return null
     }
 
-    private val handlePeerMessage: suspend (PublicKey, ByteArray) -> ByteArray = { publicKey, data ->
-        logger.info { "Received message for: ${Id.ofPublicKey(publicKey)}" }
-        val connectionHandler = connectionHandlers[publicKey]
+    private val handleMessage: suspend (ByteArray) -> Unit = { message ->
+        val envelope = MessageEnvelope.decode(message)
+        val connection = connectionHandlers[envelope.to]
 
-        if(connectionHandler == null){
+        logger.info { "Received message to: ${Id.ofPublicKey(envelope.to)}" }
+
+        if(connection == null) {
             logger.info { "Received message for peer that is not connected" }
             // TODO: Signal back to client
+        } else {
+            logger.info { "Message is to connected peer" }
         }
-
-        ByteArray(0)
     }
+
+
 
     suspend fun run() = coroutineScope() {
         selectorManager.use {
@@ -82,9 +87,8 @@ class RelayServer(port: Int) {
 
                     if (publicKey != null) {
                         logger.info { "Connection Authenticated for: ${Id.ofPublicKey(publicKey)}" }
-                        val connectionHandler = ConnectionHandler(connection, handlePeerMessage)
-                        connectionHandlers[publicKey] = connectionHandler
-                        launch { connectionHandler.use { it.run() } }
+                        connectionHandlers[publicKey] = connection
+                        launch { connection.use { it.listen(handleMessage) } }
                     }
                 }
             }

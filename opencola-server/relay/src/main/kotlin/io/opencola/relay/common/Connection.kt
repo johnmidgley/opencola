@@ -56,7 +56,7 @@ class Connection(private val socket: Socket) : Closeable {
         socket.close()
     }
 
-    suspend fun listen(handleMessage: (ByteArray) -> Unit) = coroutineScope {
+    suspend fun listen(handleMessage: suspend (ByteArray) -> Unit) = coroutineScope {
         if(listening)
             throw IllegalStateException("Connection is already listening")
         else
