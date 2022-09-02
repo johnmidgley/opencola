@@ -5,8 +5,6 @@ import io.ktor.utils.io.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import mu.KotlinLogging
 import java.io.Closeable
 
@@ -33,21 +31,8 @@ class Connection(private val socket: Socket) : Closeable {
     private val writeChannel = socket.openWriteChannel(autoFlush = true)
     private var listening = false
 
-    internal val connectionMutex = Mutex()
-
     fun isReady(): Boolean {
         return !(socket.isClosed || readChannel.isClosedForRead || writeChannel.isClosedForWrite)
-    }
-
-    internal suspend inline fun <reified T> transact(name: String = "", block: (Connection) -> T): T? {
-        try {
-            connectionMutex.withLock {
-                return block(this)
-            }
-        } catch (e: Exception) {
-            logger.error { "Error in transaction $name: $e" }
-            return null
-        }
     }
 
     internal suspend fun writeSizedByteArray(byteArray: ByteArray) {
@@ -71,23 +56,17 @@ class Connection(private val socket: Socket) : Closeable {
         socket.close()
     }
 
-    // NOTE: This is the only place reads should occur, outside authentication
     suspend fun listen(handleMessage: (ByteArray) -> Unit) = coroutineScope {
-        if(listening) {
+        if(listening)
             throw IllegalStateException("Connection is already listening")
-        }
-
-        listening = true
-
-        logger.info { "Connection Listening" }
+        else
+            listening = true
 
         while (isActive) {
             try {
-                val message = readSizedByteArray()
-                logger.info { "Got message" }
-                handleMessage(message)
-            } catch(e: CancellationException){
-                return@coroutineScope
+                handleMessage(readSizedByteArray())
+            } catch(e: CancellationException) {
+                break
             } catch (e: Exception) {
                 logger.error { "$e" }
             }

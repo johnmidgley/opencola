@@ -17,15 +17,9 @@ internal class ConnectionHandler(
 
     // NOTE: This is the only place (outside of authentication) that any reads should occur.
     suspend fun run() {
-        while (true) {
-            try {
-                val envelope = MessageEnvelope.decode(connection.readSizedByteArray())
-                logger.info { "Received message to: ${Id.ofPublicKey(envelope.to)}" }
-            } catch (e: CancellationException) {
-                return
-            } catch (e: Exception) {
-                logger.error("${e.stackTrace}")
-            }
+        connection.listen { envelopeBytes ->
+            val envelope = MessageEnvelope.decode(envelopeBytes)
+            logger.info { "Received message to: ${Id.ofPublicKey(envelope.to)}" }
         }
     }
 
