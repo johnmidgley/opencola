@@ -61,6 +61,7 @@ class Client(private val hostname: String, private val port: Int, private val ke
         return connectionMutex.withLock {
             if (_connection == null || !_connection!!.isReady()) {
                 if(connectionFailures > 0) {
+                    // TODO: Factor out retry policy
                     val delayInSeconds = min(1L.shl(connectionFailures), Duration.ofHours(1).seconds)
                     logger.warn{ "Waiting $delayInSeconds seconds to connect" }
 
@@ -81,37 +82,6 @@ class Client(private val hostname: String, private val port: Int, private val ke
             }
 
             _connection!!
-        }
-    }
-
-    // This needs to be called before messages can be received from peers. Requests automatically open connections too.
-    suspend fun connect() {
-        getConnection()
-    }
-
-    suspend fun respondToMessage(messageHeader: Header, body: ByteArray) {
-        logger.info("Responding from ${keyPair.public.asId()} to ${messageHeader.from.asId()}")
-        val responseMessage = Message(Header(keyPair.public, messageHeader.sessionId), body)
-        val envelope = MessageEnvelope(messageHeader.from, responseMessage)
-        getConnection().writeSizedByteArray(MessageEnvelope.encode(envelope))
-    }
-
-    suspend fun sendMessage(to: PublicKey, body: ByteArray ): ByteArray? {
-        logger.info { "Sending message from ${keyPair.public.asId()} to ${to.asId()}" }
-        val message = Message(Header(keyPair.public, UUID.randomUUID()), body)
-        val envelope = MessageEnvelope(to, message)
-        val deferredResult = CompletableDeferred<ByteArray?>()
-
-        sessions[message.header.sessionId] = deferredResult
-        getConnection().writeSizedByteArray(MessageEnvelope.encode(envelope))
-
-        return try {
-            // TODO: Configure timeout
-            withTimeout(5000) {
-                deferredResult.await()
-            }
-        } catch (e: TimeoutCancellationException) {
-            null
         }
     }
 
@@ -146,10 +116,41 @@ class Client(private val hostname: String, private val port: Int, private val ke
         }
     }
 
+    // This needs to be called before messages can be received from peers. Requests automatically open connections too.
+    suspend fun open() {
+        getConnection()
+    }
+
     override fun close() {
         open = false
         _connection?.close()
         _connection = null
+    }
+
+    suspend fun sendMessage(to: PublicKey, body: ByteArray ): ByteArray? {
+        logger.info { "Sending message from ${keyPair.public.asId()} to ${to.asId()}" }
+        val message = Message(Header(keyPair.public, UUID.randomUUID()), body)
+        val envelope = MessageEnvelope(to, message)
+        val deferredResult = CompletableDeferred<ByteArray?>()
+
+        sessions[message.header.sessionId] = deferredResult
+        getConnection().writeSizedByteArray(MessageEnvelope.encode(envelope))
+
+        return try {
+            // TODO: Configure timeout
+            withTimeout(5000) {
+                deferredResult.await()
+            }
+        } catch (e: TimeoutCancellationException) {
+            null
+        }
+    }
+
+    suspend fun respondToMessage(messageHeader: Header, body: ByteArray) {
+        logger.info("Responding from ${keyPair.public.asId()} to ${messageHeader.from.asId()}")
+        val responseMessage = Message(Header(keyPair.public, messageHeader.sessionId), body)
+        val envelope = MessageEnvelope(messageHeader.from, responseMessage)
+        getConnection().writeSizedByteArray(MessageEnvelope.encode(envelope))
     }
 
     companion object {

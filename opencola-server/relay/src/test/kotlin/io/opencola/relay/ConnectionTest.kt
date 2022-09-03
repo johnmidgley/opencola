@@ -13,17 +13,17 @@ class ConnectionTest {
     private val defaultPort = 5796
 
     @Test
-    fun testConnection() {
+    fun testSendResponse() {
         val keyPair0 = generateKeyPair()
         val keyPair1 = generateKeyPair()
 
         runBlocking {
             val relayServer = RelayServer(defaultPort)
-            val serverJob = launch { relayServer.run() }
+            val serverJob = launch { relayServer.open() }
             while(!relayServer.isStarted()){ delay(50) }
 
-            val client0 = Client("0.0.0.0", defaultPort, keyPair0).also { it.connect() }
-            val client1 = Client("0.0.0.0", defaultPort, keyPair1).also { it.connect() }
+            val client0 = Client("0.0.0.0", defaultPort, keyPair0).also { it.open() }
+            val client1 = Client("0.0.0.0", defaultPort, keyPair1).also { it.open() }
 
             val clientJob = launch {
                 launch { client0.listen { "client0".toByteArray() } }
@@ -37,5 +37,27 @@ class ConnectionTest {
             clientJob.cancel()
             serverJob.cancel()
         }
+    }
+
+    @Test
+    fun testClientConnectBeforeServer(){
+        runBlocking {
+            val keyPair0 = generateKeyPair()
+        }
+    }
+
+    @Test
+    fun testServerPartition(){
+
+    }
+
+    @Test
+    fun testClientPartition(){
+
+    }
+
+    @Test
+    fun testMultipleClientListen(){
+
     }
 }

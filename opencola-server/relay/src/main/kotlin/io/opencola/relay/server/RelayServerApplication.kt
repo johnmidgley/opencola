@@ -19,6 +19,6 @@ fun main() {
     startWebServer()
 
     runBlocking {
-        launch(Dispatchers.Default) { RelayServer(5796).run() }
+        launch(Dispatchers.Default) { RelayServer(5796).open() }
     }
 }

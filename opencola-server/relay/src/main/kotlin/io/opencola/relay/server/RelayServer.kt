@@ -14,19 +14,20 @@ import mu.KotlinLogging
 import opencola.core.extensions.toByteArray
 import io.opencola.relay.common.Connection
 import io.opencola.relay.common.MessageEnvelope
+import java.io.Closeable
 import java.security.PublicKey
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
-class RelayServer(port: Int) {
+class RelayServer(port: Int): Closeable {
     private val logger = KotlinLogging.logger("RelayServer")
     private val selectorManager = ActorSelectorManager(Dispatchers.IO)
     private val serverSocket = aSocket(selectorManager).tcp().bind(port = port)
     private val connections = ConcurrentHashMap<PublicKey, Connection>()
-    private var started = false
+    private var open = false
 
     fun isStarted() : Boolean {
-        return started
+        return open
     }
 
     private suspend fun authenticate(connection: Connection): PublicKey? {
@@ -66,12 +67,12 @@ class RelayServer(port: Int) {
         }
     }
 
-    suspend fun run() = coroutineScope() {
+    suspend fun open() = coroutineScope() {
         selectorManager.use {
             serverSocket.use {
                 logger.info("Relay Server listening at ${serverSocket.localAddress}")
-                started = true
-                while (isActive) {
+                open = true
+                while (isActive && open) {
                     val socket = serverSocket.accept()
                     val connection = Connection(socket)
                     val publicKey = authenticate(connection)
@@ -84,6 +85,14 @@ class RelayServer(port: Int) {
                 }
             }
         }
+    }
+
+    override fun close() {
+        open = false
+        connections.values.forEach{ it.close() }
+        connections.clear()
+        serverSocket.close()
+        selectorManager.close()
     }
 
     companion object {

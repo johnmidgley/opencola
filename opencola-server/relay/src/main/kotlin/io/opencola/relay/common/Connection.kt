@@ -18,13 +18,13 @@ class Connection(private val socket: Socket) : Closeable {
         return !(socket.isClosed || readChannel.isClosedForRead || writeChannel.isClosedForWrite)
     }
 
+    internal suspend fun readSizedByteArray() : ByteArray {
+        return ByteArray(readChannel.readInt()).also { readChannel.readFully(it, 0, it.size) }
+    }
+
     internal suspend fun writeSizedByteArray(byteArray: ByteArray) {
         writeChannel.writeInt(byteArray.size)
         writeChannel.writeFully(byteArray)
-    }
-
-    internal suspend fun readSizedByteArray() : ByteArray {
-        return ByteArray(readChannel.readInt()).also { readChannel.readFully(it, 0, it.size) }
     }
 
     internal suspend fun readInt() : Int {
