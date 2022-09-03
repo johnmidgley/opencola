@@ -33,8 +33,9 @@ class Client(private val hostname: String, private val port: Int, private val ke
     // Not to be touched directly. Access by calling getConnections, which will ensure it's opened and ready
     private var _connection: Connection? = null
     private val connectionMutex = Mutex() // TODO: Not needed anymore, is it?
+    private val openMutex = Mutex(true)
     private val sessions = ConcurrentHashMap<UUID, CompletableDeferred<ByteArray?>>()
-    private var open = true
+    private var closed = false
     private var connectionFailures = 0
 
     // Should only be called once, right after connection to server
@@ -54,9 +55,13 @@ class Client(private val hostname: String, private val port: Int, private val ke
         }
     }
 
-    private suspend fun getConnection() : Connection {
-        if(!open)
+    private suspend fun getConnection(waitForOpen: Boolean = true) : Connection {
+        if(closed)
             throw IllegalStateException("Can't get connection on a Client that has been closed")
+
+        if(waitForOpen) {
+            openMutex.withLock { }
+        }
 
         return connectionMutex.withLock {
             if (_connection == null || !_connection!!.isReady()) {
@@ -75,6 +80,7 @@ class Client(private val hostname: String, private val port: Int, private val ke
                         authenticate(it)
                     }
                     connectionFailures = 0
+                    openMutex.unlock()
                 } catch (e: ConnectException) {
                     connectionFailures++
                     throw e
@@ -102,27 +108,21 @@ class Client(private val hostname: String, private val port: Int, private val ke
         }
     }
 
-    // NOTE: This is the only place reads should occur, outside authentication
-    suspend fun listen(messageHandler: suspend (ByteArray) -> ByteArray) = coroutineScope {
-        while(isActive && open) {
+    suspend fun open(messageHandler: suspend (ByteArray) -> ByteArray) {
+        while(!closed) {
             try {
                 // TODO: Problem here if you call listen more than once - gets into infinite loop
-                getConnection().listen { payload -> handleMessage(payload, messageHandler) }
+                getConnection(false).listen { payload -> handleMessage(payload, messageHandler) }
             } catch (e: CancellationException) {
-                return@coroutineScope
+                break
             } catch (e: Exception) {
                 logger.error { "Exception during listen: $e" }
             }
         }
     }
 
-    // This needs to be called before messages can be received from peers. Requests automatically open connections too.
-    suspend fun open() {
-        getConnection()
-    }
-
     override fun close() {
-        open = false
+        closed = true
         _connection?.close()
         _connection = null
     }

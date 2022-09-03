@@ -22,12 +22,12 @@ class ConnectionTest {
             val serverJob = launch { relayServer.open() }
             while(!relayServer.isStarted()){ delay(50) }
 
-            val client0 = Client("0.0.0.0", defaultPort, keyPair0).also { it.open() }
-            val client1 = Client("0.0.0.0", defaultPort, keyPair1).also { it.open() }
+            val client0 = Client("0.0.0.0", defaultPort, keyPair0)
+            val client1 = Client("0.0.0.0", defaultPort, keyPair1)
 
             val clientJob = launch {
-                launch { client0.listen { "client0".toByteArray() } }
-                launch { client1.listen { payload -> payload.append(" client1".toByteArray()) } }
+                launch { client0.open { "client0".toByteArray() } }
+                launch { client1.open { payload -> payload.append(" client1".toByteArray()) } }
             }
 
             val peerResponse = client0.sendMessage(keyPair1.public, "hello".toByteArray())
