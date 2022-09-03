@@ -38,6 +38,10 @@ class Client(private val hostname: String, private val port: Int, private val ke
     private var closed = false
     private var connectionFailures = 0
 
+    suspend fun waitUntilOpen() {
+        openMutex.withLock {  }
+    }
+
     // Should only be called once, right after connection to server
     private suspend fun authenticate(connection: Connection) {
         // Send public key

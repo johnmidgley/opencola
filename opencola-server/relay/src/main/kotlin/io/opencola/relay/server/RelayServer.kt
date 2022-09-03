@@ -14,6 +14,8 @@ import mu.KotlinLogging
 import opencola.core.extensions.toByteArray
 import io.opencola.relay.common.Connection
 import io.opencola.relay.common.MessageEnvelope
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.io.Closeable
 import java.security.PublicKey
 import java.util.*
@@ -24,10 +26,11 @@ class RelayServer(port: Int): Closeable {
     private val selectorManager = ActorSelectorManager(Dispatchers.IO)
     private val serverSocket = aSocket(selectorManager).tcp().bind(port = port)
     private val connections = ConcurrentHashMap<PublicKey, Connection>()
-    private var open = false
+    private val openMutex = Mutex(true)
+    private var closed = false
 
-    fun isStarted() : Boolean {
-        return open
+    suspend fun waitUntilOpen() {
+        openMutex.withLock {  }
     }
 
     private suspend fun authenticate(connection: Connection): PublicKey? {
@@ -71,8 +74,8 @@ class RelayServer(port: Int): Closeable {
         selectorManager.use {
             serverSocket.use {
                 logger.info("Relay Server listening at ${serverSocket.localAddress}")
-                open = true
-                while (isActive && open) {
+                openMutex.unlock()
+                while (isActive && !closed) {
                     val socket = serverSocket.accept()
                     val connection = Connection(socket)
                     val publicKey = authenticate(connection)
@@ -88,7 +91,7 @@ class RelayServer(port: Int): Closeable {
     }
 
     override fun close() {
-        open = false
+        closed = true
         connections.values.forEach{ it.close() }
         connections.clear()
         serverSocket.close()
