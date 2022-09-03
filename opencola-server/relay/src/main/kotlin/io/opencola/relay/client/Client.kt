@@ -113,6 +113,10 @@ class Client(private val hostname: String, private val port: Int, private val ke
     }
 
     suspend fun open(messageHandler: suspend (ByteArray) -> ByteArray) {
+        if(!openMutex.isLocked) {
+            throw IllegalStateException("Client is already opened")
+        }
+
         while(!closed) {
             try {
                 // TODO: Problem here if you call listen more than once - gets into infinite loop

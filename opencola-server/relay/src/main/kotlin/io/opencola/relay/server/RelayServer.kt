@@ -71,6 +71,10 @@ class RelayServer(port: Int): Closeable {
     }
 
     suspend fun open() = coroutineScope() {
+        if(!openMutex.isLocked){
+            throw IllegalStateException("Server is already opened")
+        }
+
         selectorManager.use {
             serverSocket.use {
                 logger.info("Relay Server listening at ${serverSocket.localAddress}")

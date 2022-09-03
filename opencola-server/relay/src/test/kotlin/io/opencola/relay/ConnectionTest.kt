@@ -70,17 +70,22 @@ class ConnectionTest {
     }
 
     @Test
-    fun testServerPartition(){
+    fun testServerPartition() {
 
     }
 
     @Test
-    fun testClientPartition(){
+    fun testClientPartition() {
 
     }
 
     @Test
-    fun testMultipleClientListen(){
+    fun testRandomClientsCalls() {
+
+    }
+
+    @Test
+    fun testMultipleClientListen() {
 
     }
 }
