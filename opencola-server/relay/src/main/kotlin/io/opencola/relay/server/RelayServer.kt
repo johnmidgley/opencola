@@ -6,16 +6,13 @@ import io.opencola.core.model.Id
 import io.opencola.core.security.initProvider
 import io.opencola.core.security.isValidSignature
 import io.opencola.core.security.publicKeyFromBytes
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import mu.KotlinLogging
-import opencola.core.extensions.toByteArray
 import io.opencola.relay.common.Connection
 import io.opencola.relay.common.MessageEnvelope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import mu.KotlinLogging
+import opencola.core.extensions.toByteArray
 import java.io.Closeable
 import java.security.PublicKey
 import java.util.*
@@ -52,7 +49,6 @@ class RelayServer(port: Int): Closeable {
                 throw RuntimeException("Challenge signature is not valid")
 
             return publicKey
-
         } catch (e: Exception) {
             // TODO: Fix anti-pattern of catch all. Coroutines can be canceled, and this stops propagation.
             logger.warn { "Client failed to authenticate: $e" }
@@ -66,29 +62,38 @@ class RelayServer(port: Int): Closeable {
         val envelope = MessageEnvelope.decode(payload)
 
         if (from != envelope.to) {
+            // TODO: Check if connection open and or catch exception and remove bad connection
             connections[envelope.to]?.writeSizedByteArray(envelope.message)
         }
     }
 
     suspend fun open() = coroutineScope() {
-        if(!openMutex.isLocked){
+        if (!openMutex.isLocked) {
             throw IllegalStateException("Server is already opened")
         }
 
-        selectorManager.use {
-            serverSocket.use {
-                logger.info("Relay Server listening at ${serverSocket.localAddress}")
-                openMutex.unlock()
-                while (isActive && !closed) {
-                    val socket = serverSocket.accept()
-                    val connection = Connection(socket)
-                    val publicKey = authenticate(connection)
+        logger.info("Relay Server listening at ${serverSocket.localAddress}")
+        openMutex.unlock()
 
-                    if (publicKey != null) {
-                        logger.info { "Connection Authenticated for: ${Id.ofPublicKey(publicKey)}" }
-                        connections[publicKey] = connection
-                        launch { connection.use { it.listen { payload -> handleMessage(publicKey, payload) } } }
-                    }
+        while (isActive && !closed) {
+            try {
+                val socket = serverSocket.accept()
+                val connection = Connection(socket)
+                val publicKey = authenticate(connection)
+
+                if (publicKey != null) {
+                    logger.info { "Connection Authenticated for: ${Id.ofPublicKey(publicKey)}" }
+                    connections[publicKey] = connection
+                    launch { connection.use { it.listen { payload -> handleMessage(publicKey, payload) } } }
+                }
+            } catch (e: Exception) {
+                if (closed || e is CancellationException) {
+                    close()
+                    break
+                }
+                else {
+                    logger.error { "Error accepting connection: $e" }
+                    throw e
                 }
             }
         }

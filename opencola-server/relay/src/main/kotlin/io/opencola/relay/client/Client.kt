@@ -27,6 +27,7 @@ private fun PublicKey.asId() : Id {
     return Id.ofPublicKey(this)
 }
 
+// TODO: Add connection and response timeouts as well as retry policy parameters
 class Client(private val hostname: String, private val port: Int, private val keyPair: KeyPair) : Closeable {
     private val logger = KotlinLogging.logger("Client")
 
@@ -64,11 +65,13 @@ class Client(private val hostname: String, private val port: Int, private val ke
             throw IllegalStateException("Can't get connection on a Client that has been closed")
 
         if(waitForOpen) {
+            // TODO: Add connection timeout
             openMutex.withLock { }
         }
 
         return connectionMutex.withLock {
             if (_connection == null || !_connection!!.isReady()) {
+                // TODO: Move to open
                 if(connectionFailures > 0) {
                     // TODO: Factor out retry policy
                     val delayInSeconds = min(1L.shl(connectionFailures), Duration.ofHours(1).seconds)
@@ -84,7 +87,6 @@ class Client(private val hostname: String, private val port: Int, private val ke
                         authenticate(it)
                     }
                     connectionFailures = 0
-                    openMutex.unlock()
                 } catch (e: ConnectException) {
                     connectionFailures++
                     throw e
@@ -104,7 +106,6 @@ class Client(private val hostname: String, private val port: Int, private val ke
                 sessions.remove(message.header.sessionId)
                 sessionResult.complete(message.body)
             } else {
-                // TODO: Use handler passed into client for this
                 respondToMessage(message.header, handler(message.body))
             }
         } catch(e: Exception){
@@ -113,14 +114,19 @@ class Client(private val hostname: String, private val port: Int, private val ke
     }
 
     suspend fun open(messageHandler: suspend (ByteArray) -> ByteArray) {
-        if(!openMutex.isLocked) {
+        // TODO: This doesn't look right. openMutex could be locked briefly get getConnection
+        if (!openMutex.isLocked) {
             throw IllegalStateException("Client is already opened")
         }
 
-        while(!closed) {
+        while (!closed) {
             try {
-                // TODO: Problem here if you call listen more than once - gets into infinite loop
-                getConnection(false).listen { payload -> handleMessage(payload, messageHandler) }
+                if (!openMutex.isLocked)
+                    openMutex.lock()
+                getConnection(false).also {
+                    openMutex.unlock()
+                    it.listen { payload -> handleMessage(payload, messageHandler) }
+                }
             } catch (e: CancellationException) {
                 break
             } catch (e: Exception) {
@@ -141,15 +147,18 @@ class Client(private val hostname: String, private val port: Int, private val ke
         val envelope = MessageEnvelope(to, message)
         val deferredResult = CompletableDeferred<ByteArray?>()
 
-        sessions[message.header.sessionId] = deferredResult
-        getConnection().writeSizedByteArray(MessageEnvelope.encode(envelope))
-
         return try {
+            sessions[message.header.sessionId] = deferredResult
+            getConnection().writeSizedByteArray(MessageEnvelope.encode(envelope))
+
             // TODO: Configure timeout
             withTimeout(5000) {
                 deferredResult.await()
             }
-        } catch (e: TimeoutCancellationException) {
+        } catch(e: ConnectException) {
+            null
+        }
+        catch (e: TimeoutCancellationException) {
             null
         }
     }
@@ -158,6 +167,8 @@ class Client(private val hostname: String, private val port: Int, private val ke
         logger.info("Responding from ${keyPair.public.asId()} to ${messageHeader.from.asId()}")
         val responseMessage = Message(Header(keyPair.public, messageHeader.sessionId), body)
         val envelope = MessageEnvelope(messageHeader.from, responseMessage)
+
+        // TODO: This can fail, if server goes down. Should failure propagate?
         getConnection().writeSizedByteArray(MessageEnvelope.encode(envelope))
     }
 
