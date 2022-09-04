@@ -27,7 +27,7 @@ private fun PublicKey.asId() : Id {
     return Id.ofPublicKey(this)
 }
 
-// TODO: Add connection and response timeouts as well as retry policy parameters
+// TODO: Add name, connection and response timeouts and retry policy parameters
 class Client(private val hostname: String, private val port: Int, private val keyPair: KeyPair) : Closeable {
     private val logger = KotlinLogging.logger("Client")
 
@@ -142,7 +142,6 @@ class Client(private val hostname: String, private val port: Int, private val ke
     }
 
     suspend fun sendMessage(to: PublicKey, body: ByteArray ): ByteArray? {
-        logger.info { "Sending message from ${keyPair.public.asId()} to ${to.asId()}" }
         val message = Message(Header(keyPair.public, UUID.randomUUID()), body)
         val envelope = MessageEnvelope(to, message)
         val deferredResult = CompletableDeferred<ByteArray?>()
@@ -164,7 +163,6 @@ class Client(private val hostname: String, private val port: Int, private val ke
     }
 
     suspend fun respondToMessage(messageHeader: Header, body: ByteArray) {
-        logger.info("Responding from ${keyPair.public.asId()} to ${messageHeader.from.asId()}")
         val responseMessage = Message(Header(keyPair.public, messageHeader.sessionId), body)
         val envelope = MessageEnvelope(messageHeader.from, responseMessage)
 

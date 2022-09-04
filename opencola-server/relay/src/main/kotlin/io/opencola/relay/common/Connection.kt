@@ -3,11 +3,13 @@ package io.opencola.relay.common
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
 import mu.KotlinLogging
 import java.io.Closeable
 
+// Add name
 class Connection(private val socket: Socket) : Closeable {
     private val logger = KotlinLogging.logger("Connection")
     private val readChannel = socket.openReadChannel()
@@ -50,6 +52,8 @@ class Connection(private val socket: Socket) : Closeable {
             try {
                 handleMessage(readSizedByteArray())
             } catch(e: CancellationException) {
+                break
+            } catch(e: ClosedReceiveChannelException){
                 break
             } catch (e: Exception) {
                 logger.error { "$e" }
