@@ -12,22 +12,25 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import mu.KotlinLogging
-import opencola.core.extensions.toByteArray
 import java.io.Closeable
 import java.security.PublicKey
-import java.util.*
+import java.security.SecureRandom
 import java.util.concurrent.ConcurrentHashMap
 
-class RelayServer(port: Int): Closeable {
+class RelayServer(
+    port: Int,
+    private val numChallengeBytes: Int = 32
+) : Closeable {
     private val logger = KotlinLogging.logger("RelayServer")
     private val selectorManager = ActorSelectorManager(Dispatchers.IO)
     private val serverSocket = aSocket(selectorManager).tcp().bind(port = port)
     private val connections = ConcurrentHashMap<PublicKey, Connection>()
     private val openMutex = Mutex(true)
+    private val random = SecureRandom()
     private var closed = false
 
     suspend fun waitUntilOpen() {
-        openMutex.withLock {  }
+        openMutex.withLock { }
     }
 
     private suspend fun authenticate(connection: Connection): PublicKey? {
@@ -36,8 +39,7 @@ class RelayServer(port: Int): Closeable {
             val publicKey = publicKeyFromBytes(encodedPublicKey)
 
             // Send challenge
-            // TODO: Use secure random bit generation
-            val challenge = UUID.randomUUID().toByteArray()
+            val challenge = ByteArray(numChallengeBytes).also { random.nextBytes(it) }
             connection.writeSizedByteArray(challenge)
 
             // Read signed challenge
@@ -100,8 +102,7 @@ class RelayServer(port: Int): Closeable {
                 if (closed || e is CancellationException) {
                     close()
                     break
-                }
-                else {
+                } else {
                     logger.error { "Error accepting connection: $e" }
                     throw e
                 }
@@ -111,7 +112,7 @@ class RelayServer(port: Int): Closeable {
 
     override fun close() {
         closed = true
-        connections.values.forEach{ it.close() }
+        connections.values.forEach { it.close() }
         connections.clear()
         serverSocket.close()
         selectorManager.close()
