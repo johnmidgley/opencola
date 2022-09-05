@@ -51,8 +51,9 @@ class RelayServer(
                 throw RuntimeException("Challenge signature is not valid")
 
             return publicKey
+        } catch (e: CancellationException) {
+            // Let job cancellation fall through
         } catch (e: Exception) {
-            // TODO: Fix anti-pattern of catch all. Coroutines can be canceled, and this stops propagation.
             logger.warn { "Client failed to authenticate: $e" }
             connection.close()
         }
