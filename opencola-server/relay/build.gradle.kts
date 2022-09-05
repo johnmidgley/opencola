@@ -11,7 +11,7 @@ group = "io.opencola"
 version = "1.0-SNAPSHOT"
 
 application {
-    mainClass.set("io.opencola.relay.ApplicationKt")
+    mainClass.set("io.opencola.relay.server.RelayApplicationKt")
 
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
