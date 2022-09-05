@@ -59,11 +59,21 @@ class RelayServer(port: Int): Closeable {
     }
 
     private suspend fun handleMessage(from: PublicKey, payload: ByteArray) {
-        val envelope = MessageEnvelope.decode(payload)
+        try {
+            val envelope = MessageEnvelope.decode(payload)
 
-        if (from != envelope.to) {
-            // TODO: Check if connection open and or catch exception and remove bad connection
-            connections[envelope.to]?.writeSizedByteArray(envelope.message)
+            if (from != envelope.to) {
+                val connection = connections[envelope.to]
+
+                if (connection == null)
+                    return
+                else if (!connection.isReady())
+                    connections.remove(envelope.to)
+                else
+                    connection.writeSizedByteArray(envelope.message)
+            }
+        } catch (e: Exception) {
+            logger.error { "Error while handling message: $e" }
         }
     }
 
