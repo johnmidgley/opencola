@@ -27,14 +27,15 @@ private fun PublicKey.asId() : Id {
     return Id.ofPublicKey(this)
 }
 
-// TODO: Add name and connection timeout and retry policy parameters
+// TODO: Retry policy parameters
 class Client(
     private val hostname: String,
     private val port: Int,
     private val keyPair: KeyPair,
     private val requestTimeoutMilliseconds: Long = 5000, // TODO: What's the right value here?
+    name: String? = null
 ) : Closeable {
-    private val logger = KotlinLogging.logger("Client")
+    private val logger = KotlinLogging.logger("Client${if(name != null) " ($name)" else ""}")
 
     // Not to be touched directly. Access by calling getConnections, which will ensure it's opened and ready
     private var _connection: Connection? = null
@@ -111,6 +112,7 @@ class Client(
                 sessions.remove(message.header.sessionId)
                 sessionResult.complete(message.body)
             } else {
+                // respondToMMessage will apply request timeout
                 respondToMessage(message.header, handler(message.body))
             }
         } catch(e: Exception){
@@ -153,10 +155,10 @@ class Client(
 
         return try {
             sessions[message.header.sessionId] = deferredResult
-            getConnection().writeSizedByteArray(MessageEnvelope.encode(envelope))
+            val connection = getConnection()
 
-            // TODO: Configure timeout
             withTimeout(requestTimeoutMilliseconds) {
+                connection.writeSizedByteArray(MessageEnvelope.encode(envelope))
                 deferredResult.await()
             }
         } catch(e: ConnectException) {
@@ -170,10 +172,11 @@ class Client(
     suspend fun respondToMessage(messageHeader: Header, body: ByteArray) {
         val responseMessage = Message(Header(keyPair.public, messageHeader.sessionId), body)
         val envelope = MessageEnvelope(messageHeader.from, responseMessage)
+        val connection = getConnection()
 
         // TODO: This can fail, if server goes down. Should failure propagate?
         withTimeout(requestTimeoutMilliseconds) {
-            getConnection().writeSizedByteArray(MessageEnvelope.encode(envelope))
+            connection.writeSizedByteArray(MessageEnvelope.encode(envelope))
         }
     }
 

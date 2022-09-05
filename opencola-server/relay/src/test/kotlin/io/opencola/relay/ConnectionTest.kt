@@ -27,7 +27,7 @@ class ConnectionTest {
                            val keyPair: KeyPair = generateKeyPair(),
 
                            ) : Closeable {
-        val client: Client = Client(defaultHost, defaultPort, keyPair)
+        val client: Client = Client(defaultHost, defaultPort, keyPair, name = name)
         private var clientJob: Job? = null
 
         suspend fun open() = coroutineScope {

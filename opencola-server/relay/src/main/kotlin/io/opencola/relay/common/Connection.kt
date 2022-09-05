@@ -9,9 +9,8 @@ import kotlinx.coroutines.isActive
 import mu.KotlinLogging
 import java.io.Closeable
 
-// Add name
-class Connection(private val socket: Socket) : Closeable {
-    private val logger = KotlinLogging.logger("Connection")
+class Connection(private val socket: Socket, name: String? = null) : Closeable {
+    private val logger = KotlinLogging.logger("Connection${if(name != null) " ($name)" else ""}")
     private val readChannel = socket.openReadChannel()
     private val writeChannel = socket.openWriteChannel(autoFlush = true)
     private var listening = false
