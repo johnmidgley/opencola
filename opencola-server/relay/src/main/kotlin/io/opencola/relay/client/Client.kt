@@ -27,13 +27,18 @@ private fun PublicKey.asId() : Id {
     return Id.ofPublicKey(this)
 }
 
-// TODO: Add name, connection and response timeouts and retry policy parameters
-class Client(private val hostname: String, private val port: Int, private val keyPair: KeyPair) : Closeable {
+// TODO: Add name and connection timeout and retry policy parameters
+class Client(
+    private val hostname: String,
+    private val port: Int,
+    private val keyPair: KeyPair,
+    private val requestTimeoutMilliseconds: Long = 5000, // TODO: What's the right value here?
+) : Closeable {
     private val logger = KotlinLogging.logger("Client")
 
     // Not to be touched directly. Access by calling getConnections, which will ensure it's opened and ready
     private var _connection: Connection? = null
-    private val connectionMutex = Mutex() // TODO: Not needed anymore, is it?
+    private val connectionMutex = Mutex()
     private val openMutex = Mutex(true)
     private val sessions = ConcurrentHashMap<UUID, CompletableDeferred<ByteArray?>>()
     private var closed = false
@@ -151,7 +156,7 @@ class Client(private val hostname: String, private val port: Int, private val ke
             getConnection().writeSizedByteArray(MessageEnvelope.encode(envelope))
 
             // TODO: Configure timeout
-            withTimeout(5000) {
+            withTimeout(requestTimeoutMilliseconds) {
                 deferredResult.await()
             }
         } catch(e: ConnectException) {
@@ -167,7 +172,9 @@ class Client(private val hostname: String, private val port: Int, private val ke
         val envelope = MessageEnvelope(messageHeader.from, responseMessage)
 
         // TODO: This can fail, if server goes down. Should failure propagate?
-        getConnection().writeSizedByteArray(MessageEnvelope.encode(envelope))
+        withTimeout(requestTimeoutMilliseconds) {
+            getConnection().writeSizedByteArray(MessageEnvelope.encode(envelope))
+        }
     }
 
     companion object {
