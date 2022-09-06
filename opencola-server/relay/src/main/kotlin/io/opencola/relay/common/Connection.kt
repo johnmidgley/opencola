@@ -37,6 +37,7 @@ class Connection(private val connectedSocket: ConnectedSocket, val name: String?
         connectedSocket.close()
         listenJob?.cancel()
         listenJob = null
+        logger.debug { "Closed" }
     }
 
     suspend fun listen(handleMessage: suspend (ByteArray) -> Unit) = coroutineScope {

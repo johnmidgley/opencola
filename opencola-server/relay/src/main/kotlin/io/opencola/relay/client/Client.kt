@@ -14,35 +14,36 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import mu.KotlinLogging
 import java.io.Closeable
-import java.lang.Long.min
 import java.net.ConnectException
 import java.security.KeyPair
 import java.security.PublicKey
-import java.time.Duration
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
-// TODO: Retry policy parameters
 class Client(
     private val hostname: String,
     private val port: Int,
     private val keyPair: KeyPair,
+    val name: String? = null,
     private val requestTimeoutMilliseconds: Long = 10000,
-    val name: String? = null
+    private val retryPolicy: (Int) -> Long = retryExponentialBackoff(),
 ) : Closeable {
     private val logger = KotlinLogging.logger("Client${if(name != null) " ($name)" else ""}")
 
     // Not to be touched directly. Access by calling getConnections, which will ensure it's opened and ready
     private var _connection: Connection? = null
+    private var _state = Initialized
     private val connectionMutex = Mutex()
     private val openMutex = Mutex(true)
     private val sessions = ConcurrentHashMap<UUID, CompletableDeferred<ByteArray?>>()
-    private var state = Initialized
     private var connectionFailures = 0
     private var listenJob: Job? = null
 
     val publicKey : PublicKey
         get() = keyPair.public
+
+    val state : State
+        get() = _state
 
     suspend fun waitUntilOpen() {
         openMutex.withLock {  }
@@ -66,7 +67,7 @@ class Client(
     }
 
     private suspend fun getConnection(waitForOpen: Boolean = true) : Connection {
-        if(state == Closed)
+        if(_state == Closed)
             throw IllegalStateException("Can't get connection on a Client that has been closed")
 
         if(waitForOpen) {
@@ -77,12 +78,11 @@ class Client(
 
         return connectionMutex.withLock {
             if (_connection == null || !_connection!!.isReady()) {
-                if(connectionFailures > 0) {
-                    // TODO: Factor out retry policy
-                    val delayInSeconds = min(1L.shl(connectionFailures), Duration.ofHours(1).seconds)
-                    logger.warn{ "Waiting $delayInSeconds seconds to connect" }
 
-                    delay(delayInSeconds * 1000)
+                if(connectionFailures > 0) {
+                    val delayInMilliseconds = retryPolicy(connectionFailures)
+                    logger.warn{ "Waiting $delayInMilliseconds ms to connect" }
+                    delay(delayInMilliseconds)
                 }
 
                 logger.info { "Creating Connection for: ${Id.ofPublicKey(keyPair.public)}" }
@@ -120,20 +120,20 @@ class Client(
     }
 
     suspend fun open(messageHandler: suspend (ByteArray) -> ByteArray) = coroutineScope {
-        if (state != Initialized) {
+        if (_state != Initialized) {
             throw IllegalStateException("Client has already been opened")
         }
 
-        state = Opening
+        _state = Opening
 
         listenJob = launch {
-            while (state != Closed) {
+            while (_state != Closed) {
                 try {
                     if (!openMutex.isLocked)
                         openMutex.lock()
 
                     getConnection(false).also {
-                        state = Open
+                        _state = Open
                         openMutex.unlock()
                         it.listen { payload -> handleMessage(payload, messageHandler) }
                     }
@@ -147,7 +147,7 @@ class Client(
     }
 
     override fun close() {
-        state = Closed
+        _state = Closed
         listenJob?.cancel()
         listenJob = null
         _connection?.close()

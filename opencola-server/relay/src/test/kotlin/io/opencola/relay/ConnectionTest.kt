@@ -3,6 +3,7 @@ package io.opencola.relay
 import io.ktor.util.collections.*
 import io.opencola.core.security.generateKeyPair
 import io.opencola.relay.client.Client
+import io.opencola.relay.common.State
 import io.opencola.relay.server.RelayServer
 import kotlinx.coroutines.*
 import opencola.core.extensions.append
@@ -33,7 +34,7 @@ class ConnectionTest {
 
     private fun getClient(name: String,
                           keyPair: KeyPair = generateKeyPair()): Client {
-        return Client(defaultHost, defaultPort, keyPair, 5000, name)
+        return Client(defaultHost, defaultPort, keyPair, name, 5000)
 
     }
 
@@ -66,6 +67,7 @@ class ConnectionTest {
 
             // Give the client a chance to have a failed connection attempt
             delay(100)
+            assert(client0.state == State.Opening)
 
             val relayServer = RelayServer(defaultPort).also { launch { it.open() }; it.waitUntilOpen()}
             val client1 = getClient("client1")
@@ -126,7 +128,6 @@ class ConnectionTest {
             client1.close()
 
             println("Verifying partition")
-            // TODO: Investigate the double connection error in logs at this point
             val peerResponse1 = client0.sendMessage(client1.publicKey, "hello".toByteArray())
             assertNull(peerResponse1)
 
