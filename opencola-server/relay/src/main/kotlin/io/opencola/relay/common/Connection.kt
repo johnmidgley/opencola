@@ -2,10 +2,9 @@ package io.opencola.relay.common
 
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
+import kotlinx.coroutines.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.isActive
 import mu.KotlinLogging
 import java.io.Closeable
 
@@ -13,7 +12,7 @@ class Connection(private val socket: Socket, name: String? = null) : Closeable {
     private val logger = KotlinLogging.logger("Connection${if(name != null) " ($name)" else ""}")
     private val readChannel = socket.openReadChannel()
     private val writeChannel = socket.openWriteChannel(autoFlush = true)
-    private var listening = false
+    private var listenJob: Job? = null
 
     fun isReady(): Boolean {
         return !(socket.isClosed || readChannel.isClosedForRead || writeChannel.isClosedForWrite)
@@ -38,24 +37,30 @@ class Connection(private val socket: Socket, name: String? = null) : Closeable {
 
     override fun close() {
         socket.close()
-        listening = false
+        listenJob?.cancel()
+        listenJob = null
     }
 
     suspend fun listen(handleMessage: suspend (ByteArray) -> Unit) = coroutineScope {
-        if(listening)
+        // TODO: Add close check here and in client and server
+        if(listenJob != null)
             throw IllegalStateException("Connection is already listening")
-        else
-            listening = true
 
-        while (isActive && listening && isReady()) {
-            try {
-                handleMessage(readSizedByteArray())
-            } catch(e: CancellationException) {
-                break
-            } catch(e: ClosedReceiveChannelException){
-                break
-            } catch (e: Exception) {
-                logger.error { "$e" }
+        listenJob = launch {
+            while (listenJob != null && isReady()) {
+                try {
+                    handleMessage(readSizedByteArray())
+                } catch (e: CancellationException) {
+                    logger.debug { "Cancelled" }
+                    close()
+                    break
+                } catch (e: ClosedReceiveChannelException) {
+                    logger.debug { "Socket Closed" }
+                    close()
+                    break
+                } catch (e: Exception) {
+                    logger.error { "$e" }
+                }
             }
         }
     }

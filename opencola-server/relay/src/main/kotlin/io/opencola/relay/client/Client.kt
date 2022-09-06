@@ -33,7 +33,7 @@ class Client(
     private val port: Int,
     private val keyPair: KeyPair,
     private val requestTimeoutMilliseconds: Long = 5000, // TODO: What's the right value here?
-    name: String? = null
+    val name: String? = null
 ) : Closeable {
     private val logger = KotlinLogging.logger("Client${if(name != null) " ($name)" else ""}")
 
@@ -44,6 +44,10 @@ class Client(
     private val sessions = ConcurrentHashMap<UUID, CompletableDeferred<ByteArray?>>()
     private var closed = false
     private var connectionFailures = 0
+    private var listenJob: Job? = null
+
+    val publicKey : PublicKey
+        get() = keyPair.public
 
     suspend fun waitUntilOpen() {
         openMutex.withLock {  }
@@ -89,7 +93,7 @@ class Client(
                 logger.info { "Creating Connection for: ${Id.ofPublicKey(keyPair.public)}" }
 
                 try {
-                    _connection = Connection(aSocket(selectorManager).tcp().connect(hostname, port = port)).also {
+                    _connection = Connection(aSocket(selectorManager).tcp().connect(hostname, port = port), name).also {
                         authenticate(it)
                     }
                     connectionFailures = 0
@@ -120,35 +124,40 @@ class Client(
         }
     }
 
-    suspend fun open(messageHandler: suspend (ByteArray) -> ByteArray) {
+    suspend fun open(messageHandler: suspend (ByteArray) -> ByteArray) = coroutineScope {
         // TODO: This doesn't look right. openMutex could be locked briefly get getConnection
         if (!openMutex.isLocked) {
             throw IllegalStateException("Client is already opened")
         }
 
-        while (!closed) {
-            try {
-                if (!openMutex.isLocked)
-                    openMutex.lock()
-                getConnection(false).also {
-                    openMutex.unlock()
-                    it.listen { payload -> handleMessage(payload, messageHandler) }
+        listenJob = launch {
+            while (!closed) {
+                try {
+                    if (!openMutex.isLocked)
+                        openMutex.lock()
+                    getConnection(false).also {
+                        openMutex.unlock()
+                        it.listen { payload -> handleMessage(payload, messageHandler) }
+                    }
+                } catch (e: CancellationException) {
+                    break
+                } catch (e: Exception) {
+                    logger.error { "Exception during listen: $e" }
                 }
-            } catch (e: CancellationException) {
-                break
-            } catch (e: Exception) {
-                logger.error { "Exception during listen: $e" }
             }
         }
     }
 
     override fun close() {
         closed = true
+        listenJob?.cancel()
+        listenJob = null
         _connection?.close()
         _connection = null
     }
 
-    suspend fun sendMessage(to: PublicKey, body: ByteArray ): ByteArray? {
+    suspend fun sendMessage(to: PublicKey, body: ByteArray): ByteArray? {
+        // TODO: Encrypt
         val message = Message(Header(keyPair.public, UUID.randomUUID()), body)
         val envelope = MessageEnvelope(to, message)
         val deferredResult = CompletableDeferred<ByteArray?>()

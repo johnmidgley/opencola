@@ -28,6 +28,7 @@ class RelayServer(
     private val openMutex = Mutex(true)
     private val random = SecureRandom()
     private var closed = false
+    private var listenJob: Job? = null
 
     suspend fun waitUntilOpen() {
         openMutex.withLock { }
@@ -70,9 +71,10 @@ class RelayServer(
 
                 if (connection == null)
                     return
-                else if (!connection.isReady())
+                else if (!connection.isReady()) {
+                    logger.debug { "Removing closed connection for: ${Id.ofPublicKey(envelope.to)}" }
                     connections.remove(envelope.to)
-                else
+                } else
                     connection.writeSizedByteArray(envelope.message)
             }
         } catch (e: Exception) {
@@ -81,31 +83,35 @@ class RelayServer(
     }
 
     suspend fun open() = coroutineScope() {
-        if (!openMutex.isLocked) {
+
+        // TODO: Check that all open calls (Client, Connection) check for null listenjob too
+        if (!openMutex.isLocked || listenJob != null) {
             throw IllegalStateException("Server is already opened")
         }
 
-        logger.info("Relay Server listening at ${serverSocket.localAddress}")
-        openMutex.unlock()
+        listenJob = launch {
+            logger.info("Relay Server listening at ${serverSocket.localAddress}")
+            openMutex.unlock()
 
-        while (isActive && !closed) {
-            try {
-                val socket = serverSocket.accept()
-                val connection = Connection(socket)
-                val publicKey = authenticate(connection)
+            while (isActive && !closed) {
+                try {
+                    val socket = serverSocket.accept()
+                    val connection = Connection(socket)
+                    val publicKey = authenticate(connection)
 
-                if (publicKey != null) {
-                    logger.info { "Connection Authenticated for: ${Id.ofPublicKey(publicKey)}" }
-                    connections[publicKey] = connection
-                    launch { connection.use { it.listen { payload -> handleMessage(publicKey, payload) } } }
-                }
-            } catch (e: Exception) {
-                if (closed || e is CancellationException) {
-                    close()
-                    break
-                } else {
-                    logger.error { "Error accepting connection: $e" }
-                    throw e
+                    if (publicKey != null) {
+                        logger.info { "Connection Authenticated for: ${Id.ofPublicKey(publicKey)}" }
+                        connections[publicKey] = connection
+                        launch { connection.use { it.listen { payload -> handleMessage(publicKey, payload) } } }
+                    }
+                } catch (e: Exception) {
+                    if (closed || e is CancellationException) {
+                        close()
+                        break
+                    } else {
+                        logger.error { "Error accepting connection: $e" }
+                        throw e
+                    }
                 }
             }
         }
@@ -115,6 +121,8 @@ class RelayServer(
         closed = true
         connections.values.forEach { it.close() }
         connections.clear()
+        listenJob?.cancel()
+        listenJob = null
         serverSocket.close()
         selectorManager.close()
     }
