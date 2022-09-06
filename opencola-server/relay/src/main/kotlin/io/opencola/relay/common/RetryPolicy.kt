@@ -3,7 +3,6 @@ package io.opencola.relay.common
 import java.lang.Long.min
 import java.time.Duration
 
-// TODO: Add unit tests
 val retryContinuous: (Int) -> Long = { 0 }
 
 fun retryConstantInterval(intervalInMilliseconds: Long): (Int) -> Long {
