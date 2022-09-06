@@ -29,7 +29,7 @@ class Client(
     private val hostname: String,
     private val port: Int,
     private val keyPair: KeyPair,
-    private val requestTimeoutMilliseconds: Long = 5000, // TODO: What's the right value here?
+    private val requestTimeoutMilliseconds: Long = 10000,
     val name: String? = null
 ) : Closeable {
     private val logger = KotlinLogging.logger("Client${if(name != null) " ($name)" else ""}")

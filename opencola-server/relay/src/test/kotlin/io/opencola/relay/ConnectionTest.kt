@@ -33,7 +33,7 @@ class ConnectionTest {
 
     private fun getClient(name: String,
                           keyPair: KeyPair = generateKeyPair()): Client {
-        return Client(defaultHost, defaultPort, keyPair, name = name)
+        return Client(defaultHost, defaultPort, keyPair, 5000, name)
 
     }
 
