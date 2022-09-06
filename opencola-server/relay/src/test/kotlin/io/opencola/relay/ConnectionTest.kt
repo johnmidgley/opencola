@@ -46,7 +46,6 @@ class ConnectionTest {
     @Test
     fun testSendResponse() {
         runBlocking {
-            // TODO: Use use { }
             val relayServer = RelayServer(defaultPort).also { launch { it.open(); it.waitUntilOpen() } }
             val client0 = getClient("client0").also { launch { open(it) }; it.waitUntilOpen() }
             val client1 = getClient("client1")
@@ -104,7 +103,7 @@ class ConnectionTest {
             assertNotNull(peerResponse2)
             assertEquals("hello client1", String(peerResponse2))
 
-            listOf(client0, client1, relayServer0, relayServer1).forEach { it.close() }
+            listOf(client0, client1, relayServer1).forEach { it.close() }
         }
     }
 

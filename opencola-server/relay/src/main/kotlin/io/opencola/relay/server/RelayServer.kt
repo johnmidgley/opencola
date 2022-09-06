@@ -8,6 +8,7 @@ import io.opencola.core.security.isValidSignature
 import io.opencola.core.security.publicKeyFromBytes
 import io.opencola.relay.common.Connection
 import io.opencola.relay.common.MessageEnvelope
+import io.opencola.relay.common.State.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -27,7 +28,7 @@ class RelayServer(
     private val connections = ConcurrentHashMap<PublicKey, Connection>()
     private val openMutex = Mutex(true)
     private val random = SecureRandom()
-    private var closed = false
+    private var state = Initialized
     private var listenJob: Job? = null
 
     suspend fun waitUntilOpen() {
@@ -83,17 +84,18 @@ class RelayServer(
     }
 
     suspend fun open() = coroutineScope() {
-
-        // TODO: Check that all open calls (Client, Connection) check for null listenjob too
-        if (!openMutex.isLocked || listenJob != null) {
-            throw IllegalStateException("Server is already opened")
+        if (state != Initialized) {
+            throw IllegalStateException("Server has already been opened")
         }
+
+        state = Opening
 
         listenJob = launch {
             logger.info("Relay Server listening at ${serverSocket.localAddress}")
+            state = Open
             openMutex.unlock()
 
-            while (isActive && !closed) {
+            while (state != Closed) {
                 try {
                     val socket = serverSocket.accept()
                     val connection = Connection(socket)
@@ -105,7 +107,7 @@ class RelayServer(
                         launch { connection.use { it.listen { payload -> handleMessage(publicKey, payload) } } }
                     }
                 } catch (e: Exception) {
-                    if (closed || e is CancellationException) {
+                    if (state == Closed || e is CancellationException) {
                         close()
                         break
                     } else {
@@ -118,7 +120,7 @@ class RelayServer(
     }
 
     override fun close() {
-        closed = true
+        state = Closed
         connections.values.forEach { it.close() }
         connections.clear()
         listenJob?.cancel()

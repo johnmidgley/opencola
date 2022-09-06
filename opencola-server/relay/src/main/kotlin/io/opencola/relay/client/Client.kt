@@ -10,6 +10,7 @@ import io.opencola.relay.common.Connection
 import io.opencola.relay.common.Header
 import io.opencola.relay.common.Message
 import io.opencola.relay.common.MessageEnvelope
+import io.opencola.relay.common.State.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -22,10 +23,6 @@ import java.security.PublicKey
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-
-private fun PublicKey.asId() : Id {
-    return Id.ofPublicKey(this)
-}
 
 // TODO: Retry policy parameters
 class Client(
@@ -42,7 +39,7 @@ class Client(
     private val connectionMutex = Mutex()
     private val openMutex = Mutex(true)
     private val sessions = ConcurrentHashMap<UUID, CompletableDeferred<ByteArray?>>()
-    private var closed = false
+    private var state = Initialized
     private var connectionFailures = 0
     private var listenJob: Job? = null
 
@@ -71,17 +68,17 @@ class Client(
     }
 
     private suspend fun getConnection(waitForOpen: Boolean = true) : Connection {
-        if(closed)
+        if(state == Closed)
             throw IllegalStateException("Can't get connection on a Client that has been closed")
 
         if(waitForOpen) {
-            // TODO: Add connection timeout
+            // Block other callers while connection is being opened so that retries are properly spaced.
+            // open() manages this lock
             openMutex.withLock { }
         }
 
         return connectionMutex.withLock {
             if (_connection == null || !_connection!!.isReady()) {
-                // TODO: Move to open
                 if(connectionFailures > 0) {
                     // TODO: Factor out retry policy
                     val delayInSeconds = min(1L.shl(connectionFailures), Duration.ofHours(1).seconds)
@@ -125,17 +122,20 @@ class Client(
     }
 
     suspend fun open(messageHandler: suspend (ByteArray) -> ByteArray) = coroutineScope {
-        // TODO: This doesn't look right. openMutex could be locked briefly get getConnection
-        if (!openMutex.isLocked) {
-            throw IllegalStateException("Client is already opened")
+        if (state != Initialized) {
+            throw IllegalStateException("Client has already been opened")
         }
 
+        state = Opening
+
         listenJob = launch {
-            while (!closed) {
+            while (state != Closed) {
                 try {
                     if (!openMutex.isLocked)
                         openMutex.lock()
+
                     getConnection(false).also {
+                        state = Open
                         openMutex.unlock()
                         it.listen { payload -> handleMessage(payload, messageHandler) }
                     }
@@ -149,7 +149,7 @@ class Client(
     }
 
     override fun close() {
-        closed = true
+        state = Closed
         listenJob?.cancel()
         listenJob = null
         _connection?.close()
@@ -157,7 +157,6 @@ class Client(
     }
 
     suspend fun sendMessage(to: PublicKey, body: ByteArray): ByteArray? {
-        // TODO: Encrypt
         val message = Message(Header(keyPair.public, UUID.randomUUID()), body)
         val envelope = MessageEnvelope(to, message)
         val deferredResult = CompletableDeferred<ByteArray?>()
