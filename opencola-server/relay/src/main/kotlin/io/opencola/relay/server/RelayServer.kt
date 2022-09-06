@@ -6,6 +6,7 @@ import io.opencola.core.model.Id
 import io.opencola.core.security.initProvider
 import io.opencola.core.security.isValidSignature
 import io.opencola.core.security.publicKeyFromBytes
+import io.opencola.relay.common.ConnectedSocket
 import io.opencola.relay.common.Connection
 import io.opencola.relay.common.MessageEnvelope
 import io.opencola.relay.common.State.*
@@ -35,20 +36,20 @@ class RelayServer(
         openMutex.withLock { }
     }
 
-    private suspend fun authenticate(connection: Connection): PublicKey? {
+    private suspend fun authenticate(connectedSocket: ConnectedSocket): PublicKey? {
         try {
-            val encodedPublicKey = connection.readSizedByteArray()
+            val encodedPublicKey = connectedSocket.readSizedByteArray()
             val publicKey = publicKeyFromBytes(encodedPublicKey)
 
             // Send challenge
             val challenge = ByteArray(numChallengeBytes).also { random.nextBytes(it) }
-            connection.writeSizedByteArray(challenge)
+            connectedSocket.writeSizedByteArray(challenge)
 
             // Read signed challenge
-            val challengeSignature = connection.readSizedByteArray()
+            val challengeSignature = connectedSocket.readSizedByteArray()
 
             val status = if (isValidSignature(publicKey, challenge, challengeSignature)) 0 else -1
-            connection.writeInt(status)
+            connectedSocket.writeChannel.writeInt(status)
             if (status != 0)
                 throw RuntimeException("Challenge signature is not valid")
 
@@ -57,7 +58,7 @@ class RelayServer(
             // Let job cancellation fall through
         } catch (e: Exception) {
             logger.warn { "Client failed to authenticate: $e" }
-            connection.close()
+            connectedSocket.close()
         }
 
         return null
@@ -97,12 +98,11 @@ class RelayServer(
 
             while (state != Closed) {
                 try {
-                    val socket = serverSocket.accept()
-                    val connection = Connection(socket)
-                    val publicKey = authenticate(connection)
+                    val connectedSocket = ConnectedSocket(serverSocket.accept())
 
-                    if (publicKey != null) {
-                        logger.info { "Connection Authenticated for: ${Id.ofPublicKey(publicKey)}" }
+                    authenticate(connectedSocket)?.let {  publicKey ->
+                        val connection = Connection(connectedSocket, Id.ofPublicKey(publicKey).toString())
+                        logger.info { "Connection Authenticated for: ${connection.name}" }
                         connections[publicKey] = connection
                         launch { connection.use { it.listen { payload -> handleMessage(publicKey, payload) } } }
                     }

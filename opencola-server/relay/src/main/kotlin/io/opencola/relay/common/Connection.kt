@@ -1,22 +1,19 @@
 package io.opencola.relay.common
 
-import io.ktor.network.sockets.*
-import io.ktor.utils.io.*
+import io.opencola.relay.common.State.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import mu.KotlinLogging
 import java.io.Closeable
 
-class Connection(private val socket: Socket, name: String? = null) : Closeable {
+class Connection(private val connectedSocket: ConnectedSocket, val name: String? = null) : Closeable {
     private val logger = KotlinLogging.logger("Connection${if(name != null) " ($name)" else ""}")
-    private val readChannel = socket.openReadChannel()
-    private val writeChannel = socket.openWriteChannel(autoFlush = true)
-    private var state = State.Initialized
+    private var state = Initialized
     private var listenJob: Job? = null
 
     fun isReady(): Boolean {
-        return !(state == State.Closed || socket.isClosed || readChannel.isClosedForRead || writeChannel.isClosedForWrite)
+        return state != Closed && connectedSocket.isReady()
     }
 
     private fun isReadyOrThrow() {
@@ -25,42 +22,31 @@ class Connection(private val socket: Socket, name: String? = null) : Closeable {
         }
     }
 
-    internal suspend fun readSizedByteArray() : ByteArray {
+    private suspend fun readSizedByteArray() : ByteArray {
         isReadyOrThrow()
-        return ByteArray(readChannel.readInt()).also { readChannel.readFully(it, 0, it.size) }
+        return connectedSocket.readSizedByteArray()
     }
 
     internal suspend fun writeSizedByteArray(byteArray: ByteArray) {
         isReadyOrThrow()
-        writeChannel.writeInt(byteArray.size)
-        writeChannel.writeFully(byteArray)
-    }
-
-    internal suspend fun readInt() : Int {
-        isReadyOrThrow()
-        return readChannel.readInt()
-    }
-
-    internal suspend fun writeInt(i: Int) {
-        isReadyOrThrow()
-        writeChannel.writeInt(i)
+        connectedSocket.writeSizedByteArray(byteArray)
     }
 
     override fun close() {
-        state = State.Closed
-        socket.close()
+        state = Closed
+        connectedSocket.close()
         listenJob?.cancel()
         listenJob = null
     }
 
     suspend fun listen(handleMessage: suspend (ByteArray) -> Unit) = coroutineScope {
-        if(state != State.Initialized)
+        if(state != Initialized)
             throw IllegalStateException("Connection is already listening")
 
-        state = State.Opening
+        state = Opening
 
         listenJob = launch {
-            state = State.Open
+            state = Open
 
             while (isReady()) {
                 try {

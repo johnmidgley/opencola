@@ -6,10 +6,8 @@ import io.opencola.core.model.Id
 import io.opencola.core.security.decrypt
 import io.opencola.core.security.initProvider
 import io.opencola.core.security.sign
+import io.opencola.relay.common.*
 import io.opencola.relay.common.Connection
-import io.opencola.relay.common.Header
-import io.opencola.relay.common.Message
-import io.opencola.relay.common.MessageEnvelope
 import io.opencola.relay.common.State.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
@@ -51,17 +49,17 @@ class Client(
     }
 
     // Should only be called once, right after connection to server
-    private suspend fun authenticate(connection: Connection) {
+    private suspend fun authenticate(connectedSocket: ConnectedSocket) {
         // Send public key
-        connection.writeSizedByteArray(keyPair.public.encoded)
+        connectedSocket.writeSizedByteArray(keyPair.public.encoded)
 
         // Read challenge
-        val challengeBytes = connection.readSizedByteArray()
+        val challengeBytes = connectedSocket.readSizedByteArray()
 
         // Sign challenge and send back
-        connection.writeSizedByteArray(sign(keyPair.private, challengeBytes))
+        connectedSocket.writeSizedByteArray(sign(keyPair.private, challengeBytes))
 
-        val authenticationResponse = connection.readInt()
+        val authenticationResponse = connectedSocket.readChannel.readInt()
         if (authenticationResponse != 0) {
             throw RuntimeException("Unable to authenticate connection: $authenticationResponse")
         }
@@ -90,9 +88,9 @@ class Client(
                 logger.info { "Creating Connection for: ${Id.ofPublicKey(keyPair.public)}" }
 
                 try {
-                    _connection = Connection(aSocket(selectorManager).tcp().connect(hostname, port = port), name).also {
-                        authenticate(it)
-                    }
+                    val connectedSocket = ConnectedSocket(aSocket(selectorManager).tcp().connect(hostname, port = port))
+                    authenticate(connectedSocket)
+                    _connection = Connection(connectedSocket, name)
                     connectionFailures = 0
                 } catch (e: ConnectException) {
                     connectionFailures++
