@@ -1,0 +1,18 @@
+#!/bin/bash
+docker-compose --version 1>/dev/null
+if [ $? -ne 0 ] 
+then
+echo $'\e[31mUnable to execute docker-compose.\e[0m Is Docker [https://docs.docker.com/get-docker/] installed?'
+exit 1
+fi
+
+docker-compose -p oc-relay up --build -d # 1>/dev/null
+if [ $? -eq 0 ] 
+then
+echo  $'\e[0;32mOpenCola Relay has started:\e[0m configure docker to run at startup so you do not have to manually start OpenCola again'
+else
+echo $'\e[31mUnable to start OpenCola Relay.\e[0m Is docker running [try "open /Applications/Docker.app/"]? Is the port already in use?'
+exit 2
+fi
+
+echo "Visit http://localhost:8080 to get see the home page"

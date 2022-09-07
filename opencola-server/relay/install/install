@@ -1,0 +1,18 @@
+#!/bin/bash
+echo "Removing old dist"
+rm -rf oc-relay
+mkdir oc-relay
+
+echo "Running gradle installDist"
+pushd ../../
+./gradlew installDist
+popd
+
+echo "Copying distribution"
+cp -r ../../relay/build/install/relay/* oc-relay
+
+echo "Done."
+
+
+
+

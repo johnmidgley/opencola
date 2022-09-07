@@ -1,0 +1,8 @@
+services:
+  oc:
+    build: ..
+    container_name: oc-relay
+    ports:
+      - "5796:5796"
+      - "8080:8080"
+    restart: unless-stopped
