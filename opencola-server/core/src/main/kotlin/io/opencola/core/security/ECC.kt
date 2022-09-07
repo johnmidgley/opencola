@@ -29,7 +29,7 @@ fun generateKeyPair() : KeyPair {
 }
 
 fun sign(privateKey: PrivateKey, data: ByteArray): ByteArray {
-    val ecdsaSign = Signature.getInstance(SIGNATURE_ALGO)
+    val ecdsaSign = java.security.Signature.getInstance(SIGNATURE_ALGO)
     ecdsaSign.initSign(privateKey)
     ecdsaSign.update(data)
     return ecdsaSign.sign()
@@ -57,7 +57,7 @@ fun decrypt(privateKey: PrivateKey, bytes: ByteArray) : ByteArray {
 }
 
 fun isValidSignature(publicKey: PublicKey, data: ByteArray, signature: ByteArray): Boolean {
-    val ecdsaVerify = Signature.getInstance(SIGNATURE_ALGO)
+    val ecdsaVerify = java.security.Signature.getInstance(SIGNATURE_ALGO)
     ecdsaVerify.initVerify(publicKey)
     ecdsaVerify.update(data)
     return ecdsaVerify.verify(signature)

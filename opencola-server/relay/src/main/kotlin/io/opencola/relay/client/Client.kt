@@ -3,9 +3,7 @@ package io.opencola.relay.client
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.opencola.core.model.Id
-import io.opencola.core.security.decrypt
-import io.opencola.core.security.initProvider
-import io.opencola.core.security.sign
+import io.opencola.core.security.*
 import io.opencola.relay.common.*
 import io.opencola.relay.common.Connection
 import io.opencola.relay.common.State.*
@@ -104,7 +102,7 @@ class Client(
 
     private suspend fun handleMessage(payload: ByteArray, handler: suspend (ByteArray) -> ByteArray) {
         try {
-            val message = Message.decode(decrypt(keyPair.private, payload))
+            val message = Message.decode(decrypt(keyPair.private, payload)).validate()
             val sessionResult = sessions[message.header.sessionId]
 
             if(sessionResult != null) {
@@ -154,16 +152,15 @@ class Client(
     }
 
     suspend fun sendMessage(to: PublicKey, body: ByteArray): ByteArray? {
-        val message = Message(Header(keyPair.public, UUID.randomUUID()), body)
+        val message = Message(keyPair, UUID.randomUUID(), body)
         val envelope = MessageEnvelope(to, message)
         val deferredResult = CompletableDeferred<ByteArray?>()
 
         return try {
             sessions[message.header.sessionId] = deferredResult
-            val connection = getConnection()
 
             withTimeout(requestTimeoutMilliseconds) {
-                connection.writeSizedByteArray(MessageEnvelope.encode(envelope))
+                getConnection().writeSizedByteArray(MessageEnvelope.encode(envelope))
                 deferredResult.await()
             }
         } catch (e: ConnectException) {
@@ -182,13 +179,12 @@ class Client(
     }
 
     suspend fun respondToMessage(messageHeader: Header, body: ByteArray) {
-        val responseMessage = Message(Header(keyPair.public, messageHeader.sessionId), body)
+        val responseMessage = Message(keyPair, messageHeader.sessionId, body)
         val envelope = MessageEnvelope(messageHeader.from, responseMessage)
-        val connection = getConnection()
 
         try {
             withTimeout(requestTimeoutMilliseconds) {
-                connection.writeSizedByteArray(MessageEnvelope.encode(envelope))
+                getConnection().writeSizedByteArray(MessageEnvelope.encode(envelope))
             }
         } catch (e: ConnectException) {
             logger.debug { "Failed connect when sending response" }

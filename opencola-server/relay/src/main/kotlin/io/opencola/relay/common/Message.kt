@@ -1,14 +1,29 @@
 package io.opencola.relay.common
 
+import io.opencola.core.security.Signature
+import io.opencola.core.security.isValidSignature
 import io.opencola.core.serialization.StreamSerializer
 import io.opencola.core.serialization.readByteArray
 import io.opencola.core.serialization.writeByteArray
 import java.io.InputStream
 import java.io.OutputStream
+import java.security.KeyPair
+import java.util.*
 
 class Message(val header: Header, val body: ByteArray) {
+    constructor(senderKeyPair: KeyPair, sessionId: UUID, body: ByteArray)
+            : this (Header(senderKeyPair.public, sessionId, Signature.of(senderKeyPair.private, body)), body)
+
     override fun toString(): String {
         return "Message(header=$header, body=${body.size} bytes)"
+    }
+
+    fun validate(): Message {
+        if(!isValidSignature(header.from, body, header.signature.bytes)){
+            throw RuntimeException("Invalid Signature")
+        }
+
+        return this
     }
 
     companion object : StreamSerializer<Message> {
