@@ -123,7 +123,6 @@ class Client(
         if (_state != Initialized) {
             throw IllegalStateException("Client has already been opened")
         }
-
         _state = Opening
 
         listenJob = launch {
@@ -167,10 +166,17 @@ class Client(
                 connection.writeSizedByteArray(MessageEnvelope.encode(envelope))
                 deferredResult.await()
             }
-        } catch(e: ConnectException) {
+        } catch (e: ConnectException) {
+            logger.debug { "Failed connect when sending message" }
             null
-        }
-        catch (e: TimeoutCancellationException) {
+        } catch (e: TimeoutCancellationException) {
+            logger.debug { "Timeout sending message" }
+            null
+        } catch (e: CancellationException) {
+            // Let exception flow through
+            null
+        } catch (e: Exception) {
+            logger.error { "Unexpected exception when sending message $e" }
             null
         }
     }
@@ -180,9 +186,18 @@ class Client(
         val envelope = MessageEnvelope(messageHeader.from, responseMessage)
         val connection = getConnection()
 
-        // TODO: This can fail, if server goes down. Should failure propagate?
-        withTimeout(requestTimeoutMilliseconds) {
-            connection.writeSizedByteArray(MessageEnvelope.encode(envelope))
+        try {
+            withTimeout(requestTimeoutMilliseconds) {
+                connection.writeSizedByteArray(MessageEnvelope.encode(envelope))
+            }
+        } catch (e: ConnectException) {
+            logger.debug { "Failed connect when sending response" }
+        } catch (e: TimeoutCancellationException) {
+            logger.debug { "Timeout sending response" }
+        } catch (e: CancellationException) {
+            // Let exception flow through
+        } catch (e: Exception) {
+            logger.error { "Unexpected exception when sending response $e" }
         }
     }
 
