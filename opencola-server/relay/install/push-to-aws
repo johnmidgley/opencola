@@ -1,0 +1,5 @@
+#!/bin/bash
+# aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 147892678753.dkr.ecr.us-west-2.amazonaws.com
+docker build -t oc-relay .
+docker tag oc-relay:latest 147892678753.dkr.ecr.us-west-2.amazonaws.com/oc-relay:latest
+docker push 147892678753.dkr.ecr.us-west-2.amazonaws.com/oc-relay:latest

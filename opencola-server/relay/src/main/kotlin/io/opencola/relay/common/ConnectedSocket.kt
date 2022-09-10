@@ -6,6 +6,7 @@ import io.ktor.utils.io.*
 import java.io.Closeable
 
 class ConnectedSocket(val socket: Socket) : Closeable {
+    private val maxReadSize = 1024 * 1024 * 50 // TODO: Make configurable
     val readChannel = socket.openReadChannel()
     val writeChannel = socket.openWriteChannel(autoFlush = true)
 
@@ -14,7 +15,13 @@ class ConnectedSocket(val socket: Socket) : Closeable {
     }
 
     suspend fun readSizedByteArray() : ByteArray {
-        return ByteArray(readChannel.readInt()).also { readChannel.readFully(it, 0, it.size) }
+        val size = readChannel.readInt()
+
+        if(size > maxReadSize) {
+            throw RuntimeException("Read size too big: $size")
+        }
+
+        return ByteArray(size).also { readChannel.readFully(it, 0, it.size) }
     }
 
     suspend fun writeSizedByteArray(byteArray: ByteArray) {
