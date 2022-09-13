@@ -14,7 +14,6 @@ class ConnectedSocket(val socket: Socket) : Closeable {
     }
 
     suspend fun readSizedByteArray() : ByteArray {
-        // TODO - Limit read size - can crash client if wrong protocol is used, or adversarial server is connected to
         return ByteArray(readChannel.readInt()).also { readChannel.readFully(it, 0, it.size) }
     }
 

@@ -83,7 +83,7 @@ class Client(
                     delay(delayInMilliseconds)
                 }
 
-                logger.info { "Creating Connection for: ${Id.ofPublicKey(keyPair.public)}" }
+                logger.info { "Creating Connection for: ${Id.ofPublicKey(keyPair.public)} at $hostname:$port" }
 
                 try {
                     val connectedSocket = ConnectedSocket(aSocket(selectorManager).tcp().connect(hostname, port = port))
