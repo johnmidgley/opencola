@@ -2,17 +2,14 @@ package io.opencola.relay
 
 import io.opencola.core.security.generateKeyPair
 import io.opencola.relay.client.Client
-import io.opencola.relay.client.StandardSocketClient
 import io.opencola.relay.client.WebSocketClient
 import io.opencola.relay.common.State
-import io.opencola.relay.server.StandardSocketRelayServer
 import io.opencola.relay.server.startWebServer
 import kotlinx.coroutines.*
 import opencola.core.extensions.append
 import java.security.KeyPair
 import java.util.*
 import java.util.stream.Collectors
-import kotlin.concurrent.thread
 import kotlin.math.abs
 import kotlin.test.*
 
@@ -151,10 +148,6 @@ class ConnectionTest {
             // NOTE: Will fail on timeouts with to many calls (> 5000). Need to refactor for concurrency for real
             // load testing
             val relayServer = startWebServer(defaultPort)
-//            thread {
-//                runBlocking { launch { relayServer.open() } }
-//            }
-//            relayServer.waitUntilOpen()
 
             val numClients = 50
             val clients = (0 until numClients).map { getClient(name = "client$it", requestTimeoutInMilliseconds = 10000) }
