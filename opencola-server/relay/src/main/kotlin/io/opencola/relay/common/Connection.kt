@@ -5,18 +5,17 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import mu.KotlinLogging
-import java.io.Closeable
 
-class Connection(private val connectedSocket: ConnectedSocket, val name: String? = null) : Closeable {
+class Connection(private val socketSession: SocketSession, val name: String? = null) {
     private val logger = KotlinLogging.logger("Connection${if(name != null) " ($name)" else ""}")
     private var state = Initialized
     private var listenJob: Job? = null
 
-    fun isReady(): Boolean {
-        return state != Closed && connectedSocket.isReady()
+    suspend fun isReady(): Boolean {
+        return state != Closed && socketSession.isReady()
     }
 
-    private fun isReadyOrThrow() {
+    private suspend fun isReadyOrThrow() {
         if(!isReady()){
             throw IllegalStateException("Connection is not ready")
         }
@@ -24,17 +23,17 @@ class Connection(private val connectedSocket: ConnectedSocket, val name: String?
 
     private suspend fun readSizedByteArray() : ByteArray {
         isReadyOrThrow()
-        return connectedSocket.readSizedByteArray()
+        return socketSession.readSizedByteArray()
     }
 
     internal suspend fun writeSizedByteArray(byteArray: ByteArray) {
         isReadyOrThrow()
-        connectedSocket.writeSizedByteArray(byteArray)
+        socketSession.writeSizedByteArray(byteArray)
     }
 
-    override fun close() {
+    suspend fun close() {
         state = Closed
-        connectedSocket.close()
+        socketSession.close()
         listenJob?.cancel()
         listenJob = null
         logger.debug { "Closed" }

@@ -1,55 +1,50 @@
 package io.opencola.relay.server
 
-import io.ktor.network.selector.*
-import io.ktor.network.sockets.*
 import io.opencola.core.model.Id
 import io.opencola.core.security.initProvider
 import io.opencola.core.security.isValidSignature
 import io.opencola.core.security.publicKeyFromBytes
-import io.opencola.relay.common.ConnectedSocket
+import io.opencola.core.serialization.IntByteArrayCodec
 import io.opencola.relay.common.Connection
 import io.opencola.relay.common.MessageEnvelope
+import io.opencola.relay.common.SocketSession
 import io.opencola.relay.common.State.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import mu.KotlinLogging
-import java.io.Closeable
 import java.security.PublicKey
 import java.security.SecureRandom
 import java.util.concurrent.ConcurrentHashMap
 
-class RelayServer(
-    port: Int,
+abstract class AbstractRelayServer(
     private val numChallengeBytes: Int = 32
-) : Closeable {
-    private val logger = KotlinLogging.logger("RelayServer")
-    private val selectorManager = ActorSelectorManager(Dispatchers.IO)
-    private val serverSocket = aSocket(selectorManager).tcp().bind(port = port)
+) {
+    protected val logger = KotlinLogging.logger("RelayServer")
     private val connections = ConcurrentHashMap<PublicKey, Connection>()
-    private val openMutex = Mutex(true)
+    protected val openMutex = Mutex(true)
     private val random = SecureRandom()
-    private var state = Initialized
-    private var listenJob: Job? = null
+    protected var state = Initialized
+    protected var listenJob: Job? = null
 
     suspend fun waitUntilOpen() {
         openMutex.withLock { }
     }
 
-    private suspend fun authenticate(connectedSocket: ConnectedSocket): PublicKey? {
+    private suspend fun authenticate(socketSession: SocketSession): PublicKey? {
         try {
-            val encodedPublicKey = connectedSocket.readSizedByteArray()
+            val encodedPublicKey = socketSession.readSizedByteArray()
             val publicKey = publicKeyFromBytes(encodedPublicKey)
 
             // Send challenge
             val challenge = ByteArray(numChallengeBytes).also { random.nextBytes(it) }
-            connectedSocket.writeSizedByteArray(challenge)
+            socketSession.writeSizedByteArray(challenge)
 
             // Read signed challenge
-            val challengeSignature = connectedSocket.readSizedByteArray()
+            val challengeSignature = socketSession.readSizedByteArray()
 
             val status = if (isValidSignature(publicKey, challenge, challengeSignature)) 0 else -1
-            connectedSocket.writeChannel.writeInt(status)
+            socketSession.writeSizedByteArray(IntByteArrayCodec.encode(status))
             if (status != 0)
                 throw RuntimeException("Challenge signature is not valid")
 
@@ -58,7 +53,7 @@ class RelayServer(
             // Let job cancellation fall through
         } catch (e: Exception) {
             logger.warn { "Client failed to authenticate: $e" }
-            connectedSocket.close()
+            socketSession.close()
         }
 
         return null
@@ -84,49 +79,27 @@ class RelayServer(
         }
     }
 
-    suspend fun open() = coroutineScope() {
-        if (state != Initialized) {
-            throw IllegalStateException("Server has already been opened")
-        }
-
-        state = Opening
-
-        listenJob = launch {
-            logger.info("Relay Server listening at ${serverSocket.localAddress}")
-            state = Open
-            openMutex.unlock()
-
-            while (state != Closed) {
-                try {
-                    val connectedSocket = ConnectedSocket(serverSocket.accept())
-
-                    authenticate(connectedSocket)?.let {  publicKey ->
-                        val connection = Connection(connectedSocket, Id.ofPublicKey(publicKey).toString())
-                        logger.info { "Connection Authenticated for: ${connection.name}" }
-                        connections[publicKey] = connection
-                        launch { connection.use { it.listen { payload -> handleMessage(publicKey, payload) } } }
-                    }
-                } catch (e: Exception) {
-                    if (state == Closed || e is CancellationException) {
-                        close()
-                        break
-                    } else {
-                        logger.error { "Error accepting connection: $e" }
-                        throw e
-                    }
-                }
+    suspend fun handleSession(socketSession: SocketSession) {
+        authenticate(socketSession)?.let { publicKey ->
+            val connection = Connection(socketSession, Id.ofPublicKey(publicKey).toString())
+            logger.info { "Connection Authenticated for: ${connection.name}" }
+            connections[publicKey] = connection
+            try {
+                connection.listen { payload -> handleMessage(publicKey, payload) }
+            } finally {
+                connection.close()
             }
         }
     }
 
-    override fun close() {
+    abstract suspend fun open()
+
+    open suspend fun close() {
         state = Closed
         connections.values.forEach { it.close() }
         connections.clear()
         listenJob?.cancel()
         listenJob = null
-        serverSocket.close()
-        selectorManager.close()
     }
 
     companion object {
