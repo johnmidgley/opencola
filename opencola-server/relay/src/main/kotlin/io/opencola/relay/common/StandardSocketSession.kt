@@ -5,6 +5,7 @@ import io.ktor.network.sockets.Socket
 import io.ktor.utils.io.*
 
 class StandardSocketSession(private val socket: Socket) : SocketSession {
+    val maxReadSize = 1024 *1024 * 50
     val readChannel = socket.openReadChannel()
     val writeChannel = socket.openWriteChannel(autoFlush = true)
 
@@ -13,7 +14,13 @@ class StandardSocketSession(private val socket: Socket) : SocketSession {
     }
 
     override suspend fun readSizedByteArray() : ByteArray {
-        return ByteArray(readChannel.readInt()).also { readChannel.readFully(it, 0, it.size) }
+        val numBytes = readChannel.readInt()
+
+        if(numBytes > maxReadSize) {
+            throw IllegalArgumentException("Read size to big: $numBytes")
+        }
+
+        return ByteArray(numBytes).also { readChannel.readFully(it, 0, it.size) }
     }
 
     override suspend fun writeSizedByteArray(byteArray: ByteArray) {

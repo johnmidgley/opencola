@@ -25,14 +25,7 @@ class ConnectionTest {
         keyPair: KeyPair = generateKeyPair(),
         requestTimeoutInMilliseconds: Long = 5000,
     ) : Client {
-        return StandardSocketClient(defaultHost, defaultPort, keyPair, name, requestTimeoutInMilliseconds)
-    }
-
-    private fun getWebSocketClient(
-        name: String,
-        keyPair: KeyPair = generateKeyPair(),
-        requestTimeoutInMilliseconds: Long = 5000,
-    ): WebSocketClient {
+        //return StandardSocketClient(defaultHost, defaultPort, keyPair, name, requestTimeoutInMilliseconds)
         return WebSocketClient(defaultHost, defaultPort, keyPair, name, requestTimeoutInMilliseconds)
     }
 
@@ -45,27 +38,9 @@ class ConnectionTest {
     @Test
     fun testSendResponse() {
         runBlocking {
-            val relayServer = StandardSocketRelayServer(defaultPort).also { launch { it.open(); it.waitUntilOpen() } }
+            val relayWebServer = startWebServer(defaultPort)
             val client0 = getClient(name = "client0").also { launch { open(it) }; it.waitUntilOpen() }
             val client1 = getClient(name = "client1")
-                .also { launch { it.open { p -> p.append(" client1".toByteArray()) } }; it.waitUntilOpen() }
-
-            val peerResponse = client0.sendMessage(client1.publicKey, "hello".toByteArray())
-            assertNotNull(peerResponse)
-            assertEquals("hello client1", String(peerResponse))
-
-            client0.close()
-            client1.close()
-            relayServer.close()
-        }
-    }
-
-    @Test
-    fun testSendResponseWebSocket() {
-        runBlocking {
-            val relayWebServer = startWebServer(defaultPort)
-            val client0 = getWebSocketClient(name = "client0").also { launch { open(it) }; it.waitUntilOpen() }
-            val client1 = getWebSocketClient(name = "client1")
                 .also { launch { it.open { p -> p.append(" client1".toByteArray()) } }; it.waitUntilOpen() }
 
             val peerResponse = client0.sendMessage(client1.publicKey, "hello".toByteArray())
@@ -87,7 +62,8 @@ class ConnectionTest {
             delay(100)
             assert(client0.state == State.Opening)
 
-            val relayServer = StandardSocketRelayServer(defaultPort).also { launch { it.open() }; it.waitUntilOpen()}
+            val relayServer = startWebServer(defaultPort)
+
             val client1 = getClient("client1")
                 .also { launch { it.open { p -> p.append(" client1".toByteArray()) } }; it.waitUntilOpen() }
 
@@ -98,14 +74,14 @@ class ConnectionTest {
 
             client0.close()
             client1.close()
-            relayServer.close()
+            relayServer.stop(200,200)
         }
     }
 
     @Test
     fun testServerPartition() {
         runBlocking {
-            val relayServer0 = StandardSocketRelayServer(defaultPort).also { launch { it.open() }; it.waitUntilOpen() }
+            val relayServer0 = startWebServer(defaultPort)
             val client0 = getClient("client0").also { launch { open(it) }; it.waitUntilOpen() }
             val client1 = getClient("client1")
                 .also { launch { it.open { p -> p.append(" client1".toByteArray()) } }; it.waitUntilOpen() }
@@ -114,12 +90,12 @@ class ConnectionTest {
             assertNotNull(peerResponse0)
             assertEquals("hello client1", String(peerResponse0))
 
-            relayServer0.close()
+            relayServer0.stop(200,200)
 
             val peerResponse1 = client0.sendMessage(client1.publicKey, "hello".toByteArray())
             assertNull(peerResponse1)
 
-            val relayServer1 = StandardSocketRelayServer(defaultPort).also { launch { it.open(); it.waitUntilOpen() } }
+            val relayServer1 = startWebServer(defaultPort)
 
             val peerResponse2 = client0.sendMessage(client1.publicKey, "hello".toByteArray())
             assertNotNull(peerResponse2)
@@ -127,8 +103,7 @@ class ConnectionTest {
 
             client0.close()
             client1.close()
-            relayServer0.close()
-            relayServer1.close()
+            relayServer1.stop(200,200)
         }
     }
 
@@ -136,7 +111,7 @@ class ConnectionTest {
     fun testClientPartition() {
         runBlocking {
             println("Starting server and clients")
-            val relayServer0 = StandardSocketRelayServer(defaultPort).also { launch { it.open() }; it.waitUntilOpen() }
+            val relayServer0 = startWebServer(defaultPort)
             val client0 = getClient("client0", requestTimeoutInMilliseconds = 500).also { launch { open(it) }; it.waitUntilOpen() }
             val client1KeyPair = generateKeyPair()
             val client1 = getClient("client1", client1KeyPair)
@@ -166,7 +141,7 @@ class ConnectionTest {
             client0.close()
             client1.close()
             client1Rejoin.close()
-            relayServer0.close()
+            relayServer0.stop(200,200)
         }
     }
 
@@ -175,11 +150,11 @@ class ConnectionTest {
         runBlocking {
             // NOTE: Will fail on timeouts with to many calls (> 5000). Need to refactor for concurrency for real
             // load testing
-            val relayServer = StandardSocketRelayServer(defaultPort)
-            thread {
-                runBlocking { launch { relayServer.open() } }
-            }
-            relayServer.waitUntilOpen()
+            val relayServer = startWebServer(defaultPort)
+//            thread {
+//                runBlocking { launch { relayServer.open() } }
+//            }
+//            relayServer.waitUntilOpen()
 
             val numClients = 50
             val clients = (0 until numClients).map { getClient(name = "client$it", requestTimeoutInMilliseconds = 10000) }
@@ -206,7 +181,7 @@ class ConnectionTest {
                 .forEach { it.join() }
 
             clients.forEach { it.close() }
-            relayServer.close()
+            relayServer.stop(200,200)
         }
     }
 

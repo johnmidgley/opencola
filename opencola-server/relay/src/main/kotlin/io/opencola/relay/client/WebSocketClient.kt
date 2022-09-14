@@ -22,7 +22,6 @@ class WebSocketClient(
     }
 
     override suspend fun getSocketSession(): SocketSession {
-        logger.info { "Getting websocket session" }
         return WebSocketSessionWrapper(client.webSocketSession(method = HttpMethod.Get, host = hostname, port = port, path = "/relay"))
     }
 }
