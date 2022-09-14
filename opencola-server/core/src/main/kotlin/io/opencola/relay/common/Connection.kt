@@ -26,7 +26,7 @@ class Connection(private val socketSession: SocketSession, val name: String? = n
         return socketSession.readSizedByteArray()
     }
 
-    internal suspend fun writeSizedByteArray(byteArray: ByteArray) {
+    suspend fun writeSizedByteArray(byteArray: ByteArray) {
         isReadyOrThrow()
         socketSession.writeSizedByteArray(byteArray)
     }
