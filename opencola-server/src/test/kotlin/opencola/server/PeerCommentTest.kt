@@ -39,7 +39,7 @@ class PeerCommentTest : PeerTest() {
         val authority1 by application1.injector.instance<Authority>()
         val entityStore1 by application1.injector.instance<EntityStore>()
         startServer(server1)
-        Thread.sleep(1000)
+        Thread.sleep(1500)
         val comment = addComment(authority1, entityStore1, resource0.entityId, null, "Comment")
         val resource1 = entityStore1.getEntity(authority1.authorityId, resource0.entityId) as ResourceEntity
 
