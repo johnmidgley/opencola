@@ -91,6 +91,7 @@ abstract class AbstractClient(
                     _connection = Connection(socketSession, name)
                     connectionFailures = 0
                 } catch (e: ConnectException) {
+                    // TODO: Max connectFailures?
                     connectionFailures++
                     throw e
                 }

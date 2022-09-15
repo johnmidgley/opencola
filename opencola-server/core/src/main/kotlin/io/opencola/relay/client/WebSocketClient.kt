@@ -7,6 +7,7 @@ import io.ktor.http.*
 import io.opencola.relay.common.*
 import java.security.KeyPair
 
+// TODO: This should probably just take a URI
 class WebSocketClient(
     hostname: String,
     port: Int,
