@@ -14,6 +14,7 @@ import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import java.net.URI
 import java.security.KeyPair
+import java.security.PublicKey
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.thread
 
@@ -31,7 +32,7 @@ class OCRelayNetworkProvider(private val addressBook: AddressBook, private val k
             val client = WebSocketClient(uri.host, uri.port, keyPair, uri.toString())
             val listenThread = thread {
                 runBlocking {
-                    client.open { request -> handleRequest(request) }
+                    client.open { publicKey, request -> handleRequest(publicKey, request) }
                 }
             }
             connections[uri] = ConnectionInfo(client, listenThread)
@@ -98,10 +99,15 @@ class OCRelayNetworkProvider(private val addressBook: AddressBook, private val k
         }
     }
 
-    private fun handleRequest(bytes: ByteArray) : ByteArray {
+    private fun handleRequest(fromPublicKey: PublicKey, bytes: ByteArray): ByteArray {
         if (!started) throw IllegalStateException("Provider is not started - can't handleRequest")
         val handler = this.handler ?: throw IllegalStateException("Call to handleRequest when handler has not been set")
         val request = Json.decodeFromString<Request>(String(bytes))
+        val fromAuthority = addressBook.getAuthority(request.from)
+            ?: throw RuntimeException("Received request from unknown authority: ${request.from}")
+        if(fromAuthority.publicKey != fromPublicKey)
+            throw RuntimeException("Request public key does not match authority public key")
+
         val response = handler(request)
 
         return Json.encodeToString(response).toByteArray()

@@ -8,6 +8,7 @@ import io.opencola.relay.server.startWebServer
 import kotlinx.coroutines.*
 import opencola.core.extensions.append
 import java.security.KeyPair
+import java.security.PublicKey
 import java.util.*
 import java.util.stream.Collectors
 import kotlin.math.abs
@@ -27,7 +28,7 @@ class ConnectionTest {
     }
 
     private suspend fun open(client: Client,
-                             messageHandler: suspend (ByteArray) -> ByteArray = { _ -> client.name!!.toByteArray() }
+                             messageHandler: suspend (PublicKey, ByteArray) -> ByteArray = { _, _ -> client.name!!.toByteArray() }
         ) = coroutineScope {
         launch { client.open(messageHandler) }
     }
@@ -38,7 +39,15 @@ class ConnectionTest {
             val relayWebServer = startWebServer(defaultPort)
             val client0 = getClient(name = "client0").also { launch { open(it) }; it.waitUntilOpen() }
             val client1 = getClient(name = "client1")
-                .also { launch { it.open { p -> p.append(" client1".toByteArray()) } }; it.waitUntilOpen() }
+                .also {
+                    launch {
+                        it.open { k, p ->
+                            assertEquals(client0.publicKey, k)
+                            p.append(" client1".toByteArray()) }
+                    }
+
+                    it.waitUntilOpen()
+                }
 
             val peerResponse = client0.sendMessage(client1.publicKey, "hello".toByteArray())
             assertNotNull(peerResponse)
@@ -62,7 +71,7 @@ class ConnectionTest {
             val relayServer = startWebServer(defaultPort)
 
             val client1 = getClient("client1")
-                .also { launch { it.open { p -> p.append(" client1".toByteArray()) } }; it.waitUntilOpen() }
+                .also { launch { it.open { _, p -> p.append(" client1".toByteArray()) } }; it.waitUntilOpen() }
 
             client0.sendMessage(client1.publicKey, "hello".toByteArray()).also {
                 assertNotNull(it)
@@ -81,7 +90,7 @@ class ConnectionTest {
             val relayServer0 = startWebServer(defaultPort)
             val client0 = getClient("client0").also { launch { open(it) }; it.waitUntilOpen() }
             val client1 = getClient("client1")
-                .also { launch { it.open { p -> p.append(" client1".toByteArray()) } }; it.waitUntilOpen() }
+                .also { launch { it.open { _, p -> p.append(" client1".toByteArray()) } }; it.waitUntilOpen() }
 
             val peerResponse0 = client0.sendMessage(client1.publicKey, "hello".toByteArray())
             assertNotNull(peerResponse0)
@@ -112,7 +121,7 @@ class ConnectionTest {
             val client0 = getClient("client0", requestTimeoutInMilliseconds = 500).also { launch { open(it) }; it.waitUntilOpen() }
             val client1KeyPair = generateKeyPair()
             val client1 = getClient("client1", client1KeyPair)
-                .also { launch { it.open { p -> p.append(" client1".toByteArray()) } }; it.waitUntilOpen() }
+                .also { launch { it.open { _, p -> p.append(" client1".toByteArray()) } }; it.waitUntilOpen() }
 
             println("Sending message")
             val peerResponse0 = client0.sendMessage(client1.publicKey, "hello".toByteArray())
@@ -128,7 +137,7 @@ class ConnectionTest {
 
             println("Rejoining client")
             val client1Rejoin = getClient("client1", client1KeyPair)
-                .also { launch { it.open { p -> p.append(" client1".toByteArray()) } }; it.waitUntilOpen() }
+                .also { launch { it.open { _, p -> p.append(" client1".toByteArray()) } }; it.waitUntilOpen() }
 
             println("Verifying rejoin")
             val peerResponse2 = client0.sendMessage(client1.publicKey, "hello".toByteArray())

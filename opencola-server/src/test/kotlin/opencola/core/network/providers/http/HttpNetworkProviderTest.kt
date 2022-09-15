@@ -2,18 +2,19 @@ package opencola.core.network.providers.http
 
 import io.opencola.core.model.Authority
 import io.opencola.core.model.Id
-import io.opencola.core.network.providers.http.HttpNetworkProvider
 import io.opencola.core.network.Request
-import opencola.server.PeerTest
 import io.opencola.core.network.RequestRouter
 import io.opencola.core.network.Response
+import io.opencola.core.network.providers.http.HttpNetworkProvider
+import opencola.server.PeerTest
 import org.junit.Test
 import kotlin.test.assertNotNull
 
-class HttpNetworkProviderTest : PeerTest(){
+class HttpNetworkProviderTest : PeerTest() {
     @Test
     fun testHttpNetworkProvider() {
-        val applicationNode = getApplicationNode(0, zeroTierIntegrationEnabled = false, persistent = false).also { it.start() }
+        val applicationNode =
+            getApplicationNode(0, zeroTierIntegrationEnabled = false, persistent = false).also { it.start() }
 
         try {
             val app = applicationNode.application

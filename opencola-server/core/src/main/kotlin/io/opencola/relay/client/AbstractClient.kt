@@ -101,7 +101,7 @@ abstract class AbstractClient(
         }
     }
 
-    private suspend fun handleMessage(payload: ByteArray, handler: suspend (ByteArray) -> ByteArray) {
+    private suspend fun handleMessage(payload: ByteArray, handler: suspend (PublicKey, ByteArray) -> ByteArray) {
         try {
             val message = Message.decode(decrypt(keyPair.private, payload)).validate()
             val sessionResult = sessions[message.header.sessionId]
@@ -111,14 +111,14 @@ abstract class AbstractClient(
                 sessionResult.complete(message.body)
             } else {
                 // respondToMMessage will apply request timeout
-                respondToMessage(message.header, handler(message.body))
+                respondToMessage(message.header, handler(message.header.from, message.body))
             }
         } catch(e: Exception){
             logger.error { "Exception in handleMessage: $e" }
         }
     }
 
-    override suspend fun open(messageHandler: suspend (ByteArray) -> ByteArray) = coroutineScope {
+    override suspend fun open(messageHandler: suspend (PublicKey, ByteArray) -> ByteArray) = coroutineScope {
         if (_state != Initialized) {
             throw IllegalStateException("Client has already been opened")
         }
