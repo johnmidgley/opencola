@@ -24,7 +24,7 @@ fun getApplications(
             Triple(
                 instanceStoragePath,
                 config,
-                Application.getOrCreateRootPublicKey(instanceStoragePath, baseConfig.security)
+                Application.getOrCreateRootKeyPair(instanceStoragePath, baseConfig.security)
             )
         }
 
@@ -32,10 +32,10 @@ fun getApplications(
         val peerConfigs = (0 until nServers)
             .filter { it != i }
             .map {
-                val (_, peerConfig, key) = configTuples[it]
+                val (_, peerConfig, keyPair) = configTuples[it]
                 PeerConfig(
-                    Id.ofPublicKey(key).toString(),
-                    key.encode(),
+                    Id.ofPublicKey(keyPair.public).toString(),
+                    keyPair.public.encode(),
                     peerConfig.name,
                     "${peerConfig.server.host}:${peerConfig.server.port}"
                 )

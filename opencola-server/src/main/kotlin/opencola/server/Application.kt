@@ -54,11 +54,11 @@ fun main(args: Array<String>) {
     logger.info { "Storage path: $storagePath" }
 
     val config = loadConfig(storagePath.resolve("opencola-server.yaml"))
-    val publicKey = Application.getOrCreateRootPublicKey(storagePath, config.security)
+    val keyPair = Application.getOrCreateRootKeyPair(storagePath, config.security)
 
-    val application = Application.instance(applicationPath, storagePath, config, publicKey)
-    application.logger.info("Authority: ${Id.ofPublicKey(publicKey)}")
-    application.logger.info("Public Key : ${publicKey.encode()}")
+    val application = Application.instance(applicationPath, storagePath, config, keyPair)
+    application.logger.info("Authority: ${Id.ofPublicKey(keyPair.public)}")
+    application.logger.info("Public Key : ${keyPair.public.encode()}")
 
     // TODO: Make sure entityService starts as soon as server is up, so that transactions can be received
     getServer(application).start(wait = true)

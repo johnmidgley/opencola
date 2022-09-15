@@ -21,7 +21,7 @@ import org.kodein.di.instance
 import java.io.File
 import java.net.URI
 import java.nio.file.Path
-import java.security.PublicKey
+import java.security.KeyPair
 import kotlin.io.path.*
 
 class Application(val applicationPath: Path, val storagePath: Path, val config: Config, val injector: DI) {
@@ -38,11 +38,11 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
 
         // TODO: pub key should come from private store, not authority.pub, and multiple authorities (personas) should be allowed
         // TODO: Move to Identity Service
-        fun getOrCreateRootPublicKey(storagePath: Path, securityConfig: SecurityConfig): PublicKey {
+        fun getOrCreateRootKeyPair(storagePath: Path, securityConfig: SecurityConfig): KeyPair {
             val publicKeyFile = "authority.pub" // TODO: Config?
             val authorityPubPath = storagePath.resolve(publicKeyFile)
             val keyStore = KeyStore(storagePath.resolve(securityConfig.keystore.name), securityConfig.keystore.password)
-            val publicKey =  if (authorityPubPath.exists()) {
+            val keyPair =  if (authorityPubPath.exists()) {
                 val publicKey = decodePublicKey(authorityPubPath.readText())
                 val privateKey = keyStore.getPrivateKey(Id.ofPublicKey(publicKey))
                 if(privateKey != null)
@@ -50,16 +50,16 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
                 else
                     throw IllegalStateException("No private key found in keystore {${keyStore.path}} for public key {${publicKey}} found in $publicKeyFile")
 
-                publicKey
+                KeyPair(publicKey, privateKey)
             } else {
                 logger.info { "Key file $publicKeyFile doesn't exist. Creating new KeyPair" }
                 val keyPair = generateKeyPair()
                 keyStore.addKey(Id.ofPublicKey(keyPair.public), keyPair)
                 authorityPubPath.writeText(keyPair.public.encode())
-                keyPair.public
+                keyPair
             }
 
-            return publicKey
+            return keyPair
         }
 
         fun getEntityStoreDB(authority: Authority, storagePath: Path): Database {
@@ -76,13 +76,13 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
             return SQLiteDB(path).db
         }
 
-        fun instance(applicationPath: Path, storagePath: Path, config: Config, authorityPublicKey: PublicKey): Application {
+        fun instance(applicationPath: Path, storagePath: Path, config: Config, authorityKeyPair: KeyPair): Application {
             if(!storagePath.exists()){
                 File(storagePath.toString()).mkdirs()
             }
 
             // TODO: Change from authority to public key - they authority should come from the private store based on the private key
-            val authority = Authority(authorityPublicKey, URI("http://${config.server.host}:${config.server.port}"), "You")
+            val authority = Authority(authorityKeyPair.public, URI("http://${config.server.host}:${config.server.port}"), "You")
             val keyStore = KeyStore(storagePath.resolve(config.security.keystore.name), config.security.keystore.password)
             val fileStore = LocalFileStore(storagePath.resolve("filestore"))
             val entityStoreDB = getEntityStoreDB(authority, storagePath)
@@ -119,8 +119,8 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
 
         fun instance(applicationPath: Path, storagePath: Path, config: Config? = null) : Application {
             val appConfig = config ?: loadConfig(storagePath.resolve("opencola-server.yaml"))
-            val publicKey = getOrCreateRootPublicKey(storagePath, appConfig.security)
-            return instance(applicationPath, storagePath, appConfig, publicKey)
+            val keyPair = getOrCreateRootKeyPair(storagePath, appConfig.security)
+            return instance(applicationPath, storagePath, appConfig, keyPair)
         }
     }
 }

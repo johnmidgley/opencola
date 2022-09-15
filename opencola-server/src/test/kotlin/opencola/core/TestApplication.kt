@@ -37,8 +37,9 @@ object TestApplication {
             storagePath.resolve(config.security.keystore.name),
             config.security.keystore.password
         )
-        keyStore.addKey(authority.authorityId, KeyPair(authorityPublicKey, authorityPrivateKey))
-        val instance =  Application.instance(applicationPath, storagePath, config, authorityPublicKey)
+        val keyPair = KeyPair(authorityPublicKey, authorityPrivateKey)
+        keyStore.addKey(authority.authorityId, keyPair)
+        val instance =  Application.instance(applicationPath, storagePath, config, keyPair)
         val index by instance.injector.instance<SearchIndex>()
 
         // Clear out any existing index
@@ -67,7 +68,7 @@ object TestApplication {
 
     fun newApplication(): Application {
         val applicationStoragePath = getTmpDirectory(".storage")
-        val publicKey = Application.getOrCreateRootPublicKey(applicationStoragePath, config.security)
+        val publicKey = Application.getOrCreateRootKeyPair(applicationStoragePath, config.security)
         return Application.instance(instance.applicationPath, applicationStoragePath, config, publicKey)
     }
 }
