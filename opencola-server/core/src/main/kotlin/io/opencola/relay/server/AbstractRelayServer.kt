@@ -82,13 +82,16 @@ abstract class AbstractRelayServer(
     suspend fun handleSession(socketSession: SocketSession) {
         authenticate(socketSession)?.let { publicKey ->
             val connection = Connection(socketSession, Id.ofPublicKey(publicKey).toString())
-            logger.info { "Connection Authenticated for: ${connection.name}" }
+            logger.info { "Session authenticated for: ${connection.name}" }
             connections[publicKey] = connection
+
             try {
                 // TODO: Add garbage collection on inactive connections?
                 connection.listen { payload -> handleMessage(publicKey, payload) }
             } finally {
                 connection.close()
+                connections.remove(publicKey)
+                logger.info { "Session closed for: ${connection.name}" }
             }
         }
     }
