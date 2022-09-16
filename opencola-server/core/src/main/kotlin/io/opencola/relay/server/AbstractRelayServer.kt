@@ -85,6 +85,7 @@ abstract class AbstractRelayServer(
             logger.info { "Connection Authenticated for: ${connection.name}" }
             connections[publicKey] = connection
             try {
+                // TODO: Add garbage collection on inactive connections?
                 connection.listen { payload -> handleMessage(publicKey, payload) }
             } finally {
                 connection.close()

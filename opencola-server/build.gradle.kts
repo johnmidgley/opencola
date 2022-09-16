@@ -87,6 +87,7 @@ dependencies {
 
     implementation("com.zerotier.sockets:libzt-1.8.4")
 
+    testImplementation(project(":relay"))
     testImplementation("io.ktor:ktor-server-tests:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
 }

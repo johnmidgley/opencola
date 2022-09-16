@@ -11,6 +11,8 @@ import io.opencola.core.network.NetworkNode
 import io.opencola.core.network.RequestRouter
 import io.opencola.core.network.getDefaultRoutes
 import io.opencola.core.network.providers.http.HttpNetworkProvider
+import io.opencola.core.network.providers.relay.OCRelayNetworkProvider
+import io.opencola.core.network.providers.relay.openColaRelayScheme
 import io.opencola.core.search.LuceneSearchIndex
 import io.opencola.core.security.*
 import io.opencola.core.storage.*
@@ -97,6 +99,7 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
                 bindSingleton { AddressBook(instance(), storagePath, instance(), config.server, config.network) }
                 bindSingleton { RequestRouter(getDefaultRoutes(instance(), instance(), instance())) }
                 bindSingleton { HttpNetworkProvider(config.server, instance(), instance()) }
+                bindSingleton { OCRelayNetworkProvider(instance(), authorityKeyPair) }
                 bindSingleton { NetworkNode(config.network, storagePath.resolve("network"), authority.authorityId, instance(),instance(), instance(), instance()) }
                 bindSingleton { LuceneSearchIndex(authority.authorityId, storagePath.resolve("lucene")) }
                 bindSingleton { ExposedEntityStore(entityStoreDB, instance(), instance(), instance(), instance()) }
@@ -112,8 +115,12 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
 
             eventBus.start(reactor)
 
-            return Application(applicationPath, storagePath, config, injector).also {
-                it.inject<NetworkNode>().setProvider("http", it.inject<HttpNetworkProvider>())
+            return Application(applicationPath, storagePath, config, injector).also { app ->
+                app.inject<NetworkNode>().let { networkNode ->
+                    // TODO: make scheme be part of provider, so you can't incorrectly register
+                    networkNode.setProvider("http", app.inject<HttpNetworkProvider>())
+                    networkNode.setProvider(openColaRelayScheme, app.inject<OCRelayNetworkProvider>())
+                }
             }
         }
 

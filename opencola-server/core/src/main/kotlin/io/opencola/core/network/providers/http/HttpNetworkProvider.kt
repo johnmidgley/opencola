@@ -34,10 +34,12 @@ class HttpNetworkProvider(serverConfig: ServerConfig, private val authority: Aut
 
     override fun start() {
         started = true
+        logger.info { "Started" }
     }
 
     override fun stop() {
         started = false
+        logger.info { "Stopped" }
     }
 
     override fun getAddress(): URI {

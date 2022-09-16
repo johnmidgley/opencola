@@ -150,6 +150,8 @@ class NetworkNode(
             setAuthToken(authority)
         }
 
+        providers.values.forEach { it.start() }
+
         addressBook.addUpdateHandler(peerUpdateHandler)
         logger.info { "Started" }
     }

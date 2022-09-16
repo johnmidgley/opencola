@@ -30,9 +30,15 @@ class OCRelayNetworkProvider(private val addressBook: AddressBook, private val k
     private fun addClient(uri: URI) {
         if(uri.scheme == openColaRelayScheme && !connections.contains(uri)) {
             val client = WebSocketClient(uri.host, uri.port, keyPair, uri.toString())
+            // TODO: Move away from threads, or at least just use one
             val listenThread = thread {
-                runBlocking {
-                    client.open { publicKey, request -> handleRequest(publicKey, request) }
+                try {
+                    runBlocking {
+                        logger.info { "Opening client: $uri" }
+                        client.open { publicKey, request -> handleRequest(publicKey, request) }
+                    }
+                } catch (e: InterruptedException) {
+                    // Expected on shutdown
                 }
             }
             connections[uri] = ConnectionInfo(client, listenThread)
@@ -47,6 +53,7 @@ class OCRelayNetworkProvider(private val addressBook: AddressBook, private val k
             .toSet()
             .forEach{ addClient(it) }
         started = true
+        logger.info { "Started" }
     }
 
     override fun stop() {
@@ -57,6 +64,7 @@ class OCRelayNetworkProvider(private val addressBook: AddressBook, private val k
             }
         }
         started = false
+        logger.info { "Stopped" }
     }
 
     override fun getAddress(): URI {

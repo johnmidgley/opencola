@@ -137,6 +137,8 @@ abstract class AbstractClient(
                     }
                 } catch (e: CancellationException) {
                     break
+                } catch(e: InterruptedException) {
+                    break
                 } catch (e: Exception) {
                     logger.error { "Exception during listen: $e" }
                 }
