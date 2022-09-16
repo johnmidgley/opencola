@@ -15,10 +15,13 @@ import io.opencola.core.config.ServerConfig
 import io.opencola.core.model.Authority
 import io.opencola.core.network.AbstractNetworkProvider
 import io.opencola.core.network.*
+import io.opencola.core.security.Signator
+import kotlinx.serialization.encodeToString
+import opencola.core.extensions.toHexString
 import java.lang.IllegalStateException
 import java.net.URI
 
-class HttpNetworkProvider(serverConfig: ServerConfig) : AbstractNetworkProvider() {
+class HttpNetworkProvider(serverConfig: ServerConfig, private val authority: Authority, private val signator: Signator) : AbstractNetworkProvider() {
     private val logger = KotlinLogging.logger("HttpNetworkProvider")
     var started = false
     private val serverAddress = URI("http://${serverConfig.host}:${serverConfig.port}")
@@ -60,8 +63,11 @@ class HttpNetworkProvider(serverConfig: ServerConfig) : AbstractNetworkProvider(
             return runBlocking {
                 val httpResponse = httpClient.post<HttpStatement>(urlString) {
                     // TODO: Support more efficient, binary formats
-                    contentType(ContentType.Application.Json)
-                    body = request
+                    contentType(ContentType.Application.OctetStream)
+                    val payload = Json.encodeToString(request).toByteArray()
+                    val signature = signator.signBytes(request.from, payload)
+                    headers.append("oc-signature", signature.toHexString())
+                    body = payload
                 }.execute()
 
                 val response = Json.decodeFromString<Response>(String(httpResponse.readBytes()))

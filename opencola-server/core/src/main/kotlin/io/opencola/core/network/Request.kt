@@ -17,6 +17,9 @@ data class Request(
     val parameters: Map<String, String>? = null,
     val body: ByteArray? = null,
 ) {
+    override fun toString(): String {
+        return "Request(from=$from, method=$method, path=$path, headers=$headers, parameters=$parameters, body.size=${body?.size})"
+    }
     enum class Method {
         DELETE,
         GET,

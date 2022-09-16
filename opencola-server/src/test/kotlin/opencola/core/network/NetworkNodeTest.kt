@@ -73,8 +73,12 @@ class NetworkNodeTest : PeerTest() {
             val resource1 = ResourceEntity(authority1.entityId, URI("https://resource1"), "Resource1")
             val entityStore1 = application1.application.inject<EntityStore>().also { it.updateEntities(resource1) }
 
+            println("Adding application1 as peer to application0")
+            // Note this will trigger an expected error in the logs, since it will trigger a transaction request, but
+            // app0 isn't known to app1 yet
             addPeer(application0, application1)
             readStdOut { line -> line.contains("Completed requesting transactions from") }
+            println("Adding application0 as peer to application1")
             addPeer(application1, application0)
 
             // Connection should trigger two index operations from transaction sharing

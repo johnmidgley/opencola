@@ -64,7 +64,8 @@ class NetworkNode(
         val response = router.handleRequest(request)
 
         // Since we received a request, the peer must be online
-        updatePeerStatus(request.from, Online)
+        if(request.from != authorityId)
+            updatePeerStatus(request.from, Online)
 
         response
     }

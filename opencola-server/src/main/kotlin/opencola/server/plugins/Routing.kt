@@ -7,15 +7,14 @@ import io.ktor.http.content.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import io.opencola.core.extensions.hexStringToByteArray
 import mu.KotlinLogging
 import opencola.core.extensions.nullOrElse
 import io.opencola.core.model.Authority
 import io.opencola.core.model.Id
 import io.opencola.core.network.Notification
-import io.opencola.core.network.Request
 import io.opencola.core.network.handleGetTransactions
 import io.opencola.core.network.handleNotification
-import io.opencola.core.network.providers.http.HttpNetworkProvider
 import opencola.server.handlers.*
 import io.opencola.core.config.Application as app
 
@@ -141,10 +140,9 @@ fun Application.configureRouting(app: app) {
         }
 
         post("/networkNode") {
-            val httpNetworkProvider = app.inject<HttpNetworkProvider>()
-            val request = call.receive<Request>()
-            val response = httpNetworkProvider.handleRequest(request)
-            call.respond(response)
+            val signature = call.request.header("oc-signature")?.hexStringToByteArray()
+            val payload = call.receive<ByteArray>()
+            call.respond(handleNetworkNode(app.inject(), app.inject(), payload, signature))
         }
 
         static(""){

@@ -69,7 +69,7 @@ fun getDefaultRoutes(
         Route(
             Request.Method.GET,
             "/ping"
-        ) { Response(200, "Pong") },
+        ) { Response(200, "pong") },
         Route(
             Request.Method.POST,
             "/notifications"

@@ -49,6 +49,10 @@ class MainReactor(
     }
 
     private fun requestTransactions(peer: Authority) {
+        if(peer.entityId == authority.entityId) {
+            logger.warn { "Attempt to request transactions from self" }
+        }
+
         var mostRecentTransactionId = entityStore.getLastTransactionId(peer.entityId)
 
         // TODO - Config max batches
