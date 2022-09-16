@@ -51,4 +51,13 @@ docker tag oc-relay:latest 147892678753.dkr.ecr.us-west-2.amazonaws.com/oc-relay
 docker push 147892678753.dkr.ecr.us-west-2.amazonaws.com/oc-relay:latest
 ```
 
+**Update Image**
+
+[Stack Overflow](https://stackoverflow.com/questions/48099941/how-to-update-container-image-in-aws-fargate)
+
+Not tested: 
+```
+aws ecs update-service --cluster <cluster> --service <service> --force-new-deployment
+```
+
 **[Delete image or repository](https://docs.aws.amazon.com/AmazonECR/latest/userguide/getting-started-cli.html)**
