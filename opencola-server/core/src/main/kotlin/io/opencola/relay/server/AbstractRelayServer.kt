@@ -31,6 +31,10 @@ abstract class AbstractRelayServer(
         openMutex.withLock { }
     }
 
+    suspend fun connectionStates() : List<Pair<String, Boolean>> {
+        return connections.map { Pair(Id.ofPublicKey(it.key).toString(), it.value.isReady()) }
+    }
+
     private suspend fun authenticate(socketSession: SocketSession): PublicKey? {
         try {
             val encodedPublicKey = socketSession.readSizedByteArray()

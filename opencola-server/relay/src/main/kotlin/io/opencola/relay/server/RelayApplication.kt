@@ -4,12 +4,9 @@ import io.ktor.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.opencola.relay.server.plugins.configureRouting
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import io.ktor.websocket.*
 
-fun startWebServer(port: Int): NettyApplicationEngine {
+fun startWebServer(port: Int, wait: Boolean = false): NettyApplicationEngine {
     return embeddedServer(Netty, port = port, host = "0.0.0.0") {
         install(WebSockets) {
             // TODO: Check these values
@@ -19,13 +16,9 @@ fun startWebServer(port: Int): NettyApplicationEngine {
             masking = false
         }
         configureRouting(WebSocketRelayServer())
-    }.start()
+    }.start(wait)
 }
 
 fun main() {
-    startWebServer(8080)
-
-    runBlocking {
-        launch(Dispatchers.Default) { StandardSocketRelayServer(5796).open() }
-    }
+    startWebServer(8080, true)
 }

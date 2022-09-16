@@ -23,7 +23,7 @@ class ApplicationTest {
         }) {
             handleRequest(HttpMethod.Get, "/").apply {
                 assertEquals(HttpStatusCode.OK, response.status())
-                assertEquals("OpenCola Relay Server", response.content)
+                assert(response.content!!.startsWith("OpenCola Relay Server"))
             }
         }
     }
