@@ -47,6 +47,8 @@ docker tag oc-relay:latest 147892678753.dkr.ecr.us-west-2.amazonaws.com/oc-relay
 ```
 
 **Push Image**
+
+**For first push** - use ``push-to-aws`` thereafter. 
 ```
 docker push 147892678753.dkr.ecr.us-west-2.amazonaws.com/oc-relay:latest
 ```
@@ -54,10 +56,11 @@ docker push 147892678753.dkr.ecr.us-west-2.amazonaws.com/oc-relay:latest
 **Update Image**
 
 [Stack Overflow](https://stackoverflow.com/questions/48099941/how-to-update-container-image-in-aws-fargate)
+ 
+```
+aws ecs update-service --cluster oc-relay-cluster --service oc-relay-container-service --force-new-deployment
+```
 
-Not tested: 
-```
-aws ecs update-service --cluster <cluster> --service <service> --force-new-deployment
-```
+May need to manually delete old task. 
 
 **[Delete image or repository](https://docs.aws.amazon.com/AmazonECR/latest/userguide/getting-started-cli.html)**
