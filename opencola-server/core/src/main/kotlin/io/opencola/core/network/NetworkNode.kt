@@ -18,6 +18,8 @@ import kotlin.collections.listOf
 import kotlin.collections.set
 import io.opencola.core.config.NetworkConfig as OpenColaNetworkConfig
 
+// TODO: If another node suspends and (which looks offline) and then wakes up, other nodes will not be aware that it's
+//  back online. Ping when coming out of suspend, or ping / request transactions periodically?
 
 class NetworkNode(
     private val config: OpenColaNetworkConfig,
