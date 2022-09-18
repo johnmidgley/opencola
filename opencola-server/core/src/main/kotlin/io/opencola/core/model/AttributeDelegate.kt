@@ -29,6 +29,7 @@ val tagsAttributeDelegate = MultiValueSetAttributeDelegate<String>(CoreAttribute
 val publicKeyAttributeDelegate = AttributeDelegate(PublicKeyByteArrayCodec)
 val byteArrayAttributeDelegate = AttributeDelegate(BytesByteArrayCodec)
 
+@Suppress("UNCHECKED_CAST")
 class MultiValueSetAttributeDelegate<T> (val attribute: Attribute) {
     operator fun getValue(thisRef: Entity, property: KProperty<*>): Set<T> {
         return thisRef

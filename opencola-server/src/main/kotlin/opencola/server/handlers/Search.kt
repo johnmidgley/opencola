@@ -13,6 +13,7 @@ data class SearchResult(val id: String, val name: String?, val uri: String, val 
 data class SearchResults(val query: String, val matches: List<SearchResult>)
 
 fun handleSearch(authority: Authority, entityStore: EntityStore, searchIndex: SearchIndex, query: String) : SearchResults {
+    // TODO: Make search index take authority as parameter
     val results = searchIndex.search(query).map {
         when (val entity = entityStore.getEntity(it.authorityId, it.entityId)){
             is ResourceEntity -> SearchResult(it.entityId.toString(), it.name, entity.uri.toString(), it.description)

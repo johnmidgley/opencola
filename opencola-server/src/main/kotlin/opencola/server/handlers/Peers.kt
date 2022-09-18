@@ -63,7 +63,7 @@ data class TokenRequest(val token: String)
 @Serializable
 data class PeersResult(val authorityId: String, val pagingToken: String?, val results: List<Peer>) {
     constructor(authority: Authority, pagingToken: String?, peers: List<Peer>) :
-            this(authority.entityId.toString(), null, peers)
+            this(authority.entityId.toString(), pagingToken, peers)
 }
 
 fun getPeers(authority: Authority, addressBook: AddressBook): PeersResult {

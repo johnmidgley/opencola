@@ -1,11 +1,15 @@
 package io.opencola.relay
 
+import io.ktor.server.netty.*
 import io.opencola.core.security.generateKeyPair
 import io.opencola.relay.client.Client
 import io.opencola.relay.client.WebSocketClient
 import io.opencola.relay.common.State
 import io.opencola.relay.server.startWebServer
-import kotlinx.coroutines.*
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import opencola.core.extensions.append
 import java.security.KeyPair
 import java.security.PublicKey
@@ -87,31 +91,39 @@ class ConnectionTest {
     @Test
     fun testServerPartition() {
         runBlocking {
-            val relayServer0 = startWebServer(defaultPort)
-            val client0 = getClient("client0").also { launch { open(it) }; it.waitUntilOpen() }
-            val client1 = getClient("client1")
-                .also { launch { it.open { _, p -> p.append(" client1".toByteArray()) } }; it.waitUntilOpen() }
+            val relayServer0: NettyApplicationEngine?
+            var relayServer1: NettyApplicationEngine? = null
+            var client0: Client? = null
+            var client1: Client? = null
 
-            val peerResponse0 = client0.sendMessage(client1.publicKey, "hello".toByteArray())
-            assertNotNull(peerResponse0)
-            assertEquals("hello client1", String(peerResponse0))
+            try {
+                relayServer0 = startWebServer(defaultPort)
+                client0 = getClient("client0").also { launch { open(it) }; it.waitUntilOpen() }
+                client1 = getClient("client1")
+                    .also { launch { it.open { _, p -> p.append(" client1".toByteArray()) } }; it.waitUntilOpen() }
 
-            relayServer0.stop(200,200)
+                val peerResponse0 = client0.sendMessage(client1.publicKey, "hello".toByteArray())
+                assertNotNull(peerResponse0)
+                assertEquals("hello client1", String(peerResponse0))
 
-            val peerResponse1 = client0.sendMessage(client1.publicKey, "hello".toByteArray())
-            assertNull(peerResponse1)
+                relayServer0.stop(200, 200)
 
-            val relayServer1 = startWebServer(defaultPort)
+                val peerResponse1 = client0.sendMessage(client1.publicKey, "hello".toByteArray())
+                assertNull(peerResponse1)
 
-            val peerResponse2 = client0.sendMessage(client1.publicKey, "hello".toByteArray())
-            assertNotNull(peerResponse2)
-            assertEquals("hello client1", String(peerResponse2))
+                relayServer1 = startWebServer(defaultPort)
 
-            client0.close()
-            client1.close()
-            relayServer1.stop(200,200)
+                val peerResponse2 = client0.sendMessage(client1.publicKey, "hello".toByteArray())
+                assertNotNull(peerResponse2)
+                assertEquals("hello client1", String(peerResponse2))
+            } finally {
+                client0?.close()
+                client1?.close()
+                relayServer1?.stop(200, 200)
+            }
         }
     }
+
 
     @Test
     fun testClientPartition() {

@@ -21,8 +21,8 @@ interface StreamSerializer<T> {
         }
     }
 
-    fun decode(bytes: ByteArray) : T {
-        return ByteArrayInputStream(bytes).use {
+    fun decode(value: ByteArray) : T {
+        return ByteArrayInputStream(value).use {
             decode(it)
         }
     }
