@@ -75,7 +75,7 @@ abstract class AbstractClient(
         }
 
         return connectionMutex.withLock {
-            if (_connection == null || !_connection!!.isReady()) {
+            if (_state != Closed && _connection == null || !_connection!!.isReady()) {
 
                 if(connectionFailures > 0) {
                     val delayInMilliseconds = retryPolicy(connectionFailures)
@@ -83,13 +83,12 @@ abstract class AbstractClient(
                     delay(delayInMilliseconds)
                 }
 
-                logger.info { "Creating Connection for: ${Id.ofPublicKey(keyPair.public)} at $hostname:$port" }
-
                 try {
                     val socketSession = getSocketSession()
                     authenticate(socketSession)
                     _connection = Connection(socketSession, name)
                     connectionFailures = 0
+                    logger.info { "Connection created for ${Id.ofPublicKey(keyPair.public)}" }
                 } catch (e: ConnectException) {
                     // TODO: Max connectFailures?
                     connectionFailures++
@@ -131,7 +130,7 @@ abstract class AbstractClient(
                         openMutex.lock()
 
                     getConnection(false).also {
-                        _state = Open
+                        if(_state == Opening) _state = Open
                         openMutex.unlock()
                         it.listen { payload -> handleMessage(payload, messageHandler) }
                     }
@@ -152,6 +151,7 @@ abstract class AbstractClient(
         listenJob = null
         _connection?.close()
         _connection = null
+        logger.info { "Closed - $name" }
     }
 
     override suspend fun sendMessage(to: PublicKey, body: ByteArray): ByteArray? {

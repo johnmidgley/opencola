@@ -111,6 +111,9 @@ data class InviteToken(
                     throw IllegalArgumentException("http(s) addresses must be absolute")
             } else if (address.scheme == "zt") {
                 ZeroTierAddress.fromURI(address) ?: throw IllegalArgumentException("Invalid ZeroTier address: $address")
+            } else if(address.scheme == "ocr") {
+                if (address.port == -1)
+                    throw IllegalArgumentException("ocr addresses must include port")
             } else
                 throw IllegalArgumentException("Invalid host address $address")
 

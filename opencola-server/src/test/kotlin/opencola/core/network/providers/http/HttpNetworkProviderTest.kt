@@ -14,7 +14,7 @@ class HttpNetworkProviderTest : PeerTest() {
     @Test
     fun testHttpNetworkProvider() {
         val applicationNode =
-            getApplicationNode(0, zeroTierIntegrationEnabled = false, persistent = false).also { it.start() }
+            getApplicationNode().also { it.start() }
 
         try {
             val app = applicationNode.application
@@ -33,4 +33,17 @@ class HttpNetworkProviderTest : PeerTest() {
     }
 
     // TODO: Add test that makes request without signature, bad signature, bad public key, inactive authority
+
+    @Test
+    fun testHttpConnectAndReplicate() {
+        val application0 = getApplicationNode().also { it.start() }
+        val application1 = getApplicationNode().also { it.start() }
+
+        try {
+            testConnectAndReplicate(application0, application1)
+        } finally {
+            application0.stop()
+            application1.stop()
+        }
+    }
 }

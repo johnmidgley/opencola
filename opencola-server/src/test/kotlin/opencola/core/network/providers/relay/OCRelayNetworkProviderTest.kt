@@ -17,21 +17,20 @@ import kotlin.test.assertNull
 class OCRelayNetworkProviderTest : PeerTest() {
     private val ocRelayUri = URI("ocr://0.0.0.0:8080")
 
+    fun setAuthorityAddressToRelay(authorityId: Id, addressBook: AddressBook) : Authority {
+        val authority = addressBook.getAuthority(authorityId)!!
+        authority.uri = ocRelayUri
+        return addressBook.updateAuthority(authority)
+    }
+
     @Test
     fun testOCRelayNetworkProvider() {
         println("Getting applications")
         val (app0, app1) = getApplications(2)
 
         println("Setting Relay Addresses")
-        val addressBook0 = app0.inject<AddressBook>()
-        val peer1 = addressBook0.getAuthority(app1.inject<Authority>().entityId)!!
-        peer1.uri = ocRelayUri
-        addressBook0.updateAuthority(peer1)
-
-        val addressBook1 = app1.inject<AddressBook>()
-        val peer0 = addressBook1.getAuthority(app0.inject<Authority>().entityId)!!
-        peer0.uri = ocRelayUri
-        addressBook1.updateAuthority(peer0)
+        val peer1 = setAuthorityAddressToRelay(app1.inject<Authority>().entityId, app0.inject())
+        val peer0 = setAuthorityAddressToRelay(app0.inject<Authority>().entityId, app1.inject())
 
         println("Starting relay server")
         val webServer = startWebServer(8080)
@@ -58,12 +57,14 @@ class OCRelayNetworkProviderTest : PeerTest() {
 
             println("Testing wrong public key on recipient side")
             run {
+                val addressBook1 = app1.inject<AddressBook>()
                 val peer = addressBook1.getAuthority(peer0.entityId)!!
                 peer.publicKey = generateKeyPair().public
                 addressBook1.updateAuthority(peer)
                 val response =
                     networkNode0.sendRequest(peer1.entityId, Request(peer0.entityId, Request.Method.GET, "/ping"))
-                assertNull(response)
+                assertNotNull(response)
+                assertEquals(400, response.status)
             }
 
             // TODO: Test bad signature
@@ -75,6 +76,27 @@ class OCRelayNetworkProviderTest : PeerTest() {
             networkNode1.stop()
             println("Stopping relay server")
             webServer.stop(200, 200)
+        }
+    }
+
+    @Test
+    fun testRelayConnectAndReplicate() {
+        val application0 = getApplicationNode().also { it.start() }
+        val application1 = getApplicationNode().also { it.start() }
+        val app0 = application0.application
+        val app1 = application1.application
+
+        val relayServer = startWebServer(8080)
+
+        setAuthorityAddressToRelay(app0.inject<Authority>().entityId, app0.inject() )
+        setAuthorityAddressToRelay(app1.inject<Authority>().entityId, app1.inject() )
+
+        try {
+            testConnectAndReplicate(application0, application1)
+        } finally {
+            application0.stop()
+            application1.stop()
+            relayServer.stop(200,200)
         }
     }
 }

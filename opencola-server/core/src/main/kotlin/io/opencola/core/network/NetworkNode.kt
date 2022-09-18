@@ -1,20 +1,17 @@
 package io.opencola.core.network
 
-import mu.KotlinLogging
 import io.opencola.core.event.EventBus
 import io.opencola.core.event.Events
-import opencola.core.extensions.nullOrElse
 import io.opencola.core.model.Authority
 import io.opencola.core.model.Id
 import io.opencola.core.network.NetworkNode.PeerStatus.*
 import io.opencola.core.network.providers.zerotier.ZeroTierNetworkProvider
 import io.opencola.core.security.Encryptor
 import io.opencola.core.storage.AddressBook
+import mu.KotlinLogging
+import opencola.core.extensions.nullOrElse
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.collections.forEach
-import kotlin.collections.isNotEmpty
-import kotlin.collections.listOf
 import kotlin.collections.set
 import io.opencola.core.config.NetworkConfig as OpenColaNetworkConfig
 
@@ -39,6 +36,7 @@ class NetworkNode(
         Online,
     }
 
+    @Synchronized
     private fun updatePeerStatus(peerId: Id, status: PeerStatus, suppressNotifications: Boolean = false): PeerStatus {
         val peer = addressBook.getAuthority(peerId)
 
@@ -47,13 +45,18 @@ class NetworkNode(
             return Unknown
         }
 
-        logger.info { "Updating peer ${peer.name} to $status" }
-
         peerStatuses.getOrDefault(peerId, Unknown).let { previousStatus ->
-            peerStatuses[peerId] = status
+            if(status != previousStatus) {
+                logger.info { "Updating peer ${peer.name} to $status" }
+                peerStatuses[peerId] = status
 
-            if (!suppressNotifications && status != previousStatus && status == Online) {
-                eventBus.sendMessage(Events.PeerNotification.toString(), Notification(peerId, PeerEvent.Online).encode())
+                // TODO: Why ignore anything but online?
+                if (!suppressNotifications && status == Online) {
+                    eventBus.sendMessage(
+                        Events.PeerNotification.toString(),
+                        Notification(peerId, PeerEvent.Online).encode()
+                    )
+                }
             }
 
             return previousStatus
@@ -186,9 +189,6 @@ class NetworkNode(
         //  this way is super ugly. Figure out a better way
         val suppressNotifications = request.path == "/transactions"
 
-        if(suppressNotifications)
-            logger.warn { "Suppressing notifications" }
-
         if (response == null || response.status < 400)
             // Don't update status for calls that made it to a peer but result in an error. In particular, this
             // avoids a peer transition from offline to online when a call fails for authorization reasons
@@ -205,6 +205,10 @@ class NetworkNode(
             return null
         }
 
-        return sendRequest(peer, request)
+        return sendRequest(peer, request)?.also {
+            if (it.status >= 400) {
+                logger.warn { it }
+            }
+        }
     }
 }

@@ -27,28 +27,38 @@ class OCRelayNetworkProvider(private val addressBook: AddressBook, private val k
     // TODO: Move to AbstractProvider
     var started = false
 
-    private fun addClient(uri: URI) {
-        if(uri.scheme == openColaRelayScheme && !connections.contains(uri)) {
-            val client = WebSocketClient(uri.host, uri.port, keyPair, uri.toString())
-            // TODO: Move away from threads, or at least just use one
-            val listenThread = thread {
-                try {
-                    runBlocking {
-                        logger.info { "Opening client: $uri" }
-                        client.open { publicKey, request -> handleRequest(publicKey, request) }
-                    }
-                } catch (e: InterruptedException) {
-                    // Expected on shutdown
-                }
-            }
-            connections[uri] = ConnectionInfo(client, listenThread)
+    @Synchronized
+    private fun addClient(uri: URI): Client {
+        if(uri.scheme != openColaRelayScheme) {
+            throw IllegalArgumentException("$uri does not match $openColaRelayScheme")
         }
+
+        connections[uri]?.let {
+            logger.warn { "Client already started: $uri" }
+            return it.client
+        }
+
+        val client = WebSocketClient(uri.host, uri.port, keyPair, uri.toString())
+        // TODO: Move away from threads, or at least just use one
+        val listenThread = thread {
+            try {
+                runBlocking {
+                    logger.info { "Opening client: $uri" }
+                    client.open { publicKey, request -> handleRequest(publicKey, request) }
+                }
+            } catch (e: InterruptedException) {
+                // Expected on shutdown
+            }
+        }
+        connections[uri] = ConnectionInfo(client, listenThread)
+
+        return client
     }
 
     override fun start() {
         addressBook
             .getAuthorities(true)
-            .filter {  it.uri?.scheme == openColaRelayScheme }
+            .filter { it.uri?.scheme == openColaRelayScheme }
             .mapNotNull { it.uri }
             .toSet()
             .forEach{ addClient(it) }
@@ -112,11 +122,16 @@ class OCRelayNetworkProvider(private val addressBook: AddressBook, private val k
         val handler = this.handler ?: throw IllegalStateException("Call to handleRequest when handler has not been set")
         val request = Json.decodeFromString<Request>(String(bytes))
         val fromAuthority = addressBook.getAuthority(request.from)
-            ?: throw RuntimeException("Received request from unknown authority: ${request.from}")
-        if(fromAuthority.publicKey != fromPublicKey)
-            throw RuntimeException("Request public key does not match authority public key")
 
-        val response = handler(request)
+        val response = if (fromAuthority == null) {
+            logger.warn { "Received request from unknown authority: ${request.from}" }
+            Response(401, "Unknown sender")
+        } else if (fromAuthority.publicKey != fromPublicKey) {
+            val message = "Request public key does not match authority public key"
+            logger.error { message }
+            Response(400, message)
+        } else
+            handler(request)
 
         return Json.encodeToString(response).toByteArray()
     }
