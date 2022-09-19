@@ -9,6 +9,8 @@ interface NetworkProvider {
 
     // TODO: Needed?
     fun getAddress() : URI
+    fun getScheme() : String
+    fun validateAddress(address: URI)
 
     // If a peer URI changes with the same provider, it will result in removePeer(oldPeer) addPeer(newPeer)
     fun addPeer(peer: Authority)

@@ -3,7 +3,6 @@ package io.opencola.core.network
 import io.opencola.core.serialization.Base58
 import io.opencola.core.model.Authority
 import io.opencola.core.model.Id
-import io.opencola.core.network.providers.zerotier.ZeroTierAddress
 import io.opencola.core.security.Signator
 import io.opencola.core.security.isValidSignature
 import io.opencola.core.serialization.*
@@ -109,8 +108,6 @@ data class InviteToken(
             } else if (address.scheme.startsWith("http")) {
                 if (!address.isAbsolute)
                     throw IllegalArgumentException("http(s) addresses must be absolute")
-            } else if (address.scheme == "zt") {
-                ZeroTierAddress.fromURI(address) ?: throw IllegalArgumentException("Invalid ZeroTier address: $address")
             } else if(address.scheme == "ocr") {
                 if (address.port == -1)
                     throw IllegalArgumentException("ocr addresses must include port")

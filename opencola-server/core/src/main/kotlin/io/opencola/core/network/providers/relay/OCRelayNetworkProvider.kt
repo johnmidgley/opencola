@@ -81,6 +81,19 @@ class OCRelayNetworkProvider(private val addressBook: AddressBook, private val k
         TODO("Not yet implemented")
     }
 
+    override fun getScheme(): String {
+        return openColaRelayScheme
+    }
+
+    override fun validateAddress(address: URI) {
+        if(address.scheme != getScheme()) {
+            throw IllegalArgumentException("Invalid scheme for provider: ${address.scheme}")
+        }
+
+        if (address.port == -1)
+            throw IllegalArgumentException("ocr addresses must include port")
+    }
+
     override fun addPeer(peer: Authority) {
         peer.uri?.let { addClient(it) }
     }

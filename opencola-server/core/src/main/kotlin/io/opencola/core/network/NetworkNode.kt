@@ -5,7 +5,6 @@ import io.opencola.core.event.Events
 import io.opencola.core.model.Authority
 import io.opencola.core.model.Id
 import io.opencola.core.network.NetworkNode.PeerStatus.*
-import io.opencola.core.network.providers.zerotier.ZeroTierNetworkProvider
 import io.opencola.core.security.Encryptor
 import io.opencola.core.storage.AddressBook
 import mu.KotlinLogging
@@ -106,32 +105,7 @@ class NetworkNode(
         return authority.networkToken.nullOrElse { String(encryptor.decrypt(authorityId, it)) }
     }
 
-    // Only meant to be called from peerUpdateHandler
-    private fun setAuthToken(authority: Authority) {
-        if (authority.entityId != authorityId) {
-            logger.warn { "Attempt to set auth token for non root authority" }
-            return
-        }
-
-        val authToken = getAuthToken(authority)
-        setProvider("zt", null)
-
-        if (authToken != null) {
-            val provider = ZeroTierNetworkProvider(storagePath, config.zeroTierConfig, authority, router, authToken)
-            setProvider("zt", provider)
-            authority.uri = provider.getAddress()
-
-            // Avoid update recursion
-            addressBook.updateAuthority(authority, suppressUpdateHandler = peerUpdateHandler)
-        }
-    }
-
     private val peerUpdateHandler : (Authority?, Authority?) -> Unit = { previousAuthority, currentAuthority ->
-        // TODO: Move this.
-        if(currentAuthority?.entityId == authorityId) {
-            setAuthToken(currentAuthority)
-        }
-
         if(previousAuthority?.uri != currentAuthority?.uri) {
             previousAuthority?.uri?.let {
                 providers[it.scheme]?.removePeer(previousAuthority) ?:
@@ -147,16 +121,7 @@ class NetworkNode(
 
     fun start() {
         logger.info { "Starting..." }
-
-        if(config.zeroTierConfig.providerEnabled) {
-            val authority = addressBook.getAuthority(authorityId)
-                ?: throw IllegalArgumentException("Root authority not in AddressBook: $authorityId")
-
-            setAuthToken(authority)
-        }
-
         providers.values.forEach { it.start() }
-
         addressBook.addUpdateHandler(peerUpdateHandler)
         logger.info { "Started" }
     }

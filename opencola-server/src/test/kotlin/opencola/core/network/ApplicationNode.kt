@@ -32,14 +32,6 @@ class ApplicationNode(val application: Application) : Node {
         server?.stop(1000, 1000)
     }
 
-    override fun setNetworkToken(token: String) {
-        val app = application
-        val peer = getPeers(app.inject(), app.inject())
-            .let { result -> result.results.single { it.id == result.authorityId } }
-        val peer1 = Peer(peer.id, peer.name, peer.publicKey, peer.address, peer.imageUri, peer.isActive, token)
-        updatePeer(peer1)
-    }
-
     override fun getInviteToken(): String {
         return getInviteToken(application.inject<Authority>().entityId, application.inject(), application.inject())
     }

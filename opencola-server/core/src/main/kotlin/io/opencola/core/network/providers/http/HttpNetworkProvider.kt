@@ -46,6 +46,15 @@ class HttpNetworkProvider(serverConfig: ServerConfig, private val authority: Aut
         return serverAddress
     }
 
+    override fun getScheme(): String {
+        return "http"
+    }
+
+    override fun validateAddress(address: URI) {
+        // Just needs to be a valid URI
+        return
+    }
+
     override fun addPeer(peer: Authority) {
         // Nothing to do
     }

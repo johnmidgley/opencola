@@ -61,8 +61,6 @@ dependencies {
     implementation("org.apache.lucene:lucene-queryparser:9.1.0")
     implementation("org.jetbrains.kotlinx:kotlinx-cli:0.3.4")
 
-    implementation("com.zerotier.sockets:libzt-1.8.4")
-
     testImplementation("io.ktor:ktor-server-tests:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
 }

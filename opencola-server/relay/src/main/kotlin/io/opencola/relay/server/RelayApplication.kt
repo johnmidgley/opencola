@@ -10,10 +10,11 @@ fun startWebServer(port: Int, wait: Boolean = false): NettyApplicationEngine {
     return embeddedServer(Netty, port = port, host = "0.0.0.0") {
         install(WebSockets) {
             // TODO: Check these values
-            // pingPeriod = Duration.ofSeconds(15)
-            // timeout = Duration.ofSeconds(15)
+            // pingPeriod = null
+            // timeout = Duration.ofHours(1)
             maxFrameSize = 1024 *1024 * 50
             masking = false
+
         }
         configureRouting(WebSocketRelayServer())
     }.start(wait)

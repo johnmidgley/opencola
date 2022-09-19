@@ -10,7 +10,6 @@ import io.opencola.core.model.Id
 import io.opencola.core.network.InviteToken
 import io.opencola.core.network.Notification
 import io.opencola.core.network.PeerEvent
-import io.opencola.core.network.providers.zerotier.ZeroTierNetworkProvider
 import io.opencola.core.security.Encryptor
 import io.opencola.core.security.Signator
 import io.opencola.core.security.decodePublicKey
@@ -20,7 +19,6 @@ import java.net.URI
 import java.security.PublicKey
 
 private val logger = KotlinLogging.logger("PeerHandler")
-const val redactedNetworkToken = "##########"
 
 @Serializable
 data class Peer(
@@ -30,9 +28,8 @@ data class Peer(
     val address: String,
     val imageUri: String?,
     val isActive: Boolean,
-    val networkToken: String?,
 ) {
-    constructor(id: Id, name: String, publicKey: PublicKey, address: URI, imageUri: URI?, isActive: Boolean, networkToken: String?) :
+    constructor(id: Id, name: String, publicKey: PublicKey, address: URI, imageUri: URI?, isActive: Boolean) :
             this(
                 id.toString(),
                 name,
@@ -40,7 +37,6 @@ data class Peer(
                 address.toString(),
                 imageUri?.toString(),
                 isActive,
-                networkToken,
             )
 
     fun toAuthority(authorityId: Id, encryptor: Encryptor) : Authority {
@@ -52,7 +48,6 @@ data class Peer(
             imageUri = imageUri.nullOrElse { URI(it) },
         ).also { authority ->
             authority.setActive(isActive)
-            authority.networkToken = networkToken.nullOrElse { encryptor.encrypt(authorityId, it.toByteArray()) }
         }
     }
 }
@@ -76,7 +71,6 @@ fun getPeers(authority: Authority, addressBook: AddressBook): PeersResult {
             it.uri!!,
             it.imageUri,
             addressBook.isAuthorityActive(it),
-            it.networkToken.nullOrElse { redactedNetworkToken },
         )
     }
 
@@ -108,20 +102,6 @@ fun updatePeer(authorityId: Id, addressBook: AddressBook, encryptor: Encryptor, 
         existingPeerAuthority.imageUri = peerAuthority.imageUri
         existingPeerAuthority.tags = peerAuthority.tags
         existingPeerAuthority.networkToken = peerAuthority.networkToken
-    }
-
-    if(peer.networkToken != null){
-        if(peerAuthority.entityId != authorityId){
-            throw IllegalArgumentException("Attempt to set networkToken for non root authority")
-        }
-
-        if(peer.networkToken != redactedNetworkToken) {
-            if(!ZeroTierNetworkProvider.isNetworkTokenValid(peer.networkToken)){
-                throw IllegalArgumentException("Network token provided is not valid: ${peer.networkToken}")
-            }
-
-            peerAuthority.networkToken = encryptor.encrypt(authorityId, peer.networkToken.toByteArray())
-        }
     }
 
     val peerToUpdate = existingPeerAuthority ?: peerAuthority
@@ -168,7 +148,6 @@ fun inviteTokenToPeer(authorityId: Id, inviteToken: String): Peer {
         decodedInviteToken.address,
         imageUri,
         true,
-        null,
     )
 }
 

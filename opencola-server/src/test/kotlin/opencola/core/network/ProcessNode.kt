@@ -60,16 +60,6 @@ class ProcessNode(private val nodePath: Path, val name: String, val serverPort: 
             process!!.destroy()
     }
 
-    override fun setNetworkToken(token: String){
-        val peersUri = serviceUri.resolve("/peers")
-        val peersResult: PeersResult = jsonHttpClient.get(peersUri)
-        val authorityId = peersResult.authorityId
-
-        val authority = peersResult.results.first{ it.id == authorityId }
-        val peer = Peer(authority.id, authority.name, authority.publicKey, authority.address, authority.imageUri, authority.isActive, token)
-        jsonHttpClient.put<Unit>(peersUri, peer)
-    }
-
     override fun getInviteToken(): String {
         return jsonHttpClient.get<TokenRequest>(serviceUri.resolve("/peers/token")).token
     }

@@ -9,7 +9,6 @@ interface Node {
     fun make()
     fun start() : Node
     fun stop()
-    fun setNetworkToken(token: String)
     fun getInviteToken() : String
     fun postInviteToken(token: String) : Peer
     fun getPeers() : PeersResult

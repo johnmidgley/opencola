@@ -5,14 +5,11 @@ import io.ktor.server.netty.*
 import mu.KotlinLogging
 import opencola.core.TestApplication
 import io.opencola.core.config.Application
-import io.opencola.core.config.ZeroTierConfig
-import io.opencola.core.config.setZeroTierConfig
 import io.opencola.core.io.readStdOut
 import io.opencola.core.model.Authority
 import io.opencola.core.model.ResourceEntity
 import io.opencola.core.storage.EntityStore
 import opencola.core.network.ApplicationNode
-import opencola.core.network.baseZtPort
 import opencola.server.handlers.inviteTokenToPeer
 import java.net.URI
 import kotlin.test.assertEquals

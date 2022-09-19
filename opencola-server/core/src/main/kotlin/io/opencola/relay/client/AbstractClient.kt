@@ -89,7 +89,7 @@ abstract class AbstractClient(
                     _connection = Connection(socketSession, name)
                     connectionFailures = 0
                     logger.info { "Connection created for ${Id.ofPublicKey(keyPair.public)}" }
-                } catch (e: ConnectException) {
+                } catch (e: Exception) {
                     // TODO: Max connectFailures?
                     connectionFailures++
                     throw e
