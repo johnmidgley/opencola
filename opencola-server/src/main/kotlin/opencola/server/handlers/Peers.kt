@@ -39,7 +39,7 @@ data class Peer(
                 isActive,
             )
 
-    fun toAuthority(authorityId: Id, encryptor: Encryptor) : Authority {
+    fun toAuthority(authorityId: Id) : Authority {
         return Authority(
             authorityId,
             decodePublicKey(publicKey),
@@ -82,10 +82,10 @@ fun deletePeer(addressBook: AddressBook, peerId: Id) {
     addressBook.deleteAuthority(peerId)
 }
 
-fun updatePeer(authorityId: Id, addressBook: AddressBook, encryptor: Encryptor, eventBus: EventBus, peer: Peer) {
+fun updatePeer(authorityId: Id, addressBook: AddressBook, eventBus: EventBus, peer: Peer) {
     logger.info { "Updating peer: $peer" }
 
-    val peerAuthority = peer.toAuthority(authorityId, encryptor)
+    val peerAuthority = peer.toAuthority(authorityId)
     val existingPeerAuthority = addressBook.getAuthority(peerAuthority.entityId)
 
     if(existingPeerAuthority != null) {

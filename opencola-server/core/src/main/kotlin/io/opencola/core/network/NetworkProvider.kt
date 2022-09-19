@@ -7,8 +7,6 @@ interface NetworkProvider {
     fun start()
     fun stop()
 
-    // TODO: Needed?
-    fun getAddress() : URI
     fun getScheme() : String
     fun validateAddress(address: URI)
 

@@ -77,10 +77,6 @@ class OCRelayNetworkProvider(private val addressBook: AddressBook, private val k
         logger.info { "Stopped" }
     }
 
-    override fun getAddress(): URI {
-        TODO("Not yet implemented")
-    }
-
     override fun getScheme(): String {
         return openColaRelayScheme
     }

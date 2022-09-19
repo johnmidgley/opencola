@@ -74,14 +74,17 @@ class NetworkNode(
         response
     }
 
-    fun setProvider(scheme: String, provider: NetworkProvider?) {
-        if(provider == null)
-            providers.remove(scheme)?.stop()
-        else {
-            provider.setRequestHandler(requestHandler)
-            providers[scheme] = provider
-            provider.start()
+    fun addProvider(provider: NetworkProvider) {
+        val scheme = provider.getScheme()
+        if(providers.contains(scheme)) {
+            throw IllegalArgumentException("Provider already registered: $scheme")
         }
+
+        // TODO: Check not already started?
+
+        provider.setRequestHandler(requestHandler)
+        providers[scheme] = provider
+        provider.start()
     }
 
     fun broadcastRequest(request: Request) {

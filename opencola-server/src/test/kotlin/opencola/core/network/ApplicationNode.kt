@@ -29,7 +29,7 @@ class ApplicationNode(val application: Application) : Node {
     override fun stop() {
         application.inject<NetworkNode>().stop()
         application.inject<EventBus>().stop()
-        server?.stop(1000, 1000)
+        server?.stop(500, 500)
     }
 
     override fun getInviteToken(): String {
@@ -45,7 +45,7 @@ class ApplicationNode(val application: Application) : Node {
     }
 
     override fun updatePeer(peer: Peer) {
-        updatePeer(application.inject<Authority>().entityId, application.inject(), application.inject(), application.inject(), peer)
+        updatePeer(application.inject<Authority>().entityId, application.inject(), application.inject(), peer)
     }
 
     companion object Factory {

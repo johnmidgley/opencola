@@ -12,7 +12,6 @@ import io.opencola.core.network.RequestRouter
 import io.opencola.core.network.getDefaultRoutes
 import io.opencola.core.network.providers.http.HttpNetworkProvider
 import io.opencola.core.network.providers.relay.OCRelayNetworkProvider
-import io.opencola.core.network.providers.relay.openColaRelayScheme
 import io.opencola.core.search.LuceneSearchIndex
 import io.opencola.core.security.*
 import io.opencola.core.storage.*
@@ -118,8 +117,8 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
             return Application(applicationPath, storagePath, config, injector).also { app ->
                 app.inject<NetworkNode>().let { networkNode ->
                     // TODO: make scheme be part of provider, so you can't incorrectly register
-                    networkNode.setProvider("http", app.inject<HttpNetworkProvider>())
-                    networkNode.setProvider(openColaRelayScheme, app.inject<OCRelayNetworkProvider>())
+                    networkNode.addProvider(app.inject<HttpNetworkProvider>())
+                    networkNode.addProvider(app.inject<OCRelayNetworkProvider>())
                 }
             }
         }

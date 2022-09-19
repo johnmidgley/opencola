@@ -42,10 +42,6 @@ class HttpNetworkProvider(serverConfig: ServerConfig, private val authority: Aut
         logger.info { "Stopped" }
     }
 
-    override fun getAddress(): URI {
-        return serverAddress
-    }
-
     override fun getScheme(): String {
         return "http"
     }
