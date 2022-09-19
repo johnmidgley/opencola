@@ -50,6 +50,9 @@ class OCRelayNetworkProvider(private val addressBook: AddressBook, private val k
                 // Expected on shutdown
             }
         }
+
+        // TODO: The underlying client may reconnect due to server partitioning, sleep/wake, etc. When this happens
+        //  it might be good to request new transactions from any peers on that connection
         connections[uri] = ConnectionInfo(client, listenThread)
 
         return client
