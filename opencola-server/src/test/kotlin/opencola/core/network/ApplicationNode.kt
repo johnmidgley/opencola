@@ -45,7 +45,7 @@ class ApplicationNode(val application: Application) : Node {
     }
 
     override fun updatePeer(peer: Peer) {
-        updatePeer(application.inject<Authority>().entityId, application.inject(), application.inject(), peer)
+        updatePeer(application.inject<Authority>().entityId, application.inject(), application.inject(), application.inject(), peer)
     }
 
     companion object Factory {

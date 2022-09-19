@@ -95,9 +95,12 @@ class OCRelayNetworkProvider(private val addressBook: AddressBook, private val k
     }
 
     override fun removePeer(peer: Authority) {
+        logger.info { "Removing peer: ${peer.entityId}" }
         peer.uri?.let { peerUri ->
-            if (addressBook.getAuthorities(true).none { it.uri == peerUri && it.entityId != peer.entityId })
+            if (addressBook.getAuthorities(true).none { it.uri == peerUri && it.entityId != peer.entityId }) {
+                runBlocking { connections[peerUri]?.client?.close() }
                 connections.remove(peerUri)
+            }
         }
     }
 

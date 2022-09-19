@@ -8,7 +8,7 @@ import io.opencola.core.network.NetworkNode.PeerStatus.*
 import io.opencola.core.security.Encryptor
 import io.opencola.core.storage.AddressBook
 import mu.KotlinLogging
-import opencola.core.extensions.nullOrElse
+import java.net.URI
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.set
@@ -33,6 +33,11 @@ class NetworkNode(
         Unknown,
         Offline,
         Online,
+    }
+
+    fun validatePeerAddress(address: URI) {
+        val provider = providers[address.scheme] ?: throw IllegalArgumentException("No provider for: ${address.scheme}")
+        provider.validateAddress(address)
     }
 
     @Synchronized
@@ -101,11 +106,6 @@ class NetworkNode(
                 }
             }
         }
-    }
-
-    // TODO: Move these AuthToken functions out of here. Should happen in peer handler.
-    private fun getAuthToken(authority: Authority) : String? {
-        return authority.networkToken.nullOrElse { String(encryptor.decrypt(authorityId, it)) }
     }
 
     private val peerUpdateHandler : (Authority?, Authority?) -> Unit = { previousAuthority, currentAuthority ->

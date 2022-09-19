@@ -8,9 +8,9 @@ import opencola.core.extensions.nullOrElse
 import io.opencola.core.model.Authority
 import io.opencola.core.model.Id
 import io.opencola.core.network.InviteToken
+import io.opencola.core.network.NetworkNode
 import io.opencola.core.network.Notification
 import io.opencola.core.network.PeerEvent
-import io.opencola.core.security.Encryptor
 import io.opencola.core.security.Signator
 import io.opencola.core.security.decodePublicKey
 import io.opencola.core.security.encode
@@ -82,7 +82,7 @@ fun deletePeer(addressBook: AddressBook, peerId: Id) {
     addressBook.deleteAuthority(peerId)
 }
 
-fun updatePeer(authorityId: Id, addressBook: AddressBook, eventBus: EventBus, peer: Peer) {
+fun updatePeer(authorityId: Id, addressBook: AddressBook, networkNode: NetworkNode, eventBus: EventBus, peer: Peer) {
     logger.info { "Updating peer: $peer" }
 
     val peerAuthority = peer.toAuthority(authorityId)
@@ -105,6 +105,12 @@ fun updatePeer(authorityId: Id, addressBook: AddressBook, eventBus: EventBus, pe
     }
 
     val peerToUpdate = existingPeerAuthority ?: peerAuthority
+
+    if(peerToUpdate.uri == null)
+        throw IllegalArgumentException("No URI specified for peer: ${peerToUpdate.entityId}")
+    else
+        networkNode.validatePeerAddress(peerToUpdate.uri!!)
+
     addressBook.updateAuthority(peerToUpdate)
 
     // TODO: Move out of here - doesn't belong
