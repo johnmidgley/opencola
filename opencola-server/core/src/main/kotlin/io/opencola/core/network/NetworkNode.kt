@@ -36,7 +36,9 @@ class NetworkNode(
     }
 
     fun validatePeerAddress(address: URI) {
-        val provider = providers[address.scheme] ?: throw IllegalArgumentException("No provider for: ${address.scheme}")
+        if(address.toString().isBlank()) throw IllegalArgumentException("Address cannot be empty")
+        val scheme = address.scheme ?: throw IllegalArgumentException("Address must contain a scheme")
+        val provider = providers[scheme] ?: throw IllegalArgumentException("No provider for: ${address.scheme}")
         provider.validateAddress(address)
     }
 
@@ -108,17 +110,34 @@ class NetworkNode(
         }
     }
 
-    private val peerUpdateHandler : (Authority?, Authority?) -> Unit = { previousAuthority, currentAuthority ->
-        if(previousAuthority?.uri != currentAuthority?.uri) {
-            previousAuthority?.uri?.let {
-                providers[it.scheme]?.removePeer(previousAuthority) ?:
-                    logger.warn { "No provider for scheme: ${it.scheme} - can't remove peer with uri $it" }
-            }
+    private fun getProvider(peer: Authority) : NetworkProvider? {
+        val provider = peer.uri?.let { providers[it.scheme] }
 
-            currentAuthority?.uri?.let {
-                providers[it.scheme]?.addPeer(currentAuthority) ?:
-                    logger.warn { "No provider for scheme: ${it.scheme} - can't add peer with uri $it" }
-            }
+        if(provider == null)
+            logger.warn { "No provider for ${peer.uri}" }
+
+        return provider
+    }
+
+    private fun addPeer(peer: Authority) {
+        getProvider(peer)?.addPeer(peer)
+    }
+
+    private fun removePeer(peer: Authority) {
+        getProvider(peer)?.removePeer(peer)
+    }
+
+    private val peerUpdateHandler: (Authority?, Authority?) -> Unit = { previousAuthority, currentAuthority ->
+        if (previousAuthority != null && currentAuthority != null
+            && previousAuthority.getActive() != currentAuthority.getActive()
+        ) {
+            if (previousAuthority.getActive())
+                removePeer(previousAuthority)
+            else
+                addPeer(currentAuthority)
+        } else if (previousAuthority?.uri != currentAuthority?.uri) {
+            previousAuthority?.let { if(it.getActive()) removePeer(it) }
+            currentAuthority?.let { if(it.getActive()) addPeer(it) }
         }
     }
 

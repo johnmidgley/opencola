@@ -89,8 +89,11 @@ class OCRelayNetworkProvider(private val addressBook: AddressBook, private val k
             throw IllegalArgumentException("Invalid scheme for provider: ${address.scheme}")
         }
 
+        // TODO: Should port be forced, or should there be a default ocr port?
         if (address.port == -1)
             throw IllegalArgumentException("ocr addresses must include port")
+
+        // TODO: Make a call to validate the service is up?
     }
 
     override fun addPeer(peer: Authority) {

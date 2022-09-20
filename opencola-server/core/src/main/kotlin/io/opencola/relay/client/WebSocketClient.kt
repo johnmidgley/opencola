@@ -19,7 +19,7 @@ class WebSocketClient(
         private val client = HttpClient(CIO) {
         install(WebSockets) {
             // Configure WebSockets
-            pingInterval = 1000 * 55
+            pingInterval = 1000 * 55 // TODO: Make configurable
         }
     }
 

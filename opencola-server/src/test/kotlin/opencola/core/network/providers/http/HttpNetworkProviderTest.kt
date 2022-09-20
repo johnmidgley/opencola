@@ -4,13 +4,13 @@ import io.opencola.core.model.Authority
 import io.opencola.core.model.Id
 import io.opencola.core.network.Request
 import io.opencola.core.network.providers.http.HttpNetworkProvider
-import opencola.server.PeerTest
+import opencola.server.PeerNetworkTest
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-class HttpNetworkProviderTest : PeerTest() {
+class HttpNetworkProviderTest : PeerNetworkTest() {
     @Test
     fun testHttpNetworkProvider() {
         val applicationNode =

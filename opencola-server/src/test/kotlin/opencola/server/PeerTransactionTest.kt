@@ -9,7 +9,7 @@ import org.kodein.di.instance
 import java.lang.Thread.sleep
 import java.net.URI
 
-class PeerTransactionTest : PeerTest() {
+class PeerTransactionTest : PeerNetworkTest() {
     @Test
     fun testTransactionReplication() {
         val applications = getApplications(2)

@@ -7,14 +7,14 @@ import io.opencola.core.network.Request
 import io.opencola.core.security.generateKeyPair
 import io.opencola.core.storage.AddressBook
 import io.opencola.relay.server.startWebServer
-import opencola.server.PeerTest
+import opencola.server.PeerNetworkTest
 import org.junit.Test
 import java.net.URI
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-class OCRelayNetworkProviderTest : PeerTest() {
+class OCRelayNetworkProviderTest : PeerNetworkTest() {
     private val ocRelayUri = URI("ocr://0.0.0.0:8080")
 
     fun setAuthorityAddressToRelay(authorityId: Id, addressBook: AddressBook) : Authority {

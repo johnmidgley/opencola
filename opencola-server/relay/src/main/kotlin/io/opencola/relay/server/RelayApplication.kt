@@ -12,7 +12,7 @@ fun startWebServer(port: Int, wait: Boolean = false): NettyApplicationEngine {
             // TODO: Check these values
             // pingPeriod = null
             // timeout = Duration.ofHours(1)
-            maxFrameSize = 1024 *1024 * 50
+            maxFrameSize = 1024 *1024 * 50 // TODO: Config
             masking = false
 
         }

@@ -35,7 +35,7 @@ class AddressBook(private val authority: Authority, storagePath: Path, signator:
         if(addressBookAuthority.uri.toString().isBlank()) {
             // Fallback to local server address.
             // TODO: Is there a better place for this?
-            addressBookAuthority.uri = URI("http://${serverConfig.host}:${serverConfig.port}")
+            addressBookAuthority.uri = URI("ocr://relay.opencola.net:8080")
             updateAuthority(addressBookAuthority)
         }
 

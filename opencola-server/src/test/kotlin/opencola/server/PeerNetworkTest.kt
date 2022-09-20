@@ -16,7 +16,7 @@ import kotlin.test.assertEquals
 
 private var nextServerNum = 0
 
-open class PeerTest {
+open class PeerNetworkTest {
     protected val logger = KotlinLogging.logger("PeerTransactionTest")
     private val basePortNumber: Int = 6000
 
