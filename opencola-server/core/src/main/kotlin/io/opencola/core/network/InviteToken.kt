@@ -1,6 +1,5 @@
 package io.opencola.core.network
 
-import io.opencola.core.serialization.Base58
 import io.opencola.core.model.Authority
 import io.opencola.core.model.Id
 import io.opencola.core.security.Signator
@@ -24,11 +23,6 @@ data class InviteToken(
     val epochSecond: Long = Instant.now().epochSecond,
     val body: ByteArray = emptyByteArray
 ) {
-
-    fun toAuthority(rootAuthorityId: Id): Authority {
-        val image = imageUri.let { if (it.toString().isBlank()) null else imageUri }
-        return Authority(rootAuthorityId, publicKey, address, name, imageUri = image)
-    }
 
     fun encode(signator: Signator): ByteArray {
         val token = ByteArrayOutputStream().use {
@@ -102,23 +96,9 @@ data class InviteToken(
             }
         }
 
-        private fun validateAddress(address: URI?): URI {
-            if (address == null) {
-                throw IllegalArgumentException("Invalid null address")
-            } else if (address.scheme.startsWith("http")) {
-                if (!address.isAbsolute)
-                    throw IllegalArgumentException("http(s) addresses must be absolute")
-            } else if(address.scheme == "ocr") {
-                if (address.port == -1)
-                    throw IllegalArgumentException("ocr addresses must include port")
-            } else
-                throw IllegalArgumentException("Invalid host address $address")
-
-            return address
-        }
-
         fun fromAuthority(authority: Authority): InviteToken {
-            val address = validateAddress(authority.uri)
+            val address =
+                authority.uri ?: throw IllegalArgumentException("Authority must have URI to create invite token")
 
             return InviteToken(
                 authority.authorityId,

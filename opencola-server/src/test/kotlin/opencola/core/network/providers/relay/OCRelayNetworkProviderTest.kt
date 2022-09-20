@@ -6,6 +6,7 @@ import io.opencola.core.network.NetworkNode
 import io.opencola.core.network.Request
 import io.opencola.core.security.generateKeyPair
 import io.opencola.core.storage.AddressBook
+import io.opencola.relay.client.defaultOCRPort
 import io.opencola.relay.server.startWebServer
 import opencola.server.PeerNetworkTest
 import org.junit.Test
@@ -15,7 +16,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class OCRelayNetworkProviderTest : PeerNetworkTest() {
-    private val ocRelayUri = URI("ocr://0.0.0.0:8080")
+    private val ocRelayUri = URI("ocr://0.0.0.0")
 
     fun setAuthorityAddressToRelay(authorityId: Id, addressBook: AddressBook) : Authority {
         val authority = addressBook.getAuthority(authorityId)!!
@@ -33,7 +34,7 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
         val peer0 = setAuthorityAddressToRelay(app0.inject<Authority>().entityId, app1.inject())
 
         println("Starting relay server")
-        val webServer = startWebServer(8080)
+        val webServer = startWebServer(defaultOCRPort)
         println("Starting network node0")
         val networkNode0 = app0.inject<NetworkNode>().also { it.start() }
         println("Starting network node1")
@@ -86,7 +87,7 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
         val app0 = application0.application
         val app1 = application1.application
 
-        val relayServer = startWebServer(8080)
+        val relayServer = startWebServer(defaultOCRPort)
 
         setAuthorityAddressToRelay(app0.inject<Authority>().entityId, app0.inject() )
         setAuthorityAddressToRelay(app1.inject<Authority>().entityId, app1.inject() )

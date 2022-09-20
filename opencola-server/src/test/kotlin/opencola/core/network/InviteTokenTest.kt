@@ -29,7 +29,7 @@ class InviteTokenTest {
     fun testInviteTokenFromPeerHandler() {
         val app = TestApplication.instance
         val authority = app.inject<Authority>()
-        val inviteToken = InviteToken.decodeBase58(getInviteToken(authority.entityId, app.inject(), app.inject()))
+        val inviteToken = InviteToken.decodeBase58(getInviteToken(authority.entityId, app.inject(), app.inject(), app.inject()))
         assertEquals(authority.publicKey, inviteToken.publicKey)
     }
 }

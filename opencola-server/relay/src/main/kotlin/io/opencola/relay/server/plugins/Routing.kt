@@ -10,6 +10,10 @@ import io.opencola.relay.server.WebSocketRelayServer
 fun Application.configureRouting(webSocketRelayServer: WebSocketRelayServer) {
     routing {
         get("/") {
+            call.respondText("OpenCola Relay Server")
+        }
+
+        get("/connections") {
             val connectionStates = webSocketRelayServer.connectionStates()
             val states = connectionStates.joinToString("\n") { "${it.first} - ${if (it.second) "Ready" else "Not Ready"}"  }
             call.respondText("OpenCola Relay Server\n\nConnections (${connectionStates.count()})\n\n$states")

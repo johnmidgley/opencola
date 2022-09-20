@@ -134,9 +134,11 @@ private fun removePeer(peerId: Id, addressBook: AddressBook) {
     addressBook.deleteAuthority(peerId)
 }
 
-fun getInviteToken(authorityId: Id, addressBook: AddressBook, signator: Signator): String {
+fun getInviteToken(authorityId: Id, addressBook: AddressBook, networkNode: NetworkNode, signator: Signator): String {
     val authority = addressBook.getAuthority(authorityId)
         ?: throw IllegalStateException("Root authority not found - can't generate invite token")
+    val address = authority.uri ?: throw IllegalArgumentException("Can't get invite token for peer without address")
+    networkNode.validatePeerAddress(address)
     return InviteToken.fromAuthority(authority).encodeBase58(signator)
 }
 

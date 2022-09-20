@@ -5,17 +5,17 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.features.websocket.*
 import io.ktor.http.*
 import io.opencola.relay.common.*
+import java.net.URI
 import java.security.KeyPair
 
 // TODO: This should probably just take a URI
 class WebSocketClient(
-    hostname: String,
-    port: Int,
+    uri: URI,
     keyPair: KeyPair,
     name: String? = null,
     requestTimeoutMilliseconds: Long = 10000,
     retryPolicy: (Int) -> Long = retryExponentialBackoff(),
-) : AbstractClient(hostname, port, keyPair, name, requestTimeoutMilliseconds, retryPolicy) {
+) : AbstractClient(uri, keyPair, name, requestTimeoutMilliseconds, retryPolicy) {
         private val client = HttpClient(CIO) {
         install(WebSockets) {
             // Configure WebSockets

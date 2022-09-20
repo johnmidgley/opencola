@@ -118,7 +118,7 @@ fun Application.configureRouting(app: app) {
 
         // TODO: change token to inviteToken
         get("/peers/token") {
-            val inviteToken = getInviteToken(app.inject<Authority>().entityId, app.inject(), app.inject())
+            val inviteToken = getInviteToken(app.inject<Authority>().entityId, app.inject(), app.inject(), app.inject())
             call.respond(TokenRequest(inviteToken))
         }
 

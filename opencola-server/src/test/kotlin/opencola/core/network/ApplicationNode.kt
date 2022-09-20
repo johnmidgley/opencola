@@ -33,7 +33,7 @@ class ApplicationNode(val application: Application) : Node {
     }
 
     override fun getInviteToken(): String {
-        return getInviteToken(application.inject<Authority>().entityId, application.inject(), application.inject())
+        return getInviteToken(application.inject<Authority>().entityId, application.inject(), application.inject(), application.inject())
     }
 
     override fun postInviteToken(token: String): Peer {
