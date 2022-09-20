@@ -17,7 +17,7 @@ import java.security.PublicKey
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
-const val defaultOCRPort = 5646
+const val defaultOCRPort = 2652
 
 abstract class AbstractClient(
     protected val uri: URI,

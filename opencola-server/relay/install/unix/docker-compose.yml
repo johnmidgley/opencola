@@ -3,5 +3,5 @@ services:
     build: ..
     container_name: oc-relay
     ports:
-      - "5646:5646"
+      - "2652:2652"
     restart: unless-stopped
