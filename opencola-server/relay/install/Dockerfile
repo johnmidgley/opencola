@@ -13,4 +13,4 @@ FROM openjdk:17
 COPY ./oc-relay/ /oc-relay
 WORKDIR /oc-relay
 CMD ["sh", "bin/relay"]
-EXPOSE 5796 8080
+EXPOSE 5646

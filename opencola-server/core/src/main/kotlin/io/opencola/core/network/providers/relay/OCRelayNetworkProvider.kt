@@ -5,7 +5,7 @@ import io.opencola.core.network.AbstractNetworkProvider
 import io.opencola.core.network.Request
 import io.opencola.core.network.Response
 import io.opencola.core.storage.AddressBook
-import io.opencola.relay.client.Client
+import io.opencola.relay.client.RelayClient
 import io.opencola.relay.client.WebSocketClient
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
@@ -22,13 +22,13 @@ const val openColaRelayScheme = "ocr"
 
 class OCRelayNetworkProvider(private val addressBook: AddressBook, private val keyPair: KeyPair): AbstractNetworkProvider() {
     private val logger = KotlinLogging.logger("OCRelayNetworkProvider")
-    data class ConnectionInfo(val client: Client, val listenThread: Thread)
+    data class ConnectionInfo(val client: RelayClient, val listenThread: Thread)
     private val connections = ConcurrentHashMap<URI, ConnectionInfo>()
     // TODO: Move to AbstractProvider
     var started = false
 
     @Synchronized
-    private fun addClient(uri: URI): Client {
+    private fun addClient(uri: URI): RelayClient {
         if(uri.scheme != openColaRelayScheme) {
             throw IllegalArgumentException("$uri does not match $openColaRelayScheme")
         }
@@ -38,7 +38,7 @@ class OCRelayNetworkProvider(private val addressBook: AddressBook, private val k
             return it.client
         }
 
-        val client = WebSocketClient(uri.host, uri.port, keyPair, uri.toString())
+        val client = WebSocketClient(uri, keyPair, uri.toString())
         // TODO: Move away from threads, or at least just use one
         val listenThread = thread {
             try {
@@ -89,11 +89,12 @@ class OCRelayNetworkProvider(private val addressBook: AddressBook, private val k
             throw IllegalArgumentException("Invalid scheme for provider: ${address.scheme}")
         }
 
-        // TODO: Should port be forced, or should there be a default ocr port?
-        if (address.port == -1)
-            throw IllegalArgumentException("ocr addresses must include port")
-
-        // TODO: Make a call to validate the service is up?
+        // Check that connection can be established
+        try {
+            runBlocking { WebSocketClient(address, keyPair).getSocketSession().close() }
+        } catch (e: Exception) {
+            throw IllegalArgumentException("Could not establish connection to relay server ($address): ${e.message}")
+        }
     }
 
     override fun addPeer(peer: Authority) {

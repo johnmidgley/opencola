@@ -15,4 +15,4 @@ echo $'\e[31mUnable to start OpenCola Relay.\e[0m Is docker running [try "open /
 exit 2
 fi
 
-echo "Visit http://localhost:8080 to get see the home page"
+echo "Visit http://localhost:5646 to get see the home page"

@@ -11,29 +11,39 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import mu.KotlinLogging
 import java.net.ConnectException
+import java.net.URI
 import java.security.KeyPair
 import java.security.PublicKey
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
+const val defaultOCRPort = 5646
+
 abstract class AbstractClient(
-    protected val hostname: String,
-    protected val port: Int,
+    protected val uri: URI,
     private val keyPair: KeyPair,
     final override val name: String? = null,
     private val requestTimeoutMilliseconds: Long = 10000,
     private val retryPolicy: (Int) -> Long = retryExponentialBackoff(),
-) : Client {
+) : RelayClient {
     protected val logger = KotlinLogging.logger("Client${if(name != null) " ($name)" else ""}")
+    protected val hostname: String = uri.host
+    protected val port = if(uri.port > 0) uri.port else defaultOCRPort
 
     // Not to be touched directly. Access by calling getConnections, which will ensure it's opened and ready
     private var _connection: Connection? = null
+
     private var _state = Initialized
     private val connectionMutex = Mutex()
     private val openMutex = Mutex(true)
     private val sessions = ConcurrentHashMap<UUID, CompletableDeferred<ByteArray?>>()
     private var connectionFailures = 0
     private var listenJob: Job? = null
+
+    init {
+        if(uri.scheme != "ocr")
+            throw IllegalArgumentException("Scheme must be 'ocr' for relay URI: $uri")
+    }
 
     override val publicKey : PublicKey
         get() = keyPair.public

@@ -5,6 +5,7 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.opencola.relay.server.plugins.configureRouting
 import io.ktor.websocket.*
+import io.opencola.relay.client.defaultOCRPort
 
 fun startWebServer(port: Int, wait: Boolean = false): NettyApplicationEngine {
     return embeddedServer(Netty, port = port, host = "0.0.0.0") {
@@ -21,5 +22,5 @@ fun startWebServer(port: Int, wait: Boolean = false): NettyApplicationEngine {
 }
 
 fun main() {
-    startWebServer(8080, true)
+    startWebServer(defaultOCRPort, true)
 }

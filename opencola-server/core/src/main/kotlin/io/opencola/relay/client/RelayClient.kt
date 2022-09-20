@@ -4,7 +4,7 @@ import io.opencola.relay.common.Header
 import io.opencola.relay.common.State
 import java.security.PublicKey
 
-interface Client {
+interface RelayClient {
     val publicKey: PublicKey
     val state: State
     val name: String?

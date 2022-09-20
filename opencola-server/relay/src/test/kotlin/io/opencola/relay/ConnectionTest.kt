@@ -2,8 +2,9 @@ package io.opencola.relay
 
 import io.ktor.server.netty.*
 import io.opencola.core.security.generateKeyPair
-import io.opencola.relay.client.Client
+import io.opencola.relay.client.RelayClient
 import io.opencola.relay.client.WebSocketClient
+import io.opencola.relay.client.defaultOCRPort
 import io.opencola.relay.common.State
 import io.opencola.relay.server.startWebServer
 import kotlinx.coroutines.coroutineScope
@@ -11,6 +12,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import opencola.core.extensions.append
+import java.net.URI
 import java.security.KeyPair
 import java.security.PublicKey
 import java.util.*
@@ -18,20 +20,18 @@ import java.util.stream.Collectors
 import kotlin.math.abs
 import kotlin.test.*
 
-private const val defaultHost = "0.0.0.0"
-private const val defaultPort = 5796
+private val relayServerUri = URI("ocr://0.0.0.0")
 
 class ConnectionTest {
     private fun getClient(
         name: String,
         keyPair: KeyPair = generateKeyPair(),
         requestTimeoutInMilliseconds: Long = 5000,
-    ) : Client {
-        //return StandardSocketClient(defaultHost, defaultPort, keyPair, name, requestTimeoutInMilliseconds)
-        return WebSocketClient(defaultHost, defaultPort, keyPair, name, requestTimeoutInMilliseconds)
+    ) : RelayClient {
+        return WebSocketClient(relayServerUri, keyPair, name, requestTimeoutInMilliseconds)
     }
 
-    private suspend fun open(client: Client,
+    private suspend fun open(client: RelayClient,
                              messageHandler: suspend (PublicKey, ByteArray) -> ByteArray = { _, _ -> client.name!!.toByteArray() }
         ) = coroutineScope {
         launch { client.open(messageHandler) }
@@ -40,7 +40,7 @@ class ConnectionTest {
     @Test
     fun testSendResponse() {
         runBlocking {
-            val relayWebServer = startWebServer(defaultPort)
+            val relayWebServer = startWebServer(defaultOCRPort)
             val client0 = getClient(name = "client0").also { launch { open(it) }; it.waitUntilOpen() }
             val client1 = getClient(name = "client1")
                 .also {
@@ -72,7 +72,7 @@ class ConnectionTest {
             delay(100)
             assert(client0.state == State.Opening)
 
-            val relayServer = startWebServer(defaultPort)
+            val relayServer = startWebServer(defaultOCRPort)
 
             val client1 = getClient("client1")
                 .also { launch { it.open { _, p -> p.append(" client1".toByteArray()) } }; it.waitUntilOpen() }
@@ -93,11 +93,11 @@ class ConnectionTest {
         runBlocking {
             val relayServer0: NettyApplicationEngine?
             var relayServer1: NettyApplicationEngine? = null
-            var client0: Client? = null
-            var client1: Client? = null
+            var client0: RelayClient? = null
+            var client1: RelayClient? = null
 
             try {
-                relayServer0 = startWebServer(defaultPort)
+                relayServer0 = startWebServer(defaultOCRPort)
                 client0 = getClient("client0").also { launch { open(it) }; it.waitUntilOpen() }
                 client1 = getClient("client1")
                     .also { launch { it.open { _, p -> p.append(" client1".toByteArray()) } }; it.waitUntilOpen() }
@@ -111,7 +111,7 @@ class ConnectionTest {
                 val peerResponse1 = client0.sendMessage(client1.publicKey, "hello".toByteArray())
                 assertNull(peerResponse1)
 
-                relayServer1 = startWebServer(defaultPort)
+                relayServer1 = startWebServer(defaultOCRPort)
 
                 val peerResponse2 = client0.sendMessage(client1.publicKey, "hello".toByteArray())
                 assertNotNull(peerResponse2)
@@ -129,7 +129,7 @@ class ConnectionTest {
     fun testClientPartition() {
         runBlocking {
             println("Starting server and clients")
-            val relayServer0 = startWebServer(defaultPort)
+            val relayServer0 = startWebServer(defaultOCRPort)
             val client0 = getClient("client0", requestTimeoutInMilliseconds = 500).also { launch { open(it) }; it.waitUntilOpen() }
             val client1KeyPair = generateKeyPair()
             val client1 = getClient("client1", client1KeyPair)
@@ -168,7 +168,7 @@ class ConnectionTest {
         runBlocking {
             // NOTE: Will fail on timeouts with to many calls (> 5000). Need to refactor for concurrency for real
             // load testing
-            val relayServer = startWebServer(defaultPort)
+            val relayServer = startWebServer(defaultOCRPort)
 
             val numClients = 50
             val clients = (0 until numClients).map { getClient(name = "client$it", requestTimeoutInMilliseconds = 10000) }
@@ -202,7 +202,7 @@ class ConnectionTest {
     @Test
     fun testMultipleClientListen() {
         runBlocking {
-            var client: Client? = null
+            var client: RelayClient? = null
 
             assertFails {
                 runBlocking {
