@@ -3,7 +3,7 @@ package io.opencola.core.storage
 import mu.KotlinLogging
 import io.opencola.core.content.parseMime
 import io.opencola.core.content.splitMht
-import opencola.core.extensions.nullOrElse
+import io.opencola.core.extensions.nullOrElse
 import io.opencola.core.model.DataEntity
 import io.opencola.core.model.Id
 import io.opencola.core.model.ResourceEntity

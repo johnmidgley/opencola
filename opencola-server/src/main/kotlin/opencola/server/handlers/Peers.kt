@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import io.opencola.core.event.EventBus
 import io.opencola.core.event.Events
-import opencola.core.extensions.nullOrElse
+import io.opencola.core.extensions.nullOrElse
 import io.opencola.core.model.Authority
 import io.opencola.core.model.Id
 import io.opencola.core.network.InviteToken
@@ -120,18 +120,6 @@ fun updatePeer(authorityId: Id, addressBook: AddressBook, networkNode: NetworkNo
             Events.PeerNotification.toString(),
             Notification(peerAuthority.entityId, PeerEvent.Added).encode()
         )
-}
-
-private fun removePeer(peerId: Id, addressBook: AddressBook) {
-    logger.info { "Removing peer: $peerId" }
-    val peer = addressBook.getAuthority(peerId)
-
-    if(peer == null){
-        logger.info { "No peer found - ignoring" }
-        return
-    }
-
-    addressBook.deleteAuthority(peerId)
 }
 
 fun getInviteToken(authorityId: Id, addressBook: AddressBook, networkNode: NetworkNode, signator: Signator): String {

@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import opencola.core.extensions.nullOrElse
+import io.opencola.core.extensions.nullOrElse
 
 @Serializable
 data class Response(

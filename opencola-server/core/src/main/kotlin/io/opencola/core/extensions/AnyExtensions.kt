@@ -1,4 +1,4 @@
-package opencola.core.extensions
+package io.opencola.core.extensions
 
 inline fun <T : Any, R> T?.ifNotNullOrElse(ifNotNullLambda: (T) -> R, elseLambda: () -> R)
         = let { if(it == null) elseLambda() else ifNotNullLambda(it) }

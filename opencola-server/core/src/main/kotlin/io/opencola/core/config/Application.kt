@@ -99,7 +99,7 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
                 bindSingleton { RequestRouter(getDefaultRoutes(instance(), instance(), instance())) }
                 bindSingleton { HttpNetworkProvider(config.server, instance(), instance()) }
                 bindSingleton { OCRelayNetworkProvider(instance(), authorityKeyPair) }
-                bindSingleton { NetworkNode(config.network, storagePath.resolve("network"), authority.authorityId, instance(),instance(), instance(), instance()) }
+                bindSingleton { NetworkNode(authority.authorityId, instance(),instance(), instance()) }
                 bindSingleton { LuceneSearchIndex(authority.authorityId, storagePath.resolve("lucene")) }
                 bindSingleton { ExposedEntityStore(entityStoreDB, instance(), instance(), instance(), instance()) }
                 // TODO: Add unit tests for MhtCache
@@ -116,7 +116,6 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
 
             return Application(applicationPath, storagePath, config, injector).also { app ->
                 app.inject<NetworkNode>().let { networkNode ->
-                    // TODO: make scheme be part of provider, so you can't incorrectly register
                     networkNode.addProvider(app.inject<HttpNetworkProvider>())
                     networkNode.addProvider(app.inject<OCRelayNetworkProvider>())
                 }

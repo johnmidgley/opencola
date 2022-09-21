@@ -3,7 +3,6 @@ package io.opencola.core.model
 import java.net.URI
 import java.security.PublicKey
 
-// TODO: Remove? Private keys are in keystore, so really no difference between an Authority and a regular Actor
 class Authority : Entity {
     var uri by uriAttributeDelegate
     var publicKey by publicKeyAttributeDelegate

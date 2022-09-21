@@ -12,7 +12,7 @@ import io.opencola.core.model.Actions
 import io.opencola.core.model.DataEntity
 import io.opencola.core.model.Id
 import io.opencola.core.model.ResourceEntity
-import opencola.core.extensions.nullOrElse
+import io.opencola.core.extensions.nullOrElse
 import io.opencola.core.storage.EntityStore
 import io.opencola.core.storage.FileStore
 import org.apache.james.mime4j.message.DefaultMessageWriter

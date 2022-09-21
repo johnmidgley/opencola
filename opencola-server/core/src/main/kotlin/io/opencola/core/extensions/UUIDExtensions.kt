@@ -1,4 +1,4 @@
-package opencola.core.extensions
+package io.opencola.core.extensions
 
 import java.nio.ByteBuffer
 import java.util.*

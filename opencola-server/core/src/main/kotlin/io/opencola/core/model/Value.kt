@@ -78,6 +78,12 @@ class MultiValueListOfStringItem(val key: UUID, val value: String?) {
         return true
     }
 
+    override fun hashCode(): Int {
+        var result = key.hashCode()
+        result = 31 * result + (value?.hashCode() ?: 0)
+        return result
+    }
+
     companion object Factory{
         fun fromMultiValue(multiValue: MultiValueListItem): MultiValueListOfStringItem {
             return MultiValueListOfStringItem(multiValue.key, String(multiValue.bytes))

@@ -1,6 +1,6 @@
 package io.opencola.core.model
 
-import opencola.core.extensions.nullOrElse
+import io.opencola.core.extensions.nullOrElse
 import io.opencola.core.serialization.*
 import kotlin.reflect.KProperty
 

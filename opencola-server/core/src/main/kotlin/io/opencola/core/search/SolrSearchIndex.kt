@@ -3,7 +3,7 @@ package io.opencola.core.search
 import com.lordcodes.turtle.shellRun
 import mu.KotlinLogging
 import io.opencola.core.config.SolrConfig
-import opencola.core.extensions.logErrorAndThrow
+import io.opencola.core.extensions.logErrorAndThrow
 import io.opencola.core.model.CoreAttribute
 import io.opencola.core.model.Entity
 import io.opencola.core.model.Id

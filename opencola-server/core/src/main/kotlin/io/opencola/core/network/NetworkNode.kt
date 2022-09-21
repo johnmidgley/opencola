@@ -5,25 +5,19 @@ import io.opencola.core.event.Events
 import io.opencola.core.model.Authority
 import io.opencola.core.model.Id
 import io.opencola.core.network.NetworkNode.PeerStatus.*
-import io.opencola.core.security.Encryptor
 import io.opencola.core.storage.AddressBook
 import mu.KotlinLogging
 import java.net.URI
-import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.set
-import io.opencola.core.config.NetworkConfig as OpenColaNetworkConfig
 
 // TODO: If another node suspends and (which looks offline) and then wakes up, other nodes will not be aware that it's
 //  back online. Ping when coming out of suspend, or ping / request transactions periodically?
 
 class NetworkNode(
-    private val config: OpenColaNetworkConfig,
-    private val storagePath: Path,
     private val authorityId: Id,
     private val router: RequestRouter,
     private val addressBook: AddressBook,
-    private val encryptor: Encryptor,
     private val eventBus: EventBus,
 ) {
     private val logger = KotlinLogging.logger("NetworkNode")

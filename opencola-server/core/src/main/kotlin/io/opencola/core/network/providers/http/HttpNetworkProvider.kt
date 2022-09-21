@@ -17,7 +17,7 @@ import io.opencola.core.network.AbstractNetworkProvider
 import io.opencola.core.network.*
 import io.opencola.core.security.Signator
 import kotlinx.serialization.encodeToString
-import opencola.core.extensions.toHexString
+import io.opencola.core.extensions.toHexString
 import java.lang.IllegalStateException
 import java.net.URI
 

@@ -3,7 +3,7 @@ package io.opencola.core.serialization
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import opencola.core.extensions.toByteArray
+import io.opencola.core.extensions.toByteArray
 import io.opencola.core.security.publicKeyFromBytes
 import java.io.ByteArrayInputStream
 import java.net.URI

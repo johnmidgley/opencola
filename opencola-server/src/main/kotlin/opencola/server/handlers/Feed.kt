@@ -4,7 +4,7 @@ import io.ktor.application.*
 import io.ktor.response.*
 import io.opencola.core.model.*
 import kotlinx.serialization.Serializable
-import opencola.core.extensions.nullOrElse
+import io.opencola.core.extensions.nullOrElse
 import io.opencola.core.model.CoreAttribute.*
 import io.opencola.core.search.SearchIndex
 import io.opencola.core.storage.AddressBook

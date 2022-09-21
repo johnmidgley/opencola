@@ -7,7 +7,7 @@ import io.opencola.core.serialization.StreamSerializer
 import io.opencola.core.serialization.UUIDByteArrayCodecCodec
 import io.opencola.core.serialization.readByteArray
 import io.opencola.core.serialization.writeByteArray
-import opencola.core.extensions.toByteArray
+import io.opencola.core.extensions.toByteArray
 import java.io.InputStream
 import java.io.OutputStream
 import java.security.PublicKey

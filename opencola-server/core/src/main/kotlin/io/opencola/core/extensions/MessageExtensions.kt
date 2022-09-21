@@ -1,4 +1,4 @@
-package opencola.core.extensions
+package io.opencola.core.extensions
 
 import org.apache.james.mime4j.dom.Message
 import org.apache.james.mime4j.message.DefaultMessageWriter

@@ -3,8 +3,8 @@ package io.opencola.core.event
 
 import mu.KotlinLogging
 import io.opencola.core.config.EventBusConfig
-import opencola.core.extensions.nullOrElse
-import opencola.core.extensions.shutdownWithTimout
+import io.opencola.core.extensions.nullOrElse
+import io.opencola.core.extensions.shutdownWithTimout
 import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.statements.api.ExposedBlob
@@ -124,6 +124,7 @@ class EventBus(private val storagePath: Path, config: EventBusConfig) {
             processMessage(it)
 
             // Process remaining messages. We don't loop here, to give the executor a chance to shut down
+            // TODO: Fix - have started flag and loop here
             if (messages.count() > 1)
                 executorService.execute { processMessages() }
         }

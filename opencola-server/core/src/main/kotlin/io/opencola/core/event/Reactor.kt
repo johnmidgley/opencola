@@ -57,7 +57,7 @@ class MainReactor(
 
         // TODO - Config max batches
         // TODO: Set reasonable max batches and batch sizes
-        for (batch in 1..10) {
+        for (batch in 1..10000) {
             logger.info { "Requesting transactions from ${peer.name} - Batch $batch" }
             val baseParams = mapOf("authorityId" to peer.entityId.toString())
             val params = if(mostRecentTransactionId == null)

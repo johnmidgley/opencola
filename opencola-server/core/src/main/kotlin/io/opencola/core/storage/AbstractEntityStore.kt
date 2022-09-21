@@ -4,8 +4,8 @@ import mu.KotlinLogging
 import io.opencola.core.event.EventBus
 import io.opencola.core.event.Events
 import io.opencola.core.model.*
-import opencola.core.extensions.ifNotNullOrElse
-import opencola.core.extensions.nullOrElse
+import io.opencola.core.extensions.ifNotNullOrElse
+import io.opencola.core.extensions.nullOrElse
 import io.opencola.core.security.Signator
 import io.opencola.core.storage.EntityStore.TransactionOrder
 import java.security.PublicKey

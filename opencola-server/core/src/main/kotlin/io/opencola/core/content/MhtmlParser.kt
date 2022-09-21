@@ -1,7 +1,7 @@
 package io.opencola.core.content
 
 import io.ktor.utils.io.charsets.Charset
-import opencola.core.extensions.nullOrElse
+import io.opencola.core.extensions.nullOrElse
 import io.opencola.core.model.Id
 import org.apache.james.mime4j.codec.DecoderUtil
 import org.apache.james.mime4j.dom.*

@@ -1,7 +1,7 @@
 package opencola.service
 
 import kotlinx.serialization.Serializable
-import opencola.core.extensions.nullOrElse
+import io.opencola.core.extensions.nullOrElse
 import io.opencola.core.model.Authority
 import io.opencola.core.model.Id
 

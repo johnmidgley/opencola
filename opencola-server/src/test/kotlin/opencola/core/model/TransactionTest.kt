@@ -2,7 +2,7 @@ package opencola.core.model
 
 import io.opencola.core.model.*
 import opencola.core.TestApplication
-import opencola.core.extensions.toHexString
+import io.opencola.core.extensions.toHexString
 import io.opencola.core.security.SIGNATURE_ALGO
 import io.opencola.core.security.Signator
 import io.opencola.core.security.sha256

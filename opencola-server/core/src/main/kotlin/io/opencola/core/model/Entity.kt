@@ -1,7 +1,7 @@
 package io.opencola.core.model
 
 import mu.KotlinLogging
-import opencola.core.extensions.nullOrElse
+import io.opencola.core.extensions.nullOrElse
 import io.opencola.core.model.AttributeType.*
 import java.net.URI
 import java.util.*
@@ -297,7 +297,12 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
             val currentFacts = currentFacts(sortedFacts)
             if (currentFacts.isEmpty()) return null
 
-            // TODO: Validate that all subjects and entities are equal
+            if(facts.map { it.authorityId }.toSet().count() != 1)
+                throw IllegalArgumentException("Facts are not all from same authority")
+
+            if(facts.map { it.entityId }.toSet().count() != 1)
+                throw IllegalArgumentException("Facts are not all for the same entity")
+
             // TODO: Should type be mutable? Probably no
             val typeFact = currentFacts.lastOrNull { it.attribute == CoreAttribute.Type.spec }
                 ?: throw IllegalStateException("Entity has no type")

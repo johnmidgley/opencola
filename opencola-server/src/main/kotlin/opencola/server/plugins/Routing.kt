@@ -9,7 +9,7 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import io.opencola.core.extensions.hexStringToByteArray
 import mu.KotlinLogging
-import opencola.core.extensions.nullOrElse
+import io.opencola.core.extensions.nullOrElse
 import io.opencola.core.model.Authority
 import io.opencola.core.model.Id
 import io.opencola.core.network.Notification

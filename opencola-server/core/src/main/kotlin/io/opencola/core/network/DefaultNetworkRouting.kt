@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import io.opencola.core.event.EventBus
 import io.opencola.core.event.Events
-import opencola.core.extensions.nullOrElse
+import io.opencola.core.extensions.nullOrElse
 import io.opencola.core.model.Id
 import io.opencola.core.model.SignedTransaction
 import io.opencola.core.storage.AddressBook
