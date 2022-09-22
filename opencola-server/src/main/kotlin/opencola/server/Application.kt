@@ -1,6 +1,9 @@
 package opencola.server
 
 import io.ktor.application.*
+import io.ktor.features.*
+import io.ktor.http.*
+import io.ktor.response.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import kotlinx.cli.ArgParser
@@ -14,6 +17,9 @@ import io.opencola.core.event.Events
 import io.opencola.core.model.Id
 import io.opencola.core.network.NetworkNode
 import io.opencola.core.security.encode
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
 import opencola.server.plugins.configureContentNegotiation
 import opencola.server.plugins.configureHTTP
 import opencola.server.plugins.configureRouting
@@ -26,6 +32,9 @@ fun onServerStarted(application: Application){
     application.inject<EventBus>().sendMessage(Events.NodeStarted.toString())
 }
 
+@Serializable
+data class ErrorResponse(val message: String)
+
 fun getServer(application: Application): NettyApplicationEngine {
     val serverConfig = application.config.server
 
@@ -34,6 +43,12 @@ fun getServer(application: Application): NettyApplicationEngine {
         configureHTTP()
         configureContentNegotiation()
         configureRouting(application)
+        install(StatusPages) {
+            exception<Throwable> { cause ->
+                val response = ErrorResponse(cause.message ?: "Unknown")
+                call.respond(HttpStatusCode.InternalServerError, Json.encodeToString(response))
+            }
+        }
         this.environment.monitor.subscribe(ApplicationStarted) { onServerStarted(application) }
     }
 }
