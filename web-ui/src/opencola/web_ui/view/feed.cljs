@@ -12,7 +12,7 @@
    [opencola.web-ui.common :as common :refer [action-img]]
    [opencola.web-ui.view.search :as search]
    [opencola.web-ui.model.error :as error]
-   [opencola.web-ui.model.feed :as feed]))
+   [opencola.web-ui.model.feed :as feed])) ;; TODO: Change to model
 
 
 ;; TODO: Look at https://github.com/Day8/re-com
@@ -25,6 +25,15 @@
 
 (defn tags-as-string [authority-id item]
   (string/join " " (map :value (authority-actions-of-type authority-id :tag item))))
+
+
+(defn update-feed-item [feed! view-item]
+  (let [entity-id (:entityId view-item)
+        updated-feed (update-in 
+                      @feed! 
+                      [:results]
+                      #(map (fn [i] (if (= entity-id (:entityId i)) view-item i)) %))]
+    (reset! feed! updated-feed)))
 
 ;; TODO - Use https://clj-commons.org/camel-snake-kebab/
 ;; Be careful with like
@@ -67,9 +76,39 @@
     (str (if (not= host "") "http://") host "/data/" data-id))) 
 
 
+(defn set-error-message! [atom! message]
+  (swap! atom! assoc-in [:error-message] message))
+
+(defn set-error-message [item message]
+  (assoc-in item [:error-message] message))
+
+(defn clear-error-message [item]
+  (dissoc item :error-message))
+
+(defn error-control [edit-item]
+  (when-let [message (:error-message edit-item)]
+    [:div.error [:p message]]))
+
 (defn edit-control [editing?!]
   [:span.edit-entity {:on-click #(reset! editing?! true)} (action-img "edit")])
 
+
+(defn get-item [feed entity-id]
+  (->> feed :results (some #(if (= entity-id (:entityId %)) %))))
+
+
+(defn remove-comment [item comment-id]
+  (update-in item 
+             [:activities :comment]
+             (fn [comments]
+               (filterv #(not= comment-id (:id %)) comments))))
+
+(defn delete-comment [feed! entity-id comment-id]
+  (let [item (get-item @feed! entity-id)]
+    (feed/delete-comment
+     comment-id
+     #(update-feed-item feed! (remove-comment (clear-error-message item) comment-id))
+     #(update-feed-item feed! (set-error-message item %)))))
 
 (defn comment-control [feed! entity-id comment-id text expanded?!]
   (let [text! (atom text)]
@@ -83,7 +122,7 @@
           [:button {:on-click #(feed/add-comment feed! entity-id comment-id @text! expanded?!)} "Save"] " "
           [:button {:on-click #(reset! expanded?! false)} "Cancel"]
           (if comment-id
-            [:button.delete-button {:on-click #(feed/delete-comment feed! entity-id comment-id)} "Delete"])]]))))
+            [:button.delete-button {:on-click #(delete-comment feed! entity-id comment-id)} "Delete"])]]))))
 
 (defn item-comment [feed! entity-id comment-action]
 (let [editing?! (atom false)]
@@ -210,14 +249,30 @@
         actions (-> item :activities :save)
         saved? (some #(= authority-id (:authorityId %)) actions)]
     (if (not saved?)
-      (feed/save-entity feed! item))))
+      (feed/save-entity
+       item
+       #(update-feed-item feed! %)
+       #(update-feed-item feed! (set-error-message item %))))))
+
+;; New version
+(defn update-entity-new [feed! editing?! item]
+  (feed/update-entity 
+   item
+   #(do (update-feed-item feed! %)
+        (if editing?! (reset! editing?! false)))
+   #(do
+      (println (str "Start: " item))
+      (println (str "After: "(set-error-message item %)))
+      (update-feed-item feed! (set-error-message item %))
+      (println (str "get-item: "(get-item @feed! (:entityId item)))))))
+
 
 (defn like-item [feed! item]
    (let [authority-id (:authorityId @feed!)
          actions (-> item :activities :like)
          edit-item (edit-item authority-id item)
          like (some #(if (= authority-id (:authorityId %)) (reader/read-string (:value %))) actions)]
-     (feed/update-entity feed! nil (update-in edit-item [:like ] #(if % nil true)))))
+     (feed/update-entity-old feed! nil (update-in edit-item [:like ] #(if % nil true)))))
 
 
 ;; TODO - Combing with tags-edit-control?
@@ -231,7 +286,7 @@
           {:type "text"
            :value (:tags @edit-item!)
            :on-change #(swap! edit-item! assoc-in [:tags] (-> % .-target .-value))}]
-         [:button {:on-click #(feed/update-entity feed! tagging?! @edit-item!)} "Save"] " "
+         [:button {:on-click #(feed/update-entity-old feed! tagging?! @edit-item!)} "Save"] " "
          [:button {:on-click #(reset! tagging?! false)} "Cancel"] " "]))))
 
 (defn item-activities [feed! item editing?!]
@@ -286,6 +341,7 @@
         summary (:summary item)
         item-uri (uri (:uri summary))]
     (fn []
+      ; (println (str item))
       [:div.feed-item
        [item-name summary]
        [:div.item-body
@@ -293,7 +349,8 @@
         [common/md->component {:class "item-desc"}  (:description summary)]]
        [item-tags-summary (-> item :activities :tag)]
        [:div.posted-by "Posted by: " (:postedBy summary)]
-       [item-activities feed! item editing?!]])))
+       [item-activities feed! item editing?!]
+       [error-control item]])))
 
 
 (defn name-edit-control [edit-item!]
@@ -349,21 +406,23 @@
     (action-img "like")]])
 
 (defn edit-item-control [edit-item! on-save on-cancel on-delete]
-   (fn []
-     (let [description-state! (atom nil)]
-       [:div.feed-item
-        [name-edit-control edit-item!]
-        [image-uri-edit-control edit-item!]
-        [description-edit-control edit-item! description-state!]
-        [like-edit-control edit-item!]
-        [tags-edit-control edit-item!]
-        [comment-edit-control edit-item!]
-        [:button {:on-click (fn []
-                              (swap! edit-item! assoc-in [:description] (.value @description-state!))
-                              (on-save)) } "Save"] " "
-        [:button {:on-click on-cancel} "Cancel"] " "
-        (if on-delete
-          [:button.delete-button {:on-click on-delete} "Delete"])])))
+  (let [description-state! (atom nil)]
+    (fn []
+      [:div.feed-item
+       [:div.error (:error @edit-item!)]
+       [name-edit-control edit-item!]
+       [image-uri-edit-control edit-item!]
+       [description-edit-control edit-item! description-state!]
+       [like-edit-control edit-item!]
+       [tags-edit-control edit-item!]
+       [comment-edit-control edit-item!]
+       [error-control @edit-item!]
+       [:button {:on-click (fn []
+                             (swap! edit-item! assoc-in [:description] (.value @description-state!))
+                             (on-save)) } "Save"] " "
+       [:button {:on-click on-cancel} "Cancel"] " "
+       (if on-delete
+         [:button.delete-button {:on-click on-delete} "Delete"])])))
 
 ;; TODO: Use keys to get 
 (defn edit-feed-item [feed! item editing?!]
@@ -375,7 +434,7 @@
         deletable? (some #(= authority-id (:authorityId %)) (-> item :activities :save))]
     (edit-item-control 
      edit-item!
-     #(feed/update-entity feed! editing?! @edit-item!)
+     #(feed/update-entity-old feed! editing?! @edit-item!)
      #(reset! editing?! false)
      (if deletable? #(feed/delete-entity feed! editing?! entity-id)))))
 
@@ -409,6 +468,17 @@
     [:img.header-icon {:src  "../img/peers.png" :on-click #(common/set-location "#/peers")}]])
 
 
+(defn prepend-feed-item [feed! view-item]
+  (swap! feed! update-in [:results] #(into [view-item] %)))
+
+(defn new-post [feed! creating-post!? edit-item!]
+  (feed/new-post 
+   @edit-item!
+   #(do 
+      (prepend-feed-item feed! %)
+      (reset! creating-post!? false))
+   #(set-error-message! edit-item! %)))
+
 (defn feed-page [feed! query! on-search]
   (let [creating-post?! (atom false)]
     (fn []
@@ -419,6 +489,6 @@
          (let [edit-item! (atom (edit-item))]
            [edit-item-control
             edit-item!
-            #(feed/new-post feed! creating-post?! @edit-item!)
+            #(new-post feed! creating-post?! edit-item!)
             #(reset! creating-post?! false) nil]))
        [feed-list feed!]])))

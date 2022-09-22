@@ -3,6 +3,11 @@
    [opencola.web-ui.ajax :as ajax]
    [opencola.web-ui.model.error :as error]))
 
+(defn error-result->str [{status :status text :status-text}]
+  (if (= 0 status)
+    "Unable to connect to server. Please make sure it is running."
+    text))
+
 (defn set-error-from-result [feed! {status :status text :status-text}]
   (reset! feed! {:error  (str "Error: " status ": " text)}))
 
@@ -25,6 +30,10 @@
       (update :results #(map model-to-view-item %))
       (set-query query)))
 
+
+;; TODO: Remove any mention of feed! in here - should be in view
+
+;; TODO Move to view
 (defn update-feed-item [feed! view-item]
   (let [entity-id (:entityId view-item)
         updated-feed (update-in 
@@ -33,8 +42,6 @@
                       #(map (fn [i] (if (= entity-id (:entityId i)) view-item i)) %))]
     (reset! feed! updated-feed)))
 
-(defn prepend-feed-item [feed! view-item]
-  (swap! feed! update-in [:results] #(into [view-item] %)))
 
 (defn delete-feed-item [feed! entity-id]
   (swap! feed! update-in [:results] (fn [results] (remove #(= (:entityId %) entity-id) results))))
@@ -75,7 +82,7 @@
 
 ;; TODO: editing?! should not be passed in here. Make it part of the actual view model, that gets
 ;; overwritten when reloaded from client. 
-(defn update-entity [feed! editing?! item] 
+(defn update-entity-old [feed! editing?! item] 
   (ajax/PUT 
    (str "/entity/" (:entityId item))
    item
@@ -83,40 +90,34 @@
         (if editing?! (reset! editing?! false)))
    #(set-error-from-result feed! %)))
 
-(defn get-item [feed entity-id]
-  (->> feed :results (some #(if (= entity-id (:entityId %)) %))))
-
-(defn remove-comment [item comment-id]
-  (update-in item 
-             [:activities :comment]
-             (fn [comments]
-               (filterv #(not= comment-id (:id %)) comments))))
-
-(defn delete-comment [feed! entity-id comment-id]  
-  (let [item (get-item @feed! entity-id)]
-    (ajax/DELETE
-     (str "/comment/" comment-id)
-     #(update-feed-item feed! (remove-comment item comment-id))
-     #(set-error-from-result feed! %))))
-
-(defn save-entity [feed! view-item]
-  (ajax/POST 
-   (str "/entity/" (:entityId view-item))
-   nil
-   #(update-feed-item feed! (model-to-view-item %))
-   #(set-error-from-result feed! %)))
-
-(defn like-entity [feed! view-item]
+(defn update-entity [item on-success on-error] 
   (ajax/PUT 
-   (str "/entity/" (:entityId view-item))
-   nil
-   #(update-feed-item feed! (model-to-view-item %))
-   #(set-error-from-result feed! %)))
+   (str "/entity/" (:entityId item))
+   item
+   #(on-success (model-to-view-item %))
+   #(on-error (error-result->str %))))
 
-(defn new-post [feed! editing?! item]
+
+(defn delete-comment [comment-id on-success on-error]  
+  (ajax/DELETE
+   (str "/comment/" comment-id)
+   on-success ;; Follow main pattern and just return whole item? Will mess up UI state, but could ignore result
+   #(on-error (error-result->str %))))
+
+
+;; TODO: Change *-error to *-failure
+(defn save-entity [item on-success on-error]
+  (ajax/POST 
+   (str "/entity/" (:entityId item))
+   nil
+   #(on-success (model-to-view-item %))
+   #(on-error (error-result->str %))))
+
+
+
+(defn new-post [item on-success on-error]
   (ajax/POST
    (str "/post")
    item
-   #(do (prepend-feed-item feed! (model-to-view-item %))
-        (if editing?! (reset! editing?! false)))
-   #(set-error-from-result feed! %)))
+   #(on-success (model-to-view-item %))
+   #(on-error (error-result->str %))))
