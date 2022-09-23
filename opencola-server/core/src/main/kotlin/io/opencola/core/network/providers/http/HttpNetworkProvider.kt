@@ -32,7 +32,7 @@ class HttpNetworkProvider(serverConfig: ServerConfig, private val authority: Aut
         }
     }
 
-    override fun start() {
+    override fun start(waitUntilReady: Boolean) {
         started = true
         logger.info { "Started" }
     }

@@ -58,13 +58,21 @@ class OCRelayNetworkProvider(private val addressBook: AddressBook, private val k
         return client
     }
 
-    override fun start() {
+    override fun start(waitUntilReady: Boolean) {
         addressBook
             .getAuthorities(true)
             .filter { it.uri?.scheme == openColaRelayScheme }
             .mapNotNull { it.uri }
             .toSet()
-            .forEach{ addClient(it) }
+            .forEach {
+                addClient(it).also {
+                    if (waitUntilReady) {
+                        runBlocking {
+                            it.waitUntilOpen()
+                        }
+                    }
+                }
+            }
         started = true
         logger.info { "Started" }
     }

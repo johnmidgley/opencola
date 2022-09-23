@@ -36,9 +36,9 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
         println("Starting relay server")
         val webServer = startWebServer(defaultOCRPort)
         println("Starting network node0")
-        val networkNode0 = app0.inject<NetworkNode>().also { it.start() }
+        val networkNode0 = app0.inject<NetworkNode>().also { it.start(true) }
         println("Starting network node1")
-        val networkNode1 = app1.inject<NetworkNode>().also { it.start() }
+        val networkNode1 = app1.inject<NetworkNode>().also { it.start(true) }
 
         try {
             println("Testing ping")

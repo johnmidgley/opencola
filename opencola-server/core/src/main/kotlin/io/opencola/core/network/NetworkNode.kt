@@ -135,9 +135,9 @@ class NetworkNode(
         }
     }
 
-    fun start() {
+    fun start(waitUntilReady: Boolean = false) {
         logger.info { "Starting..." }
-        providers.values.forEach { it.start() }
+        providers.values.forEach { it.start(waitUntilReady) }
         addressBook.addUpdateHandler(peerUpdateHandler)
         logger.info { "Started" }
     }

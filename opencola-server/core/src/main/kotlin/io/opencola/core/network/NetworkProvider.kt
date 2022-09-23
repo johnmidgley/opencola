@@ -4,7 +4,7 @@ import io.opencola.core.model.Authority
 import java.net.URI
 
 interface NetworkProvider {
-    fun start()
+    fun start(waitUntilReady: Boolean = false)
     fun stop()
 
     fun getScheme() : String
