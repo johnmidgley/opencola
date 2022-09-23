@@ -103,6 +103,17 @@
              (fn [comments]
                (filterv #(not= comment-id (:id %)) comments))))
 
+
+(defn update-comment [feed! entity-id comment-id text editing?! error!]
+  (feed/update-comment 
+   entity-id 
+   comment-id
+   text
+   #(do
+      (update-feed-item feed! %)
+      (reset! editing?! false))
+   #(reset! error! (set-error-message @error! %))))
+
 (defn delete-comment [feed! entity-id comment-id]
   (let [item (get-item @feed! entity-id)]
     (feed/delete-comment
@@ -111,7 +122,8 @@
      #(update-feed-item feed! (set-error-message item %)))))
 
 (defn comment-control [feed! entity-id comment-id text expanded?!]
-  (let [text! (atom text)]
+  (let [text! (atom text)
+        error! (atom {})]
     (fn []
       (if @expanded?!
         [:div.item-comment
@@ -119,7 +131,8 @@
           [:textarea.comment-text-edit {:type "text"
                                         :value @text!
                                         :on-change #(reset! text! (-> % .-target .-value))}]
-          [:button {:on-click #(feed/add-comment feed! entity-id comment-id @text! expanded?!)} "Save"] " "
+          [error-control @error!]
+          [:button {:on-click #(update-comment feed! entity-id comment-id @text! expanded?! error!)} "Save"] " "
           [:button {:on-click #(reset! expanded?! false)} "Cancel"]
           (if comment-id
             [:button.delete-button {:on-click #(delete-comment feed! entity-id comment-id)} "Delete"])]]))))
@@ -254,17 +267,19 @@
        #(update-feed-item feed! %)
        #(update-feed-item feed! (set-error-message item %))))))
 
-;; New version
-(defn update-entity-new [feed! editing?! item]
+
+(defn update-display-entity [feed! edit-item item]
   (feed/update-entity 
-   item
+   edit-item
+   #(update-feed-item feed! %)
+   #(update-feed-item feed! (set-error-message item %))))
+
+(defn update-edit-entity [feed! editing?! edit-item! item]
+  (feed/update-entity 
+   @edit-item!
    #(do (update-feed-item feed! %)
-        (if editing?! (reset! editing?! false)))
-   #(do
-      (println (str "Start: " item))
-      (println (str "After: "(set-error-message item %)))
-      (update-feed-item feed! (set-error-message item %))
-      (println (str "get-item: "(get-item @feed! (:entityId item)))))))
+        (reset! editing?! false))
+   #(swap! edit-item! assoc-in [:error-message] %)))
 
 
 (defn like-item [feed! item]
@@ -272,8 +287,7 @@
          actions (-> item :activities :like)
          edit-item (edit-item authority-id item)
          like (some #(if (= authority-id (:authorityId %)) (reader/read-string (:value %))) actions)]
-     (feed/update-entity-old feed! nil (update-in edit-item [:like ] #(if % nil true)))))
-
+     (update-display-entity feed! (update-in edit-item [:like ] #(if % nil true)) item)))
 
 ;; TODO - Combing with tags-edit-control?
 (defn tags-control [feed! item tagging?!]
@@ -286,7 +300,8 @@
           {:type "text"
            :value (:tags @edit-item!)
            :on-change #(swap! edit-item! assoc-in [:tags] (-> % .-target .-value))}]
-         [:button {:on-click #(feed/update-entity-old feed! tagging?! @edit-item!)} "Save"] " "
+         [error-control @edit-item!]
+         [:button {:on-click #(update-edit-entity feed! tagging?! edit-item! item)} "Save"] " "
          [:button {:on-click #(reset! tagging?! false)} "Cancel"] " "]))))
 
 (defn item-activities [feed! item editing?!]
@@ -341,7 +356,6 @@
         summary (:summary item)
         item-uri (uri (:uri summary))]
     (fn []
-      ; (println (str item))
       [:div.feed-item
        [item-name summary]
        [:div.item-body
@@ -351,7 +365,6 @@
        [:div.posted-by "Posted by: " (:postedBy summary)]
        [item-activities feed! item editing?!]
        [error-control item]])))
-
 
 (defn name-edit-control [edit-item!]
        [:div.item-name
@@ -434,7 +447,7 @@
         deletable? (some #(= authority-id (:authorityId %)) (-> item :activities :save))]
     (edit-item-control 
      edit-item!
-     #(feed/update-entity-old feed! editing?! @edit-item!)
+     #(update-edit-entity feed! editing?! edit-item! item)
      #(reset! editing?! false)
      (if deletable? #(feed/delete-entity feed! editing?! entity-id)))))
 

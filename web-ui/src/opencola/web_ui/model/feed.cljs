@@ -3,10 +3,10 @@
    [opencola.web-ui.ajax :as ajax]
    [opencola.web-ui.model.error :as error]))
 
-(defn error-result->str [{status :status text :status-text}]
+(defn error-result->str [{status :status text :status-text response :response}]
   (if (= 0 status)
     "Unable to connect to server. Please make sure it is running."
-    text))
+    (:message response)))
 
 (defn set-error-from-result [feed! {status :status text :status-text}]
   (reset! feed! {:error  (str "Error: " status ": " text)}))
@@ -62,40 +62,21 @@
                #(set-error-from-result feed! %))) 
 
 
-;; TODO: Break out view and model here - feed should be controlled by model, but editing should be controlled
-;; by view. 
-(defn comment-handler [feed! editing?! model-item]
-  (update-feed-item feed! (model-to-view-item model-item))
-  (reset! editing?! false))
-
-
-;; TODO: Change to update comment
-(defn add-comment [feed! entity-id comment-id text editing?!]
+(defn update-comment [entity-id comment-id text on-success on-error]
   (ajax/POST (str "entity/" entity-id "/comment") 
              {:commentId comment-id
               :text text}
-             #(comment-handler feed! editing?! %)
-             #(set-error-from-result feed! %)))
+             #(on-success (model-to-view-item %))
+             #(on-error (error-result->str %))))
 
-(defn update-item-error-handler [feed! response]
-  (set-error-from-result feed! response))
-
-;; TODO: editing?! should not be passed in here. Make it part of the actual view model, that gets
-;; overwritten when reloaded from client. 
-(defn update-entity-old [feed! editing?! item] 
-  (ajax/PUT 
-   (str "/entity/" (:entityId item))
-   item
-   #(do (update-feed-item feed! (model-to-view-item %))
-        (if editing?! (reset! editing?! false)))
-   #(set-error-from-result feed! %)))
-
-(defn update-entity [item on-success on-error] 
-  (ajax/PUT 
-   (str "/entity/" (:entityId item))
-   item
-   #(on-success (model-to-view-item %))
-   #(on-error (error-result->str %))))
+(defn update-entity [item on-success on-error]
+  ;; TODO - Weird to dissoc a view value here. Think about proper binder
+  (let [item (dissoc item :error-message)]
+   (ajax/PUT 
+    (str "/entity/" (:entityId item))
+    item
+    #(on-success (model-to-view-item %))
+    #(on-error (error-result->str %)))))
 
 
 (defn delete-comment [comment-id on-success on-error]  
