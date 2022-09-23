@@ -15,15 +15,16 @@
   (if query (assoc-in feed [:query] query)))
 
 (defn model-to-view-item [model-item]
-  (update model-item 
-          :activities
-          (fn [activities]
-            (->> activities
-                 (mapcat
-                  (fn [activity]
-                    (let [activity-no-actions (dissoc activity :actions)]
-                      (map #(merge activity-no-actions %) (:actions activity)))))
-                 (group-by #(keyword (:type %)))))))
+  (if (not-empty model-item)
+    (update model-item 
+            :activities
+            (fn [activities]
+              (->> activities
+                   (mapcat
+                    (fn [activity]
+                      (let [activity-no-actions (dissoc activity :actions)]
+                        (map #(merge activity-no-actions %) (:actions activity)))))
+                   (group-by #(keyword (:type %))))))))
 
 (defn feed-to-view-model [feed query]
   (-> feed 
@@ -43,23 +44,16 @@
     (reset! feed! updated-feed)))
 
 
-(defn delete-feed-item [feed! entity-id]
-  (swap! feed! update-in [:results] (fn [results] (remove #(= (:entityId %) entity-id) results))))
-
-
 (defn get-feed [query feed!]
   (ajax/GET (str "feed" "?q=" query) 
             #(reset! feed! (feed-to-view-model % query))
-            #(set-error-from-result feed! %)))
+            #(set-error-from-result feed! %))) 
 
-(defn delete-entity [feed! editing?! entity-id]
-  (ajax/DELETE (str "entity/" entity-id) 
-               (fn [model-item]
-                 (if (empty? model-item)
-                   (delete-feed-item feed! entity-id)
-                   (update-feed-item feed! (model-to-view-item model-item)))
-                 (if editing?! (reset! editing?! false)))
-               #(set-error-from-result feed! %))) 
+(defn delete-entity [entity-id on-success on-error]
+  (ajax/DELETE 
+   (str "entity/" entity-id)
+   #(on-success (model-to-view-item %))
+   #(on-error (error-result->str %))))
 
 
 (defn update-comment [entity-id comment-id text on-success on-error]

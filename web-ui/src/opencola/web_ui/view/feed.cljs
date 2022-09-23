@@ -437,6 +437,23 @@
        (if on-delete
          [:button.delete-button {:on-click on-delete} "Delete"])])))
 
+
+(defn delete-feed-item [feed! entity-id]
+  (swap! feed! update-in [:results] (fn [results] (remove #(= (:entityId %) entity-id) results))))
+
+(defn delete-entity [feed! editing?! item edit-item!]
+  (let [entity-id (:entityId item)]
+    (feed/delete-entity
+     entity-id
+     (fn [item]
+       (if (empty? item)
+         (delete-feed-item feed! entity-id)
+         (update-feed-item feed! item))
+       (if editing?! (reset! editing?! false)))
+     #(set-error-message! edit-item! %)
+     #_(update-feed-item feed! (set-error-message item %)))))
+
+
 ;; TODO: Use keys to get 
 (defn edit-feed-item [feed! item editing?!]
   (let [authority-id (:authorityId @feed!)
@@ -449,7 +466,8 @@
      edit-item!
      #(update-edit-entity feed! editing?! edit-item! item)
      #(reset! editing?! false)
-     (if deletable? #(feed/delete-entity feed! editing?! entity-id)))))
+     (if deletable? #(delete-entity feed! editing?! item edit-item!)))))
+
 
 (defn feed-item [feed! item]
   (let [editing?! (atom false)]
