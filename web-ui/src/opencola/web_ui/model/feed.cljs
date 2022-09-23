@@ -8,9 +8,6 @@
     "Unable to connect to server. Please make sure it is running."
     (:message response)))
 
-(defn set-error-from-result [feed! {status :status text :status-text}]
-  (reset! feed! {:error  (str "Error: " status ": " text)}))
-
 (defn set-query [feed query]
   (if query (assoc-in feed [:query] query)))
 
@@ -32,22 +29,10 @@
       (set-query query)))
 
 
-;; TODO: Remove any mention of feed! in here - should be in view
-
-;; TODO Move to view
-(defn update-feed-item [feed! view-item]
-  (let [entity-id (:entityId view-item)
-        updated-feed (update-in 
-                      @feed! 
-                      [:results]
-                      #(map (fn [i] (if (= entity-id (:entityId i)) view-item i)) %))]
-    (reset! feed! updated-feed)))
-
-
-(defn get-feed [query feed!]
+(defn get-feed [query on-success on-error]
   (ajax/GET (str "feed" "?q=" query) 
-            #(reset! feed! (feed-to-view-model % query))
-            #(set-error-from-result feed! %))) 
+            #(on-success (feed-to-view-model % query))
+            #(on-error (error-result->str %)))) 
 
 (defn delete-entity [entity-id on-success on-error]
   (ajax/DELETE 

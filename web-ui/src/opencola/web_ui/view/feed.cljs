@@ -441,6 +441,7 @@
 (defn delete-feed-item [feed! entity-id]
   (swap! feed! update-in [:results] (fn [results] (remove #(= (:entityId %) entity-id) results))))
 
+
 (defn delete-entity [feed! editing?! item edit-item!]
   (let [entity-id (:entityId item)]
     (feed/delete-entity
@@ -450,8 +451,7 @@
          (delete-feed-item feed! entity-id)
          (update-feed-item feed! item))
        (if editing?! (reset! editing?! false)))
-     #(set-error-message! edit-item! %)
-     #_(update-feed-item feed! (set-error-message item %)))))
+     #(set-error-message! edit-item! %))))
 
 
 ;; TODO: Use keys to get 

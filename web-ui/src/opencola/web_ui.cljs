@@ -29,6 +29,16 @@
 
 (secretary/set-config! :prefix "#")
 
+(defn set-feed-error [feed! message]
+  (reset! feed! {:error  message}))
+
+(defn get-feed [query feed!]
+  (feed-model/get-feed
+   query
+   #(reset! feed! %)
+   #(set-feed-error feed! %)))
+
+
 (defroute "/" []
   (common/set-location  "#/feed"))
 
@@ -36,7 +46,7 @@
   (let [query (or (:q query-params) "")]
     (reset! query! query)
     (if @config/config ; Needed when overriding host-url for dev
-      (feed-model/get-feed query feed!))
+      (get-feed query feed!))
     (set-page :feed)))
 
 (defroute "/peers" []
@@ -71,12 +81,13 @@
   (when-let [el (get-app-element)]
     (mount el)))
 
+
 ;; conditionally start your application based on the presence of an "app" element
 ;; this is particularly helpful for testing this ns without launching the app
 #_(mount-app-element)
 (config/get-config #(do (mount-app-element)
                         ;; TODO: Figure out a better way to do this. Maybe handle in the AJAX layer?
-                        (feed-model/get-feed @query! feed!)
+                        (get-feed @query! feed!)
                         (peer-model/get-peers peers!)) 
                    error/error-handler)
 
