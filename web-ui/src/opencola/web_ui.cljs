@@ -19,6 +19,7 @@
 (def query! (atom ""))
 (def feed! (atom {}))
 (def peers! (atom {}))
+(def error! (atom {}))
 
 (defn page-visible? [page]
   @(page page-visible-atoms))
@@ -37,7 +38,6 @@
    query
    #(reset! feed! %)
    #(set-feed-error feed! %)))
-
 
 (defroute "/" []
   (common/set-location "#/feed"))
@@ -60,7 +60,6 @@
 (defn get-app-element []
   (gdom/getElement "app"))
 
-
 (defn on-search [query feed!]
   (common/set-location (str "#feed" (if (empty? query) "" (str "?q=" query)))))
 
@@ -71,7 +70,8 @@
           (if @(:peers page-visible-atoms)
             [peer/peer-page peers! query! #(on-search % feed!)])
           (if @(:error page-visible-atoms)
-            [:div.settings "404"])]))
+            [:div.settings "404"])
+          [error/error-control @error!]]))
 
 
 (defn mount [el]
@@ -81,15 +81,13 @@
   (when-let [el (get-app-element)]
     (mount el)))
 
-
 ;; conditionally start your application based on the presence of an "app" element
 ;; this is particularly helpful for testing this ns without launching the app
 #_(mount-app-element)
 (config/get-config #(do (mount-app-element)
-                        ;; TODO: Figure out a better way to do this. Maybe handle in the AJAX layer?
                         (get-feed @query! feed!)
                         (peer/get-peers peers!)) 
-                   error/error-handler)
+                   #(error/set-error! error! %))
 
 ;; specify reload hook with ^:after-load metadata
 (defn ^:after-load on-reload []

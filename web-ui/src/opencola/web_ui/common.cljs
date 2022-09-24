@@ -28,10 +28,6 @@
 (defn action-img [name]
   [:img.action-img {:src (str "../img/" name ".png") :alt name :title name}])
 
-(defn error-message []
-  (if-let [e (error/get-error-message)]
-    [:div.error e]))
-
 
 ;; https://github.com/reagent-project/reagent/blob/master/doc/CreatingReagentComponents.md
 (defn simple-mde [id text state!] 

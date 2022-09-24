@@ -21,16 +21,4 @@
     [:div.error [:p e]]))
 
 
-;; TODO - Remove everything below here - depended on global error state
-
-(defonce error-message (atom nil))
-
-(defn set-error-message [message]
-  (reset! error-message message)
-  (.log js/console message))
-
-;; TODO: Clear error on any successful call
-; Generic error handler that sets error message
-(defn error-handler [{:keys [status status-text]}]
-  (set-error-message (str "Error: " status ": " status-text)))
 
