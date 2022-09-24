@@ -3,32 +3,30 @@
    [opencola.web-ui.ajax :as ajax]
    [opencola.web-ui.model.error :as error]))
 
-;; TODO: Move result function to caller, no need to hide here
-
-(defn get-peers [peers!]
+(defn get-peers [on-success on-error]
   (ajax/GET "peers" 
-            #(reset! peers! %)
-            error/error-handler)) ; TODO: Make error handler optional - otherwise default to this
+            #(on-success %)
+            #(on-error (error/error-result->str %))))
 
-(defn update-peer [peers! peer]
+(defn update-peer [peer on-success on-error]
   (ajax/PUT "peers"
             peer
-            #(get-peers peers!)
-            error/error-handler))
+            #(get-peers on-success on-error)
+            #(on-error (error/error-result->str %))))
 
+(defn delete-peer [peer on-success on-error]
+  (ajax/DELETE 
+   (str "peers/" (:id peer))
+   #(get-peers on-success on-error)
+   #(on-error (error/error-result->str %))))
 
-(defn delete-peer [peers! peer]
-  (ajax/DELETE (str "peers/" (:id peer))
-               #(get-peers peers!)
-               error/error-handler))
-
-(defn get-invite-token [token!]
+(defn get-invite-token [on-success on-error]
   (ajax/GET "peers/token"
-            #(reset! token! (:token %))
-            error/error-handler))
+            #(on-success (:token %))
+            #(on-error (error/error-result->str %))))
 
-(defn token-to-peer [token f]
+(defn token-to-peer [token on-success on-error]
   (ajax/POST "peers/token"
              {:token token}
-             f
-             error/error-handler))
+             on-success
+             #(on-error (error/error-result->str %))))

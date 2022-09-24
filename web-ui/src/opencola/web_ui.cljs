@@ -30,7 +30,7 @@
 (secretary/set-config! :prefix "#")
 
 (defn set-feed-error [feed! message]
-  (reset! feed! {:error  message}))
+  (reset! feed! {:error-message  message}))
 
 (defn get-feed [query feed!]
   (feed-model/get-feed
@@ -40,7 +40,7 @@
 
 
 (defroute "/" []
-  (common/set-location  "#/feed"))
+  (common/set-location "#/feed"))
 
 (defroute "/feed" [query-params]
   (let [query (or (:q query-params) "")]
@@ -51,7 +51,7 @@
 
 (defroute "/peers" []
   (if @config/config
-    (peer-model/get-peers peers!))
+    (peer/get-peers peers!))
   (set-page :peers))
 
 (defroute "*" []
@@ -88,7 +88,7 @@
 (config/get-config #(do (mount-app-element)
                         ;; TODO: Figure out a better way to do this. Maybe handle in the AJAX layer?
                         (get-feed @query! feed!)
-                        (peer-model/get-peers peers!)) 
+                        (peer/get-peers peers!)) 
                    error/error-handler)
 
 ;; specify reload hook with ^:after-load metadata

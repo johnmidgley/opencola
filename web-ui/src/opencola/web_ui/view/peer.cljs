@@ -9,12 +9,18 @@
    [alphabase.base58 :as b58]
    [cljs.pprint :as pprint]))
 
+
+(defn get-peers [peers!]
+  (model/get-peers
+            #(reset! peers! %)
+            #(error/set-error! peers! %)))
+
+
 (defn header-actions [query! adding-peer?!]
   [:div.header-actions 
    [:img.header-icon {:src  "../img/add-peer.png" :on-click #(swap! adding-peer?! not)}]
    common/image-divider
    [:img.header-icon {:src  "../img/feed.png" :on-click #(common/set-location (str "#/feed?q=" @query!))}]])
-
 
 (defn map-to-token [m]
   (->> m (map (fn [[k v]] (str (name k) "=" v))) (interpose \|) (apply str)))
@@ -52,6 +58,17 @@
     :checked (:isActive @peer!)
     :on-change #(swap! peer! assoc-in [:isActive] (-> % .-target .-checked))}])
 
+(defn update-peer [peers! peer!]
+  (model/update-peer
+   @peer!
+   #(reset! peers! %)
+   #(error/set-error! peer! %)))
+
+(defn delete-peer [peers! peer!]
+  (model/delete-peer
+   @peer!
+   #(reset! peers! %)
+   #(error/set-error! peer! %)))
 
 (defn peer-item [peers! peer adding-peer?!]
   (let [creating? adding-peer?!
@@ -86,26 +103,32 @@
              [:td [peer-active p! @editing?!]]]]]]
          (if @editing?!
            [:div
+            [error/error-control @p!]
             [:button
              {:disabled (and (not adding-peer?!) (= @p! peer)) 
               :on-click #(do
-                           (model/update-peer peers! @p!)
+                           (update-peer peers! p!)
                            (if adding-peer?! (reset! adding-peer?! false)))} "Save"] " "
             [:button {:on-click  #(do
                                     (reset! p! peer)
                                     (if adding-peer?! (reset! adding-peer?! false))
                                     (reset! editing?! false))} "Cancel"] " "
             (if (not creating?)
-              [:button.delete-button {:on-click #(model/delete-peer peers! peer)} "Delete"])]
+              [:button.delete-button {:on-click #(delete-peer peers! p!)} "Delete"])]
            [:div.edit-peer
             [:button {:on-click #(reset! editing?! true)} "Edit"]])]))))
 
+(defn get-invite-token [token! add-error!]
+  (model/get-invite-token
+   #(reset! token! %)
+   #(error/set-error! add-error! %)))
 
 (defn add-peer-item [peers! adding-peer?!]
   (let [send-token! (atom "Loading...")
         receive-token! (atom "")
-        peer! (atom nil)]
-    (model/get-invite-token send-token!)
+        peer! (atom nil)
+        add-error! (atom {})]
+    (get-invite-token send-token! add-error!)
     (fn []
       (if @peer!
         [peer-item peers! @peer! adding-peer?!]
@@ -131,12 +154,16 @@
                 :value @receive-token!
                 :on-change #(reset! receive-token! (-> % .-target .-value))}]]]
             [:tr
-             [:td [:button {:on-click 
-                            (fn [] 
-                              (model/token-to-peer @receive-token! #(reset! peer! %)
-                                                   #_(model/update-peer peers! %))
-                              #_(reset! adding-peer?! false))} 
-                   "Add"]]]]]]]))))
+             [:td 
+              [:button {:on-click 
+                        (fn [] 
+                          (model/token-to-peer 
+                           @receive-token! 
+                           #(reset! peer! %) 
+                           #(error/set-error! add-error! %)))} 
+               "Add"]]
+             [:td
+              [error/error-control @add-error!]]]]]]]))))
 
 (defn peer-list [peers! adding-peer?!]
   (if @peers!
@@ -147,10 +174,11 @@
               ^{:key peer} [peer-item peers! peer]))]))
 
 (defn peer-page [peers! query! on-search!]
+
   (let [adding-peer?! (atom false)]
     (fn []
       [:div.settings-page
        [search/search-header query! on-search! (partial header-actions query! adding-peer?!)]
-       [common/error-message]
+       [error/error-control @peers!]
        [peer-list peers! adding-peer?!]])))
 

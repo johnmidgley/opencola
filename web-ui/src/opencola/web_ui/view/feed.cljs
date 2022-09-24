@@ -488,8 +488,9 @@
      (doall (for [item  (:results @feed!)]
               ^{:key item} [feed-item feed! item]))]))
 
+;; TODO: Consolidate all error controls
 (defn feed-error [feed!]
-  (if-let [e (:error @feed!)]
+  (if-let [e (:error-message @feed!)]
     [:div.error e]))
 
 (defn header-actions [creating-post?!]
