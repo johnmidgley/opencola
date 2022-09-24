@@ -17,6 +17,12 @@
 
 ;; TODO: Look at https://github.com/Day8/re-com
 
+(defn get-feed [query feed!]
+  (feed/get-feed
+   query
+   #(reset! feed! %)
+   #(error/set-error! feed! %)))
+
 (defn format-time [epoch-second]
   (f/unparse (f/formatter "yyyy-MM-dd hh:mm") (c/from-long (* epoch-second 1000))))
 
@@ -76,19 +82,6 @@
     (str (if (not= host "") "http://") host "/data/" data-id))) 
 
 
-(defn set-error-message! [atom! message]
-  (swap! atom! assoc-in [:error-message] message))
-
-(defn set-error-message [item message]
-  (assoc-in item [:error-message] message))
-
-(defn clear-error-message [item]
-  (dissoc item :error-message))
-
-(defn error-control [edit-item]
-  (when-let [message (:error-message edit-item)]
-    [:div.error [:p message]]))
-
 (defn edit-control [editing?!]
   [:span.edit-entity {:on-click #(reset! editing?! true)} (action-img "edit")])
 
@@ -112,14 +105,15 @@
    #(do
       (update-feed-item feed! %)
       (reset! editing?! false))
-   #(reset! error! (set-error-message @error! %))))
+   #(error/set-error! error! %)))
 
 (defn delete-comment [feed! entity-id comment-id]
   (let [item (get-item @feed! entity-id)]
     (feed/delete-comment
-     comment-id
-     #(update-feed-item feed! (remove-comment (clear-error-message item) comment-id))
-     #(update-feed-item feed! (set-error-message item %)))))
+     comment-id                          
+     ;; TODO: Pass in error, instead of adding to item?
+     #(update-feed-item feed! (remove-comment (error/clear-error item) comment-id))
+     #(update-feed-item feed! (error/set-error item %)))))
 
 (defn comment-control [feed! entity-id comment-id text expanded?!]
   (let [text! (atom text)
@@ -131,7 +125,7 @@
           [:textarea.comment-text-edit {:type "text"
                                         :value @text!
                                         :on-change #(reset! text! (-> % .-target .-value))}]
-          [error-control @error!]
+          [error/error-control @error!]
           [:button {:on-click #(update-comment feed! entity-id comment-id @text! expanded?! error!)} "Save"] " "
           [:button {:on-click #(reset! expanded?! false)} "Cancel"]
           (if comment-id
@@ -265,14 +259,14 @@
       (feed/save-entity
        item
        #(update-feed-item feed! %)
-       #(update-feed-item feed! (set-error-message item %))))))
+       #(update-feed-item feed! (error/set-error item %))))))
 
 
 (defn update-display-entity [feed! edit-item item]
   (feed/update-entity 
    edit-item
    #(update-feed-item feed! %)
-   #(update-feed-item feed! (set-error-message item %))))
+   #(update-feed-item feed! (error/set-error item %))))
 
 (defn update-edit-entity [feed! editing?! edit-item! item]
   (feed/update-entity 
@@ -300,7 +294,7 @@
           {:type "text"
            :value (:tags @edit-item!)
            :on-change #(swap! edit-item! assoc-in [:tags] (-> % .-target .-value))}]
-         [error-control @edit-item!]
+         [error/error-control @edit-item!]
          [:button {:on-click #(update-edit-entity feed! tagging?! edit-item! item)} "Save"] " "
          [:button {:on-click #(reset! tagging?! false)} "Cancel"] " "]))))
 
@@ -364,7 +358,7 @@
        [item-tags-summary (-> item :activities :tag)]
        [:div.posted-by "Posted by: " (:postedBy summary)]
        [item-activities feed! item editing?!]
-       [error-control item]])))
+       [error/error-control item]])))
 
 (defn name-edit-control [edit-item!]
        [:div.item-name
@@ -429,7 +423,7 @@
        [like-edit-control edit-item!]
        [tags-edit-control edit-item!]
        [comment-edit-control edit-item!]
-       [error-control @edit-item!]
+       [error/error-control @edit-item!]
        [:button {:on-click (fn []
                              (swap! edit-item! assoc-in [:description] (.value @description-state!))
                              (on-save)) } "Save"] " "
@@ -451,7 +445,7 @@
          (delete-feed-item feed! entity-id)
          (update-feed-item feed! item))
        (if editing?! (reset! editing?! false)))
-     #(set-error-message! edit-item! %))))
+     #(error/set-error! edit-item! %))))
 
 
 ;; TODO: Use keys to get 
@@ -488,11 +482,6 @@
      (doall (for [item  (:results @feed!)]
               ^{:key item} [feed-item feed! item]))]))
 
-;; TODO: Consolidate all error controls
-(defn feed-error [feed!]
-  (if-let [e (:error-message @feed!)]
-    [:div.error e]))
-
 (defn header-actions [creating-post?!]
    [:div.header-actions 
     [:img.header-icon {:src  "../img/new-post.png" :on-click #(swap! creating-post?! not)}]
@@ -509,14 +498,14 @@
    #(do 
       (prepend-feed-item feed! %)
       (reset! creating-post!? false))
-   #(set-error-message! edit-item! %)))
+   #(error/set-error! edit-item! %)))
 
 (defn feed-page [feed! query! on-search]
   (let [creating-post?! (atom false)]
     (fn []
       [:div#opencola.feed-page
        [search/search-header query! on-search (partial header-actions creating-post?!)]
-       [feed-error feed!]
+       [error/set-error! feed!]
        (if @creating-post?!
          (let [edit-item! (atom (edit-item))]
            [edit-item-control

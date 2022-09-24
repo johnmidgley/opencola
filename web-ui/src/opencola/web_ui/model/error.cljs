@@ -13,6 +13,9 @@
 (defn get-error [m]
   (:error m))
 
+(defn clear-error [item]
+  (dissoc item :error))
+
 (defn set-error! [atom! error]
   (reset! atom! (set-error @atom! error)))
 

@@ -30,15 +30,6 @@
 
 (secretary/set-config! :prefix "#")
 
-(defn set-feed-error [feed! message]
-  (reset! feed! {:error-message  message}))
-
-(defn get-feed [query feed!]
-  (feed-model/get-feed
-   query
-   #(reset! feed! %)
-   #(set-feed-error feed! %)))
-
 (defroute "/" []
   (common/set-location "#/feed"))
 
@@ -46,7 +37,7 @@
   (let [query (or (:q query-params) "")]
     (reset! query! query)
     (if @config/config ; Needed when overriding host-url for dev
-      (get-feed query feed!))
+      (feed/get-feed query feed!))
     (set-page :feed)))
 
 (defroute "/peers" []
@@ -85,7 +76,7 @@
 ;; this is particularly helpful for testing this ns without launching the app
 #_(mount-app-element)
 (config/get-config #(do (mount-app-element)
-                        (get-feed @query! feed!)
+                        (feed/get-feed @query! feed!)
                         (peer/get-peers peers!)) 
                    #(error/set-error! error! %))
 
