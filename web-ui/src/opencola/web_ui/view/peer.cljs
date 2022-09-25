@@ -174,7 +174,6 @@
               ^{:key peer} [peer-item peers! peer]))]))
 
 (defn peer-page [peers! query! on-search!]
-
   (let [adding-peer?! (atom false)]
     (fn []
       [:div.settings-page

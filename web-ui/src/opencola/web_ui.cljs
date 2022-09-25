@@ -4,6 +4,7 @@
    [reagent.core :as reagent :refer [atom]]
    [reagent.dom :as rdom]
    [opencola.web-ui.config :as config]
+   [opencola.web-ui.app-state :as state :refer [query! feed! peers! error!]]
    [opencola.web-ui.common :as common]
    [opencola.web-ui.view.feed :as feed]
    [opencola.web-ui.view.peer :as peer]
@@ -15,18 +16,6 @@
   (:import [goog History]
            [goog.history EventType]))
 
-(def page-visible-atoms (apply hash-map (mapcat #(vector % (atom false)) [:feed :peers :error])))
-(def query! (atom ""))
-(def feed! (atom {}))
-(def peers! (atom {}))
-(def error! (atom {}))
-
-(defn page-visible? [page]
-  @(page page-visible-atoms))
-
-(defn set-page [page]
-  (let [page-atom! (page page-visible-atoms)]
-    (common/select-atom (map second page-visible-atoms) page-atom!)))
 
 (secretary/set-config! :prefix "#")
 
@@ -35,18 +24,18 @@
 
 (defroute "/feed" [query-params]
   (let [query (or (:q query-params) "")]
-    (reset! query! query)
+    (state/set-query! query)
     (if @config/config ; Needed when overriding host-url for dev
-      (feed/get-feed query feed!))
-    (set-page :feed)))
+      (feed/get-feed query (feed!)))
+    (state/set-page! :feed)))
 
 (defroute "/peers" []
   (if @config/config
-    (peer/get-peers peers!))
-  (set-page :peers))
+    (peer/get-peers (peers!)))
+  (state/set-page! :peers))
 
 (defroute "*" []
-  (set-page :error))
+  (state/set-page! :error))
 
 (defn get-app-element []
   (gdom/getElement "app"))
@@ -55,14 +44,15 @@
   (common/set-location (str "#feed" (if (empty? query) "" (str "?q=" query)))))
 
 (defn app []
-  (fn [] [:div.app
-          (if @(:feed page-visible-atoms)
-            [feed/feed-page feed! query! #(on-search % feed!)])
-          (if @(:peers page-visible-atoms)
-            [peer/peer-page peers! query! #(on-search % feed!)])
-          (if @(:error page-visible-atoms)
-            [:div.settings "404"])
-          [error/error-control @error!]]))
+  (fn []
+    [:div.app
+     (if (state/page-visible? :feed)
+       [feed/feed-page (feed!) (query!)  #(on-search % (feed!))])
+     (if (state/page-visible? :peers)
+       [peer/peer-page (peers!) (query!) #(on-search % (feed!))])
+     (if (state/page-visible? :error)
+       [:div.settings "404"])
+     [error/error-control @(error!)]]))
 
 
 (defn mount [el]
@@ -76,9 +66,9 @@
 ;; this is particularly helpful for testing this ns without launching the app
 #_(mount-app-element)
 (config/get-config #(do (mount-app-element)
-                        (feed/get-feed @query! feed!)
-                        (peer/get-peers peers!)) 
-                   #(error/set-error! error! %))
+                        (feed/get-feed @(query!) (feed!))
+                        (peer/get-peers (peers!))) 
+                   #(error/set-error! (error!) %))
 
 ;; specify reload hook with ^:after-load metadata
 (defn ^:after-load on-reload []
