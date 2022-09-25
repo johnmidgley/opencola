@@ -12,13 +12,13 @@
    [opencola.web-ui.common :as common :refer [action-img]]
    [opencola.web-ui.view.search :as search]
    [opencola.web-ui.model.error :as error]
-   [opencola.web-ui.model.feed :as feed])) ;; TODO: Change to model
+   [opencola.web-ui.model.feed :as model]))
 
 
 ;; TODO: Look at https://github.com/Day8/re-com
 
 (defn get-feed [query feed!]
-  (feed/get-feed
+  (model/get-feed
    query
    #(reset! feed! %)
    #(error/set-error! feed! %)))
@@ -98,22 +98,20 @@
 
 
 (defn update-comment [feed! entity-id comment-id text editing?! error!]
-  (feed/update-comment 
+  (model/update-comment 
    entity-id 
    comment-id
    text
-   #(do
-      (update-feed-item feed! %)
-      (reset! editing?! false))
+   #(update-feed-item feed! %)
    #(error/set-error! error! %)))
 
-(defn delete-comment [feed! entity-id comment-id]
+(defn delete-comment [feed! entity-id comment-id error!]
   (let [item (get-item @feed! entity-id)]
-    (feed/delete-comment
+    (model/delete-comment
      comment-id                          
      ;; TODO: Pass in error, instead of adding to item?
      #(update-feed-item feed! (remove-comment (error/clear-error item) comment-id))
-     #(update-feed-item feed! (error/set-error item %)))))
+     #(error/set-error! error! %))))
 
 (defn comment-control [feed! entity-id comment-id text expanded?!]
   (let [text! (atom text)
@@ -129,7 +127,8 @@
           [:button {:on-click #(update-comment feed! entity-id comment-id @text! expanded?! error!)} "Save"] " "
           [:button {:on-click #(reset! expanded?! false)} "Cancel"]
           (if comment-id
-            [:button.delete-button {:on-click #(delete-comment feed! entity-id comment-id)} "Delete"])]]))))
+            [:button.delete-button 
+             {:on-click #(delete-comment feed! entity-id comment-id error!)} "Delete"])]]))))
 
 (defn item-comment [feed! entity-id comment-action]
 (let [editing?! (atom false)]
@@ -256,24 +255,23 @@
         actions (-> item :activities :save)
         saved? (some #(= authority-id (:authorityId %)) actions)]
     (if (not saved?)
-      (feed/save-entity
-       item
-       #(update-feed-item feed! %)
-       #(update-feed-item feed! (error/set-error item %))))))
+      (model/save-entity
+        item
+        #(update-feed-item feed! %)
+        #(update-feed-item feed! (error/set-error item %))))))
 
 
 (defn update-display-entity [feed! edit-item item]
-  (feed/update-entity 
+  (model/update-entity 
    edit-item
    #(update-feed-item feed! %)
    #(update-feed-item feed! (error/set-error item %))))
 
 (defn update-edit-entity [feed! editing?! edit-item! item]
-  (feed/update-entity 
+  (model/update-entity 
    @edit-item!
-   #(do (update-feed-item feed! %)
-        (reset! editing?! false))
-   #(swap! edit-item! assoc-in [:error-message] %)))
+   #(update-feed-item feed! %)
+   #(error/set-error! edit-item! %)))
 
 
 (defn like-item [feed! item]
@@ -438,10 +436,10 @@
 
 (defn delete-entity [feed! editing?! item edit-item!]
   (let [entity-id (:entityId item)]
-    (feed/delete-entity
+    (model/delete-entity
      entity-id
      (fn [item]
-       (if (empty? item)
+       (if (empty? item) ;; Item may not be deletable, if you don't own it. Should hide it
          (delete-feed-item feed! entity-id)
          (update-feed-item feed! item))
        (if editing?! (reset! editing?! false)))
@@ -493,7 +491,7 @@
   (swap! feed! update-in [:results] #(into [view-item] %)))
 
 (defn new-post [feed! creating-post!? edit-item!]
-  (feed/new-post 
+  (model/new-post 
    @edit-item!
    #(do 
       (prepend-feed-item feed! %)
@@ -505,7 +503,7 @@
     (fn []
       [:div#opencola.feed-page
        [search/search-header query! on-search (partial header-actions creating-post?!)]
-       [error/set-error! feed!]
+       [error/error-control @feed!]
        (if @creating-post?!
          (let [edit-item! (atom (edit-item))]
            [edit-item-control

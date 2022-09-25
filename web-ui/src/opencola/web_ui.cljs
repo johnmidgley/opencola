@@ -17,6 +17,7 @@
            [goog.history EventType]))
 
 
+;; TODO: Move routing to separate file
 (secretary/set-config! :prefix "#")
 
 (defroute "/" []
@@ -24,7 +25,7 @@
 
 (defroute "/feed" [query-params]
   (let [query (or (:q query-params) "")]
-    (state/set-query! query)
+    (query! query)
     (if @config/config ; Needed when overriding host-url for dev
       (feed/get-feed query (feed!)))
     (state/set-page! :feed)))

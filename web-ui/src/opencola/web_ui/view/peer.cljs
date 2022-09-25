@@ -12,8 +12,8 @@
 
 (defn get-peers [peers!]
   (model/get-peers
-            #(reset! peers! %)
-            #(error/set-error! peers! %)))
+   #(reset! peers! %)
+   #(error/set-error! peers! %)))
 
 
 (defn header-actions [query! adding-peer?!]

@@ -23,17 +23,20 @@
         page-atom! (page page-visible-atoms)]
     (common/select-atom (map second page-visible-atoms) page-atom!)))
 
-(defn query! []
-  (:query! app-state))
-
-(defn set-query! [query]
-  (reset! (query!) query))
+(defn query! 
+  ([]
+   (:query! app-state))
+  ([query]
+   (reset! (query!) query) ))
 
 (defn feed! [] 
   (:feed! app-state))
 
-(defn peers! []
-  (:peers! app-state))
+(defn peers! 
+  ([]
+   (:peers! app-state))
+  ([peers]
+   (reset! (peers!) peers)))
 
 (defn error! []
   (:error! app-state))
