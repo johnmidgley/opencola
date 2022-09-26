@@ -23,9 +23,6 @@
    #(reset! feed! %)
    #(error/set-error! feed! %)))
 
-(defn format-time [epoch-second]
-  (f/unparse (f/formatter "yyyy-MM-dd hh:mm") (c/from-long (* epoch-second 1000))))
-
 (defn authority-actions-of-type [authority-id type item]
   (filter #(= authority-id (:authorityId %)) (-> item :activities type)))
 
@@ -136,12 +133,12 @@
     (let [root-authority-id (:authorityId @feed!)
           {authority-id :authorityId
            authority-name :authorityName 
-           epoch-second :epochSecond 
+           date-time :dateTime
            text :value
            comment-id :id} comment-action]
       [:div.item-comment 
        [:div.item-attribution 
-        authority-name " " (format-time epoch-second) " "
+        authority-name " " date-time " "
         (if (= authority-id root-authority-id)
           [:span {:on-click #(reset! editing?! true)} [action-img "edit"]])
         ":"]
@@ -160,12 +157,12 @@
 
 (defn item-save [save-action]
   (let [{authority-name :authorityName 
-         epoch-second :epochSecond 
+         date-time :dateTime
          data-id :id
          host :host} save-action]
     [:tr.item-attribution
      [:td authority-name " "]
-     [:td (format-time epoch-second)]
+     [:td date-time]
      [:td
       (if data-id
         [:span
@@ -204,10 +201,10 @@
 
 (defn item-tag [tag-action]
   (let [{authority-name :authorityName
-         epoch-second :epochSecond} tag-action] 
+         date-time :dateTime} tag-action] 
     [:tr.item-attribution
      [:td authority-name]
-     [:td (format-time epoch-second)]
+     [:td date-time]
      [:td.tag-cell (tag (:value tag-action))]]))
 
 
@@ -224,10 +221,10 @@
 
 (defn item-like [like-action]
   (let [{authority-name :authorityName 
-         epoch-second :epochSecond } like-action]
+         date-time :dateTime } like-action]
     [:tr.item-attribution 
      [:td (str authority-name)]
-     [:td (format-time epoch-second)]]))
+     [:td date-time]]))
 
 ;; TODO: Templatize this - same for saves and comments
 (defn item-likes [expanded?! like-actions]

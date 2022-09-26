@@ -1,9 +1,11 @@
 package opencola.service
 
-import kotlinx.serialization.Serializable
 import io.opencola.core.extensions.nullOrElse
 import io.opencola.core.model.Authority
 import io.opencola.core.model.Id
+import kotlinx.serialization.Serializable
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Serializable
 // TODO - Replace Search Result
@@ -44,7 +46,7 @@ data class EntityResult(
         val authorityId: String,
         val authorityName: String,
         val host: String,
-        val epochSecond: Long,
+        val dateTime: String,
         val actions: List<Action>,
     ) {
         constructor(authority: Authority, epochSecond: Long, actions: List<Action>) :
@@ -52,7 +54,22 @@ data class EntityResult(
                     authority.entityId.toString(),
                     authority.name!!,
                     authority.uri!!.authority ?: "",
-                    epochSecond,
+                    epochSecondToDateString(epochSecond),
                     actions)
+
+        fun getEpochSecond() : Long {
+            return dateFormat.parse(dateTime).time / 1000
+        }
+    }
+
+    companion object {
+        private val dateFormat = SimpleDateFormat("yyyy-MM-dd hh:mm:ss aa").also {
+            it.timeZone =  Calendar.getInstance().timeZone
+        }
+
+        fun epochSecondToDateString(epochSecond: Long) : String {
+            val date = Date(epochSecond * 1000)
+            return dateFormat.format(date)
+        }
     }
 }
