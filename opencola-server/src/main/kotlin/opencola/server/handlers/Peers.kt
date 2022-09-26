@@ -85,6 +85,9 @@ fun deletePeer(addressBook: AddressBook, peerId: Id) {
 fun updatePeer(authorityId: Id, addressBook: AddressBook, networkNode: NetworkNode, eventBus: EventBus, peer: Peer) {
     logger.info { "Updating peer: $peer" }
 
+    if(Id.ofPublicKey(decodePublicKey(peer.publicKey)) != Id.decode(peer.id))
+        throw IllegalArgumentException("Public key update not supported yet")
+
     val peerAuthority = peer.toAuthority(authorityId)
     val existingPeerAuthority = addressBook.getAuthority(peerAuthority.entityId)
 
