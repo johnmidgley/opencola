@@ -116,7 +116,7 @@
     (fn []
       (if @expanded?!
         [:div.item-comment
-         [:div.item-comment-text
+         [:div.item-comment-edit
           [:textarea.comment-text-edit {:type "text"
                                         :value @text!
                                         :on-change #(reset! text! (-> % .-target .-value))}]
@@ -144,7 +144,7 @@
         ":"]
        (if @editing?!
          [comment-control feed! entity-id comment-id text editing?!]
-         [common/md->component {:class "item-comment-text"} text])]))))
+         [:div.item-comment-container [common/md->component {:class "item-comment-text"} text]])]))))
 
 (defn item-comments [preview-fn? expanded?! comment-actions feed! entity-id]
   (let [preview? (preview-fn?)
