@@ -11,9 +11,11 @@ import kotlinx.cli.ArgType
 import kotlinx.cli.default
 import mu.KotlinLogging
 import io.opencola.core.config.Application
+import io.opencola.core.config.SSLConfig
 import io.opencola.core.config.loadConfig
 import io.opencola.core.event.EventBus
 import io.opencola.core.event.Events
+import io.opencola.core.extensions.runCommand
 import io.opencola.core.model.Id
 import io.opencola.core.network.NetworkNode
 import io.opencola.core.security.encode
@@ -23,34 +25,94 @@ import kotlinx.serialization.encodeToString
 import opencola.server.plugins.configureContentNegotiation
 import opencola.server.plugins.configureHTTP
 import opencola.server.plugins.configureRouting
+import org.slf4j.LoggerFactory
+import java.net.Inet4Address
+import java.nio.file.Path
+import java.security.KeyStore
 import kotlin.io.path.Path
+import kotlin.io.path.isDirectory
 
 private val logger = KotlinLogging.logger("opencola")
 
-fun onServerStarted(application: Application){
+fun onServerStarted(application: Application) {
+    val hostAddress = Inet4Address.getLocalHost().hostAddress
     application.inject<NetworkNode>().start()
     application.inject<EventBus>().sendMessage(Events.NodeStarted.toString())
+    logger.info { "Server started: http://$hostAddress:${application.config.server.port}" }
+    application.config.server.ssl?.let {
+        logger.info { "Server started: https://$hostAddress:${it.port} - certs needed" }
+    }
 }
 
 @Serializable
 data class ErrorResponse(val message: String)
 
+fun getSanEntry(san: String) :String {
+    return when(san) {
+        "localhost" -> "dns:localhost"
+        "hostAddress" -> "ip:${Inet4Address.getLocalHost().hostAddress}"
+        else -> "ip:$san"
+    }
+}
+
+fun getSSLCertificateStore(storagePath: Path, password: String, sslConfig: SSLConfig): KeyStore {
+    val certStoragePath = storagePath.resolve("cert")
+    if(!certStoragePath.isDirectory()) {
+        throw IllegalStateException("'cert' directory doesn't exist in $certStoragePath. Please copy from install storage directory")
+    }
+
+    val keyStoreFile = storagePath.resolve("cert/opencola-ssl.jks").toFile()
+    if(!keyStoreFile.exists()) {
+        logger.info { "SSL Certificate store not found - creating" }
+        val sans = sslConfig.sans.joinToString(",") { getSanEntry(it) }
+        "./gen-ssl-cert $sans".runCommand(storagePath.resolve("cert"), printOutput = true)
+    }
+
+    val keystore = KeyStore.getInstance("JKS")!!
+    keyStoreFile.inputStream().use { keystore.load(keyStoreFile.inputStream(), password.toCharArray()) }
+
+    return keystore
+}
+
 fun getServer(application: Application): NettyApplicationEngine {
     val serverConfig = application.config.server
+    val sslCertStorePassword = "password"
 
-    return embeddedServer(Netty, port = serverConfig.port, host = serverConfig.host) {
-        // install(CallLogging)
-        configureHTTP()
-        configureContentNegotiation()
-        configureRouting(application)
-        install(StatusPages) {
-            exception<Throwable> { cause ->
-                val response = ErrorResponse(cause.message ?: "Unknown")
-                call.respond(HttpStatusCode.InternalServerError, Json.encodeToString(response))
+    val environment = applicationEngineEnvironment {
+        log = LoggerFactory.getLogger("ktor.application")
+
+        connector {
+            host = serverConfig.host
+            port = serverConfig.port
+        }
+
+        if (serverConfig.ssl != null) {
+            sslConnector(
+                keyStore = getSSLCertificateStore(application.storagePath, sslCertStorePassword, serverConfig.ssl!!),
+                keyAlias = "opencola-ssl",
+                keyStorePassword = { sslCertStorePassword.toCharArray() },
+                privateKeyPassword = { sslCertStorePassword.toCharArray() }
+            ) {
+                host = serverConfig.host
+                port = serverConfig.ssl!!.port
             }
         }
-        this.environment.monitor.subscribe(ApplicationStarted) { onServerStarted(application) }
+
+        module {
+            configureHTTP()
+            configureContentNegotiation()
+            configureRouting(application)
+            install(StatusPages) {
+                exception<Throwable> { cause ->
+                    val response = ErrorResponse(cause.message ?: "Unknown")
+                    call.respond(HttpStatusCode.InternalServerError, Json.encodeToString(response))
+                }
+            }
+            this.environment.monitor.subscribe(ApplicationStarted) { onServerStarted(application) }
+        }
     }
+
+    return embeddedServer(Netty, environment)
 }
 
 fun main(args: Array<String>) {

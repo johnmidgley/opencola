@@ -18,7 +18,7 @@ fun getApplications(
 ): List<Application> {
     val configTuples = (0 until nServers)
         .map { baseConfig.setName("Server-${serverNum++}") }
-        .mapIndexed { i, it -> it.setServer(ServerConfig(it.server.host, basePortNumber + i)) }
+        .mapIndexed { i, it -> it.setServer(ServerConfig(it.server.host, basePortNumber + i, null)) }
         .map { config ->
             val instanceStoragePath = storagePath.resolve(config.name).createDirectory()
             Triple(

@@ -3,6 +3,7 @@ services:
     build: ..
     ports:
       - "5795:5795"
+      - "5796:5796"
     volumes:
       # Volumes for windows machines
       - "$APPDATA\\opencola\\storage\\:/opencola/storage"

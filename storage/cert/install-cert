@@ -1,0 +1,11 @@
+#!/bin/bash
+
+OS="`uname`"
+case $OS in
+  'Darwin')
+    sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain opencola-ssl.der
+    ;;
+   *)
+   echo "Unknown OS - unable to install cer"
+   ;;
+esac

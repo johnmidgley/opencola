@@ -83,7 +83,9 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
             }
 
             // TODO: Change from authority to public key - they authority should come from the private store based on the private key
-            val authority = Authority(authorityKeyPair.public, URI("http://${config.server.host}:${config.server.port}"), "You")
+            val defaultAddress = config.network?.defaultAddress ?: URI("pcr://relay.opencola.net")
+            val authority = Authority(authorityKeyPair.public, defaultAddress, "You")
+
             val keyStore = KeyStore(storagePath.resolve(config.security.keystore.name), config.security.keystore.password)
             val fileStore = LocalFileStore(storagePath.resolve("filestore"))
             val entityStoreDB = getEntityStoreDB(authority, storagePath)
@@ -95,7 +97,7 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
                 bindSingleton { TextExtractor() }
                 bindSingleton { Signator(instance()) }
                 bindSingleton { Encryptor(instance()) }
-                bindSingleton { AddressBook(instance(), storagePath, instance(), config.server, config.network) }
+                bindSingleton { AddressBook(instance(), storagePath, instance(), config.network) }
                 bindSingleton { RequestRouter(getDefaultRoutes(instance(), instance(), instance())) }
                 bindSingleton { HttpNetworkProvider(config.server, instance(), instance()) }
                 bindSingleton { OCRelayNetworkProvider(instance(), authorityKeyPair) }

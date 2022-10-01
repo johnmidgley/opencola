@@ -10,6 +10,7 @@ import io.opencola.core.storage.AddressBook
 import opencola.server.getServer
 import opencola.server.handlers.*
 import java.io.File
+import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.copyTo
 import kotlin.io.path.exists
@@ -74,7 +75,9 @@ class ApplicationNode(val application: Application) : Node {
             }
 
             val configToUse = (config ?: loadConfig(storagePath.resolve("opencola-server.yaml"))).let{
-                it.setServer(ServerConfig(it.server.host, port))
+                it
+                    .setServer(ServerConfig(it.server.host, port, null))
+                    .setNetwork(NetworkConfig(it.network?.peers ?: emptyList(), URI("http://${it.server.host}:$port")))
             }
 
             val instance = Application.instance(TestApplication.applicationPath, storagePath, configToUse)

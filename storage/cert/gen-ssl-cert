@@ -1,0 +1,24 @@
+#!/bin/sh
+# https://docs.oracle.com/en/java/javase/12/tools/keytool.html
+# https://www.pixelstech.net/article/1406724116-Generate-certificate-in-Java----Self-signed-certificate
+# ip:127.0.0.1,ip:10.243.13.107,dns:localhost
+#TODO: Create variable for opencola-ssl - maybe pass in to script
+keytool -genkeypair -alias opencola-ssl -keystore opencola-ssl.jks -dname "CN=opencola, O=OpenCola" -storepass password -keypass password -ext bc:critical=ca:true -ext san=$1 -keyalg rsa -validity 3650
+
+if [ 0 -ne $? ]
+then
+  exit 1
+fi
+
+keytool -exportcert -keystore opencola-ssl.jks -alias opencola-ssl -file opencola-ssl.pem -rfc -storepass password -keypass password
+keytool -exportcert -keystore opencola-ssl.jks -alias opencola-ssl -file opencola-ssl.der -storepass password -keypass password
+keytool -printcert -file opencola-ssl.pem
+
+# How to install certs
+# https://support.kerioconnect.gfi.com/hc/en-us/articles/360015200119-Adding-Trusted-Root-Certificates-to-the-Server
+
+# To load into mac keystore
+# sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain localhost.der
+
+# For iOS
+# https://apple.stackexchange.com/questions/283348/how-do-i-trust-a-self-signed-certificate-in-ios-10-3

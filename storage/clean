@@ -9,11 +9,6 @@ then
   exit
 fi
 
-echo "Stopping network"
-cd  ../network
-docker-compose down
-cd ../storage
-
 echo "Deleting data files (leaving keys)"
 rm -f *.db
 rm -rf filestore
@@ -22,9 +17,3 @@ rm -rf var-solr/logs
 rm -rf var-solr/data/*.opencola
 rm -rf lucene
 rm -rf test
-
-echo "Re-starting docker"
-cd ../network
-docker-compose up -d
-cd ../storage
-

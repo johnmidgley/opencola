@@ -4,7 +4,6 @@ import io.ktor.util.collections.*
 import mu.KotlinLogging
 import io.opencola.core.config.NetworkConfig
 import io.opencola.core.config.PeerConfig
-import io.opencola.core.config.ServerConfig
 import io.opencola.core.model.Authority
 import io.opencola.core.model.Id
 import io.opencola.core.security.Signator
@@ -14,7 +13,7 @@ import java.nio.file.Path
 import java.security.PublicKey
 
 // TODO: Move ServerConfig to NetworkConfig?
-class AddressBook(private val authority: Authority, storagePath: Path, signator: Signator, serverConfig: ServerConfig, networkConfig: NetworkConfig) {
+class AddressBook(private val authority: Authority, storagePath: Path, signator: Signator, networkConfig: NetworkConfig?) {
     val logger = KotlinLogging.logger("AddressBook")
 
     private val activeTag = "active"
@@ -39,7 +38,7 @@ class AddressBook(private val authority: Authority, storagePath: Path, signator:
             updateAuthority(addressBookAuthority)
         }
 
-        importPeers(networkConfig.peers)
+        networkConfig?.let { importPeers(it.peers) }
     }
 
     private fun importPeers(peers: List<PeerConfig>) {
