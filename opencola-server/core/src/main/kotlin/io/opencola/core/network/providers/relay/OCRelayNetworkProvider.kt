@@ -34,7 +34,6 @@ class OCRelayNetworkProvider(private val addressBook: AddressBook, private val k
         }
 
         connections[uri]?.let {
-            logger.warn { "Client already started: $uri" }
             return it.client
         }
 
