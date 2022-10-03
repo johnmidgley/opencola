@@ -1,9 +1,9 @@
 package opencola.server.handlers
 
-import io.ktor.application.*
+import io.ktor.server.application.*
 import io.ktor.http.*
-import io.ktor.request.*
-import io.ktor.response.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import io.opencola.core.content.HtmlParser

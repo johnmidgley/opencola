@@ -1,12 +1,12 @@
 package io.opencola.core.network.providers.http
 
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
-import io.ktor.client.features.json.*
-import io.ktor.client.features.json.serializer.*
+import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -27,8 +27,8 @@ class HttpNetworkProvider(serverConfig: ServerConfig, private val authority: Aut
     private val serverAddress = URI("http://${serverConfig.host}:${serverConfig.port}")
 
     private val httpClient = HttpClient(CIO) {
-        install(JsonFeature){
-            serializer = KotlinxSerializer()
+        install(ContentNegotiation){
+            json()
         }
     }
 
@@ -68,16 +68,15 @@ class HttpNetworkProvider(serverConfig: ServerConfig, private val authority: Aut
             logger.info { "Sending request $request" }
 
             return runBlocking {
-                val httpResponse = httpClient.post<HttpStatement>(urlString) {
-                    // TODO: Support more efficient, binary formats
+                val httpResponse = httpClient.post(urlString) {
                     contentType(ContentType.Application.OctetStream)
                     val payload = Json.encodeToString(request).toByteArray()
                     val signature = signator.signBytes(request.from, payload)
                     headers.append("oc-signature", signature.toHexString())
-                    body = payload
-                }.execute()
+                    setBody(payload)
+                }.body<ByteArray>()
 
-                val response = Json.decodeFromString<Response>(String(httpResponse.readBytes()))
+                val response = Json.decodeFromString<Response>(String(httpResponse))
                 logger.info { "Response: $response" }
                 response
             }

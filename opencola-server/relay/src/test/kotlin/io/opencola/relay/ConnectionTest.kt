@@ -12,6 +12,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import io.opencola.core.extensions.append
+import io.opencola.relay.server.WebSocketRelayServer
 import java.net.URI
 import java.security.KeyPair
 import java.security.PublicKey
@@ -23,6 +24,18 @@ import kotlin.test.*
 private val relayServerUri = URI("ocr://0.0.0.0")
 
 class ConnectionTest {
+    private class RelayServer(val webSocketRelayServer: WebSocketRelayServer,
+                              val nettyApplicationEngine: NettyApplicationEngine) {
+        suspend fun stop() {
+            webSocketRelayServer.close()
+            nettyApplicationEngine.stop(1000,1000)
+        }
+    }
+
+    private fun startServer() : RelayServer {
+        return WebSocketRelayServer().let { RelayServer(it, startWebServer(defaultOCRPort, it)) }
+    }
+
     private fun getClient(
         name: String,
         keyPair: KeyPair = generateKeyPair(),
@@ -40,7 +53,7 @@ class ConnectionTest {
     @Test
     fun testSendResponse() {
         runBlocking {
-            val relayWebServer = startWebServer(defaultOCRPort)
+            val server = startServer()
             val client0 = getClient(name = "client0").also { launch { open(it) }; it.waitUntilOpen() }
             val client1 = getClient(name = "client1")
                 .also {
@@ -57,8 +70,7 @@ class ConnectionTest {
             assertNotNull(peerResponse)
             assertEquals("hello client1", String(peerResponse))
 
-            relayWebServer.stop(200, 200)
-
+            server.stop()
             listOf(client0, client1).forEach { it.close() }
         }
     }
@@ -91,13 +103,13 @@ class ConnectionTest {
     @Test
     fun testServerPartition() {
         runBlocking {
-            val relayServer0: NettyApplicationEngine?
-            var relayServer1: NettyApplicationEngine? = null
+            val relayServer0: RelayServer
+            var relayServer1: RelayServer? = null
             var client0: RelayClient? = null
             var client1: RelayClient? = null
 
             try {
-                relayServer0 = startWebServer(defaultOCRPort)
+                relayServer0 = startServer()
                 client0 = getClient("client0").also { launch { open(it) }; it.waitUntilOpen() }
                 client1 = getClient("client1")
                     .also { launch { it.open { _, p -> p.append(" client1".toByteArray()) } }; it.waitUntilOpen() }
@@ -106,12 +118,12 @@ class ConnectionTest {
                 assertNotNull(peerResponse0)
                 assertEquals("hello client1", String(peerResponse0))
 
-                relayServer0.stop(200, 200)
+                relayServer0.stop()
 
                 val peerResponse1 = client0.sendMessage(client1.publicKey, "hello".toByteArray())
                 assertNull(peerResponse1)
 
-                relayServer1 = startWebServer(defaultOCRPort)
+                relayServer1 = startServer()
 
                 val peerResponse2 = client0.sendMessage(client1.publicKey, "hello".toByteArray())
                 assertNotNull(peerResponse2)
@@ -119,7 +131,7 @@ class ConnectionTest {
             } finally {
                 client0?.close()
                 client1?.close()
-                relayServer1?.stop(200, 200)
+                relayServer1?.stop()
             }
         }
     }

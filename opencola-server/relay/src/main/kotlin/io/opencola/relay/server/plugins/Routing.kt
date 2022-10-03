@@ -1,9 +1,9 @@
 package io.opencola.relay.server.plugins
 
-import io.ktor.routing.*
-import io.ktor.application.*
-import io.ktor.response.*
-import io.ktor.websocket.*
+import io.ktor.server.routing.*
+import io.ktor.server.application.*
+import io.ktor.server.response.*
+import io.ktor.server.websocket.*
 import io.opencola.relay.common.WebSocketSessionWrapper
 import io.opencola.relay.server.WebSocketRelayServer
 

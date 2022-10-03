@@ -1,12 +1,12 @@
 package opencola.server.plugins
 
-import io.ktor.application.*
-import io.ktor.application.Application
+import io.ktor.server.application.*
+import io.ktor.server.application.Application
 import io.ktor.http.*
-import io.ktor.http.content.*
-import io.ktor.request.*
-import io.ktor.response.*
-import io.ktor.routing.*
+import io.ktor.server.http.content.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import io.opencola.core.extensions.hexStringToByteArray
 import mu.KotlinLogging
 import io.opencola.core.extensions.nullOrElse
@@ -140,6 +140,7 @@ fun Application.configureRouting(app: app) {
         }
 
         post("/networkNode") {
+            call.request.headers
             val signature = call.request.header("oc-signature")?.hexStringToByteArray()
             val payload = call.receive<ByteArray>()
             call.respond(handleNetworkNode(app.inject(), app.inject(), payload, signature))

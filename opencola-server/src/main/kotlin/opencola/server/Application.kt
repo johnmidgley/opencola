@@ -1,11 +1,11 @@
 package opencola.server
 
-import io.ktor.application.*
-import io.ktor.features.*
+import io.ktor.server.application.*
 import io.ktor.http.*
-import io.ktor.response.*
+import io.ktor.server.response.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import io.ktor.server.plugins.statuspages.*
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.default
@@ -103,7 +103,7 @@ fun getServer(application: Application): NettyApplicationEngine {
             configureContentNegotiation()
             configureRouting(application)
             install(StatusPages) {
-                exception<Throwable> { cause ->
+                exception<Throwable> { call, cause ->
                     val response = ErrorResponse(cause.message ?: "Unknown")
                     call.respond(HttpStatusCode.InternalServerError, Json.encodeToString(response))
                 }

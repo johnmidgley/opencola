@@ -1,20 +1,21 @@
 package opencola.server
 
+import io.ktor.client.request.*
+import io.ktor.client.request.forms.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
-import io.ktor.http.content.*
 import io.ktor.server.testing.*
-import io.ktor.utils.io.streams.*
 import io.opencola.core.model.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import opencola.core.TestApplication
-import opencola.core.model.*
 import io.opencola.core.network.Notification
 import io.opencola.core.network.PeerEvent.*
 import io.opencola.core.security.generateKeyPair
 import io.opencola.core.storage.AddressBook
 import io.opencola.core.storage.EntityStore
+import kotlinx.coroutines.delay
 import opencola.server.handlers.EntityPayload
 import opencola.server.handlers.FeedResult
 import opencola.server.handlers.SearchResults
@@ -34,52 +35,54 @@ class ApplicationTest {
     val injector = TestApplication.instance.injector
 
     @Test
-    fun testRoot() {
-        withTestApplication({ configureRouting(application) }) {
-            handleRequest(HttpMethod.Get, "/").apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-            }
+    fun testRoot()  = testApplication {
+        application {
+            configureRouting(application)
         }
+
+        val response = client.get("/")
+        assertEquals(HttpStatusCode.OK, response.status)
     }
 
     @Test
-    fun testGetEntity(){
+    fun testGetEntity() = testApplication {
         val authority by injector.instance<Authority>()
         val entityStore by injector.instance<EntityStore>()
         val entity = ResourceEntity(authority.authorityId, URI("http://opencola.org"), trust = 1.0F, like = true, rating = 1.0F)
-
         entityStore.updateEntities(entity)
 
-        withTestApplication({ configureRouting(application); configureContentNegotiation() }) {
-            handleRequest(HttpMethod.Get, "/entity/${entity.entityId}").apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-                assertNotNull(response.content)
-                val entityResult = Json.decodeFromString<EntityResult>(response.content!!)
-                // TODO: Can't use .equals, since returned entity has committed transaction ids.
-                // Make commit return the updated entity or implement a contentEquals that ignores transaction id
-                assertEquals(entity.entityId, Id.decode(entityResult.entityId))
-                assertEquals(entity.uri, URI(entityResult.summary.uri!!))
-
-                val activity = entityResult.activities.single()
-                assertEquals(authority.authorityId.toString(), activity.authorityId)
-
-                val actions = activity.actions
-                assertEquals(4, actions.size)
-
-                val trustAction = actions.single { it.type == "trust" }
-                assertEquals(entity.trust.toString(), trustAction.value)
-
-                val likeAction = actions.single { it.type == "like" }
-                assertEquals(entity.like.toString(), likeAction.value)
-
-                val ratingAction = actions.single { it.type == "rate" }
-                assertEquals(entity.rating.toString(), ratingAction.value)
-            }
+        application {
+            configureRouting(application)
+            configureContentNegotiation()
         }
+
+        val response = client.get("/entity/${entity.entityId}")
+        assertEquals(HttpStatusCode.OK, response.status)
+        val content = response.bodyAsText()
+        val entityResult = Json.decodeFromString<EntityResult>(content)
+        // TODO: Can't use .equals, since returned entity has committed transaction ids.
+        // Make commit return the updated entity or implement a contentEquals that ignores transaction id
+        assertEquals(entity.entityId, Id.decode(entityResult.entityId))
+        assertEquals(entity.uri, URI(entityResult.summary.uri!!))
+
+        val activity = entityResult.activities.single()
+        assertEquals(authority.authorityId.toString(), activity.authorityId)
+
+        val actions = activity.actions
+        assertEquals(4, actions.size)
+
+        val trustAction = actions.single { it.type == "trust" }
+        assertEquals(entity.trust.toString(), trustAction.value)
+
+        val likeAction = actions.single { it.type == "like" }
+        assertEquals(entity.like.toString(), likeAction.value)
+
+        val ratingAction = actions.single { it.type == "rate" }
+        assertEquals(entity.rating.toString(), ratingAction.value)
     }
 
     @Test
-    fun testStatusActions(){
+    fun testStatusActions() = testApplication {
         val authority by injector.instance<Authority>()
         val entityStore by injector.instance<EntityStore>()
         val uri = URI("https://opencola.org")
@@ -87,70 +90,70 @@ class ApplicationTest {
 
         entityStore.updateEntities(entity)
 
-        withTestApplication({ configureRouting(application); configureContentNegotiation() }) {
-            handleRequest(HttpMethod.Get, "/actions/${URLEncoder.encode(uri.toString(), "utf-8")}").apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-                assertNotNull(response.content)
-                val actions = Json.decodeFromString<Actions>(response.content!!)
-
-                assertEquals(entity.trust, actions.trust)
-                assertEquals(entity.like, actions.like)
-                assertEquals(entity.rating, actions.rating)
-            }
+        application {
+            configureRouting(application)
+            configureContentNegotiation()
         }
+
+        val response = client.get("/actions/${URLEncoder.encode(uri.toString(), "utf-8")}")
+        val content = response.bodyAsText()
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertNotNull(content)
+        val actions = Json.decodeFromString<Actions>(content)
+
+        assertEquals(entity.trust, actions.trust)
+        assertEquals(entity.like, actions.like)
+        assertEquals(entity.rating, actions.rating)
     }
-
-
 
     @Test
     // TODO: Break this up!
     // TODO: Add tests for Like and trust that use this code
-    fun testSavePageThenSearch(){
+    fun testSavePageThenSearch() = testApplication {
         val mhtPath = TestApplication.applicationPath.resolve("../sample-docs/Conway's Game of Life - Wikipedia.mht")
+        val fileBytes = File(mhtPath.toString()).readBytes()
 
-        withTestApplication({ configureRouting(application); configureContentNegotiation() }) {
-            with(handleRequest(HttpMethod.Post, "/action"){
-                val boundary = "WebAppBoundary"
-                val fileBytes = File(mhtPath.toString()).readBytes()
-
-                addHeader(HttpHeaders.ContentType, ContentType.MultiPart.FormData.withParameter("boundary", boundary).toString())
-                setBody(boundary, listOf(
-                    PartData.FormItem("save", { }, headersOf(
-                        HttpHeaders.ContentDisposition,
-                        ContentDisposition.Inline
-                            .withParameter(ContentDisposition.Parameters.Name, "action")
-                            .toString()
-                    )),
-                    PartData.FormItem("true", { }, headersOf(
-                        HttpHeaders.ContentDisposition,
-                        ContentDisposition.Inline
-                            .withParameter(ContentDisposition.Parameters.Name, "value")
-                            .toString()
-                    )),
-                    PartData.FileItem({fileBytes.inputStream().asInput()}, {}, headersOf(
-                        HttpHeaders.ContentDisposition,
-                        ContentDisposition.File
-                            .withParameter(ContentDisposition.Parameters.Name, "mhtml")
-                            .withParameter(ContentDisposition.Parameters.FileName, "blob")
-                            .toString(),
-                    ))
-                ))
-            }) {
-                assertEquals(HttpStatusCode.Accepted, response.status())
-            }
-
-            Thread.sleep(500)
-
-            handleRequest(HttpMethod.Get, "/search?q=game").apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-                val searchResults = Json.decodeFromString<SearchResults>(response.content!!)
-                assertEquals("Conway's Game of Life - Wikipedia", searchResults.matches.first().name)
-            }
+        application {
+            configureRouting(application)
+            configureContentNegotiation()
         }
+
+        // TODO: This should work, according to https://ktor.io/docs/testing.html#make-request
+//        val client = createClient {
+//            install(ContentNegotiation) {
+//                json()
+//            }
+//        }
+
+        val boundary = "WebAppBoundary"
+        val response = client.post("/action") {
+            setBody(
+                MultiPartFormDataContent(
+                    formData {
+                        append("action", "save")
+                        append("value", "true")
+                        append("mhtml", fileBytes, Headers.build {
+                            append(HttpHeaders.ContentDisposition, "filename=blob")
+                        })
+                    },
+                    boundary,
+                    ContentType.MultiPart.FormData.withParameter("boundary", boundary)
+                )
+            )
+        }
+
+        assertEquals(HttpStatusCode.Accepted, response.status)
+        delay(500)
+
+        val searchResponse = client.get("/search?q=game")
+        assertEquals(HttpStatusCode.OK, searchResponse.status)
+        val searchResults = Json.decodeFromString<SearchResults>(searchResponse.bodyAsText())
+        assertEquals("Conway's Game of Life - Wikipedia", searchResults.matches.first().name)
     }
 
     @Test
-    fun testPostNotification(){
+    fun testPostNotification() = testApplication {
         // TODO: This seems to spit a few errors - should be fixed with PeerRouter updates
 
         val localAuthority by injector.instance<Authority>()
@@ -158,14 +161,17 @@ class ApplicationTest {
         val peerAuthority = addressBook.updateAuthority(Authority(localAuthority.authorityId, generateKeyPair().public, URI(""), "Test"))
         val notification = Notification(peerAuthority.authorityId, NewTransaction)
 
-        withTestApplication({ configureRouting(application); configureContentNegotiation() }) {
-            with(handleRequest(HttpMethod.Post, "/notifications"){
-                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                setBody(Json.encodeToString(notification))
-            }) {
-                assertEquals(HttpStatusCode.OK, response.status())
-            }
+        application {
+            configureRouting(application)
+            configureContentNegotiation()
         }
+
+        val response = client.post("/notifications") {
+            headers.append(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            setBody(Json.encodeToString(notification))
+        }
+
+        assertEquals(HttpStatusCode.OK, response.status)
     }
 
     private fun getSingleActivity(feedResult: FeedResult, type: String): EntityResult.Activity {
@@ -177,7 +183,12 @@ class ApplicationTest {
     }
 
     @Test
-    fun testGetFeed(){
+    fun testGetFeed() = testApplication {
+        application {
+            configureRouting(application)
+            configureContentNegotiation()
+        }
+
         val authority by injector.instance<Authority>()
         val entityStore by injector.instance<EntityStore>()
         entityStore.resetStore()
@@ -201,27 +212,24 @@ class ApplicationTest {
 
         // TODO: Add another authority
 
-        withTestApplication({ configureRouting(application); configureContentNegotiation() }) {
-            handleRequest(HttpMethod.Get, "/feed").apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-                assertNotNull(response.content)
-                val feedResult = Json.decodeFromString<FeedResult>(response.content!!)
+        val response = client.get("/feed")
+        assertEquals(HttpStatusCode.OK, response.status)
+        val content = response.bodyAsText()
+        val feedResult = Json.decodeFromString<FeedResult>(content)
 
-                assertEquals(entity.entityId.toString(), feedResult.results[0].entityId)
-                assertEquals(5, feedResult.results[0].activities.count())
-                assertEquals(uri.toString(), feedResult.results[0].summary.uri)
-                feedResult.results[0].activities.single { it.actions[0].type == "comment" }.actions[0].value
-                assertEquals(entity.dataId.first().toString(), getSingleActivity(feedResult, "save").actions[0].id)
-                assertEquals(entity.trust.toString(), getSingleActivityActionValue(feedResult, "trust"))
-                assertEquals(entity.like.toString(), getSingleActivityActionValue(feedResult, "like"))
-                assertEquals(entity.rating.toString(), getSingleActivityActionValue(feedResult, "rate"))
-                assertEquals(comment.text, getSingleActivityActionValue(feedResult, "comment"))
-            }
-        }
+        assertEquals(entity.entityId.toString(), feedResult.results[0].entityId)
+        assertEquals(5, feedResult.results[0].activities.count())
+        assertEquals(uri.toString(), feedResult.results[0].summary.uri)
+        feedResult.results[0].activities.single { it.actions[0].type == "comment" }.actions[0].value
+        assertEquals(entity.dataId.first().toString(), getSingleActivity(feedResult, "save").actions[0].id)
+        assertEquals(entity.trust.toString(), getSingleActivityActionValue(feedResult, "trust"))
+        assertEquals(entity.like.toString(), getSingleActivityActionValue(feedResult, "like"))
+        assertEquals(entity.rating.toString(), getSingleActivityActionValue(feedResult, "rate"))
+        assertEquals(comment.text, getSingleActivityActionValue(feedResult, "comment"))
     }
 
     @Test
-    fun testUpdateEntity(){
+    fun testUpdateEntity() = testApplication {
         val authority by injector.instance<Authority>()
         val entityStore by injector.instance<EntityStore>()
         val resourceEntity = ResourceEntity(
@@ -243,19 +251,22 @@ class ApplicationTest {
             null
         )
 
-        withTestApplication({ configureRouting(application); configureContentNegotiation() }) {
-            with(handleRequest(HttpMethod.Put, "/entity/${resourceEntity.entityId}"){
-                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                setBody(Json.encodeToString(entity))
-            }) {
-                assertEquals(HttpStatusCode.OK, response.status())
-                val entityResult = Json.decodeFromString<EntityResult>(response.content!!)
-
-                assertEquals(entity.entityId, entityResult.entityId)
-                assertEquals(entity.name, entityResult.summary.name)
-                assertEquals(entity.description, entityResult.summary.description)
-                assertEquals(entity.imageUri, entityResult.summary.imageUri)
-            }
+        application {
+            configureRouting(application)
+            configureContentNegotiation()
         }
+
+        val response = client.put("/entity/${resourceEntity.entityId}") {
+            headers.append(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            setBody(Json.encodeToString(entity))
+        }
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        val entityResult = Json.decodeFromString<EntityResult>(response.bodyAsText())
+
+        assertEquals(entity.entityId, entityResult.entityId)
+        assertEquals(entity.name, entityResult.summary.name)
+        assertEquals(entity.description, entityResult.summary.description)
+        assertEquals(entity.imageUri, entityResult.summary.imageUri)
     }
 }

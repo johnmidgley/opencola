@@ -1,9 +1,10 @@
 package io.opencola.core.io
 
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
-import io.ktor.client.features.json.*
-import io.ktor.client.features.json.serializer.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.serialization.kotlinx.json.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
@@ -11,22 +12,22 @@ import java.net.URI
 
 class JsonHttpClient {
     val httpClient = HttpClient(CIO) {
-        install(JsonFeature){
-            serializer = KotlinxSerializer()
+        install(ContentNegotiation) {
+            json()
         }
     }
 
      inline fun <reified T> get(uri: URI) : T {
          // Yes - seems horrible to hide suspend calls, but otherwise the code is infected and much harder to debug
-        return runBlocking { httpClient.get(uri.toString()) }
+        return runBlocking { httpClient.get(uri.toString()).body() }
     }
 
     inline fun <reified T> post(uri: URI, value: Any) : T {
         return runBlocking {
             httpClient.post(uri.toString()) {
                 contentType(ContentType.Application.Json)
-                body = value
-            }
+                setBody(value)
+            }.body()
         }
     }
 
@@ -34,8 +35,8 @@ class JsonHttpClient {
         return runBlocking {
             httpClient.put(uri.toString()) {
                 contentType(ContentType.Application.Json)
-                body = value
-            }
+                setBody(value)
+            }.body()
         }
     }
 }

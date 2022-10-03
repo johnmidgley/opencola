@@ -1,6 +1,5 @@
 package io.opencola.core.storage
 
-import io.ktor.util.collections.*
 import mu.KotlinLogging
 import io.opencola.core.config.NetworkConfig
 import io.opencola.core.config.PeerConfig
@@ -11,6 +10,7 @@ import io.opencola.core.security.decodePublicKey
 import java.net.URI
 import java.nio.file.Path
 import java.security.PublicKey
+import java.util.concurrent.CopyOnWriteArrayList
 
 // TODO: Move ServerConfig to NetworkConfig?
 class AddressBook(private val authority: Authority, storagePath: Path, signator: Signator, networkConfig: NetworkConfig?) {
@@ -18,7 +18,7 @@ class AddressBook(private val authority: Authority, storagePath: Path, signator:
 
     private val activeTag = "active"
     private val entityStore = ExposedEntityStore(SQLiteDB(storagePath.resolve("address-book.db")).db, authority, signator)
-    private val updateHandlers = ConcurrentList<(Authority?, Authority?) -> Unit>()
+    private val updateHandlers = CopyOnWriteArrayList<(Authority?, Authority?) -> Unit>()
 
     fun getPublicKey(authorityId: Id): PublicKey? {
         return if (authorityId == authority.authorityId)

@@ -1,6 +1,6 @@
 package opencola.server
 
-import io.ktor.application.*
+import io.ktor.server.application.*
 import io.ktor.server.netty.*
 import mu.KotlinLogging
 import opencola.core.TestApplication
