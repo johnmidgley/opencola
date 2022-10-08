@@ -66,7 +66,8 @@ dependencies {
     implementation("org.jsoup:jsoup:$jsoup_version")
     implementation("org.apache.lucene:lucene-core:$lucene_version")
     implementation("org.apache.lucene:lucene-queryparser:$lucene_version")
-    implementation("com.lordcodes.turtle:turtle:0.7.0")
+    implementation("org.apache.lucene:lucene-backward-codecs:$lucene_version")
+    implementation("com.lordcodes.turtle:turtle:0.8.0")
 
     implementation("io.ktor:ktor-server-core-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")
