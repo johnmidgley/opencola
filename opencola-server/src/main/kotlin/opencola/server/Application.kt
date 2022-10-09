@@ -2,6 +2,7 @@ package opencola.server
 
 import io.ktor.server.application.*
 import io.ktor.http.*
+import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
@@ -19,6 +20,7 @@ import io.opencola.core.extensions.runCommand
 import io.opencola.core.model.Id
 import io.opencola.core.network.NetworkNode
 import io.opencola.core.security.encode
+import io.opencola.core.security.getMd5Digest
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
@@ -77,6 +79,9 @@ fun getSSLCertificateStore(storagePath: Path, password: String, sslConfig: SSLCo
 fun getServer(application: Application): NettyApplicationEngine {
     val serverConfig = application.config.server
     val sslCertStorePassword = "password"
+    val realm = "/"
+    val username = application.config.security.login.username
+    val userTable = mapOf(username to getMd5Digest("$username:$realm:password"))
 
     val environment = applicationEngineEnvironment {
         log = LoggerFactory.getLogger("ktor.application")
@@ -106,6 +111,14 @@ fun getServer(application: Application): NettyApplicationEngine {
                 exception<Throwable> { call, cause ->
                     val response = ErrorResponse(cause.message ?: "Unknown")
                     call.respond(HttpStatusCode.InternalServerError, Json.encodeToString(response))
+                }
+            }
+            install(Authentication) {
+                digest("auth-digest") {
+                    this.realm = realm
+                    digestProvider { userName, realm ->
+                        userTable[userName]
+                    }
                 }
             }
             this.environment.monitor.subscribe(ApplicationStarted) { onServerStarted(application) }
