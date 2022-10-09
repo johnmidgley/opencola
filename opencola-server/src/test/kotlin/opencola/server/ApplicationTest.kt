@@ -4,18 +4,20 @@ import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.testing.*
 import io.opencola.core.model.*
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import opencola.core.TestApplication
 import io.opencola.core.network.Notification
-import io.opencola.core.network.PeerEvent.*
+import io.opencola.core.network.PeerEvent.NewTransaction
 import io.opencola.core.security.generateKeyPair
 import io.opencola.core.storage.AddressBook
 import io.opencola.core.storage.EntityStore
 import kotlinx.coroutines.delay
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import opencola.core.TestApplication
 import opencola.server.handlers.EntityPayload
 import opencola.server.handlers.FeedResult
 import opencola.server.handlers.SearchResults
@@ -34,27 +36,28 @@ class ApplicationTest {
     private val application = TestApplication.instance
     val injector = TestApplication.instance.injector
 
+    private fun configure(app: Application) {
+        app.configureRouting(application)
+        app.configureContentNegotiation()
+        app.install(Authentication) {
+            digest("auth-digest") { }
+        }
+    }
+
     @Test
     fun testRoot()  = testApplication {
-        application {
-            configureRouting(application)
-        }
-
+        application { configure(this) }
         val response = client.get("/")
         assertEquals(HttpStatusCode.OK, response.status)
     }
 
     @Test
     fun testGetEntity() = testApplication {
+        application { configure(this) }
         val authority by injector.instance<Authority>()
         val entityStore by injector.instance<EntityStore>()
         val entity = ResourceEntity(authority.authorityId, URI("http://opencola.org"), trust = 1.0F, like = true, rating = 1.0F)
         entityStore.updateEntities(entity)
-
-        application {
-            configureRouting(application)
-            configureContentNegotiation()
-        }
 
         val response = client.get("/entity/${entity.entityId}")
         assertEquals(HttpStatusCode.OK, response.status)
@@ -83,17 +86,13 @@ class ApplicationTest {
 
     @Test
     fun testStatusActions() = testApplication {
+        application { configure(this) }
         val authority by injector.instance<Authority>()
         val entityStore by injector.instance<EntityStore>()
         val uri = URI("https://opencola.org")
         val entity = ResourceEntity(authority.authorityId, uri, trust = 1.0F, like = true, rating = 1.0F)
 
         entityStore.updateEntities(entity)
-
-        application {
-            configureRouting(application)
-            configureContentNegotiation()
-        }
 
         val response = client.get("/actions/${URLEncoder.encode(uri.toString(), "utf-8")}")
         val content = response.bodyAsText()
@@ -111,13 +110,9 @@ class ApplicationTest {
     // TODO: Break this up!
     // TODO: Add tests for Like and trust that use this code
     fun testSavePageThenSearch() = testApplication {
+        application { configure(this) }
         val mhtPath = TestApplication.applicationPath.resolve("../sample-docs/Conway's Game of Life - Wikipedia.mht")
         val fileBytes = File(mhtPath.toString()).readBytes()
-
-        application {
-            configureRouting(application)
-            configureContentNegotiation()
-        }
 
         // TODO: This should work, according to https://ktor.io/docs/testing.html#make-request
 //        val client = createClient {
@@ -154,17 +149,13 @@ class ApplicationTest {
 
     @Test
     fun testPostNotification() = testApplication {
+        application { configure(this) }
         // TODO: This seems to spit a few errors - should be fixed with PeerRouter updates
 
         val localAuthority by injector.instance<Authority>()
         val addressBook by injector.instance<AddressBook>()
         val peerAuthority = addressBook.updateAuthority(Authority(localAuthority.authorityId, generateKeyPair().public, URI(""), "Test"))
         val notification = Notification(peerAuthority.authorityId, NewTransaction)
-
-        application {
-            configureRouting(application)
-            configureContentNegotiation()
-        }
 
         val response = client.post("/notifications") {
             headers.append(HttpHeaders.ContentType, ContentType.Application.Json.toString())
@@ -184,10 +175,7 @@ class ApplicationTest {
 
     @Test
     fun testGetFeed() = testApplication {
-        application {
-            configureRouting(application)
-            configureContentNegotiation()
-        }
+        application { configure(this) }
 
         val authority by injector.instance<Authority>()
         val entityStore by injector.instance<EntityStore>()
@@ -230,6 +218,7 @@ class ApplicationTest {
 
     @Test
     fun testUpdateEntity() = testApplication {
+        application { configure(this) }
         val authority by injector.instance<Authority>()
         val entityStore by injector.instance<EntityStore>()
         val resourceEntity = ResourceEntity(
@@ -250,11 +239,6 @@ class ApplicationTest {
             "tag",
             null
         )
-
-        application {
-            configureRouting(application)
-            configureContentNegotiation()
-        }
 
         val response = client.put("/entity/${resourceEntity.entityId}") {
             headers.append(HttpHeaders.ContentType, ContentType.Application.Json.toString())

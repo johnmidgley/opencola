@@ -13,3 +13,5 @@ fun sha256(input: ByteArray) : ByteArray{
 fun sha256(input: String): ByteArray {
     return sha256(input.toByteArray())
 }
+
+fun getMd5Digest(str: String): ByteArray = MessageDigest.getInstance("MD5").digest(str.toByteArray(Charsets.UTF_8))
