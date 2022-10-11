@@ -1,14 +1,14 @@
 {
-  "name": "openCOLA",
-  "description": "Browser Integration for openCOLA",
+  "name": "OpenCola",
+  "description": "Browser Integration for OpenCola",
   "version": "1.0",
   "manifest_version": 3,
   "background": {
     "service_worker": "background.js"
   },
   "omnibox": { "keyword" : "oc" },
-  "permissions": ["storage", "activeTab", "scripting", "pageCapture", "webRequest"],
-  "host_permissions": ["*://localhost/*"],
+  "permissions": ["storage", "activeTab", "scripting", "pageCapture", "webRequest", "webNavigation"],
+  "host_permissions": ["*://localhost*"],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
