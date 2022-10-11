@@ -6,7 +6,6 @@ import io.opencola.core.security.generateKeyPair
 import io.opencola.core.storage.AddressBook
 import opencola.core.storage.AddressBookTest.Action.*
 import java.net.URI
-//import org.junit.Test
 import kotlin.test.*
 
 class AddressBookTest {

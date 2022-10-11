@@ -15,7 +15,7 @@ class PeerCommentTest : PeerNetworkTest() {
     fun testCommentOnPeerPost(){
         val applications = getApplications(2)
         val (application0, application1) = applications
-        val (server0, server1) = applications.map { getServer(it) }
+        val (server0, server1) = applications.map { getServer(it, LoginCredentials("user", "password")) }
 
         // Start the first server and add a document
         logger.info { "Starting ${application0.config.name}" }

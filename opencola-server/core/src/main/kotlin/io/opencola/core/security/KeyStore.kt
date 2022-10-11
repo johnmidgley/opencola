@@ -20,16 +20,29 @@ class KeyStore(val path: Path, password: String) : SecurityProviderDependent() {
 
     // TODO: Move parameters to config
     var store: KeyStore = KeyStore.getInstance("PKCS12","BC")
-    private var passwordHash = sha256(password).toHexString().toCharArray()
-    private var protectionParameter = KeyStore.PasswordProtection(passwordHash)
+    private lateinit var passwordHash: CharArray//  = sha256(password).toHexString().toCharArray()
+    private lateinit var protectionParameter: KeyStore.PasswordProtection// = KeyStore.PasswordProtection(passwordHash)
+
+    private fun setPassword(password: String) {
+        passwordHash = sha256(password).toHexString().toCharArray()
+        protectionParameter = KeyStore.PasswordProtection(passwordHash)
+    }
 
     init{
-        store.load(if(path.exists()) path.inputStream() else null, passwordHash)
+        setPassword(password)
+        if(path.exists()){
+            path.inputStream().use {
+                store.load(it, passwordHash)
+            }
+        } else
+            store.load(null, passwordHash)
     }
 
     fun addKey(id: Id, keyPair: KeyPair){
         store.setKeyEntry(id.toString(), keyPair.private, null, arrayOf(createCertificate(id, keyPair)))
-        store.store(path.outputStream(), passwordHash)
+        path.outputStream().use {
+            store.store(it, passwordHash)
+        }
     }
 
     private fun getLegacyKey(id: Id) : KeyStore.Entry? {
@@ -58,5 +71,36 @@ class KeyStore(val path: Path, password: String) : SecurityProviderDependent() {
 
     fun getPublicKey(id: Id): PublicKey? {
         return getEntry(id).certificate.publicKey
+    }
+
+    fun changePassword(newPassword: String) {
+        val newPasswordHash = sha256(newPassword).toHexString().toCharArray()
+        changePassword(path, String(passwordHash), String(newPasswordHash))
+    }
+
+}
+
+fun isPasswordValid(keyStorePath: Path, password: String): Boolean {
+    try {
+        val store = KeyStore.getInstance("PKCS12", "BC")
+        keyStorePath.inputStream().use {
+            store.load(it, password.toCharArray())
+        }
+    } catch (e: Exception) {
+        return false
+    }
+
+    return true
+}
+
+fun changePassword(keyStorePath: Path, oldPassword: String, newPassword: String) {
+    val store = KeyStore.getInstance("PKCS12", "BC")
+
+    keyStorePath.inputStream().use { inputStream ->
+        store.load(inputStream, oldPassword.toCharArray())
+
+        keyStorePath.outputStream().use {
+            store.store(it, newPassword.toCharArray())
+        }
     }
 }

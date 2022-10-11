@@ -1,14 +1,13 @@
 package opencola.core.security
 
 import io.opencola.core.model.Authority
-import io.opencola.core.security.KeyStore
-import io.opencola.core.security.generateKeyPair
-import io.opencola.core.security.isValidSignature
-import io.opencola.core.security.sign
+import io.opencola.core.security.*
 import org.junit.Test
 import java.net.URI
 import kotlin.io.path.createTempDirectory
 import kotlin.test.assertNotNull
+import opencola.core.TestApplication
+import kotlin.test.assertEquals
 
 class KeyStoreTest {
     @Test
@@ -36,5 +35,26 @@ class KeyStoreTest {
         assert(isValidSignature(keyPair.public, data, signature1))
         assert(isValidSignature(publicKey1, data, signature))
         assert(isValidSignature(publicKey1, data, signature1))
+    }
+
+    @Test
+    fun testChangePassword() {
+        val keyStorePath = TestApplication.getTmpFilePath("pks")
+        val password = "password"
+        val newPassword = "newPassword"
+
+        val keyStore = KeyStore(keyStorePath, password)
+        val keyPair = generateKeyPair()
+        val authority = Authority(keyPair.public, URI(""), "Test Authority")
+        keyStore.addKey(authority.authorityId, keyPair)
+        assertNotNull(keyStore.getPublicKey(authority.authorityId))
+        keyStore.changePassword(newPassword)
+        val pubKey = keyStore.getPublicKey(authority.authorityId)
+        assertNotNull(pubKey)
+
+        val keyStore1 = KeyStore(keyStorePath, newPassword)
+        val pubKey1 = keyStore1.getPublicKey(authority.authorityId)
+        assertNotNull(pubKey1)
+        assertEquals(pubKey, pubKey1)
     }
 }

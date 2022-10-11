@@ -7,6 +7,7 @@ import io.opencola.core.event.EventBus
 import io.opencola.core.model.Authority
 import io.opencola.core.network.NetworkNode
 import io.opencola.core.storage.AddressBook
+import opencola.server.LoginCredentials
 import opencola.server.getServer
 import opencola.server.handlers.*
 import java.io.File
@@ -23,7 +24,7 @@ class ApplicationNode(val application: Application) : Node {
     }
 
     override fun start(): Node {
-        server = getServer(application).also { it.start() }
+        server = getServer(application, LoginCredentials("user","password")).also { it.start() }
         return this
     }
 
@@ -80,7 +81,7 @@ class ApplicationNode(val application: Application) : Node {
                     .setNetwork(NetworkConfig(it.network?.peers ?: emptyList(), URI("http://${it.server.host}:$port")))
             }
 
-            val instance = Application.instance(TestApplication.applicationPath, storagePath, configToUse)
+            val instance = Application.instance(TestApplication.applicationPath, storagePath, "password", configToUse)
             setRootAuthorityName(instance, name)
 
             return ApplicationNode(instance)

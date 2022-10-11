@@ -3,15 +3,15 @@
 # https://www.pixelstech.net/article/1406724116-Generate-certificate-in-Java----Self-signed-certificate
 # ip:127.0.0.1,ip:10.243.13.107,dns:localhost
 #TODO: Create variable for opencola-ssl - maybe pass in to script
-keytool -genkeypair -alias opencola-ssl -keystore opencola-ssl.jks -dname "CN=opencola, O=OpenCola" -storepass password -keypass password -ext bc:critical=ca:true -ext san=$1 -keyalg rsa -validity 3650
+keytool -genkeypair -alias opencola-ssl -keystore opencola-ssl.pks -dname "CN=opencola, O=OpenCola" -storepass password -keypass password -ext bc:critical=ca:true -ext san=$1 -keyalg rsa -validity 3650 -storetype PKCS12
 
 if [ 0 -ne $? ]
 then
   exit 1
 fi
 
-keytool -exportcert -keystore opencola-ssl.jks -alias opencola-ssl -file opencola-ssl.pem -rfc -storepass password -keypass password
-keytool -exportcert -keystore opencola-ssl.jks -alias opencola-ssl -file opencola-ssl.der -storepass password -keypass password
+keytool -exportcert -keystore opencola-ssl.pks -alias opencola-ssl -file opencola-ssl.pem -rfc -storepass password -keypass password
+keytool -exportcert -keystore opencola-ssl.pks -alias opencola-ssl -file opencola-ssl.der -storepass password -keypass password
 keytool -printcert -file opencola-ssl.pem
 
 # How to install certs

@@ -34,12 +34,12 @@ object TestApplication {
     val instance by lazy {
         val authority = Authority(authorityPublicKey, URI("http://test"), "Test Authority")
         val keyStore = KeyStore(
-            storagePath.resolve(config.security.keystore.name),
-            config.security.keystore.password
+            storagePath.resolve("keystore.pks"),
+            "password"
         )
         val keyPair = KeyPair(authorityPublicKey, authorityPrivateKey)
         keyStore.addKey(authority.authorityId, keyPair)
-        val instance =  Application.instance(applicationPath, storagePath, config, keyPair)
+        val instance =  Application.instance(applicationPath, storagePath, config, keyPair, "password")
         val index by instance.injector.instance<SearchIndex>()
 
         // Clear out any existing index
@@ -68,7 +68,7 @@ object TestApplication {
 
     fun newApplication(): Application {
         val applicationStoragePath = getTmpDirectory(".storage")
-        val publicKey = Application.getOrCreateRootKeyPair(applicationStoragePath, config.security)
-        return Application.instance(instance.applicationPath, applicationStoragePath, config, publicKey)
+        val publicKey = Application.getOrCreateRootKeyPair(applicationStoragePath, "password")
+        return Application.instance(instance.applicationPath, applicationStoragePath, config, publicKey, "password")
     }
 }

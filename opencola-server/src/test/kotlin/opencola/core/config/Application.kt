@@ -24,7 +24,7 @@ fun getApplications(
             Triple(
                 instanceStoragePath,
                 config,
-                Application.getOrCreateRootKeyPair(instanceStoragePath, baseConfig.security)
+                Application.getOrCreateRootKeyPair(instanceStoragePath, "password")
             )
         }
 
@@ -45,7 +45,8 @@ fun getApplications(
             applicationPath,
             storagePath,
             config.setNetwork(NetworkConfig(peerConfigs)),
-            publicKey
+            publicKey,
+            "password"
         )
     }
 }

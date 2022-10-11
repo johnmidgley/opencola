@@ -74,9 +74,12 @@ class HttpNetworkProvider(serverConfig: ServerConfig, private val authority: Aut
                     val signature = signator.signBytes(request.from, payload)
                     headers.append("oc-signature", signature.toHexString())
                     setBody(payload)
-                }.body<ByteArray>()
+                }
 
-                val response = Json.decodeFromString<Response>(String(httpResponse))
+                if(httpResponse.status != HttpStatusCode.OK)
+                    throw RuntimeException("Peer request resulted in error ${httpResponse.status}")
+
+                val response = Json.decodeFromString<Response>(String(httpResponse.body<ByteArray>()))
                 logger.info { "Response: $response" }
                 response
             }

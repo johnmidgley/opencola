@@ -39,10 +39,10 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
 
         // TODO: pub key should come from private store, not authority.pub, and multiple authorities (personas) should be allowed
         // TODO: Move to Identity Service
-        fun getOrCreateRootKeyPair(storagePath: Path, securityConfig: SecurityConfig): KeyPair {
+        fun getOrCreateRootKeyPair(storagePath: Path, password: String): KeyPair {
             val publicKeyFile = "authority.pub" // TODO: Config?
             val authorityPubPath = storagePath.resolve(publicKeyFile)
-            val keyStore = KeyStore(storagePath.resolve(securityConfig.keystore.name), securityConfig.keystore.password)
+            val keyStore = KeyStore(storagePath.resolve("keystore.pks"), password)
             val keyPair =  if (authorityPubPath.exists()) {
                 val publicKey = decodePublicKey(authorityPubPath.readText())
                 val privateKey = keyStore.getPrivateKey(Id.ofPublicKey(publicKey))
@@ -77,7 +77,7 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
             return SQLiteDB(path).db
         }
 
-        fun instance(applicationPath: Path, storagePath: Path, config: Config, authorityKeyPair: KeyPair): Application {
+        fun instance(applicationPath: Path, storagePath: Path, config: Config, authorityKeyPair: KeyPair, password: String): Application {
             if(!storagePath.exists()){
                 File(storagePath.toString()).mkdirs()
             }
@@ -86,7 +86,7 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
             val defaultAddress = config.network?.defaultAddress ?: URI("pcr://relay.opencola.net")
             val authority = Authority(authorityKeyPair.public, defaultAddress, "You")
 
-            val keyStore = KeyStore(storagePath.resolve(config.security.keystore.name), config.security.keystore.password)
+            val keyStore = KeyStore(storagePath.resolve("keystore.pks"), password)
             val fileStore = LocalFileStore(storagePath.resolve("filestore"))
             val entityStoreDB = getEntityStoreDB(authority, storagePath)
 
@@ -124,10 +124,10 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
             }
         }
 
-        fun instance(applicationPath: Path, storagePath: Path, config: Config? = null) : Application {
+        fun instance(applicationPath: Path, storagePath: Path, password: String, config: Config? = null) : Application {
             val appConfig = config ?: loadConfig(storagePath.resolve("opencola-server.yaml"))
-            val keyPair = getOrCreateRootKeyPair(storagePath, appConfig.security)
-            return instance(applicationPath, storagePath, appConfig, keyPair)
+            val keyPair = getOrCreateRootKeyPair(storagePath, password)
+            return instance(applicationPath, storagePath, appConfig, keyPair, password)
         }
     }
 }

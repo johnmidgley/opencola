@@ -1,26 +1,102 @@
 package opencola.server.plugins
 
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.application.Application
-import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.http.content.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.opencola.core.extensions.hexStringToByteArray
-import mu.KotlinLogging
 import io.opencola.core.extensions.nullOrElse
 import io.opencola.core.model.Authority
 import io.opencola.core.model.Id
 import io.opencola.core.network.Notification
 import io.opencola.core.network.handleGetTransactions
 import io.opencola.core.network.handleNotification
+import kotlinx.coroutines.CompletableDeferred
+import mu.KotlinLogging
+import opencola.server.LoginCredentials
 import opencola.server.handlers.*
+import java.nio.file.Path
 import io.opencola.core.config.Application as app
 
 
 // TODO: All routes should authenticate caller and authorize activity. Right now everything is open
+fun Application.configureBootstrapRouting(
+    storagePath: Path,
+    loginCredentials: CompletableDeferred<LoginCredentials>) {
+
+    routing {
+        get("/") {
+            val isNewUser = isNewUser(storagePath)
+
+            if(isNewUser) {
+                call.respondRedirect("changePassword")
+            } else {
+                val canChangePassword = passwordExists(storagePath)
+                // TODO: Get from config
+                bootstrapForm(call, "opencola")
+            }
+        }
+
+        post("/") {
+            val formParameters = call.receiveParameters()
+            val canChangePassword = passwordExists(storagePath)
+
+            val username = formParameters["username"]
+            val password = formParameters["password"]
+
+            if(username == null || username.isBlank()) {
+                bootstrapForm(call, "opencola","Please enter a username")
+            }else if (password == null || password.isBlank()) {
+                bootstrapForm(call, username,"Please enter a password")
+            } else {
+                if (validatePassword(storagePath, password)) {
+                    startingPage(call)
+                    loginCredentials.complete(LoginCredentials(username.toString(), password.toString()))
+                } else
+                    bootstrapForm(call, username, "Bad password")
+            }
+        }
+
+        get("/changePassword") {
+            bootstrapChangePasswordForm(call, isNewUser(storagePath))
+        }
+
+        post("/changePassword") {
+            val isNewUser = isNewUser(storagePath)
+            val formParameters = call.receiveParameters()
+            val oldPassword = if(isNewUser) "password" else formParameters["oldPassword"]
+            val password = formParameters["password"]
+            val passwordConfirm = formParameters["passwordConfirm"]
+
+            val error = if (!isNewUser && (oldPassword == null || oldPassword.isBlank()))
+                "Old password is required"
+            else if (password == null || password.isBlank()
+                || passwordConfirm == null || password.isBlank())
+                "You must include a new password and confirm it."
+            else if (password == "password")
+                "Your password cannot be 'password'"
+            else if (password != passwordConfirm)
+                "Passwords don't match."
+            else if (!isNewUser && !validatePassword(storagePath, oldPassword!!))
+                "Old password is incorrect."
+            else
+                null
+
+            if (error != null) {
+                bootstrapChangePasswordForm(call, isNewUser, error)
+            } else {
+                changePasswords(storagePath, oldPassword!!, password!!)
+                call.respondRedirect("/")
+            }
+        }
+    }
+}
+
+
 fun Application.configureRouting(app: app) {
     // TODO: Make and user general opencola.server
     val logger = KotlinLogging.logger("opencola.init")
@@ -104,11 +180,6 @@ fun Application.configureRouting(app: app) {
                 handleGetDataPartCall(call, authority.authorityId, app.inject())
             }
 
-            post("/action") {
-                val authority = app.inject<Authority>()
-                handlePostActionCall(call, authority.authorityId, app.inject(), app.inject(), app.inject())
-            }
-
             get("/actions/{uri}") {
                 val authority = app.inject<Authority>()
                 handleGetActionsCall(call, authority.authorityId, app.inject())
@@ -159,6 +230,11 @@ fun Application.configureRouting(app: app) {
                 file("/", resourcePath.resolve("index.html").toString())
                 files(resourcePath.toString())
             }
+        }
+
+        post("/action") {
+            val authority = app.inject<Authority>()
+            handlePostActionCall(call, authority.authorityId, app.inject(), app.inject(), app.inject())
         }
 
         post("/networkNode") {
