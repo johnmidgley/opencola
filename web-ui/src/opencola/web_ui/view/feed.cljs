@@ -76,7 +76,7 @@
 
 (defn data-url [host data-id]
   (when data-id
-    (str (if (not= host "") "http://") host "/data/" data-id))) 
+    (str "/data/" data-id))) 
 
 
 (defn edit-control [editing?!]
