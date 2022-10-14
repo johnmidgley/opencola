@@ -19,52 +19,15 @@ class BootstrapTest {
     }
 
     @Test
-    fun testChangePasswordsJustAuthorityStore() {
+    fun testChangeAuthorityStorePassword() {
         val password = "password"
         val newPassword = "newPassword"
         val storagePath = TestApplication.getTmpDirectory(".storage")
 
         val keyPair = Application.getOrCreateRootKeyPair(storagePath, password)
-        changePasswords(storagePath, password, newPassword)
+        changeAuthorityKeyStorePassword(storagePath, password, newPassword)
 
         val keyPair1 = Application.getOrCreateRootKeyPair(storagePath, newPassword)
         assertEquals(keyPair.public, keyPair1.public)
-    }
-
-    @Test
-    fun testChangePasswordsJustCertStore() {
-        val password = "password"
-        val newPassword = "newPassword"
-        val storagePath = TestApplication.getTmpDirectory(".storage").also { initStorage(it) }
-        val sslConfig = TestApplication.instance.config.server.ssl ?: SSLConfig()
-
-        val keyStore = getSSLCertificateStore(storagePath, password, sslConfig)
-        val sslCert = keyStore.getCertificate("opencola-ssl")
-
-        changeSSLCertStorePassword(storagePath, password, newPassword)
-        val keyStore1 = getSSLCertificateStore(storagePath, newPassword, sslConfig
-        )
-        val sslCert1 = keyStore1.getCertificate("opencola-ssl")
-
-        assertEquals(sslCert.publicKey, sslCert1.publicKey)
-    }
-
-    @Test
-    fun testChangePasswords() {
-        val storagePath = TestApplication.getTmpDirectory(".storage").also { initStorage(it) }
-        val sslConfig = TestApplication.instance.config.server.ssl ?: SSLConfig()
-        val password = "password"
-        val newPassword = "newPassword"
-
-        val keyPair = Application.getOrCreateRootKeyPair(storagePath, password)
-        val sslCert = getSSLCertificateStore(storagePath, password, sslConfig).getCertificate("opencola-ssl")
-
-        changePasswords(storagePath, password, newPassword)
-
-        val keyPair1 = Application.getOrCreateRootKeyPair(storagePath, newPassword)
-        val sslCert1 = getSSLCertificateStore(storagePath, newPassword, sslConfig).getCertificate("opencola-ssl")
-
-        assertEquals(keyPair.public, keyPair1.public)
-        assertEquals(sslCert.publicKey, sslCert1.publicKey)
     }
 }

@@ -18,8 +18,10 @@ import io.opencola.core.event.Events
 import io.opencola.core.extensions.runCommand
 import io.opencola.core.model.Id
 import io.opencola.core.network.NetworkNode
+import io.opencola.core.security.SecurityProviderDependent
 import io.opencola.core.security.encode
 import io.opencola.core.security.getMd5Digest
+import io.opencola.core.security.initProvider
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
@@ -38,6 +40,7 @@ import kotlin.io.path.Path
 import kotlin.io.path.isDirectory
 
 private val logger = KotlinLogging.logger("opencola")
+private const val sslCertStorePassword = "password"
 
 fun onServerStarted(application: Application) {
     val hostAddress = Inet4Address.getLocalHost().hostAddress
@@ -81,7 +84,6 @@ fun getSSLCertificateStore(storagePath: Path, password: String, sslConfig: SSLCo
 
 fun getServer(application: Application, loginCredentials: LoginCredentials): NettyApplicationEngine {
     val serverConfig = application.config.server
-    val sslCertStorePassword = "password"
     val realm = "/"
     val username = loginCredentials.username
     val userTable = mapOf(username to getMd5Digest("$username:$realm:${loginCredentials.password}"))
@@ -96,7 +98,7 @@ fun getServer(application: Application, loginCredentials: LoginCredentials): Net
 
         if (serverConfig.ssl != null) {
             sslConnector(
-                keyStore = getSSLCertificateStore(application.storagePath, loginCredentials.password, serverConfig.ssl!!),
+                keyStore = getSSLCertificateStore(application.storagePath, sslCertStorePassword, serverConfig.ssl!!),
                 keyAlias = "opencola-ssl",
                 keyStorePassword = { sslCertStorePassword.toCharArray() },
                 privateKeyPassword = { sslCertStorePassword.toCharArray() }
@@ -147,6 +149,18 @@ suspend fun getLoginCredentials(storagePath: Path, serverConfig: ServerConfig): 
             port = serverConfig.port
         }
 
+        if (serverConfig.ssl != null) {
+            sslConnector(
+                keyStore = getSSLCertificateStore(storagePath, sslCertStorePassword, serverConfig.ssl!!),
+                keyAlias = "opencola-ssl",
+                keyStorePassword = { sslCertStorePassword.toCharArray() },
+                privateKeyPassword = { sslCertStorePassword.toCharArray() }
+            ) {
+                host = serverConfig.host
+                port = serverConfig.ssl!!.port
+            }
+        }
+
         module {
             configureHTTP()
             configureBootstrapRouting(storagePath, loginCredentials)
@@ -177,6 +191,7 @@ fun main(args: Array<String>) {
 
         logger.info { "Application path: $applicationPath" }
         logger.info { "Storage path: $storagePath" }
+        initProvider()
 
         val config = loadConfig(storagePath.resolve("opencola-server.yaml"))
         val loginCredentials = getLoginCredentials(storagePath, config.server)

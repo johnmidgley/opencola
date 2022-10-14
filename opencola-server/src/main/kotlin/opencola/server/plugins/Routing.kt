@@ -19,9 +19,13 @@ import kotlinx.coroutines.CompletableDeferred
 import mu.KotlinLogging
 import opencola.server.LoginCredentials
 import opencola.server.handlers.*
+import opencola.server.view.changePasswordForm
+import opencola.server.view.startingPage
+import opencola.server.view.startupForm
 import java.nio.file.Path
 import io.opencola.core.config.Application as app
 
+const val defaultUsername = "oc"
 
 // TODO: All routes should authenticate caller and authorize activity. Right now everything is open
 fun Application.configureBootstrapRouting(
@@ -36,7 +40,7 @@ fun Application.configureBootstrapRouting(
                 call.respondRedirect("changePassword")
             } else {
                 // TODO: Get from config
-                bootstrapForm(call, "opencola")
+                startupForm(call, defaultUsername)
             }
         }
 
@@ -46,20 +50,20 @@ fun Application.configureBootstrapRouting(
             val password = formParameters["password"]
 
             if(username == null || username.isBlank()) {
-                bootstrapForm(call, "opencola","Please enter a username")
+                startupForm(call, defaultUsername,"Please enter a username")
             }else if (password == null || password.isBlank()) {
-                bootstrapForm(call, username,"Please enter a password")
+                startupForm(call, username,"Please enter a password")
             } else {
-                if (validatePassword(storagePath, password)) {
+                if (validateAuthorityKeyStorePassword(storagePath, password)) {
                     startingPage(call)
                     loginCredentials.complete(LoginCredentials(username.toString(), password.toString()))
                 } else
-                    bootstrapForm(call, username, "Bad password")
+                    startupForm(call, username, "Bad password")
             }
         }
 
         get("/changePassword") {
-            bootstrapChangePasswordForm(call, isNewUser(storagePath))
+            changePasswordForm(call, isNewUser(storagePath))
         }
 
         post("/changePassword") {
@@ -78,21 +82,20 @@ fun Application.configureBootstrapRouting(
                 "Your password cannot be 'password'"
             else if (password != passwordConfirm)
                 "Passwords don't match."
-            else if (!isNewUser && !validatePassword(storagePath, oldPassword!!))
+            else if (!isNewUser && !validateAuthorityKeyStorePassword(storagePath, oldPassword!!))
                 "Old password is incorrect."
             else
                 null
 
             if (error != null) {
-                bootstrapChangePasswordForm(call, isNewUser, error)
+                changePasswordForm(call, isNewUser, error)
             } else {
-                changePasswords(storagePath, oldPassword!!, password!!)
+                changeAuthorityKeyStorePassword(storagePath, oldPassword!!, password!!)
                 call.respondRedirect("/")
             }
         }
     }
 }
-
 
 fun Application.configureRouting(app: app) {
     // TODO: Make and user general opencola.server
