@@ -15,7 +15,7 @@ import kotlin.collections.set
 //  back online. Ping when coming out of suspend, or ping / request transactions periodically?
 
 class NetworkNode(
-    private val authorityId: Id,
+    private val authority: Authority,
     private val router: RequestRouter,
     private val addressBook: AddressBook,
     private val eventBus: EventBus,
@@ -65,12 +65,12 @@ class NetworkNode(
 
     private val providers = ConcurrentHashMap<String, NetworkProvider>()
 
-    private val requestHandler: (Request) -> Response = { request ->
-        val response = router.handleRequest(request)
+    private val requestHandler: (Id, Id, Request) -> Response = { from, to, request ->
+        val response = router.handleRequest(from, to, request)
 
         // Since we received a request, the peer must be online
-        if(request.from != authorityId)
-            updatePeerStatus(request.from, Online)
+        if(from != authority.entityId)
+            updatePeerStatus(from, Online)
 
         response
     }
@@ -88,7 +88,7 @@ class NetworkNode(
         provider.start()
     }
 
-    fun broadcastRequest(request: Request) {
+    fun broadcastRequest(from: Authority, request: Request) {
         val peers = addressBook.getAuthorities(true)
         if (peers.isNotEmpty()) {
             logger.info { "Broadcasting request: $request" }
@@ -98,7 +98,7 @@ class NetworkNode(
             peers.forEach { peer ->
                 if (listOf(Unknown, Online).contains(peerStatuses.getOrDefault(peer.entityId, Unknown))) {
                     // TODO: Make batched, to limit simultaneous connections
-                    sendRequest(peer, request)
+                    sendRequest(from, peer, request)
                 }
             }
         }
@@ -150,20 +150,19 @@ class NetworkNode(
     }
 
     // TODO - peer should be Authority or peerId?
-    private fun sendRequest(peer: Authority, request: Request) : Response? {
-        // TODO: Dispatch based on peer provider
-        if(request.from != authorityId){
-            throw IllegalArgumentException("Cannot send request from a non local authority: ${request.from}")
+    private fun sendRequest(from: Authority, to: Authority, request: Request) : Response? {
+        if(from.entityId != authority.entityId){
+            throw IllegalArgumentException("Cannot send request from a non local authority: ${from.entityId}")
         }
 
-        val peerUri = peer.uri
+        val peerUri = to.uri
         if(peerUri == null) {
-            logger.warn { "Ignoring peer without uri: ${peer.entityId}" }
+            logger.warn { "Ignoring sendRequest to peer without uri: ${to.entityId}" }
             return null
         }
 
         val provider = providers[peerUri.scheme] ?: throw IllegalStateException("No provider found for scheme: ${peerUri.scheme}")
-        val response = provider.sendRequest(peer, request)
+        val response = provider.sendRequest(authority, to, request)
 
         // TODO: This is really bad. If we successfully get transactions when the user was in an offline/unknown state,
         //  setting their state to online would trigger another transactions request, which we want to avoid. Doing it
@@ -173,7 +172,7 @@ class NetworkNode(
         if (response == null || response.status < 400)
             // Don't update status for calls that made it to a peer but result in an error. In particular, this
             // avoids a peer transition from offline to online when a call fails for authorization reasons
-            updatePeerStatus(peer.entityId, if (response == null) Offline else Online, suppressNotifications)
+            updatePeerStatus(to.entityId, if (response == null) Offline else Online, suppressNotifications)
 
         return response
     }
@@ -186,7 +185,8 @@ class NetworkNode(
             return null
         }
 
-        return sendRequest(peer, request)?.also {
+        // TODO: Authority should be passed in
+        return sendRequest(authority, peer, request)?.also {
             if (it.status >= 400) {
                 logger.warn { it }
             }

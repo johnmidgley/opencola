@@ -44,7 +44,7 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
             println("Testing ping")
             run {
                 val response =
-                    networkNode0.sendRequest(peer1.entityId, Request(peer0.entityId, Request.Method.GET, "/ping"))
+                    networkNode0.sendRequest(peer1.entityId, Request(Request.Method.GET, "/ping"))
                 assertNotNull(response)
                 assertEquals("pong", response.message)
             }
@@ -52,7 +52,7 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
             println("Testing bad 'from' id")
             run {
                 val response =
-                    networkNode0.sendRequest(Id.new(), Request(peer0.entityId, Request.Method.GET, "/ping"))
+                    networkNode0.sendRequest(Id.new(), Request(Request.Method.GET, "/ping"))
                 assertNull(response)
             }
 
@@ -63,7 +63,7 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
                 peer.publicKey = generateKeyPair().public
                 addressBook1.updateAuthority(peer)
                 val response =
-                    networkNode0.sendRequest(peer1.entityId, Request(peer0.entityId, Request.Method.GET, "/ping"))
+                    networkNode0.sendRequest(peer1.entityId, Request(Request.Method.GET, "/ping"))
                 assertNotNull(response)
                 assertEquals(400, response.status)
             }

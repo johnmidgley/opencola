@@ -69,11 +69,11 @@ fun getDefaultRoutes(
         Route(
             Request.Method.GET,
             "/ping"
-        ) { Response(200, "pong") },
+        ) { _, _, _ -> Response(200, "pong") },
         Route(
             Request.Method.POST,
             "/notifications"
-        ) { request ->
+        ) { _, _, request ->
             val notification = request.decodeBody<Notification>()
                 ?: throw IllegalArgumentException("Body must contain Notification")
 
@@ -84,14 +84,13 @@ fun getDefaultRoutes(
         Route(
             Request.Method.GET,
             "/transactions"
-        ) { request ->
+        ) { from, _, request ->
             if (request.parameters == null) {
                 throw IllegalArgumentException("/transactions call requires parameters")
             }
 
             val authorityId =
                 Id.decode(request.parameters["authorityId"] ?: throw IllegalArgumentException("No authorityId set"))
-            val peerId = request.from
             val transactionId = request.parameters["mostRecentTransactionId"].nullOrElse { Id.decode(it) }
             val numTransactions = request.parameters["numTransactions"].nullOrElse { it.toInt() }
 
@@ -101,7 +100,7 @@ fun getDefaultRoutes(
                     entityStore,
                     addressBook,
                     authorityId,
-                    peerId,
+                    from,
                     transactionId,
                     numTransactions
                 )

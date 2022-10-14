@@ -15,6 +15,8 @@ import kotlin.io.path.outputStream
 // TODO: Add logging
 // TODO: Think about an appropriate HSM
 // TODO: Investigate secure strings
+// TODO: Make abstract keystore that is base for cert store and authority store
+// TODO: Make AuthorityKeyStore, that has encrypt and sign methods
 class KeyStore(val path: Path, password: String) : SecurityProviderDependent() {
     val logger = KotlinLogging.logger(this.javaClass.simpleName)
 
@@ -60,7 +62,7 @@ class KeyStore(val path: Path, password: String) : SecurityProviderDependent() {
 
     private fun getEntry(id: Id): KeyStore.PrivateKeyEntry {
         val entry = store.getEntry(id.toString(), protectionParameter)  ?: getLegacyKey(id)
-            ?: throw RuntimeException("No private key found for $id")
+            ?: throw RuntimeException("No key found for $id")
 
         return entry as KeyStore.PrivateKeyEntry
     }

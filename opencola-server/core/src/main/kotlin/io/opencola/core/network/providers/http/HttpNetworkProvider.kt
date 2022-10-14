@@ -13,17 +13,21 @@ import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import io.opencola.core.config.ServerConfig
 import io.opencola.core.model.Authority
+import io.opencola.core.model.Id
 import io.opencola.core.network.AbstractNetworkProvider
 import io.opencola.core.network.*
-import io.opencola.core.security.Signator
+import io.opencola.core.security.*
+import io.opencola.core.storage.AddressBook
 import kotlinx.serialization.encodeToString
-import io.opencola.core.extensions.toHexString
-import java.lang.IllegalStateException
 import java.net.URI
+import kotlin.IllegalStateException
 
-class HttpNetworkProvider(serverConfig: ServerConfig, private val authority: Authority, private val signator: Signator) : AbstractNetworkProvider() {
+class HttpNetworkProvider(authority: Authority,
+                          addressBook: AddressBook,
+                          signator: Signator,
+                          encryptor: Encryptor,
+                          serverConfig: ServerConfig) : AbstractNetworkProvider(authority, addressBook, signator, encryptor) {
     private val logger = KotlinLogging.logger("HttpNetworkProvider")
-    var started = false
     private val serverAddress = URI("http://${serverConfig.host}:${serverConfig.port}")
 
     private val httpClient = HttpClient(CIO) {
@@ -60,43 +64,42 @@ class HttpNetworkProvider(serverConfig: ServerConfig, private val authority: Aut
     }
 
     // Caller (Network Node) should check if peer is active
-    override fun sendRequest(peer: Authority, request: Request) : Response? {
+    override fun sendRequest(from: Authority, to: Authority, request: Request) : Response? {
         if (!started) throw IllegalStateException("Provider is not started - can't sendRequest")
 
+        to.publicKey
+            ?: throw IllegalArgumentException("Can't send a request to a peer that does not have a public key")
+
+        // TODO: Make sure to authority is actually remote (not local authority)
+
         try {
-            val urlString = "${peer.uri}/networkNode"
+            val urlString = "${to.uri}/networkNode"
             logger.info { "Sending request $request" }
 
             return runBlocking {
                 val httpResponse = httpClient.post(urlString) {
                     contentType(ContentType.Application.OctetStream)
-                    val payload = Json.encodeToString(request).toByteArray()
-                    val signature = signator.signBytes(request.from, payload)
-                    headers.append("oc-signature", signature.toHexString())
-                    setBody(payload)
+                    val encryptedPayload =
+                        getEncodedEnvelope(from.entityId, to.entityId, Json.encodeToString(request).toByteArray(), true)
+                    setBody(encryptedPayload)
                 }
 
                 if(httpResponse.status != HttpStatusCode.OK)
-                    throw RuntimeException("Peer request resulted in error ${httpResponse.status}")
+                    throw RuntimeException("Peer request resulted in error $httpResponse: ${httpResponse.body<String>()}")
 
-                val response = Json.decodeFromString<Response>(String(httpResponse.body<ByteArray>()))
+                val envelope = MessageEnvelope.decode(httpResponse.body(), encryptor).also { validateMessageEnvelope(it) }
+                val response = Json.decodeFromString<Response>(String(envelope.message.body))
                 logger.info { "Response: $response" }
                 response
             }
         }
         catch(e: java.net.ConnectException){
-            logger.info { "${peer.name} appears to be offline." }
+            logger.info { "${to.name} appears to be offline." }
         }
         catch (e: Exception){
             logger.error { e.message }
         }
 
         return null
-    }
-
-    fun handleRequest(request: Request) : Response {
-        if (!started) throw IllegalStateException("Provider is not started - can't handleRequest")
-        val handler = this.handler ?: throw IllegalStateException("Call to handleRequest when handler has not been set")
-        return handler(request)
     }
 }

@@ -108,7 +108,7 @@ class EventBus(private val storagePath: Path, config: EventBusConfig) {
             val reactor = this.reactor ?: throw IllegalStateException("Attempt to process a message with no reactor set")
             reactor.handleMessage(message)
         } catch (e: Exception) {
-            logger.error { "Exception occurred processing $message: ${e.message}" }
+            logger.error { "Exception occurred processing $message: $e" }
             if(message.attempt < maxAttempts){
                 addMessageToStore(message.name, message.data, message.attempt + 1)
             }

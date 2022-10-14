@@ -1,9 +1,9 @@
 package opencola.core.network.providers.http
 
 import io.opencola.core.model.Authority
-import io.opencola.core.model.Id
 import io.opencola.core.network.Request
 import io.opencola.core.network.providers.http.HttpNetworkProvider
+import io.opencola.core.security.generateKeyPair
 import opencola.server.PeerNetworkTest
 import org.junit.Test
 import kotlin.test.assertEquals
@@ -18,15 +18,22 @@ class HttpNetworkProviderTest : PeerNetworkTest() {
 
         try {
             val app = applicationNode.application
+            val authority = app.inject<Authority>()
             val networkProvider = app.inject<HttpNetworkProvider>()
 
-            val goodRequest = Request(app.inject<Authority>().entityId, Request.Method.GET, "/ping", null, null)
-            val response = networkProvider.sendRequest(app.inject(), goodRequest)
+            val goodRequest = Request(Request.Method.GET, "/ping", null, null)
+            val response = networkProvider.sendRequest(authority, authority, goodRequest)
             assertNotNull(response)
             assertEquals("pong", response.message)
 
-            val badRequest = Request(Id.new(), Request.Method.GET, "/ping", null, null)
-            assertNull(networkProvider.sendRequest(app.inject(), badRequest))
+            val badKeyPair = generateKeyPair()
+            val badAuthority = Authority(badKeyPair.public, authority.uri!!, "Bad Authority")
+
+            val badRequest = Request(Request.Method.GET, "/ping", null, null)
+
+            // TODO: These should probably throw, rather than return null
+            assertNull(networkProvider.sendRequest(app.inject(), badAuthority, badRequest))
+            assertNull(networkProvider.sendRequest(badAuthority, app.inject(), badRequest))
         } finally {
             applicationNode.stop()
         }

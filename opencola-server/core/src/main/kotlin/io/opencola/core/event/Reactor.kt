@@ -65,7 +65,7 @@ class MainReactor(
             else
                 baseParams.plus(Pair("mostRecentTransactionId", mostRecentTransactionId.toString()))
 
-            val request = Request(authority.entityId, Request.Method.GET, "/transactions", null, params)
+            val request = Request(Request.Method.GET, "/transactions", null, params)
             val transactionsResponse = networkNode.sendRequest(peer.entityId, request)?.decodeBody<TransactionsResponse>()
 
             if (transactionsResponse == null || transactionsResponse.transactions.isEmpty())
@@ -103,7 +103,6 @@ class MainReactor(
             // Transaction originated locally, so inform peers
 
             val request = request(
-                authority.authorityId,
                 Request.Method.POST,
                 "/notifications",
                 null,
@@ -111,7 +110,8 @@ class MainReactor(
                 Notification(signedTransaction.transaction.authorityId, NewTransaction)
             )
 
-            networkNode.broadcastRequest(request)
+            // TODO: authority should come from transaction
+            networkNode.broadcastRequest(authority, request)
         }
     }
 

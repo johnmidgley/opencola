@@ -8,13 +8,13 @@ import io.ktor.server.http.content.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.opencola.core.extensions.hexStringToByteArray
 import io.opencola.core.extensions.nullOrElse
 import io.opencola.core.model.Authority
 import io.opencola.core.model.Id
 import io.opencola.core.network.Notification
 import io.opencola.core.network.handleGetTransactions
 import io.opencola.core.network.handleNotification
+import io.opencola.core.network.providers.http.HttpNetworkProvider
 import kotlinx.coroutines.CompletableDeferred
 import mu.KotlinLogging
 import opencola.server.LoginCredentials
@@ -35,7 +35,6 @@ fun Application.configureBootstrapRouting(
             if(isNewUser) {
                 call.respondRedirect("changePassword")
             } else {
-                val canChangePassword = passwordExists(storagePath)
                 // TODO: Get from config
                 bootstrapForm(call, "opencola")
             }
@@ -43,8 +42,6 @@ fun Application.configureBootstrapRouting(
 
         post("/") {
             val formParameters = call.receiveParameters()
-            val canChangePassword = passwordExists(storagePath)
-
             val username = formParameters["username"]
             val password = formParameters["password"]
 
@@ -238,10 +235,8 @@ fun Application.configureRouting(app: app) {
         }
 
         post("/networkNode") {
-            call.request.headers
-            val signature = call.request.header("oc-signature")?.hexStringToByteArray()
-            val payload = call.receive<ByteArray>()
-            call.respond(handleNetworkNode(app.inject(), app.inject(), payload, signature))
+            val envelopeBytes = call.receive<ByteArray>()
+            call.respondBytes(app.inject<HttpNetworkProvider>().handleMessage(envelopeBytes, useEncryption = true))
         }
     }
 }

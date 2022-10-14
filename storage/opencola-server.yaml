@@ -22,6 +22,7 @@ security:
   keystore:
     name: "keystore.pks"
     password: "password" # This should be typed in by user and removed from here
-
+#  login:
+#    authenticationRequired: false # Useful for testing
 
 

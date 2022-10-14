@@ -1,9 +1,9 @@
 package io.opencola.core.network.providers.relay
 
 import io.opencola.core.model.Authority
-import io.opencola.core.network.AbstractNetworkProvider
-import io.opencola.core.network.Request
-import io.opencola.core.network.Response
+import io.opencola.core.network.*
+import io.opencola.core.security.Encryptor
+import io.opencola.core.security.Signator
 import io.opencola.core.storage.AddressBook
 import io.opencola.relay.client.RelayClient
 import io.opencola.relay.client.WebSocketClient
@@ -20,12 +20,15 @@ import kotlin.concurrent.thread
 
 const val openColaRelayScheme = "ocr"
 
-class OCRelayNetworkProvider(private val addressBook: AddressBook, private val keyPair: KeyPair): AbstractNetworkProvider() {
+class OCRelayNetworkProvider(authority: Authority,
+                             addressBook: AddressBook,
+                             signator: Signator,
+                             encryptor: Encryptor,
+                             private val keyPair: KeyPair, // Seems redundant, but needed for Relay client.
+): AbstractNetworkProvider(authority, addressBook, signator, encryptor) {
     private val logger = KotlinLogging.logger("OCRelayNetworkProvider")
     data class ConnectionInfo(val client: RelayClient, val listenThread: Thread)
     private val connections = ConcurrentHashMap<URI, ConnectionInfo>()
-    // TODO: Move to AbstractProvider
-    var started = false
 
     @Synchronized
     private fun addClient(uri: URI): RelayClient {
@@ -43,7 +46,7 @@ class OCRelayNetworkProvider(private val addressBook: AddressBook, private val k
             try {
                 runBlocking {
                     logger.info { "Opening client: $uri" }
-                    client.open { publicKey, request -> handleRequest(publicKey, request) }
+                    client.open { _, request -> handleMessage(request, false) }
                 }
             } catch (e: InterruptedException) {
                 // Expected on shutdown
@@ -118,16 +121,16 @@ class OCRelayNetworkProvider(private val addressBook: AddressBook, private val k
         }
     }
 
-    override fun sendRequest(peer: Authority, request: Request): Response? {
-        val peerUri = peer.uri ?: return null
+    override fun sendRequest(from: Authority, to: Authority, request: Request): Response? {
+        val peerUri = to.uri ?: return null
 
         if(peerUri.scheme != openColaRelayScheme) {
             logger.warn { "Unexpected uri scheme in sendRequest: $peerUri" }
         }
 
-        val peerPublicKey = peer.publicKey
+        val peerPublicKey = to.publicKey
         if(peerPublicKey == null) {
-            logger.warn { "Can't send message to peer with no public key specified: ${peer.entityId}" }
+            logger.warn { "Can't send message to peer with no public key specified: ${to.entityId}" }
             return null
         }
 
@@ -137,28 +140,13 @@ class OCRelayNetworkProvider(private val addressBook: AddressBook, private val k
         }
 
         return runBlocking {
-            connections[peerUri]!!.client.sendMessage(peerPublicKey, Json.encodeToString(request).toByteArray())?.let {
-                Json.decodeFromString<Response>(String(it))
+            val messageBytes = Json.encodeToString(request).toByteArray()
+            val envelopeBytes = getEncodedEnvelope(from.entityId, to.entityId, messageBytes, false)
+            connections[peerUri]!!.client.sendMessage(peerPublicKey, envelopeBytes)?.let {
+                // We don't need to validate sender - OC relay enforces that response is from correct sender
+                val responseEnvelope = MessageEnvelope.decode(it).also { e -> validateMessageEnvelope(e) }
+                Json.decodeFromString<Response>(String(responseEnvelope.message.body))
             }
         }
-    }
-
-    private fun handleRequest(fromPublicKey: PublicKey, bytes: ByteArray): ByteArray {
-        if (!started) throw IllegalStateException("Provider is not started - can't handleRequest")
-        val handler = this.handler ?: throw IllegalStateException("Call to handleRequest when handler has not been set")
-        val request = Json.decodeFromString<Request>(String(bytes))
-        val fromAuthority = addressBook.getAuthority(request.from)
-
-        val response = if (fromAuthority == null) {
-            logger.warn { "Received request from unknown authority: ${request.from}" }
-            Response(401, "Unknown sender")
-        } else if (fromAuthority.publicKey != fromPublicKey) {
-            val message = "Request public key does not match authority public key"
-            logger.error { message }
-            Response(400, message)
-        } else
-            handler(request)
-
-        return Json.encodeToString(response).toByteArray()
     }
 }
