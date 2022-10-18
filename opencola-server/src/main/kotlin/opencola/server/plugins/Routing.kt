@@ -8,6 +8,7 @@ import io.ktor.server.http.content.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.sessions.*
 import io.opencola.core.extensions.nullOrElse
 import io.opencola.core.model.Authority
 import io.opencola.core.model.Id
@@ -18,8 +19,10 @@ import io.opencola.core.network.providers.http.HttpNetworkProvider
 import kotlinx.coroutines.CompletableDeferred
 import mu.KotlinLogging
 import opencola.server.LoginCredentials
+import opencola.server.UserSession
 import opencola.server.handlers.*
 import opencola.server.view.changePasswordForm
+import opencola.server.view.loggedIn
 import opencola.server.view.startingPage
 import opencola.server.view.startupForm
 import java.nio.file.Path
@@ -97,13 +100,18 @@ fun Application.configureBootstrapRouting(
     }
 }
 
-fun Application.configureRouting(app: app) {
+fun Application.configureRouting(app: app, authToken: String) {
     // TODO: Make and user general opencola.server
     val logger = KotlinLogging.logger("opencola.init")
     val authenticationRequired = app.config.security.login.authenticationRequired
 
     routing {
         authenticate("auth-digest", optional = !authenticationRequired) {
+            get("/login") {
+                call.sessions.set(UserSession(authToken))
+                loggedIn(call)
+            }
+
             get("/search") {
                 val query = call.request.queryParameters["q"]
                     ?: throw IllegalArgumentException("No query (q) specified in parameters")
@@ -234,6 +242,17 @@ fun Application.configureRouting(app: app) {
 
         post("/action") {
             val authority = app.inject<Authority>()
+
+            if(app.config.security.login.authenticationRequired) {
+                val callAuthToken = call.request.headers["authToken"]
+
+                if(callAuthToken != authToken) {
+                    logger.error { "Received call to /action with invalid token: $callAuthToken" }
+                    call.respond(HttpStatusCode.Unauthorized)
+                    return@post
+                }
+            }
+
             handlePostActionCall(call, authority.authorityId, app.inject(), app.inject(), app.inject())
         }
 

@@ -7,6 +7,7 @@ import io.ktor.server.response.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.statuspages.*
+import io.ktor.server.sessions.*
 import io.opencola.core.config.*
 import io.opencola.core.config.Application
 import kotlinx.cli.ArgParser
@@ -18,10 +19,10 @@ import io.opencola.core.event.Events
 import io.opencola.core.extensions.runCommand
 import io.opencola.core.model.Id
 import io.opencola.core.network.NetworkNode
-import io.opencola.core.security.SecurityProviderDependent
 import io.opencola.core.security.encode
 import io.opencola.core.security.getMd5Digest
 import io.opencola.core.security.initProvider
+import io.opencola.core.serialization.Base58
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
@@ -87,6 +88,7 @@ fun getServer(application: Application, loginCredentials: LoginCredentials): Net
     val realm = "/"
     val username = loginCredentials.username
     val userTable = mapOf(username to getMd5Digest("$username:$realm:${loginCredentials.password}"))
+    val authToken = Base58.encode(userTable[username]!!)
 
     val environment = applicationEngineEnvironment {
         log = LoggerFactory.getLogger("ktor.application")
@@ -111,7 +113,7 @@ fun getServer(application: Application, loginCredentials: LoginCredentials): Net
         module {
             configureHTTP()
             configureContentNegotiation()
-            configureRouting(application)
+            configureRouting(application, authToken)
             install(StatusPages) {
                 exception<Throwable> { call, cause ->
                     val response = ErrorResponse(cause.message ?: "Unknown")
@@ -126,6 +128,11 @@ fun getServer(application: Application, loginCredentials: LoginCredentials): Net
                     }
                 }
             }
+
+            install(Sessions) {
+                cookie<UserSession>("user_session")
+            }
+
             this.environment.monitor.subscribe(ApplicationStarted) { onServerStarted(application) }
         }
     }
@@ -134,6 +141,7 @@ fun getServer(application: Application, loginCredentials: LoginCredentials): Net
 }
 
 data class LoginCredentials(val username: String, val password: String)
+data class UserSession(val authToken: String)
 
 suspend fun getLoginCredentials(storagePath: Path, serverConfig: ServerConfig): LoginCredentials {
     val loginCredentials = CompletableDeferred<LoginCredentials>()
@@ -164,6 +172,9 @@ suspend fun getLoginCredentials(storagePath: Path, serverConfig: ServerConfig): 
         module {
             configureHTTP()
             configureBootstrapRouting(storagePath, loginCredentials)
+            install(Sessions) {
+                cookie<UserSession>("user_session")
+            }
         }
     }
 

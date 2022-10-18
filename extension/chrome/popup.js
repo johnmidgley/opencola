@@ -1,10 +1,53 @@
 let baseServiceUrl = "http://0.0.0.0:5795"
 let statusImg = document.getElementById("status")
+let authToken = null
+
+function parseCookie(str) {
+  return str
+    .split(';')
+    .map(v => v.split('='))
+    .reduce((acc, v) => {
+      acc[decodeURIComponent(v[0].trim())] = decodeURIComponent(v[1].trim());
+      return acc;
+    }, {});
+}
+
+function login() {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4) {
+        if(this.status != 200) {
+          alert("Unable to authenticate extension. Is your OpenCola server running? A login page will be opened to check..")
+          window.close()
+          window.open(baseServiceUrl + '/login', "_blank")
+        }
+    }
+  };
+  xhttp.open("GET",  baseServiceUrl + '/login', true);
+  xhttp.send();
+}
+
+function getAuthToken()
+{
+  chrome.cookies.get(
+    { url: baseServiceUrl, name: 'user_session' },
+    function (cookie) {
+      if (cookie) {
+        authToken = parseCookie(decodeURIComponent(cookie.value))["authToken"].replace(/^(#s)/, '')
+        console.log(authToken)
+      }
+      else {
+        login()
+        // window.open(baseServiceUrl + '/login', "_blank")
+      }
+    });
+}
 
 
 chrome.storage.sync.get("serviceUrl", (data) => {
   let serviceUrl = data.serviceUrl
   baseServiceUrl = serviceUrl
+  getAuthToken()
 })
 
 
@@ -38,6 +81,7 @@ async function sendAction(tab, action, value){
                 formData.append("value", value)
                 formData.append("mhtml", mhtmlData)
                 xhr.open("POST", baseServiceUrl + "/action")
+                xhr.setRequestHeader("authToken", authToken)
                 xhr.onreadystatechange = function () {
                     // In local files, status is 0 upon success in Mozilla Firefox
                     if(xhr.readyState === XMLHttpRequest.DONE) {
@@ -47,9 +91,15 @@ async function sendAction(tab, action, value){
                             setStatus("green")
                         } else {
                             setStatus("red")
-                            // Oh no! There has been an error with the request!
+
+                            if(status == 401)
+                              login()
                         }
+                    } else {
+                      console.log("Status: " + xhr.status)
                     }
+                  
+
                 };
                 xhr.send(formData);
             }

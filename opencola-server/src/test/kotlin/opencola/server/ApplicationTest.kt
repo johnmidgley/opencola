@@ -37,7 +37,7 @@ class ApplicationTest {
     val injector = TestApplication.instance.injector
 
     private fun configure(app: Application) {
-        app.configureRouting(application)
+        app.configureRouting(application, "")
         app.configureContentNegotiation()
         app.install(Authentication) {
             digest("auth-digest") { }

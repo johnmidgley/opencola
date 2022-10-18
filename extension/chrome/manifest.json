@@ -7,8 +7,15 @@
     "service_worker": "background.js"
   },
   "omnibox": { "keyword" : "oc" },
-  "permissions": ["storage", "activeTab", "scripting", "pageCapture", "webRequest", "webNavigation"],
-  "host_permissions": ["*://localhost*"],
+  "permissions": [
+    "storage", 
+    "activeTab", 
+    "scripting", 
+    "pageCapture", 
+    "webRequest", 
+    "webNavigation",
+    "cookies"],
+  "host_permissions": ["*://*/"],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
