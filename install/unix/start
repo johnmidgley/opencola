@@ -32,7 +32,7 @@ fi
 docker-compose -p opencola up --build -d 1>/dev/null
 if [ $? -eq 0 ] 
 then
-  echo  $'\e[0;32mOpenCola has started:\e[0m configure docker to run at startup so you do not have to manually start OpenCola again'
+    echo "Docker container started"
 else
   echo $'\e[31mUnable to start OpenCola.\e[0m Is docker running [try "open /Applications/Docker.app/"]? Is the port already in use?'
 exit 2
@@ -55,4 +55,5 @@ then
   fi
 fi
 
-echo "Server started - default addresses http://localhost:5795, https://localhost:5796"
+echo "Server started - visit http://localhost:5795"
+echo "                   or https://localhost:5796 (Secure - recommended)"
