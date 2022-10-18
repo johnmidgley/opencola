@@ -40,7 +40,7 @@ suspend fun startupForm(call: ApplicationCall, username: String, message: String
     }
 }
 
-suspend fun changePasswordForm(call: ApplicationCall, isNewUser: Boolean, message: String? = null, error: String? = null) {
+suspend fun changePasswordForm(call: ApplicationCall, isNewUser: Boolean, message: String? = null) {
     call.respondHtml {
         body {
             form(action = "/changePassword", encType = FormEncType.applicationXWwwFormUrlEncoded, method = FormMethod.post) {
