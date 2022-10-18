@@ -122,7 +122,7 @@ fun getServer(application: Application, loginCredentials: LoginCredentials): Net
             install(Authentication) {
                 digest("auth-digest") {
                     this.realm = realm
-                    digestProvider { userName, realm ->
+                    digestProvider { userName, _ ->
                         userTable[userName]
                     }
                 }
