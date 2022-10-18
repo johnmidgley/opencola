@@ -5,6 +5,12 @@ case $OS in
   'Darwin')
     sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain opencola-ssl.der
     ;;
+  'Linux')
+      # https://ubuntu.com/server/docs/security-trust-store
+      # This doesn't seem to be working. Cert seems to be installed, but browser doesn't recognize it
+      sudo cp opencola-ssl.pem /usr/local/share/ca-certificates/opencola-ssl.crt
+      sudo update-ca-certificates # --fresh
+      ;;
    *)
    echo "Unknown OS - unable to install cer"
    ;;
