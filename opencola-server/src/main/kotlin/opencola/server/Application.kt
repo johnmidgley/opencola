@@ -1,19 +1,17 @@
 package opencola.server
 
-import io.ktor.server.application.*
 import io.ktor.http.*
+import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.response.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.statuspages.*
+import io.ktor.server.response.*
 import io.ktor.server.sessions.*
-import io.opencola.core.config.*
 import io.opencola.core.config.Application
-import kotlinx.cli.ArgParser
-import kotlinx.cli.ArgType
-import kotlinx.cli.default
-import mu.KotlinLogging
+import io.opencola.core.config.SSLConfig
+import io.opencola.core.config.ServerConfig
+import io.opencola.core.config.loadConfig
 import io.opencola.core.event.EventBus
 import io.opencola.core.event.Events
 import io.opencola.core.extensions.runCommand
@@ -23,11 +21,14 @@ import io.opencola.core.security.encode
 import io.opencola.core.security.getMd5Digest
 import io.opencola.core.security.initProvider
 import io.opencola.core.serialization.Base58
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.runBlocking
+import kotlinx.cli.ArgParser
+import kotlinx.cli.ArgType
+import kotlinx.cli.default
+import kotlinx.coroutines.*
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import mu.KotlinLogging
 import opencola.server.handlers.bootstrapInit
 import opencola.server.plugins.configureBootstrapRouting
 import opencola.server.plugins.configureContentNegotiation
@@ -186,6 +187,23 @@ suspend fun getLoginCredentials(storagePath: Path, serverConfig: ServerConfig): 
     return credentials
 }
 
+suspend fun detectResume(handler: () -> Unit): Job = coroutineScope {
+    var lastCheckTimeMillis = System.currentTimeMillis()
+
+    launch {
+        while (true) {
+            delay(5000)
+            val currentTimeMillis = System.currentTimeMillis()
+
+            if (currentTimeMillis - lastCheckTimeMillis > 10000) {
+                handler()
+            }
+
+            lastCheckTimeMillis = currentTimeMillis
+        }
+    }
+}
+
 fun main(args: Array<String>) {
     runBlocking {
         // https://github.com/Kotlin/kotlinx-cli
@@ -212,7 +230,12 @@ fun main(args: Array<String>) {
         application.logger.info("Authority: ${Id.ofPublicKey(keyPair.public)}")
         application.logger.info("Public Key : ${keyPair.public.encode()}")
 
+        launch {
+            val eventBus = application.inject<EventBus>()
+            detectResume { eventBus.sendMessage(Events.NodeResume.toString()) }
+        }
+
         // TODO: Make sure entityService starts as soon as server is up, so that transactions can be received
-        getServer(application, loginCredentials).start(wait = true)
+        getServer(application, loginCredentials).start()
     }
 }

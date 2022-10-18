@@ -148,11 +148,16 @@ class MainReactor(
         }
     }
 
+    private fun handleNodeResume(event: Event){
+        logger.info { event.name }
+        updatePeerTransactions()
+    }
     override fun handleMessage(event: Event) {
         logger.info { "Handling event: $event" }
 
         when(Events.valueOf(event.name)){
             Events.NodeStarted -> handleNodeStarted(event)
+            Events.NodeResume -> handleNodeResume(event)
             Events.NewTransaction -> handleNewTransaction(event)
             Events.PeerNotification -> handlePeerNotification(event)
         }
