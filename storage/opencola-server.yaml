@@ -7,22 +7,19 @@ eventBus:
 server:
   host: 0.0.0.0 # Bind to any local address
   port: 5795
-# Default SSL Config - uncomment to customize
-#  ssl:
-#    port: 5796
-#    sans: # Subject Alternative Names that will be used in cert creation
-#      - 127.0.0.1   # loopback localhost
-#      - hostAddress # Will get from Inet4Address.getLocalHost().hostAddress
-#      - localhost   # DNS entry
+  ssl:
+    port: 5796
+    sans: # Subject Alternative Names that will be used in cert creation
+      - 127.0.0.1   # loopback localhost
+      - hostAddress # Will get from Inet4Address.getLocalHost().hostAddress
+      - localhost   # DNS entry
 
 storage:
   path: "../storage/"
 
 security:
-  keystore:
-    name: "keystore.pks"
-    password: "password" # This should be typed in by user and removed from here
-#  login:
-#    authenticationRequired: false # Useful for testing
+  login:
+    username: oc
+    # authenticationRequired: false # Useful for testing
 
 

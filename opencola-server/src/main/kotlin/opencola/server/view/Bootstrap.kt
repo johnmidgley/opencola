@@ -18,7 +18,9 @@ suspend fun startupForm(call: ApplicationCall, username: String, message: String
                     textInput {
                         name = "username"
                         value = username
+                        readonly = true
                     }
+                    + " (Editable in opencola-server.yaml)"
                 }
                 p {
                     +"Password:"

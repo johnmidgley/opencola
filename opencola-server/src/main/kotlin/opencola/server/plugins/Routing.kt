@@ -9,6 +9,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
+import io.opencola.core.config.LoginConfig
 import io.opencola.core.extensions.nullOrElse
 import io.opencola.core.model.Authority
 import io.opencola.core.model.Id
@@ -28,11 +29,10 @@ import opencola.server.view.startupForm
 import java.nio.file.Path
 import io.opencola.core.config.Application as app
 
-const val defaultUsername = "oc"
-
 // TODO: All routes should authenticate caller and authorize activity. Right now everything is open
 fun Application.configureBootstrapRouting(
     storagePath: Path,
+    loginConfig: LoginConfig,
     loginCredentials: CompletableDeferred<LoginCredentials>) {
 
     routing {
@@ -43,7 +43,7 @@ fun Application.configureBootstrapRouting(
                 call.respondRedirect("changePassword")
             } else {
                 // TODO: Get from config
-                startupForm(call, defaultUsername)
+                startupForm(call, loginConfig.username)
             }
         }
 
@@ -53,7 +53,7 @@ fun Application.configureBootstrapRouting(
             val password = formParameters["password"]
 
             if(username == null || username.isBlank()) {
-                startupForm(call, defaultUsername,"Please enter a username")
+                startupForm(call, loginConfig.username, "Please enter a username")
             }else if (password == null || password.isBlank()) {
                 startupForm(call, username,"Please enter a password")
             } else {

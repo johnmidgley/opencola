@@ -12,7 +12,7 @@ data class ServerConfig(val host: String, val port: Int, val ssl: SSLConfig? = S
 @Deprecated("No longer used")
 data class KeystoreConfig(val name: String, val password: String) // TODO: Remove
 data class LoginConfig(val username: String = "opencola", val authenticationRequired: Boolean = true)
-data class SecurityConfig(val keystore: KeystoreConfig, val login: LoginConfig = LoginConfig())
+data class SecurityConfig(val keystore: KeystoreConfig?, val login: LoginConfig = LoginConfig())
 data class SolrConfig(val baseUrl: String, val connectionTimeoutMillis: Int, val socketTimeoutMillis: Int)
 data class SearchConfig(val solr: SolrConfig?)
 data class PeerConfig(val id: String, val publicKey: String, val name: String, val host: String, val active: Boolean = true)

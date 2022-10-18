@@ -8,10 +8,8 @@ import io.ktor.server.netty.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import io.ktor.server.sessions.*
+import io.opencola.core.config.*
 import io.opencola.core.config.Application
-import io.opencola.core.config.SSLConfig
-import io.opencola.core.config.ServerConfig
-import io.opencola.core.config.loadConfig
 import io.opencola.core.event.EventBus
 import io.opencola.core.event.Events
 import io.opencola.core.extensions.runCommand
@@ -144,7 +142,7 @@ fun getServer(application: Application, loginCredentials: LoginCredentials): Net
 data class LoginCredentials(val username: String, val password: String)
 data class UserSession(val authToken: String)
 
-suspend fun getLoginCredentials(storagePath: Path, serverConfig: ServerConfig): LoginCredentials {
+suspend fun getLoginCredentials(storagePath: Path, serverConfig: ServerConfig, loginConfig: LoginConfig): LoginCredentials {
     val loginCredentials = CompletableDeferred<LoginCredentials>()
     val environment = applicationEngineEnvironment {
         log = LoggerFactory.getLogger("ktor.application")
@@ -172,7 +170,7 @@ suspend fun getLoginCredentials(storagePath: Path, serverConfig: ServerConfig): 
 
         module {
             configureHTTP()
-            configureBootstrapRouting(storagePath, loginCredentials)
+            configureBootstrapRouting(storagePath, loginConfig, loginCredentials)
             install(Sessions) {
                 cookie<UserSession>("user_session")
             }
@@ -223,7 +221,7 @@ fun main(args: Array<String>) {
         initProvider()
 
         val config = loadConfig(storagePath.resolve("opencola-server.yaml"))
-        val loginCredentials = getLoginCredentials(storagePath, config.server)
+        val loginCredentials = getLoginCredentials(storagePath, config.server, config.security.login)
         // TODO: Is getOrCreateRootKeyPair needed outside of App.instance()?
         val keyPair = Application.getOrCreateRootKeyPair(storagePath, loginCredentials.password)
         val application = Application.instance(applicationPath, storagePath, config, keyPair, loginCredentials.password)
