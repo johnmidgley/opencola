@@ -144,6 +144,11 @@ data class UserSession(val authToken: String)
 
 suspend fun getLoginCredentials(storagePath: Path, serverConfig: ServerConfig, loginConfig: LoginConfig): LoginCredentials {
     val loginCredentials = CompletableDeferred<LoginCredentials>()
+
+    if(loginConfig.password != null) {
+        return LoginCredentials(loginConfig.username, loginConfig.password!!)
+    }
+
     val environment = applicationEngineEnvironment {
         log = LoggerFactory.getLogger("ktor.application")
 

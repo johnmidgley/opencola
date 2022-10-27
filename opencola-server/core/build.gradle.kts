@@ -49,6 +49,7 @@ dependencies {
     // Content Analysis: https://tika.apache.org/2.1.0/gettingstarted.html
     implementation("org.apache.tika:tika-core:$tika_version")
     implementation("org.apache.tika:tika-parsers-standard-package:$tika_version")
+    implementation("org.apache.pdfbox:pdfbox:2.0.27")
 
     // Logging: https://www.kotlinresources.com/library/kotlin-logging/
     implementation("io.github.microutils:kotlin-logging:$kotlin_logging_version")

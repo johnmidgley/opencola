@@ -4,6 +4,7 @@ import io.opencola.core.extensions.tryParseUri
 import org.apache.james.mime4j.dom.*
 import org.apache.james.mime4j.message.DefaultMessageBuilder
 import org.apache.james.mime4j.stream.MimeConfig
+import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.net.URI
 
@@ -14,7 +15,9 @@ fun parseMime(inputStream: InputStream): Message? {
     return defaultMessageBuilder.parseMessage(inputStream)
 }
 
-
+fun parseMime(mimeText: String) : Message? {
+    return ByteArrayInputStream(mimeText.toByteArray()).use { parseMime(it) }
+}
 
 fun transformTextContent(body: Body, textTransform: (String) -> String): ByteArray {
     return when (body) {

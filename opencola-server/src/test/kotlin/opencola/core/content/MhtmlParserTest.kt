@@ -13,6 +13,34 @@ import kotlin.io.path.readBytes
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+fun getMimeSnapshotForUrl(url: String) : String {
+    return """From: <Saved by Blink>
+Snapshot-Content-Location: $url
+Subject: 
+Date: Wed, 26 Oct 2022 21:45:50 -0000
+MIME-Version: 1.0
+Content-Type: multipart/related;
+	type="text/html";
+	boundary="----MultipartBoundary--td2WB82m6rxEtr7uRJwL0aFpcCBN4ZOcVHjEMwc09z----"
+
+
+------MultipartBoundary--td2WB82m6rxEtr7uRJwL0aFpcCBN4ZOcVHjEMwc09z----
+Content-Type: text/html
+Content-ID: <frame-C318472666F631B24C9F3095357D8BD0@mhtml.blink>
+Content-Transfer-Encoding: quoted-printable
+Content-Location: $url
+
+<!DOCTYPE html><html><head><meta http-equiv=3D"Content-Type" content=3D"tex=
+t/html; charset=3Dwindows-1252"></head><body style=3D"height: 100%; width: =
+100%; overflow: hidden; margin:0px; background-color: rgb(82, 86, 89);"><em=
+bed name=3D"0344039E3E68F745D3B632020CD0CBE7" style=3D"position:absolute; l=
+eft: 0; top: 0;" width=3D"100%" height=3D"100%" src=3D"about:blank" type=3D=
+"application/pdf" internalid=3D"0344039E3E68F745D3B632020CD0CBE7"></body></=
+html>
+------MultipartBoundary--td2WB82m6rxEtr7uRJwL0aFpcCBN4ZOcVHjEMwc09z------
+"""
+}
+
 fun readMhtmlPage(path: Path): MhtmlPage {
     return MhtmlPage(path.inputStream().use { parseMime(it) ?: throw RuntimeException("Unable to parse $it") })
 }
