@@ -166,9 +166,7 @@
      [:td
       (if data-id
         [:span
-         [:a.action-link  {:href (str (data-url host data-id) "/0.html") :target "_blank"} [action-img "archive"]]
-         common/inline-divider
-         [:a.action-link  {:href (data-url host data-id) :target "_blank"} [action-img "download"]]])]]))
+         [:a.action-link  {:href (data-url host data-id) :target "_blank"} [action-img "archive"]]])]]))
  
 
 (defn item-saves [expanded?! save-actions]

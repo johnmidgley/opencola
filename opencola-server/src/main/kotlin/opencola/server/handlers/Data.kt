@@ -3,22 +3,37 @@ package opencola.server.handlers
 import io.ktor.server.application.*
 import io.ktor.http.*
 import io.ktor.server.response.*
+import io.opencola.core.model.DataEntity
 import io.opencola.core.model.Id
+import io.opencola.core.network.response
+import io.opencola.core.storage.EntityStore
+import io.opencola.core.storage.FileStore
 import mu.KotlinLogging
 import io.opencola.core.storage.MhtCache
 
-private val logger = KotlinLogging.logger("Handler")
+private val logger = KotlinLogging.logger("DataHandler")
 
-suspend fun handleGetDataCall(call: ApplicationCall, mhtCache: MhtCache, authorityId: Id) {
+suspend fun handleGetDataCall(call: ApplicationCall, entityStore: EntityStore, fileStore: FileStore, authorityId: Id) {
     val stringId = call.parameters["id"] ?: throw IllegalArgumentException("No id set")
     val entityId = Id.decode(stringId)
 
-    val data = mhtCache.getData(authorityId, entityId)
+    val dataEntity = entityStore.getEntity(authorityId, Id.decode(stringId)) as? DataEntity
+        ?: throw IllegalArgumentException("Unknown data entity: $stringId")
+
+    logger.info { "MimeType: ${dataEntity.mimeType}" }
+
+    if(dataEntity.mimeType == "multipart/related") {
+        call.respondRedirect("$stringId/0.html")
+        return
+    }
+
+    val data = fileStore.read(dataEntity.entityId)
 
     if (data == null) {
         call.respondText(status = HttpStatusCode.NoContent) { "No data for id: $entityId" }
     } else {
-        call.respondBytes(data, ContentType.Application.OctetStream)
+        call.response.headers.append("content-type", dataEntity.mimeType ?: "application/octet-stream")
+        call.respondBytes(data)
     }
 }
 

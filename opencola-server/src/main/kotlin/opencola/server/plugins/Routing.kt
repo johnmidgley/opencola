@@ -179,7 +179,7 @@ fun Application.configureRouting(app: app, authToken: String) {
 
             get("/data/{id}") {
                 val authority = app.inject<Authority>()
-                handleGetDataCall(call, app.inject(), authority.authorityId)
+                handleGetDataCall(call, app.inject(), app.inject(), authority.authorityId)
             }
 
             get("/data/{id}/{partName}") {
