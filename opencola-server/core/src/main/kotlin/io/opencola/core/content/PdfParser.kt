@@ -24,12 +24,17 @@ fun getFirstImageFromPDF(pdfBytes: ByteArray): BufferedImage? {
     PDDocument.load(pdfBytes).use { return getImages(it).firstOrNull() }
 }
 
-fun renderFirstPageOfPDF(pdfBytes: ByteArray, scale: Float = 1.0f): ByteArray {
+fun renderFirstPageOfPDF(pdfBytes: ByteArray, scale: Float = 1.0f): BufferedImage {
     PDDocument.load(pdfBytes).use { document ->
         val renderer = PDFRenderer(document)
-        val image = renderer.renderImage(0, scale)
-        ByteArrayOutputStream().use {
-            ImageIO.write(image, "PNG", it)
+        return renderer.renderImage(0, scale)
+    }
+}
+
+fun BufferedImage.toBytes(format: String) : ByteArray {
+    ByteArrayOutputStream().use {  outStream ->
+        outStream.use {
+            ImageIO.write(this, format, it)
             return it.toByteArray()
         }
     }
