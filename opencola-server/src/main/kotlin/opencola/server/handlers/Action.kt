@@ -107,7 +107,7 @@ fun updatePdfResource(
     resourceEntity.name = Path(mhtmlPage.uri.path).fileName.toString()
     resourceEntity.text = text
     resourceEntity.description = text.substring(0, 500)
-    resourceEntity.imageUri = URI(imageDataEntity?.let { "data/${it.entityId}" } ?: "img/pdfIcon.png")
+    resourceEntity.imageUri = imageDataEntity?.let { URI("data/${it.entityId}") }
 
     return imageDataEntity?.let { listOf(it) } ?: emptyList()
 }
