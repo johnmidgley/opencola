@@ -83,7 +83,7 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
             }
 
             // TODO: Change from authority to public key - they authority should come from the private store based on the private key
-            val defaultAddress = config.network?.defaultAddress ?: URI("pcr://relay.opencola.net")
+            val defaultAddress = config.network?.defaultAddress ?: URI("ocr://relay.opencola.net")
             val authority = Authority(authorityKeyPair.public, defaultAddress, "You")
 
             val keyStore = KeyStore(storagePath.resolve("keystore.pks"), password)

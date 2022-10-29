@@ -69,7 +69,7 @@ suspend fun changePasswordForm(call: ApplicationCall, isNewUser: Boolean, messag
                     passwordInput(name = "passwordConfirm")
                 }
                 p {
-                    submitInput() { value = "Change Password" }
+                    submitInput() { value = if (isNewUser) "Set Password" else "Change Password" }
                 }
             }
         }

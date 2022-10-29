@@ -12,10 +12,8 @@ storage:
   path: "../storage/test"
 
 security:
-  keystore:
-    name: "keystore.pks"
-    password: "password"
   login:
+    password: password
     authenticationRequired: false
 
 search:

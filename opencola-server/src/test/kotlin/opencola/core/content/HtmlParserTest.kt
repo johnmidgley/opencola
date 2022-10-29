@@ -1,6 +1,8 @@
 package opencola.core.content
 
 import io.opencola.core.content.HtmlParser
+import io.opencola.core.content.MhtmlPage
+import io.opencola.core.content.parseMime
 import org.junit.Test
 import java.net.URI
 import kotlin.io.path.Path
@@ -99,5 +101,14 @@ class HtmlParserTest {
         val testImageUri = URI("http://opencola.io/img.png")
         val parser = HtmlParser("<head><meta name=\"twitter:image\" content=\"$testImageUri\"></body>")
         assertEquals(testImageUri, parser.parseImageUri())
+    }
+
+    @Test
+    fun testGetEmbeddedTypePDF() {
+        val mhtmlPage =  MhtmlPage(parseMime(getMimeSnapshotForUrl("http://test"))!!)
+        val htmlParser = HtmlParser(mhtmlPage.htmlText!!)
+        val embeddedType = htmlParser.parseEmbeddedType()
+
+        assertEquals("application/pdf", embeddedType)
     }
 }

@@ -97,7 +97,7 @@ class HttpNetworkProvider(authority: Authority,
             logger.info { "${to.name} appears to be offline." }
         }
         catch (e: Exception){
-            logger.error { e.message }
+            logger.error { "sendRequest: $e" }
         }
 
         return null

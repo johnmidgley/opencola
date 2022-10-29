@@ -11,6 +11,13 @@ import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.net.URI
 
+fun Message.toBytes() : ByteArray {
+    return ByteArrayOutputStream().use { outputStream ->
+        DefaultMessageWriter().writeMessage(this, outputStream)
+        outputStream.toByteArray()
+    }
+}
+
 class MhtmlPage {
     val message: Message
     val uri: URI
@@ -18,8 +25,9 @@ class MhtmlPage {
     val description: String?
     val imageUri: URI?
     val text: String?
-
     val htmlText : String?
+    val embeddedMimeType : String?
+
     private val contentLocationMap: Map<String,String>
 
     // TODO: Make work on stream?
@@ -35,6 +43,7 @@ class MhtmlPage {
         title = htmlParser?.parseTitle() ?: DecoderUtil.decodeEncodedWords(message.header.getField("Subject")?.body, Charset.defaultCharset())
         description = htmlParser.nullOrElse { it.parseDescription() }
         imageUri = htmlParser.nullOrElse { it.parseImageUri() } ?: getImageUri(message)
+        embeddedMimeType = htmlParser?.let { it.parseEmbeddedType() }
         text = htmlText.nullOrElse { TextExtractor().getBody(it.toByteArray()) }
     }
 

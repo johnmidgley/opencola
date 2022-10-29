@@ -20,6 +20,7 @@ storage:
 security:
   login:
     username: oc
+    # password: password # Useful for testing
     # authenticationRequired: false # Useful for testing
 
 

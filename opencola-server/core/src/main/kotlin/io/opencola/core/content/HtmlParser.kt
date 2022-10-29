@@ -59,4 +59,14 @@ class HtmlParser(html: String) {
         )
             .mapNotNull { it.tryParseUri() }.firstOrNull { it.isAbsolute }
     }
+
+    fun parseEmbeddedType() : String? {
+        val singleChild = doc.body().children().singleOrNull()
+
+        if(singleChild != null && singleChild.normalName() == "embed") {
+            return singleChild.attr("type")
+        }
+
+        return null
+    }
 }

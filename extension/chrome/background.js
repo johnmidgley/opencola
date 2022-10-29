@@ -1,4 +1,4 @@
-let serviceUrl = "http://0.0.0.0:5795";
+let serviceUrl = "https://localhost:5796";
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.sync.get("serviceUrl", (data) => {
@@ -19,9 +19,3 @@ chrome.omnibox.onInputEntered.addListener(function(text) {
     chrome.tabs.create({ url: newURL });
   })
 });
-
-// chrome.webNavigation.onCompleted.addListener(function(details) {
-//     console.log("Nav - oc: " + details.url);
-// },
-//  // {url: [{hostEquals : '0.0.0.0'}]}
-// );

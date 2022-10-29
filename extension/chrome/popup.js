@@ -1,4 +1,4 @@
-let baseServiceUrl = "http://0.0.0.0:5795"
+let baseServiceUrl = "https://localhost:5796"
 let statusImg = document.getElementById("status")
 let authToken = null
 
@@ -27,8 +27,7 @@ function login() {
   xhttp.send();
 }
 
-function getAuthToken()
-{
+function getAuthToken() {
   chrome.cookies.get(
     { url: baseServiceUrl, name: 'user_session' },
     function (cookie) {
@@ -38,7 +37,6 @@ function getAuthToken()
       }
       else {
         login()
-        // window.open(baseServiceUrl + '/login', "_blank")
       }
     });
 }
@@ -51,7 +49,7 @@ chrome.storage.sync.get("serviceUrl", (data) => {
 })
 
 
-function setStatus(status){
+function setStatus(status) {
     switch(status){
         case "red":
         case "yellow":
@@ -65,7 +63,7 @@ function setStatus(status){
 }
 
 
-async function sendAction(tab, action, value){
+async function sendAction(tab, action, value) {
     // TODO: Check this out https://stackoverflow.com/questions/32194397/why-isnt-chrome-pagecapture-saveasmhtml-working-in-my-google-chrome-extension
     // TODO: Why doesn't console logging work here?
 

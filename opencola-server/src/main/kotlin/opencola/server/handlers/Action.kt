@@ -1,61 +1,179 @@
 package opencola.server.handlers
 
-import io.ktor.server.application.*
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.http.content.*
+import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
-import io.opencola.core.content.MhtmlPage
-import io.opencola.core.content.TextExtractor
-import io.opencola.core.content.parseMhtml
-import io.opencola.core.model.Actions
-import io.opencola.core.model.DataEntity
-import io.opencola.core.model.Id
-import io.opencola.core.model.ResourceEntity
+import io.opencola.core.content.*
 import io.opencola.core.extensions.nullOrElse
+import io.opencola.core.model.*
 import io.opencola.core.storage.EntityStore
 import io.opencola.core.storage.FileStore
-import org.apache.james.mime4j.message.DefaultMessageWriter
+import kotlinx.coroutines.runBlocking
+import mu.KotlinLogging
 import java.io.ByteArrayOutputStream
 import java.net.URI
+import javax.imageio.ImageIO
+import kotlin.io.path.Path
+import kotlin.io.path.exists
+import kotlin.io.path.inputStream
 
-fun updateResource(authorityId: Id, entityStore: EntityStore, fileStore: FileStore, textExtractor: TextExtractor,
-                   mhtmlPage: MhtmlPage, actions: Actions
-): ResourceEntity {
-    val writer = DefaultMessageWriter()
-    ByteArrayOutputStream().use { outputStream ->
-        writer.writeMessage(mhtmlPage.message, outputStream)
-        val pageBytes = outputStream.toByteArray()
-        val dataId = fileStore.write(pageBytes)
-        val mimeType = textExtractor.getType(pageBytes)
-        val resourceId = Id.ofUri(mhtmlPage.uri)
-        val entity = (entityStore.getEntity(authorityId, resourceId) ?: ResourceEntity(authorityId, mhtmlPage.uri)) as ResourceEntity
+private val logger = KotlinLogging.logger("ActionHandler")
 
-        // Add / update fields
-        // TODO - Check if setting null writes a retraction when fields are null
-        entity.dataId = entity.dataId.plus(dataId)
-        entity.name = mhtmlPage.title
-        entity.text = mhtmlPage.text
-        entity.description = mhtmlPage.description
-        entity.imageUri = mhtmlPage.imageUri
+class Content(val mimeType: String, val data: ByteArray)
 
-        actions.trust.nullOrElse { entity.trust = it }
-        actions.like.nullOrElse { entity.like = it }
-        actions.rating.nullOrElse { entity.rating = it }
+fun getFileData(uri: URI) : ByteArray? {
+    val path = Path(uri.path)
 
-        val dataEntity = (entityStore.getEntity(authorityId, dataId) ?: DataEntity(
-            authorityId,
-            dataId,
-            mimeType
-        ))
+    if(path.exists())
+        return path.inputStream().use { it.readAllBytes() }
 
-        entityStore.updateEntities(entity, dataEntity)
-        return entity
+    return null
+}
+
+fun getHttpData(uri: URI): ByteArray? {
+    val client = HttpClient(CIO) {
+        engine {
+            requestTimeout = 30000
+        }
+    }
+    return runBlocking {
+        try {
+            logger.info { "Getting data for: $uri" }
+            val response = client.get(uri.toString())
+            logger.info { "Got response for $uri: $response" }
+            if (response.status.value < 400) {
+                val bytes = response.readBytes()
+                logger.info { "Got data for $uri: $response" }
+                bytes
+            } else {
+                logger.error { "Unable to get data for $uri: $response" }
+                null
+            }
+        } catch (e: Exception) {
+            logger.error { "Exception during get: $e" }
+            null
+        }
     }
 }
 
-fun handleAction(authorityId: Id, entityStore: EntityStore, fileStore: FileStore, textExtractor: TextExtractor,
-                 action: String, value: String?, mhtml: ByteArray) {
+fun getData(uri: URI) : ByteArray? {
+    return when (uri.scheme) {
+        "file" -> getFileData(uri)
+        "http" -> getHttpData(uri)
+        "https" -> getHttpData(uri)
+        else -> throw IllegalArgumentException("Unable to getData for unknown scheme: ${uri.scheme}")
+    }
+}
+
+fun getContent(mhtmlPage: MhtmlPage, textExtractor: TextExtractor): Content {
+    val embeddedMimeType = mhtmlPage.embeddedMimeType
+    return if (embeddedMimeType == null) {
+        val parts = splitMht(mhtmlPage.message)
+        if (parts.count() == 1) {
+            // Not really multipart (e.g. image) - unwrap so content is directly accessible.
+            parts.first().let { Content(it.mimeType, it.bytes) }
+        } else
+            Content("multipart/related", mhtmlPage.message.toBytes())
+    } else {
+        val data = getData(mhtmlPage.uri)
+            ?: throw RuntimeException("Unable to access data for ${mhtmlPage.uri} ")
+        Content(embeddedMimeType, data)
+    }
+}
+
+fun getImageFromPdf(content: Content) : Content? {
+    return getFirstImageFromPDF(content.data)?.let { image ->
+        Content("image/png", image.toBytes("PNG"))
+    }
+}
+
+fun updatePdfResource(
+    resourceEntity: ResourceEntity,
+    mhtmlPage: MhtmlPage,
+    content: Content,
+    entityStore: EntityStore,
+    fileStore: FileStore
+): List<Entity> {
+    val text = TextExtractor().getBody(content.data)
+    val imageDataEntity = getImageFromPdf(content)?.let { imageContent ->
+        getDataEntity(resourceEntity.authorityId, entityStore, fileStore, imageContent) }
+
+    resourceEntity.name = Path(mhtmlPage.uri.path).fileName.toString()
+    resourceEntity.text = text
+    resourceEntity.description = text.substring(0, 500)
+    resourceEntity.imageUri = imageDataEntity?.let { URI("data/${it.entityId}") }
+
+    return imageDataEntity?.let { listOf(it) } ?: emptyList()
+}
+
+fun updateMultipartResource(resourceEntity: ResourceEntity, mhtmlPage: MhtmlPage) : List<Entity> {
+    // Add / update fields
+    // TODO - Check if setting null writes a retraction when fields are null
+    resourceEntity.name = mhtmlPage.title
+    resourceEntity.text = mhtmlPage.text
+    resourceEntity.description = mhtmlPage.description
+    resourceEntity.imageUri = mhtmlPage.imageUri
+
+    return emptyList()
+}
+
+fun getDataEntity(authorityId: Id, entityStore: EntityStore, fileStore: FileStore, content: Content) : DataEntity {
+    val dataId = fileStore.write(content.data)
+    return (entityStore.getEntity(authorityId, dataId) ?: DataEntity(
+        authorityId,
+        dataId,
+        content.mimeType
+    )) as DataEntity
+}
+
+fun updateActions(entity: Entity, actions: Actions) {
+    actions.trust.nullOrElse { entity.trust = it }
+    actions.like.nullOrElse { entity.like = it }
+    actions.rating.nullOrElse { entity.rating = it }
+}
+
+fun updateResource(
+    authorityId: Id,
+    entityStore: EntityStore,
+    fileStore: FileStore,
+    textExtractor: TextExtractor,
+    mhtmlPage: MhtmlPage,
+    actions: Actions
+): ResourceEntity {
+    // TODO: File URIs are not unique - and only valid on the originating device.
+    val content = getContent(mhtmlPage, textExtractor)
+    val dataEntity = getDataEntity(authorityId, entityStore, fileStore, content)
+    val entity = (entityStore.getEntity(authorityId, Id.ofUri(mhtmlPage.uri))
+        ?: ResourceEntity(authorityId, mhtmlPage.uri)) as ResourceEntity
+
+    updateActions(entity, actions)
+    entity.dataId = entity.dataId.plus(dataEntity.entityId)
+
+    val extraEntities = when(content.mimeType) {
+        "multipart/related" -> updateMultipartResource(entity, mhtmlPage)
+        "application/pdf" -> updatePdfResource(entity, mhtmlPage, content, entityStore, fileStore)
+        else -> updateMultipartResource(entity, mhtmlPage)
+    }
+
+    entityStore.updateEntities(entity, dataEntity, *extraEntities.toTypedArray())
+    return entity
+}
+
+fun handleAction(
+    authorityId: Id,
+    entityStore: EntityStore,
+    fileStore: FileStore,
+    textExtractor: TextExtractor,
+    action: String,
+    value: String?,
+    mhtml: ByteArray
+) {
     val mhtmlPage = mhtml.inputStream().use { parseMhtml(it) ?: throw RuntimeException("Unable to parse mhtml") }
 
     val actions = when (action) {
@@ -68,11 +186,12 @@ fun handleAction(authorityId: Id, entityStore: EntityStore, fileStore: FileStore
     updateResource(authorityId, entityStore, fileStore, textExtractor,  mhtmlPage, actions)
 }
 
-suspend fun handlePostActionCall(call: ApplicationCall,
-                                 authorityId: Id,
-                                 entityStore: EntityStore,
-                                 fileStore: FileStore,
-                                 textExtractor: TextExtractor
+suspend fun handlePostActionCall(
+    call: ApplicationCall,
+    authorityId: Id,
+    entityStore: EntityStore,
+    fileStore: FileStore,
+    textExtractor: TextExtractor
 ) {
     val multipart = call.receiveMultipart()
     var action: String? = null

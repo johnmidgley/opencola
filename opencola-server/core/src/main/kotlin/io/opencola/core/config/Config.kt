@@ -9,7 +9,7 @@ import java.nio.file.Path
 data class EventBusConfig(val name: String = "event-bus", val maxAttempts: Int = 3)
 data class SSLConfig(val port: Int = 5796, val sans: List<String> = listOf("127.0.0.1", "localhost", "hostAddress"))
 data class ServerConfig(val host: String, val port: Int, val ssl: SSLConfig? = SSLConfig())
-data class LoginConfig(val username: String = "opencola", val authenticationRequired: Boolean = true)
+data class LoginConfig(val username: String = "opencola", val password: String? = null, val authenticationRequired: Boolean = true)
 data class SecurityConfig(val login: LoginConfig = LoginConfig())
 data class SolrConfig(val baseUrl: String, val connectionTimeoutMillis: Int, val socketTimeoutMillis: Int)
 data class SearchConfig(val solr: SolrConfig?)

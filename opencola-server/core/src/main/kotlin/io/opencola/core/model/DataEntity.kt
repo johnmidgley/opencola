@@ -8,7 +8,7 @@ import java.net.URI
 // parent - id of parent (container or website)
 // name, desc, tags, trust, like, rating
 open class DataEntity : Entity {
-    private var mimeType by stringAttributeDelegate
+    var mimeType by stringAttributeDelegate
 
     constructor(
         authorityId: Id, dataId: Id,
