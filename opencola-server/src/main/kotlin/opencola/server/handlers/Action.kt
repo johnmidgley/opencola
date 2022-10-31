@@ -97,19 +97,21 @@ fun updatePdfResource(
     resourceEntity: ResourceEntity,
     mhtmlPage: MhtmlPage,
     content: Content,
-    entityStore: EntityStore,
-    fileStore: FileStore
+//    entityStore: EntityStore,
+//    fileStore: FileStore
 ): List<Entity> {
     val text = TextExtractor().getBody(content.data)
-    val imageDataEntity = getImageFromPdf(content)?.let { imageContent ->
-        getDataEntity(resourceEntity.authorityId, entityStore, fileStore, imageContent) }
+    // TODO: Re-enable image extraction when image cache is working
+//    val imageDataEntity = getImageFromPdf(content)?.let { imageContent ->
+//        getDataEntity(resourceEntity.authorityId, entityStore, fileStore, imageContent) }
 
     resourceEntity.name = Path(mhtmlPage.uri.path).fileName.toString()
     resourceEntity.text = text
     resourceEntity.description = text.substring(0, 500)
-    resourceEntity.imageUri = imageDataEntity?.let { URI("data/${it.entityId}") }
+    // resourceEntity.imageUri = imageDataEntity?.let { URI("data/${it.entityId}") }
 
-    return imageDataEntity?.let { listOf(it) } ?: emptyList()
+    // return imageDataEntity?.let { listOf(it) } ?: emptyList()
+    return emptyList()
 }
 
 fun updateMultipartResource(resourceEntity: ResourceEntity, mhtmlPage: MhtmlPage) : List<Entity> {
@@ -157,7 +159,7 @@ fun updateResource(
 
     val extraEntities = when(content.mimeType) {
         "multipart/related" -> updateMultipartResource(entity, mhtmlPage)
-        "application/pdf" -> updatePdfResource(entity, mhtmlPage, content, entityStore, fileStore)
+        "application/pdf" -> updatePdfResource(entity, mhtmlPage, content)
         else -> updateMultipartResource(entity, mhtmlPage)
     }
 
