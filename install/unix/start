@@ -41,7 +41,17 @@ fi
 if ! $CERT_EXISTED
 then
   echo "Waiting for certificate creation"
-  sleep 10 # Give the server some time to start and gen certs, if needed
+
+  for i in {1..30}
+  do
+    if [ -e "$OPENCOLA_HOME/storage/cert/opencola-ssl.der" ]
+    then
+      break
+    else
+      sleep 1
+    fi    
+  done
+
   if [ -e "$OPENCOLA_HOME/storage/cert/opencola-ssl.der" ]
   then
     echo "New certs have been created. Install (y/n)?"
