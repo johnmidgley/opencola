@@ -1,0 +1,72 @@
+#!/bin/bash
+export OPENCOLA_HOME=~/.opencola
+
+IPS=$(hostname -I | tr -s ' ' ',')
+export SANS="${IPS}localhost"
+
+if [[ ! -d $OPENCOLA_HOME/storage ]]; then
+  echo "Creating storage"
+  mkdir -p $OPENCOLA_HOME/storage
+  cp -r ../opencola/storage/* $OPENCOLA_HOME/storage 
+fi
+
+CERT_DIR="$OPENCOLA_HOME/storage/cert"
+if [ ! -d "$CERT_DIR" ] || [ ! -f "$CERT_DIR/gen-ssl-cert" ]; then
+  echo "Creating cert directory"
+  cp -r ../opencola/storage/cert "$OPENCOLA_HOME/storage/"
+fi
+
+if [ -e "$OPENCOLA_HOME/storage/cert/opencola-ssl.der" ]
+then
+  echo "SSL certificate found"
+  CERT_EXISTED=true
+else
+  echo "No SSL certificate found"
+  CERT_EXISTED=false
+fi
+
+docker-compose --version 1>/dev/null
+if [ $? -ne 0 ] 
+then
+  echo $'\e[31mUnable to execute docker-compose.\e[0m Is Docker [https://docs.docker.com/get-docker/] installed?'
+  exit 1
+fi
+
+docker-compose -p opencola up --build -d 1>/dev/null
+if [ $? -eq 0 ] 
+then
+    echo "Docker container started"
+else
+  echo $'\e[31mUnable to start OpenCola.\e[0m Is docker running [try "open /Applications/Docker.app/"]? Is the port already in use?'
+exit 2
+fi
+
+if ! $CERT_EXISTED
+then
+  echo "Waiting for certificate creation"
+
+  for i in {1..30}
+  do
+    if [ -e "$OPENCOLA_HOME/storage/cert/opencola-ssl.der" ]
+    then
+      break
+    else
+      sleep 1
+    fi    
+  done
+
+  if [ -e "$OPENCOLA_HOME/storage/cert/opencola-ssl.der" ]
+  then
+    echo "New certs have been created. Install (y/n)?"
+    read -r
+    if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ]
+    then
+      pushd $OPENCOLA_HOME/storage/cert/
+      sh install-cert
+      popd
+    fi
+  fi
+fi
+
+echo "Server started - visit http://localhost:5795"
+echo "                   or https://localhost:5796 (Secure - recommended)"

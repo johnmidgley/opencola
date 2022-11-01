@@ -1,0 +1,4 @@
+#!/bin/bash
+export OPENCOLA_HOME=~/.opencola
+docker-compose -p opencola down
+

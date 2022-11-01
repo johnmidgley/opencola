@@ -1,0 +1,14 @@
+version: '3'
+services:
+  oc:
+    build: ..
+    environment:
+      - server.ssl.sans=$SANS
+    container_name: opencola-server
+    ports:
+      - "5795:5795"
+      - "5796:5796"
+    volumes:
+      - $OPENCOLA_HOME/storage:/opencola/storage
+    restart: unless-stopped
+
