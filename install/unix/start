@@ -1,6 +1,9 @@
 #!/bin/bash
 export OPENCOLA_HOME=~/.opencola
 
+IPS=$(ifconfig | grep "inet " | awk '{print $2}' | tr -s '\n' ", ")
+export SANS="${IPS}localhost"
+
 if [[ ! -d $OPENCOLA_HOME/storage ]]; then
   echo "Creating storage"
   mkdir -p $OPENCOLA_HOME/storage
