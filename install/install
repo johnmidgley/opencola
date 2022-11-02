@@ -28,18 +28,13 @@ cp -r  ../../extension/chrome .
 
 if [ -d "storage" ]; 
 then
-echo "Storage already exists" 
+  echo "Storage already exists" 
 else
-echo "Creating storage"
-mkdir -p storage/var-solr/data
-cp ../../storage/opencola-server.yaml storage/
-cp ../../storage/var-solr/log4j2.xml storage/var-solr/
-cp -r ../../storage/var-solr/data/configsets/ storage/var-solr/data/configsets
-cp ../../storage/var-solr/data/solr.xml storage/var-solr/data/
-cp ../../storage/var-solr/data/zoo.cfg storage/var-solr/data/
-mkdir -p storage/cert
-cp ../../storage/cert/gen-ssl-cert storage/cert
-cp ../../storage/cert/install-cert storage/cert
+  echo "Creating storage"
+  mkdir -p storage/cert
+  cp ../../storage/opencola-server.yaml storage/
+  cp ../../storage/cert/gen-ssl-cert storage/cert
+  cp ../../storage/cert/install-cert storage/cert
 fi
 echo "Done."
 
