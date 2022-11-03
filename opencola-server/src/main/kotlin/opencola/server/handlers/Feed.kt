@@ -99,7 +99,7 @@ fun activitiesByEntityId(idToAuthority: (Id) -> Authority?,
                 .mapNotNull { entity -> idToAuthority(entity.authorityId).nullOrElse { entityActivities(it, entity, comments) } }
                 .flatten()
                 .filter { it.actions.isNotEmpty() }
-                .sortedByDescending { it.getEpochSecond() }
+                .sortedByDescending { it.epochSecond }
             Pair(entityId, activities)
         }
         .associate { it }

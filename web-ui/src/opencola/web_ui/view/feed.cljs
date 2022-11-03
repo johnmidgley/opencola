@@ -23,6 +23,16 @@
    #(reset! feed! %)
    #(error/set-error! feed! %)))
 
+(defn timezone-to-offset-seconds [[sign hours minutes seconds]]
+  (* (if (= sign :-) -1 1) (+ (* hours 3600) (* minutes 60) seconds)))
+
+(def timezone-offset-seconds (timezone-to-offset-seconds (:offset (cljs-time.core/default-time-zone))))
+
+(defn format-time [epoch-second]
+  (f/unparse 
+   (f/formatter "yyyy-MM-dd hh:mm A") 
+   (c/from-long (* (+ epoch-second timezone-offset-seconds) 1000))))
+
 (defn authority-actions-of-type [authority-id type item]
   (filter #(= authority-id (:authorityId %)) (-> item :activities type)))
 
@@ -132,13 +142,13 @@
   (fn []
     (let [root-authority-id (:authorityId @feed!)
           {authority-id :authorityId
-           authority-name :authorityName 
-           date-time :dateTime
+           authority-name :authorityName
+           epoch-second :epochSecond 
            text :value
            comment-id :id} comment-action]
       [:div.item-comment 
        [:div.item-attribution 
-        authority-name " " date-time " "
+        authority-name " " (format-time epoch-second) " "
         (if (= authority-id root-authority-id)
           [:span {:on-click #(reset! editing?! true)} [action-img "edit"]])
         ":"]
@@ -157,12 +167,12 @@
 
 (defn item-save [save-action]
   (let [{authority-name :authorityName 
-         date-time :dateTime
+         epoch-second :epochSecond
          data-id :id
          host :host} save-action]
     [:tr.item-attribution
      [:td authority-name " "]
-     [:td date-time]
+     [:td (format-time epoch-second)]
      [:td
       (if data-id
         [:span
@@ -199,10 +209,10 @@
 
 (defn item-tag [tag-action]
   (let [{authority-name :authorityName
-         date-time :dateTime} tag-action] 
+         epoch-second :epochSecond} tag-action] 
     [:tr.item-attribution
      [:td authority-name]
-     [:td date-time]
+     [:td (format-time epoch-second)]
      [:td.tag-cell (tag (:value tag-action))]]))
 
 
@@ -219,10 +229,10 @@
 
 (defn item-like [like-action]
   (let [{authority-name :authorityName 
-         date-time :dateTime } like-action]
+         epoch-second :epochSecond } like-action]
     [:tr.item-attribution 
      [:td (str authority-name)]
-     [:td date-time]]))
+     [:td (format-time epoch-second)]]))
 
 ;; TODO: Templatize this - same for saves and comments
 (defn item-likes [expanded?! like-actions]
