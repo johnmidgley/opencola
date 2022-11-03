@@ -21,7 +21,7 @@ if (Test-Path -Path "$env:AppData\opencola")
 
 # Get Subject Altenative Names for cert (IP4 Addresses of machine)
 $env:SANS = ""
-$ips = Get-NetIPAddress -AddressFamily IPV4 | Select IPAddress 
+$ips = Get-NetIPAddress -AddressFamily IPV4 | Select-Object IPAddress 
 
 foreach($ip in $ips) {
     $env:SANS += $ip.IPAddress + ","
@@ -36,7 +36,7 @@ if($certExisted)
     Write-Output "No SSL certificate found"
 }
 
-if ($false) {
+if ($true) {
 # Stop any running docker instances of oc
 docker compose -p opencola down
 
@@ -55,16 +55,21 @@ for($i = 0; $i -lt 10; $i++) {
     }
 }
 
-if(Test-Path -Path "$env:AppData\opencola\storage\cert\opencola-ssl.der") {
+if((Test-Path -Path "$env:AppData\opencola\storage\cert\opencola-ssl.der") -and !$certExisted) {
     $installCert = Read-Host "New certificate found. Install? [y/n]"
 
-    if($installCert.toLower() == "y") {
-        cd "$env:AppData\opencola\storage\cert"
-        install-cert.bat
+    if($installCert.toLower() = "y") {
+        Push-Location "$env:AppData\opencola\storage\cert"
+        .\install-cert.ps1
+        Pop-Location
     }
 } else {
     Write-Output "Certficates not created. You will get privacy errors if using https"
 }
 
-echo "Server started - visit http://localhost:5795"
-echo "                   or https://localhost:5796 (Secure - recommended)"
+Write-Output "Server started - visit http://localhost:5795"
+Write-Output "                   or https://localhost:5796 (Secure - recommended)"
+Write-Output ""
+Write-Output "Waiting to launch browser..."
+Start-Sleep -Seconds 5
+Start-Process https://localhost:5796
