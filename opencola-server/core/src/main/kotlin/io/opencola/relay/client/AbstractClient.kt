@@ -177,10 +177,10 @@ abstract class AbstractClient(
                 deferredResult.await()
             }
         } catch (e: ConnectException) {
-            logger.debug { "Failed connect when sending message" }
+            logger.error { "Failed connect when sending message" }
             null
         } catch (e: TimeoutCancellationException) {
-            logger.debug { "Timeout sending message" }
+            logger.warn { "Timeout sending message to: ${Id.ofPublicKey(to)}" }
             null
         } catch (e: CancellationException) {
             // Let exception flow through
@@ -197,12 +197,13 @@ abstract class AbstractClient(
 
         try {
             withTimeout(requestTimeoutMilliseconds) {
+
                 getConnection().writeSizedByteArray(MessageEnvelope.encode(envelope))
             }
         } catch (e: ConnectException) {
-            logger.debug { "Failed connect when sending response" }
+            logger.error { "Failed connect when sending response" }
         } catch (e: TimeoutCancellationException) {
-            logger.debug { "Timeout sending response" }
+            logger.error { "Timeout sending response" }
         } catch (e: CancellationException) {
             // Let exception flow through
         } catch (e: Exception) {
