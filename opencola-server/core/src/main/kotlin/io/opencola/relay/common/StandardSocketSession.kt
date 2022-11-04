@@ -26,6 +26,7 @@ class StandardSocketSession(private val socket: Socket) : SocketSession {
     override suspend fun writeSizedByteArray(byteArray: ByteArray) {
         writeChannel.writeInt(byteArray.size)
         writeChannel.writeFully(byteArray)
+        writeChannel.flush()
     }
 
     override suspend fun close() {

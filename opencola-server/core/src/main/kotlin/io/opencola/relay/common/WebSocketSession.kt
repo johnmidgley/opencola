@@ -18,6 +18,7 @@ class WebSocketSessionWrapper(private val webSocketSession: DefaultWebSocketSess
 
     override suspend fun writeSizedByteArray(byteArray: ByteArray) {
         webSocketSession.send(Frame.Binary(true, byteArray))
+        webSocketSession.flush()
     }
 
     override suspend fun close() {
