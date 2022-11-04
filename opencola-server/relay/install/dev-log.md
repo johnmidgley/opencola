@@ -70,4 +70,7 @@ May need to manually delete old task.
 
 **[Delete image or repository](https://docs.aws.amazon.com/AmazonECR/latest/userguide/getting-started-cli.html)**
 
-
+**Viewing Logs**
+```
+aws logs get-log-events --log-group-name /ecs/oc-relay-task-definition --log-stream-name ecs/oc-relay/29b75861031d4b1a9905f405a0bc343a --no-start-from-head
+```
