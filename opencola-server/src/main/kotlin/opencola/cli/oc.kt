@@ -1,6 +1,8 @@
 package opencola.cli
 
 import io.opencola.core.config.Application
+import io.opencola.core.model.Authority
+import io.opencola.core.model.Id
 import io.opencola.core.model.SignedTransaction
 import io.opencola.core.storage.EntityStore
 import org.kodein.di.instance
@@ -8,27 +10,22 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
+import kotlin.math.exp
 
 fun printUsage(){
     println("Usage: oc TASK COMMAND [ARGS] ")
 }
 
-fun exportTransactions(entityStore: EntityStore, args: List<String>){
-    if(args.count() != 1){
-        println("export transactions should have exactly 1 argument - filename")
-        return
-    }
-
+fun transactionsFromEntityStore(entityStore: EntityStore, authorityIds: Iterable<Id> = emptyList()) : Sequence<SignedTransaction> {
     val batchSize = 50
-    println("Exporting transactions to: ${args.first()} batch size: $batchSize")
 
-    Path(args.first()).outputStream().use { stream ->
-        var transactions = entityStore.getSignedTransactions(emptyList(), null, EntityStore.TransactionOrder.IdAscending, batchSize)
+    return sequence {
+        var transactions = entityStore.getSignedTransactions(authorityIds, null, EntityStore.TransactionOrder.IdAscending, batchSize)
 
         while (true) {
             transactions.forEach{
                 println("Writing ${it.transaction.id}")
-                SignedTransaction.encode(stream, it)
+                yield(it)
             }
 
             if(transactions.count() < batchSize){
@@ -40,7 +37,26 @@ fun exportTransactions(entityStore: EntityStore, args: List<String>){
     }
 }
 
-private fun transactionsFromPath(path: Path): Sequence<SignedTransaction> {
+fun exportTransactions(entityStore: EntityStore, path: Path, authorityIds: Iterable<Id> = emptyList()) {
+    path.outputStream().use { stream ->
+        transactionsFromEntityStore(entityStore, authorityIds).forEach {
+            println("Writing ${it.transaction.id}")
+            SignedTransaction.encode(stream, it)
+        }
+    }
+}
+
+fun exportTransactions(entityStore: EntityStore, args: List<String>){
+    if(args.count() != 1){
+        println("export transactions should have exactly 1 argument - filename")
+        return
+    }
+
+    println("Exporting transactions to: ${args.first()}")
+    exportTransactions(entityStore, Path(args.first()))
+}
+
+fun transactionsFromPath(path: Path): Sequence<SignedTransaction> {
     return sequence {
         path.inputStream().use {
             // TODO: Make sure available works properly. From the docs, it seems like it can return 0 when no buffered data left.

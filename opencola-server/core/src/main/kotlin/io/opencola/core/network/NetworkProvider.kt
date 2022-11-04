@@ -74,6 +74,7 @@ abstract class AbstractNetworkProvider(val authority: Authority,
             validateMessageEnvelope(envelope)
             handler(envelope.message.from, envelope.to, Json.decodeFromString(String(envelope.message.body)))
         } catch (e: Exception) {
+            // TODO: Certain messages can't be responded to - (e.g. unknown peer). Make OC specific exceptions and handle properly
             Response(400, e.message)
         }
 

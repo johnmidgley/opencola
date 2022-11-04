@@ -8,6 +8,8 @@ import org.junit.Test
 import org.kodein.di.instance
 import java.lang.Thread.sleep
 import java.net.URI
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class PeerTransactionTest : PeerNetworkTest() {
     @Test
@@ -97,6 +99,52 @@ class PeerTransactionTest : PeerNetworkTest() {
         } finally {
             server0.stop(1000, 1000)
             server1.stop(1000, 1000)
+        }
+    }
+
+    @Test
+    fun testConnectAndBidirectionalReplicate(){
+        val server0 = getApplicationNode().also { it.start() }
+        val server1 = getApplicationNode()// .also { it.start() }
+
+        try {
+            val app0 = server0.application
+            val app1 = server1.application
+
+            // Add item to server0
+            val authorityId0 = app0.inject<Authority>().entityId
+            val resourceEntity0 = ResourceEntity(authorityId0, URI("https://opencola.io"), "OpenCola From Server 0", "OpenCola Website 0")
+            val entityStore0 = app0.inject<EntityStore>()
+            entityStore0.updateEntities(resourceEntity0)
+
+            // Add server1 as peer to server0 when server 1 is offline
+            server0.updatePeer(server0.postInviteToken(server1.getInviteToken()))
+
+            // Start server1
+            server1.start()
+
+            // Add server0 as peer to server1
+            server1.updatePeer(server1.postInviteToken(server0.getInviteToken()))
+
+            // Now add something to server 1
+            val authorityId1 = app1.inject<Authority>().entityId
+            val resourceEntity1 = ResourceEntity(authorityId1, URI("https://opencola.io/"), "OpenCola From Server 1", "OpenCola Website 1")
+            val entityStore1 = app1.inject<EntityStore>()
+            entityStore1.updateEntities(resourceEntity1)
+
+            // Wait for request errors to roll through
+            sleep(2000)
+
+            val resource1FromServer0 = entityStore0.getEntity(resourceEntity1.authorityId, resourceEntity1.entityId) as? ResourceEntity
+            assertNotNull(resource1FromServer0)
+            assertEquals(resourceEntity1.name, resource1FromServer0.name)
+
+            val resource0FromServer1 = entityStore1.getEntity(resourceEntity0.authorityId, resourceEntity0.entityId) as? ResourceEntity
+            assertNotNull(resource0FromServer1)
+            assertEquals(resourceEntity0.name, resource0FromServer1.name)
+        } finally {
+            server0.stop()
+            server1.stop()
         }
     }
 }

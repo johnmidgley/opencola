@@ -56,6 +56,7 @@ fun handleGetTransactions(
         totalNumTransactions
     ).drop(extra)
 
+    logger.info { "Returning ${transactions.count()} transactions" }
     return TransactionsResponse(transactionId, currentTransactionId, transactions.toList())
 }
 

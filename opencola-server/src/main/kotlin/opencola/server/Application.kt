@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory
 import java.net.Inet4Address
 import java.nio.file.Path
 import java.security.KeyStore
+import kotlin.concurrent.thread
 import kotlin.io.path.Path
 import kotlin.io.path.isDirectory
 
@@ -207,13 +208,36 @@ suspend fun detectResume(handler: () -> Unit): Job = coroutineScope {
     }
 }
 
+fun getApplication(
+    applicationPath: Path,
+    storagePath: Path,
+    config: Config,
+    loginCredentials: LoginCredentials
+): Application {
+    // TODO: Is getOrCreateRootKeyPair needed outside of App.instance()?
+    val keyPair = Application.getOrCreateRootKeyPair(storagePath, loginCredentials.password)
+    val application = Application.instance(applicationPath, storagePath, config, keyPair, loginCredentials.password)
+    application.logger.info("Authority: ${Id.ofPublicKey(keyPair.public)}")
+    application.logger.info("Public Key : ${keyPair.public.encode()}")
+
+    thread {
+        runBlocking {
+            launch {
+                val eventBus = application.inject<EventBus>()
+                detectResume { eventBus.sendMessage(Events.NodeResume.toString()) }
+            }
+        }
+    }
+
+    return application
+}
+
 fun main(args: Array<String>) {
     runBlocking {
         // https://github.com/Kotlin/kotlinx-cli
         val parser = ArgParser("oc")
         val app by parser.option(ArgType.String, shortName = "a", description = "Application path").default(".")
-        val storage by parser.option(ArgType.String, shortName = "s", description = "Storage path")
-            .default("../storage")
+        val storage by parser.option(ArgType.String, shortName = "s", description = "Storage path").default("../storage")
 
         parser.parse(args)
 
@@ -227,16 +251,7 @@ fun main(args: Array<String>) {
 
         val config = loadConfig(storagePath.resolve("opencola-server.yaml"))
         val loginCredentials = getLoginCredentials(storagePath, config.server, config.security.login)
-        // TODO: Is getOrCreateRootKeyPair needed outside of App.instance()?
-        val keyPair = Application.getOrCreateRootKeyPair(storagePath, loginCredentials.password)
-        val application = Application.instance(applicationPath, storagePath, config, keyPair, loginCredentials.password)
-        application.logger.info("Authority: ${Id.ofPublicKey(keyPair.public)}")
-        application.logger.info("Public Key : ${keyPair.public.encode()}")
-
-        launch {
-            val eventBus = application.inject<EventBus>()
-            detectResume { eventBus.sendMessage(Events.NodeResume.toString()) }
-        }
+        val application = getApplication(applicationPath, storagePath, config, loginCredentials)
 
         // TODO: Make sure entityService starts as soon as server is up, so that transactions can be received
         getServer(application, loginCredentials).start()
