@@ -58,7 +58,7 @@ Likely to require authentication to default registry (above)
 docker push 147892678753.dkr.ecr.us-west-2.amazonaws.com/oc-relay:latest
 ```
 
-**Update Image (Live Service)**
+**Update Service (Live Service)**
 
 [Stack Overflow](https://stackoverflow.com/questions/48099941/how-to-update-container-image-in-aws-fargate)
  
@@ -70,13 +70,4 @@ May need to manually delete old task.
 
 **[Delete image or repository](https://docs.aws.amazon.com/AmazonECR/latest/userguide/getting-started-cli.html)**
 
-**Updating a Service**
-
-[docs](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/update-service-console-v2.html)
-
-1. Go to the [opencola relay cluster](https://us-west-2.console.aws.amazon.com/ecs/v2/clusters/opencola/services?region=us-west-2)
-2. Check *oc-relay-service* and click 'Edit'
-3. Expand *Deployment options*
-4. Check *Force new deployment*
-5. Click Update
 
