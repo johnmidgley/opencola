@@ -21,7 +21,7 @@ aws-cli/2.4.5 Python/3.8.8 Darwin/18.7.0 botocore/2.4.5
 ```
 
 **Create Credentials**
-* Got to [IAM Console](https://us-east-1.console.aws.amazon.com/iamv2/home#/home) and follow [Set up credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html)
+* Got to [IAM Console](https://us-west-2.console.aws.amazon.com/iamv2/home#/home) and follow [Set up credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html)
 
 **Authenticate to default registry**
 
@@ -38,6 +38,7 @@ aws ecr create-repository \
 
 **Create Docker image**
 ```
+> ./install
 > docker build -t oc-relay .
 ```
 
@@ -48,12 +49,16 @@ docker tag oc-relay:latest 147892678753.dkr.ecr.us-west-2.amazonaws.com/oc-relay
 
 **Push Image**
 
+*** ONLY DO THIS FROM LINUX ***
+
+Likely to require authentication to default registry (above)
+
 **For first push** - use ``push-to-aws`` thereafter. 
 ```
 docker push 147892678753.dkr.ecr.us-west-2.amazonaws.com/oc-relay:latest
 ```
 
-**Update Image**
+**Update Image (Live Service)**
 
 [Stack Overflow](https://stackoverflow.com/questions/48099941/how-to-update-container-image-in-aws-fargate)
  
@@ -64,3 +69,14 @@ aws ecs update-service --cluster oc-relay-cluster --service oc-relay-container-s
 May need to manually delete old task. 
 
 **[Delete image or repository](https://docs.aws.amazon.com/AmazonECR/latest/userguide/getting-started-cli.html)**
+
+**Updating a Service**
+
+[docs](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/update-service-console-v2.html)
+
+1. Go to the [opencola relay cluster](https://us-west-2.console.aws.amazon.com/ecs/v2/clusters/opencola/services?region=us-west-2)
+2. Check *oc-relay-service* and click 'Edit'
+3. Expand *Deployment options*
+4. Check *Force new deployment*
+5. Click Update
+
