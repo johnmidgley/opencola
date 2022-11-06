@@ -63,7 +63,7 @@ docker push 147892678753.dkr.ecr.us-west-2.amazonaws.com/oc-relay:latest
 [Stack Overflow](https://stackoverflow.com/questions/48099941/how-to-update-container-image-in-aws-fargate)
  
 ```
-aws ecs update-service --cluster oc-relay-cluster --service oc-relay-container-service --force-new-deployment
+aws ecs update-service --cluster opencola --service oc-relay-service --force-new-deployment
 ```
 
 May need to manually delete old task. 
