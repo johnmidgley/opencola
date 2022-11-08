@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [ $# -ne 1 ]
+then
+  echo "Usage: $0 REPO-NAME"
+  exit 1
+fi
+
+aws ecr create-repository --repository-name "$1" --image-scanning-configuration scanOnPush=true

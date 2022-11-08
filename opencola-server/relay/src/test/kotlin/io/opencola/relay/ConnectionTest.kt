@@ -226,4 +226,28 @@ class ConnectionTest {
             client?.close()
         }
     }
+
+    // @Test
+    fun testLatency() {
+        runBlocking {
+            val relayServer = startWebServer(defaultOCRPort)
+            val client0 = getClient("client0", requestTimeoutInMilliseconds = 30000).also { launch { open(it) }; it.waitUntilOpen() }
+            val client1 = getClient("client1").also { launch { open(it) }; it.waitUntilOpen() }
+            val data = ByteArray(1024 * 1024)
+
+            try {
+                (0..1).forEach { _ ->
+                    val startTime = System.currentTimeMillis()
+                    val response = client0.sendMessage(client1.publicKey, data)
+                    val elapsedTime = System.currentTimeMillis() - startTime
+                    println("Elapsed time: ${elapsedTime / 1000}")
+                    assertNotNull(response)
+                }
+            } finally {
+                client0.close()
+                client1.close()
+                relayServer.stop()
+            }
+        }
+    }
 }

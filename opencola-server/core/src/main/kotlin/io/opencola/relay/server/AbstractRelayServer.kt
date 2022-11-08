@@ -81,7 +81,7 @@ abstract class AbstractRelayServer(
                     logger.info { "$prefix Removing closed connection for receiver" }
                     connections.remove(envelope.to)
                 } else {
-                    logger.info { "$prefix Delivering" }
+                    logger.info { "$prefix Delivering ${envelope.message.size} bytes" }
                     connection.writeSizedByteArray(envelope.message)
                 }
             }
