@@ -4,7 +4,7 @@ import io.ktor.websocket.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.isActive
 
-class WebSocketSessionWrapper(private val webSocketSession: DefaultWebSocketSession) : SocketSession {
+class WebSocketSessionWrapper(val webSocketSession: DefaultWebSocketSession) : SocketSession {
     @OptIn(ExperimentalCoroutinesApi::class)
     override suspend fun isReady(): Boolean {
         return webSocketSession.isActive

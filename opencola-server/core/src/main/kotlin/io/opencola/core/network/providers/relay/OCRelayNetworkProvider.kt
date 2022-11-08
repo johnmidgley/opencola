@@ -14,7 +14,6 @@ import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import java.net.URI
 import java.security.KeyPair
-import java.security.PublicKey
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.thread
 
@@ -140,13 +139,20 @@ class OCRelayNetworkProvider(authority: Authority,
         }
 
         return runBlocking {
-            val messageBytes = Json.encodeToString(request).toByteArray()
-            val envelopeBytes = getEncodedEnvelope(from.entityId, to.entityId, messageBytes, false)
-            connections[peerUri]!!.client.sendMessage(peerPublicKey, envelopeBytes)?.let {
-                // We don't need to validate sender - OC relay enforces that response is from correct sender
-                val responseEnvelope = MessageEnvelope.decode(it).also { e -> validateMessageEnvelope(e) }
-                Json.decodeFromString<Response>(String(responseEnvelope.message.body))
+            try {
+                val messageBytes = Json.encodeToString(request).toByteArray()
+                val envelopeBytes = getEncodedEnvelope(from.entityId, to.entityId, messageBytes, false)
+                val client = connections[peerUri]!!.client
+                client.sendMessage(peerPublicKey, envelopeBytes)?.let {
+                    // We don't need to validate sender - OC relay enforces that response is from correct sender
+                    val responseEnvelope = MessageEnvelope.decode(it).also { e -> validateMessageEnvelope(e) }
+                    Json.decodeFromString<Response>(String(responseEnvelope.message.body))
+                }
+            } catch (e: Exception) {
+                logger.error { "sendRequest: $e" }
+                null
             }
+
         }
     }
 }

@@ -23,7 +23,7 @@ abstract class AbstractClient(
     protected val uri: URI,
     private val keyPair: KeyPair,
     final override val name: String? = null,
-    private val requestTimeoutMilliseconds: Long = 10000,
+    private val requestTimeoutMilliseconds: Long = 20000,
     private val retryPolicy: (Int) -> Long = retryExponentialBackoff(),
 ) : RelayClient {
     protected val logger = KotlinLogging.logger("Client${if(name != null) " ($name)" else ""}")
@@ -112,11 +112,15 @@ abstract class AbstractClient(
 
     private suspend fun handleMessage(payload: ByteArray, handler: suspend (PublicKey, ByteArray) -> ByteArray) {
         try {
+            logger.info { "Handling message" }
             val message = Message.decode(decrypt(keyPair.private, payload)).validate()
             val sessionResult = sessions[message.header.sessionId]
 
+            logger.info { "SessionId: ${message.header.sessionId}" }
+
             if(sessionResult != null) {
                 sessions.remove(message.header.sessionId)
+                // TODO: Handle late arriving responses
                 sessionResult.complete(message.body)
             } else {
                 // respondToMMessage will apply request timeout
@@ -197,7 +201,6 @@ abstract class AbstractClient(
 
         try {
             withTimeout(requestTimeoutMilliseconds) {
-
                 getConnection().writeSizedByteArray(MessageEnvelope.encode(envelope))
             }
         } catch (e: ConnectException) {

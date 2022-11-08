@@ -68,9 +68,12 @@ class MainReactor(
             val request = Request(Request.Method.GET, "/transactions", null, params)
             val transactionsResponse = networkNode.sendRequest(peer.entityId, request)?.decodeBody<TransactionsResponse>()
 
-            if (transactionsResponse == null || transactionsResponse.transactions.isEmpty())
+            if (transactionsResponse == null || transactionsResponse.transactions.isEmpty()) {
+                logger.info { "No transactions received from ${peer.name}" }
                 break
+            }
 
+            logger.info { "Adding ${transactionsResponse.transactions.count()} transactions from ${peer.name}" }
             entityStore.addSignedTransactions(transactionsResponse.transactions)
             mostRecentTransactionId = transactionsResponse.transactions.last().transaction.id
 
