@@ -47,7 +47,7 @@ fun handleGetTransactions(
     }
 
     val extra = (if (transactionId == null) 0 else 1)
-    val totalNumTransactions = (numTransactions ?: 10) + extra
+    val totalNumTransactions = (numTransactions ?: 5) + extra
     val currentTransactionId = entityStore.getLastTransactionId(authorityId)
     val transactions = entityStore.getSignedTransactions(
         authorityId,
