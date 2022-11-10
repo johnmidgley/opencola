@@ -10,7 +10,6 @@ cd ../opencola-server
 echo "Copying distribution"
 cd ../install/opencola
 cp ../scripts/* .
-cp ../README.txt .
 mkdir server
 cp -r ../../opencola-server/build/install/opencola-server/* server
 
@@ -35,7 +34,7 @@ else
   cp ../../storage/opencola-server.yaml storage/
   cp ../../storage/cert/gen-ssl-cert storage/cert
   cp ../../storage/cert/install-cert storage/cert
-  cp ../../storage/cert/install-cert.bat storage/cert
+  cp ../../storage/cert/install-cert.ps1 storage/cert
 fi
 echo "Done."
 
