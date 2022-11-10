@@ -21,7 +21,7 @@ if (Test-Path -Path "$env:AppData\opencola")
 
 # Get Subject Altenative Names for cert (IP4 Addresses of machine)
 $env:SANS = ""
-$ips = Get-NetIPAddress -AddressFamily IPV4 | Select-Object IPAddress 
+$ips = Get-NetIPAddress -AddressFamily IPV4 | Where-Object {$_.AddressState -eq "Preferred"} | Select-Object IPAddress 
 
 foreach($ip in $ips) {
     $env:SANS += $ip.IPAddress + ","
@@ -36,39 +36,53 @@ if($certExisted)
     Write-Output "No SSL certificate found"
 }
 
-if ($true) {
 # Stop any running docker instances of oc
-docker compose -p opencola down
+#docker compose -p opencola down
 
 Write-Output "Starting OpenCola with docker.."
 docker compose -p opencola up --build -d 
-}
 
-Write-Output "Waiting for certificate creation"
+if (!$certExisted) {
+    Write-Output "Waiting for certificate creation"
 
-for($i = 0; $i -lt 10; $i++) {
+    for ($i = 0; $i -lt 10; $i++) {
+        if (Test-Path -Path "$env:AppData\opencola\storage\cert\opencola-ssl.der") {
+            break
+        }
+        else {
+            Start-Sleep -Seconds 1
+        }
+    }
+
     if (Test-Path -Path "$env:AppData\opencola\storage\cert\opencola-ssl.der") {
-        break
-    } else {
-        Write-Output "Sleeping"
-        Start-Sleep -Seconds 1
+        $installCert = Read-Host "New certificate found. Install? [y/n]"
+
+        if ($installCert.toLower() -eq "y") {
+            Push-Location "$env:AppData\opencola\storage\cert"
+            .\install-cert.ps1
+            Pop-Location
+        }
+    }
+    else {
+        Write-Output "Certficates not created. You will get privacy errors if using https"
     }
 }
 
-if((Test-Path -Path "$env:AppData\opencola\storage\cert\opencola-ssl.der") -and !$certExisted) {
-    $installCert = Read-Host "New certificate found. Install? [y/n]"
-
-    if($installCert.toLower() = "y") {
-        Push-Location "$env:AppData\opencola\storage\cert"
-        .\install-cert.ps1
-        Pop-Location
-    }
-} else {
-    Write-Output "Certficates not created. You will get privacy errors if using https"
+Write-Output "Server Started"
+Write-Output ""
+Write-Output "Insecure URLs:"
+Write-Output "http://localhost:5795"
+foreach($ip in $ips) {
+    Write-Output "http://$($ip.ipAddress):5795"
 }
 
-Write-Output "Server started - visit http://localhost:5795"
-Write-Output "                   or https://localhost:5796 (Secure - recommended)"
+Write-Output ""
+Write-Output "Secure URLs:"
+Write-Output "https://localhost:5796"
+foreach($ip in $ips) {
+    Write-Output "https://$($ip.ipAddress):5796"
+}
+
 Write-Output ""
 Write-Output "Waiting to launch browser..."
 Start-Sleep -Seconds 5

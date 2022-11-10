@@ -68,5 +68,13 @@ then
   fi
 fi
 
-echo "Server started - visit http://localhost:5795"
-echo "                   or https://localhost:5796 (Secure - recommended)"
+echo "Server started"
+echo
+echo "Insecure URLS:"
+echo "http://localhost:5795 (Local only)"
+hostname -I | tr -s ' ' '\n' | grep -v 127.0.0.1 | awk '{print "http://" $1 ":5795"}'
+echo
+echo "Secure URLs (Recommended):"
+echo "https://localhost:5796 (Local only)"
+hostname -I | tr -s ' ' '\n' | grep -v 127.0.0.1 | awk '{print "https://" $1 ":5796"}'
+
