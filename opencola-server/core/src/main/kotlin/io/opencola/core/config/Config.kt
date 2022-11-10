@@ -18,7 +18,7 @@ data class NetworkConfig(val peers: List<PeerConfig> = emptyList(), val defaultA
 
 data class Config(
     val name: String,
-    val eventBus: EventBusConfig,
+    val eventBus: EventBusConfig = EventBusConfig(),
     val server: ServerConfig,
     val security: SecurityConfig,
     val search: SearchConfig?,

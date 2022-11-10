@@ -1,26 +1,15 @@
 name: server
 
-eventBus:
-  name: "event-bus"
-  maxRetries: 3
-
 server:
   host: 0.0.0.0 # Bind to any local address
   port: 5795
   ssl:
     port: 5796
-    sans: # Subject Alternative Names that will be used in cert creation
-      - 127.0.0.1   # loopback localhost
-      - hostAddress # Will get from Inet4Address.getLocalHost().hostAddress
-      - localhost   # DNS entry
-
-storage:
-  path: "../storage/"
 
 security:
   login:
     username: oc
-    # password: password # Useful for testing
-    # authenticationRequired: false # Useful for testing
+    # password: password # Set if you're ok with less security for convenience 
+    # authenticationRequired: # Set if you're ok with less security for convenience
 
 
