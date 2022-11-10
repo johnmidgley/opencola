@@ -10,6 +10,6 @@ security:
   login:
     username: oc
     # password: password # Set if you're ok with less security for convenience 
-    # authenticationRequired: # Set if you're ok with less security for convenience
+    # authenticationRequired: false # Set if you're ok with less security for convenience
 
 
