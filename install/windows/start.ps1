@@ -45,7 +45,7 @@ docker compose -p opencola up --build -d
 if (!$certExisted) {
     Write-Output "Waiting for certificate creation"
 
-    for ($i = 0; $i -lt 10; $i++) {
+    for ($i = 0; $i -lt 30; $i++) {
         if (Test-Path -Path "$env:AppData\opencola\storage\cert\opencola-ssl.der") {
             break
         }
