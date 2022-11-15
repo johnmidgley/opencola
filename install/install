@@ -33,6 +33,7 @@ else
   mkdir -p storage/cert
   cp ../../storage/opencola-server.yaml storage/
   cp ../../storage/cert/gen-ssl-cert storage/cert
+  cp ../../storage/cert/gen-ssl-cert.ps1 storage/cert
   cp ../../storage/cert/install-cert storage/cert
   cp ../../storage/cert/install-cert.ps1 storage/cert
 fi
