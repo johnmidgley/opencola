@@ -78,7 +78,11 @@ class ApplicationNode(val application: Application) : Node {
             val configToUse = (config ?: loadConfig(storagePath.resolve("opencola-server.yaml"))).let{
                 it
                     .setServer(ServerConfig(it.server.host, port, null))
-                    .setNetwork(NetworkConfig(it.network?.peers ?: emptyList(), URI("http://${it.server.host}:$port")))
+                    .setNetwork(
+                        NetworkConfig(
+                            it.network.peers,
+                            URI("http://${it.server.host}:$port"),
+                            it.network.requestTimeoutMilliseconds))
             }
 
             val instance = Application.instance(TestApplication.applicationPath, storagePath, "password", configToUse)

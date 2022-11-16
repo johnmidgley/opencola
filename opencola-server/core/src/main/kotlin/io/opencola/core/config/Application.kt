@@ -100,7 +100,7 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
                 bindSingleton { AddressBook(instance(), storagePath, instance(), config.network) }
                 bindSingleton { RequestRouter(getDefaultRoutes(instance(), instance(), instance())) }
                 bindSingleton { HttpNetworkProvider(instance(), instance(), instance(), instance(), config.server) }
-                bindSingleton { OCRelayNetworkProvider(instance(), instance(), instance(), instance(), authorityKeyPair) }
+                bindSingleton { OCRelayNetworkProvider(instance(), instance(), instance(), instance(), authorityKeyPair, config.network) }
                 bindSingleton { NetworkNode(authority, instance(),instance(), instance()) }
                 bindSingleton { LuceneSearchIndex(authority.authorityId, storagePath.resolve("lucene")) }
                 bindSingleton { ExposedEntityStore(entityStoreDB, instance(), instance(), instance(), instance()) }

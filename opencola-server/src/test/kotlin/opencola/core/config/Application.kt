@@ -44,7 +44,7 @@ fun getApplications(
         Application.instance(
             applicationPath,
             storagePath,
-            config.setNetwork(NetworkConfig(peerConfigs)),
+            config.setNetwork(NetworkConfig(peerConfigs, requestTimeoutMilliseconds = config.network.requestTimeoutMilliseconds)),
             publicKey,
             "password"
         )

@@ -68,15 +68,9 @@ abstract class AbstractNetworkProvider(val authority: Authority,
     fun handleMessage(envelopeBytes: ByteArray, useEncryption: Boolean) : ByteArray {
         if (!started) throw IllegalStateException("Provider is not started - can't handleRequest")
         val handler = this.handler ?: throw IllegalStateException("Call to handleRequest when handler has not been set")
-        val envelope = MessageEnvelope.decode(envelopeBytes, if (useEncryption) encryptor else null)
-
-        val response = try {
-            validateMessageEnvelope(envelope)
-            handler(envelope.message.from, envelope.to, Json.decodeFromString(String(envelope.message.body)))
-        } catch (e: Exception) {
-            // TODO: Certain messages can't be responded to - (e.g. unknown peer). Make OC specific exceptions and handle properly
-            Response(400, e.message)
-        }
+        val encryptor = if (useEncryption) this.encryptor else null
+        val envelope = MessageEnvelope.decode(envelopeBytes, encryptor).also { validateMessageEnvelope(it) }
+        val response =  handler(envelope.message.from, envelope.to, Json.decodeFromString(String(envelope.message.body)))
 
         return getEncodedEnvelope(envelope.to, envelope.message.from, Json.encodeToString(response).toByteArray(), useEncryption)
     }

@@ -1,13 +1,18 @@
 package opencola.core.network.providers.relay
 
+import io.opencola.core.config.Application
 import io.opencola.core.model.Authority
 import io.opencola.core.model.Id
 import io.opencola.core.network.NetworkNode
 import io.opencola.core.network.Request
+import io.opencola.core.network.providers.relay.OCRelayNetworkProvider
 import io.opencola.core.security.generateKeyPair
 import io.opencola.core.storage.AddressBook
+import io.opencola.relay.client.WebSocketClient
 import io.opencola.relay.client.defaultOCRPort
 import io.opencola.relay.server.startWebServer
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import opencola.server.PeerNetworkTest
 import org.junit.Test
 import java.net.URI
@@ -64,8 +69,7 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
                 addressBook1.updateAuthority(peer)
                 val response =
                     networkNode0.sendRequest(peer1.entityId, Request(Request.Method.GET, "/ping"))
-                assertNotNull(response)
-                assertEquals(400, response.status)
+                assertNull(response)
             }
 
             // TODO: Test bad signature
@@ -98,6 +102,59 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
             application0.stop()
             application1.stop()
             relayServer.stop(200,200)
+        }
+    }
+
+
+
+    @Test
+    fun testIgnoreBadSerialization() {
+        runBlocking {
+            println("Getting applications")
+            val (app0, app1) = getApplications(2)
+
+            println("Setting Relay Addresses")
+            setAuthorityAddressToRelay(app1.inject<Authority>().entityId, app0.inject())
+            setAuthorityAddressToRelay(app0.inject<Authority>().entityId, app1.inject())
+
+            println("Starting relay server")
+            val webServer = startWebServer(defaultOCRPort)
+
+            println("Starting network node0")
+            val networkNode0 = app0.inject<NetworkNode>().also { it.start(true) }
+
+            println("Starting network node1")
+            app1.inject<NetworkNode>().also { it.start(true) }
+
+            println("Creating relay client")
+            val app0KeyPair = Application.getOrCreateRootKeyPair(app0.storagePath, "password")
+            networkNode0.stop()
+            val relayClient = WebSocketClient(URI("ocr://0.0.0.0"), app0KeyPair, "client", 5000)
+            val job = launch { relayClient.open { _, _ -> "nothing".toByteArray() } }
+            relayClient.waitUntilOpen()
+
+            try {
+                println("Testing bad message")
+                run {
+                    val relayProvider = app0.inject<OCRelayNetworkProvider>()
+                    val envelope = relayProvider.getEncodedEnvelope(
+                        app0.inject<Authority>().entityId,
+                        app1.inject<Authority>().entityId,
+                        "bad message".toByteArray(),
+                        false
+                    )
+
+                    val result = relayClient.sendMessage(app1.inject<Authority>().publicKey!!, envelope)
+                    assertNull(result)
+                }
+            } finally {
+                println("Closing relay client")
+                relayClient.close()
+                println("Stopping network node0")
+                networkNode0.stop()
+                println("Stopping relay server")
+                webServer.stop(200, 200)
+            }
         }
     }
 }

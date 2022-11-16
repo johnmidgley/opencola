@@ -1,5 +1,6 @@
 package io.opencola.core.network.providers.relay
 
+import io.opencola.core.config.NetworkConfig
 import io.opencola.core.model.Authority
 import io.opencola.core.network.*
 import io.opencola.core.security.Encryptor
@@ -24,6 +25,7 @@ class OCRelayNetworkProvider(authority: Authority,
                              signator: Signator,
                              encryptor: Encryptor,
                              private val keyPair: KeyPair, // Seems redundant, but needed for Relay client.
+                             private val networkConfig: NetworkConfig,
 ): AbstractNetworkProvider(authority, addressBook, signator, encryptor) {
     private val logger = KotlinLogging.logger("OCRelayNetworkProvider")
     data class ConnectionInfo(val client: RelayClient, val listenThread: Thread)
@@ -39,7 +41,7 @@ class OCRelayNetworkProvider(authority: Authority,
             return it.client
         }
 
-        val client = WebSocketClient(uri, keyPair, uri.toString())
+        val client = WebSocketClient(uri, keyPair, uri.toString(), networkConfig.requestTimeoutMilliseconds)
         // TODO: Move away from threads, or at least just use one
         val listenThread = thread {
             try {
@@ -100,7 +102,12 @@ class OCRelayNetworkProvider(authority: Authority,
 
         // Check that connection can be established
         try {
-            runBlocking { WebSocketClient(address, keyPair).getSocketSession().close() }
+            runBlocking {
+                WebSocketClient(
+                    address,
+                    keyPair,
+                    requestTimeoutMilliseconds = networkConfig.requestTimeoutMilliseconds).getSocketSession().close()
+            }
         } catch (e: Exception) {
             throw IllegalArgumentException("Could not establish connection to relay server ($address): ${e.message}")
         }

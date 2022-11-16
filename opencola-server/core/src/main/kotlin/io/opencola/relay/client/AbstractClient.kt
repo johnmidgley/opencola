@@ -124,6 +124,10 @@ abstract class AbstractClient(
                 sessionResult.complete(message.body)
             } else {
                 // respondToMMessage will apply request timeout
+                // TODO: It is a bad assumption that unrecognized session ids indicate a request that needs a response.
+                //  This can happen in a partitioning situation, where a response with an unknown session id is received.
+                //  FIX THIS in next version of relay protocol. For now, it will result in an error that won't be
+                //  responded to
                 respondToMessage(message.header, handler(message.header.from, message.body))
             }
         } catch(e: Exception){

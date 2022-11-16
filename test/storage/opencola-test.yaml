@@ -24,3 +24,4 @@ search:
 
 network:
   defaultAddress: "http://0.0.0.0:6000"
+  requestTimeoutMilliseconds: 2000
