@@ -82,7 +82,8 @@ class ApplicationNode(val application: Application) : Node {
                         NetworkConfig(
                             it.network.peers,
                             URI("http://${it.server.host}:$port"),
-                            it.network.requestTimeoutMilliseconds))
+                            it.network.requestTimeoutMilliseconds,
+                            it.network.socksProxy))
             }
 
             val instance = Application.instance(TestApplication.applicationPath, storagePath, "password", configToUse)

@@ -14,9 +14,12 @@ data class SecurityConfig(val login: LoginConfig = LoginConfig())
 data class SolrConfig(val baseUrl: String, val connectionTimeoutMillis: Int, val socketTimeoutMillis: Int)
 data class SearchConfig(val solr: SolrConfig?)
 data class PeerConfig(val id: String, val publicKey: String, val name: String, val host: String, val active: Boolean = true)
+data class SocksProxy(val host: String, val port: Int)
 data class NetworkConfig(val peers: List<PeerConfig> = emptyList(),
                          val defaultAddress: URI = URI("ocr://relay.opencola.net"),
-                         val requestTimeoutMilliseconds: Long = 20000)
+                         val requestTimeoutMilliseconds: Long = 20000,
+                         val socksProxy: SocksProxy? = null)
+
 
 data class Config(
     val name: String,

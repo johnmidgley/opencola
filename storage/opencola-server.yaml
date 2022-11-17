@@ -6,6 +6,12 @@ server:
   ssl:
     port: 5796
 
+network:
+#  requestTimeoutMilliseconds: 20000 # Default is 20 seconds. May need to adjust for higher latency environments
+#  socksProxy: # Socks proxy config. Only used by HttpNetworkProvider right now
+#    host: hostname
+#    port: 1080
+
 security:
   login:
     username: oc
