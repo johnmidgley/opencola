@@ -17,7 +17,7 @@ function login() {
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4) {
         if(this.status != 200) {
-          alert("Unable to authenticate extension. Is your OpenCola server running? A login page will be opened to check..")
+          alert("Unable to authenticate extension.\n A login page will be opened.")
           window.close()
           window.open(baseServiceUrl + '/login', "_blank")
         }
@@ -33,7 +33,6 @@ function getAuthToken() {
     function (cookie) {
       if (cookie) {
         authToken = parseCookie(decodeURIComponent(cookie.value))["authToken"].replace(/^(#s)/, '')
-        console.log(authToken)
       }
       else {
         login()
@@ -41,11 +40,25 @@ function getAuthToken() {
     });
 }
 
-
 chrome.storage.sync.get("serviceUrl", (data) => {
   let serviceUrl = data.serviceUrl
   baseServiceUrl = serviceUrl
-  getAuthToken()
+  
+  let xhttp = new XMLHttpRequest()
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4) {
+        if(this.status == 0) {
+          alert("Can't connect to server:\n" + baseServiceUrl + "\nPlease start it and try again.")
+          window.close()
+        } else {
+          getAuthToken()
+          setStatus("green")
+        }
+    }
+  };
+
+  xhttp.open("GET", baseServiceUrl)
+  xhttp.send();
 })
 
 
@@ -64,9 +77,6 @@ function setStatus(status) {
 
 
 async function sendAction(tab, action, value) {
-    // TODO: Check this out https://stackoverflow.com/questions/32194397/why-isnt-chrome-pagecapture-saveasmhtml-working-in-my-google-chrome-extension
-    // TODO: Why doesn't console logging work here?
-
     setStatus("yellow")
 
     try {
