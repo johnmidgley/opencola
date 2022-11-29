@@ -10,7 +10,6 @@ private var serverNum = 0
 
 // TODO: Replace this with method use for testing NetworkNode
 fun getApplications(
-    applicationPath: Path,
     storagePath: Path,
     baseConfig: Config,
     basePortNumber: Int,
@@ -42,7 +41,6 @@ fun getApplications(
             }
 
         Application.instance(
-            applicationPath,
             storagePath,
             config.setNetwork(NetworkConfig(peerConfigs, requestTimeoutMilliseconds = config.network.requestTimeoutMilliseconds)),
             publicKey,

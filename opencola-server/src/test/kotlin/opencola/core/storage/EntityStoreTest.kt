@@ -173,7 +173,7 @@ class EntityStoreTest {
     // TODO: This only tests the entity store that is used in the test config (i.e. SimpleEntityStore is not tested)
     @Test
     fun testGetFacts(){
-        val applications = getApplications(TestApplication.applicationPath, TestApplication.storagePath, TestApplication.config, 6000, 2)
+        val applications = getApplications(TestApplication.storagePath, TestApplication.config, 6000, 2)
 
         // Create some entities for first authority
         val authority0 by applications[0].injector.instance<Authority>()

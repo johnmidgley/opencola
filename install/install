@@ -18,10 +18,6 @@ echo "Copying config"
 mkdir oc-network
 cp ../../network/docker-compose.yml oc-network
 
-echo "Copying resources"
-mkdir server/resources
-cp -r ../../opencola-server/resources/* server/resources/
-
 echo "Copying Chrome extension"
 cp -r  ../../extension/chrome .
 

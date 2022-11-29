@@ -25,7 +25,7 @@ import java.nio.file.Path
 import java.security.KeyPair
 import kotlin.io.path.*
 
-class Application(val applicationPath: Path, val storagePath: Path, val config: Config, val injector: DI) {
+class Application(val storagePath: Path, val config: Config, val injector: DI) {
     val logger = KotlinLogging.logger("opencola.${config.name}")
 
     inline fun <reified T : Any> inject() : T {
@@ -77,7 +77,7 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
             return SQLiteDB(path).db
         }
 
-        fun instance(applicationPath: Path, storagePath: Path, config: Config, authorityKeyPair: KeyPair, password: String): Application {
+        fun instance(storagePath: Path, config: Config, authorityKeyPair: KeyPair, password: String): Application {
             if(!storagePath.exists()){
                 File(storagePath.toString()).mkdirs()
             }
@@ -116,7 +116,7 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
 
             eventBus.start(reactor)
 
-            return Application(applicationPath, storagePath, config, injector).also { app ->
+            return Application(storagePath, config, injector).also { app ->
                 app.inject<NetworkNode>().let { networkNode ->
                     networkNode.addProvider(app.inject<HttpNetworkProvider>())
                     networkNode.addProvider(app.inject<OCRelayNetworkProvider>())
@@ -124,10 +124,10 @@ class Application(val applicationPath: Path, val storagePath: Path, val config: 
             }
         }
 
-        fun instance(applicationPath: Path, storagePath: Path, password: String, config: Config? = null) : Application {
+        fun instance(storagePath: Path, password: String, config: Config? = null) : Application {
             val appConfig = config ?: loadConfig(storagePath.resolve("opencola-server.yaml"))
             val keyPair = getOrCreateRootKeyPair(storagePath, password)
-            return instance(applicationPath, storagePath, appConfig, keyPair, password)
+            return instance(storagePath, appConfig, keyPair, password)
         }
     }
 }

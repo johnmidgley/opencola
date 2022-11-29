@@ -22,7 +22,6 @@ open class PeerNetworkTest {
 
     protected fun getApplications(nServers: Int): List<Application> {
         return opencola.core.config.getApplications(
-            TestApplication.applicationPath,
             TestApplication.storagePath,
             TestApplication.config,
             basePortNumber,

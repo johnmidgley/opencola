@@ -86,7 +86,7 @@ class ApplicationNode(val application: Application) : Node {
                             it.network.socksProxy))
             }
 
-            val instance = Application.instance(TestApplication.applicationPath, storagePath, "password", configToUse)
+            val instance = Application.instance(storagePath, "password", configToUse)
             setRootAuthorityName(instance, name)
 
             return ApplicationNode(instance)

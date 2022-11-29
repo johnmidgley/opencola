@@ -10,6 +10,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import io.opencola.core.config.LoginConfig
+import io.opencola.core.config.getResourcePath
 import io.opencola.core.extensions.nullOrElse
 import io.opencola.core.model.Authority
 import io.opencola.core.model.Id
@@ -233,7 +234,7 @@ fun Application.configureRouting(app: app, authToken: String) {
             }
 
             static(""){
-                val resourcePath = app.applicationPath.resolve("resources")
+                val resourcePath = getResourcePath("web")
                 logger.info("Initializing static resources from $resourcePath")
                 file("/", resourcePath.resolve("index.html").toString())
                 files(resourcePath.toString())

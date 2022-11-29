@@ -5,6 +5,6 @@ echo "Building min"
 lein fig:min
 echo "Copying resources"
 cd resources/public
-cp cljs-out/dev-main.js ../../../opencola-server/resources/cljs-out/
-cp *.html ../../../opencola-server/resources
-cp -r css img ../../../opencola-server/resources
+cp cljs-out/dev-main.js ../../../opencola-server/src/main/resources/web/cljs-out/
+cp *.html ../../../opencola-server/src/main/resources/web
+cp -r css img ../../../opencola-server/src/main/resources/web

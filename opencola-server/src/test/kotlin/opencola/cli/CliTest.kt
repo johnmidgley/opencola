@@ -56,7 +56,7 @@ class CliTest {
     fun testDumpDefaultTransactions() {
         val storagePath = Path(System.getenv("HOME")).resolve(".opencola/storage")
         val config = loadConfig(storagePath.resolve("opencola-server.yaml"))
-        val app = getApplication(Path("."), storagePath, config, LoginCredentials("oc", "password"))
+        val app = getApplication(storagePath, config, LoginCredentials("oc", "password"))
         val entityStore = app.inject<EntityStore>()
         val authority = app.inject<Authority>()
         exportTransactions(entityStore, storagePath.resolve("transactions.bin"), listOf(authority.entityId))
@@ -66,7 +66,7 @@ class CliTest {
     fun testLoadTransactionsToTest() {
         val storagePath = Path(System.getProperty("user.dir")).resolve("../storage")
         val config = loadConfig(storagePath.resolve("opencola-server.yaml"))
-        val app = getApplication(Path("."), storagePath, config, LoginCredentials("oc", "password"))
+        val app = getApplication(storagePath, config, LoginCredentials("oc", "password"))
         val entityStore = app.inject<EntityStore>()
         val authority = app.inject<Authority>()
         val signator = app.inject<Signator>()

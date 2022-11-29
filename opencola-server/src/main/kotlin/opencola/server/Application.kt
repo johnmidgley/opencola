@@ -209,14 +209,13 @@ suspend fun detectResume(handler: () -> Unit): Job = coroutineScope {
 }
 
 fun getApplication(
-    applicationPath: Path,
     storagePath: Path,
     config: Config,
     loginCredentials: LoginCredentials
 ): Application {
     // TODO: Is getOrCreateRootKeyPair needed outside of App.instance()?
     val keyPair = Application.getOrCreateRootKeyPair(storagePath, loginCredentials.password)
-    val application = Application.instance(applicationPath, storagePath, config, keyPair, loginCredentials.password)
+    val application = Application.instance(storagePath, config, keyPair, loginCredentials.password)
     application.logger.info("Authority: ${Id.ofPublicKey(keyPair.public)}")
     application.logger.info("Public Key : ${keyPair.public.encode()}")
 
@@ -236,22 +235,22 @@ fun main(args: Array<String>) {
     runBlocking {
         // https://github.com/Kotlin/kotlinx-cli
         val parser = ArgParser("oc")
-        val app by parser.option(ArgType.String, shortName = "a", description = "Application path").default(".")
-        val storage by parser.option(ArgType.String, shortName = "s", description = "Storage path").default("../storage")
 
+        // TODO: App parameter is now ignored. Was only needed to locate resources, which are now bundled directly.
+        //  Leaving here until no scripts depend on it
+        var app by parser.option(ArgType.String, shortName = "a", description = "Application path").default(".")
+        val storage by parser.option(ArgType.String, shortName = "s", description = "Storage path").default("../storage")
         parser.parse(args)
 
         val currentPath = Path(System.getProperty("user.dir"))
-        val applicationPath = currentPath.resolve(app)
         val storagePath = currentPath.resolve(storage)
 
-        logger.info { "Application path: $applicationPath" }
         logger.info { "Storage path: $storagePath" }
         initProvider()
 
         val config = loadConfig(storagePath.resolve("opencola-server.yaml"))
         val loginCredentials = getLoginCredentials(storagePath, config.server, config.security.login)
-        val application = getApplication(applicationPath, storagePath, config, loginCredentials)
+        val application = getApplication(storagePath, config, loginCredentials)
 
         // TODO: Make sure entityService starts as soon as server is up, so that transactions can be received
         getServer(application, loginCredentials).start()
