@@ -25,6 +25,8 @@ fun String?.blankToNull() : String? {
 }
 
 fun String.startProcess(workingDir: Path): Process? {
+    // TODO: Problem here - splitting on " " in the middle of a filename "e.g. Application\ Support" causes problems.
+    //  Should only split on spaces that aren't escaped.
     return ProcessBuilder(*split(" ").toTypedArray())
         .directory(File(workingDir.toString()))
         .start()

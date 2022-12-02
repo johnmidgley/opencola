@@ -12,5 +12,5 @@
 FROM openjdk:17
 COPY ./opencola/ /opencola
 WORKDIR /opencola/server
-CMD ["sh", "bin/opencola-server"]
+CMD ["sh", "bin/opencola-server", "-s", "/opencola/storage"]
 EXPOSE 5795
