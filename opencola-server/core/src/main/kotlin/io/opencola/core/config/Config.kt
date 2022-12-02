@@ -7,7 +7,7 @@ import java.nio.file.Path
 // TODO: Add config layers, that allow for override. Use push / pop
 // https://github.com/sksamuel/hoplite
 data class EventBusConfig(val name: String = "event-bus", val maxAttempts: Int = 3)
-data class SSLConfig(val port: Int = 5796, val sans: List<String> = listOf("127.0.0.1", "localhost", "hostAddress"))
+data class SSLConfig(val port: Int = 5796, val sans: List<String> = emptyList())
 data class ServerConfig(val host: String, val port: Int, val ssl: SSLConfig? = SSLConfig())
 data class LoginConfig(val username: String = "opencola", val password: String? = null, val authenticationRequired: Boolean = true)
 data class SecurityConfig(val login: LoginConfig = LoginConfig())

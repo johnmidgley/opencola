@@ -27,11 +27,11 @@ then
 else
   echo "Creating storage"
   mkdir -p storage/cert
-  cp ../../storage/opencola-server.yaml storage/
-  cp ../../storage/cert/gen-ssl-cert storage/cert
-  cp ../../storage/cert/gen-ssl-cert.ps1 storage/cert
-  cp ../../storage/cert/install-cert storage/cert
-  cp ../../storage/cert/install-cert.ps1 storage/cert
+  cp ../../opencola-server/src/main/resources/storage/opencola-server.yaml storage/
+  cp ../../opencola-server/src/main/resources/storage/cert/gen-ssl-cert storage/cert
+  cp ../../opencola-server/src/main/resources/storage/cert/gen-ssl-cert.ps1 storage/cert
+  cp ../../opencola-server/src/main/resources/storage/cert/install-cert storage/cert
+  cp ../../opencola-server/src/main/resources/storage/cert/install-cert.ps1 storage/cert
 fi
 echo "Done."
 

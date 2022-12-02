@@ -64,7 +64,7 @@ class CliTest {
 
     // Load transactions into test storage from "transactions.bin"
     fun testLoadTransactionsToTest() {
-        val storagePath = Path(System.getProperty("user.dir")).resolve("../storage")
+        val storagePath = Path(System.getProperty("user.dir")).resolve("src/main/storage")
         val config = loadConfig(storagePath.resolve("opencola-server.yaml"))
         val app = getApplication(storagePath, config, LoginCredentials("oc", "password"))
         val entityStore = app.inject<EntityStore>()

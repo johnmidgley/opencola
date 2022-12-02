@@ -12,13 +12,11 @@ import io.opencola.core.config.*
 import io.opencola.core.config.Application
 import io.opencola.core.event.EventBus
 import io.opencola.core.event.Events
-import io.opencola.core.extensions.runCommand
 import io.opencola.core.model.Id
 import io.opencola.core.network.NetworkNode
-import io.opencola.core.security.encode
-import io.opencola.core.security.getMd5Digest
-import io.opencola.core.security.initProvider
+import io.opencola.core.security.*
 import io.opencola.core.serialization.Base58
+import io.opencola.core.system.*
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.default
@@ -34,11 +32,12 @@ import opencola.server.plugins.configureHTTP
 import opencola.server.plugins.configureRouting
 import org.slf4j.LoggerFactory
 import java.net.Inet4Address
+import java.net.NetworkInterface
+import java.net.URI
 import java.nio.file.Path
 import java.security.KeyStore
 import kotlin.concurrent.thread
-import kotlin.io.path.Path
-import kotlin.io.path.isDirectory
+import kotlin.io.path.*
 
 private val logger = KotlinLogging.logger("opencola")
 private const val sslCertStorePassword = "password"
@@ -56,13 +55,47 @@ fun onServerStarted(application: Application) {
 @Serializable
 data class ErrorResponse(val message: String)
 
-fun getSanEntry(san: String) :String {
-    return when(san) {
-        "localhost" -> "dns:localhost"
-        "hostAddress" -> "ip:${Inet4Address.getLocalHost().hostAddress}"
-        else -> "ip:$san"
-    }
+fun getSanEntriesFromNetworkInterfaces(): List<String> {
+    return NetworkInterface.getNetworkInterfaces()
+        .toList()
+        .flatMap { networkInterface ->
+            networkInterface.inetAddresses
+                .toList()
+                .filterIsInstance<Inet4Address>()
+                .map { "ip:${it.hostAddress}" }
+        }.toList()
+        .plus("dns:localhost")
 }
+
+fun getSanEntries(sslConfig: SSLConfig): List<String> {
+    // If subject alternative names are specified in config, as is the case when running in docker, use them,
+    // otherwise generate from network interfaces
+    return sslConfig.sans.ifEmpty { getSanEntriesFromNetworkInterfaces() }
+}
+
+fun createSSLCertificateAndStore(storagePath: Path, password: String, sslConfig: SSLConfig) {
+    val certPath = storagePath.resolve("cert")
+    val sans = getSanEntries(sslConfig)
+    val keyPair = generateRSAKeyPair()
+    val cert = generateSelfSignedV3Certificate("CN=opencola, O=OpenCola", sans, keyPair)
+    val keystore = KeyStore.getInstance("PKCS12","BC")
+    keystore.load(null, password.toCharArray())
+    keystore.setKeyEntry("opencola-ssl", keyPair.private, null, arrayOf(cert))
+
+    // Write keystore for SSL use
+    val keyStoreFile = storagePath.resolve("cert/opencola-ssl.pks")
+    keyStoreFile.outputStream().use {
+        keystore.store(it, password.toCharArray())
+    }
+
+    // Write certs to be used by devices
+    certPath.resolve("opencola-ssl.pem").writeText(convertCertificateToPEM(cert))
+    certPath.resolve("opencola-ssl.der").writeBytes(cert.encoded)
+
+    logger.info { "Create cert with SANS: ${sans.joinToString(", " )}" }
+}
+
+
 
 fun getSSLCertificateStore(storagePath: Path, password: String, sslConfig: SSLConfig): KeyStore {
     val certStoragePath = storagePath.resolve("cert")
@@ -70,14 +103,14 @@ fun getSSLCertificateStore(storagePath: Path, password: String, sslConfig: SSLCo
         throw IllegalStateException("'cert' directory doesn't exist in $certStoragePath. Please copy from install storage directory")
     }
 
-    val keyStoreFile = storagePath.resolve("cert/opencola-ssl.pks").toFile()
+    val keyStoreFile = certStoragePath.resolve("opencola-ssl.pks").toFile()
     if(!keyStoreFile.exists()) {
         logger.info { "SSL Certificate store not found - creating" }
-        val sans = sslConfig.sans.joinToString(",") { getSanEntry(it) }
-        "./gen-ssl-cert $sans".runCommand(storagePath.resolve("cert"), printOutput = true)
+        createSSLCertificateAndStore(storagePath, password, sslConfig)
+        // openFile(certStoragePath.resolve("opencola-ssl.der"))
     }
 
-    val keystore = KeyStore.getInstance("PKCS12","BC") // KeyStore.getInstance("JKS")!!
+    val keystore = KeyStore.getInstance("PKCS12","BC")
     keyStoreFile.inputStream().use { keystore.load(keyStoreFile.inputStream(), password.toCharArray()) }
 
     return keystore
@@ -191,22 +224,6 @@ suspend fun getLoginCredentials(storagePath: Path, serverConfig: ServerConfig, l
     return credentials
 }
 
-suspend fun detectResume(handler: () -> Unit): Job = coroutineScope {
-    var lastCheckTimeMillis = System.currentTimeMillis()
-
-    launch {
-        while (true) {
-            delay(5000)
-            val currentTimeMillis = System.currentTimeMillis()
-
-            if (currentTimeMillis - lastCheckTimeMillis > 10000) {
-                handler()
-            }
-
-            lastCheckTimeMillis = currentTimeMillis
-        }
-    }
-}
 
 fun getApplication(
     storagePath: Path,
@@ -231,6 +248,39 @@ fun getApplication(
     return application
 }
 
+fun getDefaultStoragePathForOS(): Path {
+    val userHome = Path(System.getProperty("user.home"))
+
+    return when (getOS()) {
+        OS.Mac -> userHome.resolve("Library/Application Support/OpenCola/storage")
+        OS.Windows -> userHome.resolve("AppData/Local/OpenCola/storage")
+        else -> userHome.resolve(".opencola/storage")
+    }
+}
+
+fun initStorage(argPath: String) : Path {
+    val homeStoragePath = Path(System.getProperty("user.home")).resolve(".opencola/storage")
+
+    val storagePath =
+        if(argPath.isNotBlank()) {
+            // Storage path has been explicitly set, so use it
+            Path(argPath)
+        } else if(homeStoragePath.exists()) {
+            // The default original storage location is present, so use it
+            homeStoragePath
+        } else {
+            // Fall back to OS specific default paths
+            getDefaultStoragePathForOS()
+        }
+
+    if(!storagePath.exists()) {
+        copyResources("storage", storagePath)
+    }
+
+    return storagePath
+}
+
+
 fun main(args: Array<String>) {
     runBlocking {
         // https://github.com/Kotlin/kotlinx-cli
@@ -238,13 +288,14 @@ fun main(args: Array<String>) {
 
         // TODO: App parameter is now ignored. Was only needed to locate resources, which are now bundled directly.
         //  Leaving here until no scripts depend on it
+        @Suppress("UNUSED_VARIABLE")
         var app by parser.option(ArgType.String, shortName = "a", description = "Application path").default(".")
-        val storage by parser.option(ArgType.String, shortName = "s", description = "Storage path").default("../storage")
+        val storage by parser.option(ArgType.String, shortName = "s", description = "Storage path").default("")
         parser.parse(args)
 
-        val currentPath = Path(System.getProperty("user.dir"))
-        val storagePath = currentPath.resolve(storage)
+        val storagePath = initStorage(storage)
 
+        logger.info { "OS:  ${System.getProperty("os.name")}" }
         logger.info { "Storage path: $storagePath" }
         initProvider()
 

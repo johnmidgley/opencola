@@ -40,9 +40,8 @@ fun extractResourceDirectory(resourceUrl: URL, destinationPath: Path): Path {
     return destinationPath.resolve(resourcePath)
 }
 
-fun getResourcePath(resourcePath: String) : Path {
-     // val root = URL("jar:file:/Applications/OpenCola.app/Contents/app/opencola-server-1.0-SNAPSHOT.jar!/$resourcePath")
-     val root = object {}.javaClass.classLoader.getResource(resourcePath)
+fun getResourceFilePath(resourcePath: String, cachePath: Path) : Path {
+     val root = getResourceUrl(resourcePath)
         ?: throw IllegalStateException("Unable to locate root resource: $resourcePath")
 
     return when (root.protocol) {
@@ -50,9 +49,14 @@ fun getResourcePath(resourcePath: String) : Path {
             // Resources are available on the filesystem, so just return local path
             Path(root.path)
         "jar" -> {
-            extractResourceDirectory(root, Path("resource-cache"))
+            extractResourceDirectory(root, cachePath)
         }
         else ->
             throw RuntimeException("Don't know how to handle resource protocol: ${root.protocol}")
     }
+}
+
+fun copyResources(resourcePath: String,  destinationPath: Path) {
+    val path = getResourceFilePath(resourcePath, createTempDirectory("oc-resource-cache")).toFile()
+    path.copyRecursively(destinationPath.toFile())
 }

@@ -11,13 +11,6 @@ import kotlin.io.path.createDirectory
 import kotlin.test.assertEquals
 
 class BootstrapTest {
-    // TODO: Move to more general place
-    private fun initStorage(storagePath: Path) {
-        val certDirectory = storagePath.resolve("cert")
-        certDirectory.createDirectory()
-        TestApplication.applicationPath.resolve("../storage/cert/gen-ssl-cert").copyTo(certDirectory.resolve("gen-ssl-cert"))
-    }
-
     @Test
     fun testChangeAuthorityStorePassword() {
         val password = "password"

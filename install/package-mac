@@ -8,10 +8,11 @@ fi
 
 echo "Creating dmg"
 jpackage --input opencola/server/lib/ \
-  --resource-dir opencola/server/resources/ \
   --name OpenCola \
   --main-jar opencola-server-1.0-SNAPSHOT.jar \
   --main-class opencola.server.ApplicationKt \
   --type dmg \
   --java-options '--enable-preview' \
   --verbose
+
+  # --resource-dir opencola/server/resources/ \
