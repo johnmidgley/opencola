@@ -282,28 +282,36 @@ fun initStorage(argPath: String) : Path {
 
 
 fun main(args: Array<String>) {
-    runBlocking {
-        // https://github.com/Kotlin/kotlinx-cli
-        val parser = ArgParser("oc")
+    try {
+        runBlocking {
+            // https://github.com/Kotlin/kotlinx-cli
+            val parser = ArgParser("oc")
 
-        // TODO: App parameter is now ignored. Was only needed to locate resources, which are now bundled directly.
-        //  Leaving here until no scripts depend on it
-        @Suppress("UNUSED_VARIABLE")
-        var app by parser.option(ArgType.String, shortName = "a", description = "Application path").default(".")
-        val storage by parser.option(ArgType.String, shortName = "s", description = "Storage path").default("")
-        parser.parse(args)
+            // TODO: App parameter is now ignored. Was only needed to locate resources, which are now bundled directly.
+            //  Leaving here until no scripts depend on it
+            @Suppress("UNUSED_VARIABLE")
+            var app by parser.option(ArgType.String, shortName = "a", description = "Application path").default(".")
+            val storage by parser.option(ArgType.String, shortName = "s", description = "Storage path").default("")
+            parser.parse(args)
 
-        val storagePath = initStorage(storage)
+            val storagePath = initStorage(storage)
+            val config = loadConfig(storagePath.resolve("opencola-server.yaml"))
+            logger.info { "OS:  ${System.getProperty("os.name")}" }
+            logger.info { "Storage path: $storagePath" }
+            initProvider()
 
-        logger.info { "OS:  ${System.getProperty("os.name")}" }
-        logger.info { "Storage path: $storagePath" }
-        initProvider()
+            launch {
+                delay(1000)
+                openUri(URI("http://localhost:${config.server.port}"))
+            }
 
-        val config = loadConfig(storagePath.resolve("opencola-server.yaml"))
-        val loginCredentials = getLoginCredentials(storagePath, config.server, config.security.login)
-        val application = getApplication(storagePath, config, loginCredentials)
+            val loginCredentials = getLoginCredentials(storagePath, config.server, config.security.login)
+            val application = getApplication(storagePath, config, loginCredentials)
 
-        // TODO: Make sure entityService starts as soon as server is up, so that transactions can be received
-        getServer(application, loginCredentials).start()
+            // TODO: Make sure entityService starts as soon as server is up, so that transactions can be received
+            getServer(application, loginCredentials).start()
+        }
+    } catch (e: Exception) {
+        logger.error { e }
     }
 }

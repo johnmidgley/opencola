@@ -9,9 +9,8 @@
         </filter>
     </appender>
 
-    <!--
     <appender name="file" class="ch.qos.logback.core.FileAppender">
-        <file>opencola.log</file>
+        <file>${user.home}/logs/opencola/opencola-server.log</file>
         <append>true</append>
         <immediateFlush>true</immediateFlush>
         <encoder>
@@ -21,11 +20,10 @@
             <level>INFO</level>
         </filter>
     </appender>
-    -->
 
     <root level="info">
         <appender-ref ref="STDOUT"/>
-        <!-- appender-ref ref="file"/ -->
+        <appender-ref ref="file"/>
     </root>
 
     <logger name="org.eclipse.jetty" level="INFO"/>
