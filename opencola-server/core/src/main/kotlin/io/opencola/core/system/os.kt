@@ -19,6 +19,8 @@ fun getOS() : OS {
 
     return if(os.contains("mac"))
         OS.Mac
+    else if(os.contains("windows"))
+        OS.Windows
     else
         OS.Unknown
 }
@@ -34,7 +36,7 @@ fun openFile(path: Path) {
 fun openUri(uri: URI) {
     when(getOS()) {
         OS.Mac -> "open $uri".runCommand()
-        OS.Windows -> "start $uri".runCommand()
+        OS.Windows -> "explorer $uri".runCommand()
         else -> logger.warn { "Don't know how to open $uri on this os" }
     }
 }

@@ -1,5 +1,7 @@
 package io.opencola.core.config
 
+import io.ktor.http.*
+import java.io.File
 import java.io.InputStream
 import java.net.URL
 import java.nio.file.Path
@@ -21,7 +23,7 @@ fun getResourceAsStream(name: String): InputStream? {
 
 fun extractResourceDirectory(resourceUrl: URL, destinationPath: Path): Path {
     val parts = resourceUrl.path.split("!")
-    val jarPath = URL(parts[0]).path
+    val jarPath = File(URL(parts[0]).toURI()).toPath().toString()
     val resourcePath = parts[1].trim('/') + "/"
     val jarFile = JarFile(jarPath)
 
@@ -45,9 +47,10 @@ fun getResourceFilePath(resourcePath: String, cachePath: Path) : Path {
         ?: throw IllegalStateException("Unable to locate root resource: $resourcePath")
 
     return when (root.protocol) {
-        "file" ->
+        "file" -> {
             // Resources are available on the filesystem, so just return local path
-            Path(root.path)
+            File(root.toURI()).toPath()
+        }
         "jar" -> {
             extractResourceDirectory(root, cachePath)
         }
