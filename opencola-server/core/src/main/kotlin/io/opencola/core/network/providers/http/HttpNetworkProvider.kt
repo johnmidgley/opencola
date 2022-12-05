@@ -34,7 +34,6 @@ class HttpNetworkProvider(authority: Authority,
                           networkConfig: NetworkConfig,
 ) : AbstractNetworkProvider(authority, addressBook, signator, encryptor) {
     private val logger = KotlinLogging.logger("HttpNetworkProvider")
-    private val serverAddress = URI("http://${serverConfig.host}:${serverConfig.port}")
 
     private val httpClient = HttpClient(OkHttp) {
         install(ContentNegotiation) {
@@ -42,6 +41,7 @@ class HttpNetworkProvider(authority: Authority,
         }
         engine {
             if(networkConfig.socksProxy != null) {
+                logger.info { "Using Socks Proxy: ${networkConfig.socksProxy}" }
                 proxy = ProxyBuilder.socks(networkConfig.socksProxy.host, networkConfig.socksProxy.port)
             }
         }
