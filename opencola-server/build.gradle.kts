@@ -25,6 +25,7 @@ plugins {
     kotlin("jvm") version "1.6.10"
     kotlin("plugin.serialization") version "1.6.0"
     // id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("org.jetbrains.compose") version "1.1.0"
 }
 
 group = "opencola"
@@ -35,11 +36,13 @@ application {
 }
 
 repositories {
+    google()
     mavenCentral()
     flatDir{
         name = "localRepository"
         dirs("${project.rootDir}/../lib")
     }
+    maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
 }
 
 // https://thelyfsoshort.io/kotlin-reflection-shadow-jars-minimize-9bd74964c74
@@ -88,4 +91,11 @@ dependencies {
     testImplementation(project(":relay"))
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktor_version")
+
+    implementation(compose.desktop.currentOs)
+}
+
+compose.desktop {
+    // Leaving this empty, since using basic application plugin and jpackage directly
+    // due to issue with compose not pulling in full JRE
 }
