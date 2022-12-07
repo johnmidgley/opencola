@@ -6,12 +6,13 @@ then
   exit 1
 fi
 
-echo "Creating dmg"
+echo "Packaging for MacOS"
 jpackage --input opencola/server/lib/ \
-  --name OpenCola1 \
+  --name OpenCola \
   --main-jar opencola-server-1.0-SNAPSHOT.jar \
   --main-class opencola.server.ApplicationKt \
-  --type app-image \
+  --type dmg \
+  --icon icons/desktop-icon.icns \
   --java-options '--enable-preview' \
   --arguments --desktop \
   --verbose
