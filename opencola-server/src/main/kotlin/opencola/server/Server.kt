@@ -190,20 +190,14 @@ suspend fun getLoginCredentials(storagePath: Path, serverConfig: ServerConfig, l
 }
 
 fun startServer(storagePath: Path, config: Config, exitApplication: () -> Unit) {
-    try {
-        runBlocking {
-            launch {
-                delay(1000)
-                openUri(URI("http://localhost:${config.server.port}"))
-            }
-
-            val loginCredentials = getLoginCredentials(storagePath, config.server, config.security.login)
-            val application = getApplication(storagePath, config, loginCredentials)
-
-            // TODO: Make sure entityService starts as soon as server is up, so that transactions can be received
-            getServer(application, loginCredentials).start()
+    runBlocking {
+        launch {
+            delay(1000)
+            openUri(URI("http://localhost:${config.server.port}"))
         }
-    } catch (e: Throwable) {
-        logger.error { "$e: ${e.stackTrace[0]}" }
+
+        val loginCredentials = getLoginCredentials(storagePath, config.server, config.security.login)
+        val application = getApplication(storagePath, config, loginCredentials)
+        getServer(application, loginCredentials).start()
     }
 }
