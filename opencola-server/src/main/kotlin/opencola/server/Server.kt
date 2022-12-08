@@ -189,7 +189,7 @@ suspend fun getLoginCredentials(storagePath: Path, serverConfig: ServerConfig, l
     return credentials
 }
 
-fun startServer(storagePath: Path, config: Config, exitApplication: () -> Unit) {
+fun startServer(storagePath: Path, config: Config) {
     runBlocking {
         launch {
             delay(1000)

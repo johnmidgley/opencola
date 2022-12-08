@@ -1,0 +1,22 @@
+#!/bin/bash
+
+if [ $# -ne 1 ]
+then
+  echo "Usage: $0 version"
+  exit 1
+fi
+
+
+echo "Packaging for MacLinuxOS"
+# https://docs.oracle.com/en/java/javase/14/docs/specs/man/jpackage.html
+jpackage --input ../opencola/server/lib/ \
+  --name opencola \
+  --vendor OpenCola \
+  --app-version "$1" \
+  --main-jar opencola-server-1.0-SNAPSHOT.jar \
+  --main-class opencola.server.ApplicationKt \
+  --java-options '--enable-preview' \
+  --arguments --desktop \
+  --verbose \
+  --type app-image \
+  --icon pull-tab.png

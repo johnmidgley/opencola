@@ -79,7 +79,7 @@ suspend fun changePasswordForm(call: ApplicationCall, isNewUser: Boolean, messag
 suspend fun startingPage(call: ApplicationCall) {
     call.respondHtml {
         body {
-            +"OpenCola is starting..."
+            +"OpenCola is carbonating..."
             script {
                 unsafe {
                     raw("""

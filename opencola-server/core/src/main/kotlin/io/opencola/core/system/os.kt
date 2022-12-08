@@ -2,6 +2,7 @@ package io.opencola.core.system
 
 import io.opencola.core.extensions.runCommand
 import mu.KotlinLogging
+import java.awt.Desktop
 import java.net.URI
 import java.nio.file.Path
 
@@ -21,6 +22,8 @@ fun getOS() : OS {
         OS.Mac
     else if(os.contains("windows"))
         OS.Windows
+    else if(os.contains("linux"))
+        OS.Linux
     else
         OS.Unknown
 }
@@ -33,10 +36,25 @@ fun openFile(path: Path) {
     }
 }
 
+fun openUriLinux(uri: URI) {
+    try {
+        "xdg-open $uri".runCommand()
+        return
+    } catch(e: Throwable) {}
+
+    try {
+        Desktop.getDesktop().browse(uri)
+        return
+    } catch (e: Throwable) {}
+
+    throw RuntimeException("Unable to open $uri on Linux")
+}
+
 fun openUri(uri: URI) {
     when(getOS()) {
         OS.Mac -> "open $uri".runCommand()
         OS.Windows -> "explorer $uri".runCommand()
+        OS.Linux -> openUriLinux(uri)
         else -> logger.warn { "Don't know how to open $uri on this os" }
     }
 }
