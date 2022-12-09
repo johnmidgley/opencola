@@ -189,7 +189,25 @@ suspend fun startingPage(call: ApplicationCall) {
             script {
                 unsafe {
                     raw("""
-                        setTimeout("window.location = '/';",7000);
+                        // setTimeout("window.location = '/';",7000);
+                        function onImageAvailable( src, onSuccess ) {
+                            console.log("Trying")
+                    
+                            let img = new Image();
+                            img.onload = function () {
+                                onSuccess();
+                            };
+                    
+                            img.onerror = function () {
+                                setTimeout(onImageAvailable, 1000, src, onSuccess);
+                            };
+                    
+                            img.src = src;
+                        }
+                    
+                        onImageAvailable("img/pull-tab.png", function () {
+                            window.location = '/';
+                        });
                         """)
                 }
             }
