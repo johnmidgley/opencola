@@ -2,9 +2,9 @@ package opencola.core.network
 
 import mu.KotlinLogging
 import io.opencola.core.extensions.runCommand
-import io.opencola.core.extensions.startProcess
 import io.opencola.core.io.JsonHttpClient
 import io.opencola.core.io.MultiStreamReader
+import io.opencola.core.system.startProcess
 import opencola.server.handlers.Peer
 import opencola.server.handlers.PeersResult
 import opencola.server.handlers.TokenRequest
@@ -47,7 +47,7 @@ class ProcessNode(private val nodePath: Path, val name: String, val serverPort: 
 
     override fun start(): Node {
         logger.info { "Starting $name" }
-        val process = "./start-node $name".startProcess(nodePath)!!.also { this.process == process }
+        val process = startProcess(listOf("./start-node", name), nodePath)!!.also { this.process = it }
 
         blockOnProcessOutputUntil(process, name){ it.contains("MainReactor: NodeStarted") }
         blockUntilNodeReady()

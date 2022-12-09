@@ -151,10 +151,6 @@ suspend fun getLoginCredentials(storagePath: Path, serverConfig: ServerConfig, l
     val environment = applicationEngineEnvironment {
         log = LoggerFactory.getLogger("ktor.application")
 
-        // TODO: Without knowing the password for the cert file upfront, we can't connect ssl.
-        //  1. The way it is know, you enter your password on an insecure form - but it's on your machine - problem?
-        //  2. Could used a fixed password for cert store. Risks?
-        //  3. Could pass credentials in to container - clunky if authentication fails or you want to change your password
         connector {
             host = serverConfig.host
             port = serverConfig.port
@@ -174,7 +170,7 @@ suspend fun getLoginCredentials(storagePath: Path, serverConfig: ServerConfig, l
 
         module {
             configureHTTP()
-            configureBootstrapRouting(storagePath, loginConfig, loginCredentials)
+            configureBootstrapRouting(storagePath, serverConfig, loginConfig, loginCredentials)
             install(Sessions) {
                 cookie<UserSession>("user_session")
             }
@@ -184,7 +180,7 @@ suspend fun getLoginCredentials(storagePath: Path, serverConfig: ServerConfig, l
     bootstrapInit(storagePath, serverConfig.ssl!!)
     val server = embeddedServer(Netty, environment).start(wait = false)
     val credentials = loginCredentials.await()
-    server.stop(200,200)
+    server.stop(500,500)
 
     return credentials
 }

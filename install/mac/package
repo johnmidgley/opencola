@@ -19,4 +19,4 @@ jpackage --input ../opencola/server/lib/ \
   --arguments --desktop \
   --verbose \
   --type dmg \
-  --icon icons/desktop-icon.icns
+  --icon desktop-icon.icns

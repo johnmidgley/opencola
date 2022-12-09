@@ -58,3 +58,16 @@ fun openUri(uri: URI) {
         else -> logger.warn { "Don't know how to open $uri on this os" }
     }
 }
+
+fun autoStartMac() {
+    val args = listOf("osascript", "-e", "tell application \"System Events\" to make login item at end with properties {path:\"/Applications/OpenCola.app\", hidden:false}")
+    val result = runCommand(args).joinToString("\n")
+    logger.info { "Auto start result: $result" }
+}
+
+fun autoStart() {
+    when(getOS()) {
+        OS.Mac -> autoStartMac()
+        else -> logger.warn { "Don't know how to auto start on this os" }
+    }
+}

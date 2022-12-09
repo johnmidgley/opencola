@@ -23,6 +23,4 @@ fun main(args: Array<String>) {
     } catch (e: Throwable) {
         logger.error { "FATAL: $e: ${e.stackTrace[0]}" }
     }
-
-    logger.info { "Stopped" }
 }

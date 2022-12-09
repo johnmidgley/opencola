@@ -10,6 +10,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import io.opencola.core.config.LoginConfig
+import io.opencola.core.config.ServerConfig
 import io.opencola.core.config.getResourceFilePath
 import io.opencola.core.extensions.nullOrElse
 import io.opencola.core.model.Authority
@@ -18,21 +19,21 @@ import io.opencola.core.network.Notification
 import io.opencola.core.network.handleGetTransactions
 import io.opencola.core.network.handleNotification
 import io.opencola.core.network.providers.http.HttpNetworkProvider
+import io.opencola.core.system.autoStart
+import io.opencola.core.system.openFile
 import kotlinx.coroutines.CompletableDeferred
 import mu.KotlinLogging
 import opencola.server.LoginCredentials
 import opencola.server.UserSession
 import opencola.server.handlers.*
-import opencola.server.view.changePasswordForm
-import opencola.server.view.loggedIn
-import opencola.server.view.startingPage
-import opencola.server.view.startupForm
+import opencola.server.view.*
 import java.nio.file.Path
 import io.opencola.core.config.Application as app
 
 // TODO: All routes should authenticate caller and authorize activity. Right now everything is open
 fun Application.configureBootstrapRouting(
     storagePath: Path,
+    serverConfig: ServerConfig,
     loginConfig: LoginConfig,
     loginCredentials: CompletableDeferred<LoginCredentials>) {
 
@@ -40,8 +41,10 @@ fun Application.configureBootstrapRouting(
         get("/") {
             val isNewUser = isNewUser(storagePath)
 
-            if(isNewUser) {
-                call.respondRedirect("changePassword")
+            if(serverConfig.ssl != null && !isCertInstalled(storagePath)) {
+                call.respondRedirect("/installCert.html")
+            } else if(isNewUser) {
+                call.respondRedirect("newUser")
             } else {
                 // TODO: Get from config
                 startupForm(call, loginConfig.username)
@@ -66,37 +69,82 @@ fun Application.configureBootstrapRouting(
             }
         }
 
-        get("/changePassword") {
-            changePasswordForm(call, isNewUser(storagePath))
+        get("/newUser") {
+            newUserForm(call, loginConfig.username)
         }
 
-        post("/changePassword") {
-            val isNewUser = isNewUser(storagePath)
+        post("/newUser") {
             val formParameters = call.receiveParameters()
-            val oldPassword = if(isNewUser) "password" else formParameters["oldPassword"]
+            val username = formParameters["username"]
             val password = formParameters["password"]
             val passwordConfirm = formParameters["passwordConfirm"]
+            val autoStart = formParameters["autoStart"]?.toBoolean() ?: false
 
-            val error = if (!isNewUser && (oldPassword == null || oldPassword.isBlank()))
-                "Old password is required"
-            else if (password == null || password.isBlank()
-                || passwordConfirm == null || password.isBlank())
+            val error = if (username == null || username.isBlank())
+              "Please enter a username"
+            else if (password == null || password.isBlank() || passwordConfirm == null || password.isBlank())
                 "You must include a new password and confirm it."
             else if (password == "password")
                 "Your password cannot be 'password'"
             else if (password != passwordConfirm)
                 "Passwords don't match."
-            else if (!isNewUser && !validateAuthorityKeyStorePassword(storagePath, oldPassword!!))
+            else
+                null
+
+            if(error != null) {
+                newUserForm(call, username!!, error)
+            } else {
+                changeAuthorityKeyStorePassword(storagePath, "password", password!!)
+                if(autoStart) { autoStart() }
+                startingPage(call)
+                loginCredentials.complete(LoginCredentials(username.toString(), password.toString()))
+            }
+        }
+
+        post("/installCert") {
+            openFile(storagePath.resolve("cert/opencola-ssl.pem"))
+            call.respondRedirect("installCert.html")
+        }
+
+        post("/certInstalled") {
+            setCertInstalled(storagePath)
+            call.respondRedirect("https://localhost:${serverConfig.ssl!!.port}")
+        }
+
+        get("/changePassword") {
+            changePasswordForm(call)
+        }
+
+        post("/changePassword") {
+            val formParameters = call.receiveParameters()
+            val oldPassword = formParameters["oldPassword"]
+            val password = formParameters["newPassword"]
+            val passwordConfirm = formParameters["newPasswordConfirm"]
+
+            val error = if (oldPassword == null || oldPassword.isBlank())
+                "Old password is required"
+            else if (password == null || password.isBlank()
+                || passwordConfirm == null || passwordConfirm.isBlank())
+                "You must include a new password and confirm it."
+            else if (password == "password")
+                "Your password cannot be 'password'"
+            else if (password != passwordConfirm)
+                "Passwords don't match."
+            else if (!validateAuthorityKeyStorePassword(storagePath, oldPassword))
                 "Old password is incorrect."
             else
                 null
 
             if (error != null) {
-                changePasswordForm(call, isNewUser, error)
+                changePasswordForm(call, error)
             } else {
                 changeAuthorityKeyStorePassword(storagePath, oldPassword!!, password!!)
                 call.respondRedirect("/")
             }
+        }
+
+        static("") {
+            resources("bootstrap/mac")
         }
     }
 }
@@ -233,7 +281,8 @@ fun Application.configureRouting(app: app, authToken: String) {
                 call.respond("{}")
             }
 
-            static(""){
+            static("") {
+                // TODO: Resources don't need to be extracted - can serve right from resources - FIX
                 val resourcePath = getResourceFilePath("web", app.storagePath.parent.resolve("resource-cache"))
                 logger.info("Initializing static resources from $resourcePath")
                 file("/", resourcePath.resolve("index.html").toString())
