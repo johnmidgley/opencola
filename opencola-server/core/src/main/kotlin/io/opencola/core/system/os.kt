@@ -41,12 +41,12 @@ fun openUriLinux(uri: URI) {
     try {
         "xdg-open $uri".runCommand()
         return
-    } catch(e: Throwable) {}
+    } catch(_: Throwable) {}
 
     try {
         Desktop.getDesktop().browse(uri)
         return
-    } catch (e: Throwable) {}
+    } catch (_: Throwable) {}
 
     throw RuntimeException("Unable to open $uri on Linux")
 }
