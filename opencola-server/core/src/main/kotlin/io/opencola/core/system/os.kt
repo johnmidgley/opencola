@@ -5,6 +5,7 @@ import mu.KotlinLogging
 import java.awt.Desktop
 import java.net.URI
 import java.nio.file.Path
+import kotlin.io.path.exists
 
 private val logger = KotlinLogging.logger("oc.system")
 
@@ -65,9 +66,39 @@ fun autoStartMac() {
     logger.info { "Auto start result: $result" }
 }
 
+fun autoStartLinux() {
+    val opencolaServerPath = ((Path.of({}.javaClass.protectionDomain.codeSource.location.path).parent).parent).parent
+        .resolve("bin")
+        .resolve("opencola")
+
+    if(!opencolaServerPath.exists()) {
+        logger.warn { "Can't find opencola-server path for autostart. Tried $opencolaServerPath" }
+        return
+    }
+
+    val deskTopEntry = """
+        [Desktop Entry]
+        Type=Application
+        Exec=/home/john/dev/opencola/install/linux/opencola/bin/opencola
+        Hidden=false
+        NoDisplay=false
+        X-GNOME-Autostart-enabled=true
+        Name[en_US]=OpenCola
+        Name=OpenCola
+        Comment[en_US]=
+        Comment=
+    """.trimIndent()
+
+    Path
+        .of(System.getProperty("user.home"), ".config", "autostart", "opencola.desktop")
+        .toFile()
+        .writeText(deskTopEntry)
+}
+
 fun autoStart() {
     when(getOS()) {
         OS.Mac -> autoStartMac()
+        OS.Linux -> autoStartLinux()
         else -> logger.warn { "Don't know how to auto start on this os" }
     }
 }

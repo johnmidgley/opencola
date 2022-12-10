@@ -19,7 +19,9 @@ import io.opencola.core.network.Notification
 import io.opencola.core.network.handleGetTransactions
 import io.opencola.core.network.handleNotification
 import io.opencola.core.network.providers.http.HttpNetworkProvider
+import io.opencola.core.system.OS
 import io.opencola.core.system.autoStart
+import io.opencola.core.system.getOS
 import io.opencola.core.system.openFile
 import kotlinx.coroutines.CompletableDeferred
 import mu.KotlinLogging
@@ -28,6 +30,7 @@ import opencola.server.UserSession
 import opencola.server.handlers.*
 import opencola.server.view.*
 import java.nio.file.Path
+import kotlin.io.path.readText
 import io.opencola.core.config.Application as app
 
 // TODO: All routes should authenticate caller and authorize activity. Right now everything is open
@@ -102,8 +105,17 @@ fun Application.configureBootstrapRouting(
         }
 
         post("/installCert") {
-            openFile(storagePath.resolve("cert/opencola-ssl.pem"))
-            call.respondRedirect("installCert.html")
+            val certPath = storagePath.resolve("cert/opencola-ssl.pem")
+            val os = getOS()
+
+            if(os == OS.Mac || os == OS.Windows) {
+                openFile(certPath)
+                call.respondRedirect("installCert.html")
+            } else {
+                // Send the raw cert for manual installation
+                call.response.header("Content-Disposition", "attachment; filename=\"opencola-ssl.pem\"")
+                call.respondText(certPath.readText(), ContentType("application", "x-x509-ca-cert"))
+            }
         }
 
         post("/certInstalled") {
@@ -144,7 +156,7 @@ fun Application.configureBootstrapRouting(
         }
 
         static("") {
-            resources("bootstrap/mac")
+            resources("bootstrap/${getOS().toString().lowercase()}")
         }
     }
 }

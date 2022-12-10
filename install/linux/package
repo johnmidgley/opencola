@@ -6,6 +6,7 @@ then
   exit 1
 fi
 
+rm -rf opencola
 
 echo "Packaging for MacLinuxOS"
 # https://docs.oracle.com/en/java/javase/14/docs/specs/man/jpackage.html
