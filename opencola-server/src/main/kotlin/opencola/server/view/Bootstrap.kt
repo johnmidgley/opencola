@@ -189,7 +189,6 @@ suspend fun startingPage(call: ApplicationCall) {
             script {
                 unsafe {
                     raw("""
-                        // setTimeout("window.location = '/';",7000);
                         function onImageAvailable( src, onSuccess ) {
                             console.log("Trying")
                     
