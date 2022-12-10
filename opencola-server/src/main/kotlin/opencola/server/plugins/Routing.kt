@@ -30,7 +30,7 @@ import opencola.server.UserSession
 import opencola.server.handlers.*
 import opencola.server.view.*
 import java.nio.file.Path
-import kotlin.io.path.readText
+import kotlin.io.path.readBytes
 import io.opencola.core.config.Application as app
 
 // TODO: All routes should authenticate caller and authorize activity. Right now everything is open
@@ -105,16 +105,16 @@ fun Application.configureBootstrapRouting(
         }
 
         post("/installCert") {
-            val certPath = storagePath.resolve("cert/opencola-ssl.pem")
+            val certPath = storagePath.resolve("cert/opencola-ssl.der")
             val os = getOS()
 
-            if(os == OS.Mac || os == OS.Windows) {
+            if(os == OS.Mac) {
                 openFile(certPath)
                 call.respondRedirect("installCert.html")
             } else {
                 // Send the raw cert for manual installation
-                call.response.header("Content-Disposition", "attachment; filename=\"opencola-ssl.pem\"")
-                call.respondText(certPath.readText(), ContentType("application", "x-x509-ca-cert"))
+                call.response.header("Content-Disposition", "attachment; filename=\"opencola-ssl.der\"")
+                call.respondBytes(certPath.readBytes(), ContentType("application", "x-x509-ca-cert"))
             }
         }
 

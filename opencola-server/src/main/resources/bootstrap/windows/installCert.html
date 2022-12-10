@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="css/main.css">
+    <title>Install Certificate</title>
+</head>
+<body style="max-width: 1200px">
+    <h2>Welcome to OpenCola!</h2>
+
+    In order to access OpenCola over a secure connection, you need to install an SSL certificate.
+    To start the process, click <strong>Download Certificate</strong> and then follow the instructions below.
+
+    <p>
+        <form  action="/installCert" method="post">
+            <input type="submit" value="Download Certificate"/>
+        </form>
+    </p>
+
+    <h3>Instructions</h3>
+
+    <p> After the certificate is downloaded, open it: </p>
+    <img src="img/certificate.png" alt="Certificate" width="353" class="center">
+    <p>Click <strong>Install Certificate</strong>:</p>
+    <img src="img/installCertificate.png" alt="Import Wizard" width="468" class="center">
+    <p>Click <strong>Next</strong>:</p>
+    <img src="img/placeCertificates.png" alt="Place Certificate" width="468" class="center">
+    <p>Select <strong>Place all certificates in the following store</strong>: </p>
+    <img src="img/placeCertificates.png" alt="Select store" width="468" class="center">
+    <p>Click <strong>Browse</strong></p>
+    <img src="img/selectCertificateStore.png" alt="Select Trusted Root Certificate Authorities" width="409" class="center">
+    <p>Select <strong>Trusted Root Certificate Authorities</strong> and click <strong>OK</strong> and then <strong>Next:</strong></p>
+    <img src="img/completing.png" alt="Complete Import Wizard" width="468" class="center">
+    <p>Click <strong>Finish</strong>, which will likely display a security warning: </p>
+    <img src="img/securityWarning.png" alt="Security Warning" width="360" class="center">
+    <p>Click <strong>Yes</strong>, then click <strong>Yes</strong> on the confirmation dialog and close the wizard.</p>
+
+    <p>
+        <form  action="/certInstalled" method="post">
+            <input type="submit" value="Continue">
+        </form>
+    </p>
+</body>
+</html>

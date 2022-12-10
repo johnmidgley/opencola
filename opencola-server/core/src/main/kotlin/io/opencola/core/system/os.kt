@@ -3,9 +3,12 @@ package io.opencola.core.system
 import io.opencola.core.extensions.runCommand
 import mu.KotlinLogging
 import java.awt.Desktop
+import java.io.File
 import java.net.URI
+import java.net.URL
 import java.nio.file.Path
 import kotlin.io.path.exists
+import kotlin.io.path.writeText
 
 private val logger = KotlinLogging.logger("oc.system")
 
@@ -95,9 +98,32 @@ fun autoStartLinux() {
         .writeText(deskTopEntry)
 }
 
+fun getAppJarPath() : Path {
+    return File({}.javaClass.protectionDomain.codeSource.location.toURI()).toPath()
+}
+
+fun autoStartWindows() {
+    val exePath = getAppJarPath().parent.parent.resolve("OpenCola.exe")
+
+    if(!exePath.exists()) {
+        logger.warn { "Can't locate OpenCola.exe - unable to auto start" }
+        return
+    }
+
+    val command = """
+        cd %userprofile%\\Start Menu\\Programs\\Startup
+        del opencola.lnk"
+        mklink "%userprofile%\\Start Menu\\Programs\\Startup\\opencola.lnk" "C:\\Program Files\\OpenCola\\OpenCola.exe"
+    """.trimIndent()
+    val autoStartBat = kotlin.io.path.createTempFile(suffix = "autostart.bat").also { it.writeText(command) }
+    val result = runCommand(listOf(autoStartBat.toString())).joinToString("\n")
+    logger.info { "autoStartWindows: $result" }
+}
+
 fun autoStart() {
     when(getOS()) {
         OS.Mac -> autoStartMac()
+        OS.Windows -> autoStartWindows()
         OS.Linux -> autoStartLinux()
         else -> logger.warn { "Don't know how to auto start on this os" }
     }

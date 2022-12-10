@@ -8,6 +8,7 @@ private val logger = KotlinLogging.logger("opencola")
 
 fun main(args: Array<String>) {
     try {
+        logger.info { "Starting..." }
         logger.info { "OS: ${System.getProperty("os.name")} - Detected ${getOS()}" }
         logger.info { "Args: ${args.joinToString(" ")}" }
         val commandLineArgs = CommandLineArgs(args)

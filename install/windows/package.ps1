@@ -9,7 +9,7 @@ if ($Args.count -ne 1) {
 
 "Creating Windows Installer"
 # https://docs.oracle.com/en/java/javase/14/docs/specs/man/jpackage.html
-jpackage --input opencola/server/lib/ `
+jpackage --input ../opencola/server/lib/ `
     --name OpenCola `
     --vendor OpenCola `
     --app-version $Args[0] `
@@ -19,7 +19,7 @@ jpackage --input opencola/server/lib/ `
     --arguments --desktop `
     --verbose `
     --type msi `
-    --icon icons/pull-tab.ico `
+    --icon pull-tab.ico `
     --win-shortcut `
     --win-menu
 # --win-console
