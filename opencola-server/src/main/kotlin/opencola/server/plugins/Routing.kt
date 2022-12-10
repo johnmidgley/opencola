@@ -105,7 +105,8 @@ fun Application.configureBootstrapRouting(
         }
 
         post("/installCert") {
-            val certPath = storagePath.resolve("cert/opencola-ssl.der")
+            // FYI - linux only supports pem. Windows and Mac support both der and pem
+            val certPath = storagePath.resolve("cert/opencola-ssl.pem")
             val os = getOS()
 
             if(os == OS.Mac) {
@@ -113,7 +114,7 @@ fun Application.configureBootstrapRouting(
                 call.respondRedirect("installCert.html")
             } else {
                 // Send the raw cert for manual installation
-                call.response.header("Content-Disposition", "attachment; filename=\"opencola-ssl.der\"")
+                call.response.header("Content-Disposition", "attachment; filename=\"opencola-ssl.pem\"")
                 call.respondBytes(certPath.readBytes(), ContentType("application", "x-x509-ca-cert"))
             }
         }
