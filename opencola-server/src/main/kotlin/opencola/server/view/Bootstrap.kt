@@ -2,7 +2,9 @@ package opencola.server.view
 
 import io.ktor.server.application.*
 import io.ktor.server.html.*
+import io.ktor.server.sessions.*
 import kotlinx.html.*
+import opencola.server.UserSession
 
 suspend fun startupForm(call: ApplicationCall, username: String, message: String? = null) {
     call.respondHtml {
@@ -24,9 +26,7 @@ suspend fun startupForm(call: ApplicationCall, username: String, message: String
                     textInput {
                         name = "username"
                         value = username
-                        readonly = true
                     }
-                    + " (Editable in opencola-server.yaml)"
                 }
                 p {
                     +"Password:"
@@ -83,9 +83,7 @@ suspend fun newUserForm(call: ApplicationCall, username: String, message: String
                             textInput {
                                 name = "username"
                                 value = username
-                                readonly = true
                             }
-                            + " (Editable in opencola-server.yaml)"
                         }
                     }
                     tr {
@@ -135,7 +133,6 @@ suspend fun changePasswordForm(call: ApplicationCall, message: String? = null) {
             }
         }
         body {
-
             form(action = "/changePassword", encType = FormEncType.applicationXWwwFormUrlEncoded, method = FormMethod.post) {
                 if(message != null) {
                     p {
@@ -176,7 +173,8 @@ suspend fun changePasswordForm(call: ApplicationCall, message: String? = null) {
     }
 }
 
-suspend fun startingPage(call: ApplicationCall) {
+suspend fun startingPage(call: ApplicationCall, username: String) {
+    call.sessions.set(UserSession(username, true))
     call.respondHtml {
         head {
             link {

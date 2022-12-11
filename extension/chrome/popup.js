@@ -12,9 +12,10 @@ function parseCookie(str) {
     }, {});
 }
 
-function login() {
+function checkLoggedIn() {
   var xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function() {
+    console.log("State change")
     if (this.readyState == 4) {
         if(this.status != 200) {
           alert("Unable to authenticate extension.\n A login page will be opened.")
@@ -23,21 +24,8 @@ function login() {
         }
     }
   };
-  xhttp.open("GET",  baseServiceUrl + '/login', true);
+  xhttp.open("GET",  baseServiceUrl + '/isLoggedIn', true);
   xhttp.send();
-}
-
-function getAuthToken() {
-  chrome.cookies.get(
-    { url: baseServiceUrl, name: 'user_session' },
-    function (cookie) {
-      if (cookie) {
-        authToken = parseCookie(decodeURIComponent(cookie.value))["authToken"].replace(/^(#s)/, '')
-      }
-      else {
-        login()
-      }
-    });
 }
 
 chrome.storage.sync.get("serviceUrl", (data) => {
@@ -51,7 +39,7 @@ chrome.storage.sync.get("serviceUrl", (data) => {
           alert("Can't connect to server:\n" + baseServiceUrl + "\nPlease start it and try again.")
           window.close()
         } else {
-          getAuthToken()
+          checkLoggedIn()
           setStatus("green")
         }
     }

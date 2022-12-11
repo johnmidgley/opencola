@@ -6,6 +6,8 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.response.*
+import io.ktor.server.sessions.*
 import io.ktor.server.testing.*
 import io.opencola.core.model.*
 import io.opencola.core.network.Notification
@@ -37,11 +39,18 @@ class ApplicationTest {
     val injector = TestApplication.instance.injector
 
     private fun configure(app: Application) {
-        app.configureRouting(application, "")
+        app.configureRouting(application)
         app.configureContentNegotiation()
         app.install(Authentication) {
-            digest("auth-digest") { }
+            session<UserSession>("auth-session") {
+                validate { session -> session }
+            }
         }
+
+        app.install(Sessions) {
+            cookie<UserSession>("user_session")
+        }
+
     }
 
     @Test

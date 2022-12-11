@@ -5,6 +5,7 @@ import io.ktor.server.application.*
 import io.ktor.server.application.Application
 import io.ktor.server.auth.*
 import io.ktor.server.http.content.*
+import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -19,6 +20,7 @@ import io.opencola.core.network.Notification
 import io.opencola.core.network.handleGetTransactions
 import io.opencola.core.network.handleNotification
 import io.opencola.core.network.providers.http.HttpNetworkProvider
+import io.opencola.core.network.response
 import io.opencola.core.system.OS
 import io.opencola.core.system.autoStart
 import io.opencola.core.system.getOS
@@ -29,6 +31,7 @@ import opencola.server.LoginCredentials
 import opencola.server.UserSession
 import opencola.server.handlers.*
 import opencola.server.view.*
+import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.readBytes
 import io.opencola.core.config.Application as app
@@ -48,9 +51,11 @@ fun Application.configureBootstrapRouting(
                 call.respondRedirect("/installCert.html")
             } else if(isNewUser) {
                 call.respondRedirect("newUser")
+            } else if (call.request.origin.scheme != "https") {
+                call.respondRedirect("https://localhost:${serverConfig.ssl!!.port}")
             } else {
-                // TODO: Get from config
-                startupForm(call, loginConfig.username)
+                val username = call.sessions.get<UserSession>()?.username ?: loginConfig.username
+                startupForm(call, username)
             }
         }
 
@@ -65,7 +70,7 @@ fun Application.configureBootstrapRouting(
                 startupForm(call, username,"Please enter a password")
             } else {
                 if (validateAuthorityKeyStorePassword(storagePath, password)) {
-                    startingPage(call)
+                    startingPage(call, username)
                     loginCredentials.complete(LoginCredentials(username.toString(), password.toString()))
                 } else
                     startupForm(call, username, "Bad password")
@@ -99,7 +104,7 @@ fun Application.configureBootstrapRouting(
             } else {
                 changeAuthorityKeyStorePassword(storagePath, "password", password!!)
                 if(autoStart) { autoStart() }
-                startingPage(call)
+                startingPage(call, username!!)
                 loginCredentials.complete(LoginCredentials(username.toString(), password.toString()))
             }
         }
@@ -162,18 +167,50 @@ fun Application.configureBootstrapRouting(
     }
 }
 
-fun Application.configureRouting(app: app, authToken: String) {
+fun Application.configureRouting(app: app) {
     // TODO: Make and user general opencola.server
     val logger = KotlinLogging.logger("opencola.init")
-    val authenticationRequired = app.config.security.login.authenticationRequired
 
     routing {
-        authenticate("auth-digest", optional = !authenticationRequired) {
-            get("/login") {
-                call.sessions.set(UserSession(authToken))
-                loggedIn(call)
-            }
+        // Authentication from https://ktor.io/docs/session-auth.html
 
+        get("/login") {
+            val username = call.sessions.get<UserSession>()?.username ?: app.config.security.login.username
+            loginPage(call, username)
+        }
+
+        post("/login") {
+            val formParameters = call.receiveParameters()
+            val username = formParameters["username"]
+            val password = formParameters["password"]
+
+            if(username == null || username.isBlank())
+                loginPage(call, app.config.security.login.username, "Please enter a username")
+            if(password == null || password.isBlank()) {
+                loginPage(call, app.config.security.login.username, "Please enter a password")
+            } else if (validateAuthorityKeyStorePassword(app.storagePath, password)) {
+                call.sessions.set(UserSession(username!!, true))
+                call.respondRedirect("/")
+            } else {
+                loginPage(call, app.config.security.login.username, "Bad password")
+            }
+        }
+
+        get("logout") {
+            val username = call.sessions.get<UserSession>()?.username ?: app.config.security.login.username
+            call.sessions.set(UserSession(username, false))
+            call.respondRedirect("/login")
+        }
+
+        get("/isLoggedIn") {
+            val userSession = call.sessions.get<UserSession>()
+            if(userSession == null || !userSession.isLoggedIn)
+                call.respond(HttpStatusCode.Unauthorized)
+            else
+                call.respond(HttpStatusCode.OK)
+        }
+
+        authenticate("auth-session") {
             get("/search") {
                 val query = call.request.queryParameters["q"]
                     ?: throw IllegalArgumentException("No query (q) specified in parameters")
@@ -294,29 +331,23 @@ fun Application.configureRouting(app: app, authToken: String) {
                 call.respond("{}")
             }
 
-            static("") {
+            post("/action") {
+                val authority = app.inject<Authority>()
+                handlePostActionCall(call, authority.authorityId, app.inject(), app.inject(), app.inject())
+            }
+
+            static {
                 // TODO: Resources don't need to be extracted - can serve right from resources - FIX
                 val resourcePath = getResourceFilePath("web", app.storagePath.parent.resolve("resource-cache"))
-                logger.info("Initializing static resources from $resourcePath")
                 file("/", resourcePath.resolve("index.html").toString())
-                files(resourcePath.toString())
             }
         }
 
-        post("/action") {
-            val authority = app.inject<Authority>()
-
-            if(app.config.security.login.authenticationRequired) {
-                val callAuthToken = call.request.headers["authToken"]
-
-                if(callAuthToken != authToken) {
-                    logger.error { "Received call to /action with invalid token: $callAuthToken" }
-                    call.respond(HttpStatusCode.Unauthorized)
-                    return@post
-                }
-            }
-
-            handlePostActionCall(call, authority.authorityId, app.inject(), app.inject(), app.inject())
+        static {
+            // TODO: Resources don't need to be extracted - can serve right from resources - FIX
+            val resourcePath = getResourceFilePath("web", app.storagePath.parent.resolve("resource-cache"))
+            logger.info("Initializing static resources from $resourcePath")
+            files(resourcePath.toString())
         }
 
         post("/networkNode") {

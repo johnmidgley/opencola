@@ -111,7 +111,7 @@ fun getServer(application: Application, loginCredentials: LoginCredentials): Net
         module {
             configureHTTP()
             configureContentNegotiation()
-            configureRouting(application, authToken)
+            configureRouting(application)
             install(StatusPages) {
                 exception<Throwable> { call, cause ->
                     val response = ErrorResponse(cause.message ?: "Unknown")
@@ -119,10 +119,16 @@ fun getServer(application: Application, loginCredentials: LoginCredentials): Net
                 }
             }
             install(Authentication) {
-                digest("auth-digest") {
-                    this.realm = realm
-                    digestProvider { userName, _ ->
-                        userTable[userName]
+                session<UserSession>("auth-session") {
+                    validate { session ->
+                        if(session.isLoggedIn) {
+                            session
+                        } else {
+                            null
+                        }
+                    }
+                    challenge {
+                        call.respondRedirect("/login")
                     }
                 }
             }
@@ -139,7 +145,7 @@ fun getServer(application: Application, loginCredentials: LoginCredentials): Net
 }
 
 data class LoginCredentials(val username: String, val password: String)
-data class UserSession(val authToken: String)
+data class UserSession(val username: String, val isLoggedIn: Boolean) : Principal
 
 suspend fun getLoginCredentials(storagePath: Path, serverConfig: ServerConfig, loginConfig: LoginConfig): LoginCredentials {
     val loginCredentials = CompletableDeferred<LoginCredentials>()
