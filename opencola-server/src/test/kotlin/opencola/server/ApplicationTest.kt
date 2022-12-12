@@ -6,7 +6,6 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.response.*
 import io.ktor.server.sessions.*
 import io.ktor.server.testing.*
 import io.opencola.core.model.*
@@ -23,6 +22,7 @@ import opencola.core.TestApplication
 import opencola.server.handlers.EntityPayload
 import opencola.server.handlers.FeedResult
 import opencola.server.handlers.SearchResults
+import opencola.server.plugins.UserSession
 import opencola.server.plugins.configureContentNegotiation
 import opencola.server.plugins.configureRouting
 import opencola.service.EntityResult

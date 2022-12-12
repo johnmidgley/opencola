@@ -27,14 +27,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import opencola.server.handlers.bootstrapInit
-import opencola.server.plugins.configureBootstrapRouting
-import opencola.server.plugins.configureContentNegotiation
-import opencola.server.plugins.configureHTTP
-import opencola.server.plugins.configureRouting
+import opencola.server.plugins.*
 import org.slf4j.LoggerFactory
 import java.net.Inet4Address
 import java.net.URI
@@ -112,30 +107,9 @@ fun getServer(application: Application, loginCredentials: LoginCredentials): Net
             configureHTTP()
             configureContentNegotiation()
             configureRouting(application)
-            install(StatusPages) {
-                exception<Throwable> { call, cause ->
-                    val response = ErrorResponse(cause.message ?: "Unknown")
-                    call.respond(HttpStatusCode.InternalServerError, Json.encodeToString(response))
-                }
-            }
-            install(Authentication) {
-                session<UserSession>("auth-session") {
-                    validate { session ->
-                        if(session.isLoggedIn) {
-                            session
-                        } else {
-                            null
-                        }
-                    }
-                    challenge {
-                        call.respondRedirect("/login")
-                    }
-                }
-            }
-
-            install(Sessions) {
-                cookie<UserSession>("user_session")
-            }
+            configureStatusPages()
+            configureAuthentication()
+            configureSessions()
 
             this.environment.monitor.subscribe(ApplicationStarted) { onServerStarted(application) }
         }
@@ -145,7 +119,6 @@ fun getServer(application: Application, loginCredentials: LoginCredentials): Net
 }
 
 data class LoginCredentials(val username: String, val password: String)
-data class UserSession(val username: String, val isLoggedIn: Boolean) : Principal
 
 suspend fun getLoginCredentials(storagePath: Path, serverConfig: ServerConfig, loginConfig: LoginConfig): LoginCredentials {
     val loginCredentials = CompletableDeferred<LoginCredentials>()

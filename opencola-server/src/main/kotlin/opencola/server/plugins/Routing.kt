@@ -20,7 +20,6 @@ import io.opencola.core.network.Notification
 import io.opencola.core.network.handleGetTransactions
 import io.opencola.core.network.handleNotification
 import io.opencola.core.network.providers.http.HttpNetworkProvider
-import io.opencola.core.network.response
 import io.opencola.core.system.OS
 import io.opencola.core.system.autoStart
 import io.opencola.core.system.getOS
@@ -28,10 +27,8 @@ import io.opencola.core.system.openFile
 import kotlinx.coroutines.CompletableDeferred
 import mu.KotlinLogging
 import opencola.server.LoginCredentials
-import opencola.server.UserSession
 import opencola.server.handlers.*
 import opencola.server.view.*
-import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.readBytes
 import io.opencola.core.config.Application as app
