@@ -173,8 +173,8 @@ suspend fun changePasswordForm(call: ApplicationCall, message: String? = null) {
     }
 }
 
-suspend fun startingPage(call: ApplicationCall, username: String) {
-    call.sessions.set(UserSession(username, true))
+suspend fun startingPage(call: ApplicationCall, authToken: String) {
+    call.sessions.set(UserSession(authToken))
     call.respondHtml {
         head {
             link {

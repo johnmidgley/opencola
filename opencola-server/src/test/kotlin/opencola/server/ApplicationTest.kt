@@ -39,7 +39,7 @@ class ApplicationTest {
     val injector = TestApplication.instance.injector
 
     private fun configure(app: Application) {
-        app.configureRouting(application)
+        app.configureRouting(application, AuthToken.encryptionParams)
         app.configureContentNegotiation()
         app.install(Authentication) {
             session<UserSession>("auth-session") {

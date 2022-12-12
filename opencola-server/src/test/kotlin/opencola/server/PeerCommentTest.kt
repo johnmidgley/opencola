@@ -2,6 +2,7 @@ package opencola.server
 
 import io.opencola.core.model.Authority
 import io.opencola.core.model.ResourceEntity
+import io.opencola.core.security.generateKeyPair
 import io.opencola.core.storage.EntityStore
 import opencola.server.handlers.addComment
 import org.junit.Test
@@ -15,7 +16,7 @@ class PeerCommentTest : PeerNetworkTest() {
     fun testCommentOnPeerPost(){
         val applications = getApplications(2)
         val (application0, application1) = applications
-        val (server0, server1) = applications.map { getServer(it, LoginCredentials("user", "password")) }
+        val (server0, server1) = applications.map { getServer(it, AuthToken.encryptionParams) }
 
         // Start the first server and add a document
         logger.info { "Starting ${application0.config.name}" }

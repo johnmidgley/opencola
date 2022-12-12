@@ -12,6 +12,7 @@ import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.X509EncodedKeySpec
 import java.util.*
 import javax.crypto.Cipher
+import javax.crypto.KeyGenerator
 
 
 // https://metamug.com/article/security/sign-verify-digital-signature-ecdsa-java.html

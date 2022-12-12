@@ -5,7 +5,6 @@ import mu.KotlinLogging
 import java.awt.Desktop
 import java.io.File
 import java.net.URI
-import java.net.URL
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.writeText
@@ -119,6 +118,8 @@ fun autoStartWindows() {
     val result = runCommand(listOf(autoStartBat.toString())).joinToString("\n")
     logger.info { "autoStartWindows: $result" }
 }
+
+// osascript -e 'tell application "Terminal" to do script "cd /Users/johnmidgley/Library/Application*Support/OpenCola/storage/cert && ./install-cert"'
 
 fun autoStart() {
     when(getOS()) {

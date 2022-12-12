@@ -1,13 +1,8 @@
 package opencola.server
 
-import io.ktor.http.*
 import io.ktor.server.application.*
-import io.ktor.server.auth.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import io.ktor.server.plugins.statuspages.*
-import io.ktor.server.response.*
-import io.ktor.server.sessions.*
 import io.opencola.core.config.Application
 import io.opencola.core.config.Config
 import io.opencola.core.config.LoginConfig
@@ -16,9 +11,7 @@ import io.opencola.core.event.EventBus
 import io.opencola.core.event.Events
 import io.opencola.core.model.Id
 import io.opencola.core.network.NetworkNode
-import io.opencola.core.security.encode
-import io.opencola.core.security.getMd5Digest
-import io.opencola.core.security.initProvider
+import io.opencola.core.security.*
 import io.opencola.core.serialization.Base58
 import io.opencola.core.system.detectResume
 import io.opencola.core.system.openUri
@@ -76,12 +69,8 @@ fun onServerStarted(application: Application) {
 @Serializable
 data class ErrorResponse(val message: String)
 
-fun getServer(application: Application, loginCredentials: LoginCredentials): NettyApplicationEngine {
+fun getServer(application: Application, authEncryptionParams: EncryptionParams): NettyApplicationEngine {
     val serverConfig = application.config.server
-    val realm = "/"
-    val username = loginCredentials.username
-    val userTable = mapOf(username to getMd5Digest("$username:$realm:${loginCredentials.password}"))
-    val authToken = Base58.encode(userTable[username]!!)
 
     val environment = applicationEngineEnvironment {
         log = LoggerFactory.getLogger("ktor.application")
@@ -106,9 +95,9 @@ fun getServer(application: Application, loginCredentials: LoginCredentials): Net
         module {
             configureHTTP()
             configureContentNegotiation()
-            configureRouting(application)
+            configureRouting(application, authEncryptionParams)
             configureStatusPages()
-            configureAuthentication()
+            configureAuthentication(authEncryptionParams)
             configureSessions()
 
             this.environment.monitor.subscribe(ApplicationStarted) { onServerStarted(application) }
@@ -120,7 +109,12 @@ fun getServer(application: Application, loginCredentials: LoginCredentials): Net
 
 data class LoginCredentials(val username: String, val password: String)
 
-suspend fun getLoginCredentials(storagePath: Path, serverConfig: ServerConfig, loginConfig: LoginConfig): LoginCredentials {
+suspend fun getLoginCredentials(
+    storagePath: Path,
+    serverConfig: ServerConfig,
+    loginConfig: LoginConfig,
+    authEncryptionParams: EncryptionParams,
+): LoginCredentials {
     val loginCredentials = CompletableDeferred<LoginCredentials>()
 
     if(loginConfig.password != null) {
@@ -149,10 +143,8 @@ suspend fun getLoginCredentials(storagePath: Path, serverConfig: ServerConfig, l
 
         module {
             configureHTTP()
-            configureBootstrapRouting(storagePath, serverConfig, loginConfig, loginCredentials)
-            install(Sessions) {
-                cookie<UserSession>("user_session")
-            }
+            configureBootstrapRouting(storagePath, serverConfig, loginConfig, authEncryptionParams, loginCredentials)
+            configureSessions()
         }
     }
 
@@ -171,8 +163,8 @@ fun startServer(storagePath: Path, config: Config) {
             openUri(URI("http://localhost:${config.server.port}"))
         }
 
-        val loginCredentials = getLoginCredentials(storagePath, config.server, config.security.login)
+        val loginCredentials = getLoginCredentials(storagePath, config.server, config.security.login, AuthToken.encryptionParams)
         val application = getApplication(storagePath, config, loginCredentials)
-        getServer(application, loginCredentials).start()
+        getServer(application, AuthToken.encryptionParams).start()
     }
 }

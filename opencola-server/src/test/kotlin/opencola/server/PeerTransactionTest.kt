@@ -2,6 +2,7 @@ package opencola.server
 
 import io.opencola.core.model.Authority
 import io.opencola.core.model.ResourceEntity
+import io.opencola.core.security.generateKeyPair
 import io.opencola.core.storage.EntityStore
 import opencola.server.handlers.handleSearch
 import org.junit.Test
@@ -16,7 +17,7 @@ class PeerTransactionTest : PeerNetworkTest() {
     fun testTransactionReplication() {
         val applications = getApplications(2)
         val (application0, application1) = applications
-        val (server0, server1) = applications.map { getServer(it, LoginCredentials("user", "password")) }
+        val (server0, server1) = applications.map { getServer(it, AuthToken.encryptionParams) }
 
         try {
             // Start first server and add a resource to the store
@@ -61,7 +62,7 @@ class PeerTransactionTest : PeerNetworkTest() {
     fun testRequestOnlineTrigger() {
         val applications = getApplications(2)
         val (application0, application1) = applications
-        val (server0, server1) = applications.map { getServer(it, LoginCredentials("user", "password")) }
+        val (server0, server1) = applications.map { getServer(it, AuthToken.encryptionParams) }
 
         try {
             // Start the first server and add a document
@@ -88,7 +89,7 @@ class PeerTransactionTest : PeerNetworkTest() {
             // Now start up the first server again. This will trigger call get transactions to server 1, which should trigger
             // it to grab the missing transaction
             logger.info { "Re-starting ${application0.config.name}" }
-            val server0restart = getServer(application0, LoginCredentials("user", "password"))
+            val server0restart = getServer(application0, AuthToken.encryptionParams)
             startServer(server0restart)
             sleep(2000)
 

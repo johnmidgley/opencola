@@ -7,6 +7,7 @@ import io.opencola.core.event.EventBus
 import io.opencola.core.model.Authority
 import io.opencola.core.network.NetworkNode
 import io.opencola.core.storage.AddressBook
+import opencola.server.AuthToken
 import opencola.server.LoginCredentials
 import opencola.server.getServer
 import opencola.server.handlers.*
@@ -24,7 +25,7 @@ class ApplicationNode(val application: Application) : Node {
     }
 
     override fun start(): Node {
-        server = getServer(application, LoginCredentials("user","password")).also { it.start() }
+        server = getServer(application, AuthToken.encryptionParams).also { it.start() }
         return this
     }
 

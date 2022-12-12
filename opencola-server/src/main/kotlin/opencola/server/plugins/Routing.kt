@@ -20,12 +20,14 @@ import io.opencola.core.network.Notification
 import io.opencola.core.network.handleGetTransactions
 import io.opencola.core.network.handleNotification
 import io.opencola.core.network.providers.http.HttpNetworkProvider
+import io.opencola.core.security.EncryptionParams
 import io.opencola.core.system.OS
 import io.opencola.core.system.autoStart
 import io.opencola.core.system.getOS
 import io.opencola.core.system.openFile
 import kotlinx.coroutines.CompletableDeferred
 import mu.KotlinLogging
+import opencola.server.AuthToken
 import opencola.server.LoginCredentials
 import opencola.server.handlers.*
 import opencola.server.view.*
@@ -33,12 +35,18 @@ import java.nio.file.Path
 import kotlin.io.path.readBytes
 import io.opencola.core.config.Application as app
 
+private fun ApplicationCall.getAuthToken(encryptionParams: EncryptionParams): AuthToken? {
+    return sessions.get<UserSession>()?.decodeAuthToken(encryptionParams)
+}
+
 // TODO: All routes should authenticate caller and authorize activity. Right now everything is open
 fun Application.configureBootstrapRouting(
     storagePath: Path,
     serverConfig: ServerConfig,
     loginConfig: LoginConfig,
-    loginCredentials: CompletableDeferred<LoginCredentials>) {
+    authEncryptionParams: EncryptionParams,
+    loginCredentials: CompletableDeferred<LoginCredentials>,
+) {
 
     routing {
         get("/") {
@@ -51,7 +59,7 @@ fun Application.configureBootstrapRouting(
             } else if (call.request.origin.scheme != "https") {
                 call.respondRedirect("https://localhost:${serverConfig.ssl!!.port}")
             } else {
-                val username = call.sessions.get<UserSession>()?.username ?: loginConfig.username
+                val username = call.getAuthToken(authEncryptionParams)?.username ?: loginConfig.username
                 startupForm(call, username)
             }
         }
@@ -67,7 +75,8 @@ fun Application.configureBootstrapRouting(
                 startupForm(call, username,"Please enter a password")
             } else {
                 if (validateAuthorityKeyStorePassword(storagePath, password)) {
-                    startingPage(call, username)
+                    val authToken = AuthToken(username).encode(authEncryptionParams)
+                    startingPage(call, authToken)
                     loginCredentials.complete(LoginCredentials(username.toString(), password.toString()))
                 } else
                     startupForm(call, username, "Bad password")
@@ -164,7 +173,7 @@ fun Application.configureBootstrapRouting(
     }
 }
 
-fun Application.configureRouting(app: app) {
+fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParams) {
     // TODO: Make and user general opencola.server
     val logger = KotlinLogging.logger("opencola.init")
 
@@ -172,8 +181,9 @@ fun Application.configureRouting(app: app) {
         // Authentication from https://ktor.io/docs/session-auth.html
 
         get("/login") {
-            val username = call.sessions.get<UserSession>()?.username ?: app.config.security.login.username
+            val username = call.getAuthToken(authEncryptionParams)?.username ?: app.config.security.login.username
             loginPage(call, username)
+
         }
 
         post("/login") {
@@ -186,7 +196,8 @@ fun Application.configureRouting(app: app) {
             if(password == null || password.isBlank()) {
                 loginPage(call, app.config.security.login.username, "Please enter a password")
             } else if (validateAuthorityKeyStorePassword(app.storagePath, password)) {
-                call.sessions.set(UserSession(username!!, true))
+                val authToken = AuthToken(username!!).encode(authEncryptionParams)
+                call.sessions.set(UserSession(authToken))
                 call.respondRedirect("/")
             } else {
                 loginPage(call, app.config.security.login.username, "Bad password")
@@ -194,17 +205,18 @@ fun Application.configureRouting(app: app) {
         }
 
         get("logout") {
-            val username = call.sessions.get<UserSession>()?.username ?: app.config.security.login.username
-            call.sessions.set(UserSession(username, false))
+            val username = call.getAuthToken(authEncryptionParams)?.username ?: app.config.security.login.username
+            val authToken = AuthToken(username, -1).encode(authEncryptionParams)
+            call.sessions.set(UserSession(authToken))
             call.respondRedirect("/login")
         }
 
         get("/isLoggedIn") {
-            val userSession = call.sessions.get<UserSession>()
-            if(userSession == null || !userSession.isLoggedIn)
-                call.respond(HttpStatusCode.Unauthorized)
-            else
+            val authToken = call.getAuthToken(authEncryptionParams)
+            if(authToken?.isValid() == true)
                 call.respond(HttpStatusCode.OK)
+            else
+                call.respond(HttpStatusCode.Unauthorized)
         }
 
         authenticate("auth-session") {
