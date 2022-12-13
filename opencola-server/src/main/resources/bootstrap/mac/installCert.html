@@ -9,30 +9,18 @@
 <body style="max-width: 1200px">
     <h2>Welcome to OpenCola!</h2>
 
-    In order to access OpenCola over a secure connection, you need to install an SSL certificate.
-    To start the process, click <strong>Install Certificate</strong> and then follow the instructions below.
+    In order to access OpenCola over a secure connection, you need to install an SSL certificate. This keeps your password and data private.
+
+    <p>Click <strong>Install Certificate</strong> to open Keychain Access and install the certificate:</p>
 
     <p>
-        <form  action="/installCert" method="post">
-            <input type="submit" value="Install Certificate"/>
-        </form>
+    <form  action="/installCert" method="post">
+        <input type="submit" value="Install Certificate"/>
+    </form>
     </p>
 
-    <h3>Instructions</h3>
 
-    <p> At the prompt, enter your password and hit enter: </p>
-    <img src="img/enterKeychainPassword.png" alt="Enter Keychain Password" width="370" class="center">
-    <p>You will see your keychain with an added opencola certificate (not trusted):</p>
-    <img src="img/keychainAccessUntrusted.png" alt="Keychain Access With OpenCola Not Trusted" width="909" class="center">
-    <p>Double click on the certificate to open the certificate details and expand the <strong>trust</strong> section:</p>
-    <img src="img/openColaCert.png" alt="Certificate Details" width="625" class="center">
-    <p>Change the value for <strong>Secure Sockets Layer (SSL)</strong> to <strong>Always Trust</strong>:</p>
-    <img src="img/openColaCertAlwaysTrust.png" alt="Certificate Details With Always Trust For SSL" width="625" class="center">
-    <p>Close the certificate, at which point you will be asked to enter your password again.
-        Your keychain should look like:</p>
-    <img src="img/keychainAccessTrusted.png" alt="Keychain Access With OpenCola Trusted" width="909" class="center">
-    <p>Close <strong>Keychain Access</strong> and click <strong>Continue</strong></p>
-
+    When done, click <strong>Continue</strong>:
     <p>
         <form  action="/certInstalled" method="post">
             <input type="submit" value="Continue">

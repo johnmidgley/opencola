@@ -21,10 +21,7 @@ import io.opencola.core.network.handleGetTransactions
 import io.opencola.core.network.handleNotification
 import io.opencola.core.network.providers.http.HttpNetworkProvider
 import io.opencola.core.security.EncryptionParams
-import io.opencola.core.system.OS
-import io.opencola.core.system.autoStart
-import io.opencola.core.system.getOS
-import io.opencola.core.system.openFile
+import io.opencola.core.system.*
 import kotlinx.coroutines.CompletableDeferred
 import mu.KotlinLogging
 import opencola.server.AuthToken
@@ -120,8 +117,8 @@ fun Application.configureBootstrapRouting(
             val os = getOS()
 
             if(os == OS.Mac) {
-                openFile(certPath)
-                call.respondRedirect("installCert.html")
+                installCertMac(storagePath)
+                call.respondRedirect("/")
             } else {
                 // Send the raw cert for manual installation
                 call.response.header("Content-Disposition", "attachment; filename=\"opencola-ssl.pem\"")

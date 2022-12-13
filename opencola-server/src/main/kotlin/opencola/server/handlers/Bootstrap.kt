@@ -10,6 +10,8 @@ import io.opencola.core.security.KeyStore as OpenColaKeyStore
 
 private val logger = KotlinLogging.logger("bootstrap")
 
+// TODO: These look like they could live elsewhere
+
 fun getCertStorePath(storagePath: Path) : Path {
     return storagePath.resolve("cert/opencola-ssl.pks")
 }
@@ -36,22 +38,6 @@ fun validateAuthorityKeyStorePassword(storagePath: Path, password: String): Bool
 // TODO: Move to authority store specific place
 fun changeAuthorityKeyStorePassword(storagePath: Path, oldPassword: String, newPassword: String) {
     OpenColaKeyStore(getAuthorityStorePath(storagePath), oldPassword).changePassword(newPassword)
-}
-
-private fun certInstalledIndicatorPath(storagePath: Path): Path {
-    return getCertStorePath(storagePath)
-        .toString()
-        .substringBeforeLast(".")
-        .plus(".installed")
-        .let { Path.of(it) }
-}
-
-fun isCertInstalled(storagePath: Path): Boolean {
-    return certInstalledIndicatorPath(storagePath).exists()
-}
-
-fun setCertInstalled(storagePath: Path) {
-    certInstalledIndicatorPath(storagePath).toFile().createNewFile()
 }
 
 fun isNewUser(storagePath: Path): Boolean {

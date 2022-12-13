@@ -35,6 +35,10 @@ fun runCommand(args: List<String>, workingDir: Path = Path("."), timeoutInSecond
                 if (printOutput) println(line)
             }
         }
+
+        if(process.exitValue() != 0) {
+            throw RuntimeException("Command failed (${process.exitValue()}) ${args.joinToString(" ")}: ${outputLines.joinToString("\n")}")
+        }
     }
 
     process.destroy()
