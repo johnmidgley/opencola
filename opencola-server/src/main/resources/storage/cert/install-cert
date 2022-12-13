@@ -3,7 +3,7 @@
 OS="`uname`"
 case $OS in
   'Darwin')
-      sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain opencola-ssl.der
+      security add-trusted-cert -k login.keychain-db opencola-ssl.pem
       ;;
   'Linux')
     # https://ubuntu.com/server/docs/security-trust-store
