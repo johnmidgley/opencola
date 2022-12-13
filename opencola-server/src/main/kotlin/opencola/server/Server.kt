@@ -11,10 +11,12 @@ import io.opencola.core.event.EventBus
 import io.opencola.core.event.Events
 import io.opencola.core.model.Id
 import io.opencola.core.network.NetworkNode
-import io.opencola.core.security.*
-import io.opencola.core.serialization.Base58
+import io.opencola.core.security.EncryptionParams
+import io.opencola.core.security.encode
+import io.opencola.core.security.initProvider
 import io.opencola.core.system.detectResume
 import io.opencola.core.system.openUri
+import io.opencola.core.system.runningInDocker
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -158,9 +160,11 @@ suspend fun getLoginCredentials(
 
 fun startServer(storagePath: Path, config: Config) {
     runBlocking {
-        launch {
-            delay(1000)
-            openUri(URI("http://localhost:${config.server.port}"))
+        if (!runningInDocker()) {
+            launch {
+                delay(1000)
+                openUri(URI("http://localhost:${config.server.port}"))
+            }
         }
 
         val loginCredentials = getLoginCredentials(storagePath, config.server, config.security.login, AuthToken.encryptionParams)

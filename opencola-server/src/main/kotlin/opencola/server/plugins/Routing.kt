@@ -75,8 +75,7 @@ fun Application.configureBootstrapRouting(
                 startupForm(call, username,"Please enter a password")
             } else {
                 if (validateAuthorityKeyStorePassword(storagePath, password)) {
-                    val authToken = AuthToken(username).encode(authEncryptionParams)
-                    startingPage(call, authToken)
+                    startingPage(call, AuthToken(username).encode(authEncryptionParams))
                     loginCredentials.complete(LoginCredentials(username.toString(), password.toString()))
                 } else
                     startupForm(call, username, "Bad password")
@@ -110,7 +109,7 @@ fun Application.configureBootstrapRouting(
             } else {
                 changeAuthorityKeyStorePassword(storagePath, "password", password!!)
                 if(autoStart) { autoStart() }
-                startingPage(call, username!!)
+                startingPage(call, AuthToken(username!!).encode(authEncryptionParams))
                 loginCredentials.complete(LoginCredentials(username.toString(), password.toString()))
             }
         }

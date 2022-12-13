@@ -1,8 +1,8 @@
 #!/bin/bash
 export OPENCOLA_HOME=~/.opencola
 
-IPS=$(ifconfig | grep "inet " | awk '{print $2}' | tr -s '\n' ", ")
-export SANS="${IPS}localhost"
+IPS=$(ifconfig | grep "inet " | awk '{print "ip:"$2}' | tr -s '\n' ", ")
+export SANS="${IPS}dns:localhost"
 
 if [[ ! -d $OPENCOLA_HOME/storage ]]; then
   echo "Creating storage"
@@ -14,15 +14,6 @@ CERT_DIR="$OPENCOLA_HOME/storage/cert"
 if [ ! -d "$CERT_DIR" ] || [ ! -f "$CERT_DIR/gen-ssl-cert" ]; then
   echo "Creating cert directory"
   cp -r ../opencola/storage/cert "$OPENCOLA_HOME/storage/"
-fi
-
-if [ -e "$OPENCOLA_HOME/storage/cert/opencola-ssl.der" ]
-then
-  echo "SSL certificate found"
-  CERT_EXISTED=true
-else
-  echo "No SSL certificate found"
-  CERT_EXISTED=false
 fi
 
 docker-compose --version 1>/dev/null
@@ -41,9 +32,9 @@ else
 exit 2
 fi
 
-if ! $CERT_EXISTED
+if !  [ -e "$OPENCOLA_HOME/storage/cert/opencola-ssl.installed" ]
 then
-  echo "Waiting for certificate creation"
+  echo "Waiting for certificate creation..."
 
   for i in {1..30}
   do
@@ -57,17 +48,36 @@ then
 
   if [ -e "$OPENCOLA_HOME/storage/cert/opencola-ssl.der" ]
   then
-    echo "New certs have been created. Install (y/n)?"
-    read -r
-    if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ]
-    then
-      pushd $OPENCOLA_HOME/storage/cert/
-      sh install-cert
-      popd
-    fi
+    echo "New certs have been created. Installing (requires password)"
+    pushd $OPENCOLA_HOME/storage/cert/
+    bash install-cert
+    touch "$OPENCOLA_HOME/storage/cert/opencola-ssl.installed"
+    popd
+    
+  else
+    echo "No certs found. Something didn't start properly. Please check your logs"
+    exit 1
   fi
 fi
 
+echo "Wating for server to start..."
+
+for i in {1..30}
+do
+  sleep 1
+  curl --output /dev/null --silent --fail "http://localhost:5795/"
+  if [ $? -eq 0 ]
+  then
+    STARTED=true
+    break
+  fi
+done
+
+if [ -z ${STARTED+x} ]
+then
+  echo "Server failed to start. Please check the logs"
+  exit 1
+fi
 
 echo "Server started"
 echo
@@ -78,3 +88,7 @@ echo
 echo "Secure URLs (Recommended):"
 echo "https://localhost:5796 (Local only)"
 ifconfig | grep "inet " | grep -v 127.0.0.1 | awk '{print "https://" $2 ":5796"}'
+
+open "https://localhost:5796"
+
+

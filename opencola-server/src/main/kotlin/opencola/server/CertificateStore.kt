@@ -31,10 +31,14 @@ fun getSanEntriesFromNetworkInterfaces(): List<String> {
 fun getSanEntries(sslConfig: SSLConfig): List<String> {
     // If subject alternative names are specified in config, as is the case when running in docker, use them,
     // otherwise generate from network interfaces
-    return sslConfig.sans.ifEmpty { getSanEntriesFromNetworkInterfaces() }
+    return sslConfig
+        .sans
+        .ifEmpty { getSanEntriesFromNetworkInterfaces() }
+        .also { logger.info { "Subject Alternative Names: $it" } }
 }
 
 fun createSSLCertificateAndStore(storagePath: Path, password: String, sslConfig: SSLConfig) {
+    logger.info { "Creating certificate store" }
     val certPath = storagePath.resolve("cert")
     val sans = getSanEntries(sslConfig)
     val keyPair = generateRSAKeyPair()
@@ -64,7 +68,7 @@ fun getSSLCertificateStore(storagePath: Path, password: String, sslConfig: SSLCo
 
     val keyStoreFile = certStoragePath.resolve("opencola-ssl.pks").toFile()
     if(!keyStoreFile.exists()) {
-        logger.info { "SSL Certificate store not found - creating" }
+        logger.info { "SSL Certificate store not found" }
         createSSLCertificateAndStore(storagePath, password, sslConfig)
         // openFile(certStoragePath.resolve("opencola-ssl.der"))
     }

@@ -3,6 +3,7 @@ package opencola.server.view
 import io.ktor.server.application.*
 import io.ktor.server.html.*
 import io.ktor.server.sessions.*
+import io.opencola.core.system.runningInDocker
 import kotlinx.html.*
 import opencola.server.plugins.UserSession
 
@@ -102,15 +103,17 @@ suspend fun newUserForm(call: ApplicationCall, username: String, message: String
                             passwordInput(name = "passwordConfirm")
                         }
                     }
-                    tr {
-                        td {
-                            +"Auto-Start:"
-                        }
-                        td {
-                            checkBoxInput {
-                                name = "autostart"
-                                value = "true"
-                                checked = true
+                    if (!runningInDocker()) {
+                        tr {
+                            td {
+                                +"Auto-Start:"
+                            }
+                            td {
+                                checkBoxInput {
+                                    name = "autostart"
+                                    value = "true"
+                                    checked = true
+                                }
                             }
                         }
                     }
