@@ -60,7 +60,7 @@ then
   fi
 fi
 
-echo "Wating for server to start..."
+echo "Waiting for server to start..."
 
 for i in {1..30}
 do

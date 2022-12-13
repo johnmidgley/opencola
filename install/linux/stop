@@ -1,4 +1,5 @@
 #!/bin/bash
 export OPENCOLA_HOME=~/.opencola
-docker-compose -p opencola down
+docker-compose -p opencola down 1>/dev/null 2>/dev/null
+echo "OpenCola is stopped"
 
