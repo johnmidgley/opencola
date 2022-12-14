@@ -1,50 +1,26 @@
 # Script execution must be enable to run this script. To do so, execute the following command:
 # Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Bypass -Force
 
-param(
-    [Parameter()]
-    [String] $mode = "docker"
-)
+$ErrorActionPreference= 'silentlycontinue'
 
-$jdkPath = "$env:ProgramFiles\Java\jdk-19"
+$certDirectoryPath = "$env:AppData\opencola\storage\cert\"
+$certDerPath = "$certDirectoryPath\opencola-ssl.der"
+$certInstalledPath = "$certDirectoryPath\opencola-ssl.installed"
 
-
-if($mode -eq "docker") {
-    if (Test-Path -Path "$env:ProgramFiles\Docker\Docker\resources\bin")
-    {
-	    "Looks like Docker is installed in the default location"
-    } else {
-	    "Looks like Docker is NOT installed in the default location."
-        "Install docker: https://www.docker.com/"
-	    exit 1
-    }
-} elseif(mode -eq "java") {
-    if(!(Test-Path -Path $jdkPath -PathType Container)) {
-        "Could not find required JDK in $jdkPath"
-        $installJava = Read-Host "Would you like to install java now? [y/n]"
-        if($installJava.toLower() -eq "y") {
-            .\install-java 
-            if($LASTEXITCODE -ne 0) {
-                "Java install failed. Can't start OpenCola."
-                exit 1
-            }
-        } else {
-            "You must install Java to run OpenCola in java mode"
-            exit 1
-        }
-    }
+if (Test-Path -Path "$env:ProgramFiles\Docker\Docker\resources\bin") {
+    "Looks like Docker is installed in the default location"
 } else {
-    "ERROR: Unknown mode: $mode"
+    Write-Host -ForegroundColor Red "Looks like Docker is NOT installed in the default location."
+    "Install docker: https://www.docker.com/"
     exit 1
 }
 
 # Check if OpenCola storage dir already exists in the default location
-if (Test-Path -Path "$env:AppData\opencola")
-{
+if (Test-Path -Path "$env:AppData\opencola\storage") {
     "OpenCola storage already exists."
 } else {
-        "OpenCola storage does not exist. Making a new one..."
-        Copy-Item -Path ..\opencola\storage\ "$env:AppData\opencola\storage" -Recurse
+    "OpenCola storage does not exist. Making a new one..."
+    Copy-Item -Path ..\opencola\storage\ "$env:AppData\opencola\storage" -Recurse
 }
 
 # Get Subject Altenative Names for cert (IP4 Addresses of machine)
@@ -55,99 +31,92 @@ foreach($ip in $ips) {
     $env:SANS += $ip.IPAddress + ","
 }
 
-$certExisted = Test-Path -Path "$env:AppData\opencola\storage\cert\opencola-ssl.der"
-
-if($certExisted)
-{
-    "SSL certificate found"
+$certInstalled = (Test-Path -Path $certInstalledPath)
+if($certInstalled) {
+    "SSL certificate installed"
 } else {
-    "No SSL certificate found"
+    "SSL certificate NOT installed"
 
     if(!([Security.Principal.WindowsPrincipal] `
         [Security.Principal.WindowsIdentity]::GetCurrent() `
         ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-	        Write-Host "TYou must be running as administrator to install certificates" -ForegroundColor Red
+	        Write-Host -ForegroundColor Red "You must be running as administrator to install certificates"
 	        exit 1
     }
 }
 
-if($mode -eq "docker") {
-    "Starting OpenCola with docker.."
-    docker compose -p opencola up --build -d 
+"Starting OpenCola with docker."
+docker compose -p opencola up --build -d 
 
-    if($LASTEXITCODE -ne 0) {
-        "Docker failed to start Opencola."
+if($LASTEXITCODE -ne 0) {
+    Write-Host -ForegroundColor Red "Docker failed to start Opencola." 
+    exit 1
+}
+
+if (!$certInstalled) {
+    Write-Host -NoNewline "Waiting for certificate creation."
+
+    for ($i = 0; $i -lt 30; $i++) {
+        if (Test-Path -Path $certDerPath) {
+            break
+        } else {
+            Write-Host -NoNewline "."
+            Start-Sleep -Seconds 1
+        }
+    }
+
+    Write-Host ""
+
+    if(!(Test-Path -Path $certDerPath)) {
+        Write-Host -ForegroundColor Red "Certficates not created. Please check logs." 
         exit 1
     }
+}
 
-    if (!$certExisted) {
-        "Waiting for certificate creation"
+if(!$certInstalled) {
+    Write-Host -ForegroundColor Green -NoNewline "New certificate found. Install? [y/n] "
+    $installCert = Read-Host
 
-        for ($i = 0; $i -lt 30; $i++) {
-            if (Test-Path -Path "$env:AppData\opencola\storage\cert\opencola-ssl.der") {
-                break
-            }
-            else {
-                Start-Sleep -Seconds 1
-            }
-        }
-    }
-} elseif($mode -eq "java") {
-    if(!$certExisted) {
-        $sans = "dns:localhost"
-
-        foreach($ip in $ips) {
-            $sans += ",ip:" + $ip.IPAddress 
-        }
-
+    if ($installCert.toLower() -eq "y") {
         Push-Location "$env:AppData\opencola\storage\cert"
-        .\gen-ssl-cert.ps1 $sans
-        Pop-location 
+        .\install-cert.ps1
+        "ERROR: $LASTEXITCODE"
+        Pop-Location
 
-        if($LASTEXITCODE -ne 0) {
-            "ERROR: Unable to create certificates"
+        if($LASTEXITCODE -eq 0) {
+            Write-Output "" >> $certInstalledPath
         }
     }
 }
 
-# If a cert was created, install it
-if(!$certExisted) {
-    if (Test-Path -Path "$env:AppData\opencola\storage\cert\opencola-ssl.der") {
-        $installCert = Read-Host "New certificate found. Install? [y/n]"
-
-        if ($installCert.toLower() -eq "y") {
-            Push-Location "$env:AppData\opencola\storage\cert"
-            .\install-cert.ps1
-            "ERROR: $LASTEXITCODE"
-            Pop-Location
-
-            if($LASTEXITCODE -ne 0) {
-                "Certificat did not get installed. Did you forget to run as administrator?"
-                "If so, goto $env:AppData\opencola\storage\cert and run install-cert.ps1 in an Administrator shell"
-                exit 1
-            }
-        }
-    }
-    else {
-        "Certficates not created. You will get privacy errors if using https"
-    }
+if(!(Test-Path -Path $certInstalledPath)) {
+    Write-Host -ForegroundColor Red "Certificate did not get installed. Can't start OpenCola"
+    exit 1    
 }
 
-if($mode -eq "java") {
-    $processOptions = @{
-        FilePath = "$jdkPath\bin\java"
-        WorkingDirectory = "."
-        #RedirectStandardOutput = "stdout.log"
-        #RedirectStandardError = "stderr.log"
-        WindowStyle = "Minimized"
-        ArgumentList = "-classpath ..\opencola\server\lib\* opencola.server.ApplicationKt -s $env:appData\opencola\storage\ -a ..\opencola\server"
+$started = $false
+Write-Host -NoNewline "Waiting for server to start."
+
+for($i = 0; $i -lt 10; $i++){
+    $status = (Invoke-WebRequest "http://localhost:5795").statusCode
+
+    if($status -eq "200") {
+        $started = $true
+        break
     }
 
-    Start-Process @processOptions
-    # java -classpath "..\opencola\server\lib\*" opencola.server.ApplicationKt -s "$env:appData\opencola\storage\" -a ..\opencola\server
+    Write-Host -NoNewline "."
+    Start-Sleep -Seconds 1
 }
 
-"Server Started"
+""
+
+if(!$started) {
+    Write-Host -ForegroundColor Red "Server failed to start. Please check the logs."
+    exit 1
+}
+
+Write-Host -ForegroundColor Green "Server Started"
 ""
 "Insecure URLs:"
 "http://localhost:5795"
@@ -162,7 +131,4 @@ foreach($ip in $ips) {
      "https://$($ip.ipAddress):5796"
 }
 
-""
-"Waiting to launch browser..."
-Start-Sleep -Seconds 5
 Start-Process https://localhost:5796
