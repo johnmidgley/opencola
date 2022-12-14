@@ -1,8 +1,10 @@
 #!/bin/bash
 export OPENCOLA_HOME=~/.opencola
 
+IP_REGEX="([0-9]{1,3}\.){3}[0-9]{1,3}"
 IPS=$(hostname -I | tr -s ' ' ',')
-export SANS="${IPS}localhost"
+SANS="$(echo "$IPS" | sed -r "s/$IP_REGEX/ip:&/g")dns:localhost"
+export SANS
 
 if [[ ! -d $OPENCOLA_HOME/storage ]]; then
   echo "Creating storage"
@@ -16,56 +18,67 @@ if [ ! -d "$CERT_DIR" ] || [ ! -f "$CERT_DIR/gen-ssl-cert" ]; then
   cp -r ../opencola/storage/cert "$OPENCOLA_HOME/storage/"
 fi
 
-if [ -e "$OPENCOLA_HOME/storage/cert/opencola-ssl.der" ]
-then
-  echo "SSL certificate found"
-  CERT_EXISTED=true
-else
-  echo "No SSL certificate found"
-  CERT_EXISTED=false
-fi
-
-docker-compose --version 1>/dev/null
+docker-compose --version 1>/dev/null 2>/dev/null
 if [ $? -ne 0 ] 
 then
   echo $'\e[31mUnable to execute docker-compose.\e[0m Is Docker [https://docs.docker.com/get-docker/] installed?'
   exit 1
 fi
 
-docker-compose -p opencola up --build -d 1>/dev/null
+docker-compose -p opencola up --build -d 1>/dev/null 2>/dev/null
 if [ $? -eq 0 ] 
 then
     echo "Docker container started"
 else
-  echo $'\e[31mUnable to start OpenCola.\e[0m Is docker running [try "open /Applications/Docker.app/"]? Is the port already in use?'
+  echo $'\e[31mUnable to start OpenCola.\e[0m Is docker running? Is the port already in use?'
 exit 2
 fi
 
-if ! $CERT_EXISTED
-then
-  echo "Waiting for certificate creation"
+#if !  [ -e "$OPENCOLA_HOME/storage/cert/opencola-ssl.installed" ]
+#then
+#  echo "Waiting for certificate creation..."
+#
+#  for i in {1..30}
+#  do
+#    if [ -e "$OPENCOLA_HOME/storage/cert/opencola-ssl.der" ]
+#    then
+#      break
+#    else
+#      sleep 1
+#    fi
+#  done
+#
+#  if [ -e "$OPENCOLA_HOME/storage/cert/opencola-ssl.der" ]
+#  then
+#    echo "New certs have been created. Installing (requires password)"
+#    pushd $OPENCOLA_HOME/storage/cert/
+#    bash install-cert
+#    touch "$OPENCOLA_HOME/storage/cert/opencola-ssl.installed"
+#    popd
+#
+#  else
+#    echo "No certs found. Something didn't start properly. Please check your logs"
+#    exit 1
+#  fi
+#fi
 
-  for i in {1..30}
-  do
-    if [ -e "$OPENCOLA_HOME/storage/cert/opencola-ssl.der" ]
-    then
-      break
-    else
-      sleep 1
-    fi    
-  done
+echo "Waiting for server to start..."
 
-  if [ -e "$OPENCOLA_HOME/storage/cert/opencola-ssl.der" ]
+for i in {1..30}
+do
+  sleep 1
+  curl --output /dev/null --silent --fail "http://localhost:5795/"
+  if [ $? -eq 0 ]
   then
-    echo "New certs have been created. Install (y/n)?"
-    read -r
-    if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ]
-    then
-      pushd $OPENCOLA_HOME/storage/cert/
-      sh install-cert
-      popd
-    fi
+    STARTED=true
+    break
   fi
+done
+
+if [ -z ${STARTED+x} ]
+then
+  echo "Server failed to start. Please check the logs"
+  exit 1
 fi
 
 echo "Server started"
@@ -77,4 +90,11 @@ echo
 echo "Secure URLs (Recommended):"
 echo "https://localhost:5796 (Local only)"
 hostname -I | tr -s ' ' '\n' | grep -v 127.0.0.1 | awk '{print "https://" $1 ":5796"}'
+echo
 
+xdg-open "http://localhost:5795" 1>/dev/null 2>/dev/null
+
+if [ $? -ne 0 ]
+then
+  echo "Don't know how to open a browser window on this distribution. Please open a browser and go to http://localhost:5795"
+fi
