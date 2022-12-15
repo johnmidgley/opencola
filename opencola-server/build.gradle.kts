@@ -1,3 +1,5 @@
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+
 val ktor_version: String by project
 val kotlin_version: String by project
 val logback_version: String by project
@@ -22,18 +24,13 @@ https://docs.gradle.org/current/userguide/userguide.html
 
 plugins {
     application
-    kotlin("jvm") version "1.6.10"
+    kotlin("jvm") version "1.7.20"
     kotlin("plugin.serialization") version "1.6.0"
-    // id("com.github.johnrengelman.shadow") version "7.1.2"
-    id("org.jetbrains.compose") version "1.1.0"
+    id("org.jetbrains.compose") version "1.2.2"
 }
 
 group = "opencola"
-version = "1.0-SNAPSHOT"
-
-application {
-    mainClass.set("opencola.server.ApplicationKt")
-}
+version = "1.1.5"
 
 repositories {
     google()
@@ -44,15 +41,6 @@ repositories {
     }
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
 }
-
-// https://thelyfsoshort.io/kotlin-reflection-shadow-jars-minimize-9bd74964c74
-// NOTE: This does not work, likely due to some reflection magic that is invisible
-// to the minimizer
-//tasks.shadowJar {
-//    minimize {
-//        // exclude(dependency("org.jetbrains.kotlin:.*"))
-//    }
-//}
 
 dependencies {
     implementation(project(":core"))
@@ -95,7 +83,31 @@ dependencies {
     implementation(compose.desktop.currentOs)
 }
 
+fun getTarget(): TargetFormat {
+    val os = System.getProperty("os.name").toLowerCase()
+
+    return  if(os.contains("mac"))
+        TargetFormat.Dmg
+    else if(os.contains("win"))
+        TargetFormat.Msi
+    else if(os.contains("nux"))
+        TargetFormat.Pkg
+    else
+        TargetFormat.AppImage
+}
+
 compose.desktop {
-    // Leaving this empty, since using basic application plugin and jpackage directly
-    // due to issue with compose not pulling in full JRE
+//    application {
+//        mainClass = "opencola.server.ApplicationKt"
+//
+//        nativeDistributions {
+//            macOS {
+//                iconFile.set(File("src/main/resources/icons/opencola.icns"))
+//            }
+//            packageName = "OpenCola"
+//            args += listOf("--desktop")
+//            includeAllModules = true
+//            targetFormats(getTarget())
+//        }
+//    }
 }

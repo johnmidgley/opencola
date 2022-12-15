@@ -8,7 +8,7 @@ import java.net.URI
 import java.nio.file.Path
 
 fun startDesktopApp(storagePath: Path, config: Config) = application {
-    val icon = painterResource("pulltab-icon.png")
+    val icon = painterResource("icons/opencola.png")
 
     Window(
         title = "OpenCola",
