@@ -13,7 +13,7 @@ jpackage --input ../opencola/server/lib/ `
     --name OpenCola `
     --vendor OpenCola `
     --app-version $Args[0] `
-    --main-jar opencola-server-1.0-SNAPSHOT.jar `
+    --main-jar "opencola-server-$Args[0].jar" `
     --main-class opencola.server.ApplicationKt `
     --java-options '--enable-preview' `
     --arguments --desktop `
