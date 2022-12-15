@@ -32,6 +32,10 @@ plugins {
 group = "opencola"
 version = "1.1.5"
 
+application {
+    mainClass.set("opencola.server.ApplicationKt")
+}
+
 repositories {
     google()
     mavenCentral()
