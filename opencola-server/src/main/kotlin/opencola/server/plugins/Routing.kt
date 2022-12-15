@@ -66,9 +66,9 @@ fun Application.configureBootstrapRouting(
             val username = formParameters["username"]
             val password = formParameters["password"]
 
-            if(username == null || username.isBlank()) {
+            if(username.isNullOrBlank()) {
                 startupForm(call, loginConfig.username, "Please enter a username")
-            }else if (password == null || password.isBlank()) {
+            }else if (password.isNullOrBlank()) {
                 startupForm(call, username,"Please enter a password")
             } else {
                 if (validateAuthorityKeyStorePassword(storagePath, password)) {
@@ -80,19 +80,27 @@ fun Application.configureBootstrapRouting(
         }
 
         get("/newUser") {
-            newUserForm(call, loginConfig.username)
+            if (call.request.origin.scheme != "https") {
+                call.respondRedirect("https://localhost:${serverConfig.ssl!!.port}/newUser")
+            } else {
+                newUserForm(call, loginConfig.username)
+            }
         }
 
         post("/newUser") {
+            if (call.request.origin.scheme != "https") {
+                throw RuntimeException("Attempt to create new user over non-https connection.")
+            }
+
             val formParameters = call.receiveParameters()
             val username = formParameters["username"]
             val password = formParameters["password"]
             val passwordConfirm = formParameters["passwordConfirm"]
             val autoStart = formParameters["autoStart"]?.toBoolean() ?: false
 
-            val error = if (username == null || username.isBlank())
+            val error = if (username.isNullOrBlank())
               "Please enter a username"
-            else if (password == null || password.isBlank() || passwordConfirm == null || password.isBlank())
+            else if (password.isNullOrBlank() || passwordConfirm.isNullOrBlank())
                 "You must include a new password and confirm it."
             else if (password == "password")
                 "Your password cannot be 'password'"
@@ -112,16 +120,18 @@ fun Application.configureBootstrapRouting(
         }
 
         post("/installCert") {
-            // FYI - linux only supports pem. Windows and Mac support both der and pem
-            val certPath = storagePath.resolve("cert/opencola-ssl.pem")
+            // FYI - linux only supports pem. Mac support both der and pem. Windows only supports der
+            val certType = if (getOS() == OS.Windows) "der" else "pem"
+            val certName = "opencola-ssl.$certType"
+            val certPath = storagePath.resolve("cert/$certName")
             val os = getOS()
 
-            if(os == OS.Mac) {
-                installCertMac(storagePath)
+            if (os == OS.Mac || os == OS.Windows) {
+                installTrustedCACert(storagePath)
                 call.respondRedirect("/")
             } else {
                 // Send the raw cert for manual installation
-                call.response.header("Content-Disposition", "attachment; filename=\"opencola-ssl.pem\"")
+                call.response.header("Content-Disposition", "attachment; filename=\"$certName\"")
                 call.respondBytes(certPath.readBytes(), ContentType("application", "x-x509-ca-cert"))
             }
         }
@@ -177,12 +187,19 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
         // Authentication from https://ktor.io/docs/session-auth.html
 
         get("/login") {
-            val username = call.getAuthToken(authEncryptionParams)?.username ?: app.config.security.login.username
-            loginPage(call, username)
-
+            if (call.request.origin.scheme != "https") {
+                call.respondRedirect("https://localhost:${app.config.server.ssl!!.port}/login")
+            } else {
+                val username = call.getAuthToken(authEncryptionParams)?.username ?: app.config.security.login.username
+                loginPage(call, username)
+            }
         }
 
         post("/login") {
+            if (call.request.origin.scheme != "https") {
+                throw RuntimeException("Attempt to post login credentials over non-https connection.")
+            }
+
             val formParameters = call.receiveParameters()
             val username = formParameters["username"]
             val password = formParameters["password"]

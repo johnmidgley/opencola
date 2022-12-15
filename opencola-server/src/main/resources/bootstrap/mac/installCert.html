@@ -11,20 +11,12 @@
 
     In order to access OpenCola over a secure connection, you need to install an SSL certificate. This keeps your password and data private.
 
-    <p>Click <strong>Install Certificate</strong> to open Keychain Access and install the certificate:</p>
-
-    <p>
+    <p>1. Click <strong>Install Certificate</strong> (but read step 2 first, so you know what to expect):</p>
     <form  action="/installCert" method="post">
         <input type="submit" value="Install Certificate"/>
     </form>
-    </p>
 
-
-    When done, click <strong>Continue</strong>:
-    <p>
-        <form  action="/certInstalled" method="post">
-            <input type="submit" value="Continue">
-        </form>
-    </p>
+    <p>2. Enter your password in the dialog that looks like:</p>
+    <img src="img/enterKeychainPassword.png" alt="Security Warning" width="360" class="center">
 </body>
 </html>

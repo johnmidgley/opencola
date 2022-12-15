@@ -31,14 +31,6 @@ fun getOS() : OS {
         OS.Unknown
 }
 
-fun openFile(path: Path) {
-    when(getOS()) {
-        OS.Mac -> "open ${path.fileName}".runCommand(path.parent)
-        OS.Windows -> "start ${path.fileName}".runCommand(path.parent)
-        else -> logger.warn { "Don't know how to open $path on this os" }
-    }
-}
-
 fun openUriLinux(uri: URI) {
     try {
         "xdg-open $uri".runCommand()
@@ -56,7 +48,7 @@ fun openUriLinux(uri: URI) {
 fun openUri(uri: URI) {
     when(getOS()) {
         OS.Mac -> "open $uri".runCommand()
-        OS.Windows -> "explorer $uri".runCommand()
+        OS.Windows -> Desktop.getDesktop().browse(uri) // "explorer $uri".runCommand()
         OS.Linux -> openUriLinux(uri)
         else -> logger.warn { "Don't know how to open $uri on this os" }
     }

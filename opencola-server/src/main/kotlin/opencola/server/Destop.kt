@@ -22,7 +22,7 @@ fun startDesktopApp(storagePath: Path, config: Config) = application {
             menu = {
                 Item(
                     text = "Feed",
-                    onClick = { openUri(URI("http://localhost:${config.server.port}")) }
+                    onClick = { openUri(URI("https://localhost:${config.server.ssl?.port ?: 5796}")) }
                 )
                 Separator()
                 Item(

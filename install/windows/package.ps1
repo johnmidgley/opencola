@@ -7,13 +7,15 @@ if ($Args.count -ne 1) {
 	exit 1
 }
 
+$version = $Args[0]
+
 "Creating Windows Installer"
 # https://docs.oracle.com/en/java/javase/14/docs/specs/man/jpackage.html
 jpackage --input ../opencola/server/lib/ `
     --name OpenCola `
     --vendor OpenCola `
-    --app-version $Args[0] `
-    --main-jar "opencola-server-$Args[0].jar" `
+    --app-version $version `
+    --main-jar "opencola-server-$version.jar" `
     --main-class opencola.server.ApplicationKt `
     --java-options '--enable-preview' `
     --arguments --desktop `
