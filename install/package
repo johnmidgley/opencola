@@ -8,6 +8,14 @@ fi
 
 ./package
 mkdir OpenCola-"$1"
-cp -r Dockerfile opencola mac windows linux OpenCola-"$1"
+cp -r Dockerfile opencola OpenCola-"$1"
+pushd OpenCola-"$1"
+mkdir mac
+cp ../mac/docker-compose.yml ../mac/start ../mac/stop mac
+mkdir windows
+cp ../windows/docker-compose.yml ../windows/start.ps1 ../windows/stop.ps1 windows
+mkdir linux
+cp ../linux/docker-compose.yml ../linux/start ../linux/stop linux
+popd
 zip -r OpenCola-"$1".zip OpenCola-"$1"
 rm -rf OpenCola-"$1"
