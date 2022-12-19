@@ -55,6 +55,7 @@ fun openUri(uri: URI) {
 }
 
 fun autoStartMac() {
+    // To reset permissions: tccutil reset All opencola.server
     val args = listOf("osascript", "-e", "tell application \"System Events\" to make login item at end with properties {path:\"/Applications/OpenCola.app\", hidden:false}")
     val result = runCommand(args).joinToString("\n")
     logger.info { "Auto start result: $result" }
@@ -113,11 +114,18 @@ fun autoStartWindows() {
 
 // osascript -e 'tell application "Terminal" to do script "cd /Users/johnmidgley/Library/Application*Support/OpenCola/storage/cert && ./install-cert"'
 
-fun autoStart() {
-    when(getOS()) {
-        OS.Mac -> autoStartMac()
-        OS.Windows -> autoStartWindows()
-        OS.Linux -> autoStartLinux()
-        else -> logger.warn { "Don't know how to auto start on this os" }
+fun autoStart() : Boolean {
+    try {
+        when (getOS()) {
+            OS.Mac -> autoStartMac()
+            OS.Windows -> autoStartWindows()
+            OS.Linux -> autoStartLinux()
+            else -> logger.warn { "Don't know how to auto start on this os" }
+        }
+    } catch (e: Throwable) {
+        logger.error(e) { "Error auto starting" }
+        return false
     }
+
+    return true
 }
