@@ -8,7 +8,7 @@ fi
 
 rm -rf opencola
 
-echo "Packaging for MacLinuxOS"
+echo "Packaging for Linux"
 # https://docs.oracle.com/en/java/javase/14/docs/specs/man/jpackage.html
 jpackage --input ../opencola/server/lib/ \
   --name opencola \
@@ -21,3 +21,5 @@ jpackage --input ../opencola/server/lib/ \
   --verbose \
   --type app-image \
   --icon pull-tab.png
+
+tar -cvzf "OpenCola-$1.tgz" opencola
