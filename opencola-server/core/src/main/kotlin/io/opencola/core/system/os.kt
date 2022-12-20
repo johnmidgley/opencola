@@ -62,19 +62,19 @@ fun autoStartMac() {
 }
 
 fun autoStartLinux() {
-    val opencolaServerPath = ((Path.of({}.javaClass.protectionDomain.codeSource.location.path).parent).parent).parent
+    val openColaServerPath = ((Path.of({}.javaClass.protectionDomain.codeSource.location.path).parent).parent).parent
         .resolve("bin")
         .resolve("opencola")
 
-    if(!opencolaServerPath.exists()) {
-        logger.warn { "Can't find opencola-server path for autostart. Tried $opencolaServerPath" }
+    if(!openColaServerPath.exists()) {
+        logger.warn { "Can't find opencola-server path for autostart. Tried $openColaServerPath" }
         return
     }
 
     val deskTopEntry = """
         [Desktop Entry]
         Type=Application
-        Exec=/home/john/dev/opencola/install/linux/opencola/bin/opencola
+        Exec=${openColaServerPath}
         Hidden=false
         NoDisplay=false
         X-GNOME-Autostart-enabled=true
