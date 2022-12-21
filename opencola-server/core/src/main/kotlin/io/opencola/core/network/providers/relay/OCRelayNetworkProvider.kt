@@ -86,6 +86,7 @@ class OCRelayNetworkProvider(authority: Authority,
                 it.client.close()
                 it.listenThread.interrupt()
             }
+            connections.clear()
         }
         started = false
         logger.info { "Stopped" }

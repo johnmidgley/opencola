@@ -1,6 +1,5 @@
 package io.opencola.core.event
 
-import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import io.opencola.core.event.EventBus.Event
@@ -10,6 +9,7 @@ import io.opencola.core.network.PeerEvent.*
 import io.opencola.core.search.SearchIndex
 import io.opencola.core.storage.AddressBook
 import io.opencola.core.storage.EntityStore
+import kotlinx.coroutines.launch
 import java.io.ByteArrayInputStream
 
 interface Reactor {
@@ -42,7 +42,7 @@ class MainReactor(
                 peers
                     .forEach {
                         if(it.entityId != authority.entityId)
-                            async { requestTransactions(it.entityId) }
+                            launch { requestTransactions(it.entityId) }
                     }
             }
         }
@@ -153,6 +153,12 @@ class MainReactor(
 
     private fun handleNodeResume(event: Event){
         logger.info { event.name }
+
+        // Restart network node so that connections are fresh
+        networkNode.stop()
+        networkNode.start()
+
+        // Request any transactions that may have been missed while suspended.
         updatePeerTransactions()
     }
     override fun handleMessage(event: Event) {
