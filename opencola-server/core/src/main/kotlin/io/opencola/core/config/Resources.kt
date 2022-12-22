@@ -1,6 +1,5 @@
 package io.opencola.core.config
 
-import io.ktor.http.*
 import java.io.File
 import java.io.InputStream
 import java.net.URL
@@ -21,7 +20,7 @@ fun getResourceAsStream(name: String): InputStream? {
     return object {}.javaClass.classLoader.getResourceAsStream(name)
 }
 
-fun extractResourceDirectory(resourceUrl: URL, destinationPath: Path): Path {
+fun extractResourceDirectory(resourceUrl: URL, destinationPath: Path, overwriteExistingFiles: Boolean): Path {
     val parts = resourceUrl.path.split("!")
     val jarPath = File(URL(parts[0]).toURI()).toPath().toString()
     val resourcePath = parts[1].trim('/') + "/"
@@ -34,7 +33,10 @@ fun extractResourceDirectory(resourceUrl: URL, destinationPath: Path): Path {
             if(it.isDirectory) {
                 destinationPath.resolve(it.name).createDirectories()
             } else {
-                destinationPath.resolve(it.name).writeBytes(getResourceAsStream(it.name)!!.readAllBytes())
+                val destinationFile = destinationPath.resolve(it.name)
+                if(!destinationFile.exists() || overwriteExistingFiles) {
+                    destinationFile.writeBytes(jarFile.getInputStream(it).readBytes())
+                }
             }
         }
     }
@@ -42,7 +44,7 @@ fun extractResourceDirectory(resourceUrl: URL, destinationPath: Path): Path {
     return destinationPath.resolve(resourcePath)
 }
 
-fun getResourceFilePath(resourcePath: String, cachePath: Path) : Path {
+fun getResourceFilePath(resourcePath: String, fileSystemPath: Path, overwriteExistingFiles: Boolean) : Path {
      val root = getResourceUrl(resourcePath)
         ?: throw IllegalStateException("Unable to locate root resource: $resourcePath")
 
@@ -52,14 +54,14 @@ fun getResourceFilePath(resourcePath: String, cachePath: Path) : Path {
             File(root.toURI()).toPath()
         }
         "jar" -> {
-            extractResourceDirectory(root, cachePath)
+            extractResourceDirectory(root, fileSystemPath, overwriteExistingFiles)
         }
         else ->
             throw RuntimeException("Don't know how to handle resource protocol: ${root.protocol}")
     }
 }
 
-fun copyResources(resourcePath: String,  destinationPath: Path) {
-    val path = getResourceFilePath(resourcePath, createTempDirectory("oc-resource-cache")).toFile()
+fun copyResources(resourcePath: String,  destinationPath: Path, overwriteExistingFiles: Boolean) {
+    val path = getResourceFilePath(resourcePath, createTempDirectory("oc-resources"), overwriteExistingFiles).toFile()
     path.copyRecursively(destinationPath.toFile())
 }

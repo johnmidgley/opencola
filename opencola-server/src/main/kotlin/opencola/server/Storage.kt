@@ -33,7 +33,7 @@ fun initStorage(argPath: String) : Path {
         }
 
     if(!storagePath.exists()) {
-        copyResources("storage", storagePath)
+        copyResources("storage", storagePath, true)
     }
 
     return storagePath

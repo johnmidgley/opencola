@@ -18,4 +18,8 @@ security:
     # password: password # Set if you're ok with less security for convenience 
     # authenticationRequired: false # Set if you're ok with less security for convenience
 
-
+resources:
+  # If you would like to edit resources (css, images, etc), uncomment 'allow-edit' below.
+  # When updating to a new release,you may need to move your changes out, start the server so that new versions of the
+  # resources are created, and then re-apply your changes.
+  # allow-edit: true

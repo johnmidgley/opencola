@@ -359,15 +359,22 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             }
 
             static {
-                // TODO: Resources don't need to be extracted - can serve right from resources - FIX
-                val resourcePath = getResourceFilePath("web", app.storagePath.parent.resolve("resource-cache"))
+                val resourcePath = getResourceFilePath(
+                    "web",
+                    app.storagePath.resolve("resources"),
+                    !app.config.resources.allowEdit
+                )
                 file("/", resourcePath.resolve("index.html").toString())
             }
         }
 
         static {
             // TODO: Resources don't need to be extracted - can serve right from resources - FIX
-            val resourcePath = getResourceFilePath("web", app.storagePath.parent.resolve("resource-cache"))
+            val resourcePath = getResourceFilePath(
+                "web",
+                app.storagePath.resolve("resources"),
+                !app.config.resources.allowEdit
+            )
             logger.info("Initializing static resources from $resourcePath")
             files(resourcePath.toString())
         }

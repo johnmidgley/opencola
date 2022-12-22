@@ -19,6 +19,7 @@ data class NetworkConfig(val peers: List<PeerConfig> = emptyList(),
                          val defaultAddress: URI = URI("ocr://relay.opencola.net"),
                          val requestTimeoutMilliseconds: Long = 20000,
                          val socksProxy: SocksProxy? = null)
+data class Resources(val allowEdit: Boolean = false)
 
 
 data class Config(
@@ -28,6 +29,7 @@ data class Config(
     val security: SecurityConfig,
     val search: SearchConfig?,
     val network: NetworkConfig = NetworkConfig(),
+    val resources: Resources = Resources(),
 )
 
 // TODO: Use config layers instead of having to copy parts of config tree
