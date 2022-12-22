@@ -99,7 +99,7 @@ fun getServer(application: Application, authEncryptionParams: EncryptionParams):
             configureContentNegotiation()
             configureRouting(application, authEncryptionParams)
             configureStatusPages()
-            configureAuthentication(authEncryptionParams)
+            configureAuthentication(application.config.security.login, authEncryptionParams)
             configureSessions()
 
             this.environment.monitor.subscribe(ApplicationStarted) { onServerStarted(application) }
