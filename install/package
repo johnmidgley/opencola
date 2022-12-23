@@ -7,9 +7,9 @@ then
 fi
 
 ./package
-mkdir OpenCola-"$1"
-cp -r Dockerfile opencola OpenCola-"$1"
-pushd OpenCola-"$1"
+mkdir OpenCola-Docker-"$1"
+cp -r Dockerfile opencola OpenCola-Docker-"$1"
+pushd OpenCola-Docker-"$1"
 mkdir mac
 cp ../mac/docker-compose.yml ../mac/start ../mac/stop mac
 mkdir windows
@@ -17,5 +17,10 @@ cp ../windows/docker-compose.yml ../windows/start.ps1 ../windows/stop.ps1 window
 mkdir linux
 cp ../linux/docker-compose.yml ../linux/start ../linux/stop linux
 popd
-zip -r OpenCola-"$1".zip OpenCola-"$1"
-rm -rf OpenCola-"$1"
+zip -r OpenCola-Docker-"$1".zip OpenCola-Docker-"$1"
+rm -rf OpenCola-Docker-"$1"
+
+mkdir OpenCola-Chrome-"$1"
+cp -r opencola/chrome/* OpenCola-Chrome-"$1"
+zip -r OpenCola-Chrome-"$1".zip OpenCola-Chrome-"$1"
+rm -rf OpenCola-Chrome-"$1"
