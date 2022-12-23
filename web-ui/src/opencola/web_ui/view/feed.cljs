@@ -158,12 +158,18 @@
 
 (defn item-comments [preview-fn? expanded?! comment-actions feed! entity-id]
   (let [preview? (preview-fn?)
+        more (- (count comment-actions) 3)
         comment-actions (if preview? (take 3 comment-actions) comment-actions)]
     (if (or @expanded?! (and preview? (not-empty comment-actions)))
       [:div.item-comments
-       [:span {:on-click (fn [] (swap! expanded?! #(not %)))} "Comments"]
+       [:span {:on-click (fn [] (swap! expanded?! #(not %)))} "Comments:"]
        (doall (for [comment-action comment-actions]
-                ^{:key comment-action} [item-comment feed! entity-id comment-action]))])))
+                ^{:key comment-action} [item-comment feed! entity-id comment-action]))
+       [:div.item-comments-footer {:on-click (fn [] (swap! expanded?! #(not %)))}
+        (if (> more 0)
+          (if preview?
+            [:span.action "Show more" (action-img "show")]
+            [:span.action "Show less" (action-img "hide")]))]])))
 
 (defn item-save [save-action]
   (let [{authority-name :authorityName 
@@ -319,12 +325,13 @@
          [action-summary feed! :comment action-expanded? activities #(swap! commenting? not)]
          common/inline-divider
          [edit-control editing?!]
-         [tags-control feed! item tagging?]
-         [comment-control feed! entity-id nil "" commenting?]
-         [item-saves (:save action-expanded?) (:save activities)]
-         [item-likes (:like action-expanded?) (:like activities)]
-         [item-tags (:tag action-expanded?) (:tag activities)] 
-         [item-comments preview-fn? (:comment action-expanded?) (:comment activities) feed! entity-id]]))))
+         [:div.activity-block
+          [tags-control feed! item tagging?]
+          [comment-control feed! entity-id nil "" commenting?]
+          [item-saves (:save action-expanded?) (:save activities)]
+          [item-likes (:like action-expanded?) (:like activities)]
+          [item-tags (:tag action-expanded?) (:tag activities)] 
+          [item-comments preview-fn? (:comment action-expanded?) (:comment activities) feed! entity-id]]]))))
 
 
 (defn item-name [summary]

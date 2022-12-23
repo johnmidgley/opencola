@@ -77,11 +77,7 @@ body {
     padding-top: 5px;
 }
 
-.list-header {
-    padding-top: 10px
-}
-
-.item-comments {
+.item-comments-footer {
     padding-top: 10px;
 }
 
@@ -89,13 +85,7 @@ body {
     padding-top: 10px;
 }
 
-.item-saves {
-   padding-top: 10px;
-}
 
-.item-likes {
-   padding-top: 10px;
-}
 
 .item-comment-container {
 }
@@ -298,3 +288,13 @@ td {
    padding-top: 5px;
    padding-bottom: 5px;
 }
+
+.activity-block {
+    margin-top: 10px;
+    padding: 0px;
+}
+
+.action {
+    color: darkblue;
+}
+
