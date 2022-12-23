@@ -30,7 +30,7 @@ plugins {
 }
 
 group = "opencola"
-version = "1.1.5"
+version = "1.1.6"
 
 application {
     mainClass.set("opencola.server.ApplicationKt")
