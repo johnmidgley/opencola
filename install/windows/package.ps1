@@ -25,3 +25,5 @@ jpackage --input ../opencola/server/lib/ `
     --win-shortcut `
     --win-menu
 # --win-console
+
+mv "OpenCola-$version.msi" "OpenCola-Windows-$version.msi"
