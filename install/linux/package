@@ -22,4 +22,4 @@ jpackage --input ../opencola/server/lib/ \
   --type app-image \
   --icon pull-tab.png
 
-tar -cvzf "OpenCola-$1.tgz" opencola
+tar -cvzf "OpenCola-Linux-$1.tgz" opencola
