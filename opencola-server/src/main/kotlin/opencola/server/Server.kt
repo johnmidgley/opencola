@@ -45,15 +45,8 @@ fun getApplication(
     val application = Application.instance(storagePath, config, keyPair, loginCredentials.password)
     application.logger.info("Authority: ${Id.ofPublicKey(keyPair.public)}")
     application.logger.info("Public Key : ${keyPair.public.encode()}")
-
-    thread {
-        runBlocking {
-            launch {
-                val eventBus = application.inject<EventBus>()
-                detectResume { eventBus.sendMessage(Events.NodeResume.toString()) }
-            }
-        }
-    }
+    val eventBus = application.inject<EventBus>()
+    detectResume { eventBus.sendMessage(Events.NodeResume.toString()) }
 
     return application
 }
