@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory
 import java.net.Inet4Address
 import java.net.URI
 import java.nio.file.Path
-import kotlin.concurrent.thread
 
 private val logger = KotlinLogging.logger("opencola")
 private const val sslCertStorePassword = "password"
@@ -46,22 +45,17 @@ fun getApplication(
     application.logger.info("Authority: ${Id.ofPublicKey(keyPair.public)}")
     application.logger.info("Public Key : ${keyPair.public.encode()}")
 
-    thread {
-        runBlocking {
-            launch {
-                val eventBus = application.inject<EventBus>()
-                detectResume { eventBus.sendMessage(Events.NodeResume.toString()) }
-            }
-        }
-    }
-
     return application
 }
 
 fun onServerStarted(application: Application) {
     val hostAddress = Inet4Address.getLocalHost().hostAddress
     application.inject<NetworkNode>().start()
-    application.inject<EventBus>().sendMessage(Events.NodeStarted.toString())
+    application.inject<EventBus>().let {
+        it.sendMessage(Events.NodeStarted.toString())
+        detectResume { it.sendMessage(Events.NodeResume.toString()) }
+    }
+
     logger.info { "Server started: http://$hostAddress:${application.config.server.port}" }
     application.config.server.ssl?.let {
         logger.info { "Server started: https://$hostAddress:${it.port} - certs needed" }

@@ -1,23 +1,32 @@
 package io.opencola.core.system
 
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import java.lang.Thread.sleep
+import java.util.concurrent.Executors
 
-suspend fun detectResume(handler: () -> Unit): Job = coroutineScope {
-    var lastCheckTimeMillis = System.currentTimeMillis()
+private val logger = mu.KotlinLogging.logger("detectResume")
+private val executorService = Executors.newSingleThreadExecutor()
+private const val delayTimeMillis: Long = 10000L
+private const val maxDelayTimeMillis: Long = 30000L
 
-    launch {
-        while (true) {
-            delay(5000)
-            val currentTimeMillis = System.currentTimeMillis()
+@Synchronized
+fun detectResume(handler: () -> Unit) {
+    logger.info("Launching resume detection")
 
-            if (currentTimeMillis - lastCheckTimeMillis > 10000) {
-                handler()
+    // Putting in thread, since it seems to be sensitive to co-routine implementation. Probably a better way to
+    // ensure it's isolated.
+    executorService.execute {
+        try {
+            while (true) {
+                val timeBeforeDelayMillis = System.currentTimeMillis()
+                sleep(delayTimeMillis)
+                val actualDelayTimeMillis = System.currentTimeMillis() - timeBeforeDelayMillis
+
+                if (actualDelayTimeMillis > maxDelayTimeMillis) {
+                    handler()
+                }
             }
-
-            lastCheckTimeMillis = currentTimeMillis
+        } catch (e: Throwable) {
+            logger.error { "Error in resume detection: $e" }
         }
     }
 }
