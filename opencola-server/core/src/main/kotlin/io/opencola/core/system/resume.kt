@@ -17,14 +17,11 @@ fun detectResume(handler: () -> Unit) {
     executorService.execute {
         try {
             while (true) {
-                logger.info { "Waiting $delayTimeMillis ms" }
                 val timeBeforeDelayMillis = System.currentTimeMillis()
                 sleep(delayTimeMillis)
                 val actualDelayTimeMillis = System.currentTimeMillis() - timeBeforeDelayMillis
-                logger.info { "Actual delay $actualDelayTimeMillis ms" }
 
                 if (actualDelayTimeMillis > maxDelayTimeMillis) {
-                    logger.info { "Resume detected (ActualDelay:$actualDelayTimeMillis ms MaxDelay: $maxDelayTimeMillis)" }
                     handler()
                 }
             }
