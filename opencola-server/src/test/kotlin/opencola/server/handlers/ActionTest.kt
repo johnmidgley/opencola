@@ -26,7 +26,7 @@ class ActionTest {
 
 
         val mhtml = getMimeSnapshotForUrl("file://$pdfPath").toByteArray()
-        handleAction(app.inject<Authority>().entityId, app.inject(), app.inject(), app.inject(), "save", "true", mhtml)
+        handleAction(app.inject<Authority>().entityId, app.inject(), app.inject(), "save", "true", mhtml)
 
         println("Done")
     }

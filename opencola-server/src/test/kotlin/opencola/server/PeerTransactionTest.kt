@@ -2,7 +2,6 @@ package opencola.server
 
 import io.opencola.core.model.Authority
 import io.opencola.core.model.ResourceEntity
-import io.opencola.core.security.generateKeyPair
 import io.opencola.core.storage.EntityStore
 import opencola.server.handlers.handleSearch
 import org.junit.Test
@@ -31,7 +30,7 @@ class PeerTransactionTest : PeerNetworkTest() {
 
             startServer(server1)
             sleep(1000) // TODO Bad - after event bus is implemented, trigger off events, rather than waiting for sync
-            val results0 = handleSearch(application1.inject(), application1.inject(), application1.inject(), "stuff")
+            val results0 = handleSearch(application1.inject(), application1.inject(), "stuff")
             assert(results0.matches.size == 1)
             assert(results0.matches[0].name == resource0.name)
 
@@ -44,13 +43,13 @@ class PeerTransactionTest : PeerNetworkTest() {
             )
             entityStore0.updateEntities(resource1)
             sleep(1500)
-            val results1 = handleSearch(application1.inject(), application1.inject(), application1.inject(), "other")
+            val results1 = handleSearch(application1.inject(), application1.inject(), "other")
             assert(results1.matches.size == 1)
             assert(results1.matches[0].name == resource1.name)
 
             entityStore0.deleteEntity(authority0.authorityId, resource1.entityId)
             sleep(1000)
-            val results2 = handleSearch(application1.inject(), application1.inject(), application1.inject(), "other")
+            val results2 = handleSearch(application1.inject(), application1.inject(), "other")
             assert(results2.matches.isEmpty())
         } finally {
             server0.stop(1000, 1000)
@@ -94,7 +93,7 @@ class PeerTransactionTest : PeerNetworkTest() {
             sleep(2000)
 
             logger.info { "Searching ${application1.config.name}" }
-            val results0 = handleSearch(application1.inject(), application1.inject(), application1.inject(), "stuff")
+            val results0 = handleSearch(application1.inject(), application1.inject(), "stuff")
             assert(results0.matches.size == 1)
             assert(results0.matches[0].name == resource0.name)
         } finally {

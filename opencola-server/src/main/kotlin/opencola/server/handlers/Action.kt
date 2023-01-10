@@ -16,9 +16,7 @@ import io.opencola.core.storage.EntityStore
 import io.opencola.core.storage.FileStore
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
-import java.io.ByteArrayOutputStream
 import java.net.URI
-import javax.imageio.ImageIO
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.inputStream
@@ -71,7 +69,7 @@ fun getData(uri: URI) : ByteArray? {
     }
 }
 
-fun getContent(mhtmlPage: MhtmlPage, textExtractor: TextExtractor): Content {
+fun getContent(mhtmlPage: MhtmlPage): Content {
     val embeddedMimeType = mhtmlPage.embeddedMimeType
     return if (embeddedMimeType == null) {
         val parts = splitMht(mhtmlPage.message)
@@ -144,12 +142,11 @@ fun updateResource(
     authorityId: Id,
     entityStore: EntityStore,
     fileStore: FileStore,
-    textExtractor: TextExtractor,
     mhtmlPage: MhtmlPage,
     actions: Actions
 ): ResourceEntity {
     // TODO: File URIs are not unique - and only valid on the originating device.
-    val content = getContent(mhtmlPage, textExtractor)
+    val content = getContent(mhtmlPage)
     val dataEntity = getDataEntity(authorityId, entityStore, fileStore, content)
     val entity = (entityStore.getEntity(authorityId, Id.ofUri(mhtmlPage.uri))
         ?: ResourceEntity(authorityId, mhtmlPage.uri)) as ResourceEntity
@@ -171,7 +168,6 @@ fun handleAction(
     authorityId: Id,
     entityStore: EntityStore,
     fileStore: FileStore,
-    textExtractor: TextExtractor,
     action: String,
     value: String?,
     mhtml: ByteArray
@@ -185,7 +181,7 @@ fun handleAction(
         else -> throw NotImplementedError("No handler for $action")
     }
 
-    updateResource(authorityId, entityStore, fileStore, textExtractor,  mhtmlPage, actions)
+    updateResource(authorityId, entityStore, fileStore, mhtmlPage, actions)
 }
 
 suspend fun handlePostActionCall(
@@ -193,7 +189,6 @@ suspend fun handlePostActionCall(
     authorityId: Id,
     entityStore: EntityStore,
     fileStore: FileStore,
-    textExtractor: TextExtractor
 ) {
     val multipart = call.receiveMultipart()
     var action: String? = null
@@ -229,7 +224,7 @@ suspend fun handlePostActionCall(
         throw IllegalArgumentException("No mhtml specified for request")
     }
 
-    handleAction(authorityId, entityStore, fileStore, textExtractor, action as String, value, mhtml as ByteArray)
+    handleAction(authorityId, entityStore, fileStore, action as String, value, mhtml as ByteArray)
     call.respond(HttpStatusCode.Accepted)
 }
 

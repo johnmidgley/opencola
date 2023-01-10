@@ -20,7 +20,6 @@ import org.kodein.di.DI
 import org.kodein.di.bindSingleton
 import org.kodein.di.instance
 import java.io.File
-import java.net.URI
 import java.nio.file.Path
 import java.security.KeyPair
 import kotlin.io.path.*
@@ -83,7 +82,7 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
             }
 
             // TODO: Change from authority to public key - they authority should come from the private store based on the private key
-            val defaultAddress = config.network?.defaultAddress ?: URI("ocr://relay.opencola.net")
+            val defaultAddress = config.network.defaultAddress
             val authority = Authority(authorityKeyPair.public, defaultAddress, "You")
 
             val keyStore = KeyStore(storagePath.resolve("keystore.pks"), password)
@@ -99,7 +98,7 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
                 bindSingleton { Encryptor(instance()) }
                 bindSingleton { AddressBook(instance(), storagePath, instance(), config.network) }
                 bindSingleton { RequestRouter(getDefaultRoutes(instance(), instance(), instance())) }
-                bindSingleton { HttpNetworkProvider(instance(), instance(), instance(), instance(), config.server, config.network) }
+                bindSingleton { HttpNetworkProvider(instance(), instance(), instance(), instance(), config.network) }
                 bindSingleton { OCRelayNetworkProvider(instance(), instance(), instance(), instance(), authorityKeyPair, config.network) }
                 bindSingleton { NetworkNode(authority, instance(),instance(), instance()) }
                 bindSingleton { LuceneSearchIndex(authority.authorityId, storagePath.resolve("lucene")) }

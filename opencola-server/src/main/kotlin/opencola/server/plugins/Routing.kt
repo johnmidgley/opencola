@@ -237,7 +237,7 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
                 val query = call.request.queryParameters["q"]
                     ?: throw IllegalArgumentException("No query (q) specified in parameters")
 
-                call.respond(handleSearch(app.inject(), app.inject(), app.inject(), query))
+                call.respond(handleSearch(app.inject(), app.inject(), query))
             }
 
             get("/entity/{entityId}") {
@@ -355,7 +355,7 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
 
             post("/action") {
                 val authority = app.inject<Authority>()
-                handlePostActionCall(call, authority.authorityId, app.inject(), app.inject(), app.inject())
+                handlePostActionCall(call, authority.authorityId, app.inject(), app.inject())
             }
 
             static {

@@ -130,7 +130,7 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
             val app0KeyPair = Application.getOrCreateRootKeyPair(app0.storagePath, "password")
             networkNode0.stop()
             val relayClient = WebSocketClient(URI("ocr://0.0.0.0"), app0KeyPair, "client", 5000)
-            val job = launch { relayClient.open { _, _ -> "nothing".toByteArray() } }
+            launch { relayClient.open { _, _ -> "nothing".toByteArray() } }
             relayClient.waitUntilOpen()
 
             try {
