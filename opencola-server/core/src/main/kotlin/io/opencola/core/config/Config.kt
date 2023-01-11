@@ -1,6 +1,7 @@
 package io.opencola.core.config
 
-import com.sksamuel.hoplite.ConfigLoader
+import com.sksamuel.hoplite.ConfigLoaderBuilder
+import com.sksamuel.hoplite.addFileSource
 import java.net.URI
 import java.nio.file.Path
 
@@ -46,7 +47,10 @@ fun Config.setNetwork(network: NetworkConfig): Config {
 }
 
 fun loadConfig(configPath: Path): Config {
-    return ConfigLoader().loadConfigOrThrow(configPath)
+    return ConfigLoaderBuilder.default()
+        .addFileSource(configPath.toFile())
+        .build()
+        .loadConfigOrThrow()
 }
 
 

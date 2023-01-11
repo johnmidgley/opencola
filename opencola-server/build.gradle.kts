@@ -21,7 +21,6 @@ https://docs.gradle.org/current/userguide/userguide.html
 ********************************************************
 
 */
-
 plugins {
     application
     kotlin("jvm") version "1.7.20"
@@ -29,21 +28,29 @@ plugins {
     id("org.jetbrains.compose") version "1.2.2"
 }
 
-group = "opencola"
-version = "1.1.6"
+// TODO: Pull allProjects properties out of sub projects
+allprojects {
+    group = "opencola"
+    version = "1.1.6"
 
-application {
-    mainClass.set("opencola.server.ApplicationKt")
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+        kotlinOptions.jvmTarget = "17"
+    }
+
+    repositories {
+        google()
+        mavenCentral()
+        flatDir {
+            name = "localRepository"
+            dirs("${project.rootDir}/../lib")
+        }
+        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+    }
 }
 
-repositories {
-    google()
-    mavenCentral()
-    flatDir{
-        name = "localRepository"
-        dirs("${project.rootDir}/../lib")
-    }
-    maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+// TODO: Move this application to a separate project. This level should be for all projects.
+application {
+    mainClass.set("opencola.server.ApplicationKt")
 }
 
 dependencies {
