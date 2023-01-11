@@ -29,7 +29,7 @@ import opencola.service.EntityResult
 import org.kodein.di.instance
 import java.io.File
 import java.net.URI
-import java.net.URLEncoder
+import java.net.URLEncoder.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -39,14 +39,13 @@ class ApplicationTest {
     val injector = TestApplication.instance.injector
 
     private fun configure(app: Application) {
-        app.configureRouting(application, AuthToken.encryptionParams)
-        app.configureContentNegotiation()
         app.install(Authentication) {
             session<UserSession>("auth-session") {
                 validate { session -> session }
             }
         }
-
+        app.configureRouting(application, AuthToken.encryptionParams)
+        app.configureContentNegotiation()
         app.install(Sessions) {
             cookie<UserSession>("user_session")
         }
@@ -103,7 +102,12 @@ class ApplicationTest {
 
         entityStore.updateEntities(entity)
 
-        val response = client.get("/actions/${URLEncoder.encode(uri.toString(), "utf-8")}")
+        val urlString = buildString {
+            append("/actions/")
+            append(encode(uri.toString(), "utf-8"))
+        }
+
+        val response = client.get(urlString)
         val content = response.bodyAsText()
 
         assertEquals(HttpStatusCode.OK, response.status)
