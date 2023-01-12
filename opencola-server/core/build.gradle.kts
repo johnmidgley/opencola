@@ -34,6 +34,7 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib"))
     implementation(project(":util"))
+    implementation(project(":io"))
     implementation(project(":serialization"))
 
     implementation("org.jetbrains.exposed:exposed-core:$exposed_version")

@@ -1,6 +1,6 @@
 package io.opencola.core.system
 
-import io.opencola.core.io.MultiStreamReader
+import io.opencola.io.MultiStreamReader
 import java.io.File
 import java.nio.file.Path
 import java.time.Instant

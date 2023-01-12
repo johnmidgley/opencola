@@ -73,6 +73,7 @@ dependencies {
     implementation("io.ktor:ktor-client-cio-jvm:$ktor_version")
     implementation("io.ktor:ktor-client-serialization-jvm:$ktor_version")
 
+    testImplementation(project(":io"))
     testImplementation(project(":relay"))
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktor_version")

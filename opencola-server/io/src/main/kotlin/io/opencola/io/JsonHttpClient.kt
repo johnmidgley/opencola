@@ -1,4 +1,4 @@
-package io.opencola.core.io
+package io.opencola.io
 
 import io.ktor.client.*
 import io.ktor.client.call.*

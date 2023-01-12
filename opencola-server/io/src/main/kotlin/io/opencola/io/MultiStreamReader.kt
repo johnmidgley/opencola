@@ -1,4 +1,4 @@
-package io.opencola.core.io
+package io.opencola.io
 
 import java.io.Closeable
 import java.io.InputStream

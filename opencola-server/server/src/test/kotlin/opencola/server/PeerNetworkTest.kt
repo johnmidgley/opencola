@@ -5,7 +5,7 @@ import io.ktor.server.netty.*
 import mu.KotlinLogging
 import opencola.core.TestApplication
 import io.opencola.core.config.Application
-import io.opencola.core.io.StdoutMonitor
+import io.opencola.io.StdoutMonitor
 import io.opencola.core.model.Authority
 import io.opencola.core.model.ResourceEntity
 import io.opencola.core.storage.EntityStore

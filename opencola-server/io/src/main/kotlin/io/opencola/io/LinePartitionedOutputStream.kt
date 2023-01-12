@@ -1,12 +1,13 @@
-package io.opencola.core.io
+package io.opencola.io
 
-import org.eclipse.jetty.util.BlockingArrayQueue
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
+import java.util.concurrent.ArrayBlockingQueue
 
 class LinePartitionedOutputStream : OutputStream() {
     private var outStream = ByteArrayOutputStream()
-    private val queue = BlockingArrayQueue<String>()
+
+    private val queue = ArrayBlockingQueue<String>(100)
 
     override fun write(b: Int) {
         outStream.write(b)

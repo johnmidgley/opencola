@@ -2,8 +2,8 @@ package opencola.core.network
 
 import mu.KotlinLogging
 import io.opencola.core.extensions.runCommand
-import io.opencola.core.io.JsonHttpClient
-import io.opencola.core.io.MultiStreamReader
+import io.opencola.io.JsonHttpClient
+import io.opencola.io.MultiStreamReader
 import io.opencola.core.system.startProcess
 import opencola.server.handlers.Peer
 import opencola.server.handlers.PeersResult
