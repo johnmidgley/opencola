@@ -1,4 +1,6 @@
-package io.opencola.core.serialization
+package io.opencola.core.serialization.codecs
+
+import io.opencola.core.serialization.ByteArrayCodec
 
 object BytesByteArrayCodec : ByteArrayCodec<ByteArray> {
     override fun encode(value: ByteArray): ByteArray {

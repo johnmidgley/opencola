@@ -1,5 +1,8 @@
 package io.opencola.core.serialization
 
+import io.opencola.core.serialization.codecs.IntByteArrayCodec
+import io.opencola.core.serialization.codecs.LongByteArrayCodec
+import io.opencola.core.serialization.codecs.UUIDByteArrayCodecCodec
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI

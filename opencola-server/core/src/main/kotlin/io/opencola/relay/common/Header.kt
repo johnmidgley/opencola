@@ -4,7 +4,7 @@ import io.opencola.core.model.Id
 import io.opencola.core.security.Signature
 import io.opencola.core.security.publicKeyFromBytes
 import io.opencola.core.serialization.StreamSerializer
-import io.opencola.core.serialization.UUIDByteArrayCodecCodec
+import io.opencola.core.serialization.codecs.UUIDByteArrayCodecCodec
 import io.opencola.core.serialization.readByteArray
 import io.opencola.core.serialization.writeByteArray
 import io.opencola.core.extensions.toByteArray

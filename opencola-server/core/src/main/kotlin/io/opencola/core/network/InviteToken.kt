@@ -2,6 +2,7 @@ package io.opencola.core.network
 
 import io.opencola.core.model.Authority
 import io.opencola.core.model.Id
+import io.opencola.core.security.PublicKeyByteArrayCodec
 import io.opencola.core.security.Signator
 import io.opencola.core.security.isValidSignature
 import io.opencola.core.serialization.*

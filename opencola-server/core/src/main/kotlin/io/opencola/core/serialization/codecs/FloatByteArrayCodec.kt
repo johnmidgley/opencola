@@ -1,5 +1,6 @@
-package io.opencola.core.serialization
+package io.opencola.core.serialization.codecs
 
+import io.opencola.core.serialization.ByteArrayCodec
 import java.nio.ByteBuffer
 
 object FloatByteArrayCodec : ByteArrayCodec<Float> {

@@ -1,6 +1,8 @@
 package io.opencola.core.model
 
+import io.opencola.core.security.PublicKeyByteArrayCodec
 import io.opencola.core.serialization.*
+import io.opencola.core.serialization.codecs.*
 import java.net.URI
 
 // NOTE: In order to be properly searchable, attributes should be added to the search schema.

@@ -1,6 +1,6 @@
 package opencola.core.serialization
 
-import io.opencola.core.serialization.UUIDByteArrayCodecCodec
+import io.opencola.core.serialization.codecs.UUIDByteArrayCodecCodec
 import org.junit.Test
 import java.util.*
 import kotlin.test.assertEquals

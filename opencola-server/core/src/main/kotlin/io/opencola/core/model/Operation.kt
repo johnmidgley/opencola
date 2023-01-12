@@ -1,7 +1,7 @@
 package io.opencola.core.model
 
 import io.opencola.core.serialization.StreamSerializer
-import io.opencola.core.serialization.IntByteArrayCodec
+import io.opencola.core.serialization.codecs.IntByteArrayCodec
 import java.io.InputStream
 import java.io.OutputStream
 

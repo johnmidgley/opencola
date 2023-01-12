@@ -1,7 +1,9 @@
 package io.opencola.core.model
 
 import io.opencola.core.extensions.nullOrElse
+import io.opencola.core.security.PublicKeyByteArrayCodec
 import io.opencola.core.serialization.*
+import io.opencola.core.serialization.codecs.*
 import kotlin.reflect.KProperty
 
 class AttributeDelegate<T>(val codec: ByteArrayCodec<T>, val resettable: Boolean = true) {

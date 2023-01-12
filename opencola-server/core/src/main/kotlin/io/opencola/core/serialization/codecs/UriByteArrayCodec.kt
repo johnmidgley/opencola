@@ -1,5 +1,6 @@
-package io.opencola.core.serialization
+package io.opencola.core.serialization.codecs
 
+import io.opencola.core.serialization.ByteArrayCodec
 import java.net.URI
 
 object UriByteArrayCodec : ByteArrayCodec<URI> {
