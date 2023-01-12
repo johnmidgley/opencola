@@ -1,7 +1,7 @@
 package io.opencola.core.model
 
 import kotlinx.serialization.Serializable
-import io.opencola.core.serialization.*
+import io.opencola.serialization.*
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream

@@ -11,7 +11,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import io.opencola.core.extensions.append
+import io.opencola.util.append
 import io.opencola.relay.server.WebSocketRelayServer
 import java.net.URI
 import java.security.KeyPair

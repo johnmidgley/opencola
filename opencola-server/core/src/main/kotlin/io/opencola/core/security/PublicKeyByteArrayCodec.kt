@@ -1,6 +1,6 @@
 package io.opencola.core.security
 
-import io.opencola.core.serialization.ByteArrayCodec
+import io.opencola.serialization.ByteArrayCodec
 import java.security.PublicKey
 
 object PublicKeyByteArrayCodec : ByteArrayCodec<PublicKey> {

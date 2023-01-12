@@ -2,7 +2,7 @@ package io.opencola.relay.client
 
 import io.opencola.core.model.Id
 import io.opencola.core.security.*
-import io.opencola.core.serialization.codecs.IntByteArrayCodec
+import io.opencola.serialization.codecs.IntByteArrayCodec
 import io.opencola.relay.common.*
 import io.opencola.relay.common.Connection
 import io.opencola.relay.common.State.*

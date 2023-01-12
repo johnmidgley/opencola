@@ -1,7 +1,7 @@
-package io.opencola.core.serialization.codecs
+package io.opencola.serialization.codecs
 
-import io.opencola.core.extensions.toByteArray
-import io.opencola.core.serialization.ByteArrayCodec
+import io.opencola.util.toByteArray
+import io.opencola.serialization.ByteArrayCodec
 import java.io.ByteArrayInputStream
 import java.nio.ByteBuffer
 import java.util.*

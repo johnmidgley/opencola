@@ -3,11 +3,11 @@ package io.opencola.core.model
 import io.ktor.util.*
 import kotlinx.serialization.Serializable
 import io.opencola.util.Base58
-import io.opencola.core.extensions.toByteArray
-import io.opencola.core.extensions.toHexString
+import io.opencola.util.toByteArray
+import io.opencola.util.toHexString
 import io.opencola.core.security.sha256
-import io.opencola.core.serialization.ByteArrayCodec
-import io.opencola.core.serialization.StreamSerializer
+import io.opencola.serialization.ByteArrayCodec
+import io.opencola.serialization.StreamSerializer
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI

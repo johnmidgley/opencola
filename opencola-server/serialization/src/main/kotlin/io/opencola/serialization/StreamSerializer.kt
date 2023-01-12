@@ -1,4 +1,4 @@
-package io.opencola.core.serialization
+package io.opencola.serialization
 
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream

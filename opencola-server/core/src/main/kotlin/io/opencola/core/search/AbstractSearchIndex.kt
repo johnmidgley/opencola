@@ -1,7 +1,7 @@
 package io.opencola.core.search
 
 import io.opencola.core.extensions.nullOrElse
-import io.opencola.core.extensions.toHexString
+import io.opencola.util.toHexString
 import io.opencola.core.model.Attribute
 import io.opencola.core.model.AttributeType.*
 import io.opencola.core.model.Entity

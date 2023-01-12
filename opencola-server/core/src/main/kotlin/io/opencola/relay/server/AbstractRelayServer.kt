@@ -4,7 +4,7 @@ import io.opencola.core.model.Id
 import io.opencola.core.security.initProvider
 import io.opencola.core.security.isValidSignature
 import io.opencola.core.security.publicKeyFromBytes
-import io.opencola.core.serialization.codecs.IntByteArrayCodec
+import io.opencola.serialization.codecs.IntByteArrayCodec
 import io.opencola.relay.common.Connection
 import io.opencola.relay.common.MessageEnvelope
 import io.opencola.relay.common.SocketSession

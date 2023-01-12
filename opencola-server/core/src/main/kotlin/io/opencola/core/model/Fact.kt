@@ -2,9 +2,9 @@ package io.opencola.core.model
 
 import kotlinx.serialization.Serializable
 import io.opencola.core.extensions.nullOrElse
-import io.opencola.core.serialization.StreamSerializer
-import io.opencola.core.serialization.readLong
-import io.opencola.core.serialization.writeLong
+import io.opencola.serialization.StreamSerializer
+import io.opencola.serialization.readLong
+import io.opencola.serialization.writeLong
 import java.io.InputStream
 import java.io.OutputStream
 

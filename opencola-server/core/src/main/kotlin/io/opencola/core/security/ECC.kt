@@ -2,8 +2,8 @@ package io.opencola.core.security
 
 import io.opencola.util.Base58
 import io.opencola.core.extensions.hexStringToByteArray
-import io.opencola.core.serialization.readByteArray
-import io.opencola.core.serialization.writeByteArray
+import io.opencola.serialization.readByteArray
+import io.opencola.serialization.writeByteArray
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.security.*

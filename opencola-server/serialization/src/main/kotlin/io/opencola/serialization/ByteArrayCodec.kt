@@ -1,4 +1,4 @@
-package io.opencola.core.serialization
+package io.opencola.serialization
 
 // TODO: Should this be ValueCodec?
 // TODO - change to ByteArraySerializer?

@@ -1,7 +1,7 @@
 package io.opencola.core.security
 
 import mu.KotlinLogging
-import io.opencola.core.extensions.toHexString
+import io.opencola.util.toHexString
 import io.opencola.core.model.Id
 import java.nio.file.Path
 import java.security.KeyPair

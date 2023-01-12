@@ -7,8 +7,8 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import io.opencola.core.serialization.ByteArrayCodec
-import io.opencola.core.serialization.StreamSerializer
+import io.opencola.serialization.ByteArrayCodec
+import io.opencola.serialization.StreamSerializer
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI

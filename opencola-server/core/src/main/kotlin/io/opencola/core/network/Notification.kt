@@ -2,9 +2,9 @@ package io.opencola.core.network
 
 import kotlinx.serialization.Serializable
 import io.opencola.core.model.Id
-import io.opencola.core.serialization.StreamSerializer
-import io.opencola.core.serialization.readInt
-import io.opencola.core.serialization.writeInt
+import io.opencola.serialization.StreamSerializer
+import io.opencola.serialization.readInt
+import io.opencola.serialization.writeInt
 import java.io.InputStream
 import java.io.OutputStream
 

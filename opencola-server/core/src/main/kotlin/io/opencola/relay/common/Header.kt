@@ -3,11 +3,11 @@ package io.opencola.relay.common
 import io.opencola.core.model.Id
 import io.opencola.core.security.Signature
 import io.opencola.core.security.publicKeyFromBytes
-import io.opencola.core.serialization.StreamSerializer
-import io.opencola.core.serialization.codecs.UUIDByteArrayCodecCodec
-import io.opencola.core.serialization.readByteArray
-import io.opencola.core.serialization.writeByteArray
-import io.opencola.core.extensions.toByteArray
+import io.opencola.serialization.StreamSerializer
+import io.opencola.serialization.codecs.UUIDByteArrayCodecCodec
+import io.opencola.serialization.readByteArray
+import io.opencola.serialization.writeByteArray
+import io.opencola.util.toByteArray
 import java.io.InputStream
 import java.io.OutputStream
 import java.security.PublicKey

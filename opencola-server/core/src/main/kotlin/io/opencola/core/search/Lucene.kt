@@ -1,8 +1,8 @@
 package io.opencola.core.search
 
 import io.opencola.core.model.CoreAttribute
-import io.opencola.core.serialization.ByteArrayCodec
-import io.opencola.core.serialization.codecs.StringByteArrayCodec
+import io.opencola.serialization.ByteArrayCodec
+import io.opencola.serialization.codecs.StringByteArrayCodec
 
 fun getLuceneQueryString(query: String) : String {
     // TODO: play with fuzzy search (append ~ to terms) and support phrase "term1 term2" queries
