@@ -1,4 +1,5 @@
 rootProject.name = "opencola-server"
+include("util")
 include("core")
 include("relay")
 include("server")

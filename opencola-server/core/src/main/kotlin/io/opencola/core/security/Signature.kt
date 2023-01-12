@@ -1,6 +1,6 @@
 package io.opencola.core.security
 
-import io.opencola.core.serialization.Base58
+import io.opencola.util.Base58
 import java.security.PrivateKey
 
 class Signature(val bytes: ByteArray) {

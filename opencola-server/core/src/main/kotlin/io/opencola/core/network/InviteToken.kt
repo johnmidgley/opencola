@@ -5,6 +5,7 @@ import io.opencola.core.model.Id
 import io.opencola.core.security.Signator
 import io.opencola.core.security.isValidSignature
 import io.opencola.core.serialization.*
+import io.opencola.util.Base58
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.net.URI

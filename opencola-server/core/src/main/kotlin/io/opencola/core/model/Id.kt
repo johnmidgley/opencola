@@ -2,7 +2,7 @@ package io.opencola.core.model
 
 import io.ktor.util.*
 import kotlinx.serialization.Serializable
-import io.opencola.core.serialization.Base58
+import io.opencola.util.Base58
 import io.opencola.core.extensions.toByteArray
 import io.opencola.core.extensions.toHexString
 import io.opencola.core.security.sha256

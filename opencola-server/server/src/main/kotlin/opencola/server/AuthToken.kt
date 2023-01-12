@@ -1,7 +1,7 @@
 package opencola.server
 
 import io.opencola.core.security.*
-import io.opencola.core.serialization.Base58
+import io.opencola.util.Base58
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString

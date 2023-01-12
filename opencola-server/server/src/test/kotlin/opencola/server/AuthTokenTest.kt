@@ -3,7 +3,7 @@ package opencola.server
 import io.opencola.core.security.encrypt
 import io.opencola.core.security.generateKeyPair
 import io.opencola.core.security.initProvider
-import io.opencola.core.serialization.Base58
+import io.opencola.util.Base58
 import java.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals

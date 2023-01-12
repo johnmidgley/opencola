@@ -1,6 +1,6 @@
 package io.opencola.core.security
 
-import io.opencola.core.serialization.Base58
+import io.opencola.util.Base58
 import io.opencola.core.extensions.hexStringToByteArray
 import io.opencola.core.serialization.readByteArray
 import io.opencola.core.serialization.writeByteArray
@@ -12,8 +12,6 @@ import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.X509EncodedKeySpec
 import java.util.*
 import javax.crypto.Cipher
-import javax.crypto.KeyGenerator
-
 
 // https://metamug.com/article/security/sign-verify-digital-signature-ecdsa-java.html
 

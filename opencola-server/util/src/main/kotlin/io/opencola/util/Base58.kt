@@ -1,5 +1,4 @@
-
-package io.opencola.core.serialization
+package io.opencola.util
 import java.util.*
 
 /* Adapted from https://github.com/bitcoinj/bitcoinj/blob/master/core/src/main/java/org/bitcoinj/core/Base58.java
@@ -19,6 +18,7 @@ import java.util.*
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 
 object Base58 {
     private val ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".toCharArray()
