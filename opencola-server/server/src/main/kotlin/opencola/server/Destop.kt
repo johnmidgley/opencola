@@ -3,7 +3,7 @@ package opencola.server
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.window.*
 import io.opencola.core.config.Config
-import io.opencola.core.system.openUri
+import io.opencola.system.openUri
 import java.net.URI
 import java.nio.file.Path
 

@@ -14,9 +14,9 @@ import io.opencola.core.network.NetworkNode
 import io.opencola.core.security.EncryptionParams
 import io.opencola.core.security.encode
 import io.opencola.core.security.initProvider
-import io.opencola.core.system.detectResume
-import io.opencola.core.system.openUri
-import io.opencola.core.system.runningInDocker
+import io.opencola.system.detectResume
+import io.opencola.system.openUri
+import io.opencola.system.runningInDocker
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

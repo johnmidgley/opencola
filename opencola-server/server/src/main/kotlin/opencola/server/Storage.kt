@@ -1,8 +1,8 @@
 package opencola.server
 
 import io.opencola.core.config.copyResources
-import io.opencola.core.system.OS
-import io.opencola.core.system.getOS
+import io.opencola.system.OS
+import io.opencola.system.getOS
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.exists

@@ -36,6 +36,7 @@ dependencies {
     implementation(project(":util"))
     implementation(project(":io"))
     implementation(project(":serialization"))
+    implementation(project(":system"))
 
     implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")

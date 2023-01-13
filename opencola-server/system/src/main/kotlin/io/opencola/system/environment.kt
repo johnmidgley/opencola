@@ -1,4 +1,4 @@
-package io.opencola.core.system
+package io.opencola.system
 
 import java.io.File
 

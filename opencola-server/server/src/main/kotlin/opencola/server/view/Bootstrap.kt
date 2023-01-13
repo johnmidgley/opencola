@@ -3,7 +3,7 @@ package opencola.server.view
 import io.ktor.server.application.*
 import io.ktor.server.html.*
 import io.ktor.server.sessions.*
-import io.opencola.core.system.runningInDocker
+import io.opencola.system.runningInDocker
 import kotlinx.html.*
 import opencola.server.plugins.UserSession
 

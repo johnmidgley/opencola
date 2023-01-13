@@ -1,4 +1,4 @@
-package io.opencola.core.system
+package io.opencola.system
 
 import io.opencola.io.MultiStreamReader
 import java.io.File

@@ -1,7 +1,7 @@
 package opencola.server
 
 import io.opencola.core.config.*
-import io.opencola.core.system.getOS
+import io.opencola.system.getOS
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("opencola")
