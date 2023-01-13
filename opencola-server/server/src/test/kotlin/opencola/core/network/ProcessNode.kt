@@ -1,7 +1,7 @@
 package opencola.core.network
 
+import io.opencola.core.system.runCommand
 import mu.KotlinLogging
-import io.opencola.core.extensions.runCommand
 import io.opencola.io.JsonHttpClient
 import io.opencola.io.MultiStreamReader
 import io.opencola.core.system.startProcess
@@ -23,7 +23,8 @@ class ProcessNode(private val nodePath: Path, val name: String, val serverPort: 
 
     override fun make() {
         logger.info { "Making $name" }
-        "./make-node $name $serverPort $ztPort".runCommand(nodePath)
+        runCommand(listOf("./make-node", name, serverPort.toString(), ztPort.toString()), nodePath)
+
     }
 
     private fun blockUntilNodeReady(){
@@ -117,18 +118,18 @@ class ProcessNode(private val nodePath: Path, val name: String, val serverPort: 
         private fun build() {
             if(!built) {
                 logger.info { "Building code" }
-                "./build".runCommand(nodeDir, printOutput = true)
+                runCommand(listOf("./build"), nodeDir, printOutput = true)
             }
             built = true
         }
 
         fun stopAllNodes(){
-            "ps -eaf"
-                .runCommand()
+            runCommand(listOf("ps", "-eaf"))
+
                 .filter { it.contains("../../install/opencola/server") }
                 .map { line -> line.split(" ").filter { it.isNotBlank() }[1] }
                 .forEach{
-                    "kill $it".runCommand()
+                    runCommand(listOf("kill", it))
                 }
         }
     }

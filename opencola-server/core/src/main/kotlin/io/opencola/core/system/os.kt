@@ -1,6 +1,5 @@
 package io.opencola.core.system
 
-import io.opencola.core.extensions.runCommand
 import mu.KotlinLogging
 import java.awt.Desktop
 import java.io.File
@@ -33,7 +32,7 @@ fun getOS() : OS {
 
 fun openUriLinux(uri: URI) {
     try {
-        "xdg-open $uri".runCommand()
+        runCommand(listOf("xdg-open", uri.toString()))
         return
     } catch(_: Throwable) {}
 
@@ -47,7 +46,7 @@ fun openUriLinux(uri: URI) {
 
 fun openUri(uri: URI) {
     when(getOS()) {
-        OS.Mac -> "open $uri".runCommand()
+        OS.Mac -> runCommand(listOf("open", uri.toString()))
         OS.Windows -> Desktop.getDesktop().browse(uri) // "explorer $uri".runCommand()
         OS.Linux -> openUriLinux(uri)
         else -> logger.warn { "Don't know how to open $uri on this os" }
