@@ -3,7 +3,7 @@ package opencola.server.plugins
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.sessions.*
-import io.opencola.core.security.EncryptionParams
+import io.opencola.security.EncryptionParams
 import opencola.server.AuthToken
 
 data class UserSession(val authToken: String) : Principal {

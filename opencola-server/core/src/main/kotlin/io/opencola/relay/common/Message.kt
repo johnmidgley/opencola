@@ -1,7 +1,7 @@
 package io.opencola.relay.common
 
-import io.opencola.core.security.Signature
-import io.opencola.core.security.isValidSignature
+import io.opencola.security.Signature
+import io.opencola.security.isValidSignature
 import io.opencola.serialization.StreamSerializer
 import io.opencola.serialization.readByteArray
 import io.opencola.serialization.writeByteArray

@@ -2,7 +2,7 @@ package io.opencola.core.storage
 
 import io.opencola.core.event.EventBus
 import io.opencola.core.model.*
-import io.opencola.core.security.Signator
+import io.opencola.security.Signator
 import io.opencola.core.storage.EntityStore.TransactionOrder
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption

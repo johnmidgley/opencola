@@ -6,7 +6,7 @@ import io.opencola.core.model.Attribute
 import io.opencola.core.model.AttributeType.*
 import io.opencola.core.model.Entity
 import io.opencola.core.model.Id
-import io.opencola.core.security.sha256
+import io.opencola.security.sha256
 
 abstract class AbstractSearchIndex : SearchIndex {
     protected fun getDocId(authorityId: Id, entityId: Id): String {

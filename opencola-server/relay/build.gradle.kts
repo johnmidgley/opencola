@@ -29,6 +29,7 @@ repositories {
 
 dependencies {
     implementation(project(":core"))
+    implementation(project(":security"))
 
     // Logging
     implementation("io.github.microutils:kotlin-logging:$kotlin_logging_version")

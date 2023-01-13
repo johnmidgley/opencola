@@ -4,9 +4,9 @@ import io.opencola.core.config.Application
 import io.opencola.core.config.loadConfig
 import io.opencola.core.model.Authority
 import io.opencola.core.search.SearchIndex
-import io.opencola.core.security.KeyStore
-import io.opencola.core.security.decodePrivateKey
-import io.opencola.core.security.decodePublicKey
+import io.opencola.security.KeyStore
+import io.opencola.security.decodePrivateKey
+import io.opencola.security.decodePublicKey
 import org.kodein.di.instance
 import java.net.URI
 import java.nio.file.Path

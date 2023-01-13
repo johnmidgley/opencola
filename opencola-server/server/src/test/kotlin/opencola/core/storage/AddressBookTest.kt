@@ -2,7 +2,7 @@ package opencola.core.storage
 
 import opencola.core.TestApplication
 import io.opencola.core.model.Authority
-import io.opencola.core.security.generateKeyPair
+import io.opencola.security.generateKeyPair
 import io.opencola.core.storage.AddressBook
 import opencola.core.storage.AddressBookTest.Action.*
 import java.net.URI

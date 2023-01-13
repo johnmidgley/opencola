@@ -1,9 +1,9 @@
 package io.opencola.core.model
 
 import kotlinx.serialization.Serializable
-import io.opencola.core.security.SIGNATURE_ALGO
-import io.opencola.core.security.Signator
-import io.opencola.core.security.isValidSignature
+import io.opencola.security.SIGNATURE_ALGO
+import io.opencola.security.Signator
+import io.opencola.security.isValidSignature
 import io.opencola.serialization.*
 import java.io.InputStream
 import java.io.OutputStream

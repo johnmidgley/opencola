@@ -42,6 +42,7 @@ dependencies {
     implementation(project(":util"))
     implementation(project(":serialization"))
     implementation(project(":system"))
+    implementation(project(":security"))
 
 
     implementation("org.jetbrains.exposed:exposed-core:$exposed_version")

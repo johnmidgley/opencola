@@ -1,6 +1,6 @@
 package opencola.core.security
 
-import io.opencola.core.security.SecurityProviderDependent
+import io.opencola.security.SecurityProviderDependent
 import java.security.Security
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec

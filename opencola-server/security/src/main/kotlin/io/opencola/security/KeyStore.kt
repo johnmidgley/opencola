@@ -1,4 +1,4 @@
-package io.opencola.core.security
+package io.opencola.security
 
 import mu.KotlinLogging
 import io.opencola.util.toHexString

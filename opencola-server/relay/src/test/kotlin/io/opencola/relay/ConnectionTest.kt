@@ -1,7 +1,7 @@
 package io.opencola.relay
 
 import io.ktor.server.netty.*
-import io.opencola.core.security.generateKeyPair
+import io.opencola.security.generateKeyPair
 import io.opencola.relay.client.RelayClient
 import io.opencola.relay.client.WebSocketClient
 import io.opencola.relay.client.defaultOCRPort

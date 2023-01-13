@@ -11,9 +11,9 @@ import io.opencola.core.event.EventBus
 import io.opencola.core.event.Events
 import io.opencola.core.model.Id
 import io.opencola.core.network.NetworkNode
-import io.opencola.core.security.EncryptionParams
-import io.opencola.core.security.encode
-import io.opencola.core.security.initProvider
+import io.opencola.security.EncryptionParams
+import io.opencola.security.encode
+import io.opencola.security.initProvider
 import io.opencola.system.detectResume
 import io.opencola.system.openUri
 import io.opencola.system.runningInDocker

@@ -3,7 +3,7 @@ package io.opencola.core.storage
 import io.opencola.core.event.EventBus
 import io.opencola.core.model.*
 import io.opencola.util.toHexString
-import io.opencola.core.security.Signator
+import io.opencola.security.Signator
 import io.opencola.core.storage.EntityStore.TransactionOrder
 import io.opencola.core.storage.EntityStore.TransactionOrder.*
 import org.jetbrains.exposed.dao.id.LongIdTable

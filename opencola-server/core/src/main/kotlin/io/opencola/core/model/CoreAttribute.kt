@@ -1,6 +1,6 @@
 package io.opencola.core.model
 
-import io.opencola.core.security.PublicKeyByteArrayCodec
+import io.opencola.security.PublicKeyByteArrayCodec
 import io.opencola.serialization.*
 import io.opencola.serialization.codecs.*
 import java.net.URI

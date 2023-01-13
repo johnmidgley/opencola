@@ -2,7 +2,7 @@ package opencola.core.config
 
 import io.opencola.core.config.*
 import io.opencola.core.model.Id
-import io.opencola.core.security.encode
+import io.opencola.security.encode
 import java.nio.file.Path
 import kotlin.io.path.createDirectory
 

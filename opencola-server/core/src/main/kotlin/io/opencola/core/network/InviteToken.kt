@@ -2,9 +2,9 @@ package io.opencola.core.network
 
 import io.opencola.core.model.Authority
 import io.opencola.core.model.Id
-import io.opencola.core.security.PublicKeyByteArrayCodec
-import io.opencola.core.security.Signator
-import io.opencola.core.security.isValidSignature
+import io.opencola.security.PublicKeyByteArrayCodec
+import io.opencola.security.Signator
+import io.opencola.security.isValidSignature
 import io.opencola.serialization.*
 import io.opencola.util.Base58
 import java.io.ByteArrayInputStream

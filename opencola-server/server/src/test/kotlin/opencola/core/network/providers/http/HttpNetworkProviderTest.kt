@@ -3,7 +3,7 @@ package opencola.core.network.providers.http
 import io.opencola.core.model.Authority
 import io.opencola.core.network.Request
 import io.opencola.core.network.providers.http.HttpNetworkProvider
-import io.opencola.core.security.generateKeyPair
+import io.opencola.security.generateKeyPair
 import opencola.server.PeerNetworkTest
 import org.junit.Test
 import kotlin.test.assertEquals

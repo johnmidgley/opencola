@@ -1,4 +1,4 @@
-package io.opencola.core.security
+package io.opencola.security
 
 import java.security.MessageDigest
 

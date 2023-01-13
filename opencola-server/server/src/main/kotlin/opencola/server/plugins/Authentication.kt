@@ -4,7 +4,7 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.opencola.core.config.LoginConfig
-import io.opencola.core.security.EncryptionParams
+import io.opencola.security.EncryptionParams
 
 fun Application.configureAuthentication(loginConfig: LoginConfig, authEncryptionParams: EncryptionParams) {
     install(Authentication) {

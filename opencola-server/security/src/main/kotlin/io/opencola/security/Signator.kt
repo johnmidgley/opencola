@@ -1,4 +1,4 @@
-package io.opencola.core.security
+package io.opencola.security
 
 class Signator(private val keystore: KeyStore) {
     fun signBytes(alias: String, bytes: ByteArray): ByteArray {

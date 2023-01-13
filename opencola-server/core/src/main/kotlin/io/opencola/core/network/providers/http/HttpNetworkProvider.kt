@@ -16,8 +16,9 @@ import mu.KotlinLogging
 import io.opencola.core.model.Authority
 import io.opencola.core.network.AbstractNetworkProvider
 import io.opencola.core.network.*
-import io.opencola.core.security.*
+import io.opencola.security.*
 import io.opencola.core.storage.AddressBook
+import io.opencola.security.Encryptor
 import kotlinx.serialization.encodeToString
 import java.net.URI
 import kotlin.IllegalStateException

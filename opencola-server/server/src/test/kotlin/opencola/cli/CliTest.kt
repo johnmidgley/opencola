@@ -6,7 +6,7 @@ import io.opencola.core.config.loadConfig
 import io.opencola.core.model.Authority
 import io.opencola.core.model.ResourceEntity
 import io.opencola.core.model.Transaction
-import io.opencola.core.security.Signator
+import io.opencola.security.Signator
 import io.opencola.core.storage.AddressBook
 import io.opencola.core.storage.EntityStore
 import io.opencola.core.storage.EntityStore.TransactionOrder

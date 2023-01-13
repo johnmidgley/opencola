@@ -1,8 +1,8 @@
 package opencola.server
 
-import io.opencola.core.security.encrypt
-import io.opencola.core.security.generateKeyPair
-import io.opencola.core.security.initProvider
+import io.opencola.security.encrypt
+import io.opencola.security.generateKeyPair
+import io.opencola.security.initProvider
 import io.opencola.util.Base58
 import java.util.*
 import kotlin.test.Test

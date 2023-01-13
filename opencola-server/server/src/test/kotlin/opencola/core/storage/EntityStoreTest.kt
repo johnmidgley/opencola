@@ -8,7 +8,7 @@ import io.opencola.core.model.CommentEntity
 import io.opencola.core.model.Entity
 import io.opencola.core.model.ResourceEntity
 import opencola.core.getAuthorityEntity
-import io.opencola.core.security.Signator
+import io.opencola.security.Signator
 import io.opencola.core.storage.*
 import io.opencola.core.storage.EntityStore.TransactionOrder
 import org.kodein.di.instance

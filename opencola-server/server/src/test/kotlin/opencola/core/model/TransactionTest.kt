@@ -3,9 +3,9 @@ package opencola.core.model
 import io.opencola.core.model.*
 import opencola.core.TestApplication
 import io.opencola.util.toHexString
-import io.opencola.core.security.SIGNATURE_ALGO
-import io.opencola.core.security.Signator
-import io.opencola.core.security.sha256
+import io.opencola.security.SIGNATURE_ALGO
+import io.opencola.security.Signator
+import io.opencola.security.sha256
 import org.junit.Test
 import org.kodein.di.instance
 import java.io.ByteArrayInputStream

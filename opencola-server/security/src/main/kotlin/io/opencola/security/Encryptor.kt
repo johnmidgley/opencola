@@ -1,4 +1,4 @@
-package io.opencola.core.security
+package io.opencola.security
 
 class Encryptor(private val keystore: KeyStore) {
     fun encrypt(alias: String, bytes: ByteArray) : ByteArray {

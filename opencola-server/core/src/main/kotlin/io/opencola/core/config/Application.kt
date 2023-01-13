@@ -13,8 +13,9 @@ import io.opencola.core.network.getDefaultRoutes
 import io.opencola.core.network.providers.http.HttpNetworkProvider
 import io.opencola.core.network.providers.relay.OCRelayNetworkProvider
 import io.opencola.core.search.LuceneSearchIndex
-import io.opencola.core.security.*
+import io.opencola.security.*
 import io.opencola.core.storage.*
+import io.opencola.security.Encryptor
 import org.jetbrains.exposed.sql.Database
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton

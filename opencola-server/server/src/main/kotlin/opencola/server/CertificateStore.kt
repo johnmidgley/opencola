@@ -1,9 +1,9 @@
 package opencola.server
 
 import io.opencola.core.config.SSLConfig
-import io.opencola.core.security.convertCertificateToPEM
-import io.opencola.core.security.generateRSAKeyPair
-import io.opencola.core.security.generateSelfSignedV3Certificate
+import io.opencola.security.convertCertificateToPEM
+import io.opencola.security.generateRSAKeyPair
+import io.opencola.security.generateSelfSignedV3Certificate
 import mu.KotlinLogging
 import java.net.Inet4Address
 import java.net.NetworkInterface

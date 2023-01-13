@@ -1,4 +1,4 @@
-package io.opencola.core.security
+package io.opencola.security
 
 import org.bouncycastle.asn1.x500.X500NameBuilder
 import org.bouncycastle.asn1.x500.style.BCStyle

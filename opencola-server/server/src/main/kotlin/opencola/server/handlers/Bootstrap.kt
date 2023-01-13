@@ -6,7 +6,7 @@ import mu.KotlinLogging
 import opencola.server.getSSLCertificateStore
 import java.nio.file.Path
 import kotlin.io.path.exists
-import io.opencola.core.security.KeyStore as OpenColaKeyStore
+import io.opencola.security.KeyStore as OpenColaKeyStore
 
 private val logger = KotlinLogging.logger("bootstrap")
 

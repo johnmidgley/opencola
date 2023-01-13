@@ -1,8 +1,8 @@
 package io.opencola.core.network
 
 import io.opencola.core.model.Id
-import io.opencola.core.security.Encryptor
-import io.opencola.core.security.encrypt
+import io.opencola.security.Encryptor
+import io.opencola.security.encrypt
 import io.opencola.serialization.readByteArray
 import io.opencola.serialization.writeByteArray
 import java.io.ByteArrayInputStream

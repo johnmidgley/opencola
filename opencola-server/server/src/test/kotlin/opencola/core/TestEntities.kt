@@ -1,6 +1,6 @@
 package opencola.core
 
-import io.opencola.core.security.generateKeyPair
+import io.opencola.security.generateKeyPair
 import io.opencola.core.model.Id
 import io.opencola.core.model.Authority
 import java.net.URI

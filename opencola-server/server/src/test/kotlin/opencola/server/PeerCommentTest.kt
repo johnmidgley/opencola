@@ -2,7 +2,6 @@ package opencola.server
 
 import io.opencola.core.model.Authority
 import io.opencola.core.model.ResourceEntity
-import io.opencola.core.security.generateKeyPair
 import io.opencola.core.storage.EntityStore
 import opencola.server.handlers.addComment
 import org.junit.Test

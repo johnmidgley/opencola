@@ -1,8 +1,8 @@
 package opencola.core.security
 
-import io.opencola.core.security.generateKeyPair
-import io.opencola.core.security.isValidSignature
-import io.opencola.core.security.sign
+import io.opencola.security.generateKeyPair
+import io.opencola.security.isValidSignature
+import io.opencola.security.sign
 import kotlin.test.Test
 
 class SignatureTest {

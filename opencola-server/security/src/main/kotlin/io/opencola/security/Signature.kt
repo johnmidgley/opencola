@@ -1,4 +1,4 @@
-package io.opencola.core.security
+package io.opencola.security
 
 import io.opencola.util.Base58
 import java.security.PrivateKey

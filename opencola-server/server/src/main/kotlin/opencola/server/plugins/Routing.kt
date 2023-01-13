@@ -20,7 +20,7 @@ import io.opencola.core.network.Notification
 import io.opencola.core.network.handleGetTransactions
 import io.opencola.core.network.handleNotification
 import io.opencola.core.network.providers.http.HttpNetworkProvider
-import io.opencola.core.security.EncryptionParams
+import io.opencola.security.EncryptionParams
 import io.opencola.system.*
 import kotlinx.coroutines.CompletableDeferred
 import mu.KotlinLogging

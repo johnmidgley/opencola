@@ -11,9 +11,9 @@ import io.opencola.core.network.InviteToken
 import io.opencola.core.network.NetworkNode
 import io.opencola.core.network.Notification
 import io.opencola.core.network.PeerEvent
-import io.opencola.core.security.Signator
-import io.opencola.core.security.decodePublicKey
-import io.opencola.core.security.encode
+import io.opencola.security.Signator
+import io.opencola.security.decodePublicKey
+import io.opencola.security.encode
 import io.opencola.core.storage.AddressBook
 import java.net.URI
 import java.security.PublicKey

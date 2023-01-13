@@ -1,8 +1,8 @@
 package io.opencola.relay.common
 
 
-import io.opencola.core.security.encrypt
-import io.opencola.core.security.publicKeyFromBytes
+import io.opencola.security.encrypt
+import io.opencola.security.publicKeyFromBytes
 import io.opencola.serialization.StreamSerializer
 import io.opencola.serialization.readByteArray
 import io.opencola.serialization.writeByteArray

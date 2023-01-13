@@ -2,8 +2,9 @@ package io.opencola.core.network
 
 import io.opencola.core.model.Authority
 import io.opencola.core.model.Id
-import io.opencola.core.security.*
+import io.opencola.security.*
 import io.opencola.core.storage.AddressBook
+import io.opencola.security.Encryptor
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json

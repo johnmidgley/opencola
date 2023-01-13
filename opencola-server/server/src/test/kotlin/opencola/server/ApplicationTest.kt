@@ -11,7 +11,7 @@ import io.ktor.server.testing.*
 import io.opencola.core.model.*
 import io.opencola.core.network.Notification
 import io.opencola.core.network.PeerEvent.NewTransaction
-import io.opencola.core.security.generateKeyPair
+import io.opencola.security.generateKeyPair
 import io.opencola.core.storage.AddressBook
 import io.opencola.core.storage.EntityStore
 import kotlinx.coroutines.delay

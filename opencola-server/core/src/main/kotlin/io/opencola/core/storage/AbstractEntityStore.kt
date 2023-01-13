@@ -6,7 +6,7 @@ import io.opencola.core.event.Events
 import io.opencola.core.model.*
 import io.opencola.core.extensions.ifNotNullOrElse
 import io.opencola.core.extensions.nullOrElse
-import io.opencola.core.security.Signator
+import io.opencola.security.Signator
 import io.opencola.core.storage.EntityStore.TransactionOrder
 import java.security.PublicKey
 

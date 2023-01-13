@@ -1,4 +1,4 @@
-package io.opencola.core.security
+package io.opencola.security
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.security.Security

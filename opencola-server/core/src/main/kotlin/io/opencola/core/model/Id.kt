@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 import io.opencola.util.Base58
 import io.opencola.util.toByteArray
 import io.opencola.util.toHexString
-import io.opencola.core.security.sha256
+import io.opencola.security.sha256
 import io.opencola.serialization.ByteArrayCodec
 import io.opencola.serialization.StreamSerializer
 import java.io.InputStream
