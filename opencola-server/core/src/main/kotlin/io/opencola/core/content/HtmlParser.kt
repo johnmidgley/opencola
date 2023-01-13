@@ -1,6 +1,6 @@
 package io.opencola.core.content
 
-import io.opencola.core.extensions.tryParseUri
+import io.opencola.util.tryParseUri
 import org.jsoup.Jsoup
 import java.net.URI
 

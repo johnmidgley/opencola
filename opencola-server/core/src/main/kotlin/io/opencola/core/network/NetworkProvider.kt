@@ -43,7 +43,7 @@ abstract class AbstractNetworkProvider(val authority: Authority,
         val toPublicKey = toAuthority.publicKey
             ?: throw IllegalArgumentException("Can't construct message to peer that does not have a public key: $to")
 
-        val message = Message(from, messageBytes, signator.signBytes(from, messageBytes))
+        val message = Message(from, messageBytes, signator.signBytes(from.toString(), messageBytes))
         return MessageEnvelope(to, message).encode(if (encryptMessage) toPublicKey else null)
     }
 

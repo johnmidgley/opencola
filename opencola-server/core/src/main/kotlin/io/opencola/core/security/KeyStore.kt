@@ -2,7 +2,6 @@ package io.opencola.core.security
 
 import mu.KotlinLogging
 import io.opencola.util.toHexString
-import io.opencola.core.model.Id
 import java.nio.file.Path
 import java.security.KeyPair
 import java.security.KeyStore
@@ -40,39 +39,26 @@ class KeyStore(val path: Path, password: String) : SecurityProviderDependent() {
             store.load(null, passwordHash)
     }
 
-    fun addKey(id: Id, keyPair: KeyPair){
-        store.setKeyEntry(id.toString(), keyPair.private, null, arrayOf(createCertificate(id, keyPair)))
+    fun addKey(alias: String, keyPair: KeyPair){
+        store.setKeyEntry(alias, keyPair.private, null, arrayOf(createCertificate(alias, keyPair)))
         path.outputStream().use {
             store.store(it, passwordHash)
         }
     }
 
-    private fun getLegacyKey(id: Id) : KeyStore.Entry? {
-        val entry = store.getEntry(id.legacyEncode(), protectionParameter)
-
-        if(entry != null){
-            logger.warn { "Updating legacy KeyStore" }
-            val privateKeyEntry = entry as KeyStore.PrivateKeyEntry
-            addKey(id, KeyPair(entry.certificate.publicKey, entry.privateKey))
-            return privateKeyEntry
-        }
-
-        return null
-    }
-
-    private fun getEntry(id: Id): KeyStore.PrivateKeyEntry {
-        val entry = store.getEntry(id.toString(), protectionParameter)  ?: getLegacyKey(id)
-            ?: throw RuntimeException("No key found for $id")
+    private fun getEntry(alias: String): KeyStore.PrivateKeyEntry {
+        val entry = store.getEntry(alias, protectionParameter)
+            ?: throw RuntimeException("No key found for $alias")
 
         return entry as KeyStore.PrivateKeyEntry
     }
 
-    fun getPrivateKey(id: Id): PrivateKey? {
-        return getEntry(id).privateKey
+    fun getPrivateKey(alias: String): PrivateKey? {
+        return getEntry(alias).privateKey
     }
 
-    fun getPublicKey(id: Id): PublicKey? {
-        return getEntry(id).certificate.publicKey
+    fun getPublicKey(alias: String): PublicKey? {
+        return getEntry(alias).certificate.publicKey
     }
 
     fun changePassword(newPassword: String) {

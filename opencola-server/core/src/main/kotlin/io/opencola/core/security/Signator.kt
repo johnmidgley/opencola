@@ -1,12 +1,10 @@
 package io.opencola.core.security
 
-import io.opencola.core.model.Id
-
 class Signator(private val keystore: KeyStore) {
-    fun signBytes(authorityId: Id, bytes: ByteArray): ByteArray {
+    fun signBytes(alias: String, bytes: ByteArray): ByteArray {
         // TODO: Sign bytes or hash of bytes? Check performance diff
-        val privateKey = keystore.getPrivateKey(authorityId)
-            ?: throw RuntimeException("Unable to find private key for Authority: $authorityId")
+        val privateKey = keystore.getPrivateKey(alias)
+            ?: throw RuntimeException("Unable to find private key for alias: $alias")
 
         return sign(privateKey, bytes)
     }

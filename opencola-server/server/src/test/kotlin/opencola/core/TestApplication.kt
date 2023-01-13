@@ -38,7 +38,7 @@ object TestApplication {
             "password"
         )
         val keyPair = KeyPair(authorityPublicKey, authorityPrivateKey)
-        keyStore.addKey(authority.authorityId, keyPair)
+        keyStore.addKey(authority.authorityId.toString(), keyPair)
         val instance =  Application.instance(storagePath, config, keyPair, "password")
         val index by instance.injector.instance<SearchIndex>()
 

@@ -10,7 +10,7 @@ import io.opencola.core.content.HtmlParser
 import io.opencola.core.content.HttpClient
 import io.opencola.core.content.urlRegex
 import io.opencola.core.model.*
-import io.opencola.core.extensions.blankToNull
+import io.opencola.util.blankToNull
 import io.opencola.core.extensions.ifNullOrElse
 import io.opencola.core.extensions.nullOrElse
 import io.opencola.core.storage.AddressBook

@@ -38,7 +38,7 @@ data class InviteToken(
             it.writeByteArray(body)
             it.toByteArray()
         }
-        val signature = signator.signBytes(authorityId, token)
+        val signature = signator.signBytes(authorityId.toString(), token)
         val signedToken = ByteArrayOutputStream().use {
             it.writeByteArray(token)
             it.writeByteArray(signature)

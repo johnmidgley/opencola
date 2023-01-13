@@ -44,7 +44,7 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
             val keyStore = KeyStore(storagePath.resolve("keystore.pks"), password)
             val keyPair =  if (authorityPubPath.exists()) {
                 val publicKey = decodePublicKey(authorityPubPath.readText())
-                val privateKey = keyStore.getPrivateKey(Id.ofPublicKey(publicKey))
+                val privateKey = keyStore.getPrivateKey(Id.ofPublicKey(publicKey).toString())
                 if(privateKey != null)
                     logger.info { "Found private key in store" }
                 else
@@ -54,7 +54,7 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
             } else {
                 logger.info { "Key file $publicKeyFile doesn't exist. Creating new KeyPair" }
                 val keyPair = generateKeyPair()
-                keyStore.addKey(Id.ofPublicKey(keyPair.public), keyPair)
+                keyStore.addKey(Id.ofPublicKey(keyPair.public).toString(), keyPair)
                 authorityPubPath.writeText(keyPair.public.encode())
                 keyPair
             }

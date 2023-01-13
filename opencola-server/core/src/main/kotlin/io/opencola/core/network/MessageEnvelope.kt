@@ -24,7 +24,7 @@ class MessageEnvelope(val to: Id, val message: Message) {
         fun decode(envelopeBytes: ByteArray, encryptor: Encryptor? = null): MessageEnvelope {
             return ByteArrayInputStream(envelopeBytes).use {
                 val id = Id.decode(it)
-                val messageBytes = it.readByteArray().let { bytes -> encryptor?.decrypt(id, bytes) ?: bytes }
+                val messageBytes = it.readByteArray().let { bytes -> encryptor?.decrypt(id.toString(), bytes) ?: bytes }
                 MessageEnvelope(id, Message.decode(messageBytes))
             }
         }

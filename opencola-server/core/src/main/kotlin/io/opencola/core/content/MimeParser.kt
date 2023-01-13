@@ -1,6 +1,6 @@
 package io.opencola.core.content
 
-import io.opencola.core.extensions.tryParseUri
+import io.opencola.util.tryParseUri
 import org.apache.james.mime4j.dom.*
 import org.apache.james.mime4j.message.DefaultMessageBuilder
 import org.apache.james.mime4j.stream.MimeConfig

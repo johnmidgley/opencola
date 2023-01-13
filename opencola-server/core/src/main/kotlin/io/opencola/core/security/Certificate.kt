@@ -1,6 +1,5 @@
 package io.opencola.core.security
 
-import io.opencola.core.model.Id
 import org.bouncycastle.asn1.x500.X500NameBuilder
 import org.bouncycastle.asn1.x500.style.BCStyle
 import org.bouncycastle.cert.X509v1CertificateBuilder
@@ -16,18 +15,18 @@ import java.security.cert.X509Certificate
 // ability to a trusted party to create certificates on their behalf?
 // A history of certificates will be needed in order to validate historical transactions.
 // Is it sufficient to replace a certificate (i.e. each user has only 1 active cert) vs. managing CRLs?
-fun createCertificate(id: Id, keyPair: KeyPair): X509Certificate {
-    val x500NameBld = X500NameBuilder(BCStyle.INSTANCE).addRDN(BCStyle.O, "openCOLA").addRDN(BCStyle.CN, "opencola:$id")
+fun createCertificate(name: String, keyPair: KeyPair): X509Certificate {
+    val x500NameBld = X500NameBuilder(BCStyle.INSTANCE).addRDN(BCStyle.O, "OpenCola").addRDN(BCStyle.CN, name)
 
-    val name = x500NameBld.build()
+    val x500Name = x500NameBld.build()
 
     // This is a v1 certificate - doesn't support extensions
     val certBuilder: X509v1CertificateBuilder = JcaX509v1CertificateBuilder(
-        name,
+        x500Name,
         BigInteger.valueOf(0), // calculateSerialNumber(),
         calculateDate(0),
         calculateDate(24 * 31),
-        name,
+        x500Name,
         keyPair.public
     )
 

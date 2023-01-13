@@ -20,7 +20,6 @@ import java.security.SecureRandom
 import java.security.cert.X509Certificate
 import java.util.*
 
-
 fun generateRSAKeyPair(keySize: Int = 2048): KeyPair {
     val kpGen = KeyPairGenerator.getInstance("RSA", "BC")
     kpGen.initialize(keySize, SecureRandom())

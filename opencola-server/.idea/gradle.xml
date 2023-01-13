@@ -13,8 +13,11 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/core" />
+            <option value="$PROJECT_DIR$/io" />
             <option value="$PROJECT_DIR$/relay" />
+            <option value="$PROJECT_DIR$/serialization" />
             <option value="$PROJECT_DIR$/server" />
+            <option value="$PROJECT_DIR$/system" />
             <option value="$PROJECT_DIR$/util" />
           </set>
         </option>

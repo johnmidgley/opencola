@@ -18,11 +18,11 @@ class KeyStoreTest {
         val keyStore = KeyStore(keyStorePath, password)
         val keyPair = generateKeyPair()
         val authority = Authority(keyPair.public, URI(""), "Test Authority")
-        keyStore.addKey(authority.authorityId, keyPair)
+        keyStore.addKey(authority.authorityId.toString(), keyPair)
 
         val keyStore1 = KeyStore(keyStorePath, password)
-        val privateKey1 = keyStore1.getPrivateKey(authority.entityId)
-        val publicKey1 = keyStore1.getPublicKey(authority.entityId)
+        val privateKey1 = keyStore1.getPrivateKey(authority.entityId.toString())
+        val publicKey1 = keyStore1.getPublicKey(authority.entityId.toString())
 
         assertNotNull(privateKey1)
         assertNotNull(publicKey1)
@@ -46,14 +46,14 @@ class KeyStoreTest {
         val keyStore = KeyStore(keyStorePath, password)
         val keyPair = generateKeyPair()
         val authority = Authority(keyPair.public, URI(""), "Test Authority")
-        keyStore.addKey(authority.authorityId, keyPair)
-        assertNotNull(keyStore.getPublicKey(authority.authorityId))
+        keyStore.addKey(authority.authorityId.toString(), keyPair)
+        assertNotNull(keyStore.getPublicKey(authority.authorityId.toString()))
         keyStore.changePassword(newPassword)
-        val pubKey = keyStore.getPublicKey(authority.authorityId)
+        val pubKey = keyStore.getPublicKey(authority.authorityId.toString())
         assertNotNull(pubKey)
 
         val keyStore1 = KeyStore(keyStorePath, newPassword)
-        val pubKey1 = keyStore1.getPublicKey(authority.authorityId)
+        val pubKey1 = keyStore1.getPublicKey(authority.authorityId.toString())
         assertNotNull(pubKey1)
         assertEquals(pubKey, pubKey1)
     }
