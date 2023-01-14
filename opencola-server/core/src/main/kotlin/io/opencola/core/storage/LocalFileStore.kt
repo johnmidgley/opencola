@@ -1,6 +1,6 @@
 package io.opencola.core.storage
 
-import io.opencola.core.model.Id
+import io.opencola.model.Id
 import java.io.InputStream
 import java.nio.file.Path
 import kotlin.io.path.*

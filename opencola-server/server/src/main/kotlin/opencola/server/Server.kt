@@ -9,7 +9,7 @@ import io.opencola.core.config.LoginConfig
 import io.opencola.core.config.ServerConfig
 import io.opencola.core.event.EventBus
 import io.opencola.core.event.Events
-import io.opencola.core.model.Id
+import io.opencola.model.Id
 import io.opencola.core.network.NetworkNode
 import io.opencola.security.EncryptionParams
 import io.opencola.security.encode

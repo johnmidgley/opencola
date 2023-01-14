@@ -1,8 +1,8 @@
 package opencola.server.handlers
 
 import io.opencola.core.extensions.nullOrElse
-import io.opencola.core.model.Authority
-import io.opencola.core.model.Id
+import io.opencola.model.Authority
+import io.opencola.model.Id
 import kotlinx.serialization.Serializable
 
 @Serializable

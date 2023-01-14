@@ -1,6 +1,5 @@
-package io.opencola.core.model
+package io.opencola.model
 
-import io.ktor.util.*
 import kotlinx.serialization.Serializable
 import io.opencola.util.Base58
 import io.opencola.util.toByteArray
@@ -8,6 +7,7 @@ import io.opencola.util.toHexString
 import io.opencola.security.sha256
 import io.opencola.serialization.ByteArrayCodec
 import io.opencola.serialization.StreamSerializer
+import io.opencola.util.hexStringToByteArray
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI
@@ -51,7 +51,8 @@ data class Id(private val bytes: ByteArray) {
         fun decode(value: String): Id {
             return decode(
                 when (value.length) {
-                    64 -> hex(value)
+
+                    64 -> value.hexStringToByteArray()
                     else -> Base58.decode(value)
                 }
             )

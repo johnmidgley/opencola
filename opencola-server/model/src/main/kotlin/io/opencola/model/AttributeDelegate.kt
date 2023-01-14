@@ -1,6 +1,5 @@
-package io.opencola.core.model
+package io.opencola.model
 
-import io.opencola.core.extensions.nullOrElse
 import io.opencola.security.PublicKeyByteArrayCodec
 import io.opencola.serialization.*
 import io.opencola.serialization.codecs.*
@@ -8,14 +7,14 @@ import kotlin.reflect.KProperty
 
 class AttributeDelegate<T>(val codec: ByteArrayCodec<T>, val resettable: Boolean = true) {
     operator fun getValue(thisRef: Entity, property: KProperty<*>): T? {
-        return thisRef.getValue(property.name)?.bytes.nullOrElse { codec.decode(it) }
+        return thisRef.getValue(property.name)?.bytes?.let { codec.decode(it) }
     }
 
     operator fun setValue(thisRef: Entity, property: KProperty<*>, value: T?) {
         if(!resettable && getValue(thisRef, property) != null)
              throw IllegalStateException("Attempt to reset a non resettable property: ${property.name}")
 
-        thisRef.setValue(property.name, value.nullOrElse { Value(codec.encode(it as T)) })
+        thisRef.setValue(property.name, value?.let { Value(codec.encode(it as T)) })
     }
 }
 
@@ -85,7 +84,7 @@ object MultiValueListOfStringAttributeDelegate {
             thisRef.setMultiValue(
                 property.name,
                 multiValueString.key,
-                multiValueString.value?.toByteArray().nullOrElse { Value(it) })
+                multiValueString.value?.toByteArray()?.let { Value(it) })
         }
 
         // Delete any removed values

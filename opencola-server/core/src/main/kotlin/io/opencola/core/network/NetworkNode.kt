@@ -2,8 +2,8 @@ package io.opencola.core.network
 
 import io.opencola.core.event.EventBus
 import io.opencola.core.event.Events
-import io.opencola.core.model.Authority
-import io.opencola.core.model.Id
+import io.opencola.model.Authority
+import io.opencola.model.Id
 import io.opencola.core.network.NetworkNode.PeerStatus.*
 import io.opencola.core.storage.AddressBook
 import mu.KotlinLogging

@@ -1,6 +1,6 @@
 package opencola.core.network.providers.http
 
-import io.opencola.core.model.Authority
+import io.opencola.model.Authority
 import io.opencola.core.network.Request
 import io.opencola.core.network.providers.http.HttpNetworkProvider
 import io.opencola.security.generateKeyPair

@@ -2,8 +2,9 @@ package io.opencola.util
 
 import java.net.URI
 
-// TODO: Figure out how to get rid of this and byte extensions these are just encoders
 fun String.hexStringToByteArray(): ByteArray {
+    // TODO: This may be more direct
+    // return BigInteger(this, 16).toByteArray()
     return this.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
 }
 

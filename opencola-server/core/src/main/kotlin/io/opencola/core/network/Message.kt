@@ -1,6 +1,6 @@
 package io.opencola.core.network
 
-import io.opencola.core.model.Id
+import io.opencola.model.Id
 import io.opencola.serialization.StreamSerializer
 import io.opencola.serialization.readByteArray
 import io.opencola.serialization.writeByteArray

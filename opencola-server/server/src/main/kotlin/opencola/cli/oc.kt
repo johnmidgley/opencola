@@ -1,16 +1,14 @@
 package opencola.cli
 
 import io.opencola.core.config.Application
-import io.opencola.core.model.Authority
-import io.opencola.core.model.Id
-import io.opencola.core.model.SignedTransaction
+import io.opencola.model.Id
+import io.opencola.model.SignedTransaction
 import io.opencola.core.storage.EntityStore
 import org.kodein.di.instance
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
-import kotlin.math.exp
 
 fun printUsage(){
     println("Usage: oc TASK COMMAND [ARGS] ")

@@ -9,7 +9,7 @@ import mu.KotlinLogging
 import io.opencola.core.content.HtmlParser
 import io.opencola.core.content.HttpClient
 import io.opencola.core.content.urlRegex
-import io.opencola.core.model.*
+import io.opencola.model.*
 import io.opencola.util.blankToNull
 import io.opencola.core.extensions.ifNullOrElse
 import io.opencola.core.extensions.nullOrElse

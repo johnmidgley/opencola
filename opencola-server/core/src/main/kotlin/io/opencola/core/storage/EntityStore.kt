@@ -1,9 +1,9 @@
 package io.opencola.core.storage
 
-import io.opencola.core.model.Entity
-import io.opencola.core.model.Fact
-import io.opencola.core.model.Id
-import io.opencola.core.model.SignedTransaction
+import io.opencola.model.Entity
+import io.opencola.model.Fact
+import io.opencola.model.Id
+import io.opencola.model.SignedTransaction
 import io.opencola.core.extensions.ifNotNullOrElse
 
 interface EntityStore {

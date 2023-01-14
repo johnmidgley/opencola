@@ -2,9 +2,9 @@ package io.opencola.core.search
 
 import mu.KotlinLogging
 import io.opencola.core.extensions.recursiveDelete
-import io.opencola.core.model.CoreAttribute.values
-import io.opencola.core.model.Entity
-import io.opencola.core.model.Id
+import io.opencola.model.CoreAttribute.values
+import io.opencola.model.Entity
+import io.opencola.model.Id
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.document.Document
 import org.apache.lucene.document.Field

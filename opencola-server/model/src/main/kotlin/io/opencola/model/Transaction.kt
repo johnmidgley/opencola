@@ -1,4 +1,4 @@
-package io.opencola.core.model
+package io.opencola.model
 
 import kotlinx.serialization.Serializable
 import io.opencola.security.SIGNATURE_ALGO

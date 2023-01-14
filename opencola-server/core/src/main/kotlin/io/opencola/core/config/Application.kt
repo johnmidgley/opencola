@@ -5,8 +5,8 @@ import io.opencola.core.content.TextExtractor
 import io.opencola.core.event.EventBus
 import io.opencola.core.event.MainReactor
 import io.opencola.core.event.Reactor
-import io.opencola.core.model.Authority
-import io.opencola.core.model.Id
+import io.opencola.model.Authority
+import io.opencola.model.Id
 import io.opencola.core.network.NetworkNode
 import io.opencola.core.network.RequestRouter
 import io.opencola.core.network.getDefaultRoutes

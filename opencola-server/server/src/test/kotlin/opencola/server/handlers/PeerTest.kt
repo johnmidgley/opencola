@@ -1,6 +1,6 @@
 package opencola.server.handlers
 
-import io.opencola.core.model.Authority
+import io.opencola.model.Authority
 import opencola.core.TestApplication
 import kotlin.test.*
 

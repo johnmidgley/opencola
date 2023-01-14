@@ -3,10 +3,10 @@ package opencola.core.storage
 import opencola.core.TestApplication
 import opencola.core.config.getApplications
 import io.opencola.core.event.EventBus
-import io.opencola.core.model.Authority
-import io.opencola.core.model.CommentEntity
-import io.opencola.core.model.Entity
-import io.opencola.core.model.ResourceEntity
+import io.opencola.model.Authority
+import io.opencola.model.CommentEntity
+import io.opencola.model.Entity
+import io.opencola.model.ResourceEntity
 import opencola.core.getAuthorityEntity
 import io.opencola.security.Signator
 import io.opencola.core.storage.*

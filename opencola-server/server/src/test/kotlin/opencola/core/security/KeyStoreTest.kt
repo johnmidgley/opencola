@@ -1,6 +1,6 @@
 package opencola.core.security
 
-import io.opencola.core.model.Authority
+import io.opencola.model.Authority
 import io.opencola.security.*
 import org.junit.Test
 import java.net.URI

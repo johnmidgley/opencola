@@ -1,4 +1,4 @@
-package io.opencola.core.model
+package io.opencola.model
 
 import io.opencola.security.PublicKeyByteArrayCodec
 import io.opencola.serialization.*

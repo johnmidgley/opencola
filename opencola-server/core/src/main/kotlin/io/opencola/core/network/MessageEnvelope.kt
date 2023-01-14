@@ -1,6 +1,6 @@
 package io.opencola.core.network
 
-import io.opencola.core.model.Id
+import io.opencola.model.Id
 import io.opencola.security.Encryptor
 import io.opencola.security.encrypt
 import io.opencola.serialization.readByteArray

@@ -4,9 +4,9 @@ import mu.KotlinLogging
 import io.opencola.core.content.parseMime
 import io.opencola.core.content.splitMht
 import io.opencola.core.extensions.nullOrElse
-import io.opencola.core.model.DataEntity
-import io.opencola.core.model.Id
-import io.opencola.core.model.ResourceEntity
+import io.opencola.model.DataEntity
+import io.opencola.model.Id
+import io.opencola.model.ResourceEntity
 import java.io.ByteArrayInputStream
 import java.nio.file.Path
 import kotlin.io.path.createDirectory

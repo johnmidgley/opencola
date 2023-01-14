@@ -3,8 +3,8 @@ package io.opencola.core.storage
 import mu.KotlinLogging
 import io.opencola.core.config.NetworkConfig
 import io.opencola.core.config.PeerConfig
-import io.opencola.core.model.Authority
-import io.opencola.core.model.Id
+import io.opencola.model.Authority
+import io.opencola.model.Id
 import io.opencola.security.Signator
 import io.opencola.security.decodePublicKey
 import java.net.URI

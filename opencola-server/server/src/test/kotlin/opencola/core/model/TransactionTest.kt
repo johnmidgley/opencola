@@ -1,6 +1,6 @@
 package opencola.core.model
 
-import io.opencola.core.model.*
+import io.opencola.model.*
 import opencola.core.TestApplication
 import io.opencola.util.toHexString
 import io.opencola.security.SIGNATURE_ALGO

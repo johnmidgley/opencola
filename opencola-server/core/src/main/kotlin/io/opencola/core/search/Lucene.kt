@@ -1,6 +1,6 @@
 package io.opencola.core.search
 
-import io.opencola.core.model.CoreAttribute
+import io.opencola.model.CoreAttribute
 import io.opencola.serialization.ByteArrayCodec
 import io.opencola.serialization.codecs.StringByteArrayCodec
 

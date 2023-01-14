@@ -1,6 +1,6 @@
 package io.opencola.relay.common
 
-import io.opencola.core.model.Id
+import io.opencola.model.Id
 import io.opencola.security.Signature
 import io.opencola.security.publicKeyFromBytes
 import io.opencola.serialization.StreamSerializer

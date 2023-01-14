@@ -3,9 +3,9 @@ package opencola.cli
 import opencola.core.TestApplication
 import io.opencola.core.config.Application
 import io.opencola.core.config.loadConfig
-import io.opencola.core.model.Authority
-import io.opencola.core.model.ResourceEntity
-import io.opencola.core.model.Transaction
+import io.opencola.model.Authority
+import io.opencola.model.ResourceEntity
+import io.opencola.model.Transaction
 import io.opencola.security.Signator
 import io.opencola.core.storage.AddressBook
 import io.opencola.core.storage.EntityStore

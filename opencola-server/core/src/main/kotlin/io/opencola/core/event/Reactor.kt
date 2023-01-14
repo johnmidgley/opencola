@@ -3,7 +3,7 @@ package io.opencola.core.event
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import io.opencola.core.event.EventBus.Event
-import io.opencola.core.model.*
+import io.opencola.model.*
 import io.opencola.core.network.*
 import io.opencola.core.network.PeerEvent.*
 import io.opencola.core.search.SearchIndex

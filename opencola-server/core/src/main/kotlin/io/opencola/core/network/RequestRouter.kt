@@ -1,6 +1,6 @@
 package io.opencola.core.network
 
-import io.opencola.core.model.Id
+import io.opencola.model.Id
 import mu.KotlinLogging
 
 class Route(val method: Request.Method, val path: String, val handler: (Id, Id, Request) -> Response)

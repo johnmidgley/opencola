@@ -1,15 +1,11 @@
-package io.opencola.core.model
+package io.opencola.model
 
 import kotlinx.serialization.Serializable
-import io.opencola.core.extensions.nullOrElse
 import io.opencola.serialization.StreamSerializer
 import io.opencola.serialization.readLong
 import io.opencola.serialization.writeLong
 import java.io.InputStream
 import java.io.OutputStream
-
-// TODO - Make MAX_LONG?
-const val UNCOMMITTED = -1L
 
 // TODO: Use protobuf
 // TODO: Intern ids and attributes
@@ -26,7 +22,7 @@ data class Fact(
     val transactionOrdinal: Long? = null,
 ) {
     override fun toString(): String {
-        val decodedValue = value.nullOrElse { attribute.codec.decode(it.bytes) }
+        val decodedValue = value.let { attribute.codec.decode(it.bytes) }
         return "{ authorityId: $authorityId entityId: $entityId attribute: $attribute value: $decodedValue operation: $operation transactionOrdinal: $transactionOrdinal"
     }
 

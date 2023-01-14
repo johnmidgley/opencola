@@ -11,7 +11,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.opencola.core.content.*
 import io.opencola.core.extensions.nullOrElse
-import io.opencola.core.model.*
+import io.opencola.model.*
 import io.opencola.core.storage.EntityStore
 import io.opencola.core.storage.FileStore
 import kotlinx.coroutines.runBlocking

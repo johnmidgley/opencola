@@ -1,6 +1,6 @@
 package io.opencola.core.search
 
-import io.opencola.core.model.Id
+import io.opencola.model.Id
 
 // TODO: Add highlighting
 // TODO: Should probably return full entity, but somewhat expensive, and won't be compatible with highlighting

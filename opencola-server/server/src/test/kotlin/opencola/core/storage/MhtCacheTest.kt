@@ -3,8 +3,8 @@ package opencola.core.storage
 import opencola.core.TestApplication
 import io.opencola.core.content.MhtmlPage
 import io.opencola.core.content.parseMime
-import io.opencola.core.model.Actions
-import io.opencola.core.model.Authority
+import io.opencola.model.Actions
+import io.opencola.model.Authority
 import io.opencola.core.storage.EntityStore
 import io.opencola.core.storage.FileStore
 import io.opencola.core.storage.MhtCache

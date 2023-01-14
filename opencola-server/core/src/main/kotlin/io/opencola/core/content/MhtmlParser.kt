@@ -2,7 +2,7 @@ package io.opencola.core.content
 
 import io.ktor.utils.io.charsets.Charset
 import io.opencola.core.extensions.nullOrElse
-import io.opencola.core.model.Id
+import io.opencola.model.Id
 import org.apache.james.mime4j.codec.DecoderUtil
 import org.apache.james.mime4j.dom.*
 import org.apache.james.mime4j.message.*
@@ -43,7 +43,7 @@ class MhtmlPage {
         title = htmlParser?.parseTitle() ?: DecoderUtil.decodeEncodedWords(message.header.getField("Subject")?.body, Charset.defaultCharset())
         description = htmlParser.nullOrElse { it.parseDescription() }
         imageUri = htmlParser.nullOrElse { it.parseImageUri() } ?: getImageUri(message)
-        embeddedMimeType = htmlParser?.let { it.parseEmbeddedType() }
+        embeddedMimeType = htmlParser?.parseEmbeddedType()
         text = htmlText.nullOrElse { TextExtractor().getBody(it.toByteArray()) }
     }
 

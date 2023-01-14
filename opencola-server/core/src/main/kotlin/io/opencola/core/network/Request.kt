@@ -5,7 +5,6 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import io.opencola.core.extensions.nullOrElse
-import io.opencola.core.model.Id
 
 @Serializable
 // TODO: Should include encoding parameter - headers?

@@ -1,7 +1,7 @@
 package io.opencola.core.network.providers.relay
 
 import io.opencola.core.config.NetworkConfig
-import io.opencola.core.model.Authority
+import io.opencola.model.Authority
 import io.opencola.core.network.*
 import io.opencola.security.Encryptor
 import io.opencola.security.Signator

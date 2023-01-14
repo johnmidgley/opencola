@@ -13,7 +13,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
-import io.opencola.core.model.Authority
+import io.opencola.model.Authority
 import io.opencola.core.network.AbstractNetworkProvider
 import io.opencola.core.network.*
 import io.opencola.security.*

@@ -1,8 +1,7 @@
-package io.opencola.core.model
+package io.opencola.model
 
 import mu.KotlinLogging
-import io.opencola.core.extensions.nullOrElse
-import io.opencola.core.model.AttributeType.*
+import io.opencola.model.AttributeType.*
 import java.net.URI
 import java.util.*
 
@@ -52,7 +51,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         this.trust = trust
         this.like = like
         this.rating = rating
-        tags.nullOrElse { this.tags = it }
+        tags?.let { this.tags = it }
     }
 
     constructor(facts: List<Fact>) : this(facts.first().authorityId, facts.first().entityId) {
@@ -100,7 +99,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
                     && (key == null || MultiValueListItem.keyOf(it.value) == key)
                     && (attribute.type != MultiValueSet || value == null || it.value == value)
             }
-            .nullOrElse { if(it.operation == Operation.Add) it else null }
+            ?.let { if(it.operation == Operation.Add) it else null }
 
         return Pair(attribute, fact)
     }
@@ -134,7 +133,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
 
     fun getMultiValue(propertyName: String, key: UUID) : MultiValueListItem? {
         val (_, fact) = getFact(propertyName, key, null)
-        return fact.nullOrElse { MultiValueListItem.fromValue(it.value) }
+        return fact?.let { MultiValueListItem.fromValue(it.value) }
     }
 
     fun getListValues(propertyName: String): List<MultiValueListItem> {

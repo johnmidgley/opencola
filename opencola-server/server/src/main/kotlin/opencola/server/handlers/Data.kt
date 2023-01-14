@@ -3,9 +3,8 @@ package opencola.server.handlers
 import io.ktor.server.application.*
 import io.ktor.http.*
 import io.ktor.server.response.*
-import io.opencola.core.model.DataEntity
-import io.opencola.core.model.Id
-import io.opencola.core.network.response
+import io.opencola.model.DataEntity
+import io.opencola.model.Id
 import io.opencola.core.storage.EntityStore
 import io.opencola.core.storage.FileStore
 import mu.KotlinLogging

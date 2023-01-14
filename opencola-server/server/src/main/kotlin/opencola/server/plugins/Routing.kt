@@ -14,8 +14,8 @@ import io.opencola.core.config.LoginConfig
 import io.opencola.core.config.ServerConfig
 import io.opencola.core.config.getResourceFilePath
 import io.opencola.core.extensions.nullOrElse
-import io.opencola.core.model.Authority
-import io.opencola.core.model.Id
+import io.opencola.model.Authority
+import io.opencola.model.Id
 import io.opencola.core.network.Notification
 import io.opencola.core.network.handleGetTransactions
 import io.opencola.core.network.handleNotification

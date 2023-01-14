@@ -1,4 +1,4 @@
-package io.opencola.core.model
+package io.opencola.model
 
 import io.opencola.serialization.StreamSerializer
 import io.opencola.serialization.codecs.IntByteArrayCodec

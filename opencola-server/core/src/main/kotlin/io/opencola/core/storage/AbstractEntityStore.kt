@@ -3,7 +3,7 @@ package io.opencola.core.storage
 import mu.KotlinLogging
 import io.opencola.core.event.EventBus
 import io.opencola.core.event.Events
-import io.opencola.core.model.*
+import io.opencola.model.*
 import io.opencola.core.extensions.ifNotNullOrElse
 import io.opencola.core.extensions.nullOrElse
 import io.opencola.security.Signator

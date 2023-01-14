@@ -1,6 +1,6 @@
 package io.opencola.relay.client
 
-import io.opencola.core.model.Id
+import io.opencola.model.Id
 import io.opencola.security.*
 import io.opencola.serialization.codecs.IntByteArrayCodec
 import io.opencola.relay.common.*

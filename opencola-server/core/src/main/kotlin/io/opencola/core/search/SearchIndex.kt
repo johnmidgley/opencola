@@ -1,7 +1,7 @@
 package io.opencola.core.search
 
-import io.opencola.core.model.Entity
-import io.opencola.core.model.Id
+import io.opencola.model.Entity
+import io.opencola.model.Id
 
 interface SearchIndex {
     fun create()

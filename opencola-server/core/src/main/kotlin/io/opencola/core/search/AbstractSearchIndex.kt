@@ -2,10 +2,10 @@ package io.opencola.core.search
 
 import io.opencola.core.extensions.nullOrElse
 import io.opencola.util.toHexString
-import io.opencola.core.model.Attribute
-import io.opencola.core.model.AttributeType.*
-import io.opencola.core.model.Entity
-import io.opencola.core.model.Id
+import io.opencola.model.Attribute
+import io.opencola.model.AttributeType.*
+import io.opencola.model.Entity
+import io.opencola.model.Id
 import io.opencola.security.sha256
 
 abstract class AbstractSearchIndex : SearchIndex {

@@ -5,8 +5,8 @@ import mu.KotlinLogging
 import io.opencola.core.event.EventBus
 import io.opencola.core.event.Events
 import io.opencola.core.extensions.nullOrElse
-import io.opencola.core.model.Authority
-import io.opencola.core.model.Id
+import io.opencola.model.Authority
+import io.opencola.model.Id
 import io.opencola.core.network.InviteToken
 import io.opencola.core.network.NetworkNode
 import io.opencola.core.network.Notification

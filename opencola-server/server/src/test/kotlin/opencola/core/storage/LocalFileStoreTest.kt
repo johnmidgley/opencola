@@ -1,6 +1,6 @@
 package opencola.core.storage
 
-import io.opencola.core.model.Id
+import io.opencola.model.Id
 import io.opencola.core.storage.LocalFileStore
 import kotlin.io.path.createTempDirectory
 import kotlin.test.Test

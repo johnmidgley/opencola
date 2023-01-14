@@ -1,8 +1,8 @@
 package opencola.core
 
 import io.opencola.security.generateKeyPair
-import io.opencola.core.model.Id
-import io.opencola.core.model.Authority
+import io.opencola.model.Id
+import io.opencola.model.Authority
 import java.net.URI
 
 fun getAuthorityEntity(subjectId: Id) : Authority {

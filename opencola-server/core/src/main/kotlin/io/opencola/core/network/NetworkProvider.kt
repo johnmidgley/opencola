@@ -1,7 +1,7 @@
 package io.opencola.core.network
 
-import io.opencola.core.model.Authority
-import io.opencola.core.model.Id
+import io.opencola.model.Authority
+import io.opencola.model.Id
 import io.opencola.security.*
 import io.opencola.core.storage.AddressBook
 import io.opencola.security.Encryptor

@@ -1,6 +1,6 @@
 package io.opencola.relay.server
 
-import io.opencola.core.model.Id
+import io.opencola.model.Id
 import io.opencola.security.initProvider
 import io.opencola.security.isValidSignature
 import io.opencola.security.publicKeyFromBytes

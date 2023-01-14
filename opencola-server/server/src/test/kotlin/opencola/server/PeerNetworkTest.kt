@@ -6,8 +6,8 @@ import mu.KotlinLogging
 import opencola.core.TestApplication
 import io.opencola.core.config.Application
 import io.opencola.io.StdoutMonitor
-import io.opencola.core.model.Authority
-import io.opencola.core.model.ResourceEntity
+import io.opencola.model.Authority
+import io.opencola.model.ResourceEntity
 import io.opencola.core.storage.EntityStore
 import opencola.core.network.ApplicationNode
 import opencola.server.handlers.inviteTokenToPeer
