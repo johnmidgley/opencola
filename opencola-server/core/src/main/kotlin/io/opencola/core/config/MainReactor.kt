@@ -1,8 +1,8 @@
 package io.opencola.core.config
 
-import io.opencola.core.event.EventBus
-import io.opencola.core.event.Events
-import io.opencola.core.event.Reactor
+import io.opencola.event.EventBus
+import io.opencola.event.Events
+import io.opencola.event.Reactor
 import io.opencola.core.network.*
 import io.opencola.core.storage.AddressBook
 import io.opencola.core.storage.EntityStore

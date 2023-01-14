@@ -1,10 +1,10 @@
 package opencola.core.event
 
 import opencola.core.TestApplication
-import io.opencola.core.event.EventBusConfig
-import io.opencola.core.event.EventBus
-import io.opencola.core.event.EventBus.Event
-import io.opencola.core.event.Reactor
+import io.opencola.event.EventBusConfig
+import io.opencola.event.EventBus
+import io.opencola.event.EventBus.Event
+import io.opencola.event.Reactor
 import org.junit.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals

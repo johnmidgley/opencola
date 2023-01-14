@@ -2,8 +2,8 @@ package opencola.server.handlers
 
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
-import io.opencola.core.event.EventBus
-import io.opencola.core.event.Events
+import io.opencola.event.EventBus
+import io.opencola.event.Events
 import io.opencola.util.nullOrElse
 import io.opencola.model.Authority
 import io.opencola.model.Id

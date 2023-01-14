@@ -1,8 +1,8 @@
 package io.opencola.core.storage
 
 import mu.KotlinLogging
-import io.opencola.core.event.EventBus
-import io.opencola.core.event.Events
+import io.opencola.event.EventBus
+import io.opencola.event.Events
 import io.opencola.model.*
 import io.opencola.util.ifNotNullOrElse
 import io.opencola.util.nullOrElse

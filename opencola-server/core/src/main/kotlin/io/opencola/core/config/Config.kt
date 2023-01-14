@@ -2,7 +2,7 @@ package io.opencola.core.config
 
 import com.sksamuel.hoplite.ConfigLoaderBuilder
 import com.sksamuel.hoplite.addFileSource
-import io.opencola.core.event.EventBusConfig
+import io.opencola.event.EventBusConfig
 import java.net.URI
 import java.nio.file.Path
 

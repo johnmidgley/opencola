@@ -3,7 +3,7 @@ package opencola.core.network
 import io.ktor.server.netty.*
 import io.opencola.core.config.*
 import opencola.core.TestApplication
-import io.opencola.core.event.EventBus
+import io.opencola.event.EventBus
 import io.opencola.model.Authority
 import io.opencola.core.network.NetworkNode
 import io.opencola.core.storage.AddressBook

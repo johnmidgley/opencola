@@ -1,6 +1,6 @@
 package io.opencola.core.storage
 
-import io.opencola.core.event.EventBus
+import io.opencola.event.EventBus
 import io.opencola.model.*
 import io.opencola.util.toHexString
 import io.opencola.security.Signator

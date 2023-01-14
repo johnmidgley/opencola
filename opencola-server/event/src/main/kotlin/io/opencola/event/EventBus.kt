@@ -1,4 +1,4 @@
-package io.opencola.core.event
+package io.opencola.event
 
 
 import mu.KotlinLogging

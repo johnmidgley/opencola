@@ -38,6 +38,7 @@ dependencies {
     implementation(project(":serialization"))
     implementation(project(":system"))
     implementation(project(":security"))
+    implementation(project(":event"))
     implementation(project(":model"))
     implementation(project(":content"))
     implementation(project(":search"))

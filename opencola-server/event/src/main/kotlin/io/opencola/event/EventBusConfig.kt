@@ -1,4 +1,4 @@
-package io.opencola.core.event
+package io.opencola.event
 
 // TODO: Add config layers, that allow for override. Use push / pop
 // https://github.com/sksamuel/hoplite

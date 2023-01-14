@@ -1,7 +1,7 @@
 package io.opencola.core.network
 
-import io.opencola.core.event.EventBus
-import io.opencola.core.event.Events
+import io.opencola.event.EventBus
+import io.opencola.event.Events
 import io.opencola.model.Authority
 import io.opencola.model.Id
 import io.opencola.core.network.NetworkNode.PeerStatus.*
