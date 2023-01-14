@@ -1,6 +1,6 @@
 package io.opencola.core.search
 
-import io.opencola.core.extensions.nullOrElse
+import io.opencola.util.nullOrElse
 import io.opencola.util.toHexString
 import io.opencola.model.Attribute
 import io.opencola.model.AttributeType.*

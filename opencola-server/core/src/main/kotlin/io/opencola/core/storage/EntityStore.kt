@@ -4,7 +4,7 @@ import io.opencola.model.Entity
 import io.opencola.model.Fact
 import io.opencola.model.Id
 import io.opencola.model.SignedTransaction
-import io.opencola.core.extensions.ifNotNullOrElse
+import io.opencola.util.ifNotNullOrElse
 
 interface EntityStore {
     enum class TransactionOrder {

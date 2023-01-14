@@ -1,4 +1,4 @@
-package io.opencola.core.extensions
+package io.opencola.util
 
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit

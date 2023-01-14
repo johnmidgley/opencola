@@ -1,7 +1,7 @@
 package io.opencola.core.search
 
 import mu.KotlinLogging
-import io.opencola.core.extensions.recursiveDelete
+import io.opencola.io.recursiveDelete
 import io.opencola.model.CoreAttribute.values
 import io.opencola.model.Entity
 import io.opencola.model.Id

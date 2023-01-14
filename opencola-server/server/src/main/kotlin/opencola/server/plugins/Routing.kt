@@ -13,7 +13,7 @@ import io.ktor.server.sessions.*
 import io.opencola.core.config.LoginConfig
 import io.opencola.core.config.ServerConfig
 import io.opencola.core.config.getResourceFilePath
-import io.opencola.core.extensions.nullOrElse
+import io.opencola.util.nullOrElse
 import io.opencola.model.Authority
 import io.opencola.model.Id
 import io.opencola.core.network.Notification

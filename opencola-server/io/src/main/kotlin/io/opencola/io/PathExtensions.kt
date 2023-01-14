@@ -1,4 +1,4 @@
-package io.opencola.core.extensions
+package io.opencola.io
 
 import java.nio.file.Path
 import kotlin.io.path.deleteIfExists
