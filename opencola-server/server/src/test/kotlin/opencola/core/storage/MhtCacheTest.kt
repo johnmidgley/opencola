@@ -1,8 +1,8 @@
 package opencola.core.storage
 
 import opencola.core.TestApplication
-import io.opencola.core.content.MhtmlPage
-import io.opencola.core.content.parseMime
+import io.opencola.content.MhtmlPage
+import io.opencola.content.parseMime
 import io.opencola.model.Actions
 import io.opencola.model.Authority
 import io.opencola.core.storage.EntityStore

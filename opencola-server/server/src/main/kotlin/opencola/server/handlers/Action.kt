@@ -9,7 +9,7 @@ import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
-import io.opencola.core.content.*
+import io.opencola.content.*
 import io.opencola.util.nullOrElse
 import io.opencola.model.*
 import io.opencola.core.storage.EntityStore

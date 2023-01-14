@@ -1,4 +1,4 @@
-package io.opencola.core.content
+package io.opencola.content
 
 import io.opencola.util.tryParseUri
 import org.jsoup.Jsoup

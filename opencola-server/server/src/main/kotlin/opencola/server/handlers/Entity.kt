@@ -6,7 +6,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
-import io.opencola.core.content.HtmlParser
+import io.opencola.content.HtmlParser
 import io.opencola.io.HttpClient
 import io.opencola.io.urlRegex
 import io.opencola.model.*

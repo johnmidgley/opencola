@@ -1,9 +1,10 @@
 package opencola.core.content
 
-import io.opencola.core.content.MhtmlPage
-import io.opencola.core.content.parseMime
+import io.opencola.content.MhtmlPage
+import io.opencola.content.parseMime
 import io.opencola.model.Id
 import org.apache.james.mime4j.message.DefaultMessageWriter
+import java.io.ByteArrayOutputStream
 import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -39,6 +40,13 @@ eft: 0; top: 0;" width=3D"100%" height=3D"100%" src=3D"about:blank" type=3D=
 html>
 ------MultipartBoundary--td2WB82m6rxEtr7uRJwL0aFpcCBN4ZOcVHjEMwc09z------
 """
+}
+
+fun MhtmlPage.getDataId() : Id {
+    ByteArrayOutputStream().use{
+        DefaultMessageWriter().writeMessage(this.message, it)
+        return Id.ofData(it.toByteArray())
+    }
 }
 
 fun readMhtmlPage(path: Path): MhtmlPage {

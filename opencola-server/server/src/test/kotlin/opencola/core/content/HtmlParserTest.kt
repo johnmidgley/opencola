@@ -1,8 +1,8 @@
 package opencola.core.content
 
-import io.opencola.core.content.HtmlParser
-import io.opencola.core.content.MhtmlPage
-import io.opencola.core.content.parseMime
+import io.opencola.content.HtmlParser
+import io.opencola.content.MhtmlPage
+import io.opencola.content.parseMime
 import org.junit.Test
 import java.net.URI
 import kotlin.io.path.Path

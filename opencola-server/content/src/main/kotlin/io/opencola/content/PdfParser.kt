@@ -1,4 +1,4 @@
-package io.opencola.core.content
+package io.opencola.content
 
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject

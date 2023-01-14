@@ -1,7 +1,7 @@
 package opencola.core.content
 
-import io.opencola.core.content.getFirstImageFromPDF
-import io.opencola.core.content.toBytes
+import io.opencola.content.getFirstImageFromPDF
+import io.opencola.content.toBytes
 import io.opencola.model.Id
 import org.junit.Test
 import kotlin.io.path.Path

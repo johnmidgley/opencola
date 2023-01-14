@@ -1,8 +1,8 @@
 package io.opencola.core.storage
 
 import mu.KotlinLogging
-import io.opencola.core.content.parseMime
-import io.opencola.core.content.splitMht
+import io.opencola.content.parseMime
+import io.opencola.content.splitMht
 import io.opencola.util.nullOrElse
 import io.opencola.model.DataEntity
 import io.opencola.model.Id

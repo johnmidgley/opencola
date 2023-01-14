@@ -1,7 +1,7 @@
 package io.opencola.core.config
 
 import mu.KotlinLogging
-import io.opencola.core.content.TextExtractor
+import io.opencola.content.TextExtractor
 import io.opencola.core.event.EventBus
 import io.opencola.core.event.MainReactor
 import io.opencola.core.event.Reactor

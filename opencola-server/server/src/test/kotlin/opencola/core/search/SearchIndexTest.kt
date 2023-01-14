@@ -1,8 +1,8 @@
 package opencola.core.search
 
-import io.opencola.core.content.MhtmlPage
-import io.opencola.core.content.TextExtractor
-import io.opencola.core.content.parseMime
+import io.opencola.content.MhtmlPage
+import io.opencola.content.TextExtractor
+import io.opencola.content.parseMime
 import io.opencola.util.nullOrElse
 import io.opencola.model.Id
 import io.opencola.model.ResourceEntity

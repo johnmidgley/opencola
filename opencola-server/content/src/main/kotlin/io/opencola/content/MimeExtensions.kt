@@ -1,4 +1,4 @@
-package io.opencola.core.content
+package io.opencola.content
 
 import org.apache.james.mime4j.dom.Header
 import org.apache.james.mime4j.dom.field.ContentLocationField

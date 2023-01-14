@@ -1,8 +1,7 @@
-package io.opencola.core.content
+package io.opencola.content
 
-import io.ktor.utils.io.charsets.Charset
 import io.opencola.util.nullOrElse
-import io.opencola.model.Id
+// import io.opencola.model.Id
 import org.apache.james.mime4j.codec.DecoderUtil
 import org.apache.james.mime4j.dom.*
 import org.apache.james.mime4j.message.*
@@ -10,6 +9,7 @@ import org.apache.james.mime4j.stream.Field
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.net.URI
+import java.nio.charset.Charset
 
 fun Message.toBytes() : ByteArray {
     return ByteArrayOutputStream().use { outputStream ->
@@ -52,15 +52,6 @@ class MhtmlPage {
         val multipart = message.body as Multipart
         val bodyPart = multipart.bodyParts.firstOrNull { it.header.getField("Content-Type").body == "text/html" } ?: return null
         return (bodyPart.body as TextBody).reader.readText()
-    }
-
-    // TODO: Should this be private and/or called on construction? Only used in tests.
-    fun getDataId() : Id {
-        // TODO - is there a better way to do this?
-        ByteArrayOutputStream().use{
-            DefaultMessageWriter().writeMessage(message, it)
-            return Id.ofData(it.toByteArray())
-        }
     }
 
     private fun getContentLocationMap(message: Message): Map<String, String> {

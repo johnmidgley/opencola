@@ -1,7 +1,7 @@
 package opencola.core.content
 
-import io.opencola.core.content.MhtmlPage
-import io.opencola.core.content.parseMime
+import io.opencola.content.MhtmlPage
+import io.opencola.content.parseMime
 import org.apache.james.mime4j.dom.Message
 import org.junit.Test
 import java.io.ByteArrayInputStream
