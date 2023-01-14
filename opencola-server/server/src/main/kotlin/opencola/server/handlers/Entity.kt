@@ -7,8 +7,8 @@ import io.ktor.server.response.*
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import io.opencola.core.content.HtmlParser
-import io.opencola.core.content.HttpClient
-import io.opencola.core.content.urlRegex
+import io.opencola.io.HttpClient
+import io.opencola.io.urlRegex
 import io.opencola.model.*
 import io.opencola.util.blankToNull
 import io.opencola.util.ifNullOrElse
