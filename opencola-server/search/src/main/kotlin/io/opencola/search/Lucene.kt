@@ -1,4 +1,4 @@
-package io.opencola.core.search
+package io.opencola.search
 
 import io.opencola.model.CoreAttribute
 import io.opencola.serialization.ByteArrayCodec

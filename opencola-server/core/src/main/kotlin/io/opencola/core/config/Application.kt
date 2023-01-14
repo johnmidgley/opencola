@@ -12,7 +12,7 @@ import io.opencola.core.network.RequestRouter
 import io.opencola.core.network.getDefaultRoutes
 import io.opencola.core.network.providers.http.HttpNetworkProvider
 import io.opencola.core.network.providers.relay.OCRelayNetworkProvider
-import io.opencola.core.search.LuceneSearchIndex
+import io.opencola.search.LuceneSearchIndex
 import io.opencola.security.*
 import io.opencola.core.storage.*
 import io.opencola.security.Encryptor

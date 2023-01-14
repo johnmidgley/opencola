@@ -3,7 +3,7 @@ package opencola.core
 import io.opencola.core.config.Application
 import io.opencola.core.config.loadConfig
 import io.opencola.model.Authority
-import io.opencola.core.search.SearchIndex
+import io.opencola.search.SearchIndex
 import io.opencola.security.KeyStore
 import io.opencola.security.decodePrivateKey
 import io.opencola.security.decodePublicKey
@@ -60,10 +60,6 @@ object TestApplication {
 
     fun getTmpDirectory(suffix: String): Path {
         return storagePath.resolve("${UUID.randomUUID()}$suffix").createDirectory()
-    }
-
-    fun createStorageDirectory(name: String) : Path {
-        return storagePath.resolve(name).createDirectory()
     }
 
     fun newApplication(): Application {

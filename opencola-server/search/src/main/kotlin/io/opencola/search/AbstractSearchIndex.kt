@@ -1,4 +1,4 @@
-package io.opencola.core.search
+package io.opencola.search
 
 import io.opencola.util.nullOrElse
 import io.opencola.util.toHexString

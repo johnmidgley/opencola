@@ -1,4 +1,4 @@
-package io.opencola.core.search
+package io.opencola.search
 
 import io.opencola.model.Entity
 import io.opencola.model.Id

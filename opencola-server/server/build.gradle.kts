@@ -46,6 +46,7 @@ dependencies {
     implementation(project(":security"))
     implementation(project(":model"))
     implementation(project(":content"))
+    implementation(project(":search"))
 
     implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
 

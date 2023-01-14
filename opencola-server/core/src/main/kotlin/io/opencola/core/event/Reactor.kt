@@ -6,7 +6,7 @@ import io.opencola.core.event.EventBus.Event
 import io.opencola.model.*
 import io.opencola.core.network.*
 import io.opencola.core.network.PeerEvent.*
-import io.opencola.core.search.SearchIndex
+import io.opencola.search.SearchIndex
 import io.opencola.core.storage.AddressBook
 import io.opencola.core.storage.EntityStore
 import kotlinx.coroutines.launch

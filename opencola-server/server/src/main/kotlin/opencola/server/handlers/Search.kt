@@ -2,7 +2,7 @@ package opencola.server.handlers
 
 import kotlinx.serialization.Serializable
 import io.opencola.model.ResourceEntity
-import io.opencola.core.search.SearchIndex
+import io.opencola.search.SearchIndex
 import io.opencola.core.storage.EntityStore
 
 @Serializable

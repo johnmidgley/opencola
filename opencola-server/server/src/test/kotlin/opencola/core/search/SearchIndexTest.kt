@@ -6,7 +6,7 @@ import io.opencola.content.parseMime
 import io.opencola.util.nullOrElse
 import io.opencola.model.Id
 import io.opencola.model.ResourceEntity
-import io.opencola.core.search.SearchIndex
+import io.opencola.search.SearchIndex
 import java.net.URI
 import kotlin.io.path.Path
 import kotlin.io.path.inputStream

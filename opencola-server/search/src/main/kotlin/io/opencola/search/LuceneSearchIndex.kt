@@ -1,4 +1,4 @@
-package io.opencola.core.search
+package io.opencola.search
 
 import mu.KotlinLogging
 import io.opencola.io.recursiveDelete

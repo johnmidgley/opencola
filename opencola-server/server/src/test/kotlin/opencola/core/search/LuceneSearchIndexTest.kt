@@ -2,7 +2,7 @@ package opencola.core.search
 
 import opencola.core.TestApplication
 import io.opencola.model.Id
-import io.opencola.core.search.LuceneSearchIndex
+import io.opencola.search.LuceneSearchIndex
 import org.junit.Test
 
 class LuceneSearchIndexTest {
