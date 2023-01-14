@@ -2,7 +2,6 @@ package io.opencola.core.event
 
 
 import mu.KotlinLogging
-import io.opencola.core.config.EventBusConfig
 import io.opencola.util.nullOrElse
 import io.opencola.util.shutdownWithTimout
 import org.jetbrains.exposed.dao.id.LongIdTable
