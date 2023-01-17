@@ -146,6 +146,8 @@ class OCRelayNetworkProvider(authority: Authority,
             addClient(peerUri)
         }
 
+        logger.info { "Sending request from: ${from.name} to: ${to.name } request: $request" }
+
         return runBlocking {
             try {
                 val messageBytes = Json.encodeToString(request).toByteArray()

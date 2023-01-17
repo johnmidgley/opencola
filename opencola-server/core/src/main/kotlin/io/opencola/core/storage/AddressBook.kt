@@ -7,6 +7,7 @@ import io.opencola.model.Authority
 import io.opencola.model.Id
 import io.opencola.security.Signator
 import io.opencola.security.decodePublicKey
+import io.opencola.util.trim
 import java.net.URI
 import java.nio.file.Path
 import java.security.PublicKey
@@ -85,6 +86,9 @@ class AddressBook(private val authority: Authority, storagePath: Path, signator:
     fun updateAuthority(authority: Authority,
                         suppressUpdateHandler: ((Authority?, Authority?) -> Unit)? = null) : Authority {
         val previousAuthority = entityStore.getEntity(authority.authorityId, authority.entityId) as Authority?
+
+        // Normalize the URI to avoid multiple connections to the same server
+        authority.uri = authority.uri?.normalize()?.trim()
 
         if(entityStore.updateEntities(authority) != null) {
             val currentAuthority = entityStore.getEntity(authority.authorityId, authority.entityId) as Authority
