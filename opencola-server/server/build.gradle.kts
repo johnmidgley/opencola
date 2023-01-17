@@ -26,6 +26,9 @@ apply {
     plugin("java")
 }
 
+application {
+    applicationName = "opencola-server"
+}
 
 // TODO: This should be settable through the java plugin archivesBaseName property, but nothing seems to work
 //  https://docs.gradle.org/7.4.1/userguide/java_plugin.html

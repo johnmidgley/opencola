@@ -1,4 +1,5 @@
 rootProject.name = "opencola-server"
+
 include("util")
 include("serialization")
 include("io")
@@ -11,6 +12,8 @@ include("search")
 include("core")
 include("relay")
 include("server")
+
+project(":server").name = "opencola-server"
 
 pluginManagement {
   repositories {

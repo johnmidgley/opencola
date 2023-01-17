@@ -11,7 +11,7 @@ echo "Copying distribution"
 cd ../../install/opencola
 cp ../scripts/* .
 mkdir server
-cp -r ../../opencola-server/server/build/install/server/* server
+cp -r ../../opencola-server/server/build/install/opencola-server/* server
 
 echo "Copying config"
 #cp ../../opencola-server/opencola-server.yaml server
