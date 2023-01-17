@@ -116,7 +116,7 @@ abstract class AbstractClient(
             val message = Message.decode(decrypt(keyPair.private, payload)).validate()
             val sessionResult = sessions[message.header.sessionId]
 
-            logger.info { "SessionId: ${message.header.sessionId}" }
+            logger.info { "Received message: ${message.header}" }
 
             if(sessionResult != null) {
                 sessions.remove(message.header.sessionId)
@@ -176,6 +176,8 @@ abstract class AbstractClient(
         val message = Message(keyPair, UUID.randomUUID(), body)
         val envelope = MessageEnvelope(to, message)
         val deferredResult = CompletableDeferred<ByteArray?>()
+
+        logger.info { "Sending message: ${message.header}" }
 
         return try {
             sessions[message.header.sessionId] = deferredResult
