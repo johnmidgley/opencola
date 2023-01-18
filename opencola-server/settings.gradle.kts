@@ -12,6 +12,7 @@ include("content")
 include("search")
 include("core")
 include("relay")
+include("relay:server")
 include("server")
 
 project(":server").name = "opencola-server"

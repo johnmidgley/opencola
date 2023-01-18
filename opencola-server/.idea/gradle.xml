@@ -18,6 +18,7 @@
             <option value="$PROJECT_DIR$/io" />
             <option value="$PROJECT_DIR$/model" />
             <option value="$PROJECT_DIR$/relay" />
+            <option value="$PROJECT_DIR$/relay/server" />
             <option value="$PROJECT_DIR$/search" />
             <option value="$PROJECT_DIR$/security" />
             <option value="$PROJECT_DIR$/serialization" />
