@@ -80,7 +80,6 @@ class ApplicationNode(val application: Application) : Node {
                     .setServer(ServerConfig(it.server.host, port, null))
                     .setNetwork(
                         NetworkConfig(
-                            it.network.peers,
                             URI("http://${it.server.host}:$port"),
                             it.network.requestTimeoutMilliseconds,
                             it.network.socksProxy))

@@ -1,12 +1,9 @@
 package io.opencola.core.storage
 
 import mu.KotlinLogging
-import io.opencola.core.config.NetworkConfig
-import io.opencola.core.config.PeerConfig
 import io.opencola.model.Authority
 import io.opencola.model.Id
 import io.opencola.security.Signator
-import io.opencola.security.decodePublicKey
 import io.opencola.util.trim
 import java.net.URI
 import java.nio.file.Path
@@ -14,7 +11,7 @@ import java.security.PublicKey
 import java.util.concurrent.CopyOnWriteArrayList
 
 // TODO: Move ServerConfig to NetworkConfig?
-class AddressBook(private val authority: Authority, storagePath: Path, signator: Signator, networkConfig: NetworkConfig?) {
+class AddressBook(private val authority: Authority, storagePath: Path, signator: Signator) {
     val logger = KotlinLogging.logger("AddressBook")
 
     private val activeTag = "active"
@@ -38,23 +35,6 @@ class AddressBook(private val authority: Authority, storagePath: Path, signator:
             addressBookAuthority.uri = URI("ocr://relay.opencola.net")
             updateAuthority(addressBookAuthority)
         }
-
-        networkConfig?.let { importPeers(it.peers) }
-    }
-
-    private fun importPeers(peers: List<PeerConfig>) {
-        peers
-            .forEach {
-                logger.info { "Importing peer: $it" }
-                val uri = URI("http://${it.host}")
-                val tags = if (it.active) setOf(activeTag) else emptySet()
-                val peerAuthority = getAuthority(Id.decode(it.id)) ?:
-                    Authority(authority.authorityId, decodePublicKey(it.publicKey), uri, it.name)
-
-                peerAuthority.name = it.name
-                peerAuthority.tags = tags
-                updateAuthority(peerAuthority)
-            }
     }
 
     // TODO: Move to Authority
