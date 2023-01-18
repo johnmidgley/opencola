@@ -4,8 +4,8 @@ import io.opencola.event.EventBus
 import io.opencola.event.Events
 import io.opencola.event.Reactor
 import io.opencola.core.network.*
-import io.opencola.core.storage.AddressBook
-import io.opencola.core.storage.EntityStore
+import io.opencola.storage.AddressBook
+import io.opencola.storage.EntityStore
 import io.opencola.model.Authority
 import io.opencola.model.DataEntity
 import io.opencola.model.Id

@@ -1,4 +1,4 @@
-package io.opencola.core.storage
+package io.opencola.storage
 
 import mu.KotlinLogging
 import io.opencola.model.Authority

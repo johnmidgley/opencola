@@ -6,7 +6,7 @@ import opencola.core.TestApplication
 import io.opencola.event.EventBus
 import io.opencola.model.Authority
 import io.opencola.core.network.NetworkNode
-import io.opencola.core.storage.AddressBook
+import io.opencola.storage.AddressBook
 import opencola.server.AuthToken
 import opencola.server.getServer
 import opencola.server.handlers.*

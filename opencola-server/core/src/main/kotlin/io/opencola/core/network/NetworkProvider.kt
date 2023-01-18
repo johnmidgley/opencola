@@ -3,7 +3,7 @@ package io.opencola.core.network
 import io.opencola.model.Authority
 import io.opencola.model.Id
 import io.opencola.security.*
-import io.opencola.core.storage.AddressBook
+import io.opencola.storage.AddressBook
 import io.opencola.security.Encryptor
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString

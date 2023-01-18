@@ -12,8 +12,8 @@ import io.opencola.model.*
 import io.opencola.core.network.Notification
 import io.opencola.core.network.PeerEvent.NewTransaction
 import io.opencola.security.generateKeyPair
-import io.opencola.core.storage.AddressBook
-import io.opencola.core.storage.EntityStore
+import io.opencola.storage.AddressBook
+import io.opencola.storage.EntityStore
 import kotlinx.coroutines.delay
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString

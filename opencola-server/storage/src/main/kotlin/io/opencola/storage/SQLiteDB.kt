@@ -1,4 +1,4 @@
-package io.opencola.core.storage
+package io.opencola.storage
 
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.transactions.TransactionManager

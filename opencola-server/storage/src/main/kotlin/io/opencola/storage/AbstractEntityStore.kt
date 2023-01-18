@@ -1,4 +1,4 @@
-package io.opencola.core.storage
+package io.opencola.storage
 
 import mu.KotlinLogging
 import io.opencola.event.EventBus
@@ -7,7 +7,7 @@ import io.opencola.model.*
 import io.opencola.util.ifNotNullOrElse
 import io.opencola.util.nullOrElse
 import io.opencola.security.Signator
-import io.opencola.core.storage.EntityStore.TransactionOrder
+import io.opencola.storage.EntityStore.TransactionOrder
 import java.security.PublicKey
 
 // TODO: Should support multiple authorities

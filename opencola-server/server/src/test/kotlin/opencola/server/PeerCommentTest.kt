@@ -2,7 +2,7 @@ package opencola.server
 
 import io.opencola.model.Authority
 import io.opencola.model.ResourceEntity
-import io.opencola.core.storage.EntityStore
+import io.opencola.storage.EntityStore
 import opencola.server.handlers.addComment
 import org.junit.Test
 import org.kodein.di.instance

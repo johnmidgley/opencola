@@ -7,10 +7,10 @@ import io.opencola.model.Authority
 import io.opencola.model.ResourceEntity
 import io.opencola.model.Transaction
 import io.opencola.security.Signator
-import io.opencola.core.storage.AddressBook
-import io.opencola.core.storage.EntityStore
-import io.opencola.core.storage.EntityStore.TransactionOrder
-import io.opencola.core.storage.ExposedEntityStore
+import io.opencola.storage.AddressBook
+import io.opencola.storage.EntityStore
+import io.opencola.storage.EntityStore.TransactionOrder
+import io.opencola.storage.ExposedEntityStore
 import opencola.server.LoginCredentials
 import opencola.server.getApplication
 import org.junit.Test

@@ -13,8 +13,8 @@ import io.opencola.model.*
 import io.opencola.util.blankToNull
 import io.opencola.util.ifNullOrElse
 import io.opencola.util.nullOrElse
-import io.opencola.core.storage.AddressBook
-import io.opencola.core.storage.EntityStore
+import io.opencola.storage.AddressBook
+import io.opencola.storage.EntityStore
 import java.net.URI
 
 private val logger = KotlinLogging.logger("EntityHandler")

@@ -13,7 +13,7 @@ import io.opencola.core.network.providers.http.HttpNetworkProvider
 import io.opencola.core.network.providers.relay.OCRelayNetworkProvider
 import io.opencola.search.LuceneSearchIndex
 import io.opencola.security.*
-import io.opencola.core.storage.*
+import io.opencola.storage.*
 import io.opencola.security.Encryptor
 import org.jetbrains.exposed.sql.Database
 import org.kodein.di.DI

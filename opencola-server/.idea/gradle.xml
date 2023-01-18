@@ -22,6 +22,7 @@
             <option value="$PROJECT_DIR$/security" />
             <option value="$PROJECT_DIR$/serialization" />
             <option value="$PROJECT_DIR$/server" />
+            <option value="$PROJECT_DIR$/storage" />
             <option value="$PROJECT_DIR$/system" />
             <option value="$PROJECT_DIR$/util" />
           </set>

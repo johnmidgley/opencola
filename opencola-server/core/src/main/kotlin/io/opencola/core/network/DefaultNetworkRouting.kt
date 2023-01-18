@@ -7,8 +7,8 @@ import io.opencola.event.Events
 import io.opencola.util.nullOrElse
 import io.opencola.model.Id
 import io.opencola.model.SignedTransaction
-import io.opencola.core.storage.AddressBook
-import io.opencola.core.storage.EntityStore
+import io.opencola.storage.AddressBook
+import io.opencola.storage.EntityStore
 
 private val logger = KotlinLogging.logger("RequestRouting")
 

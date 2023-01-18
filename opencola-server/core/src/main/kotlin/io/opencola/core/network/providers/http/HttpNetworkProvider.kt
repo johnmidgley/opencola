@@ -17,7 +17,7 @@ import io.opencola.model.Authority
 import io.opencola.core.network.AbstractNetworkProvider
 import io.opencola.core.network.*
 import io.opencola.security.*
-import io.opencola.core.storage.AddressBook
+import io.opencola.storage.AddressBook
 import io.opencola.security.Encryptor
 import kotlinx.serialization.encodeToString
 import java.net.URI

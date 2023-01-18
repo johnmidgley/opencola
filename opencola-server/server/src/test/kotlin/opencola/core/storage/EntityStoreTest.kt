@@ -9,8 +9,8 @@ import io.opencola.model.Entity
 import io.opencola.model.ResourceEntity
 import opencola.core.getAuthorityEntity
 import io.opencola.security.Signator
-import io.opencola.core.storage.*
-import io.opencola.core.storage.EntityStore.TransactionOrder
+import io.opencola.storage.*
+import io.opencola.storage.EntityStore.TransactionOrder
 import org.kodein.di.instance
 import java.net.URI
 import java.time.Instant

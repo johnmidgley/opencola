@@ -5,7 +5,7 @@ import io.opencola.event.Events
 import io.opencola.model.Authority
 import io.opencola.model.Id
 import io.opencola.core.network.NetworkNode.PeerStatus.*
-import io.opencola.core.storage.AddressBook
+import io.opencola.storage.AddressBook
 import mu.KotlinLogging
 import java.net.URI
 import java.util.concurrent.ConcurrentHashMap

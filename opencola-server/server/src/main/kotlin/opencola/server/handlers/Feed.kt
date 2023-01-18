@@ -7,8 +7,8 @@ import kotlinx.serialization.Serializable
 import io.opencola.util.nullOrElse
 import io.opencola.model.CoreAttribute.*
 import io.opencola.search.SearchIndex
-import io.opencola.core.storage.AddressBook
-import io.opencola.core.storage.EntityStore
+import io.opencola.storage.AddressBook
+import io.opencola.storage.EntityStore
 import opencola.server.handlers.EntityResult.*
 
 @Serializable

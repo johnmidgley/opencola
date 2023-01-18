@@ -5,10 +5,10 @@ import io.ktor.http.*
 import io.ktor.server.response.*
 import io.opencola.model.DataEntity
 import io.opencola.model.Id
-import io.opencola.core.storage.EntityStore
-import io.opencola.core.storage.FileStore
+import io.opencola.storage.EntityStore
+import io.opencola.storage.FileStore
 import mu.KotlinLogging
-import io.opencola.core.storage.MhtCache
+import io.opencola.storage.MhtCache
 
 private val logger = KotlinLogging.logger("DataHandler")
 

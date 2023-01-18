@@ -2,8 +2,8 @@ package opencola.server
 
 import opencola.core.TestApplication
 import io.opencola.model.Authority
-import io.opencola.core.storage.AddressBook
-import io.opencola.core.storage.EntityStore
+import io.opencola.storage.AddressBook
+import io.opencola.storage.EntityStore
 import opencola.server.handlers.EntityPayload
 import opencola.server.handlers.newPost
 import opencola.server.handlers.EntityResult

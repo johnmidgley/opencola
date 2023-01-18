@@ -5,7 +5,7 @@ import io.opencola.model.Authority
 import io.opencola.core.network.*
 import io.opencola.security.Encryptor
 import io.opencola.security.Signator
-import io.opencola.core.storage.AddressBook
+import io.opencola.storage.AddressBook
 import io.opencola.relay.client.RelayClient
 import io.opencola.relay.client.WebSocketClient
 import kotlinx.coroutines.runBlocking

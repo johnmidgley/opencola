@@ -7,7 +7,7 @@ import io.opencola.core.network.NetworkNode
 import io.opencola.core.network.Request
 import io.opencola.core.network.providers.relay.OCRelayNetworkProvider
 import io.opencola.security.generateKeyPair
-import io.opencola.core.storage.AddressBook
+import io.opencola.storage.AddressBook
 import io.opencola.relay.client.WebSocketClient
 import io.opencola.relay.client.defaultOCRPort
 import io.opencola.relay.server.startWebServer

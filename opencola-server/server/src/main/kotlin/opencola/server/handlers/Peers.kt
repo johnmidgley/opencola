@@ -14,7 +14,7 @@ import io.opencola.core.network.PeerEvent
 import io.opencola.security.Signator
 import io.opencola.security.decodePublicKey
 import io.opencola.security.encode
-import io.opencola.core.storage.AddressBook
+import io.opencola.storage.AddressBook
 import java.net.URI
 import java.security.PublicKey
 
