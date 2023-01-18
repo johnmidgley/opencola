@@ -3,8 +3,6 @@ package opencola.core.config
 import io.opencola.core.config.*
 import io.opencola.core.storage.AddressBook
 import io.opencola.model.Authority
-import io.opencola.security.decodePublicKey
-import io.opencola.security.encode
 import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.createDirectory
@@ -13,50 +11,46 @@ private var serverNum = 0
 
 // TODO: Replace this with method use for testing NetworkNode
 fun getApplications(
-    storagePath: Path,
+    rootStoragePath: Path,
     baseAppConfig: Config,
     basePortNumber: Int,
     nServers: Int
 ): List<Application> {
-    val instanceConfigs = (0 until nServers)
-        .map { baseAppConfig.setName("Server-${serverNum++}") }
-        .mapIndexed { i, it -> it.setServer(ServerConfig(it.server.host, basePortNumber + i, null)) }
-        .map { appConfig ->
-            val instanceStoragePath = storagePath.resolve(appConfig.name).createDirectory()
-            Triple(
-                instanceStoragePath,
-                appConfig,
-                Application.getOrCreateRootKeyPair(instanceStoragePath, "password")
-            )
+    val instanceConfigs =
+        (0 until nServers).map { i ->
+            object {
+                val name = "Server-${serverNum++}"
+                val storagePath = rootStoragePath.resolve(name).createDirectory()
+                val config =
+                    baseAppConfig
+                        .setName(name)
+                        .setServer(ServerConfig(baseAppConfig.server.host, basePortNumber + i, null))
+                val keyPair = Application.getOrCreateRootKeyPair(storagePath, "password")
+                val address = URI("http://${config.server.host}:${config.server.port}")
+            }
         }
 
-    return instanceConfigs.mapIndexed { i, (instanceStoragePath, config, publicKey) ->
-        val peerConfigs = (0 until nServers)
-            .filter { it != i }
-            .map {
-                val (_, peerConfig, keyPair) = instanceConfigs[it]
-                object {
-                    val publicKey = keyPair.public.encode()
-                    val name = peerConfig.name
-                    val address = URI("http://${peerConfig.server.host}:${peerConfig.server.port}")
-                }
-            }
+    val applications = instanceConfigs.map { instanceConfig ->
+        val peerConfigs = instanceConfigs.filter { it != instanceConfig }
 
         Application.instance(
-            instanceStoragePath,
-            config.setNetwork(NetworkConfig(requestTimeoutMilliseconds = config.network.requestTimeoutMilliseconds)),
-            publicKey,
+            instanceConfig.storagePath,
+            instanceConfig.config,
+            instanceConfig.keyPair,
             "password"
-        ).also { app ->
-            val authorityId = app.inject<Authority>().authorityId
+        ).also { application ->
+            // Connect to peers
+            val authorityId = application.inject<Authority>().authorityId
             peerConfigs.forEach {
-                val tags = setOf("active")
-                val peerAuthority = Authority(authorityId, decodePublicKey(it.publicKey), it.address, it.name, tags = tags)
+                val peerAuthority =
+                    Authority(authorityId, it.keyPair.public, it.address, it.name, tags = setOf("active"))
 
-                app.inject<AddressBook>().updateAuthority(peerAuthority)
+                application.inject<AddressBook>().updateAuthority(peerAuthority)
             }
         }
     }
+
+    return applications
 }
 
 
