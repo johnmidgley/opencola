@@ -39,13 +39,14 @@ fun getApplications(
         ).also { application ->
             // Connect to peers
             val authorityId = application.inject<Authority>().authorityId
+            val addressBook = application.inject<AddressBook>()
             instanceConfigs
                 .filter { it != instanceConfig }
                 .forEach {
-                val peerAuthority =
-                    Authority(authorityId, it.keyPair.public, it.address, it.name, tags = setOf("active"))
-                application.inject<AddressBook>().updateAuthority(peerAuthority)
-            }
+                    val peerAuthority =
+                        Authority(authorityId, it.keyPair.public, it.address, it.name, tags = setOf("active"))
+                    addressBook.updateAuthority(peerAuthority)
+                }
         }
     }
 
