@@ -30,22 +30,16 @@ fun getApplications(
             }
         }
 
-    val applications = instanceConfigs.map { instanceConfig ->
-        Application.instance(
-            instanceConfig.storagePath,
-            instanceConfig.config,
-            instanceConfig.keyPair,
-            "password"
-        ).also { application ->
+    val applications = instanceConfigs.map { ic ->
+        Application.instance(ic.storagePath, ic.config, ic.keyPair,"password").also { application ->
             // Connect to peers
             val authorityId = application.inject<Authority>().authorityId
             val addressBook = application.inject<AddressBook>()
             instanceConfigs
-                .filter { it != instanceConfig }
+                .filter { it != ic }
                 .forEach {
-                    val peerAuthority =
-                        Authority(authorityId, it.keyPair.public, it.address, it.name, tags = setOf("active"))
-                    addressBook.updateAuthority(peerAuthority)
+                    val peer = Authority(authorityId, it.keyPair.public, it.address, it.name, tags = setOf("active"))
+                    addressBook.updateAuthority(peer)
                 }
         }
     }
