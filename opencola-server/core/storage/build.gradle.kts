@@ -1,7 +1,7 @@
 val kotlin_version: String by project
-val kotlin_logging_version:String by project
+val kotlin_logging_version: String by project
 val exposed_version: String by project
-val sqlite_version: String by project
+val mime4j_version: String by project
 
 plugins {
     kotlin("jvm") version "1.7.20"
@@ -9,12 +9,18 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":util"))
+    implementation(project(":core:util"))
+    implementation(project(":core:serialization"))
+    implementation(project(":core:model"))
+    implementation(project(":core:event"))
+    implementation(project(":core:security"))
+    implementation(project(":core:content"))
 
     implementation("io.github.microutils:kotlin-logging:$kotlin_logging_version")
+    implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
-    implementation("org.xerial:sqlite-jdbc:$sqlite_version")
+    implementation("org.apache.james:apache-mime4j-dom:$mime4j_version")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
 }

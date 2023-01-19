@@ -9,14 +9,14 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":content"))
-    implementation(project(":event"))
-    implementation(project(":model"))
-    implementation(project(":network"))
-    implementation(project(":security"))
-    implementation(project(":serialization"))
-    implementation(project(":search"))
-    implementation(project(":storage"))
+    implementation(project(":core:content"))
+    implementation(project(":core:event"))
+    implementation(project(":core:model"))
+    implementation(project(":core:network"))
+    implementation(project(":core:security"))
+    implementation(project(":core:serialization"))
+    implementation(project(":core:search"))
+    implementation(project(":core:storage"))
     implementation("io.github.microutils:kotlin-logging:$kotlin_logging_version")
     implementation("com.sksamuel.hoplite:hoplite-core:$hoplite_version")
     implementation("com.sksamuel.hoplite:hoplite-yaml:$hoplite_version")

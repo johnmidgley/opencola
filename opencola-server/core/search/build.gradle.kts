@@ -8,11 +8,11 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":util"))
-    implementation(project(":io"))
-    implementation(project(":serialization"))
-    implementation(project(":security"))
-    implementation(project(":model"))
+    implementation(project(":core:util"))
+    implementation(project(":core:io"))
+    implementation(project(":core:serialization"))
+    implementation(project(":core:security"))
+    implementation(project(":core:model"))
 
     implementation("io.github.microutils:kotlin-logging:$kotlin_logging_version")
     implementation("org.apache.lucene:lucene-core:$lucene_version")

@@ -16,9 +16,9 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":model"))
-    implementation(project(":serialization"))
-    implementation(project(":security"))
+    implementation(project(":core:model"))
+    implementation(project(":core:serialization"))
+    implementation(project(":core:security"))
     implementation(project(":relay:common"))
 
     implementation("io.github.microutils:kotlin-logging:$kotlin_logging_version")

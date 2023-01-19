@@ -11,7 +11,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":util"))
+    implementation(project(":core:util"))
     implementation("org.jsoup:jsoup:$jsoup_version")
     implementation("org.apache.james:apache-mime4j-core:$mime4j_version")
     implementation("org.apache.james:apache-mime4j-dom:$mime4j_version")

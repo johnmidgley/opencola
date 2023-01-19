@@ -10,12 +10,12 @@ plugins {
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation(project(":util"))
-    implementation(project(":serialization"))
-    implementation(project(":security"))
-    implementation(project(":model"))
-    implementation(project(":event"))
-    implementation(project(":storage"))
+    implementation(project(":core:util"))
+    implementation(project(":core:serialization"))
+    implementation(project(":core:security"))
+    implementation(project(":core:model"))
+    implementation(project(":core:event"))
+    implementation(project(":core:storage"))
     implementation(project(":relay:client"))
     implementation(project(":relay:common"))
     implementation("io.github.microutils:kotlin-logging:$kotlin_logging_version")

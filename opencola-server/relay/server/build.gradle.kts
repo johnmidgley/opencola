@@ -28,9 +28,9 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":security"))
-    implementation(project(":serialization"))
-    implementation(project(":model"))
+    implementation(project(":core:security"))
+    implementation(project(":core:serialization"))
+    implementation(project(":core:model"))
     implementation(project(":relay:common"))
     implementation(project(":relay:client"))
 
@@ -50,7 +50,7 @@ dependencies {
     implementation("io.ktor:ktor-client-cio-jvm:$ktor_version")
     implementation("io.ktor:ktor-client-websockets-jvm:$ktor_version")
 
-    testImplementation(project(":util"))
+    testImplementation(project(":core:util"))
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktor_version")
 }

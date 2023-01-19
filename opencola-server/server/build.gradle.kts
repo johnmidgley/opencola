@@ -41,18 +41,18 @@ application {
 }
 
 dependencies {
-    implementation(project(":util"))
-    implementation(project(":io"))
-    implementation(project(":serialization"))
-    implementation(project(":system"))
-    implementation(project(":security"))
-    implementation(project(":event"))
-    implementation(project(":model"))
-    implementation(project(":content"))
-    implementation(project(":search"))
-    implementation(project(":storage"))
-    implementation(project(":network"))
-    implementation(project(":application"))
+    implementation(project(":core:util"))
+    implementation(project(":core:io"))
+    implementation(project(":core:serialization"))
+    implementation(project(":core:system"))
+    implementation(project(":core:security"))
+    implementation(project(":core:event"))
+    implementation(project(":core:model"))
+    implementation(project(":core:content"))
+    implementation(project(":core:search"))
+    implementation(project(":core:storage"))
+    implementation(project(":core:network"))
+    implementation(project(":core:application"))
 
     implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
 
@@ -85,7 +85,7 @@ dependencies {
     implementation("io.ktor:ktor-client-cio-jvm:$ktor_version")
     implementation("io.ktor:ktor-client-serialization-jvm:$ktor_version")
 
-    testImplementation(project(":io"))
+    testImplementation(project(":core:io"))
     testImplementation(project(":relay"))
     testImplementation(project(":relay:client"))
     testImplementation(project(":relay:server"))

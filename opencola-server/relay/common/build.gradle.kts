@@ -17,10 +17,10 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation(project(":util"))
-    implementation(project(":serialization"))
-    implementation(project(":security"))
-    implementation(project(":model"))
+    implementation(project(":core:util"))
+    implementation(project(":core:serialization"))
+    implementation(project(":core:security"))
+    implementation(project(":core:model"))
 
     implementation("io.github.microutils:kotlin-logging:$kotlin_logging_version")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_coroutines_version")

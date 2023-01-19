@@ -10,9 +10,9 @@ plugins {
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation(project(":util"))
-    implementation(project(":security"))
-    implementation(project(":serialization"))
+    implementation(project(":core:util"))
+    implementation(project(":core:security"))
+    implementation(project(":core:serialization"))
 
     implementation("io.github.microutils:kotlin-logging:$kotlin_logging_version")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:$kotlinx_serialization_version")

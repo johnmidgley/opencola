@@ -6,6 +6,6 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":util"))
+    implementation(project(":core:util"))
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
 }
