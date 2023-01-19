@@ -1,13 +1,8 @@
 package opencola.server.handlers
 
-import io.opencola.core.config.Application
-import io.opencola.core.config.SSLConfig
+import io.opencola.application.Application
 import opencola.core.TestApplication
-import opencola.server.getSSLCertificateStore
 import org.junit.Test
-import java.nio.file.Path
-import kotlin.io.path.copyTo
-import kotlin.io.path.createDirectory
 import kotlin.test.assertEquals
 
 class BootstrapTest {

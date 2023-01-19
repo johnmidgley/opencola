@@ -1,4 +1,4 @@
-package io.opencola.core.config
+package io.opencola.application
 
 import com.sksamuel.hoplite.ConfigLoaderBuilder
 import com.sksamuel.hoplite.addFileSource

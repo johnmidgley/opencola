@@ -10,9 +10,9 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
-import io.opencola.core.config.LoginConfig
-import io.opencola.core.config.ServerConfig
-import io.opencola.core.config.getResourceFilePath
+import io.opencola.application.LoginConfig
+import io.opencola.application.ServerConfig
+import io.opencola.application.getResourceFilePath
 import io.opencola.util.nullOrElse
 import io.opencola.model.Authority
 import io.opencola.model.Id
@@ -30,7 +30,7 @@ import opencola.server.handlers.*
 import opencola.server.view.*
 import java.nio.file.Path
 import kotlin.io.path.readBytes
-import io.opencola.core.config.Application as app
+import io.opencola.application.Application as app
 
 private fun ApplicationCall.getAuthToken(encryptionParams: EncryptionParams): AuthToken? {
     return sessions.get<UserSession>()?.decodeAuthToken(encryptionParams)

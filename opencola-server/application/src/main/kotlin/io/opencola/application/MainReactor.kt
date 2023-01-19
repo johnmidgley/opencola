@@ -1,4 +1,4 @@
-package io.opencola.core.config
+package io.opencola.application
 
 import io.opencola.event.EventBus
 import io.opencola.event.Events

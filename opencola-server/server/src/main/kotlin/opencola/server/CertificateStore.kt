@@ -1,6 +1,6 @@
 package opencola.server
 
-import io.opencola.core.config.SSLConfig
+import io.opencola.application.SSLConfig
 import io.opencola.security.convertCertificateToPEM
 import io.opencola.security.generateRSAKeyPair
 import io.opencola.security.generateSelfSignedV3Certificate

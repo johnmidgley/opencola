@@ -1,4 +1,4 @@
-package io.opencola.core.config
+package io.opencola.application
 
 import java.io.File
 import java.io.InputStream

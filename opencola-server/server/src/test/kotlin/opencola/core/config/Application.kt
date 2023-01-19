@@ -1,6 +1,6 @@
 package opencola.core.config
 
-import io.opencola.core.config.*
+import io.opencola.application.*
 import io.opencola.storage.AddressBook
 import io.opencola.model.Authority
 import java.net.URI

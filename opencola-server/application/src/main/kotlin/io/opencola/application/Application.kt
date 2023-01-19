@@ -1,4 +1,4 @@
-package io.opencola.core.config
+package io.opencola.application
 
 import mu.KotlinLogging
 import io.opencola.content.TextExtractor

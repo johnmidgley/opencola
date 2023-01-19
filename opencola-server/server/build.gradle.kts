@@ -53,6 +53,7 @@ dependencies {
     implementation(project(":search"))
     implementation(project(":storage"))
     implementation(project(":network"))
+    implementation(project(":application"))
 
     implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
 

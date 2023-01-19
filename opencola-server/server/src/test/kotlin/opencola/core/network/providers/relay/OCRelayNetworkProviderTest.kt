@@ -1,6 +1,6 @@
 package opencola.core.network.providers.relay
 
-import io.opencola.core.config.Application
+import io.opencola.application.Application
 import io.opencola.model.Authority
 import io.opencola.model.Id
 import io.opencola.network.NetworkNode

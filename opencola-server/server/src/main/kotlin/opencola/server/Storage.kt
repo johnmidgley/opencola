@@ -1,6 +1,6 @@
 package opencola.server
 
-import io.opencola.core.config.copyResources
+import io.opencola.application.copyResources
 import io.opencola.system.OS
 import io.opencola.system.getOS
 import java.nio.file.Path

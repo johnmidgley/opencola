@@ -1,6 +1,6 @@
 package opencola.server
 
-import io.opencola.core.config.*
+import io.opencola.application.*
 import io.opencola.system.getOS
 import mu.KotlinLogging
 

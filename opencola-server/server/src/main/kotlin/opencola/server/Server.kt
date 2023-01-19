@@ -3,10 +3,10 @@ package opencola.server
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import io.opencola.core.config.Application
-import io.opencola.core.config.Config
-import io.opencola.core.config.LoginConfig
-import io.opencola.core.config.ServerConfig
+import io.opencola.application.Application
+import io.opencola.application.Config
+import io.opencola.application.LoginConfig
+import io.opencola.application.ServerConfig
 import io.opencola.event.EventBus
 import io.opencola.event.Events
 import io.opencola.model.Id
