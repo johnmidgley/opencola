@@ -12,22 +12,24 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/content" />
             <option value="$PROJECT_DIR$/core" />
-            <option value="$PROJECT_DIR$/event" />
-            <option value="$PROJECT_DIR$/io" />
-            <option value="$PROJECT_DIR$/model" />
+            <option value="$PROJECT_DIR$/core/application" />
+            <option value="$PROJECT_DIR$/core/content" />
+            <option value="$PROJECT_DIR$/core/event" />
+            <option value="$PROJECT_DIR$/core/io" />
+            <option value="$PROJECT_DIR$/core/model" />
+            <option value="$PROJECT_DIR$/core/network" />
+            <option value="$PROJECT_DIR$/core/search" />
+            <option value="$PROJECT_DIR$/core/security" />
+            <option value="$PROJECT_DIR$/core/serialization" />
+            <option value="$PROJECT_DIR$/core/storage" />
+            <option value="$PROJECT_DIR$/core/system" />
+            <option value="$PROJECT_DIR$/core/util" />
             <option value="$PROJECT_DIR$/relay" />
             <option value="$PROJECT_DIR$/relay/client" />
             <option value="$PROJECT_DIR$/relay/common" />
             <option value="$PROJECT_DIR$/relay/server" />
-            <option value="$PROJECT_DIR$/search" />
-            <option value="$PROJECT_DIR$/security" />
-            <option value="$PROJECT_DIR$/serialization" />
             <option value="$PROJECT_DIR$/server" />
-            <option value="$PROJECT_DIR$/storage" />
-            <option value="$PROJECT_DIR$/system" />
-            <option value="$PROJECT_DIR$/util" />
           </set>
         </option>
       </GradleProjectSettings>
