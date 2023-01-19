@@ -30,6 +30,10 @@ repositories {
 dependencies {
     implementation(project(":core"))
     implementation(project(":security"))
+    implementation(project(":serialization"))
+    implementation(project(":model"))
+    implementation(project(":relay:common"))
+    implementation(project(":relay:client"))
 
     // Logging
     implementation("io.github.microutils:kotlin-logging:$kotlin_logging_version")

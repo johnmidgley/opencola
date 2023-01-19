@@ -6,6 +6,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":relay:common"))
     implementation(project(":relay:server"))
-
+    implementation(project(":relay:client"))
 }

@@ -86,6 +86,8 @@ dependencies {
 
     testImplementation(project(":io"))
     testImplementation(project(":relay"))
+    testImplementation(project(":relay:client"))
+    testImplementation(project(":relay:server"))
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktor_version")
 
