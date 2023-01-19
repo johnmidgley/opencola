@@ -1,17 +1,15 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-
-val ktor_version: String by project
-val kotlin_version: String by project
-val logback_version: String by project
-val exposed_version: String by project
-val kotlinx_serialization_version: String by project
-val kotlin_logging_version:String by project
-val slf4j_version: String by project
-val mime4j_version: String by project
-val bcprov_version: String by project
-val hoplite_version: String by project
-val kodein_version: String by project
-val kotlinx_cli_version: String by project
+val ktorVersion: String by project
+val kotlinVersion: String by project
+val logbackVersion: String by project
+val exposedVersion: String by project
+val kotlinxSerializationVersion: String by project
+val kotlinLoggingVersion:String by project
+val slf4jVersion: String by project
+val mime4jVersion: String by project
+val bcprovVersion: String by project
+val hopliteVersion: String by project
+val kodeinVersion: String by project
+val kotlinxCliVersion: String by project
 
 /*
 

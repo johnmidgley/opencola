@@ -1,7 +1,7 @@
-val kotlin_version: String by project
-val ktor_version: String by project
-val kotlin_logging_version:String by project
-val kotlinx_serialization_version: String by project
+val kotlinVersion: String by project
+val ktorVersion: String by project
+val kotlinLoggingVersion:String by project
+val kotlinxSerializationVersion: String by project
 
 plugins {
     kotlin("jvm") version "1.7.20"
@@ -18,11 +18,11 @@ dependencies {
     implementation(project(":core:storage"))
     implementation(project(":relay:client"))
     implementation(project(":relay:common"))
-    implementation("io.github.microutils:kotlin-logging:$kotlin_logging_version")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:$kotlinx_serialization_version")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
-    implementation("io.ktor:ktor-client-core-jvm:$ktor_version")
-    implementation("io.ktor:ktor-client-okhttp:$ktor_version")
-    implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
+    implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:$kotlinxSerializationVersion")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
+    implementation("io.ktor:ktor-client-core-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
 }

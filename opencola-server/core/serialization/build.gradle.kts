@@ -1,4 +1,4 @@
-val kotlin_version: String by project
+val kotlinVersion: String by project
 
 plugins {
     kotlin("jvm") version "1.7.20"
@@ -7,5 +7,5 @@ plugins {
 
 dependencies {
     implementation(project(":core:util"))
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
 }

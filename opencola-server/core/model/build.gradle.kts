@@ -1,6 +1,6 @@
-val kotlin_version: String by project
-val kotlin_logging_version:String by project
-val kotlinx_serialization_version: String by project
+val kotlinVersion: String by project
+val kotlinLoggingVersion:String by project
+val kotlinxSerializationVersion: String by project
 
 plugins {
     // TODO: These should be specified at top level (or at least the versions)
@@ -14,8 +14,8 @@ dependencies {
     implementation(project(":core:security"))
     implementation(project(":core:serialization"))
 
-    implementation("io.github.microutils:kotlin-logging:$kotlin_logging_version")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:$kotlinx_serialization_version")
+    implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:$kotlinxSerializationVersion")
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
 }
