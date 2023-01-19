@@ -6,11 +6,11 @@ import io.opencola.event.EventBus
 import io.opencola.event.Reactor
 import io.opencola.model.Authority
 import io.opencola.model.Id
-import io.opencola.core.network.NetworkNode
-import io.opencola.core.network.RequestRouter
-import io.opencola.core.network.getDefaultRoutes
-import io.opencola.core.network.providers.http.HttpNetworkProvider
-import io.opencola.core.network.providers.relay.OCRelayNetworkProvider
+import io.opencola.network.NetworkNode
+import io.opencola.network.RequestRouter
+import io.opencola.network.getDefaultRoutes
+import io.opencola.network.providers.http.HttpNetworkProvider
+import io.opencola.network.providers.relay.OCRelayNetworkProvider
 import io.opencola.search.LuceneSearchIndex
 import io.opencola.security.*
 import io.opencola.storage.*

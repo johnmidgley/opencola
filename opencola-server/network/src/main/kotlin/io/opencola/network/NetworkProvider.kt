@@ -1,4 +1,4 @@
-package io.opencola.core.network
+package io.opencola.network
 
 import io.opencola.model.Authority
 import io.opencola.model.Id

@@ -7,10 +7,10 @@ import io.opencola.event.Events
 import io.opencola.util.nullOrElse
 import io.opencola.model.Authority
 import io.opencola.model.Id
-import io.opencola.core.network.InviteToken
-import io.opencola.core.network.NetworkNode
-import io.opencola.core.network.Notification
-import io.opencola.core.network.PeerEvent
+import io.opencola.network.InviteToken
+import io.opencola.network.NetworkNode
+import io.opencola.network.Notification
+import io.opencola.network.PeerEvent
 import io.opencola.security.Signator
 import io.opencola.security.decodePublicKey
 import io.opencola.security.encode

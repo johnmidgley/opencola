@@ -1,4 +1,4 @@
-package io.opencola.core.network.providers.http
+package io.opencola.network.providers.http
 
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -8,14 +8,16 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
-import io.opencola.core.config.NetworkConfig
+import io.opencola.network.NetworkConfig
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import io.opencola.model.Authority
-import io.opencola.core.network.AbstractNetworkProvider
-import io.opencola.core.network.*
+import io.opencola.network.AbstractNetworkProvider
+import io.opencola.network.*
+import io.opencola.network.MessageEnvelope
+import io.opencola.network.Response
 import io.opencola.security.*
 import io.opencola.storage.AddressBook
 import io.opencola.security.Encryptor

@@ -3,9 +3,9 @@ package opencola.core.network.providers.relay
 import io.opencola.core.config.Application
 import io.opencola.model.Authority
 import io.opencola.model.Id
-import io.opencola.core.network.NetworkNode
-import io.opencola.core.network.Request
-import io.opencola.core.network.providers.relay.OCRelayNetworkProvider
+import io.opencola.network.NetworkNode
+import io.opencola.network.Request
+import io.opencola.network.providers.relay.OCRelayNetworkProvider
 import io.opencola.security.generateKeyPair
 import io.opencola.storage.AddressBook
 import io.opencola.relay.client.WebSocketClient

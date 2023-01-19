@@ -9,8 +9,8 @@ import io.ktor.server.auth.*
 import io.ktor.server.sessions.*
 import io.ktor.server.testing.*
 import io.opencola.model.*
-import io.opencola.core.network.Notification
-import io.opencola.core.network.PeerEvent.NewTransaction
+import io.opencola.network.Notification
+import io.opencola.network.PeerEvent.NewTransaction
 import io.opencola.security.generateKeyPair
 import io.opencola.storage.AddressBook
 import io.opencola.storage.EntityStore

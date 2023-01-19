@@ -3,7 +3,7 @@ package io.opencola.core.config
 import com.sksamuel.hoplite.ConfigLoaderBuilder
 import com.sksamuel.hoplite.addFileSource
 import io.opencola.event.EventBusConfig
-import java.net.URI
+import io.opencola.network.NetworkConfig
 import java.nio.file.Path
 
 data class SSLConfig(val port: Int = 5796, val sans: List<String> = emptyList())
@@ -12,10 +12,6 @@ data class LoginConfig(val username: String = "opencola", val password: String? 
 data class SecurityConfig(val login: LoginConfig = LoginConfig())
 data class SolrConfig(val baseUrl: String, val connectionTimeoutMillis: Int, val socketTimeoutMillis: Int)
 data class SearchConfig(val solr: SolrConfig?)
-data class SocksProxy(val host: String, val port: Int)
-data class NetworkConfig(val defaultAddress: URI = URI("ocr://relay.opencola.net"),
-                         val requestTimeoutMilliseconds: Long = 20000,
-                         val socksProxy: SocksProxy? = null)
 data class Resources(val allowEdit: Boolean = false)
 
 

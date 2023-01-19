@@ -10,7 +10,7 @@ import io.opencola.core.config.ServerConfig
 import io.opencola.event.EventBus
 import io.opencola.event.Events
 import io.opencola.model.Id
-import io.opencola.core.network.NetworkNode
+import io.opencola.network.NetworkNode
 import io.opencola.security.EncryptionParams
 import io.opencola.security.encode
 import io.opencola.security.initProvider

@@ -1,4 +1,4 @@
-package io.opencola.core.network
+package io.opencola.network
 
 import kotlinx.serialization.Serializable
 import io.opencola.model.Id

@@ -5,7 +5,8 @@ import io.opencola.core.config.*
 import opencola.core.TestApplication
 import io.opencola.event.EventBus
 import io.opencola.model.Authority
-import io.opencola.core.network.NetworkNode
+import io.opencola.network.NetworkConfig
+import io.opencola.network.NetworkNode
 import io.opencola.storage.AddressBook
 import opencola.server.AuthToken
 import opencola.server.getServer
@@ -82,7 +83,8 @@ class ApplicationNode(val application: Application) : Node {
                         NetworkConfig(
                             URI("http://${it.server.host}:$port"),
                             it.network.requestTimeoutMilliseconds,
-                            it.network.socksProxy))
+                            it.network.socksProxy)
+                    )
             }
 
             val instance = Application.instance(storagePath, "password", configToUse)

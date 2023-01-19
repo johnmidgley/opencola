@@ -1,8 +1,11 @@
-package io.opencola.core.network.providers.relay
+package io.opencola.network.providers.relay
 
-import io.opencola.core.config.NetworkConfig
+import io.opencola.network.NetworkConfig
 import io.opencola.model.Authority
-import io.opencola.core.network.*
+import io.opencola.network.*
+import io.opencola.network.AbstractNetworkProvider
+import io.opencola.network.MessageEnvelope
+import io.opencola.network.Response
 import io.opencola.security.Encryptor
 import io.opencola.security.Signator
 import io.opencola.storage.AddressBook

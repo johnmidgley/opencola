@@ -3,7 +3,7 @@ package io.opencola.core.config
 import io.opencola.event.EventBus
 import io.opencola.event.Events
 import io.opencola.event.Reactor
-import io.opencola.core.network.*
+import io.opencola.network.*
 import io.opencola.storage.AddressBook
 import io.opencola.storage.EntityStore
 import io.opencola.model.Authority

@@ -2,7 +2,7 @@ package opencola.core.network
 
 import opencola.core.TestApplication
 import io.opencola.model.Authority
-import io.opencola.core.network.InviteToken
+import io.opencola.network.InviteToken
 import io.opencola.security.Signator
 import opencola.server.handlers.getInviteToken
 import org.junit.Test

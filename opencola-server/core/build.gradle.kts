@@ -43,6 +43,7 @@ dependencies {
     implementation(project(":content"))
     implementation(project(":search"))
     implementation(project(":storage"))
+    implementation(project(":network"))
     implementation(project(":relay:client"))
     implementation(project(":relay:common"))
 

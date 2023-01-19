@@ -16,10 +16,10 @@ import io.opencola.core.config.getResourceFilePath
 import io.opencola.util.nullOrElse
 import io.opencola.model.Authority
 import io.opencola.model.Id
-import io.opencola.core.network.Notification
-import io.opencola.core.network.handleGetTransactions
-import io.opencola.core.network.handleNotification
-import io.opencola.core.network.providers.http.HttpNetworkProvider
+import io.opencola.network.Notification
+import io.opencola.network.handleGetTransactions
+import io.opencola.network.handleNotification
+import io.opencola.network.providers.http.HttpNetworkProvider
 import io.opencola.security.EncryptionParams
 import io.opencola.system.*
 import kotlinx.coroutines.CompletableDeferred
