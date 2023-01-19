@@ -28,7 +28,6 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":core"))
     implementation(project(":security"))
     implementation(project(":serialization"))
     implementation(project(":model"))
