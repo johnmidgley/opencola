@@ -20,7 +20,7 @@ class KeyStore(val path: Path, password: String) : SecurityProviderDependent() {
     val logger = KotlinLogging.logger(this.javaClass.simpleName)
 
     // TODO: Move parameters to config
-    var store: KeyStore = KeyStore.getInstance("PKCS12","BC")
+    private var store: KeyStore = KeyStore.getInstance("PKCS12","BC")
     private lateinit var passwordHash: CharArray//  = sha256(password).toHexString().toCharArray()
     private lateinit var protectionParameter: KeyStore.PasswordProtection// = KeyStore.PasswordProtection(passwordHash)
 
@@ -53,6 +53,11 @@ class KeyStore(val path: Path, password: String) : SecurityProviderDependent() {
         return entry as KeyStore.PrivateKeyEntry
     }
 
+    fun getKeyPair(alias: String): KeyPair {
+        val privateKey = getEntry(alias)
+        return KeyPair(privateKey.certificate.publicKey, privateKey.privateKey)
+    }
+
     fun getPrivateKey(alias: String): PrivateKey? {
         return getEntry(alias).privateKey
     }
@@ -61,11 +66,14 @@ class KeyStore(val path: Path, password: String) : SecurityProviderDependent() {
         return getEntry(alias).certificate.publicKey
     }
 
+    fun getAliases(): List<String> {
+        return store.aliases().toList()
+    }
+
     fun changePassword(newPassword: String) {
         val newPasswordHash = sha256(newPassword).toHexString().toCharArray()
         changePassword(path, String(passwordHash), String(newPasswordHash))
     }
-
 }
 
 fun isPasswordValid(keyStorePath: Path, password: String): Boolean {

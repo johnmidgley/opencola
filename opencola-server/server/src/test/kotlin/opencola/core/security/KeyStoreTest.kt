@@ -21,6 +21,7 @@ class KeyStoreTest {
         keyStore.addKey(authority.authorityId.toString(), keyPair)
 
         val keyStore1 = KeyStore(keyStorePath, password)
+
         val privateKey1 = keyStore1.getPrivateKey(authority.entityId.toString())
         val publicKey1 = keyStore1.getPublicKey(authority.entityId.toString())
 
@@ -35,6 +36,10 @@ class KeyStoreTest {
         assert(isValidSignature(keyPair.public, data, signature1))
         assert(isValidSignature(publicKey1, data, signature))
         assert(isValidSignature(publicKey1, data, signature1))
+
+        val aliases = keyStore1.getAliases()
+        assertEquals(1, aliases.size)
+        assertEquals(authority.entityId.toString(), aliases[0])
     }
 
     @Test
