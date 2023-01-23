@@ -36,30 +36,19 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
         // TODO: Remove - create loggers by component / namespace
         val logger = KotlinLogging.logger("opencola.init")
 
-        // TODO: pub key should come from private store, not authority.pub, and multiple authorities (personas) should be allowed
         // TODO: Move to Identity Service
         fun getOrCreateRootKeyPair(storagePath: Path, password: String): KeyPair {
-            val publicKeyFile = "authority.pub" // TODO: Config?
-            val authorityPubPath = storagePath.resolve(publicKeyFile)
             val keyStore = KeyStore(storagePath.resolve("keystore.pks"), password)
-            val keyPair =  if (authorityPubPath.exists()) {
-                val publicKey = decodePublicKey(authorityPubPath.readText())
-                val privateKey = keyStore.getPrivateKey(Id.ofPublicKey(publicKey).toString())
-                if(privateKey != null)
-                    logger.info { "Found private key in store" }
-                else
-                    throw IllegalStateException("No private key found in keystore {${keyStore.path}} for public key {${publicKey}} found in $publicKeyFile")
+            val aliases = keyStore.getAliases()
 
-                KeyPair(publicKey, privateKey)
+            return if(aliases.isEmpty()) {
+                logger.info { "Creating new KeyPair" }
+                generateKeyPair().also { keyStore.addKey(Id.ofPublicKey(it.public).toString(), it) }
+            } else if(aliases.size == 1) {
+                keyStore.getKeyPair(aliases.first())
             } else {
-                logger.info { "Key file $publicKeyFile doesn't exist. Creating new KeyPair" }
-                val keyPair = generateKeyPair()
-                keyStore.addKey(Id.ofPublicKey(keyPair.public).toString(), keyPair)
-                authorityPubPath.writeText(keyPair.public.encode())
-                keyPair
+                throw IllegalStateException("Multiple keys found in keystore {${keyStore.path}}")
             }
-
-            return keyPair
         }
 
         fun getEntityStoreDB(authority: Authority, storagePath: Path): Database {
