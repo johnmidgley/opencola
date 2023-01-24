@@ -12,9 +12,8 @@ import java.security.PublicKey
 
 // TODO: Should support multiple authorities
 abstract class AbstractEntityStore(
-    val authority: Authority,
     val signator: Signator,
-    val addressBook: AddressBook?,
+    val addressBook: AddressBook,
     val eventBus: EventBus?,
     ) : EntityStore {
     // TODO: Assumes transaction has been validated. Cleanup?
@@ -30,22 +29,6 @@ abstract class AbstractEntityStore(
     protected fun logAndThrow(exception: Exception) {
         logger.error { exception.message }
         throw exception
-    }
-
-    protected fun isValidTransaction(signedTransaction: SignedTransaction): Boolean {
-        // TODO: Move what can be moved to transaction
-        val transactionId = signedTransaction.transaction.id
-
-        if (signedTransaction.transaction.authorityId != authority.entityId) {
-            logger.warn { "Ignoring transaction $transactionId with unverifiable authority: $authority" }
-            return false
-        }
-
-        if (!signedTransaction.isValidTransaction(authority.publicKey as PublicKey)) {
-            logger.error { "Ignoring transaction with invalid signature $transactionId" }
-        }
-
-        return true
     }
 
     // TODO - make entity method?
@@ -83,8 +66,16 @@ abstract class AbstractEntityStore(
             logAndThrow(RuntimeException("Attempt to commit changes to multiple entities with the same id."))
         }
 
-        if (entities.any { it.authorityId != authority.authorityId }) {
-            logAndThrow(RuntimeException("Attempt to commit changes not controlled by authority"))
+        val authorityIds = entities.map { it.authorityId }.toSet()
+
+        if(authorityIds.size != 1){
+            logAndThrow(RuntimeException("Attempt to commit changes to multiple authorities."))
+        }
+
+        val authorityId = authorityIds.first()
+
+        if (addressBook.getAuthority(authorityId) as? Persona == null) {
+            logAndThrow(RuntimeException("Attempt to commit changes not controlled by local authority"))
         }
 
         val uncommittedFacts = entities.flatMap { it.getAllFacts() }.filter { it.transactionOrdinal == null }
@@ -93,7 +84,7 @@ abstract class AbstractEntityStore(
             return null
         }
 
-        val (signedTransaction, transactionOrdinal) = persistTransaction(authority.authorityId , uncommittedFacts)
+        val (signedTransaction, transactionOrdinal) = persistTransaction(authorityId , uncommittedFacts)
 
         entities.forEach {
             it.commitFacts(signedTransaction.transaction.epochSecond, transactionOrdinal)

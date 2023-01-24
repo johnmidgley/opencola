@@ -12,6 +12,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.greaterEq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.lessEq
 import org.jetbrains.exposed.sql.statements.api.ExposedBlob
+import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.ByteArrayInputStream
 
@@ -19,11 +20,10 @@ import java.io.ByteArrayInputStream
 
 class ExposedEntityStore(
     private val database: Database,
-    authority: Authority,
     signator: Signator,
-    addressBook: AddressBook? = null,
+    addressBook: AddressBook,
     eventBus: EventBus? = null,
-) : AbstractEntityStore(authority, signator, addressBook, eventBus) {
+) : AbstractEntityStore(signator, addressBook, eventBus) {
     // NOTE: Some databases may truncate the table name. This is an issue to the degree that it increases the
     // chances of collisions. Given the number of ids stored in a single DB, the chances of issue are exceedingly low.
     // This would likely be an issue only when storing data for large sets of users (millions to billions?)
@@ -51,7 +51,11 @@ class ExposedEntityStore(
     private val transactions: Transactions
 
     init {
+
         logger.info { "Initializing ExposedEntityStore {${database.url}}" }
+
+        TODO("CHECK TABLE NAMES")
+        TransactionManager.current().db.dialect.allTablesNames()
 
         facts = Facts(authority.authorityId)
         transactions = Transactions(authority.authorityId)
@@ -180,7 +184,7 @@ class ExposedEntityStore(
             SchemaUtils.drop(facts, transactions)
         }
 
-        return ExposedEntityStore(database, authority, signator, addressBook, eventBus)
+        return ExposedEntityStore(database, signator, addressBook, eventBus)
     }
 
     private fun factFromResultRow(resultRow: ResultRow): Fact {

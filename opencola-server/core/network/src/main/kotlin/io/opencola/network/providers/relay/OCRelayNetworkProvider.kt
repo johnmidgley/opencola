@@ -23,13 +23,12 @@ import kotlin.concurrent.thread
 
 const val openColaRelayScheme = "ocr"
 
-class OCRelayNetworkProvider(authority: Authority,
-                             addressBook: AddressBook,
+class OCRelayNetworkProvider(addressBook: AddressBook,
                              signator: Signator,
                              encryptor: Encryptor,
                              private val keyPair: KeyPair, // Seems redundant, but needed for Relay client.
                              private val networkConfig: NetworkConfig,
-): AbstractNetworkProvider(authority, addressBook, signator, encryptor) {
+): AbstractNetworkProvider(addressBook, signator, encryptor) {
     private val logger = KotlinLogging.logger("OCRelayNetworkProvider")
     data class ConnectionInfo(val client: RelayClient, val listenThread: Thread)
     private val connections = ConcurrentHashMap<URI, ConnectionInfo>()

@@ -25,8 +25,7 @@ interface NetworkProvider {
     fun setRequestHandler(handler: (Id, Id, Request) -> Response)
 }
 
-abstract class AbstractNetworkProvider(val authority: Authority,
-                                       val addressBook: AddressBook,
+abstract class AbstractNetworkProvider(val addressBook: AddressBook,
                                        val signator: Signator,
                                        val encryptor: Encryptor,
 ) : NetworkProvider {

@@ -3,7 +3,7 @@ package io.opencola.model
 import java.net.URI
 import java.security.PublicKey
 
-class Authority : Entity {
+open class Authority : Entity {
     var uri by uriAttributeDelegate
     var publicKey by publicKeyAttributeDelegate
     var networkToken by byteArrayAttributeDelegate

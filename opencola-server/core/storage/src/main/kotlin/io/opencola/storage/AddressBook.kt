@@ -3,6 +3,8 @@ package io.opencola.storage
 import mu.KotlinLogging
 import io.opencola.model.Authority
 import io.opencola.model.Id
+import io.opencola.model.Persona
+import io.opencola.security.KeyStore
 import io.opencola.security.Signator
 import io.opencola.util.trim
 import java.net.URI
@@ -11,11 +13,11 @@ import java.security.PublicKey
 import java.util.concurrent.CopyOnWriteArrayList
 
 // TODO: Move ServerConfig to NetworkConfig?
-class AddressBook(private val authority: Authority, storagePath: Path, signator: Signator) {
+class AddressBook(private val authority: Authority, storagePath: Path, private val keyStore: KeyStore) {
     val logger = KotlinLogging.logger("AddressBook")
 
     private val activeTag = "active"
-    private val entityStore = ExposedEntityStore(SQLiteDB(storagePath.resolve("address-book.db")).db, authority, signator)
+    private val entityStore = ExposedEntityStore(SQLiteDB(storagePath.resolve("address-book.db")).db, Signator(keyStore), this)
     private val updateHandlers = CopyOnWriteArrayList<(Authority?, Authority?) -> Unit>()
 
     fun getPublicKey(authorityId: Id): PublicKey? {
@@ -80,8 +82,12 @@ class AddressBook(private val authority: Authority, storagePath: Path, signator:
         return authority
     }
 
+    private fun authorityAsPersona(authority: Authority) : Authority {
+        return keyStore.getKeyPair(authority.entityId.toString())?.let { Persona(authority, it) } ?: authority
+    }
+
     fun getAuthority(id: Id) : Authority? {
-        return entityStore.getEntity(authority.authorityId, id) as Authority?
+       return (entityStore.getEntity(authority.authorityId, id) as Authority?)?.let { authorityAsPersona(it) }
     }
 
     // TODO: Make isActive be a property of Authority and remove filter here (caller can do it)
@@ -89,6 +95,7 @@ class AddressBook(private val authority: Authority, storagePath: Path, signator:
         return entityStore.getEntities(setOf(authority.authorityId), emptySet())
             .filterIsInstance<Authority>()
             .filter { !filterActive || it.tags.contains(activeTag)}
+            .map { authorityAsPersona(it) }
             .toSet()
     }
 

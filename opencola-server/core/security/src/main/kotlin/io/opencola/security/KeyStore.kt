@@ -46,24 +46,20 @@ class KeyStore(val path: Path, password: String) : SecurityProviderDependent() {
         }
     }
 
-    private fun getEntry(alias: String): KeyStore.PrivateKeyEntry {
-        val entry = store.getEntry(alias, protectionParameter)
-            ?: throw RuntimeException("No key found for $alias")
-
-        return entry as KeyStore.PrivateKeyEntry
+    private fun getEntry(alias: String): KeyStore.PrivateKeyEntry? {
+        return store.getEntry(alias, protectionParameter) as? KeyStore.PrivateKeyEntry
     }
 
-    fun getKeyPair(alias: String): KeyPair {
-        val privateKey = getEntry(alias)
-        return KeyPair(privateKey.certificate.publicKey, privateKey.privateKey)
+    fun getKeyPair(alias: String): KeyPair? {
+        return getEntry(alias)?.let { KeyPair(it.certificate.publicKey, it.privateKey) }
     }
 
     fun getPrivateKey(alias: String): PrivateKey? {
-        return getEntry(alias).privateKey
+        return getEntry(alias)?.privateKey
     }
 
     fun getPublicKey(alias: String): PublicKey? {
-        return getEntry(alias).certificate.publicKey
+        return getEntry(alias)?.certificate?.publicKey
     }
 
     fun getAliases(): List<String> {

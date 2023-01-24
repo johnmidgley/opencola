@@ -6,6 +6,7 @@ import io.opencola.event.EventBus
 import io.opencola.event.Reactor
 import io.opencola.model.Authority
 import io.opencola.model.Id
+import io.opencola.model.Persona
 import io.opencola.network.NetworkNode
 import io.opencola.network.RequestRouter
 import io.opencola.network.getDefaultRoutes
@@ -37,11 +38,11 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
         val logger = KotlinLogging.logger("opencola.init")
 
         // TODO: Move to Identity Service
-        fun getOrCreateRootKeyPair(storagePath: Path, password: String): KeyPair {
+        fun getOrCreateRootKeyPair(storagePath: Path, password: String): List<KeyPair> {
             val keyStore = KeyStore(storagePath.resolve("keystore.pks"), password)
             val aliases = keyStore.getAliases()
 
-            return if(aliases.isEmpty()) {
+            val keyPair = if(aliases.isEmpty()) {
                 logger.info { "Creating new KeyPair" }
                 generateKeyPair().also { keyStore.addKey(Id.ofPublicKey(it.public).toString(), it) }
             } else if(aliases.size == 1) {
@@ -49,37 +50,28 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
             } else {
                 throw IllegalStateException("Multiple keys found in keystore {${keyStore.path}}")
             }
+
+            return listOf(keyPair)
         }
 
-        fun getEntityStoreDB(authority: Authority, storagePath: Path): Database {
-            val path = storagePath.resolve("entity-store.db")
-
-            if(!path.exists()){
-                val legacyPath = storagePath.resolve("${authority.authorityId.legacyEncode()}.db")
-                if(legacyPath.exists()){
-                    logger.warn { "Moving legacy database." }
-                    legacyPath.moveTo(path)
-                }
-            }
-
-            return SQLiteDB(path).db
+        fun getEntityStoreDB(storagePath: Path): Database {
+            return SQLiteDB(storagePath.resolve("entity-store.db")).db
         }
 
-        fun instance(storagePath: Path, config: Config, authorityKeyPair: KeyPair, password: String): Application {
+        fun instance(storagePath: Path, config: Config, personaKeyPairs: List<KeyPair>, password: String): Application {
             if(!storagePath.exists()){
                 File(storagePath.toString()).mkdirs()
             }
 
             // TODO: Change from authority to public key - they authority should come from the private store based on the private key
             val defaultAddress = config.network.defaultAddress
-            val authority = Authority(authorityKeyPair.public, defaultAddress, "You")
+            val personas = personaKeyPairs.map { Persona(Authority(it.public, defaultAddress, "You"), it) }
 
             val keyStore = KeyStore(storagePath.resolve("keystore.pks"), password)
             val fileStore = LocalFileStore(storagePath.resolve("filestore"))
-            val entityStoreDB = getEntityStoreDB(authority, storagePath)
+            val entityStoreDB = getEntityStoreDB(storagePath)
 
             val injector = DI {
-                bindSingleton { authority }
                 bindSingleton { keyStore }
                 bindSingleton { fileStore }
                 bindSingleton { TextExtractor() }
@@ -114,8 +106,8 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
 
         fun instance(storagePath: Path, password: String, config: Config? = null) : Application {
             val appConfig = config ?: loadConfig(storagePath.resolve("opencola-server.yaml"))
-            val keyPair = getOrCreateRootKeyPair(storagePath, password)
-            return instance(storagePath, appConfig, keyPair, password)
+            val personaKeyPairs = getOrCreateRootKeyPair(storagePath, password)
+            return instance(storagePath, appConfig, personaKeyPairs, password)
         }
     }
 }
