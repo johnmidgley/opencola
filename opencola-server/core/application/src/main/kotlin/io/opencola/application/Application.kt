@@ -51,6 +51,10 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
                 throw IllegalStateException("Multiple keys found in keystore {${keyStore.path}}")
             }
 
+            if(keyPair == null) {
+                throw IllegalStateException("Unable to get key pair from keystore {${keyStore.path}}")
+            }
+
             return listOf(keyPair)
         }
 
@@ -79,9 +83,9 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
                 bindSingleton { Encryptor(instance()) }
                 bindSingleton { AddressBook(instance(), storagePath, instance()) }
                 bindSingleton { RequestRouter(getDefaultRoutes(instance(), instance(), instance())) }
-                bindSingleton { HttpNetworkProvider(instance(), instance(), instance(), instance(), config.network) }
-                bindSingleton { OCRelayNetworkProvider(instance(), instance(), instance(), instance(), authorityKeyPair, config.network) }
-                bindSingleton { NetworkNode(authority, instance(),instance(), instance()) }
+                bindSingleton { HttpNetworkProvider(instance(), instance(), instance(), config.network) }
+                bindSingleton { OCRelayNetworkProvider(instance(), instance(), instance(), instance(), config.network) }
+                bindSingleton { NetworkNode(instance(),instance(), instance()) }
                 bindSingleton { LuceneSearchIndex(authority.authorityId, storagePath.resolve("lucene")) }
                 bindSingleton { ExposedEntityStore(entityStoreDB, instance(), instance(), instance(), instance()) }
                 // TODO: Add unit tests for MhtCache

@@ -18,8 +18,9 @@ import org.apache.lucene.search.IndexSearcher
 import org.apache.lucene.search.Query
 import org.apache.lucene.store.FSDirectory
 import java.nio.file.Path
+import java.util.*
 
-class LuceneSearchIndex(val authorityId: Id, private val storagePath: Path) : AbstractSearchIndex() {
+class LuceneSearchIndex(private val storagePath: Path) : AbstractSearchIndex() {
     private val logger = KotlinLogging.logger("LuceneSearchIndex")
     private val analyzer = StandardAnalyzer()
 
@@ -34,7 +35,7 @@ class LuceneSearchIndex(val authorityId: Id, private val storagePath: Path) : Ab
     override fun create() {
         // Create a dummy doc to make sure index is ready to be searched
         val doc = Document()
-        doc.add(Field("id", authorityId.toString(), StringField.TYPE_NOT_STORED))
+        doc.add(Field("id", UUID.randomUUID().toString(), StringField.TYPE_NOT_STORED))
         indexDocuments(listOf(doc))
     }
 

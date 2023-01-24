@@ -4,6 +4,7 @@ import io.opencola.event.EventBus
 import io.opencola.event.Events
 import io.opencola.model.Authority
 import io.opencola.model.Id
+import io.opencola.model.Persona
 import io.opencola.network.NetworkNode.PeerStatus.*
 import io.opencola.storage.AddressBook
 import mu.KotlinLogging
@@ -15,7 +16,6 @@ import kotlin.collections.set
 //  back online. Ping when coming out of suspend, or ping / request transactions periodically?
 
 class NetworkNode(
-    private val authority: Authority,
     private val router: RequestRouter,
     private val addressBook: AddressBook,
     private val eventBus: EventBus,
@@ -69,7 +69,7 @@ class NetworkNode(
         val response = router.handleRequest(from, to, request)
 
         // Since we received a request, the peer must be online
-        if(from != authority.entityId)
+        if(addressBook.getAuthority(from) !is Persona)
             updatePeerStatus(from, Online)
 
         response
@@ -88,7 +88,7 @@ class NetworkNode(
         provider.start()
     }
 
-    fun broadcastRequest(from: Authority, request: Request) {
+    fun broadcastRequest(from: Persona, request: Request) {
         val peers = addressBook.getAuthorities(true)
         if (peers.isNotEmpty()) {
             logger.info { "Broadcasting request: $request" }
@@ -150,11 +150,7 @@ class NetworkNode(
     }
 
     // TODO - peer should be Authority or peerId?
-    private fun sendRequest(from: Authority, to: Authority, request: Request) : Response? {
-        if(from.entityId != authority.entityId){
-            throw IllegalArgumentException("Cannot send request from a non local authority: ${from.entityId}")
-        }
-
+    private fun sendRequest(from: Persona, to: Authority, request: Request) : Response? {
         val peerUri = to.uri
         if(peerUri == null) {
             logger.warn { "Ignoring sendRequest to peer without uri: ${to.entityId}" }
@@ -162,7 +158,7 @@ class NetworkNode(
         }
 
         val provider = providers[peerUri.scheme] ?: throw IllegalStateException("No provider found for scheme: ${peerUri.scheme}")
-        val response = provider.sendRequest(authority, to, request)
+        val response = provider.sendRequest(from, to, request)
 
         // TODO: This is really bad. If we successfully get transactions when the user was in an offline/unknown state,
         //  setting their state to online would trigger another transactions request, which we want to avoid. Doing it

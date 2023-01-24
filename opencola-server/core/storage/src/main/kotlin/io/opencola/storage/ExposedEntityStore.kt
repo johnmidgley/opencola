@@ -54,15 +54,20 @@ class ExposedEntityStore(
 
         logger.info { "Initializing ExposedEntityStore {${database.url}}" }
 
-        TODO("CHECK TABLE NAMES")
-        TransactionManager.current().db.dialect.allTablesNames()
 
-        facts = Facts(authority.authorityId)
-        transactions = Transactions(authority.authorityId)
+        TransactionManager.current().db.dialect.allTablesNames()
+        val rootAuthority = addressBook.getAuthorities().filterIsInstance<Persona>().first()
+
+        facts = Facts(rootAuthority.authorityId)
+        transactions = Transactions(rootAuthority.authorityId)
 
         transaction(database) {
             SchemaUtils.create(facts)
             SchemaUtils.create(transactions)
+        }
+
+        if(true) {
+            TODO("CHECK TABLE NAMES")
         }
     }
 

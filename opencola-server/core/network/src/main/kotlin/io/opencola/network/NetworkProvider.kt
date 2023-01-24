@@ -2,6 +2,7 @@ package io.opencola.network
 
 import io.opencola.model.Authority
 import io.opencola.model.Id
+import io.opencola.model.Persona
 import io.opencola.security.*
 import io.opencola.storage.AddressBook
 import io.opencola.security.Encryptor
@@ -48,7 +49,7 @@ abstract class AbstractNetworkProvider(val addressBook: AddressBook,
     }
 
     fun validateMessageEnvelope(messageEnvelope: MessageEnvelope) {
-        if(messageEnvelope.to != authority.entityId) {
+        if(addressBook.getAuthority(messageEnvelope.to) !is Persona) {
             throw IllegalArgumentException("Received message for non local authority: ${messageEnvelope.to}")
         }
 

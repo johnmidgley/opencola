@@ -25,12 +25,11 @@ import kotlinx.serialization.encodeToString
 import java.net.URI
 import kotlin.IllegalStateException
 
-class HttpNetworkProvider(authority: Authority,
-                          addressBook: AddressBook,
+class HttpNetworkProvider(addressBook: AddressBook,
                           signator: Signator,
                           encryptor: Encryptor,
                           networkConfig: NetworkConfig,
-) : AbstractNetworkProvider(authority, addressBook, signator, encryptor) {
+) : AbstractNetworkProvider(addressBook, signator, encryptor) {
     private val logger = KotlinLogging.logger("HttpNetworkProvider")
 
     private val httpClient = HttpClient(OkHttp) {
