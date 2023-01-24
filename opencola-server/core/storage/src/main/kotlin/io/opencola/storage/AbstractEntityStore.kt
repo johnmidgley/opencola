@@ -74,7 +74,7 @@ abstract class AbstractEntityStore(
 
         val authorityId = authorityIds.first()
 
-        if (addressBook.getAuthority(authorityId) as? Persona == null) {
+        if (addressBook.getAuthority(authorityId, authorityId) as? Persona == null) {
             logAndThrow(RuntimeException("Attempt to commit changes not controlled by local authority"))
         }
 
@@ -194,7 +194,7 @@ abstract class AbstractEntityStore(
     override fun addSignedTransactions(signedTransactions: List<SignedTransaction>) {
         signedTransactions.forEach {
             val transactionAuthorityId = it.transaction.authorityId
-            val publicKey = addressBook?.getPublicKey(transactionAuthorityId)
+            val publicKey = addressBook?.getPublicKey(transactionAuthorityId, transactionAuthorityId)
                 ?: throw IllegalArgumentException("No public key for: $transactionAuthorityId - cannot persist transaction ${it.transaction.id}")
 
             if (!it.isValidTransaction(publicKey))

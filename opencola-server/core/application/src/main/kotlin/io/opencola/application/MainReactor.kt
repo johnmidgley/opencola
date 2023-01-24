@@ -18,7 +18,6 @@ import java.io.ByteArrayInputStream
 
 // TODO: Invert this by having the reactor subscribe to events vs. being plugged in to the event bus
 class MainReactor(
-    private val authority: Authority,
     private val entityStore: EntityStore,
     private val searchIndex: SearchIndex,
     private val networkNode: NetworkNode,

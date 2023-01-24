@@ -86,12 +86,12 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
                 bindSingleton { HttpNetworkProvider(instance(), instance(), instance(), config.network) }
                 bindSingleton { OCRelayNetworkProvider(instance(), instance(), instance(), instance(), config.network) }
                 bindSingleton { NetworkNode(instance(),instance(), instance()) }
-                bindSingleton { LuceneSearchIndex(authority.authorityId, storagePath.resolve("lucene")) }
-                bindSingleton { ExposedEntityStore(entityStoreDB, instance(), instance(), instance(), instance()) }
+                bindSingleton { LuceneSearchIndex(storagePath.resolve("lucene")) }
+                bindSingleton { ExposedEntityStore(entityStoreDB, instance(), instance(), instance()) }
                 // TODO: Add unit tests for MhtCache
                 // TODO: Get cache name from config
                 bindSingleton { MhtCache(storagePath.resolve("mht-cache"), instance(), instance()) }
-                bindSingleton { MainReactor(instance(), instance(), instance(), instance(), instance()) }
+                bindSingleton { MainReactor(instance(), instance(), instance(), instance()) }
                 bindSingleton { EventBus(storagePath, config.eventBus) }
             }
 

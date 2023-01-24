@@ -174,15 +174,14 @@ class NetworkNode(
     }
 
     // TODO - peer should be Authority or peerId?
-    fun sendRequest(peerId: Id, request: Request) : Response? {
+    fun sendRequest(from: Id, peerId: Id, request: Request) : Response? {
+        val persona = addressBook.getAuthority(from) as? Persona
+            ?: throw IllegalArgumentException("Can't send from message from non Persona")
         val peer = addressBook.getAuthority(peerId)
-        if(peer == null){
-            logger.warn { "Attempt to send request to unknown peer" }
-            return null
-        }
+            ?: throw IllegalArgumentException("Attempt to send request to unknown peer")
 
         // TODO: Authority should be passed in
-        return sendRequest(authority, peer, request)?.also {
+        return sendRequest(persona, peer, request)?.also {
             if (it.status >= 400) {
                 logger.warn { it }
             }

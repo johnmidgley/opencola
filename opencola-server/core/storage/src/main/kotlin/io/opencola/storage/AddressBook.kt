@@ -13,30 +13,28 @@ import java.security.PublicKey
 import java.util.concurrent.CopyOnWriteArrayList
 
 // TODO: Move ServerConfig to NetworkConfig?
-class AddressBook(private val authority: Authority, storagePath: Path, private val keyStore: KeyStore) {
+class AddressBook(storagePath: Path, private val keyStore: KeyStore) {
     val logger = KotlinLogging.logger("AddressBook")
 
     private val activeTag = "active"
     private val entityStore = ExposedEntityStore(SQLiteDB(storagePath.resolve("address-book.db")).db, Signator(keyStore), this)
     private val updateHandlers = CopyOnWriteArrayList<(Authority?, Authority?) -> Unit>()
 
-    fun getPublicKey(authorityId: Id): PublicKey? {
-        return if (authorityId == authority.authorityId)
-            authority.publicKey
-        else
-            getAuthority(authorityId)?.publicKey
+    // TODO: Needed?
+    fun getPublicKey(personaId: Id, authorityId: Id): PublicKey? {
+            return getAuthority(personaId, authorityId)?.publicKey
     }
 
     init {
-        // TODO: Does something have to be updated here when public key is updatable?
-        val addressBookAuthority = getAuthority(authority.authorityId) ?: updateAuthority(authority)
-
-        if(addressBookAuthority.uri.toString().isBlank()) {
-            // Fallback to local server address.
-            // TODO: Is there a better place for this?
-            addressBookAuthority.uri = URI("ocr://relay.opencola.net")
-            updateAuthority(addressBookAuthority)
-        }
+        TODO("This is application logic - move to Application")
+//        val addressBookAuthority = getAuthority(authority.authorityId) ?: updateAuthority(authority)
+//
+//        if(addressBookAuthority.uri.toString().isBlank()) {
+//            // Fallback to local server address.
+//            // TODO: Is there a better place for this?
+//            addressBookAuthority.uri = URI("ocr://relay.opencola.net")
+//            updateAuthority(addressBookAuthority)
+//        }
     }
 
     // TODO: Move to Authority
@@ -86,25 +84,35 @@ class AddressBook(private val authority: Authority, storagePath: Path, private v
         return keyStore.getKeyPair(authority.entityId.toString())?.let { Persona(authority, it) } ?: authority
     }
 
-    fun getAuthority(id: Id) : Authority? {
-       return (entityStore.getEntity(authority.authorityId, id) as Authority?)?.let { authorityAsPersona(it) }
+    fun getAuthority(personaId: Id, id: Id) : Authority? {
+       return (entityStore.getEntity(personaId, id) as Authority?)?.let { authorityAsPersona(it) }
     }
 
     // TODO: Make isActive be a property of Authority and remove filter here (caller can do it)
     fun getAuthorities(filterActive: Boolean = false) : Set<Authority> {
-        return entityStore.getEntities(setOf(authority.authorityId), emptySet())
+        return entityStore.getEntities(emptySet(), emptySet())
             .filterIsInstance<Authority>()
             .filter { !filterActive || it.tags.contains(activeTag)}
             .map { authorityAsPersona(it) }
             .toSet()
     }
 
-    fun deleteAuthority(id: Id) {
-        if(id == authority.authorityId)
-            throw IllegalArgumentException("Can't delete root authority from address book.")
+    fun deleteAuthority(personaId: Id, id: Id) {
+        val personas = getAuthorities().filterIsInstance<Persona>()
 
-        val previousAuthority = entityStore.getEntity(authority.authorityId, authority.entityId) as Authority
+        // TODO: Add test
+        val persona = personas.firstOrNull { it.authorityId == personaId && it.entityId == personaId }
+            ?: throw IllegalArgumentException("Invalid persona id: $personaId")
+
+        // TODO: Add test
+        if(personas.count() == 1 && persona.authorityId == persona.entityId)
+            throw IllegalArgumentException("Can't delete only persona from address book.")
+
+        // TODO: Add test
+        val previousAuthority = entityStore.getEntity(persona.authorityId, id) as? Authority
+            ?: throw IllegalStateException("Attempt to delete non existent authority: personaId=$personaId, id=$id")
+
+        entityStore.deleteEntity(personaId, id)
         callUpdateHandlers(previousAuthority, null)
-        entityStore.deleteEntity(authority.authorityId, id)
     }
 }
