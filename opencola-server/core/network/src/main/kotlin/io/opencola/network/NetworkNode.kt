@@ -38,8 +38,9 @@ class NetworkNode(
 
     @Synchronized
     private fun updatePeerStatus(peerId: Id, status: PeerStatus, suppressNotifications: Boolean = false): PeerStatus {
-        val peer = addressBook.getAuthority(peerId)
+        val peer = addressBook.getAuthorities().firstOrNull { it.entityId == peerId }
 
+        // TODO: Is this check needed?
         if(peer == null) {
             logger.warn("Attempt to update status for unknown peer: $peerId")
             return Unknown
@@ -69,7 +70,7 @@ class NetworkNode(
         val response = router.handleRequest(from, to, request)
 
         // Since we received a request, the peer must be online
-        if(addressBook.getAuthority(from) !is Persona)
+        if(addressBook.getAuthority(to, from) !is Persona)
             updatePeerStatus(from, Online)
 
         response
@@ -174,10 +175,10 @@ class NetworkNode(
     }
 
     // TODO - peer should be Authority or peerId?
-    fun sendRequest(from: Id, peerId: Id, request: Request) : Response? {
-        val persona = addressBook.getAuthority(from) as? Persona
+    fun sendRequest(fromId: Id, toId: Id, request: Request) : Response? {
+        val persona = addressBook.getAuthority(fromId, fromId) as? Persona
             ?: throw IllegalArgumentException("Can't send from message from non Persona")
-        val peer = addressBook.getAuthority(peerId)
+        val peer = addressBook.getAuthority(fromId, toId)
             ?: throw IllegalArgumentException("Attempt to send request to unknown peer")
 
         // TODO: Authority should be passed in

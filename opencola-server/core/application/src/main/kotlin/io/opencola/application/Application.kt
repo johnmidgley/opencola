@@ -37,7 +37,7 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
         // TODO: Remove - create loggers by component / namespace
         val logger = KotlinLogging.logger("opencola.init")
 
-        // TODO: Move to Identity Service
+        // TODO: Rename - not single keypair anymore. Maybe getOrCreateRootKeyPairs, but doesn't seem right.
         fun getOrCreateRootKeyPair(storagePath: Path, password: String): List<KeyPair> {
             val keyStore = KeyStore(storagePath.resolve("keystore.pks"), password)
             val aliases = keyStore.getAliases()
@@ -81,7 +81,7 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
                 bindSingleton { TextExtractor() }
                 bindSingleton { Signator(instance()) }
                 bindSingleton { Encryptor(instance()) }
-                bindSingleton { AddressBook(instance(), storagePath, instance()) }
+                bindSingleton { AddressBook(storagePath, instance()) }
                 bindSingleton { RequestRouter(getDefaultRoutes(instance(), instance(), instance())) }
                 bindSingleton { HttpNetworkProvider(instance(), instance(), instance(), config.network) }
                 bindSingleton { OCRelayNetworkProvider(instance(), instance(), instance(), instance(), config.network) }

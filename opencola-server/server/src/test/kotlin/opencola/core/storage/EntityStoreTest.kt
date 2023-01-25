@@ -3,10 +3,7 @@ package opencola.core.storage
 import opencola.core.TestApplication
 import opencola.core.config.getApplications
 import io.opencola.event.EventBus
-import io.opencola.model.Authority
-import io.opencola.model.CommentEntity
-import io.opencola.model.Entity
-import io.opencola.model.ResourceEntity
+import io.opencola.model.*
 import opencola.core.getAuthorityEntity
 import io.opencola.security.Signator
 import io.opencola.storage.*
@@ -18,37 +15,25 @@ import kotlin.test.*
 
 class EntityStoreTest {
     private val app = TestApplication.instance
-    private val authority by app.injector.instance<Authority>()
     private val eventBus by app.injector.instance<EventBus>()
     private val signator by app.injector.instance<Signator>()
     private val addressBook by app.injector.instance<AddressBook>()
-    private val simpleEntityStorePath = app.storagePath.resolve("${TestApplication.testRunName}.txs")
-    private val getSimpleEntityStore = { SimpleEntityStore(simpleEntityStorePath, authority, signator, addressBook, eventBus) }
+    private val persona = addressBook.getAuthorities().filterIsInstance<Persona>().single()
     private val sqLiteEntityStorePath = app.storagePath.resolve("${TestApplication.testRunName}.db")
-    private val getSQLiteEntityStore = { ExposedEntityStore(SQLiteDB(sqLiteEntityStorePath).db, authority, signator, addressBook, eventBus)  }
+    private val getSQLiteEntityStore = { ExposedEntityStore(SQLiteDB(sqLiteEntityStorePath).db, signator, addressBook, eventBus)  }
 
     // TODO: Remove these and switch to functions below
     init{
-        getSimpleEntityStore().resetStore()
         getSQLiteEntityStore().resetStore()
     }
 
-    private fun getFreshSimpleEntityStore(): SimpleEntityStore {
-        return SimpleEntityStore(TestApplication.getTmpFilePath(".txs"), authority, signator, addressBook, eventBus)
-    }
-
     private fun getFreshExposeEntityStore(): ExposedEntityStore {
-        return ExposedEntityStore(SQLiteDB(TestApplication.getTmpFilePath(".db")).db, authority, signator, addressBook, eventBus)
-    }
-
-    @Test
-    fun testEntityStoreSimple(){
-        testEntityStore(authority, getSimpleEntityStore)
+        return ExposedEntityStore(SQLiteDB(TestApplication.getTmpFilePath(".db")).db, signator, addressBook, eventBus)
     }
 
     @Test
     fun testEntityStoreSQLite(){
-        testEntityStore(authority, getSQLiteEntityStore)
+        testEntityStore(persona, getSQLiteEntityStore)
     }
 
     private fun testEntityStore(authority: Authority, getEntityStore: ()-> EntityStore) {
@@ -74,13 +59,8 @@ class EntityStoreTest {
     }
 
     @Test
-    fun testUpdateAfterReloadSimple(){
-        testUpdateAfterReload(authority, getSimpleEntityStore)
-    }
-
-    @Test
     fun testUpdateAfterReloadSQLite(){
-        testUpdateAfterReload(authority, getSQLiteEntityStore)
+        testUpdateAfterReload(persona, getSQLiteEntityStore)
     }
 
     private fun testUpdateAfterReload(authority: Authority, getEntityStore: ()-> EntityStore){
@@ -101,17 +81,12 @@ class EntityStoreTest {
     }
 
     @Test
-    fun testGetTransactionSimple(){
-        testGetTransaction(getFreshSimpleEntityStore())
-    }
-
-    @Test
     fun testGetTransactionExposed() {
         testGetTransaction(getFreshExposeEntityStore())
     }
 
     private fun testGetTransaction(entityStore: EntityStore){
-        val entity = ResourceEntity(authority.authorityId, URI("http://opencola.org"))
+        val entity = ResourceEntity(persona.authorityId, URI("http://opencola.org"))
         val epochSecond = Instant.now().epochSecond
         val signedTransaction = entityStore.updateEntities(entity)
         assertNotNull(signedTransaction)
@@ -120,13 +95,8 @@ class EntityStoreTest {
         val transaction = entityStore.getTransaction(signedTransaction.transaction.id)
         assertNotNull(transaction)
 
-        val transactionsFromNull = entityStore.getSignedTransactions(listOf(authority.authorityId), null, TransactionOrder.IdAscending, 100)
+        val transactionsFromNull = entityStore.getSignedTransactions(listOf(persona.authorityId), null, TransactionOrder.IdAscending, 100)
         assertNotNull(transactionsFromNull.firstOrNull{ it.transaction.id == transaction.transaction.id})
-    }
-
-    @Test
-    fun testGetTransactionsSimple() {
-        testGetTransactions(getFreshSimpleEntityStore())
     }
 
     @Test
@@ -135,11 +105,11 @@ class EntityStoreTest {
     }
 
     private fun testGetTransactions(entityStore: EntityStore){
-        val entities = (0 until 3).map { ResourceEntity(authority.authorityId, URI("http://test/$it")) }
+        val entities = (0 until 3).map { ResourceEntity(persona.authorityId, URI("http://test/$it")) }
         val transactions = entities.map{ entityStore.updateEntities(it)!! }
         val transactionIds = transactions.map{ it.transaction.id }
 
-        val firstTransaction = entityStore.getSignedTransactions(listOf(authority.authorityId), null, TransactionOrder.IdAscending, 1).firstOrNull()
+        val firstTransaction = entityStore.getSignedTransactions(listOf(persona.authorityId), null, TransactionOrder.IdAscending, 1).firstOrNull()
         assertNotNull(firstTransaction)
         assertEquals(transactions.first(), firstTransaction)
 
@@ -147,7 +117,7 @@ class EntityStoreTest {
         assertNotNull(firstTransactionAll)
         assertEquals(transactions.first(), firstTransaction)
 
-        val lastTransaction = entityStore.getSignedTransactions(listOf(authority.authorityId), null, TransactionOrder.IdDescending, 1).firstOrNull()
+        val lastTransaction = entityStore.getSignedTransactions(listOf(persona.authorityId), null, TransactionOrder.IdDescending, 1).firstOrNull()
         assertNotNull(lastTransaction)
         assertEquals(entities.last().entityId, lastTransaction.transaction.transactionEntities.first().entityId)
 
@@ -155,10 +125,10 @@ class EntityStoreTest {
         assertNotNull(lastTransactionAll)
         assertEquals(transactions.last(), lastTransactionAll)
 
-        val middleTransactionsForward = entityStore.getSignedTransactions(listOf(authority.authorityId), transactionIds[1], TransactionOrder.IdAscending, 10)
+        val middleTransactionsForward = entityStore.getSignedTransactions(listOf(persona.authorityId), transactionIds[1], TransactionOrder.IdAscending, 10)
         assertEquals(transactions.drop(1), middleTransactionsForward)
 
-        val middleTransactionsBackward = entityStore.getSignedTransactions(listOf(authority.authorityId), transactionIds[1], TransactionOrder.IdDescending, 10)
+        val middleTransactionsBackward = entityStore.getSignedTransactions(listOf(persona.authorityId), transactionIds[1], TransactionOrder.IdDescending, 10)
         assertEquals(transactions.reversed().drop(1), middleTransactionsBackward)
 
         val allTransactionsForward = entityStore.getSignedTransactions(emptyList(), null, TransactionOrder.IdAscending, 10)
@@ -214,40 +184,30 @@ class EntityStoreTest {
     }
 
     @Test
-    fun testCommentsWithComputedFactsSimple(){
-        testCommentsWithComputedFacts(getFreshSimpleEntityStore())
-    }
-
-    @Test
     fun testCommentsWithComputedFactsExposed() {
         testCommentsWithComputedFacts(getFreshExposeEntityStore())
     }
 
     private fun testCommentsWithComputedFacts(entityStore: EntityStore){
-        val resource = ResourceEntity(authority.authorityId, URI("https://opencola"))
+        val resource = ResourceEntity(persona.authorityId, URI("https://opencola"))
         entityStore.updateEntities(resource)
 
-        val comment = CommentEntity(authority.authorityId, resource.entityId, "Comment")
+        val comment = CommentEntity(persona.authorityId, resource.entityId, "Comment")
         entityStore.updateEntities(comment)
 
-        val comment1 = entityStore.getEntity(authority.authorityId, comment.entityId)
+        val comment1 = entityStore.getEntity(persona.authorityId, comment.entityId)
         assertNotNull(comment1)
         assertEquals(comment, comment1)
 
-        val resource1 = entityStore.getEntity(authority.authorityId, resource.entityId)
+        val resource1 = entityStore.getEntity(persona.authorityId, resource.entityId)
         assertNotNull(resource1)
         assertEquals(1, resource1.commentIds.count())
         assertEquals(comment.entityId, resource1.commentIds.single())
 
-        entityStore.deleteEntity(authority.authorityId, comment.entityId)
-        val resource2 = entityStore.getEntity(authority.authorityId, resource.entityId)
+        entityStore.deleteEntity(persona.authorityId, comment.entityId)
+        val resource2 = entityStore.getEntity(persona.authorityId, resource.entityId)
         assertNotNull(resource2)
         assertEquals(0, resource2.commentIds.count())
-    }
-
-    @Test
-    fun testSetAndNullFactsSimple(){
-        testSetAndNullProperties(getFreshSimpleEntityStore())
     }
 
     @Test
@@ -257,11 +217,11 @@ class EntityStoreTest {
 
     private fun testSetAndNullProperties(entityStore: EntityStore) {
         val resource = ResourceEntity(
-            authority.authorityId, URI("http://opencola.io/"), "Name", "Description",
+            persona.authorityId, URI("http://opencola.io/"), "Name", "Description",
             "Text", URI("http://image.com"), 0.5F, setOf("hi"), true, .7F)
 
         entityStore.updateEntities(resource)
-        val resource1 = entityStore.getEntity(authority.authorityId, resource.entityId) as? ResourceEntity
+        val resource1 = entityStore.getEntity(persona.authorityId, resource.entityId) as? ResourceEntity
         assertNotNull(resource1)
         assertEquals(resource.authorityId, resource1.authorityId)
         assertEquals(resource.entityId, resource1.entityId)
@@ -286,7 +246,7 @@ class EntityStoreTest {
         resource1.rating = null
         entityStore.updateEntities(resource1)
 
-        val resource2 = entityStore.getEntity(authority.authorityId, resource.entityId) as? ResourceEntity
+        val resource2 = entityStore.getEntity(persona.authorityId, resource.entityId) as? ResourceEntity
         assertNotNull(resource2)
         assertEquals(resource.authorityId, resource2.authorityId)
         assertEquals(resource.entityId, resource2.entityId)
@@ -306,12 +266,6 @@ class EntityStoreTest {
         assertNull(transaction)
     }
 
-
-    @Test
-    fun testDetectDuplicateFactSimple(){
-        testDetectDuplicateFacts(getFreshSimpleEntityStore())
-    }
-
     @Test
     fun testDetectDuplicateFactExposed() {
         testDetectDuplicateFacts(getFreshExposeEntityStore())
@@ -319,32 +273,32 @@ class EntityStoreTest {
 
     private fun testDetectDuplicateFacts(entityStore: EntityStore){
         val uri = URI("https://opencola")
-        val resource0 = ResourceEntity(authority.authorityId, uri)
+        val resource0 = ResourceEntity(persona.authorityId, uri)
         entityStore.updateEntities(resource0)
 
         // Test detection of creation of a duplicate entity
-        val resource1 = ResourceEntity(authority.authorityId, uri)
+        val resource1 = ResourceEntity(persona.authorityId, uri)
         assertFails { entityStore.updateEntities(resource1) }
 
         // Test detection of duplicate multi value set property
-        val resource3 = entityStore.getEntity(authority.authorityId, resource0.entityId)!!
-        val resource4 = entityStore.getEntity(authority.authorityId, resource0.entityId)!!
+        val resource3 = entityStore.getEntity(persona.authorityId, resource0.entityId)!!
+        val resource4 = entityStore.getEntity(persona.authorityId, resource0.entityId)!!
         resource3.tags = setOf("this", "that")
         entityStore.updateEntities(resource3)
         resource4.tags = setOf("this")
         assertFails { entityStore.updateEntities(resource4) }
 
         // Test detection of duplicate single value property
-        val resource5 = entityStore.getEntity(authority.authorityId, resource0.entityId)!!
-        val resource6 = entityStore.getEntity(authority.authorityId, resource0.entityId)!!
+        val resource5 = entityStore.getEntity(persona.authorityId, resource0.entityId)!!
+        val resource6 = entityStore.getEntity(persona.authorityId, resource0.entityId)!!
         resource5.like = true
         entityStore.updateEntities(resource5)
         resource6.like = true
         assertFails { entityStore.updateEntities(resource6) }
 
         // Test detection of nulling out property
-        val resource7 = entityStore.getEntity(authority.authorityId, resource0.entityId)!!
-        val resource8 = entityStore.getEntity(authority.authorityId, resource0.entityId)!!
+        val resource7 = entityStore.getEntity(persona.authorityId, resource0.entityId)!!
+        val resource8 = entityStore.getEntity(persona.authorityId, resource0.entityId)!!
         resource7.like = null
         entityStore.updateEntities(resource7)
         resource8.like = null

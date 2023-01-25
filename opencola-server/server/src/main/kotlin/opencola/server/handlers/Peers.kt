@@ -21,6 +21,7 @@ import java.security.PublicKey
 private val logger = KotlinLogging.logger("PeerHandler")
 
 @Serializable
+// TODO: Add personaId to Peer, as peer is tied to a persona
 data class Peer(
     val id: String,
     val name: String,
@@ -77,9 +78,9 @@ fun getPeers(authority: Authority, addressBook: AddressBook): PeersResult {
     return PeersResult(authority, null, peers)
 }
 
-fun deletePeer(addressBook: AddressBook, peerId: Id) {
-    logger.info { "Deleting Peer: $peerId" }
-    addressBook.deleteAuthority(peerId)
+fun deletePeer(addressBook: AddressBook, personaId: Id, peerId: Id) {
+    logger.info { "Deleting Peer: personaId = $personaId, peerId = $peerId" }
+    addressBook.deleteAuthority(personaId, peerId)
 }
 
 fun updatePeer(authorityId: Id, addressBook: AddressBook, networkNode: NetworkNode, eventBus: EventBus, peer: Peer) {
@@ -89,7 +90,7 @@ fun updatePeer(authorityId: Id, addressBook: AddressBook, networkNode: NetworkNo
         throw IllegalArgumentException("Public key update not supported yet")
 
     val peerAuthority = peer.toAuthority(authorityId)
-    val existingPeerAuthority = addressBook.getAuthority(peerAuthority.entityId)
+    val existingPeerAuthority = addressBook.getAuthority(peerAuthority.authorityId, peerAuthority.entityId)
 
     if(existingPeerAuthority != null) {
         logger.info { "Found existing peer - updating" }
@@ -125,12 +126,12 @@ fun updatePeer(authorityId: Id, addressBook: AddressBook, networkNode: NetworkNo
         )
 }
 
-fun getInviteToken(authorityId: Id, addressBook: AddressBook, networkNode: NetworkNode, signator: Signator): String {
-    val authority = addressBook.getAuthority(authorityId)
-        ?: throw IllegalStateException("Root authority not found - can't generate invite token")
-    val address = authority.uri ?: throw IllegalArgumentException("Can't get invite token for peer without address")
+fun getInviteToken(personaId: Id, addressBook: AddressBook, networkNode: NetworkNode, signator: Signator): String {
+    val persona = addressBook.getPersona(personaId)
+        ?: throw IllegalStateException("Persona not found - can't generate invite token")
+    val address = persona.uri ?: throw IllegalArgumentException("Can't get invite token for persona without address")
     networkNode.validatePeerAddress(address)
-    return InviteToken.fromAuthority(authority).encodeBase58(signator)
+    return InviteToken.fromAuthority(persona).encodeBase58(signator)
 }
 
 fun inviteTokenToPeer(authorityId: Id, inviteToken: String): Peer {

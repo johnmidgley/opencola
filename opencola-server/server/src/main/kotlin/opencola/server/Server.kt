@@ -10,10 +10,12 @@ import io.opencola.application.ServerConfig
 import io.opencola.event.EventBus
 import io.opencola.event.Events
 import io.opencola.model.Id
+import io.opencola.model.Persona
 import io.opencola.network.NetworkNode
 import io.opencola.security.EncryptionParams
 import io.opencola.security.encode
 import io.opencola.security.initProvider
+import io.opencola.storage.AddressBook
 import io.opencola.system.detectResume
 import io.opencola.system.openUri
 import io.opencola.system.runningInDocker
@@ -40,10 +42,15 @@ fun getApplication(
     loginCredentials: LoginCredentials
 ): Application {
     // TODO: Is getOrCreateRootKeyPair needed outside of App.instance()?
-    val keyPair = Application.getOrCreateRootKeyPair(storagePath, loginCredentials.password)
-    val application = Application.instance(storagePath, config, keyPair, loginCredentials.password)
-    application.logger.info("Authority: ${Id.ofPublicKey(keyPair.public)}")
-    application.logger.info("Public Key : ${keyPair.public.encode()}")
+    val keyPairs = Application.getOrCreateRootKeyPair(storagePath, loginCredentials.password)
+    val application = Application.instance(storagePath, config, keyPairs, loginCredentials.password)
+    val addressBook = application.inject<AddressBook>()
+
+    addressBook.getAuthorities()
+        .filterIsInstance<Persona>()
+        .forEach {
+            application.logger.info("Persona: name = ${it.name},  id =${it.entityId}, publicKey = ${it.keyPair.public.encode()}")
+        }
 
     return application
 }

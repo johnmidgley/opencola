@@ -5,6 +5,7 @@ import io.opencola.application.*
 import opencola.core.TestApplication
 import io.opencola.event.EventBus
 import io.opencola.model.Authority
+import io.opencola.model.Persona
 import io.opencola.network.NetworkConfig
 import io.opencola.network.NetworkNode
 import io.opencola.storage.AddressBook
@@ -55,12 +56,18 @@ class ApplicationNode(val application: Application) : Node {
         // TODO: Move to interface or base class
         private const val basePort = 5750
 
-        private fun setRootAuthorityName(instance: Application, name: String){
-            val rootAuthority = instance.inject<Authority>()
-            val addressBook = instance.inject<AddressBook>()
-            val authority = addressBook.getAuthority(rootAuthority.authorityId)!!
-            authority.name = name
-            addressBook.updateAuthority(authority)
+        private fun setRootAuthorityName(instance: Application, name: String) {
+            instance.inject<AddressBook>()
+                .let { addressBook ->
+                    addressBook
+                        .getAuthorities()
+                        .filterIsInstance<Persona>()
+                        .single()
+                        .also {
+                            it.name = name
+                            addressBook.updateAuthority(it)
+                        }
+                }
         }
 
         // TODO: Move to interface or base class

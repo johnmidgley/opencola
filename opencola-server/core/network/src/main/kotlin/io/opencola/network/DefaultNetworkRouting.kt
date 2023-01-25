@@ -13,11 +13,14 @@ import io.opencola.storage.EntityStore
 private val logger = KotlinLogging.logger("RequestRouting")
 
 // TODO - This should change to handlePeerEvent
-fun handleNotification(addressBook: AddressBook, eventBus: EventBus, notification: Notification) {
+fun handleNotification(addressBook: AddressBook, eventBus: EventBus, fromId: Id, toId: Id, notification: Notification) {
     logger.info { "Received notification: $notification" }
 
-    addressBook.getAuthority(notification.peerId)
-        ?: throw IllegalArgumentException("Received notification from unknown peer: ${notification.peerId}")
+    if(notification.peerId != fromId)
+        throw IllegalArgumentException("Notification peerId does not match fromId: ${notification.peerId} != $fromId")
+
+    addressBook.getAuthority(toId, fromId)
+        ?: throw IllegalArgumentException("Received notification from unknown peer: ${notification.peerId} for $toId")
 
     eventBus.sendMessage(Events.PeerNotification.toString(), notification.encode())
 }
@@ -42,9 +45,11 @@ fun handleGetTransactions(
 ): TransactionsResponse {
     logger.info { "handleGetTransactionsCall authorityId: $authorityId, peerId: $peerId, transactionId: $transactionId" }
 
-    if(addressBook.getAuthority(peerId) == null){
+    if(addressBook.getAuthority(authorityId, peerId) == null){
         throw RuntimeException("Unknown peer attempted to request transactions: $peerId")
     }
+
+    // TODO: Check if peer is marked as active?
 
     val extra = (if (transactionId == null) 0 else 1)
     val totalNumTransactions = (numTransactions ?: 5) + extra
@@ -74,11 +79,11 @@ fun getDefaultRoutes(
         Route(
             Request.Method.POST,
             "/notifications"
-        ) { _, _, request ->
+        ) { from, to, request ->
             val notification = request.decodeBody<Notification>()
                 ?: throw IllegalArgumentException("Body must contain Notification")
 
-            handleNotification(addressBook, eventBus, notification)
+            handleNotification(addressBook, eventBus, from, to, notification)
             Response(200)
         },
 

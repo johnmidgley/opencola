@@ -37,25 +37,25 @@ abstract class AbstractNetworkProvider(val addressBook: AddressBook,
         this.handler = handler
     }
 
-    fun getEncodedEnvelope(from: Id, to: Id, messageBytes: ByteArray, encryptMessage: Boolean): ByteArray {
-        val toAuthority = addressBook.getAuthority(to)
-            ?: throw IllegalArgumentException("Attempt to construct message to unknown peer: $to")
+    fun getEncodedEnvelope(fromId: Id, toId: Id, messageBytes: ByteArray, encryptMessage: Boolean): ByteArray {
+        val toAuthority = addressBook.getAuthority(fromId, toId)
+            ?: throw IllegalArgumentException("Attempt to construct message to unknown peer: $toId")
 
         val toPublicKey = toAuthority.publicKey
-            ?: throw IllegalArgumentException("Can't construct message to peer that does not have a public key: $to")
+            ?: throw IllegalArgumentException("Can't construct message to peer that does not have a public key: $toId")
 
-        val message = Message(from, messageBytes, signator.signBytes(from.toString(), messageBytes))
-        return MessageEnvelope(to, message).encode(if (encryptMessage) toPublicKey else null)
+        val message = Message(fromId, messageBytes, signator.signBytes(fromId.toString(), messageBytes))
+        return MessageEnvelope(toId, message).encode(if (encryptMessage) toPublicKey else null)
     }
 
     fun validateMessageEnvelope(messageEnvelope: MessageEnvelope) {
-        if(addressBook.getAuthority(messageEnvelope.to) !is Persona) {
+        if(addressBook.getAuthority(messageEnvelope.to, messageEnvelope.to) !is Persona) {
             throw IllegalArgumentException("Received message for non local authority: ${messageEnvelope.to}")
         }
 
         val message = messageEnvelope.message
 
-        val fromAuthority = addressBook.getAuthority(message.from)
+        val fromAuthority = addressBook.getAuthority(messageEnvelope.to, message.from)
             ?: throw IllegalArgumentException("Message is from unknown authority: ${message.from}")
 
         val fromPublicKey = fromAuthority.publicKey

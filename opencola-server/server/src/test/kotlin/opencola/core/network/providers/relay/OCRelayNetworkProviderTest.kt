@@ -3,6 +3,7 @@ package opencola.core.network.providers.relay
 import io.opencola.application.Application
 import io.opencola.model.Authority
 import io.opencola.model.Id
+import io.opencola.model.Persona
 import io.opencola.network.NetworkNode
 import io.opencola.network.Request
 import io.opencola.network.providers.relay.OCRelayNetworkProvider
@@ -24,7 +25,7 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
     private val ocRelayUri = URI("ocr://0.0.0.0")
 
     fun setAuthorityAddressToRelay(authorityId: Id, addressBook: AddressBook) : Authority {
-        val authority = addressBook.getAuthority(authorityId)!!
+        val authority = addressBook.getAuthority(authorityId, authorityId)!!
         authority.uri = ocRelayUri
         return addressBook.updateAuthority(authority)
     }
@@ -34,9 +35,12 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
         println("Getting applications")
         val (app0, app1) = getApplications(2)
 
+        val app0Persona = app0.inject<AddressBook>().getAuthorities().filterIsInstance<Persona>().single()
+        val app1Persona = app1.inject<AddressBook>().getAuthorities().filterIsInstance<Persona>().single()
+
         println("Setting Relay Addresses")
-        val peer1 = setAuthorityAddressToRelay(app1.inject<Authority>().entityId, app0.inject())
-        val peer0 = setAuthorityAddressToRelay(app0.inject<Authority>().entityId, app1.inject())
+        val peer1 = setAuthorityAddressToRelay(app0Persona.entityId, app0.inject())
+        val peer0 = setAuthorityAddressToRelay(app1Persona.entityId, app1.inject())
 
         println("Starting relay server")
         val webServer = startWebServer(defaultOCRPort)
@@ -49,7 +53,7 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
             println("Testing ping")
             run {
                 val response =
-                    networkNode0.sendRequest(peer1.entityId, Request(Request.Method.GET, "/ping"))
+                    networkNode0.sendRequest(app0Persona.entityId, peer1.entityId, Request(Request.Method.GET, "/ping"))
                 assertNotNull(response)
                 assertEquals("pong", response.message)
             }
@@ -57,18 +61,18 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
             println("Testing bad 'from' id")
             run {
                 val response =
-                    networkNode0.sendRequest(Id.new(), Request(Request.Method.GET, "/ping"))
+                    networkNode0.sendRequest(app0Persona.entityId, Id.new(), Request(Request.Method.GET, "/ping"))
                 assertNull(response)
             }
 
             println("Testing wrong public key on recipient side")
             run {
                 val addressBook1 = app1.inject<AddressBook>()
-                val peer = addressBook1.getAuthority(peer0.entityId)!!
+                val peer = addressBook1.getAuthority(app1Persona.entityId, peer0.entityId)!!
                 peer.publicKey = generateKeyPair().public
                 addressBook1.updateAuthority(peer)
                 val response =
-                    networkNode0.sendRequest(peer1.entityId, Request(Request.Method.GET, "/ping"))
+                    networkNode0.sendRequest(app0Persona.entityId, peer1.entityId, Request(Request.Method.GET, "/ping"))
                 assertNull(response)
             }
 
@@ -127,7 +131,7 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
             app1.inject<NetworkNode>().also { it.start(true) }
 
             println("Creating relay client")
-            val app0KeyPair = Application.getOrCreateRootKeyPair(app0.storagePath, "password")
+            val app0KeyPair = Application.getOrCreateRootKeyPair(app0.storagePath, "password").single()
             networkNode0.stop()
             val relayClient = WebSocketClient(URI("ocr://0.0.0.0"), app0KeyPair, "client", 5000)
             launch { relayClient.open { _, _ -> "nothing".toByteArray() } }

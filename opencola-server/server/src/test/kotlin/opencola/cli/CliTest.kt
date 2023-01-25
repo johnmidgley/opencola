@@ -22,11 +22,10 @@ import kotlin.test.assertEquals
 
 class CliTest {
     private fun getTmpEntityStore(application: Application): ExposedEntityStore {
-        val authority by application.injector.instance<Authority>()
         val signator by application.injector.instance<Signator>()
         val addressBook by application.injector.instance<AddressBook>()
-        val db = Application.getEntityStoreDB(authority, TestApplication.getTmpDirectory("entity-store"))
-        return ExposedEntityStore(db, authority, signator, addressBook)
+        val db = Application.getEntityStoreDB(TestApplication.getTmpDirectory("entity-store"))
+        return ExposedEntityStore(db, signator, addressBook)
 
     }
     @Test

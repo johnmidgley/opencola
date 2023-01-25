@@ -142,10 +142,10 @@ fun getComments(entityStore: EntityStore, entities: Iterable<Entity>): Map<Id, C
        .associateBy { it.entityId }
 }
 
-fun getAuthority(rootAuthorityId: Id, addressBook: AddressBook, authorityId: Id): Authority? {
-    return addressBook.getAuthority(authorityId).nullOrElse {
+fun getAuthority(personaId: Id, addressBook: AddressBook, authorityId: Id): Authority? {
+    return addressBook.getAuthority(personaId, authorityId).nullOrElse {
         it.also {
-            if (it.entityId == rootAuthorityId) {
+            if (it.entityId == personaId) {
                 it.name = "You"
             }
         }

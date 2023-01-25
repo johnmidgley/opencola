@@ -21,6 +21,7 @@ import io.opencola.network.handleGetTransactions
 import io.opencola.network.handleNotification
 import io.opencola.network.providers.http.HttpNetworkProvider
 import io.opencola.security.EncryptionParams
+import io.opencola.storage.AddressBook
 import io.opencola.system.*
 import kotlinx.coroutines.CompletableDeferred
 import mu.KotlinLogging
@@ -314,11 +315,12 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
                 handleGetActionsCall(call, authority.authorityId, app.inject())
             }
 
-            post("/notifications") {
-                val notification = call.receive<Notification>()
-                handleNotification(app.inject(), app.inject(), notification)
-                call.respond(HttpStatusCode.OK)
-            }
+            // TODO: This should no longer be needed (handled by /networkNode), so should be removed.
+//            post("/notifications") {
+//                val notification = call.receive<Notification>()
+//                handleNotification(app.inject(), app.inject(), notification)
+//                call.respond(HttpStatusCode.OK)
+//            }
 
             get("/feed") {
                 // TODO: Handle filtering of authorities
@@ -349,7 +351,11 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
 
             delete("/peers/{peerId}") {
                 val peerId = Id.decode(call.parameters["peerId"] ?: throw IllegalArgumentException("No id set"))
-                deletePeer(app.inject(), peerId)
+
+                TODO("This is broken - need to pass in personaId")
+                val personaId = peerId
+
+                deletePeer(app.inject(), personaId, peerId)
                 call.respond("{}")
             }
 

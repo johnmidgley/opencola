@@ -3,6 +3,7 @@ package opencola.core.config
 import io.opencola.application.*
 import io.opencola.storage.AddressBook
 import io.opencola.model.Authority
+import io.opencola.model.Persona
 import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.createDirectory
@@ -25,20 +26,20 @@ fun getApplications(
                     baseAppConfig
                         .setName(name)
                         .setServer(ServerConfig(baseAppConfig.server.host, basePortNumber + i, null))
-                val keyPair = Application.getOrCreateRootKeyPair(storagePath, "password")
+                val keyPairs = Application.getOrCreateRootKeyPair(storagePath, "password")
                 val address = URI("http://${config.server.host}:${config.server.port}")
             }
         }
 
     val applications = instanceConfigs.map { ic ->
-        Application.instance(ic.storagePath, ic.config, ic.keyPair,"password").also { application ->
+        Application.instance(ic.storagePath, ic.config, ic.keyPairs,"password").also { application ->
             // Connect to peers
-            val authorityId = application.inject<Authority>().authorityId
             val addressBook = application.inject<AddressBook>()
+            val persona = addressBook.getAuthorities().filterIsInstance<Persona>().single()
             instanceConfigs
                 .filter { it != ic }
                 .forEach {
-                    val peer = Authority(authorityId, it.keyPair.public, it.address, it.name, tags = setOf("active"))
+                    val peer = Authority(persona.entityId, it.keyPairs.single().public, it.address, it.name, tags = setOf("active"))
                     addressBook.updateAuthority(peer)
                 }
         }

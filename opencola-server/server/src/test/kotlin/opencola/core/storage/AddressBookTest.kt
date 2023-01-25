@@ -2,6 +2,7 @@ package opencola.core.storage
 
 import opencola.core.TestApplication
 import io.opencola.model.Authority
+import io.opencola.model.Persona
 import io.opencola.security.generateKeyPair
 import io.opencola.storage.AddressBook
 import opencola.core.storage.AddressBookTest.Action.*
@@ -36,9 +37,9 @@ class AddressBookTest {
 
     @Test
     fun testAddressBookUpdateHandler(){
-        val authority = TestApplication.instance.inject<Authority>()
         val addressBook = TestApplication.instance.inject<AddressBook>()
-        val peer = Authority(authority.entityId, generateKeyPair().public, URI("http://test"), "Test")
+        val persona = addressBook.getAuthorities().filterIsInstance<Persona>().single()
+        val peer = Authority(persona.entityId, generateKeyPair().public, URI("http://test"), "Test")
 
         addressBook.addUpdateHandler(updateHandler)
         action = Create
@@ -47,7 +48,7 @@ class AddressBookTest {
         peer.name = "Test 2"
         addressBook.updateAuthority(peer)
         action = Delete
-        addressBook.deleteAuthority(peer.entityId)
+        addressBook.deleteAuthority(persona.entityId, peer.entityId)
 
         addressBook.removeUpdateHandler(updateHandler)
     }

@@ -3,13 +3,10 @@ package io.opencola.application
 import io.opencola.event.EventBus
 import io.opencola.event.Events
 import io.opencola.event.Reactor
+import io.opencola.model.*
 import io.opencola.network.*
 import io.opencola.storage.AddressBook
 import io.opencola.storage.EntityStore
-import io.opencola.model.Authority
-import io.opencola.model.DataEntity
-import io.opencola.model.Id
-import io.opencola.model.SignedTransaction
 import io.opencola.search.SearchIndex
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -39,17 +36,17 @@ class MainReactor(
             // TODO: Swap runBlocking with adding to peerExecutor
             runBlocking {
                 peers
-                    .forEach {
-                        if (it.entityId != authority.entityId)
-                            launch { requestTransactions(it.entityId) }
-                    }
+                    .filter { it !is Persona }
+                    .distinctBy { it.entityId }
+                    .forEach { launch { requestTransactions(it.entityId) } }
             }
         }
     }
 
     private fun requestTransactions(peer: Authority) {
-        if(peer.entityId == authority.entityId) {
-            logger.warn { "Attempt to request transactions from self" }
+        if(peer is Persona) {
+            logger.warn { "Attempt to request transactions from local persona" }
+            return
         }
 
         var mostRecentTransactionId = entityStore.getLastTransactionId(peer.entityId)
@@ -65,7 +62,7 @@ class MainReactor(
                 baseParams.plus(Pair("mostRecentTransactionId", mostRecentTransactionId.toString()))
 
             val request = Request(Request.Method.GET, "/transactions", null, params)
-            val transactionsResponse = networkNode.sendRequest(peer.entityId, request)?.decodeBody<TransactionsResponse>()
+            val transactionsResponse = networkNode.sendRequest(peer.authorityId, peer.entityId, request)?.decodeBody<TransactionsResponse>()
 
             if (transactionsResponse == null || transactionsResponse.transactions.isEmpty()) {
                 logger.info { "No transactions received from ${peer.name}" }
@@ -88,7 +85,7 @@ class MainReactor(
         // chain to existing ones, which can happen if a peer deletes their store). If this happens, inform the user
         // and ask if "abandoned" transactions should be deleted.
         // TODO: Catch / handle this error and return appropriate forbidden / not authorized status
-        val peer = addressBook.getAuthority(peerId)
+        val peer = addressBook.getPeer(peerId).firstOrNull()
             ?: throw IllegalArgumentException("Attempt to request transactions for unknown peer: $peerId ")
 
         // TODO: This blocks startup. Make fully async (and/or handle startup with event bus)
@@ -101,7 +98,7 @@ class MainReactor(
         val signedTransaction = ByteArrayInputStream(event.data).use{ SignedTransaction.decode(it) }
         indexTransaction(signedTransaction)
 
-        if (signedTransaction.transaction.authorityId == authority.authorityId) {
+        addressBook.getPersona(signedTransaction.transaction.authorityId)?.let { persona ->
             // Transaction originated locally, so inform peers
 
             val request = request(
@@ -113,7 +110,7 @@ class MainReactor(
             )
 
             // TODO: authority should come from transaction
-            networkNode.broadcastRequest(authority, request)
+            networkNode.broadcastRequest(persona, request)
         }
     }
 

@@ -84,8 +84,20 @@ class AddressBook(storagePath: Path, private val keyStore: KeyStore) {
         return keyStore.getKeyPair(authority.entityId.toString())?.let { Persona(authority, it) } ?: authority
     }
 
+    // TODO: Consider a get peer method, that returns authorities across personas
     fun getAuthority(personaId: Id, id: Id) : Authority? {
        return (entityStore.getEntity(personaId, id) as Authority?)?.let { authorityAsPersona(it) }
+    }
+
+    fun getPeer(peerId: Id) : Set<Authority> {
+        return entityStore.getEntities(emptySet(), setOf(peerId))
+            .filterIsInstance<Authority>()
+            .filter { it !is Persona && it.entityId == peerId }
+            .toSet()
+    }
+
+    fun getPersona(personaId: Id) : Persona? {
+        return entityStore.getEntity(personaId, personaId)?.let { authorityAsPersona(it as Authority) as? Persona }
     }
 
     // TODO: Make isActive be a property of Authority and remove filter here (caller can do it)
