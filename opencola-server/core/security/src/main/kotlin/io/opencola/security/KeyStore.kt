@@ -16,7 +16,7 @@ import kotlin.io.path.outputStream
 // TODO: Investigate secure strings
 // TODO: Make abstract keystore that is base for cert store and authority store
 // TODO: Make AuthorityKeyStore, that has encrypt and sign methods
-class KeyStore(val path: Path, password: String) : SecurityProviderDependent() {
+class KeyStore(val path: Path, password: String) : SecurityProviderDependent(), PublicKeyProvider<String> {
     val logger = KotlinLogging.logger(this.javaClass.simpleName)
 
     // TODO: Move parameters to config
@@ -58,7 +58,7 @@ class KeyStore(val path: Path, password: String) : SecurityProviderDependent() {
         return getEntry(alias)?.privateKey
     }
 
-    fun getPublicKey(alias: String): PublicKey? {
+    override fun getPublicKey(alias: String): PublicKey? {
         return getEntry(alias)?.certificate?.publicKey
     }
 

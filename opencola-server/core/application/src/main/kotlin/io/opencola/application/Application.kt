@@ -7,6 +7,7 @@ import io.opencola.event.Reactor
 import io.opencola.model.Authority
 import io.opencola.model.Id
 import io.opencola.model.Persona
+import io.opencola.network.NetworkConfig
 import io.opencola.network.NetworkNode
 import io.opencola.network.RequestRouter
 import io.opencola.network.getDefaultRoutes
@@ -62,6 +63,30 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
             return SQLiteDB(storagePath.resolve("entity-store.db")).db
         }
 
+        private fun initEventBus(injector: DI) {
+            //  TODO: Probably don't need reactor in the injector
+            val reactor by injector.instance<Reactor>()
+            val eventBus by injector.instance<EventBus>()
+
+            eventBus.start(reactor)
+        }
+
+        private fun initAddressBook(injector: DI, personaKeyPairs: List<KeyPair>, networkConfig: NetworkConfig) {
+            val addressBook by injector.instance<AddressBook>()
+            val personas = personaKeyPairs.map { Persona(Authority(it.public, networkConfig.defaultAddress, "You"), it) }
+
+            personas.forEach{
+                val addressBookPersona = addressBook.getPersona(it.entityId) ?: addressBook.updateAuthority(it)
+
+                if (addressBookPersona.uri.toString().isBlank()) {
+                    // Fallback to local server address.
+                    addressBookPersona.uri = networkConfig.defaultAddress
+                    addressBook.updateAuthority(addressBookPersona)
+                }
+            }
+        }
+
+        // TODO: Should probably pass in keyStore vs. personaKeyPairs. The keyStore should be able to get the personaKeyPairs
         fun instance(storagePath: Path, config: Config, personaKeyPairs: List<KeyPair>, password: String): Application {
             if(!storagePath.exists()){
                 File(storagePath.toString()).mkdirs()
@@ -95,10 +120,8 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
                 bindSingleton { EventBus(storagePath, config.eventBus) }
             }
 
-            val reactor by injector.instance<Reactor>()
-            val eventBus by injector.instance<EventBus>()
-
-            eventBus.start(reactor)
+            initEventBus(injector)
+            initAddressBook(injector, personaKeyPairs, config.network)
 
             return Application(storagePath, config, injector).also { app ->
                 app.inject<NetworkNode>().let { networkNode ->

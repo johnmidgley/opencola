@@ -80,7 +80,7 @@ class MainReactor(
         logger.info { "Completed requesting transactions from: ${peer.name}" }
     }
 
-    private fun requestTransactions(peerId: Id){
+    private fun requestTransactions(peerId: Id) {
         //TODO: After requesting transactions, check to see if a new HEAD has been set (i.e. the transactions don't
         // chain to existing ones, which can happen if a peer deletes their store). If this happens, inform the user
         // and ask if "abandoned" transactions should be deleted.
@@ -139,6 +139,8 @@ class MainReactor(
     private fun handlePeerNotification(event: EventBus.Event){
         val notification = ByteArrayInputStream(event.data).use { Notification.decode(it) }
         logger.info { "Handling notification for peer ${notification.peerId} event: ${notification.event}" }
+
+        TODO("Add logic here to only handle notifications for one persona if multiple personas are connected to a peer")
 
         when(notification.event){
             PeerEvent.Added -> requestTransactions(notification.peerId)

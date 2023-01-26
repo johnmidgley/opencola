@@ -2,7 +2,7 @@ package io.opencola.storage
 
 import io.opencola.event.EventBus
 import io.opencola.model.*
-import io.opencola.util.toHexString
+import io.opencola.security.PublicKeyProvider
 import io.opencola.security.Signator
 import io.opencola.storage.EntityStore.TransactionOrder
 import io.opencola.storage.EntityStore.TransactionOrder.*
@@ -21,15 +21,15 @@ import java.io.ByteArrayInputStream
 class ExposedEntityStore(
     private val database: Database,
     signator: Signator,
-    addressBook: AddressBook,
+    publicKeyProvider: PublicKeyProvider<Id>,
     eventBus: EventBus? = null,
-) : AbstractEntityStore(signator, addressBook, eventBus) {
+) : AbstractEntityStore(signator, publicKeyProvider, eventBus) {
     // NOTE: Some databases may truncate the table name. This is an issue to the degree that it increases the
     // chances of collisions. Given the number of ids stored in a single DB, the chances of issue are exceedingly low.
     // This would likely be an issue only when storing data for large sets of users (millions to billions?)
     // TODO: Magic numbers (32, 128) should come from config
     // TODO: Normalize attribute
-    private class Facts(authorityId: Id) : LongIdTable("fct-${Id.encode(authorityId).toHexString()}") {
+    private class Facts(name: String = "Facts") : LongIdTable(name) {
         val authorityId = binary("authorityId", 32).index()
         val entityId = binary("entityId", 32).index()
         val attribute = text("attribute")
@@ -40,7 +40,7 @@ class ExposedEntityStore(
     }
 
     // LongIdTable has implicit, autoincrement long id field
-    private class Transactions(authorityId: Id) : LongIdTable("txs-${Id.encode(authorityId).toHexString()}") {
+    private class Transactions(name: String = "Transactions") : LongIdTable(name) {
         val transactionId = binary("transactionId", 32).uniqueIndex()
         val authorityId = binary("authorityId", 32)
         val epochSecond = long("epochSecond").index()
@@ -50,24 +50,27 @@ class ExposedEntityStore(
     private val facts: Facts
     private val transactions: Transactions
 
-    init {
 
+    init {
         logger.info { "Initializing ExposedEntityStore {${database.url}}" }
 
+        // Prior to personas, the table names included the authority id. This is no longer makes sense, but we for
+        // backwards compatibility, we support the old table names.
+        // TODO: Legacy Support
+        val tableNames = transaction(database) {
+            val allTableNames = TransactionManager.current().db.dialect.allTablesNames()
+            object {
+                val facts = allTableNames.firstOrNull { it.startsWith("fct-") } ?: "Facts"
+                val transactions = allTableNames.firstOrNull { it.startsWith("txs-") } ?: "Transactions"
+            }
+        }
 
-        TransactionManager.current().db.dialect.allTablesNames()
-        val rootAuthority = addressBook.getAuthorities().filterIsInstance<Persona>().first()
-
-        facts = Facts(rootAuthority.authorityId)
-        transactions = Transactions(rootAuthority.authorityId)
+        facts = Facts(tableNames.facts)
+        transactions = Transactions(tableNames.transactions)
 
         transaction(database) {
             SchemaUtils.create(facts)
             SchemaUtils.create(transactions)
-        }
-
-        if(true) {
-            TODO("CHECK TABLE NAMES")
         }
     }
 
@@ -189,7 +192,7 @@ class ExposedEntityStore(
             SchemaUtils.drop(facts, transactions)
         }
 
-        return ExposedEntityStore(database, signator, addressBook, eventBus)
+        return ExposedEntityStore(database, signator, publicKeyProvider, eventBus)
     }
 
     private fun factFromResultRow(resultRow: ResultRow): Fact {

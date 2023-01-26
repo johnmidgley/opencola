@@ -4,16 +4,16 @@ import mu.KotlinLogging
 import io.opencola.event.EventBus
 import io.opencola.event.Events
 import io.opencola.model.*
+import io.opencola.security.PublicKeyProvider
 import io.opencola.util.ifNotNullOrElse
 import io.opencola.util.nullOrElse
 import io.opencola.security.Signator
 import io.opencola.storage.EntityStore.TransactionOrder
-import java.security.PublicKey
 
 // TODO: Should support multiple authorities
 abstract class AbstractEntityStore(
     val signator: Signator,
-    val addressBook: AddressBook,
+    val publicKeyProvider: PublicKeyProvider<Id>,
     val eventBus: EventBus?,
     ) : EntityStore {
     // TODO: Assumes transaction has been validated. Cleanup?
@@ -74,8 +74,8 @@ abstract class AbstractEntityStore(
 
         val authorityId = authorityIds.first()
 
-        if (addressBook.getAuthority(authorityId, authorityId) as? Persona == null) {
-            logAndThrow(RuntimeException("Attempt to commit changes not controlled by local authority"))
+        if (!signator.canSign(authorityId.toString())) {
+            logAndThrow(RuntimeException("Attempt to commit changes for authority without private key."))
         }
 
         val uncommittedFacts = entities.flatMap { it.getAllFacts() }.filter { it.transactionOrdinal == null }
@@ -194,7 +194,7 @@ abstract class AbstractEntityStore(
     override fun addSignedTransactions(signedTransactions: List<SignedTransaction>) {
         signedTransactions.forEach {
             val transactionAuthorityId = it.transaction.authorityId
-            val publicKey = addressBook?.getPublicKey(transactionAuthorityId, transactionAuthorityId)
+            val publicKey =  publicKeyProvider.getPublicKey(transactionAuthorityId)
                 ?: throw IllegalArgumentException("No public key for: $transactionAuthorityId - cannot persist transaction ${it.transaction.id}")
 
             if (!it.isValidTransaction(publicKey))

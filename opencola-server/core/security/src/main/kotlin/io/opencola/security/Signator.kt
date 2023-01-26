@@ -8,4 +8,8 @@ class Signator(private val keystore: KeyStore) {
 
         return sign(privateKey, bytes)
     }
+
+    fun canSign(alias: String): Boolean {
+        return keystore.getPrivateKey(alias) != null
+    }
 }

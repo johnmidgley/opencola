@@ -5,36 +5,30 @@ import io.opencola.model.Authority
 import io.opencola.model.Id
 import io.opencola.model.Persona
 import io.opencola.security.KeyStore
+import io.opencola.security.PublicKeyProvider
 import io.opencola.security.Signator
 import io.opencola.util.trim
-import java.net.URI
 import java.nio.file.Path
 import java.security.PublicKey
 import java.util.concurrent.CopyOnWriteArrayList
 
 // TODO: Move ServerConfig to NetworkConfig?
-class AddressBook(storagePath: Path, private val keyStore: KeyStore) {
+class AddressBook(storagePath: Path, private val keyStore: KeyStore) : PublicKeyProvider<Id> {
+    class KeyStorePublicKeyProvider(private val keyStore: KeyStore) : PublicKeyProvider<Id> {
+        override fun getPublicKey(alias: Id): PublicKey? {
+            return keyStore.getPublicKey(alias.toString())
+        }
+    }
+
     val logger = KotlinLogging.logger("AddressBook")
 
     private val activeTag = "active"
-    private val entityStore = ExposedEntityStore(SQLiteDB(storagePath.resolve("address-book.db")).db, Signator(keyStore), this)
+    private val entityStore = ExposedEntityStore(SQLiteDB(storagePath.resolve("address-book.db")).db, Signator(keyStore), KeyStorePublicKeyProvider(keyStore))
     private val updateHandlers = CopyOnWriteArrayList<(Authority?, Authority?) -> Unit>()
 
     // TODO: Needed?
     fun getPublicKey(personaId: Id, authorityId: Id): PublicKey? {
             return getAuthority(personaId, authorityId)?.publicKey
-    }
-
-    init {
-        TODO("This is application logic - move to Application")
-//        val addressBookAuthority = getAuthority(authority.authorityId) ?: updateAuthority(authority)
-//
-//        if(addressBookAuthority.uri.toString().isBlank()) {
-//            // Fallback to local server address.
-//            // TODO: Is there a better place for this?
-//            addressBookAuthority.uri = URI("ocr://relay.opencola.net")
-//            updateAuthority(addressBookAuthority)
-//        }
     }
 
     // TODO: Move to Authority
@@ -65,6 +59,8 @@ class AddressBook(storagePath: Path, private val keyStore: KeyStore) {
 
     fun updateAuthority(authority: Authority,
                         suppressUpdateHandler: ((Authority?, Authority?) -> Unit)? = null) : Authority {
+        // TODO: When publicKey update is allowed, need to force public keys to be same across personas
+
         val previousAuthority = entityStore.getEntity(authority.authorityId, authority.entityId) as Authority?
 
         // Normalize the URI to avoid multiple connections to the same server
@@ -126,5 +122,9 @@ class AddressBook(storagePath: Path, private val keyStore: KeyStore) {
 
         entityStore.deleteEntity(personaId, id)
         callUpdateHandlers(previousAuthority, null)
+    }
+
+    override fun getPublicKey(alias: Id): PublicKey? {
+        TODO("Not yet implemented")
     }
 }
