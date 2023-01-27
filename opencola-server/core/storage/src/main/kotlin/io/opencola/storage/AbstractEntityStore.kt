@@ -94,10 +94,6 @@ abstract class AbstractEntityStore(
     }
 
     override fun getEntities(authorityIds: Set<Id>, entityIds: Set<Id>): List<Entity> {
-        if(authorityIds.isEmpty() && entityIds.isEmpty()){
-            throw IllegalArgumentException("Attempt to retrieve whole database (getEntities call with no authorityIds or entityIds)")
-        }
-
         return getFacts(authorityIds, entityIds)
             .groupBy { Pair(it.authorityId, it.entityId) }
             .mapNotNull { Entity.fromFacts(it.value) }

@@ -88,13 +88,9 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
 
         // TODO: Should probably pass in keyStore vs. personaKeyPairs. The keyStore should be able to get the personaKeyPairs
         fun instance(storagePath: Path, config: Config, personaKeyPairs: List<KeyPair>, password: String): Application {
-            if(!storagePath.exists()){
+            if(!storagePath.exists()) {
                 File(storagePath.toString()).mkdirs()
             }
-
-            // TODO: Change from authority to public key - they authority should come from the private store based on the private key
-            val defaultAddress = config.network.defaultAddress
-            val personas = personaKeyPairs.map { Persona(Authority(it.public, defaultAddress, "You"), it) }
 
             val keyStore = KeyStore(storagePath.resolve("keystore.pks"), password)
             val fileStore = LocalFileStore(storagePath.resolve("filestore"))
@@ -109,7 +105,7 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
                 bindSingleton { AddressBook(storagePath, instance()) }
                 bindSingleton { RequestRouter(getDefaultRoutes(instance(), instance(), instance())) }
                 bindSingleton { HttpNetworkProvider(instance(), instance(), instance(), config.network) }
-                bindSingleton { OCRelayNetworkProvider(instance(), instance(), instance(), instance(), config.network) }
+                bindSingleton { OCRelayNetworkProvider(instance(), instance(), instance(), config.network) }
                 bindSingleton { NetworkNode(instance(),instance(), instance()) }
                 bindSingleton { LuceneSearchIndex(storagePath.resolve("lucene")) }
                 bindSingleton { ExposedEntityStore(entityStoreDB, instance(), instance(), instance()) }
