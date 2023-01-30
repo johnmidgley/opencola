@@ -38,11 +38,6 @@ class AddressBook(private val storagePath: Path, private val keyStore: KeyStore)
         return stringBuilder.toString()
     }
 
-    // TODO: Needed?
-    fun getPublicKey(personaId: Id, authorityId: Id): PublicKey? {
-            return getAuthority(personaId, authorityId)?.publicKey
-    }
-
     // TODO: Move to Authority
     fun isAuthorityActive(authority: Authority) : Boolean {
         return authority.tags.contains(activeTag)
@@ -125,7 +120,7 @@ class AddressBook(private val storagePath: Path, private val keyStore: KeyStore)
             ?: throw IllegalArgumentException("Invalid persona id: $personaId")
 
         // TODO: Add test
-        if(personas.count() == 1 && persona.authorityId == persona.entityId)
+        if(personas.count() == 1 && personaId == id)
             throw IllegalArgumentException("Can't delete only persona from address book.")
 
         // TODO: Add test
