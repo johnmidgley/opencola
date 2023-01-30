@@ -24,10 +24,11 @@ import kotlin.test.assertNull
 class OCRelayNetworkProviderTest : PeerNetworkTest() {
     private val ocRelayUri = URI("ocr://0.0.0.0")
 
-    fun setAuthorityAddressToRelay(authorityId: Id, addressBook: AddressBook) : Authority {
-        val authority = addressBook.getAuthority(authorityId, authorityId)!!
-        authority.uri = ocRelayUri
-        return addressBook.updateAuthority(authority)
+    private fun setPeerAddressToRelay(peerId: Id, addressBook: AddressBook) : Authority {
+        val peer = addressBook.getPeer(peerId).firstOrNull() ?:
+            throw IllegalStateException("Authority not found")
+        peer.uri = ocRelayUri
+        return addressBook.updateAuthority(peer)
     }
 
     @Test
@@ -39,8 +40,8 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
         val app1Persona = app1.inject<AddressBook>().getAuthorities().filterIsInstance<Persona>().single()
 
         println("Setting Relay Addresses")
-        val peer1 = setAuthorityAddressToRelay(app0Persona.entityId, app0.inject())
-        val peer0 = setAuthorityAddressToRelay(app1Persona.entityId, app1.inject())
+        val peer1 = setPeerAddressToRelay(app0Persona.entityId, app0.inject())
+        val peer0 = setPeerAddressToRelay(app1Persona.entityId, app1.inject())
 
         println("Starting relay server")
         val webServer = startWebServer(defaultOCRPort)
@@ -97,8 +98,8 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
 
         val relayServer = startWebServer(defaultOCRPort)
 
-        setAuthorityAddressToRelay(app0.inject<Authority>().entityId, app0.inject() )
-        setAuthorityAddressToRelay(app1.inject<Authority>().entityId, app1.inject() )
+        setPeerAddressToRelay(app0.getPersonas().single().entityId, app0.inject() )
+        setPeerAddressToRelay(app1.getPersonas().single().entityId, app1.inject() )
 
         try {
             testConnectAndReplicate(application0, application1)
@@ -118,8 +119,8 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
             val (app0, app1) = getApplications(2)
 
             println("Setting Relay Addresses")
-            setAuthorityAddressToRelay(app1.inject<Authority>().entityId, app0.inject())
-            setAuthorityAddressToRelay(app0.inject<Authority>().entityId, app1.inject())
+            setPeerAddressToRelay(app1.getPersonas().first().entityId, app0.inject())
+            setPeerAddressToRelay(app0.getPersonas().first().entityId, app1.inject())
 
             println("Starting relay server")
             val webServer = startWebServer(defaultOCRPort)
@@ -142,13 +143,13 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
                 run {
                     val relayProvider = app0.inject<OCRelayNetworkProvider>()
                     val envelope = relayProvider.getEncodedEnvelope(
-                        app0.inject<Authority>().entityId,
-                        app1.inject<Authority>().entityId,
+                        app0.getPersonas().single().entityId,
+                        app1.getPersonas().single().entityId,
                         "bad message".toByteArray(),
                         false
                     )
 
-                    val result = relayClient.sendMessage(app1.inject<Authority>().publicKey!!, envelope)
+                    val result = relayClient.sendMessage(app1.getPersonas().single().publicKey!!, envelope)
                     assertNull(result)
                 }
             } finally {

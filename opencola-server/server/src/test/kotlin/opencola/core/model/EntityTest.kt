@@ -81,7 +81,7 @@ class EntityTest {
         assertEquals(1, entity.getAllFacts().filter{ it.attribute == CoreAttribute.Uri.spec}.size)
         assertFails { entity.uri = URI("opencola://different-uri") }
 
-        // val authority = TestApplication.instance.injector.instance<Authority>()
+        // val authority = TestApplication.instance.getPersonas().first()
         // val store = EntityStore(authority)
         //TODO: Fix entity store so adding an entity returns a new Entity, and commit occurs at the same time
         // then test here that setting a new value results in a new fact

@@ -1,7 +1,6 @@
 package opencola.core.network
 
 import opencola.core.TestApplication
-import io.opencola.model.Authority
 import io.opencola.network.InviteToken
 import io.opencola.security.Signator
 import opencola.server.handlers.getInviteToken
@@ -14,7 +13,7 @@ class InviteTokenTest {
     @Test
     fun testInviteToken() {
         val injector = TestApplication.instance.injector
-        val authority by injector.instance<Authority>()
+        val authority = TestApplication.instance.getPersonas().first()
         val signator by injector.instance<Signator>()
 
         val inviteToken = InviteToken(authority.entityId, "Test Name", authority.publicKey!!, authority.uri!!, URI("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTx5bRYo79dnn0X_9y11eFKD2GG6k3mOhb8fw&usqp=CAU"))
@@ -26,7 +25,7 @@ class InviteTokenTest {
     @Test
     fun testInviteTokenFromPeerHandler() {
         val app = TestApplication.instance
-        val authority = app.inject<Authority>()
+        val authority = TestApplication.instance.getPersonas().first()
         val inviteToken = InviteToken.decodeBase58(getInviteToken(authority.entityId, app.inject(), app.inject(), app.inject()))
         assertEquals(authority.publicKey, inviteToken.publicKey)
     }

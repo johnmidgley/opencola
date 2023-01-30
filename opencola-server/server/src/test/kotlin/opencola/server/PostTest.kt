@@ -1,7 +1,6 @@
 package opencola.server
 
 import opencola.core.TestApplication
-import io.opencola.model.Authority
 import io.opencola.storage.AddressBook
 import io.opencola.storage.EntityStore
 import opencola.server.handlers.EntityPayload
@@ -18,7 +17,7 @@ class PostTest {
 
     @Test
     fun testNewPost() {
-        val authority by app.injector.instance<Authority>()
+        val authority = app.getPersonas().first()
         val entityStore by app.injector.instance<EntityStore>()
         val addressBook by app.injector.instance<AddressBook>()
         val entityPayload = EntityPayload("", "Name", "https://image.com", "description", true, "tag", "comment")

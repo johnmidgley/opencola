@@ -1,15 +1,12 @@
 package opencola.core.config
 
 import opencola.core.TestApplication
-import io.opencola.model.Authority
+import io.opencola.storage.AddressBook
 import org.junit.Test
-import org.kodein.di.instance
-import kotlin.test.assertNotNull
 
 class KodeinTest {
     @Test
     fun testKodein(){
-        val authority by TestApplication.instance.injector.instance<Authority>()
-        assertNotNull(authority.authorityId)
+        TestApplication.instance.inject<AddressBook>()
     }
 }

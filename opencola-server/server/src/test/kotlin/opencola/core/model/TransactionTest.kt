@@ -6,6 +6,7 @@ import io.opencola.util.toHexString
 import io.opencola.security.SIGNATURE_ALGO
 import io.opencola.security.Signator
 import io.opencola.security.sha256
+import io.opencola.storage.AddressBook
 import org.junit.Test
 import org.kodein.di.instance
 import java.io.ByteArrayInputStream
@@ -14,7 +15,7 @@ import kotlin.test.assertEquals
 
 class TransactionTest {
     private val app = TestApplication.instance
-    private val authority by app.injector.instance<Authority>()
+    private val authority = app.inject<AddressBook>().getAuthorities().filterIsInstance<Persona>().first()
     private val signator by app.injector.instance<Signator>()
 
     @Test

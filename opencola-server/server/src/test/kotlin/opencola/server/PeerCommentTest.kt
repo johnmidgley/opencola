@@ -1,6 +1,5 @@
 package opencola.server
 
-import io.opencola.model.Authority
 import io.opencola.model.ResourceEntity
 import io.opencola.storage.EntityStore
 import opencola.server.handlers.addComment
@@ -20,7 +19,7 @@ class PeerCommentTest : PeerNetworkTest() {
         // Start the first server and add a document
         logger.info { "Starting ${application0.config.name}" }
         startServer(server0)
-        val authority0 by application0.injector.instance<Authority>()
+        val authority0 = application0.getPersonas().first()
         val resource0 = ResourceEntity(
             authority0.authorityId,
             URI("http://www.opencola.io"),
@@ -36,7 +35,7 @@ class PeerCommentTest : PeerNetworkTest() {
 
         // Start the 2nd server and comment on the doc from the first server
         logger.info { "Starting ${application1.config.name}" }
-        val authority1 by application1.injector.instance<Authority>()
+        val authority1 = application1.getPersonas().first()
         val entityStore1 by application1.injector.instance<EntityStore>()
         startServer(server1)
         Thread.sleep(1500)

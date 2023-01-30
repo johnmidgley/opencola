@@ -1,7 +1,6 @@
 package opencola.server.handlers
 
 
-import io.opencola.model.Authority
 import opencola.core.TestApplication
 import opencola.core.content.getMimeSnapshotForUrl
 import org.junit.Test
@@ -26,7 +25,7 @@ class ActionTest {
 
 
         val mhtml = getMimeSnapshotForUrl("file://$pdfPath").toByteArray()
-        handleAction(app.inject<Authority>().entityId, app.inject(), app.inject(), "save", "true", mhtml)
+        handleAction(app.getPersonas().single().entityId, app.inject(), app.inject(), "save", "true", mhtml)
 
         println("Done")
     }

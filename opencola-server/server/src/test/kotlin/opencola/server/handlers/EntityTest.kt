@@ -15,7 +15,7 @@ class EntityTest {
     private fun saveEntity(getEntity: (Id) -> Entity): Entity {
         // Make a peer transaction that contains a resource
         val peerApplication = TestApplication.newApplication()
-        val peerAuthority by peerApplication.injector.instance<Authority>()
+        val peerAuthority = peerApplication.getPersonas().first()
         val peerEntity = getEntity(peerAuthority.authorityId)
         val peerEntityStore by peerApplication.injector.instance<EntityStore>()
         val peerTransaction = peerEntityStore.updateEntities(peerEntity)
@@ -23,7 +23,7 @@ class EntityTest {
 
         // Add resource to local store
         val injector = TestApplication.instance.injector
-        val localAuthority by injector.instance<Authority>()
+        val localAuthority = TestApplication.instance.getPersonas().first()
         val localEntityStore by injector.instance<EntityStore>()
         val localAddressBook by injector.instance<AddressBook>()
         localAddressBook.updateAuthority(Authority(localAuthority.authorityId, peerAuthority.publicKey!!, peerAuthority.uri!!, peerAuthority.name!!))

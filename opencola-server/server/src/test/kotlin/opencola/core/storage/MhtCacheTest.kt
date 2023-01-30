@@ -4,7 +4,6 @@ import opencola.core.TestApplication
 import io.opencola.content.MhtmlPage
 import io.opencola.content.parseMime
 import io.opencola.model.Actions
-import io.opencola.model.Authority
 import io.opencola.storage.EntityStore
 import io.opencola.storage.FileStore
 import io.opencola.storage.MhtCache
@@ -20,7 +19,7 @@ class MhtCacheTest {
 
     @Test
     fun testReadFromCache(){
-        val authority by injector.instance<Authority>()
+        val persona = TestApplication.instance.getPersonas().first()
         val mhtCache by injector.instance<MhtCache>()
         val entityStore by injector.instance<EntityStore>()
         val fileStore by injector.instance<FileStore>()
@@ -31,11 +30,11 @@ class MhtCacheTest {
         val message = path.inputStream().use { parseMime(it) } ?: throw RuntimeException("Unable to parse $path")
         val mhtmlPage = MhtmlPage(message)
 
-        val entity = updateResource(authority.authorityId, entityStore, fileStore, mhtmlPage, Actions())
-        val data = mhtCache.getData(authority.authorityId, entity.entityId)
+        val entity = updateResource(persona.authorityId, entityStore, fileStore, mhtmlPage, Actions())
+        val data = mhtCache.getData(persona.authorityId, entity.entityId)
         assertNotNull(data)
 
-        val part0 = mhtCache.getDataPart(authority.authorityId, entity.entityId, "0.html")
+        val part0 = mhtCache.getDataPart(persona.authorityId, entity.entityId, "0.html")
         assertNotNull(part0)
     }
 }

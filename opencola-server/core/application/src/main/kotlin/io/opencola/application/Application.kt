@@ -34,6 +34,10 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
         return instance
     }
 
+    fun getPersonas(): List<Persona> {
+        return inject<AddressBook>().getAuthorities().filterIsInstance<Persona>()
+    }
+
     companion object Global {
         // TODO: Remove - create loggers by component / namespace
         val logger = KotlinLogging.logger("opencola.init")

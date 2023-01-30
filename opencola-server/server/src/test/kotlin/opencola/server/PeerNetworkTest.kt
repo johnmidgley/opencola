@@ -6,7 +6,6 @@ import mu.KotlinLogging
 import opencola.core.TestApplication
 import io.opencola.application.Application
 import io.opencola.io.StdoutMonitor
-import io.opencola.model.Authority
 import io.opencola.model.ResourceEntity
 import io.opencola.storage.EntityStore
 import opencola.core.network.ApplicationNode
@@ -45,7 +44,7 @@ open class PeerNetworkTest {
 
     private fun addPeer(applicationNode: ApplicationNode , peerApplicationNode: ApplicationNode) {
         val inviteToken = peerApplicationNode.getInviteToken()
-        val authorityId = applicationNode.application.inject<Authority>().entityId
+        val authorityId = applicationNode.application.getPersonas().single().entityId
         val peer = inviteTokenToPeer(authorityId, inviteToken)
         applicationNode.updatePeer(peer)
     }
@@ -57,12 +56,12 @@ open class PeerNetworkTest {
 
         try {
             println("Adding entity to application0")
-            val authority0 = application0.application.inject<Authority>()
+            val authority0 = application0.application.getPersonas().single()
             val resource0 = ResourceEntity(authority0.entityId, URI("https://resource0"), "Resource0")
             val entityStore0 = application0.application.inject<EntityStore>().also { it.updateEntities(resource0) }
 
             println("Adding entity to application1")
-            val authority1 = application1.application.inject<Authority>()
+            val authority1 = application1.application.getPersonas().single()
             val resource1 = ResourceEntity(authority1.entityId, URI("https://resource1"), "Resource1")
             val entityStore1 = application1.application.inject<EntityStore>().also { it.updateEntities(resource1) }
 

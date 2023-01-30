@@ -18,7 +18,7 @@ class HttpNetworkProviderTest : PeerNetworkTest() {
 
         try {
             val app = applicationNode.application
-            val authority = app.inject<Authority>()
+            val authority = app.getPersonas().first()
             val networkProvider = app.inject<HttpNetworkProvider>()
 
             val goodRequest = Request(Request.Method.GET, "/ping", null, null)
@@ -32,8 +32,8 @@ class HttpNetworkProviderTest : PeerNetworkTest() {
             val badRequest = Request(Request.Method.GET, "/ping", null, null)
 
             // TODO: These should probably throw, rather than return null
-            assertNull(networkProvider.sendRequest(app.inject(), badAuthority, badRequest))
-            assertNull(networkProvider.sendRequest(badAuthority, app.inject(), badRequest))
+            assertNull(networkProvider.sendRequest(authority, badAuthority, badRequest))
+            assertNull(networkProvider.sendRequest(badAuthority, authority, badRequest))
         } finally {
             applicationNode.stop()
         }

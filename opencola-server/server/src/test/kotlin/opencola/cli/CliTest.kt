@@ -3,7 +3,7 @@ package opencola.cli
 import opencola.core.TestApplication
 import io.opencola.application.Application
 import io.opencola.application.loadConfig
-import io.opencola.model.Authority
+import io.opencola.model.Persona
 import io.opencola.model.ResourceEntity
 import io.opencola.model.Transaction
 import io.opencola.security.Signator
@@ -30,10 +30,10 @@ class CliTest {
     }
     @Test
     fun testExportImportRoundTrip(){
-        val application = TestApplication.instance
-        val authority by application.injector.instance<Authority>()
+        val app = TestApplication.instance
+        val authority = app.inject<AddressBook>().getAuthorities().filterIsInstance<Persona>().first()
 
-        val entityStore0 = getTmpEntityStore(application)
+        val entityStore0 = getTmpEntityStore(app)
         val resources = (0 until 5).map {
             ResourceEntity(authority.authorityId, URI("https://$it"))
         }
@@ -44,7 +44,7 @@ class CliTest {
         val exportPath = TestApplication.getTmpFilePath(".txs")
         exportTransactions(entityStore0, listOf(exportPath.toString()))
 
-        val entityStore1 = getTmpEntityStore(application)
+        val entityStore1 = getTmpEntityStore(app)
         assertEquals(0, entityStore1.getSignedTransactions(emptyList(), null, TransactionOrder.IdAscending, 100).count())
         importTransactions(entityStore1, listOf(exportPath.toString()))
         val transactions1 = entityStore1.getSignedTransactions(emptyList(), null, TransactionOrder.IdAscending, 100)
@@ -57,7 +57,7 @@ class CliTest {
         val config = loadConfig(storagePath.resolve("opencola-server.yaml"))
         val app = getApplication(storagePath, config, LoginCredentials("oc", "password"))
         val entityStore = app.inject<EntityStore>()
-        val authority = app.inject<Authority>()
+        val authority = app.getPersonas().single()
         exportTransactions(entityStore, storagePath.resolve("transactions.bin"), listOf(authority.entityId))
     }
 
@@ -67,7 +67,7 @@ class CliTest {
         val config = loadConfig(storagePath.resolve("opencola-server.yaml"))
         val app = getApplication(storagePath, config, LoginCredentials("oc", "password"))
         val entityStore = app.inject<EntityStore>()
-        val authority = app.inject<Authority>()
+        val authority = app.getPersonas().single()
         val signator = app.inject<Signator>()
 
         transactionsFromPath(storagePath.resolve("transactions.bin")).forEach {

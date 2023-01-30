@@ -1,5 +1,6 @@
 package io.opencola.model
 
+import io.opencola.security.encode
 import java.net.URI
 import java.security.PublicKey
 
@@ -42,7 +43,7 @@ open class Authority : Entity {
     constructor(facts: List<Fact>) : super(facts)
 
     override fun toString(): String {
-        return "id: $entityId, name: $name, uri: $uri"
+        return "{ authority=$authorityId, entityId=$entityId, name=$name, publicKey=${publicKey?.encode()}, uri=$uri }"
     }
 
     // TODO: Make all code locations use this

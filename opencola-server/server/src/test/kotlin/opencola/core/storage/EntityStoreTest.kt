@@ -146,13 +146,13 @@ class EntityStoreTest {
         val applications = getApplications(TestApplication.storagePath, TestApplication.config, 6000, 2)
 
         // Create some entities for first authority
-        val authority0 by applications[0].injector.instance<Authority>()
+        val authority0 = applications[0].getPersonas().first()
         val entityStore0 by applications[0].injector.instance<EntityStore>()
         val entities0 = (0 until 2).map { ResourceEntity(authority0.authorityId, URI("http://test/$it")) }
         entityStore0.updateEntities(*entities0.toTypedArray<Entity>())
 
         // Add some entities from peer store with same entity ids
-        val authority1 by applications[1].injector.instance<Authority>()
+        val authority1 = applications[1].getPersonas().first()
         val entityStore1 by applications[1].injector.instance<EntityStore>()
         val entities1 = (0 until 2).map { ResourceEntity(authority1.authorityId, URI("http://test/$it")) }
         val transaction = entityStore1.updateEntities(*entities1.toTypedArray<Entity>()) ?: throw RuntimeException("Unable to update entities")

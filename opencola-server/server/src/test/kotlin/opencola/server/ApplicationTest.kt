@@ -62,7 +62,7 @@ class ApplicationTest {
     @Test
     fun testGetEntity() = testApplication {
         application { configure(this) }
-        val authority by injector.instance<Authority>()
+        val authority = application.getPersonas().first()
         val entityStore by injector.instance<EntityStore>()
         val entity = ResourceEntity(authority.authorityId, URI("http://opencola.org"), trust = 1.0F, like = true, rating = 1.0F)
         entityStore.updateEntities(entity)
@@ -95,7 +95,7 @@ class ApplicationTest {
     @Test
     fun testStatusActions() = testApplication {
         application { configure(this) }
-        val authority by injector.instance<Authority>()
+        val authority = application.getPersonas().first()
         val entityStore by injector.instance<EntityStore>()
         val uri = URI("https://opencola.org")
         val entity = ResourceEntity(authority.authorityId, uri, trust = 1.0F, like = true, rating = 1.0F)
@@ -165,7 +165,7 @@ class ApplicationTest {
         application { configure(this) }
         // TODO: This seems to spit a few errors - should be fixed with PeerRouter updates
 
-        val localAuthority by injector.instance<Authority>()
+        val localAuthority = application.getPersonas().first()
         val addressBook by injector.instance<AddressBook>()
         val peerAuthority = addressBook.updateAuthority(Authority(localAuthority.authorityId, generateKeyPair().public, URI(""), "Test"))
         val notification = Notification(peerAuthority.authorityId, NewTransaction)
@@ -190,7 +190,7 @@ class ApplicationTest {
     fun testGetFeed() = testApplication {
         application { configure(this) }
 
-        val authority by injector.instance<Authority>()
+        val authority = application.getPersonas().first()
         val entityStore by injector.instance<EntityStore>()
         entityStore.resetStore()
 
@@ -232,7 +232,7 @@ class ApplicationTest {
     @Test
     fun testUpdateEntity() = testApplication {
         application { configure(this) }
-        val authority by injector.instance<Authority>()
+        val authority = application.getPersonas().first()
         val entityStore by injector.instance<EntityStore>()
         val resourceEntity = ResourceEntity(
             authority.authorityId,

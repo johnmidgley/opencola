@@ -140,7 +140,8 @@ class MainReactor(
         val notification = ByteArrayInputStream(event.data).use { Notification.decode(it) }
         logger.info { "Handling notification for peer ${notification.peerId} event: ${notification.event}" }
 
-        TODO("Add logic here to only handle notifications for one persona if multiple personas are connected to a peer")
+        // TODO: A peer that is connected via multiple personas should only send one notification, since broadcasts
+        //  are sent to distinct peers. Think about a test for this.
 
         when(notification.event){
             PeerEvent.Added -> requestTransactions(notification.peerId)

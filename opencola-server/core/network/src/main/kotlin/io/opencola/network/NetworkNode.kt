@@ -90,11 +90,9 @@ class NetworkNode(
     }
 
     fun broadcastRequest(from: Persona, request: Request) {
-        val peers = addressBook.getAuthorities(true)
+        val peers = addressBook.getAuthorities(true).distinctBy { it.entityId }
         if (peers.isNotEmpty()) {
             logger.info { "Broadcasting request: $request" }
-
-            TODO("Only send 1 request to peer, even if connected to multiple personas")
 
             // TODO: This is currently called in the background from the event bus, so ok, but
             //  should switch to making these requests from a pool of peer threads

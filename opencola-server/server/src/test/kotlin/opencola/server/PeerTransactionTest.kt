@@ -1,6 +1,5 @@
 package opencola.server
 
-import io.opencola.model.Authority
 import io.opencola.model.ResourceEntity
 import io.opencola.storage.EntityStore
 import opencola.server.handlers.handleSearch
@@ -21,7 +20,7 @@ class PeerTransactionTest : PeerNetworkTest() {
         try {
             // Start first server and add a resource to the store
             startServer(server0)
-            val authority0 by application0.injector.instance<Authority>()
+            val authority0 = application0.getPersonas().first()
             val resource0 =
                 ResourceEntity(authority0.authorityId, URI("http://www.opencola.org"), "document 1", text = "stuff")
             val entityStore0 by application0.injector.instance<EntityStore>()
@@ -67,7 +66,7 @@ class PeerTransactionTest : PeerNetworkTest() {
             // Start the first server and add a document
             logger.info { "Starting ${application0.config.name}" }
             startServer(server0)
-            val authority0: Authority by application0.injector.instance<Authority>()
+            val authority0 = application0.getPersonas().first()
             val resource0 =
                 ResourceEntity(authority0.authorityId, URI("http://www.opencola.org"), "document 1", text = "stuff")
             val entityStore0 by application0.injector.instance<EntityStore>()
@@ -112,7 +111,7 @@ class PeerTransactionTest : PeerNetworkTest() {
             val app1 = server1.application
 
             // Add item to server0
-            val authorityId0 = app0.inject<Authority>().entityId
+            val authorityId0 = app0.getPersonas().single().entityId
             val resourceEntity0 = ResourceEntity(authorityId0, URI("https://opencola.io"), "OpenCola From Server 0", "OpenCola Website 0")
             val entityStore0 = app0.inject<EntityStore>()
             entityStore0.updateEntities(resourceEntity0)
@@ -127,7 +126,7 @@ class PeerTransactionTest : PeerNetworkTest() {
             server1.updatePeer(server1.postInviteToken(server0.getInviteToken()))
 
             // Now add something to server 1
-            val authorityId1 = app1.inject<Authority>().entityId
+            val authorityId1 = app1.getPersonas().single().entityId
             val resourceEntity1 = ResourceEntity(authorityId1, URI("https://opencola.io/"), "OpenCola From Server 1", "OpenCola Website 1")
             val entityStore1 = app1.inject<EntityStore>()
             entityStore1.updateEntities(resourceEntity1)

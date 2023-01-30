@@ -4,7 +4,6 @@ import io.ktor.server.netty.*
 import io.opencola.application.*
 import opencola.core.TestApplication
 import io.opencola.event.EventBus
-import io.opencola.model.Authority
 import io.opencola.model.Persona
 import io.opencola.network.NetworkConfig
 import io.opencola.network.NetworkNode
@@ -37,11 +36,11 @@ class ApplicationNode(val application: Application) : Node {
     }
 
     override fun getInviteToken(): String {
-        return getInviteToken(application.inject<Authority>().entityId, application.inject(), application.inject(), application.inject())
+        return getInviteToken(application.getPersonas().single().entityId, application.inject(), application.inject(), application.inject())
     }
 
     override fun postInviteToken(token: String): Peer {
-        return inviteTokenToPeer(application.inject<Authority>().entityId, token)
+        return inviteTokenToPeer(application.getPersonas().single().entityId, token)
     }
 
     override fun getPeers(): PeersResult {
@@ -49,7 +48,7 @@ class ApplicationNode(val application: Application) : Node {
     }
 
     override fun updatePeer(peer: Peer) {
-        updatePeer(application.inject<Authority>().entityId, application.inject(), application.inject(), application.inject(), peer)
+        updatePeer(application.getPersonas().single().entityId, application.inject(), application.inject(), application.inject(), peer)
     }
 
     companion object Factory {

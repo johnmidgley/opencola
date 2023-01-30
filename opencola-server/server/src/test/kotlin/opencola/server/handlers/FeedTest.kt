@@ -7,6 +7,6 @@ class FeedTest {
     @Test
     fun testFeedWithNoResults(){
         val app = TestApplication.instance
-        getEntityResults(app.inject(), app.inject(), app.inject(), emptySet())
+        getEntityResults(app.getPersonas().single(), app.inject(), app.inject(), emptySet())
     }
 }

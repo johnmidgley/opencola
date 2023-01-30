@@ -8,12 +8,13 @@ import io.opencola.security.KeyStore
 import io.opencola.security.PublicKeyProvider
 import io.opencola.security.Signator
 import io.opencola.util.trim
+import java.lang.StringBuilder
 import java.nio.file.Path
 import java.security.PublicKey
 import java.util.concurrent.CopyOnWriteArrayList
 
 // TODO: Move ServerConfig to NetworkConfig?
-class AddressBook(storagePath: Path, private val keyStore: KeyStore) : PublicKeyProvider<Id> {
+class AddressBook(private val storagePath: Path, private val keyStore: KeyStore) : PublicKeyProvider<Id> {
     class KeyStorePublicKeyProvider(private val keyStore: KeyStore) : PublicKeyProvider<Id> {
         override fun getPublicKey(alias: Id): PublicKey? {
             return keyStore.getPublicKey(alias.toString())
@@ -25,6 +26,17 @@ class AddressBook(storagePath: Path, private val keyStore: KeyStore) : PublicKey
     private val activeTag = "active"
     private val entityStore = ExposedEntityStore(SQLiteDB(storagePath.resolve("address-book.db")).db, Signator(keyStore), KeyStorePublicKeyProvider(keyStore))
     private val updateHandlers = CopyOnWriteArrayList<(Authority?, Authority?) -> Unit>()
+
+    override fun toString(): String {
+        val stringBuilder = StringBuilder("AddressBook($storagePath){\n")
+        val (personas, peers) = getAuthorities().partition { it is Persona }
+
+        personas.forEach { stringBuilder.appendLine("\tPersona: $it") }
+        peers.forEach { stringBuilder.appendLine("\tPeer: $it") }
+        stringBuilder.appendLine("}")
+
+        return stringBuilder.toString()
+    }
 
     // TODO: Needed?
     fun getPublicKey(personaId: Id, authorityId: Id): PublicKey? {
@@ -125,6 +137,6 @@ class AddressBook(storagePath: Path, private val keyStore: KeyStore) : PublicKey
     }
 
     override fun getPublicKey(alias: Id): PublicKey? {
-        TODO("Not yet implemented")
+        return getAuthorities().firstOrNull { it.entityId == alias && it.publicKey != null }?.publicKey
     }
 }
