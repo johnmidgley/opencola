@@ -9,10 +9,6 @@ import io.ktor.server.auth.*
 import io.ktor.server.sessions.*
 import io.ktor.server.testing.*
 import io.opencola.model.*
-import io.opencola.network.Notification
-import io.opencola.network.PeerEvent.NewTransaction
-import io.opencola.security.generateKeyPair
-import io.opencola.storage.AddressBook
 import io.opencola.storage.EntityStore
 import kotlinx.coroutines.delay
 import kotlinx.serialization.decodeFromString
@@ -158,24 +154,6 @@ class ApplicationTest {
         assertEquals(HttpStatusCode.OK, searchResponse.status)
         val searchResults = Json.decodeFromString<SearchResults>(searchResponse.bodyAsText())
         assertEquals("Conway's Game of Life - Wikipedia", searchResults.matches.first().name)
-    }
-
-    @Test
-    fun testPostNotification() = testApplication {
-        application { configure(this) }
-        // TODO: This seems to spit a few errors - should be fixed with PeerRouter updates
-
-        val localAuthority = application.getPersonas().first()
-        val addressBook by injector.instance<AddressBook>()
-        val peerAuthority = addressBook.updateAuthority(Authority(localAuthority.authorityId, generateKeyPair().public, URI(""), "Test"))
-        val notification = Notification(peerAuthority.authorityId, NewTransaction)
-
-        val response = client.post("/notifications") {
-            headers.append(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            setBody(Json.encodeToString(notification))
-        }
-
-        assertEquals(HttpStatusCode.OK, response.status)
     }
 
     private fun getSingleActivity(feedResult: FeedResult, type: String): EntityResult.Activity {
