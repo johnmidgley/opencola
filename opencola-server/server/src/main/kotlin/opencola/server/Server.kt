@@ -9,7 +9,6 @@ import io.opencola.application.LoginConfig
 import io.opencola.application.ServerConfig
 import io.opencola.event.EventBus
 import io.opencola.event.Events
-import io.opencola.model.Id
 import io.opencola.model.Persona
 import io.opencola.network.NetworkNode
 import io.opencola.security.EncryptionParams
