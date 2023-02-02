@@ -115,11 +115,11 @@ fun isEntityIsVisible(authorityId: Id, entity: Entity) : Boolean {
     }
 }
 
-fun getEntityIds(entityStore: EntityStore, searchIndex: SearchIndex, query: String?): Set<Id> {
+fun getEntityIds(entityStore: EntityStore, personaIds: List<Id>, searchIndex: SearchIndex, query: String?): Set<Id> {
     // TODO: This will generally result in an unpredictable number of entities, as single actions (like, comment, etc.)
     //  take a transaction. Fix this by requesting transaction batches until no more or 100 entities have been reached
     val entityIds =  if (query == null || query.trim().isEmpty()){
-        val signedTransactions = entityStore.getSignedTransactions(emptyList(),null, EntityStore.TransactionOrder.TimeDescending,100) // TODO: Config limit
+        val signedTransactions = entityStore.getSignedTransactions(personaIds,null, EntityStore.TransactionOrder.TimeDescending,100) // TODO: Config limit
         signedTransactions.flatMap { tx -> tx.transaction.transactionEntities.map { it.entityId } }
     } else {
         searchIndex.search(query).map { it.entityId }
@@ -181,13 +181,13 @@ fun getEntityResult(authority: Authority, entityStore: EntityStore, addressBook:
 
 suspend fun handleGetFeed(
     call: ApplicationCall,
-    authority: Authority,
     entityStore: EntityStore,
     searchIndex: SearchIndex,
     addressBook: AddressBook,
 ) {
-    // TODO: Look for startTransactionId in call (For paging)
-    val entityIds = getEntityIds(entityStore, searchIndex, call.parameters["q"])
+    val personaIds = call.parameters["personaIds"]?.split(",")?.map { Id.decode(it) } ?: emptyList()
+    val entityIds = getEntityIds(entityStore, personaIds, searchIndex, call.parameters["q"])
+    val authority = addressBook.getAuthorities().filterIsInstance<Persona>().first()
 
     call.respond(FeedResult(
         authority.authorityId,

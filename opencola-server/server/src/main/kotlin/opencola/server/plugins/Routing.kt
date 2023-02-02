@@ -242,34 +242,32 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
 
             get("/entity/{entityId}") {
                 // TODO: Authority should be passed (and authenticated) in header
-                val persona = app.inject<AddressBook>().getAuthorities().filterIsInstance<Persona>().single()
                 getEntity(call, persona, app.inject(), app.inject())
             }
 
             post("/entity/{entityId}") {
-                saveEntity(call, app.inject(), app.inject(), app.inject())
+                saveEntity(call, persona, app.inject(), app.inject())
             }
 
             put("/entity/{entityId}") {
-                val persona = app.inject<AddressBook>().getAuthorities().filterIsInstance<Persona>().single()
                 updateEntity(call, persona, app.inject(), app.inject())
             }
 
             delete("/entity/{entityId}") {
-                deleteEntity(call, app.inject(), app.inject(), app.inject())
+                deleteEntity(call, persona, app.inject(), app.inject())
             }
 
             post("/entity/{entityId}/comment") {
-                addComment(call, app.inject(), app.inject(), app.inject())
+                addComment(call, persona, app.inject(), app.inject())
             }
 
             post("/post") {
-                newPost(call, app.inject(), app.inject(), app.inject())
+                newPost(call, persona, app.inject(), app.inject())
             }
 
             delete("/comment/{commentId}") {
                 // TODO: Remove call and parse comment id out here, so handlers don't need to know anything about ktor
-                deleteComment(call, app.inject(), app.inject())
+                deleteComment(call, persona, app.inject())
             }
 
             // TODO: Think about checking for no extra parameters
@@ -301,31 +299,21 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             }
 
             get("/data/{id}") {
-                val authority = app.getPersonas().single()
-                handleGetDataCall(call, app.inject(), app.inject(), authority.authorityId)
+                handleGetDataCall(call, app.inject(), app.inject(), persona.authorityId)
             }
 
             get("/data/{id}/{partName}") {
                 // TODO: Add a parameters extension that gets the parameter value or throws an exception
-                val authority = app.getPersonas().single()
-                handleGetDataPartCall(call, authority.authorityId, app.inject())
+                handleGetDataPartCall(call, persona.authorityId, app.inject())
             }
 
             get("/actions/{uri}") {
-                val authority = app.getPersonas().single()
-                handleGetActionsCall(call, authority.authorityId, app.inject())
+                handleGetActionsCall(call, persona.authorityId, app.inject())
             }
-
-            // TODO: This should no longer be needed (handled by /networkNode), so should be removed.
-//            post("/notifications") {
-//                val notification = call.receive<Notification>()
-//                handleNotification(app.inject(), app.inject(), notification)
-//                call.respond(HttpStatusCode.OK)
-//            }
 
             get("/feed") {
                 // TODO: Handle filtering of authorities
-                handleGetFeed(call, persona, app.inject(), app.inject(), app.inject())
+                handleGetFeed(call, app.inject(), app.inject(), app.inject())
             }
 
             get("/peers") {
@@ -335,34 +323,29 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             // TODO: change token to inviteToken
             get("/peers/token") {
                 val inviteToken =
-                    getInviteToken(app.getPersonas().single().entityId, app.inject(), app.inject(), app.inject())
+                    getInviteToken(persona.entityId, app.inject(), app.inject(), app.inject())
                 call.respond(TokenRequest(inviteToken))
             }
 
             post("/peers/token") {
                 val tokenRequest = call.receive<TokenRequest>()
-                call.respond(inviteTokenToPeer(app.getPersonas().single().entityId, tokenRequest.token))
+                call.respond(inviteTokenToPeer(persona.entityId, tokenRequest.token))
             }
 
             put("/peers") {
                 val peer = call.receive<Peer>()
-                updatePeer(app.getPersonas().single().entityId, app.inject(), app.inject(), app.inject(), peer)
+                updatePeer(persona.entityId, app.inject(), app.inject(), app.inject(), peer)
                 call.respond("{}")
             }
 
             delete("/peers/{peerId}") {
                 val peerId = Id.decode(call.parameters["peerId"] ?: throw IllegalArgumentException("No id set"))
-
-                TODO("This is broken - need to pass in personaId")
-                val personaId = peerId
-
-                deletePeer(app.inject(), personaId, peerId)
+                deletePeer(app.inject(), persona.entityId, peerId)
                 call.respond("{}")
             }
 
             post("/action") {
-                val authority = app.getPersonas().single()
-                handlePostActionCall(call, authority.authorityId, app.inject(), app.inject())
+                handlePostActionCall(call, persona.authorityId, app.inject(), app.inject())
             }
 
             static {
