@@ -85,6 +85,7 @@ class MainReactor(
         // chain to existing ones, which can happen if a peer deletes their store). If this happens, inform the user
         // and ask if "abandoned" transactions should be deleted.
         // TODO: Catch / handle this error and return appropriate forbidden / not authorized status
+        // Since a peer can be connected to multiple personas, we arbitrarily pick the first peer
         val peer = addressBook.getPeer(peerId).firstOrNull()
             ?: throw IllegalArgumentException("Attempt to request transactions for unknown peer: $peerId ")
 
