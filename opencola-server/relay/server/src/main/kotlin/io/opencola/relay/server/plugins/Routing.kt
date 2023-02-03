@@ -20,7 +20,8 @@ fun Application.configureRouting(webSocketRelayServer: WebSocketRelayServer) {
 
         get("/connections") {
             val connectionStates = webSocketRelayServer.connectionStates()
-            val states = connectionStates.joinToString("\n") { "${it.first} - ${if (it.second) "Ready" else "Not Ready"}"  }
+            val states =
+                connectionStates.joinToString("\n") { "${it.first} - ${if (it.second) "Ready" else "Not Ready"}" }
             call.respondText("OpenCola Relay Server\n\nConnections (${connectionStates.count()})\n\n$states")
         }
 
@@ -39,7 +40,7 @@ fun Application.configureRouting(webSocketRelayServer: WebSocketRelayServer) {
         post("/read") {
             val startTime = System.currentTimeMillis()
             val bytes = call.receiveText().toByteArray()
-            println ("/read: Read ${bytes.size} bytes in ${elapsedTime(startTime)} ms")
+            println("/read: Read ${bytes.size} bytes in ${elapsedTime(startTime)} ms")
             call.respondText { "OK" }
         }
 

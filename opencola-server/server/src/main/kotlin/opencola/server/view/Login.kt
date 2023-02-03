@@ -14,7 +14,7 @@ suspend fun loginPage(call: ApplicationCall, username: String, message: String? 
         }
         body {
             form(action = "/login", encType = FormEncType.applicationXWwwFormUrlEncoded, method = FormMethod.post) {
-                if(message != null) {
+                if (message != null) {
                     p {
                         +message
                     }

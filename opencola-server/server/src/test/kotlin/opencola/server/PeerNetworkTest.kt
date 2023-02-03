@@ -28,21 +28,21 @@ open class PeerNetworkTest {
         )
     }
 
-    protected fun startServer(engine: NettyApplicationEngine){
+    protected fun startServer(engine: NettyApplicationEngine) {
         // TODO: This is horrible. Figure out how to do this properly with suspend / coroutine / etc..
         var started = false
         engine.environment.monitor.subscribe(ApplicationStarted) { started = true }
         engine.start()
-        while(!started){
+        while (!started) {
             Thread.sleep(100)
         }
     }
 
-    protected fun getApplicationNode() : ApplicationNode {
+    protected fun getApplicationNode(): ApplicationNode {
         return ApplicationNode.getNode(nextServerNum++, false, ApplicationNode.getBaseConfig())
     }
 
-    private fun addPeer(applicationNode: ApplicationNode , peerApplicationNode: ApplicationNode) {
+    private fun addPeer(applicationNode: ApplicationNode, peerApplicationNode: ApplicationNode) {
         val inviteToken = peerApplicationNode.getInviteToken()
         val authorityId = applicationNode.application.getPersonas().single().entityId
         val peer = inviteTokenToPeer(authorityId, inviteToken)

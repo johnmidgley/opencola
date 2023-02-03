@@ -3,20 +3,21 @@ package io.opencola.relay.common
 import io.ktor.network.sockets.*
 import io.ktor.network.sockets.Socket
 import io.ktor.utils.io.*
+import kotlinx.coroutines.runBlocking
 
 class StandardSocketSession(private val socket: Socket) : SocketSession {
-    val maxReadSize = 1024 *1024 * 50
+    val maxReadSize = 1024 * 1024 * 50
     val readChannel = socket.openReadChannel()
     val writeChannel = socket.openWriteChannel(autoFlush = true)
 
-    override suspend fun isReady() : Boolean {
+    override suspend fun isReady(): Boolean {
         return !(socket.isClosed || readChannel.isClosedForRead || writeChannel.isClosedForWrite)
     }
 
-    override suspend fun readSizedByteArray() : ByteArray {
+    override suspend fun readSizedByteArray(): ByteArray {
         val numBytes = readChannel.readInt()
 
-        if(numBytes > maxReadSize) {
+        if (numBytes > maxReadSize) {
             throw IllegalArgumentException("Read size to big: $numBytes")
         }
 
@@ -30,6 +31,6 @@ class StandardSocketSession(private val socket: Socket) : SocketSession {
     }
 
     override suspend fun close() {
-        socket.close()
+        runBlocking { socket.close() }
     }
 }

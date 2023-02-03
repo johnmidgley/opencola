@@ -9,7 +9,7 @@ import opencola.server.model.Persona
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class PersonasTest : ApplicationTestBase()  {
+class PersonasTest : ApplicationTestBase() {
     @Test
     fun testPersonas() = testApplication {
         application { configure(this) }

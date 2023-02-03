@@ -23,7 +23,7 @@ import kotlin.test.assertNotNull
 
 class ApplicationTest : ApplicationTestBase() {
     @Test
-    fun testRoot()  = testApplication {
+    fun testRoot() = testApplication {
         application { configure(this) }
         val response = client.get("/")
         assertEquals(HttpStatusCode.OK, response.status)
@@ -34,7 +34,8 @@ class ApplicationTest : ApplicationTestBase() {
         application { configure(this) }
         val authority = application.getPersonas().first()
         val entityStore by injector.instance<EntityStore>()
-        val entity = ResourceEntity(authority.authorityId, URI("http://opencola.org"), trust = 1.0F, like = true, rating = 1.0F)
+        val entity =
+            ResourceEntity(authority.authorityId, URI("http://opencola.org"), trust = 1.0F, like = true, rating = 1.0F)
         entityStore.updateEntities(entity)
 
         val response = client.get("/entity/${entity.entityId}")

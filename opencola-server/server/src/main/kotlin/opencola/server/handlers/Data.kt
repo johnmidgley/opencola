@@ -21,7 +21,7 @@ suspend fun handleGetDataCall(call: ApplicationCall, entityStore: EntityStore, f
 
     logger.info { "MimeType: ${dataEntity.mimeType}" }
 
-    if(dataEntity.mimeType == "multipart/related") {
+    if (dataEntity.mimeType == "multipart/related") {
         call.respondRedirect("$stringId/0.html")
         return
     }

@@ -6,7 +6,7 @@ import io.ktor.server.plugins.contentnegotiation.*
 import kotlinx.serialization.json.Json
 
 fun Application.configureContentNegotiation() {
-    install(ContentNegotiation){
+    install(ContentNegotiation) {
         json(Json)
     }
 }

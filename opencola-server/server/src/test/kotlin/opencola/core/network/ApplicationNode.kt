@@ -36,7 +36,12 @@ class ApplicationNode(val application: Application) : Node {
     }
 
     override fun getInviteToken(): String {
-        return getInviteToken(application.getPersonas().single().entityId, application.inject(), application.inject(), application.inject())
+        return getInviteToken(
+            application.getPersonas().single().entityId,
+            application.inject(),
+            application.inject(),
+            application.inject()
+        )
     }
 
     override fun postInviteToken(token: String): Peer {
@@ -48,7 +53,13 @@ class ApplicationNode(val application: Application) : Node {
     }
 
     override fun updatePeer(peer: Peer) {
-        updatePeer(application.getPersonas().single().entityId, application.inject(), application.inject(), application.inject(), peer)
+        updatePeer(
+            application.getPersonas().single().entityId,
+            application.inject(),
+            application.inject(),
+            application.inject(),
+            peer
+        )
     }
 
     companion object Factory {
@@ -78,18 +89,20 @@ class ApplicationNode(val application: Application) : Node {
         private fun getNode(storagePath: Path, name: String, port: Int, config: Config? = null): ApplicationNode {
             if (!storagePath.exists()) {
                 File(storagePath.toString()).mkdirs()
-                val configPath = TestApplication.applicationPath.resolve("../../test/storage").resolve("opencola-test.yaml")
+                val configPath =
+                    TestApplication.applicationPath.resolve("../../test/storage").resolve("opencola-test.yaml")
                 configPath.copyTo(storagePath.resolve("opencola-server.yaml"))
             }
 
-            val configToUse = (config ?: loadConfig(storagePath.resolve("opencola-server.yaml"))).let{
+            val configToUse = (config ?: loadConfig(storagePath.resolve("opencola-server.yaml"))).let {
                 it
                     .setServer(ServerConfig(it.server.host, port, null))
                     .setNetwork(
                         NetworkConfig(
                             URI("http://${it.server.host}:$port"),
                             it.network.requestTimeoutMilliseconds,
-                            it.network.socksProxy)
+                            it.network.socksProxy
+                        )
                     )
             }
 
@@ -101,7 +114,7 @@ class ApplicationNode(val application: Application) : Node {
 
         fun getNode(num: Int, persistent: Boolean = false, config: Config? = null): ApplicationNode {
             val storagePath =
-                if(persistent)
+                if (persistent)
                     TestApplication.applicationPath.resolve("../../test/storage/persistent/node-$num")
                 else
                     TestApplication.storagePath.resolve("node-$num")

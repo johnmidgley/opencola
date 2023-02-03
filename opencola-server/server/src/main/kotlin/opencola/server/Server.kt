@@ -119,7 +119,7 @@ suspend fun getLoginCredentials(
 ): LoginCredentials {
     val loginCredentials = CompletableDeferred<LoginCredentials>()
 
-    if(loginConfig.password != null) {
+    if (loginConfig.password != null) {
         return LoginCredentials(loginConfig.username, loginConfig.password!!)
     }
 
@@ -153,7 +153,7 @@ suspend fun getLoginCredentials(
     bootstrapInit(storagePath, serverConfig.ssl!!)
     val server = embeddedServer(Netty, environment).start(wait = false)
     val credentials = loginCredentials.await()
-    server.stop(500,500)
+    server.stop(500, 500)
 
     return credentials
 }
@@ -167,7 +167,8 @@ fun startServer(storagePath: Path, config: Config) {
             }
         }
 
-        val loginCredentials = getLoginCredentials(storagePath, config.server, config.security.login, AuthToken.encryptionParams)
+        val loginCredentials =
+            getLoginCredentials(storagePath, config.server, config.security.login, AuthToken.encryptionParams)
         val application = getApplication(storagePath, config, loginCredentials)
         getServer(application, AuthToken.encryptionParams).start()
     }

@@ -17,7 +17,7 @@ suspend fun startupForm(call: ApplicationCall, username: String, message: String
         }
         body {
             form(action = "/", encType = FormEncType.applicationXWwwFormUrlEncoded, method = FormMethod.post) {
-                if(message != null) {
+                if (message != null) {
                     p {
                         +message
                     }
@@ -42,7 +42,7 @@ suspend fun startupForm(call: ApplicationCall, username: String, message: String
                     href = "/changePassword"
                     +"Change Password"
                 }
-                br {  }
+                br { }
                 a {
                     href = "/installCert.html"
                     +"Reinstall SSL Certificate"
@@ -65,7 +65,7 @@ suspend fun newUserForm(call: ApplicationCall, username: String, message: String
                 p {
                     h2 { +"Welcome to OpenCola!" }
                 }
-                if(message != null) {
+                if (message != null) {
                     p {
                         +message
                     }
@@ -136,8 +136,12 @@ suspend fun changePasswordForm(call: ApplicationCall, message: String? = null) {
             }
         }
         body {
-            form(action = "/changePassword", encType = FormEncType.applicationXWwwFormUrlEncoded, method = FormMethod.post) {
-                if(message != null) {
+            form(
+                action = "/changePassword",
+                encType = FormEncType.applicationXWwwFormUrlEncoded,
+                method = FormMethod.post
+            ) {
+                if (message != null) {
                     p {
                         +message
                     }
@@ -189,7 +193,8 @@ suspend fun startingPage(call: ApplicationCall, authToken: String) {
             +"OpenCola is carbonating..."
             script {
                 unsafe {
-                    raw("""
+                    raw(
+                        """
                         function onImageAvailable( src, onSuccess ) {
                             console.log("Trying")
                     
@@ -208,7 +213,8 @@ suspend fun startingPage(call: ApplicationCall, authToken: String) {
                         onImageAvailable("img/pull-tab.png", function () {
                             window.location = '/';
                         });
-                        """)
+                        """
+                    )
                 }
             }
         }

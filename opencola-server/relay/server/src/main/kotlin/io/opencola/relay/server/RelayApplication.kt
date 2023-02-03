@@ -12,7 +12,8 @@ import java.util.concurrent.Semaphore
 fun startWebServer(
     port: Int,
     webSocketRelayServer: WebSocketRelayServer = WebSocketRelayServer(),
-    wait: Boolean = false): NettyApplicationEngine {
+    wait: Boolean = false
+): NettyApplicationEngine {
     val startSemaphore = Semaphore(1).also { it.acquire() }
 
     val server = embeddedServer(Netty, port = port, host = "0.0.0.0") {
@@ -33,5 +34,5 @@ fun startWebServer(
 }
 
 fun main() {
-    startWebServer(defaultOCRPort, wait =  true)
+    startWebServer(defaultOCRPort, wait = true)
 }

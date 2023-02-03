@@ -7,7 +7,7 @@ import io.opencola.security.EncryptionParams
 import opencola.server.AuthToken
 
 data class UserSession(val authToken: String) : Principal {
-    fun decodeAuthToken(encryptionParams: EncryptionParams) : AuthToken? {
+    fun decodeAuthToken(encryptionParams: EncryptionParams): AuthToken? {
         return AuthToken.decode(encryptionParams, authToken)
     }
 }

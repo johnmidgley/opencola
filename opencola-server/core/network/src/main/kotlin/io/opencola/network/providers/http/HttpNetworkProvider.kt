@@ -1,7 +1,7 @@
 package io.opencola.network.providers.http
 
 import io.ktor.client.*
-import io.ktor.client.call.*
+import io.ktor.client.call.body
 import io.ktor.client.engine.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -25,10 +25,11 @@ import kotlinx.serialization.encodeToString
 import java.net.URI
 import kotlin.IllegalStateException
 
-class HttpNetworkProvider(addressBook: AddressBook,
-                          signator: Signator,
-                          encryptor: Encryptor,
-                          networkConfig: NetworkConfig,
+class HttpNetworkProvider(
+    addressBook: AddressBook,
+    signator: Signator,
+    encryptor: Encryptor,
+    networkConfig: NetworkConfig,
 ) : AbstractNetworkProvider(addressBook, signator, encryptor) {
     private val logger = KotlinLogging.logger("HttpNetworkProvider")
 
@@ -37,7 +38,7 @@ class HttpNetworkProvider(addressBook: AddressBook,
             json()
         }
         engine {
-            if(networkConfig.socksProxy != null) {
+            if (networkConfig.socksProxy != null) {
                 logger.info { "Using Socks Proxy: ${networkConfig.socksProxy}" }
                 proxy = ProxyBuilder.socks(networkConfig.socksProxy.host, networkConfig.socksProxy.port)
             }
@@ -72,7 +73,7 @@ class HttpNetworkProvider(addressBook: AddressBook,
     }
 
     // Caller (Network Node) should check if peer is active
-    override fun sendRequest(from: Authority, to: Authority, request: Request) : Response? {
+    override fun sendRequest(from: Authority, to: Authority, request: Request): Response? {
         if (!started) throw IllegalStateException("Provider is not started - can't sendRequest")
 
         to.publicKey
@@ -92,19 +93,18 @@ class HttpNetworkProvider(addressBook: AddressBook,
                     setBody(encryptedPayload)
                 }
 
-                if(httpResponse.status != HttpStatusCode.OK)
+                if (httpResponse.status != HttpStatusCode.OK)
                     throw RuntimeException("Peer request resulted in error $httpResponse: ${httpResponse.body<String>()}")
 
-                val envelope = MessageEnvelope.decode(httpResponse.body(), encryptor).also { validateMessageEnvelope(it) }
+                val envelope =
+                    MessageEnvelope.decode(httpResponse.body(), encryptor).also { validateMessageEnvelope(it) }
                 val response = Json.decodeFromString<Response>(String(envelope.message.body))
                 logger.info { "Response: $response" }
                 response
             }
-        }
-        catch(e: java.net.ConnectException){
+        } catch (e: java.net.ConnectException) {
             logger.info { "${to.name} appears to be offline." }
-        }
-        catch (e: Exception){
+        } catch (e: Exception) {
             logger.error { "sendRequest: $e" }
         }
 

@@ -12,7 +12,7 @@ class HttpClient() {
     private val httpClient = HttpClient(CIO)
 
     // TODO: This assumes html
-    fun get(url: String) : String {
+    fun get(url: String): String {
         return runBlocking {
             httpClient.get(url).bodyAsText()
 

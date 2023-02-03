@@ -31,7 +31,12 @@ suspend fun getEntity(call: ApplicationCall, authority: Authority, entityStore: 
 }
 
 // TODO - investigate delete and then re-add. It seems to "restore" all previous saves. Is this good or bad?
-suspend fun deleteEntity(call: ApplicationCall, authority: Authority, entityStore: EntityStore, addressBook: AddressBook) {
+suspend fun deleteEntity(
+    call: ApplicationCall,
+    authority: Authority,
+    entityStore: EntityStore,
+    addressBook: AddressBook
+) {
     val stringId = call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified")
     val entityId = Id.decode(stringId)
 
@@ -39,9 +44,9 @@ suspend fun deleteEntity(call: ApplicationCall, authority: Authority, entityStor
     entityStore.deleteEntity(authority.authorityId, entityId)
     val entity = getEntityResults(authority, entityStore, addressBook, setOf(entityId)).firstOrNull()
 
-    if(entity == null)
-        // Need to return something in JSON. Sending an {} means that the entity has been fully deleted (i.e. no other
-        // peers have the item, so this is a final delete)
+    if (entity == null)
+    // Need to return something in JSON. Sending an {} means that the entity has been fully deleted (i.e. no other
+    // peers have the item, so this is a final delete)
         call.respond("{}")
     else
         call.respond(entity)
@@ -58,7 +63,13 @@ data class EntityPayload(
     val comment: String?,
 )
 
-fun updateEntity(authority: Authority, entityStore: EntityStore, addressBook: AddressBook, entity: Entity, entityPayload: EntityPayload): EntityResult? {
+fun updateEntity(
+    authority: Authority,
+    entityStore: EntityStore,
+    addressBook: AddressBook,
+    entity: Entity,
+    entityPayload: EntityPayload
+): EntityResult? {
     entity.name = entityPayload.name.blankToNull()
     entity.imageUri = entityPayload.imageUri.blankToNull().nullOrElse {
         val uri = URI(it)
@@ -72,7 +83,7 @@ fun updateEntity(authority: Authority, entityStore: EntityStore, addressBook: Ad
         .blankToNull()
         .ifNullOrElse(emptySet()) { it.split(" ").toSet() }
 
-    if(entityPayload.comment.isNullOrBlank())
+    if (entityPayload.comment.isNullOrBlank())
         entityStore.updateEntities(entity)
     else
         entityStore.updateEntities(entity, CommentEntity(entity.authorityId, entity.entityId, entityPayload.comment))
@@ -80,14 +91,20 @@ fun updateEntity(authority: Authority, entityStore: EntityStore, addressBook: Ad
     return getEntityResult(authority, entityStore, addressBook, entity.entityId)
 }
 
-suspend fun updateEntity(call: ApplicationCall, authority: Authority, entityStore: EntityStore, addressBook: AddressBook) {
+suspend fun updateEntity(
+    call: ApplicationCall,
+    authority: Authority,
+    entityStore: EntityStore,
+    addressBook: AddressBook
+) {
     val authorityId = authority.authorityId
     val entityPayload = call.receive<EntityPayload>()
-    val entityId = Id.decode(entityPayload.entityId ?: throw IllegalArgumentException("No entityId specified for update"))
+    val entityId =
+        Id.decode(entityPayload.entityId ?: throw IllegalArgumentException("No entityId specified for update"))
     logger.info { "Updating: $entityPayload" }
 
     val entity = getOrCopyEntity(authorityId, entityStore, entityId)
-    if(entity == null){
+    if (entity == null) {
         call.respond(HttpStatusCode.Unauthorized)
         return
     }
@@ -95,14 +112,15 @@ suspend fun updateEntity(call: ApplicationCall, authority: Authority, entityStor
     updateEntity(authority, entityStore, addressBook, entity, entityPayload).nullOrElse { call.respond(it) }
 }
 
-fun getOrCopyEntity(authorityId : Id, entityStore: EntityStore, entityId: Id): Entity? {
-    val existingEntity = entityStore.getEntity(authorityId, entityId) ?:
-        entityStore.getEntities(emptySet(), setOf(entityId)).firstOrNull()
+fun getOrCopyEntity(authorityId: Id, entityStore: EntityStore, entityId: Id): Entity? {
+    val existingEntity =
+        entityStore.getEntity(authorityId, entityId) ?: entityStore.getEntities(emptySet(), setOf(entityId))
+            .firstOrNull()
 
-    if(existingEntity == null || existingEntity.authorityId == authorityId )
+    if (existingEntity == null || existingEntity.authorityId == authorityId)
         return existingEntity
 
-    val newEntity = when(existingEntity){
+    val newEntity = when (existingEntity) {
         is ResourceEntity -> {
             ResourceEntity(
                 authorityId,
@@ -113,8 +131,10 @@ fun getOrCopyEntity(authorityId : Id, entityStore: EntityStore, entityId: Id): E
                 existingEntity.imageUri
             )
         }
+
         is PostEntity -> {
-            PostEntity(authorityId,
+            PostEntity(
+                authorityId,
                 existingEntity.entityId,
                 existingEntity.name,
                 existingEntity.description,
@@ -122,6 +142,7 @@ fun getOrCopyEntity(authorityId : Id, entityStore: EntityStore, entityId: Id): E
                 existingEntity.imageUri
             )
         }
+
         else -> throw IllegalArgumentException("Don't know how to add ${existingEntity.javaClass.simpleName}")
     }
 
@@ -157,7 +178,12 @@ fun addComment(
 @Serializable
 data class PostCommentPayload(val commentId: String? = null, val text: String)
 
-suspend fun addComment(call: ApplicationCall, authority: Authority, entityStore: EntityStore, addressBook: AddressBook) {
+suspend fun addComment(
+    call: ApplicationCall,
+    authority: Authority,
+    entityStore: EntityStore,
+    addressBook: AddressBook
+) {
     val entityId = Id.decode(call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified"))
     val comment = call.receive<PostCommentPayload>()
 
@@ -174,7 +200,12 @@ suspend fun deleteComment(call: ApplicationCall, authority: Authority, entitySto
     call.respondText("{}")
 }
 
-suspend fun saveEntity(call: ApplicationCall, authority: Authority, entityStore: EntityStore, addressBook: AddressBook) {
+suspend fun saveEntity(
+    call: ApplicationCall,
+    authority: Authority,
+    entityStore: EntityStore,
+    addressBook: AddressBook
+) {
     val entityId = Id.decode(call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified"))
 
     val entity = getOrCopyEntity(authority.authorityId, entityStore, entityId)
@@ -186,7 +217,12 @@ suspend fun saveEntity(call: ApplicationCall, authority: Authority, entityStore:
         .nullOrElse { call.respond(it) }
 }
 
-fun newResourceFromUrl(authority: Authority, entityStore: EntityStore, addressBook: AddressBook, url: String) : EntityResult? {
+fun newResourceFromUrl(
+    authority: Authority,
+    entityStore: EntityStore,
+    addressBook: AddressBook,
+    url: String
+): EntityResult? {
     try {
         val entity = getOrCopyEntity(authority.authorityId, entityStore, Id.ofUri(URI(url)))
             ?: run {
@@ -205,19 +241,24 @@ fun newResourceFromUrl(authority: Authority, entityStore: EntityStore, addressBo
             }
 
         return getEntityResult(authority, entityStore, addressBook, entity.entityId)
-    }catch (e: Exception){
+    } catch (e: Exception) {
         logger.error { e }
     }
 
     return null
 }
 
-fun newPost(authority: Authority, entityStore: EntityStore, addressBook: AddressBook, entityPayload: EntityPayload): EntityResult? {
+fun newPost(
+    authority: Authority,
+    entityStore: EntityStore,
+    addressBook: AddressBook,
+    entityPayload: EntityPayload
+): EntityResult? {
     val url = entityPayload.description?.trim()
 
-    if(url != null && urlRegex.matchEntire(url) != null) {
+    if (url != null && urlRegex.matchEntire(url) != null) {
         val result = newResourceFromUrl(authority, entityStore, addressBook, url)
-        if(result != null)
+        if (result != null)
             return result
     }
 

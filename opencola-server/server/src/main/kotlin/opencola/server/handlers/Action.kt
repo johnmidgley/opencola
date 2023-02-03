@@ -25,10 +25,10 @@ private val logger = KotlinLogging.logger("ActionHandler")
 
 class Content(val mimeType: String, val data: ByteArray)
 
-fun getFileData(uri: URI) : ByteArray? {
+fun getFileData(uri: URI): ByteArray? {
     val path = Path(uri.path)
 
-    if(path.exists())
+    if (path.exists())
         return path.inputStream().use { it.readAllBytes() }
 
     return null
@@ -60,7 +60,7 @@ fun getHttpData(uri: URI): ByteArray? {
     }
 }
 
-fun getData(uri: URI) : ByteArray? {
+fun getData(uri: URI): ByteArray? {
     return when (uri.scheme) {
         "file" -> getFileData(uri)
         "http" -> getHttpData(uri)
@@ -85,7 +85,7 @@ fun getContent(mhtmlPage: MhtmlPage): Content {
     }
 }
 
-fun getImageFromPdf(content: Content) : Content? {
+fun getImageFromPdf(content: Content): Content? {
     return getFirstImageFromPDF(content.data)?.let { image ->
         Content("image/png", image.toBytes("PNG"))
     }
@@ -112,7 +112,7 @@ fun updatePdfResource(
     return emptyList()
 }
 
-fun updateMultipartResource(resourceEntity: ResourceEntity, mhtmlPage: MhtmlPage) : List<Entity> {
+fun updateMultipartResource(resourceEntity: ResourceEntity, mhtmlPage: MhtmlPage): List<Entity> {
     // Add / update fields
     // TODO - Check if setting null writes a retraction when fields are null
     resourceEntity.name = mhtmlPage.title
@@ -123,7 +123,7 @@ fun updateMultipartResource(resourceEntity: ResourceEntity, mhtmlPage: MhtmlPage
     return emptyList()
 }
 
-fun getDataEntity(authorityId: Id, entityStore: EntityStore, fileStore: FileStore, content: Content) : DataEntity {
+fun getDataEntity(authorityId: Id, entityStore: EntityStore, fileStore: FileStore, content: Content): DataEntity {
     val dataId = fileStore.write(content.data)
     return (entityStore.getEntity(authorityId, dataId) ?: DataEntity(
         authorityId,
@@ -154,7 +154,7 @@ fun updateResource(
     updateActions(entity, actions)
     entity.dataId = entity.dataId.plus(dataEntity.entityId)
 
-    val extraEntities = when(content.mimeType) {
+    val extraEntities = when (content.mimeType) {
         "multipart/related" -> updateMultipartResource(entity, mhtmlPage)
         "application/pdf" -> updatePdfResource(entity, mhtmlPage, content)
         else -> updateMultipartResource(entity, mhtmlPage)
@@ -204,10 +204,12 @@ suspend fun handlePostActionCall(
                     else -> throw IllegalArgumentException("Unknown FormItem in action request: ${part.name}")
                 }
             }
+
             is PartData.FileItem -> {
                 if (part.name != "mhtml") throw IllegalArgumentException("Unknown FileItem in action request: ${part.name}")
                 mhtml = part.streamProvider().use { it.readAllBytes() }
             }
+
             else -> throw IllegalArgumentException("Unknown part in request: ${part.name}")
         }
     }

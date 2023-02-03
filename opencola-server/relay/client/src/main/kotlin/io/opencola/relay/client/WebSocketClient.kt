@@ -16,7 +16,7 @@ class WebSocketClient(
     requestTimeoutMilliseconds: Long = 20000,
     retryPolicy: (Int) -> Long = retryExponentialBackoff(),
 ) : AbstractClient(uri, keyPair, name, requestTimeoutMilliseconds, retryPolicy) {
-        private val client = HttpClient(CIO) {
+    private val client = HttpClient(CIO) {
         install(WebSockets) {
             // Configure WebSockets
             pingInterval = 1000 * 55 // TODO: Make configurable
@@ -24,6 +24,13 @@ class WebSocketClient(
     }
 
     override suspend fun getSocketSession(): SocketSession {
-        return WebSocketSessionWrapper(client.webSocketSession(method = HttpMethod.Get, host = hostname, port = port, path = "/relay"))
+        return WebSocketSessionWrapper(
+            client.webSocketSession(
+                method = HttpMethod.Get,
+                host = hostname,
+                port = port,
+                path = "/relay"
+            )
+        )
     }
 }
