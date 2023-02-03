@@ -48,9 +48,9 @@ fun Application.configureBootstrapRouting(
         get("/") {
             val isNewUser = isNewUser(storagePath)
 
-            if(serverConfig.ssl != null && !isCertInstalled(storagePath)) {
+            if (serverConfig.ssl != null && !isCertInstalled(storagePath)) {
                 call.respondRedirect("/installCert.html")
-            } else if(isNewUser) {
+            } else if (isNewUser) {
                 call.respondRedirect("newUser")
             } else if (call.request.origin.scheme != "https") {
                 call.respondRedirect("https://localhost:${serverConfig.ssl!!.port}")
@@ -65,10 +65,10 @@ fun Application.configureBootstrapRouting(
             val username = formParameters["username"]
             val password = formParameters["password"]
 
-            if(username.isNullOrBlank()) {
+            if (username.isNullOrBlank()) {
                 startupForm(call, loginConfig.username, "Please enter a username")
-            }else if (password.isNullOrBlank()) {
-                startupForm(call, username,"Please enter a password")
+            } else if (password.isNullOrBlank()) {
+                startupForm(call, username, "Please enter a password")
             } else {
                 if (validateAuthorityKeyStorePassword(storagePath, password)) {
                     startingPage(call, AuthToken(username).encode(authEncryptionParams))
@@ -98,7 +98,7 @@ fun Application.configureBootstrapRouting(
             val autoStart = formParameters["autoStart"]?.toBoolean() ?: false
 
             val error = if (username.isNullOrBlank())
-              "Please enter a username"
+                "Please enter a username"
             else if (password.isNullOrBlank() || passwordConfirm.isNullOrBlank())
                 "You must include a new password and confirm it."
             else if (password == "password")
@@ -108,11 +108,13 @@ fun Application.configureBootstrapRouting(
             else
                 null
 
-            if(error != null) {
+            if (error != null) {
                 newUserForm(call, username!!, error)
             } else {
                 changeAuthorityKeyStorePassword(storagePath, "password", password!!)
-                if(autoStart) { autoStart() }
+                if (autoStart) {
+                    autoStart()
+                }
                 startingPage(call, AuthToken(username!!).encode(authEncryptionParams))
                 loginCredentials.complete(LoginCredentials(username.toString(), password.toString()))
             }
@@ -153,7 +155,8 @@ fun Application.configureBootstrapRouting(
             val error = if (oldPassword == null || oldPassword.isBlank())
                 "Old password is required"
             else if (password == null || password.isBlank()
-                || passwordConfirm == null || passwordConfirm.isBlank())
+                || passwordConfirm == null || passwordConfirm.isBlank()
+            )
                 "You must include a new password and confirm it."
             else if (password == "password")
                 "Your password cannot be 'password'"
@@ -204,9 +207,9 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             val username = formParameters["username"]
             val password = formParameters["password"]
 
-            if(username == null || username.isBlank())
+            if (username == null || username.isBlank())
                 loginPage(call, app.config.security.login.username, "Please enter a username")
-            if(password == null || password.isBlank()) {
+            if (password == null || password.isBlank()) {
                 loginPage(call, app.config.security.login.username, "Please enter a password")
             } else if (validateAuthorityKeyStorePassword(app.storagePath, password)) {
                 val authToken = AuthToken(username!!).encode(authEncryptionParams)
@@ -226,7 +229,7 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
 
         get("/isLoggedIn") {
             val authToken = call.getAuthToken(authEncryptionParams)
-            if(authToken?.isValid() == true)
+            if (authToken?.isValid() == true)
                 call.respond(HttpStatusCode.OK)
             else
                 call.respond(HttpStatusCode.Unauthorized)
@@ -348,6 +351,9 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
                 handlePostActionCall(call, persona.authorityId, app.inject(), app.inject())
             }
 
+            get("/personas") {
+                call.respond(getPersonas(app.inject()))
+            }
             static {
                 val resourcePath = getResourceFilePath(
                     "web",

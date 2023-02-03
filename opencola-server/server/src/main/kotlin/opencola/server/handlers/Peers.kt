@@ -22,6 +22,7 @@ private val logger = KotlinLogging.logger("PeerHandler")
 
 @Serializable
 // TODO: Add personaId to Peer, as peer is tied to a persona
+// Move to Model
 data class Peer(
     val id: String,
     val name: String,

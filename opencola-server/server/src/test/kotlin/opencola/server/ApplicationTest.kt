@@ -4,9 +4,6 @@ import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.auth.*
-import io.ktor.server.sessions.*
 import io.ktor.server.testing.*
 import io.opencola.model.*
 import io.opencola.storage.EntityStore
@@ -15,13 +12,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import opencola.core.TestApplication
-import opencola.server.handlers.EntityPayload
-import opencola.server.handlers.FeedResult
-import opencola.server.handlers.SearchResults
-import opencola.server.plugins.UserSession
-import opencola.server.plugins.configureContentNegotiation
-import opencola.server.plugins.configureRouting
-import opencola.server.handlers.EntityResult
+import opencola.server.handlers.*
 import org.kodein.di.instance
 import java.io.File
 import java.net.URI
@@ -30,24 +21,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-class ApplicationTest {
-    private val application = TestApplication.instance
-    val injector = TestApplication.instance.injector
-
-    private fun configure(app: Application) {
-        app.install(Authentication) {
-            session<UserSession>("auth-session") {
-                validate { session -> session }
-            }
-        }
-        app.configureRouting(application, AuthToken.encryptionParams)
-        app.configureContentNegotiation()
-        app.install(Sessions) {
-            cookie<UserSession>("user_session")
-        }
-
-    }
-
+class ApplicationTest : ApplicationTestBase() {
     @Test
     fun testRoot()  = testApplication {
         application { configure(this) }
