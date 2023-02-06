@@ -354,6 +354,12 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             get("/personas") {
                 call.respond(getPersonas(app.inject()))
             }
+
+            post("/personas") {
+                val viewPersona = call.receive<opencola.server.model.Persona>()
+                call.respond(createPersona(app.inject(), viewPersona))
+            }
+
             static {
                 val resourcePath = getResourceFilePath(
                     "web",

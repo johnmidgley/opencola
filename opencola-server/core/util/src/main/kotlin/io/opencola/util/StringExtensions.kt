@@ -1,6 +1,8 @@
 package io.opencola.util
 
 import java.net.URI
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.decodeFromString
 
 fun String.hexStringToByteArray(): ByteArray {
     // TODO: This may be more direct
@@ -18,4 +20,8 @@ fun String.tryParseUri() : URI? {
 
 fun String?.blankToNull() : String? {
     return if(this.isNullOrBlank()) null else this
+}
+
+inline fun <reified T> String.decodeJson() : T {
+    return Json.decodeFromString(this)
 }

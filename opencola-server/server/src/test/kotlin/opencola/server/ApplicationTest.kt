@@ -13,7 +13,6 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import opencola.core.TestApplication
 import opencola.server.handlers.*
-import org.kodein.di.instance
 import java.io.File
 import java.net.URI
 import java.net.URLEncoder.*
@@ -33,7 +32,7 @@ class ApplicationTest : ApplicationTestBase() {
     fun testGetEntity() = testApplication {
         application { configure(this) }
         val authority = application.getPersonas().first()
-        val entityStore by injector.instance<EntityStore>()
+        val entityStore = inject<EntityStore>()
         val entity =
             ResourceEntity(authority.authorityId, URI("http://opencola.org"), trust = 1.0F, like = true, rating = 1.0F)
         entityStore.updateEntities(entity)
@@ -67,7 +66,7 @@ class ApplicationTest : ApplicationTestBase() {
     fun testStatusActions() = testApplication {
         application { configure(this) }
         val authority = application.getPersonas().first()
-        val entityStore by injector.instance<EntityStore>()
+        val entityStore = inject<EntityStore>()
         val uri = URI("https://opencola.org")
         val entity = ResourceEntity(authority.authorityId, uri, trust = 1.0F, like = true, rating = 1.0F)
 
@@ -144,7 +143,7 @@ class ApplicationTest : ApplicationTestBase() {
         application { configure(this) }
 
         val authority = application.getPersonas().first()
-        val entityStore by injector.instance<EntityStore>()
+        val entityStore = inject<EntityStore>()
         entityStore.resetStore()
 
         val uri = URI("https://opencola.org/${Id.new()}")
@@ -186,7 +185,7 @@ class ApplicationTest : ApplicationTestBase() {
     fun testUpdateEntity() = testApplication {
         application { configure(this) }
         val authority = application.getPersonas().first()
-        val entityStore by injector.instance<EntityStore>()
+        val entityStore = inject<EntityStore>()
         val resourceEntity = ResourceEntity(
             authority.authorityId,
             URI("https://opencola.io"),
