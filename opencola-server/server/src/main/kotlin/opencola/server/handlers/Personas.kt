@@ -1,17 +1,17 @@
 package opencola.server.handlers
 
-import io.opencola.model.Persona
+import io.opencola.model.Persona as ModelPersona
 import io.opencola.security.generateKeyPair
 import io.opencola.storage.AddressBook
+import opencola.server.viewmodel.Persona
 import java.net.URI
-import opencola.server.model.Persona as UIPersona
 
-fun getPersonas(addressBook: AddressBook) : List<UIPersona> {
-    return addressBook.getAuthorities().filterIsInstance<Persona>().map { UIPersona(it) }
+fun getPersonas(addressBook: AddressBook) : List<Persona> {
+    return addressBook.getAuthorities().filterIsInstance<ModelPersona>().map { Persona(it) }
 }
 
-fun createPersona(addressBook: AddressBook, persona: UIPersona) : UIPersona {
-    val newPersona = Persona(
+fun createPersona(addressBook: AddressBook, persona: Persona) : Persona {
+    val newPersona = ModelPersona(
         generateKeyPair(),
         URI(persona.address),
         persona.name,
@@ -21,5 +21,5 @@ fun createPersona(addressBook: AddressBook, persona: UIPersona) : UIPersona {
     newPersona.setActive(persona.isActive)
 
     addressBook.updateAuthority(newPersona)
-    return UIPersona(newPersona)
+    return Persona(newPersona)
 }

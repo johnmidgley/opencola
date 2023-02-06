@@ -15,7 +15,7 @@ import io.opencola.application.ServerConfig
 import io.opencola.application.getResourceFilePath
 import io.opencola.util.nullOrElse
 import io.opencola.model.Id
-import io.opencola.model.Persona
+import io.opencola.model.Persona as ModelPersona
 import io.opencola.network.handleGetTransactions
 import io.opencola.network.providers.http.HttpNetworkProvider
 import io.opencola.security.EncryptionParams
@@ -27,6 +27,7 @@ import opencola.server.AuthToken
 import opencola.server.LoginCredentials
 import opencola.server.handlers.*
 import opencola.server.view.*
+import opencola.server.viewmodel.Persona
 import java.nio.file.Path
 import kotlin.io.path.readBytes
 import io.opencola.application.Application as app
@@ -184,7 +185,7 @@ fun Application.configureBootstrapRouting(
 fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParams) {
     // TODO: Make and user general opencola.server
     val logger = KotlinLogging.logger("opencola.init")
-    val persona = app.inject<AddressBook>().getAuthorities().filterIsInstance<Persona>().single()
+    val rootPersona = app.inject<AddressBook>().getAuthorities().filterIsInstance<ModelPersona>().single()
 
     routing {
         // Authentication from https://ktor.io/docs/session-auth.html
@@ -245,32 +246,32 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
 
             get("/entity/{entityId}") {
                 // TODO: Authority should be passed (and authenticated) in header
-                getEntity(call, persona, app.inject(), app.inject())
+                getEntity(call, rootPersona, app.inject(), app.inject())
             }
 
             post("/entity/{entityId}") {
-                saveEntity(call, persona, app.inject(), app.inject())
+                saveEntity(call, rootPersona, app.inject(), app.inject())
             }
 
             put("/entity/{entityId}") {
-                updateEntity(call, persona, app.inject(), app.inject())
+                updateEntity(call, rootPersona, app.inject(), app.inject())
             }
 
             delete("/entity/{entityId}") {
-                deleteEntity(call, persona, app.inject(), app.inject())
+                deleteEntity(call, rootPersona, app.inject(), app.inject())
             }
 
             post("/entity/{entityId}/comment") {
-                addComment(call, persona, app.inject(), app.inject())
+                addComment(call, rootPersona, app.inject(), app.inject())
             }
 
             post("/post") {
-                newPost(call, persona, app.inject(), app.inject())
+                newPost(call, rootPersona, app.inject(), app.inject())
             }
 
             delete("/comment/{commentId}") {
                 // TODO: Remove call and parse comment id out here, so handlers don't need to know anything about ktor
-                deleteComment(call, persona, app.inject())
+                deleteComment(call, rootPersona, app.inject())
             }
 
             // TODO: Think about checking for no extra parameters
@@ -302,16 +303,16 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             }
 
             get("/data/{id}") {
-                handleGetDataCall(call, app.inject(), app.inject(), persona.authorityId)
+                handleGetDataCall(call, app.inject(), app.inject(), rootPersona.authorityId)
             }
 
             get("/data/{id}/{partName}") {
                 // TODO: Add a parameters extension that gets the parameter value or throws an exception
-                handleGetDataPartCall(call, persona.authorityId, app.inject())
+                handleGetDataPartCall(call, rootPersona.authorityId, app.inject())
             }
 
             get("/actions/{uri}") {
-                handleGetActionsCall(call, persona.authorityId, app.inject())
+                handleGetActionsCall(call, rootPersona.authorityId, app.inject())
             }
 
             get("/feed") {
@@ -320,35 +321,35 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             }
 
             get("/peers") {
-                call.respond(getPeers(persona, app.inject()))
+                call.respond(getPeers(rootPersona, app.inject()))
             }
 
             // TODO: change token to inviteToken
             get("/peers/token") {
                 val inviteToken =
-                    getInviteToken(persona.entityId, app.inject(), app.inject(), app.inject())
+                    getInviteToken(rootPersona.entityId, app.inject(), app.inject(), app.inject())
                 call.respond(TokenRequest(inviteToken))
             }
 
             post("/peers/token") {
                 val tokenRequest = call.receive<TokenRequest>()
-                call.respond(inviteTokenToPeer(persona.entityId, tokenRequest.token))
+                call.respond(inviteTokenToPeer(rootPersona.entityId, tokenRequest.token))
             }
 
             put("/peers") {
                 val peer = call.receive<Peer>()
-                updatePeer(persona.entityId, app.inject(), app.inject(), app.inject(), peer)
+                updatePeer(rootPersona.entityId, app.inject(), app.inject(), app.inject(), peer)
                 call.respond("{}")
             }
 
             delete("/peers/{peerId}") {
                 val peerId = Id.decode(call.parameters["peerId"] ?: throw IllegalArgumentException("No id set"))
-                deletePeer(app.inject(), persona.entityId, peerId)
+                deletePeer(app.inject(), rootPersona.entityId, peerId)
                 call.respond("{}")
             }
 
             post("/action") {
-                handlePostActionCall(call, persona.authorityId, app.inject(), app.inject())
+                handlePostActionCall(call, rootPersona.authorityId, app.inject(), app.inject())
             }
 
             get("/personas") {
@@ -356,8 +357,8 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             }
 
             post("/personas") {
-                val viewPersona = call.receive<opencola.server.model.Persona>()
-                call.respond(createPersona(app.inject(), viewPersona))
+                val persona = call.receive<Persona>()
+                call.respond(createPersona(app.inject(), persona))
             }
 
             static {

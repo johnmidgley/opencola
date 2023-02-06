@@ -3,7 +3,7 @@ package opencola.server
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.server.testing.*
-import opencola.server.model.Persona
+import opencola.server.viewmodel.Persona
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
