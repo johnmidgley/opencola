@@ -1,8 +1,6 @@
 package io.opencola.network.providers.relay
 
 import io.opencola.network.NetworkConfig
-import io.opencola.model.Authority
-import io.opencola.model.Persona
 import io.opencola.network.*
 import io.opencola.network.AbstractNetworkProvider
 import io.opencola.network.MessageEnvelope
@@ -12,6 +10,8 @@ import io.opencola.security.Signator
 import io.opencola.storage.AddressBook
 import io.opencola.relay.client.RelayClient
 import io.opencola.relay.client.WebSocketClient
+import io.opencola.storage.AddressBookEntry
+import io.opencola.storage.PersonaAddressBookEntry
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -66,14 +66,14 @@ class OCRelayNetworkProvider(addressBook: AddressBook,
     }
 
     override fun start(waitUntilReady: Boolean) {
-        val (personaAuthorities, peerAuthorities) = addressBook.getAuthorities().partition { it is Persona }
-        val personas = personaAuthorities.associate { it.entityId to it as Persona }
+        val (personaAuthorities, peerAuthorities) = addressBook.getEntries().partition { it is PersonaAddressBookEntry }
+        val personas = personaAuthorities.associate { it.entityId to it as PersonaAddressBookEntry }
 
         peerAuthorities
-            .filter { it.getActive() }
-            .filter { it.uri?.scheme == openColaRelayScheme }
+            .filter { it.isActive }
+            .filter { it.address.scheme == openColaRelayScheme }
             // TODO: Test that only distinct ConnectionParams are added
-            .mapNotNull { peer -> personas[peer.authorityId]?.let { ConnectionParams(peer.uri!!, it.keyPair) } }
+            .mapNotNull { peer -> personas[peer.personaId]?.let { ConnectionParams(peer.address, it.keyPair) } }
             .distinct()
             .forEach {
                 addClient(it).also {
@@ -111,7 +111,7 @@ class OCRelayNetworkProvider(addressBook: AddressBook,
 
         // Check that connection can be established
         try {
-            val keyPair = addressBook.getAuthorities().filterIsInstance<Persona>().first().keyPair
+            val keyPair = addressBook.getEntries().filterIsInstance<PersonaAddressBookEntry>().first().keyPair
 
             runBlocking {
                 WebSocketClient(
@@ -124,44 +124,48 @@ class OCRelayNetworkProvider(addressBook: AddressBook,
         }
     }
 
-    override fun addPeer(peer: Authority) {
-        val persona = addressBook.getPersona(peer.authorityId) ?:
-            throw IllegalStateException ("Can't add peer ${peer.entityId} for unknown persona: ${peer.authorityId}")
+    override fun addPeer(peer: AddressBookEntry) {
+        val persona = addressBook.getEntry(peer.personaId, peer.personaId) as? PersonaAddressBookEntry ?:
+            throw IllegalStateException ("Can't add peer ${peer.entityId} for unknown persona: ${peer.personaId}")
 
-        peer.uri?.let { addClient(ConnectionParams(it, persona.keyPair)) }
+         addClient(ConnectionParams(peer.address, persona.keyPair))
     }
 
-    override fun removePeer(peer: Authority) {
-        val persona = addressBook.getPersona(peer.authorityId) ?: return
+    override fun removePeer(peer: AddressBookEntry) {
+        val persona = addressBook.getEntry(peer.personaId, peer.personaId) as? PersonaAddressBookEntry
+            ?: throw IllegalArgumentException("Can't remove peer ${peer.entityId} for unknown persona: ${peer.personaId}")
 
         logger.info { "Removing peer: ${peer.entityId}" }
-        peer.uri?.let { peerUri ->
-            if (addressBook.getAuthorities(true)
-                .none { it.uri == peerUri && it.authorityId == persona.entityId && it.entityId != peer.entityId }) {
-                val connectionParams = ConnectionParams(peerUri, persona.keyPair)
-                runBlocking { connections[connectionParams]?.client?.close() }
-                connections.remove(connectionParams)
-            }
+        if (addressBook.getEntries()
+                .filter { it.isActive }
+                .none { it.address == peer.address && it.personaId == persona.entityId && it.entityId != peer.entityId }
+        ) {
+            val connectionParams = ConnectionParams(peer.address, persona.keyPair)
+            runBlocking { connections[connectionParams]?.client?.close() }
+            connections.remove(connectionParams)
         }
     }
 
     // TODO: Since to Authority has a persona associated with it, do we need the from Authority?
-    // TODO: Change from Authority to Persona
-    override fun sendRequest(from: Authority, to: Authority, request: Request): Response? {
-        val peerUri = to.uri ?: return null
+    // TODO: Should from and to be entries of ids?
+    override fun sendRequest(from: PersonaAddressBookEntry, to: AddressBookEntry, request: Request): Response? {
+        val peerUri = to.address
 
         if(peerUri.scheme != openColaRelayScheme) {
             logger.warn { "Unexpected uri scheme in sendRequest: $peerUri" }
         }
 
         val peerPublicKey = to.publicKey
-        if(peerPublicKey == null) {
-            logger.warn { "Can't send message to peer with no public key specified: ${to.entityId}" }
-            return null
-        }
 
-        val connectionParams = addressBook.getPersona(from.authorityId)?.let { ConnectionParams(peerUri, it.keyPair) }
-            ?: throw IllegalStateException("Can't send request from unknown persona: ${from.authorityId}")
+        // TODO: Seems weird that we look this up again - from is passed in. This does block from sending to a peer
+        //  not in the address book. Maybe ids should be passed in.
+        val connectionParams = (addressBook.getEntry(from.personaId, from.entityId) as? PersonaAddressBookEntry)?.let {
+            ConnectionParams(
+                peerUri,
+                it.keyPair
+            )
+        }
+            ?: throw IllegalStateException("Can't send request from unknown persona: ${from.personaId}")
 
         if (connections[connectionParams] == null) {
             logger.warn { "Connection info missing for: $peerUri" }

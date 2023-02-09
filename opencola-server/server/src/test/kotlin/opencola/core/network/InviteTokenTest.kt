@@ -13,10 +13,10 @@ class InviteTokenTest {
     @Test
     fun testInviteToken() {
         val injector = TestApplication.instance.injector
-        val authority = TestApplication.instance.getPersonas().first()
+        val persona = TestApplication.instance.getPersonas().first()
         val signator by injector.instance<Signator>()
 
-        val inviteToken = InviteToken(authority.entityId, "Test Name", authority.publicKey!!, authority.uri!!, URI("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTx5bRYo79dnn0X_9y11eFKD2GG6k3mOhb8fw&usqp=CAU"))
+        val inviteToken = InviteToken(persona.entityId, "Test Name", persona.publicKey, persona.address, URI("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTx5bRYo79dnn0X_9y11eFKD2GG6k3mOhb8fw&usqp=CAU"))
         val token = inviteToken.encodeBase58(signator)
         val inviteToken1 = InviteToken.decodeBase58(token)
         assertEquals(inviteToken, inviteToken1)

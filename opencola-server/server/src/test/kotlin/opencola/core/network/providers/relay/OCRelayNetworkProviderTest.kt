@@ -1,17 +1,16 @@
 package opencola.core.network.providers.relay
 
 import io.opencola.application.Application
-import io.opencola.model.Authority
 import io.opencola.model.Id
-import io.opencola.model.Persona
 import io.opencola.network.NetworkNode
 import io.opencola.network.Request
 import io.opencola.network.providers.relay.OCRelayNetworkProvider
-import io.opencola.security.generateKeyPair
 import io.opencola.storage.AddressBook
 import io.opencola.relay.client.WebSocketClient
 import io.opencola.relay.client.defaultOCRPort
 import io.opencola.relay.server.startWebServer
+import io.opencola.storage.AddressBookEntry
+import io.opencola.storage.PersonaAddressBookEntry
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import opencola.server.PeerNetworkTest
@@ -25,11 +24,11 @@ import kotlin.test.assertNull
 class OCRelayNetworkProviderTest : PeerNetworkTest() {
     private val ocRelayUri = URI("ocr://0.0.0.0")
 
-    private fun setPeerAddressToRelay(addressBook: AddressBook, peerId: Id) : Authority {
-        val peer = addressBook.getPeer(peerId).firstOrNull() ?:
+    private fun setPeerAddressToRelay(addressBook: AddressBook, peerId: Id) : AddressBookEntry {
+        val peer = addressBook.getEntries().firstOrNull { it.entityId == peerId } ?:
             throw IllegalStateException("Authority not found")
-        peer.uri = ocRelayUri
-        return addressBook.updateAuthority(peer)
+        val updatedEntry = AddressBookEntry(peer.personaId, peer.entityId, peer.name, peer.publicKey, ocRelayUri, null, peer.isActive)
+        return addressBook.updateEntry(updatedEntry)
     }
 
     @Test
@@ -37,9 +36,9 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
         println("Getting applications")
         val (app0, app1) = getApplications(2)
 
-        val app0Persona = app0.inject<AddressBook>().getAuthorities().filterIsInstance<Persona>().single()
+        val app0Persona = app0.inject<AddressBook>().getEntries().filterIsInstance<PersonaAddressBookEntry>().single()
         val app0AddressBook = app0.inject<AddressBook>()
-        val app1Persona = app1.inject<AddressBook>().getAuthorities().filterIsInstance<Persona>().single()
+        val app1Persona = app1.inject<AddressBook>().getEntries().filterIsInstance<PersonaAddressBookEntry>().single()
         val app1AddressBook = app1.inject<AddressBook>()
 
         println("app0Persona=$app0Persona")
@@ -83,16 +82,17 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
                 }
             }
 
-            println("Testing wrong public key on recipient side")
-            run {
-                val addressBook1 = app1.inject<AddressBook>()
-                val peer = addressBook1.getAuthority(app1Persona.entityId, app0Persona.entityId)!!
-                peer.publicKey = generateKeyPair().public
-                addressBook1.updateAuthority(peer)
-                val response =
-                    networkNode0.sendRequest(app0Persona.entityId, app1Persona.entityId, Request(Request.Method.GET, "/ping"))
-                assertNull(response)
-            }
+//  TODO: Not allowed right now.
+//            println("Testing wrong public key on recipient side")
+//            run {
+//                val addressBook1 = app1.inject<AddressBook>()
+//                val peer = addressBook1.getEntry(app1Persona.entityId, app0Persona.entityId)!!
+//                val updatedPeer = AddressBookEntry(peer.personaId, peer.entityId, peer.name, generateKeyPair().public, peer.address, null, peer.isActive)
+//                addressBook1.updateEntry(updatedPeer)
+//                val response =
+//                    networkNode0.sendRequest(app0Persona.entityId, app1Persona.entityId, Request(Request.Method.GET, "/ping"))
+//                assertNull(response)
+//            }
 
             // TODO: Test bad signature
             // TODO: Configure request timeout so that tests can run more quickly
@@ -166,7 +166,7 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
                         false
                     )
 
-                    val result = relayClient.sendMessage(app1.getPersonas().single().publicKey!!, envelope)
+                    val result = relayClient.sendMessage(app1.getPersonas().single().publicKey, envelope)
                     assertNull(result)
                 }
             } finally {

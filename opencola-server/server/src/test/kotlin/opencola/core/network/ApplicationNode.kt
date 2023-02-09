@@ -4,10 +4,10 @@ import io.ktor.server.netty.*
 import io.opencola.application.*
 import opencola.core.TestApplication
 import io.opencola.event.EventBus
-import io.opencola.model.Persona
 import io.opencola.network.NetworkConfig
 import io.opencola.network.NetworkNode
 import io.opencola.storage.AddressBook
+import io.opencola.storage.PersonaAddressBookEntry
 import opencola.server.AuthToken
 import opencola.server.getServer
 import opencola.server.handlers.*
@@ -70,12 +70,21 @@ class ApplicationNode(val application: Application) : Node {
             instance.inject<AddressBook>()
                 .let { addressBook ->
                     addressBook
-                        .getAuthorities()
-                        .filterIsInstance<Persona>()
+                        .getEntries()
+                        .filterIsInstance<PersonaAddressBookEntry>()
                         .single()
                         .also {
-                            it.name = name
-                            addressBook.updateAuthority(it)
+                            val entry = PersonaAddressBookEntry(
+                                it.personaId,
+                                it.entityId,
+                                it.name,
+                                it.publicKey,
+                                it.address,
+                                null,
+                                it.isActive,
+                                it.keyPair
+                            )
+                            addressBook.updateEntry(entry)
                         }
                 }
         }

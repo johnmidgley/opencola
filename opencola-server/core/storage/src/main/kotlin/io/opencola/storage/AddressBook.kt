@@ -3,17 +3,16 @@ package io.opencola.storage
 import mu.KotlinLogging
 import io.opencola.model.Authority
 import io.opencola.model.Id
-import io.opencola.model.Persona
 import io.opencola.security.KeyStore
 import io.opencola.security.PublicKeyProvider
 import io.opencola.security.Signator
+import io.opencola.util.blankToNull
 import io.opencola.util.trim
 import java.lang.StringBuilder
 import java.nio.file.Path
 import java.security.PublicKey
 import java.util.concurrent.CopyOnWriteArrayList
 
-// TODO: Move ServerConfig to NetworkConfig?
 class AddressBook(private val storagePath: Path, private val keyStore: KeyStore) : PublicKeyProvider<Id> {
     class KeyStorePublicKeyProvider(private val keyStore: KeyStore) : PublicKeyProvider<Id> {
         override fun getPublicKey(alias: Id): PublicKey? {
@@ -25,11 +24,11 @@ class AddressBook(private val storagePath: Path, private val keyStore: KeyStore)
 
     private val activeTag = "active"
     private val entityStore = ExposedEntityStore(SQLiteDB(storagePath.resolve("address-book.db")).db, Signator(keyStore), KeyStorePublicKeyProvider(keyStore))
-    private val updateHandlers = CopyOnWriteArrayList<(Authority?, Authority?) -> Unit>()
+    private val updateHandlers = CopyOnWriteArrayList<(AddressBookEntry?, AddressBookEntry?) -> Unit>()
 
     override fun toString(): String {
         val stringBuilder = StringBuilder("AddressBook($storagePath){\n")
-        val (personas, peers) = getAuthorities().partition { it is Persona }
+        val (personas, peers) = getEntries().partition { it is PersonaAddressBookEntry }
 
         personas.forEach { stringBuilder.appendLine("\tPersona: $it") }
         peers.forEach { stringBuilder.appendLine("\tPeer: $it") }
@@ -38,22 +37,22 @@ class AddressBook(private val storagePath: Path, private val keyStore: KeyStore)
         return stringBuilder.toString()
     }
 
-    // TODO: Move to Authority
+    // TODO: Move to Authority - Actually - don't. This is address book specific
     fun isAuthorityActive(authority: Authority) : Boolean {
         return authority.tags.contains(activeTag)
     }
 
-    fun addUpdateHandler(handler: (Authority?, Authority?) -> Unit){
+    fun addUpdateHandler(handler: (AddressBookEntry?, AddressBookEntry?) -> Unit){
         updateHandlers.add(handler)
     }
 
-    fun removeUpdateHandler(handler: (Authority?, Authority?) -> Unit){
+    fun removeUpdateHandler(handler: (AddressBookEntry?, AddressBookEntry?) -> Unit){
         updateHandlers.remove(handler)
     }
 
-    private fun callUpdateHandlers(previousAuthority: Authority?,
-                                   currentAuthority: Authority?,
-                                   suppressUpdateHandler: ((Authority?, Authority?) -> Unit)? = null) {
+    private fun callUpdateHandlers(previousAuthority: AddressBookEntry?,
+                                   currentAuthority: AddressBookEntry?,
+                                   suppressUpdateHandler: ((AddressBookEntry?, AddressBookEntry?) -> Unit)? = null) {
         updateHandlers.forEach {
             try {
                 if(it != suppressUpdateHandler)
@@ -64,74 +63,87 @@ class AddressBook(private val storagePath: Path, private val keyStore: KeyStore)
         }
     }
 
-    fun updateAuthority(authority: Authority,
-                        suppressUpdateHandler: ((Authority?, Authority?) -> Unit)? = null) : Authority {
-        // TODO: When publicKey update is allowed, need to force public keys to be same across personas
+    private fun authorityToEntry(authority: Authority): AddressBookEntry {
+        return keyStore.getKeyPair(authority.entityId.toString())?.let {
+            PersonaAddressBookEntry(authority, it)
+        } ?: AddressBookEntry(authority)
+    }
 
-        val previousAuthority = entityStore.getEntity(authority.authorityId, authority.entityId) as Authority?
+    private fun entryToAuthority(entry: AddressBookEntry) : Authority {
+        return Authority(
+            entry.personaId,
+            entry.publicKey,
+            entry.address.normalize().trim(),
+            entry.name,
+            imageUri = entry.imageUri
+        )
+    }
 
-        // Normalize the URI to avoid multiple connections to the same server
-        authority.uri = authority.uri?.normalize()?.trim()
-
-        if(entityStore.updateEntities(authority) != null) {
-            val currentAuthority = entityStore.getEntity(authority.authorityId, authority.entityId) as Authority
-            callUpdateHandlers(previousAuthority, currentAuthority, suppressUpdateHandler)
-            return currentAuthority
+    private fun updateKeyStore(addressBookEntry: AddressBookEntry) {
+        if (addressBookEntry is PersonaAddressBookEntry) {
+            keyStore.addKey(addressBookEntry.entityId.toString(), addressBookEntry.keyPair)
         }
-
-        // Nothing changed
-        return authority
     }
 
-    private fun authorityAsPersona(authority: Authority) : Authority {
-        return keyStore.getKeyPair(authority.entityId.toString())?.let { Persona(authority, it) } ?: authority
+    private fun updateAuthority(authority: Authority, entry: AddressBookEntry) {
+        if (authority.publicKey != entry.publicKey)
+            throw IllegalArgumentException("Public key cannot be updated")
+
+        authority.uri = entry.address.normalize().trim()
+        authority.name = entry.name.blankToNull() ?: throw IllegalArgumentException("Name cannot be blank")
+        authority.imageUri = entry.imageUri
+        authority.tags = if (entry.isActive) setOf(activeTag) else emptySet()
     }
 
-    // TODO: Consider a get peer method, that returns authorities across personas
-    fun getAuthority(personaId: Id, id: Id) : Authority? {
-       return (entityStore.getEntity(personaId, id) as Authority?)?.let { authorityAsPersona(it) }
+    // TODO: suppressUpdateHandler looks like it's misnamed - is it even ever used?
+    fun updateEntry(entry: AddressBookEntry,
+                    suppressUpdateHandler: ((AddressBookEntry?, AddressBookEntry?) -> Unit)? = null) : AddressBookEntry {
+        val existingAuthority = entityStore.getEntity(entry.personaId, entry.entityId) as Authority?
+        val previousEntry = existingAuthority?.let { authorityToEntry(it) }
+        val authorityToUpdate = existingAuthority ?: entryToAuthority(entry)
+
+        // TODO: Force peers across personas to be the same
+        updateKeyStore(entry)
+        updateAuthority(authorityToUpdate, entry)
+
+        return if (entityStore.updateEntities(authorityToUpdate) == null) {
+            // Nothing changed
+            entry
+        } else {
+            // Something changed - inform subscribers
+            authorityToEntry(entityStore.getEntity(entry.personaId, entry.entityId) as Authority).also {
+                callUpdateHandlers(previousEntry, it, suppressUpdateHandler)
+            }
+        }
     }
 
-    fun getPeer(peerId: Id) : Set<Authority> {
-        return entityStore.getEntities(emptySet(), setOf(peerId))
-            .filterIsInstance<Authority>()
-            .filter { it !is Persona && it.entityId == peerId }
-            .toSet()
+    fun getEntry(personaId: Id, id: Id) : AddressBookEntry? {
+       return (entityStore.getEntity(personaId, id) as Authority?)?.let { authorityToEntry(it) }
     }
 
-    fun getPersona(personaId: Id) : Persona? {
-        return entityStore.getEntity(personaId, personaId)?.let { authorityAsPersona(it as Authority) as? Persona }
-    }
-
-    // TODO: Make isActive be a property of Authority and remove filter here (caller can do it)
-    fun getAuthorities(filterActive: Boolean = false) : Set<Authority> {
+    fun getEntries() : List<AddressBookEntry> {
         return entityStore.getEntities(emptySet(), emptySet())
             .filterIsInstance<Authority>()
-            .filter { !filterActive || it.tags.contains(activeTag)}
-            .map { authorityAsPersona(it) }
-            .toSet()
+            .map { authorityToEntry(it) }
     }
 
-    fun deleteAuthority(personaId: Id, id: Id) {
-        val personas = getAuthorities().filterIsInstance<Persona>()
+    fun deleteEntry(personaId: Id, entityId: Id) {
+        val personas = getEntries().filterIsInstance<PersonaAddressBookEntry>()
 
-        // TODO: Add test
-        val persona = personas.firstOrNull { it.authorityId == personaId && it.entityId == personaId }
+        val persona = personas.firstOrNull { it.personaId == personaId && it.entityId == personaId }
             ?: throw IllegalArgumentException("Invalid persona id: $personaId")
 
-        // TODO: Add test
-        if(personas.count() == 1 && personaId == id)
+        if(personas.count() == 1 && personaId == entityId)
             throw IllegalArgumentException("Can't delete only persona from address book.")
 
-        // TODO: Add test
-        val previousAuthority = entityStore.getEntity(persona.authorityId, id) as? Authority
-            ?: throw IllegalStateException("Attempt to delete non existent authority: personaId=$personaId, id=$id")
+        val previousAuthority = entityStore.getEntity(persona.personaId, entityId) as? Authority
+            ?: throw IllegalStateException("Attempt to delete non existent authority: personaId=$personaId, id=$entityId")
 
-        entityStore.deleteEntity(personaId, id)
-        callUpdateHandlers(previousAuthority, null)
+        entityStore.deleteEntity(personaId, entityId)
+        callUpdateHandlers(AddressBookEntry(previousAuthority), null)
     }
 
     override fun getPublicKey(alias: Id): PublicKey? {
-        return getAuthorities().firstOrNull { it.entityId == alias && it.publicKey != null }?.publicKey
+        return getEntries().firstOrNull { it.entityId == alias }?.publicKey
     }
 }

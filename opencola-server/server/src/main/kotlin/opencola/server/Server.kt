@@ -9,12 +9,12 @@ import io.opencola.application.LoginConfig
 import io.opencola.application.ServerConfig
 import io.opencola.event.EventBus
 import io.opencola.event.Events
-import io.opencola.model.Persona
 import io.opencola.network.NetworkNode
 import io.opencola.security.EncryptionParams
 import io.opencola.security.encode
 import io.opencola.security.initProvider
 import io.opencola.storage.AddressBook
+import io.opencola.storage.PersonaAddressBookEntry
 import io.opencola.system.detectResume
 import io.opencola.system.openUri
 import io.opencola.system.runningInDocker
@@ -45,8 +45,8 @@ fun getApplication(
     val application = Application.instance(storagePath, config, keyPairs, loginCredentials.password)
     val addressBook = application.inject<AddressBook>()
 
-    addressBook.getAuthorities()
-        .filterIsInstance<Persona>()
+    addressBook.getEntries()
+        .filterIsInstance<PersonaAddressBookEntry>()
         .forEach {
             application.logger.info("Persona: name = ${it.name},  id =${it.entityId}, publicKey = ${it.keyPair.public.encode()}")
         }

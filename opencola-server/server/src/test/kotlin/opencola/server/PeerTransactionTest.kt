@@ -20,9 +20,9 @@ class PeerTransactionTest : PeerNetworkTest() {
         try {
             // Start first server and add a resource to the store
             startServer(server0)
-            val authority0 = application0.getPersonas().first()
+            val persona = application0.getPersonas().first()
             val resource0 =
-                ResourceEntity(authority0.authorityId, URI("http://www.opencola.org"), "document 1", text = "stuff")
+                ResourceEntity(persona.personaId, URI("http://www.opencola.org"), "document 1", text = "stuff")
             val entityStore0 by application0.injector.instance<EntityStore>()
             entityStore0.updateEntities(resource0)
             // Verify retrieval of transaction on startup via search
@@ -35,7 +35,7 @@ class PeerTransactionTest : PeerNetworkTest() {
 
             // Verify entity update triggers live replication
             val resource1 = ResourceEntity(
-                authority0.authorityId,
+                persona.personaId,
                 URI("http://www.opencola.org/page"),
                 "document 2",
                 text = "other stuff"
@@ -46,7 +46,7 @@ class PeerTransactionTest : PeerNetworkTest() {
             assert(results1.matches.size == 1)
             assert(results1.matches[0].name == resource1.name)
 
-            entityStore0.deleteEntity(authority0.authorityId, resource1.entityId)
+            entityStore0.deleteEntity(persona.personaId, resource1.entityId)
             sleep(1000)
             val results2 = handleSearch(application1.inject(), application1.inject(), "other")
             assert(results2.matches.isEmpty())
@@ -66,9 +66,9 @@ class PeerTransactionTest : PeerNetworkTest() {
             // Start the first server and add a document
             logger.info { "Starting ${application0.config.name}" }
             startServer(server0)
-            val authority0 = application0.getPersonas().first()
+            val persona = application0.getPersonas().first()
             val resource0 =
-                ResourceEntity(authority0.authorityId, URI("http://www.opencola.org"), "document 1", text = "stuff")
+                ResourceEntity(persona.personaId, URI("http://www.opencola.org"), "document 1", text = "stuff")
             val entityStore0 by application0.injector.instance<EntityStore>()
             logger.info { "Adding entity" }
             entityStore0.updateEntities(resource0)

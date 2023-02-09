@@ -19,9 +19,9 @@ class PeerCommentTest : PeerNetworkTest() {
         // Start the first server and add a document
         logger.info { "Starting ${application0.config.name}" }
         startServer(server0)
-        val authority0 = application0.getPersonas().first()
+        val persona0 = application0.getPersonas().first()
         val resource0 = ResourceEntity(
-            authority0.authorityId,
+            persona0.personaId,
             URI("http://www.opencola.io"),
             "Name",
             "Description",
@@ -35,15 +35,15 @@ class PeerCommentTest : PeerNetworkTest() {
 
         // Start the 2nd server and comment on the doc from the first server
         logger.info { "Starting ${application1.config.name}" }
-        val authority1 = application1.getPersonas().first()
+        val persona1 = application1.getPersonas().first()
         val entityStore1 by application1.injector.instance<EntityStore>()
         startServer(server1)
         Thread.sleep(1500)
-        val comment = addComment(authority1, entityStore1, resource0.entityId, null, "Comment")
-        val resource1 = entityStore1.getEntity(authority1.authorityId, resource0.entityId) as ResourceEntity
+        val comment = addComment(persona1, entityStore1, resource0.entityId, null, "Comment")
+        val resource1 = entityStore1.getEntity(persona1.personaId, resource0.entityId) as ResourceEntity
 
         assertNotNull(resource1)
-        assertEquals(authority1.authorityId, resource1.authorityId)
+        assertEquals(persona1.personaId, resource1.authorityId)
         assertEquals(resource0.entityId, resource1.entityId)
         assertEquals(resource0.uri, resource1.uri)
         assertEquals(resource0.name, resource1.name)

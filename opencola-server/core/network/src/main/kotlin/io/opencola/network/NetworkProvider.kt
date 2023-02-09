@@ -1,11 +1,11 @@
 package io.opencola.network
 
-import io.opencola.model.Authority
 import io.opencola.model.Id
-import io.opencola.model.Persona
 import io.opencola.security.*
 import io.opencola.storage.AddressBook
 import io.opencola.security.Encryptor
+import io.opencola.storage.AddressBookEntry
+import io.opencola.storage.PersonaAddressBookEntry
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -19,10 +19,10 @@ interface NetworkProvider {
     fun validateAddress(address: URI)
 
     // If a peer URI changes with the same provider, it will result in removePeer(oldPeer) addPeer(newPeer)
-    fun addPeer(peer: Authority)
-    fun removePeer(peer: Authority)
+    fun addPeer(peer: AddressBookEntry)
+    fun removePeer(peer: AddressBookEntry)
 
-    fun sendRequest(from: Authority, to: Authority, request: Request): Response?
+    fun sendRequest(from: PersonaAddressBookEntry, to: AddressBookEntry, request: Request): Response?
     fun setRequestHandler(handler: (Id, Id, Request) -> Response)
 }
 
@@ -38,31 +38,25 @@ abstract class AbstractNetworkProvider(val addressBook: AddressBook,
     }
 
     fun getEncodedEnvelope(fromId: Id, toId: Id, messageBytes: ByteArray, encryptMessage: Boolean): ByteArray {
-        val toAuthority = addressBook.getAuthority(fromId, toId)
-            ?: throw IllegalArgumentException("Attempt to construct message to unknown peer: $toId")
-
-        val toPublicKey = toAuthority.publicKey
-            ?: throw IllegalArgumentException("Can't construct message to peer that does not have a public key: $toId")
-
+        val toAuthority = addressBook.getEntry(fromId, toId)
+            ?: throw IllegalArgumentException("$fromId does not have $toId as peer")
         val message = Message(fromId, messageBytes, signator.signBytes(fromId.toString(), messageBytes))
-        return MessageEnvelope(toId, message).encode(if (encryptMessage) toPublicKey else null)
+        return MessageEnvelope(toId, message).encode(if (encryptMessage) toAuthority.publicKey else null)
     }
 
     fun validateMessageEnvelope(messageEnvelope: MessageEnvelope) {
-        if(addressBook.getAuthority(messageEnvelope.to, messageEnvelope.to) !is Persona) {
+        val message = messageEnvelope.message
+
+        // TODO: Change all if / throw IllegalArgumentException to require
+        if(addressBook.getEntry(messageEnvelope.to, messageEnvelope.to) !is PersonaAddressBookEntry) {
             throw IllegalArgumentException("Received message for non local authority: ${messageEnvelope.to}")
         }
 
-        val message = messageEnvelope.message
+        val fromPersona = addressBook.getEntry(messageEnvelope.to, message.from)
+            ?: throw IllegalArgumentException("Message is from unknown peer: ${message.from}")
 
-        val fromAuthority = addressBook.getAuthority(messageEnvelope.to, message.from)
-            ?: throw IllegalArgumentException("Message is from unknown authority: ${message.from}")
-
-        val fromPublicKey = fromAuthority.publicKey
-            ?: throw IllegalArgumentException("Received message from authority that does not have a public key: ${message.from}")
-
-        if(!isValidSignature(fromPublicKey, message.body, message.signature)) {
-            throw IllegalArgumentException("Received message from $fromAuthority with invalid signature")
+        if(!isValidSignature(fromPersona.publicKey, message.body, message.signature)) {
+            throw IllegalArgumentException("Received message from $fromPersona with invalid signature")
         }
     }
 

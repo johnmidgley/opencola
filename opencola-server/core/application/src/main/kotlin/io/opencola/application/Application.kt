@@ -6,7 +6,6 @@ import io.opencola.event.EventBus
 import io.opencola.event.Reactor
 import io.opencola.model.Authority
 import io.opencola.model.Id
-import io.opencola.model.Persona
 import io.opencola.network.NetworkConfig
 import io.opencola.network.NetworkNode
 import io.opencola.network.RequestRouter
@@ -34,8 +33,8 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
         return instance
     }
 
-    fun getPersonas(): List<Persona> {
-        return inject<AddressBook>().getAuthorities().filterIsInstance<Persona>()
+    fun getPersonas(): List<PersonaAddressBookEntry> {
+        return inject<AddressBook>().getEntries().filterIsInstance<PersonaAddressBookEntry>()
     }
 
     companion object Global {
@@ -77,15 +76,23 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
 
         private fun initAddressBook(injector: DI, personaKeyPairs: List<KeyPair>, networkConfig: NetworkConfig) {
             val addressBook by injector.instance<AddressBook>()
-            val personas = personaKeyPairs.map { Persona(Authority(it.public, networkConfig.defaultAddress, "You"), it) }
+            val personas = personaKeyPairs.map { PersonaAddressBookEntry(Authority(it.public, networkConfig.defaultAddress, "You"), it) }
 
             personas.forEach{
-                val addressBookPersona = addressBook.getPersona(it.entityId) ?: addressBook.updateAuthority(it)
+                val addressBookPersona = addressBook.getEntry(it.personaId, it.entityId) ?: addressBook.updateEntry(it)
 
-                if (addressBookPersona.uri.toString().isBlank()) {
+                if (addressBookPersona.address.toString().isBlank()) {
                     // Fallback to local server address.
-                    addressBookPersona.uri = networkConfig.defaultAddress
-                    addressBook.updateAuthority(addressBookPersona)
+                    val updatedEntry = AddressBookEntry(
+                        addressBookPersona.personaId,
+                        addressBookPersona.entityId,
+                        addressBookPersona.name,
+                        addressBookPersona.publicKey,
+                        networkConfig.defaultAddress,
+                        addressBookPersona.imageUri,
+                        addressBookPersona.isActive
+                    )
+                    addressBook.updateEntry(updatedEntry)
                 }
             }
         }

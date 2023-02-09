@@ -19,7 +19,7 @@ fun handleNotification(addressBook: AddressBook, eventBus: EventBus, fromId: Id,
     if(notification.peerId != fromId)
         throw IllegalArgumentException("Notification peerId does not match fromId: ${notification.peerId} != $fromId")
 
-    addressBook.getAuthority(toId, fromId)
+    addressBook.getEntry(toId, fromId)
         ?: throw IllegalArgumentException("Received notification from unknown peer: ${notification.peerId} for $toId")
 
     eventBus.sendMessage(Events.PeerNotification.toString(), notification.encode())
@@ -45,7 +45,7 @@ fun handleGetTransactions(
 ): TransactionsResponse {
     logger.info { "handleGetTransactionsCall authorityId: $authorityId, peerId: $peerId, transactionId: $transactionId" }
 
-    if(addressBook.getAuthority(authorityId, peerId) == null){
+    if(addressBook.getEntry(authorityId, peerId) == null){
         throw RuntimeException("Unknown peer attempted to request transactions: $peerId")
     }
 

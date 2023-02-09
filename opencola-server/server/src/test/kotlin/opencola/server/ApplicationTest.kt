@@ -31,10 +31,10 @@ class ApplicationTest : ApplicationTestBase() {
     @Test
     fun testGetEntity() = testApplication {
         application { configure(this) }
-        val authority = application.getPersonas().first()
+        val persona = application.getPersonas().first()
         val entityStore = inject<EntityStore>()
         val entity =
-            ResourceEntity(authority.authorityId, URI("http://opencola.org"), trust = 1.0F, like = true, rating = 1.0F)
+            ResourceEntity(persona.personaId, URI("http://opencola.org"), trust = 1.0F, like = true, rating = 1.0F)
         entityStore.updateEntities(entity)
 
         val response = client.get("/entity/${entity.entityId}")
@@ -47,7 +47,7 @@ class ApplicationTest : ApplicationTestBase() {
         assertEquals(entity.uri, URI(entityResult.summary.uri!!))
 
         val activity = entityResult.activities.single()
-        assertEquals(authority.authorityId.toString(), activity.authorityId)
+        assertEquals(persona.personaId.toString(), activity.authorityId)
 
         val actions = activity.actions
         assertEquals(4, actions.size)
@@ -68,7 +68,7 @@ class ApplicationTest : ApplicationTestBase() {
         val authority = application.getPersonas().first()
         val entityStore = inject<EntityStore>()
         val uri = URI("https://opencola.org")
-        val entity = ResourceEntity(authority.authorityId, uri, trust = 1.0F, like = true, rating = 1.0F)
+        val entity = ResourceEntity(authority.personaId, uri, trust = 1.0F, like = true, rating = 1.0F)
 
         entityStore.updateEntities(entity)
 
@@ -147,7 +147,7 @@ class ApplicationTest : ApplicationTestBase() {
         entityStore.resetStore()
 
         val uri = URI("https://opencola.org/${Id.new()}")
-        val entity = ResourceEntity(authority.authorityId, uri)
+        val entity = ResourceEntity(authority.personaId, uri)
         entity.dataId = entity.dataId.plus(Id.new())
         entityStore.updateEntities(entity)
 
@@ -160,7 +160,7 @@ class ApplicationTest : ApplicationTestBase() {
         entity.rating = 0.5F
         entityStore.updateEntities(entity)
 
-        val comment = CommentEntity(authority.authorityId, entity.entityId, "Test Comment")
+        val comment = CommentEntity(authority.personaId, entity.entityId, "Test Comment")
         entityStore.updateEntities(comment)
 
         // TODO: Add another authority
@@ -184,10 +184,10 @@ class ApplicationTest : ApplicationTestBase() {
     @Test
     fun testUpdateEntity() = testApplication {
         application { configure(this) }
-        val authority = application.getPersonas().first()
+        val persona = application.getPersonas().first()
         val entityStore = inject<EntityStore>()
         val resourceEntity = ResourceEntity(
-            authority.authorityId,
+            persona.personaId,
             URI("https://opencola.io"),
             "Name",
             "Description",

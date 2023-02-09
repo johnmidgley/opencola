@@ -1,10 +1,11 @@
 package opencola.core.storage
 
 import opencola.core.TestApplication
-import io.opencola.model.Authority
-import io.opencola.model.Persona
+import io.opencola.model.Id
 import io.opencola.security.generateKeyPair
 import io.opencola.storage.AddressBook
+import io.opencola.storage.AddressBookEntry
+import io.opencola.storage.PersonaAddressBookEntry
 import opencola.core.storage.AddressBookTest.Action.*
 import java.net.URI
 import kotlin.test.*
@@ -18,17 +19,17 @@ class AddressBookTest {
 
     private var action: Action? = null
 
-    private val updateHandler: (Authority?, Authority?) -> Unit = { previousAuthority, currentAuthority ->
+    private val updateHandler: (AddressBookEntry?, AddressBookEntry?) -> Unit = { previousEntry, currentEntry ->
         when(action) {
             null -> throw IllegalStateException("Missing action")
-            Create -> { assertNull(previousAuthority); assertNotNull(currentAuthority) }
+            Create -> { assertNull(previousEntry); assertNotNull(currentEntry) }
             Update -> {
-                assertNotNull(previousAuthority)
-                assertNotNull(currentAuthority)
-                assertEquals("Test", previousAuthority.name)
-                assertEquals("Test 2", currentAuthority.name)
+                assertNotNull(previousEntry)
+                assertNotNull(currentEntry)
+                assertEquals("Test", previousEntry.name)
+                assertEquals("Test 2", currentEntry.name)
             }
-            Delete -> { assertNotNull(previousAuthority); assertNull(currentAuthority) }
+            Delete -> { assertNotNull(previousEntry); assertNull(currentEntry) }
         }
 
 
@@ -36,19 +37,35 @@ class AddressBookTest {
 
 
     @Test
-    fun testAddressBookUpdateHandler(){
+    fun testAddressBookCRUDL(){
         val addressBook = TestApplication.instance.inject<AddressBook>()
-        val persona = addressBook.getAuthorities().filterIsInstance<Persona>().single()
-        val peer = Authority(persona.entityId, generateKeyPair().public, URI("http://test"), "Test")
+        val persona = addressBook.getEntries().filterIsInstance<PersonaAddressBookEntry>().single()
+        val peerKeyPair = generateKeyPair()
+        val peer = AddressBookEntry(persona.entityId, Id.ofPublicKey(peerKeyPair.public), "Test", peerKeyPair.public, URI("http://test"), null, true)
 
         addressBook.addUpdateHandler(updateHandler)
+
         action = Create
-        addressBook.updateAuthority(peer)
+        addressBook.updateEntry(peer)
+        assertEquals(peer, addressBook.getEntry(peer.personaId, peer.entityId))
+
         action = Update
-        peer.name = "Test 2"
-        addressBook.updateAuthority(peer)
+        val updatedPeer = AddressBookEntry(
+            persona.entityId,
+            Id.ofPublicKey(peerKeyPair.public),
+            "Test 2",
+            peerKeyPair.public,
+            URI("http://test"),
+            null,
+            true
+        )
+        addressBook.updateEntry(updatedPeer)
+        assertEquals(updatedPeer, addressBook.getEntry(peer.personaId, peer.entityId))
+        assertContains(addressBook.getEntries(), updatedPeer)
+
         action = Delete
-        addressBook.deleteAuthority(persona.entityId, peer.entityId)
+        addressBook.deleteEntry(peer.personaId, peer.entityId)
+        assertNull(addressBook.getEntry(peer.personaId, peer.entityId))
 
         addressBook.removeUpdateHandler(updateHandler)
     }

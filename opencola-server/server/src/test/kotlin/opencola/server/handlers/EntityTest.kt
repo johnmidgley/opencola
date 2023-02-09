@@ -3,6 +3,7 @@ package opencola.server.handlers
 import io.opencola.model.*
 import opencola.core.TestApplication
 import io.opencola.storage.AddressBook
+import io.opencola.storage.AddressBookEntry
 import io.opencola.storage.EntityStore
 import org.junit.Test
 import org.kodein.di.instance
@@ -15,28 +16,41 @@ class EntityTest {
     private fun saveEntity(getEntity: (Id) -> Entity): Entity {
         // Make a peer transaction that contains a resource
         val peerApplication = TestApplication.newApplication()
-        val peerAuthority = peerApplication.getPersonas().first()
-        val peerEntity = getEntity(peerAuthority.authorityId)
+        val peerPersona = peerApplication.getPersonas().first()
+        val peerEntity = getEntity(peerPersona.personaId)
         val peerEntityStore by peerApplication.injector.instance<EntityStore>()
         val peerTransaction = peerEntityStore.updateEntities(peerEntity)
         assertNotNull(peerTransaction)
 
         // Add resource to local store
         val injector = TestApplication.instance.injector
-        val localAuthority = TestApplication.instance.getPersonas().first()
+        val localPersona = TestApplication.instance.getPersonas().first()
         val localEntityStore by injector.instance<EntityStore>()
         val localAddressBook by injector.instance<AddressBook>()
-        localAddressBook.updateAuthority(Authority(localAuthority.authorityId, peerAuthority.publicKey!!, peerAuthority.uri!!, peerAuthority.name!!))
+
+        localAddressBook.updateEntry(
+            AddressBookEntry(
+                localPersona.personaId,
+                peerPersona.entityId,
+                peerPersona.name,
+                peerPersona.publicKey,
+                peerPersona.address,
+                peerPersona.imageUri,
+                peerPersona.isActive
+
+            )
+        )
+
         localEntityStore.addSignedTransactions(listOf(peerTransaction))
-        assertNull(localEntityStore.getEntity(localAuthority.authorityId, peerEntity.entityId))
+        assertNull(localEntityStore.getEntity(localPersona.personaId, peerEntity.entityId))
 
         // Save and check that copy worked
-        val saveEntity = getOrCopyEntity(localAuthority.authorityId, localEntityStore, peerEntity.entityId)
+        val saveEntity = getOrCopyEntity(localPersona.personaId, localEntityStore, peerEntity.entityId)
         assertNotNull(saveEntity)
         localEntityStore.updateEntities(saveEntity)
-        val localEntity = localEntityStore.getEntity(localAuthority.authorityId, peerEntity.entityId)
+        val localEntity = localEntityStore.getEntity(localPersona.personaId, peerEntity.entityId)
         assertNotNull(localEntity)
-        assertEquals(localAuthority.authorityId, localEntity.authorityId)
+        assertEquals(localPersona.personaId, localEntity.authorityId)
         assertEquals(peerEntity.entityId, localEntity.entityId)
         assertEquals(peerEntity.name, localEntity.name)
         assertEquals(peerEntity.description, localEntity.description)

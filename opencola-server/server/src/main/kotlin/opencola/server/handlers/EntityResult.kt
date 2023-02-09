@@ -1,8 +1,8 @@
 package opencola.server.handlers
 
 import io.opencola.util.nullOrElse
-import io.opencola.model.Authority
 import io.opencola.model.Id
+import io.opencola.storage.AddressBookEntry
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -47,11 +47,11 @@ data class EntityResult(
         val epochSecond: Long,
         val actions: List<Action>,
     ) {
-        constructor(authority: Authority, epochSecond: Long, actions: List<Action>) :
+        constructor(addressBookEntry: AddressBookEntry, epochSecond: Long, actions: List<Action>) :
                 this(
-                    authority.entityId.toString(),
-                    authority.name!!,
-                    authority.uri!!.authority ?: "",
+                    addressBookEntry.entityId.toString(),
+                    addressBookEntry.name,
+                    addressBookEntry.address.authority ?: "",
                     epochSecond,
                     actions)
     }

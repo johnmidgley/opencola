@@ -1,6 +1,7 @@
 package opencola.server.plugins
 
 import io.ktor.http.*
+import io.ktor.http.HttpStatusCode.Companion.Created
 import io.ktor.server.application.*
 import io.ktor.server.application.Application
 import io.ktor.server.auth.*
@@ -15,11 +16,11 @@ import io.opencola.application.ServerConfig
 import io.opencola.application.getResourceFilePath
 import io.opencola.util.nullOrElse
 import io.opencola.model.Id
-import io.opencola.model.Persona as ModelPersona
 import io.opencola.network.handleGetTransactions
 import io.opencola.network.providers.http.HttpNetworkProvider
 import io.opencola.security.EncryptionParams
 import io.opencola.storage.AddressBook
+import io.opencola.storage.PersonaAddressBookEntry
 import io.opencola.system.*
 import kotlinx.coroutines.CompletableDeferred
 import mu.KotlinLogging
@@ -185,7 +186,7 @@ fun Application.configureBootstrapRouting(
 fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParams) {
     // TODO: Make and user general opencola.server
     val logger = KotlinLogging.logger("opencola.init")
-    val rootPersona = app.inject<AddressBook>().getAuthorities().filterIsInstance<ModelPersona>().single()
+    val rootPersona = app.inject<AddressBook>().getEntries().filterIsInstance<PersonaAddressBookEntry>().single()
 
     routing {
         // Authentication from https://ktor.io/docs/session-auth.html
@@ -303,16 +304,16 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             }
 
             get("/data/{id}") {
-                handleGetDataCall(call, app.inject(), app.inject(), rootPersona.authorityId)
+                handleGetDataCall(call, app.inject(), app.inject(), rootPersona.personaId)
             }
 
             get("/data/{id}/{partName}") {
                 // TODO: Add a parameters extension that gets the parameter value or throws an exception
-                handleGetDataPartCall(call, rootPersona.authorityId, app.inject())
+                handleGetDataPartCall(call, rootPersona.personaId, app.inject())
             }
 
             get("/actions/{uri}") {
-                handleGetActionsCall(call, rootPersona.authorityId, app.inject())
+                handleGetActionsCall(call, rootPersona.personaId, app.inject())
             }
 
             get("/feed") {
@@ -349,16 +350,32 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             }
 
             post("/action") {
-                handlePostActionCall(call, rootPersona.authorityId, app.inject(), app.inject())
-            }
-
-            get("/personas") {
-                call.respond(getPersonas(app.inject()))
+                handlePostActionCall(call, rootPersona.personaId, app.inject(), app.inject())
             }
 
             post("/personas") {
                 val persona = call.receive<Persona>()
-                call.respond(createPersona(app.inject(), persona))
+                call.respond(Created, createPersona(app.inject(), persona))
+            }
+
+            get("/personas/{id}") {
+                val id = Id.decode(call.parameters["id"] ?: throw IllegalArgumentException("No id set"))
+                call.respond(getPersona(app.inject(), id))
+            }
+
+            put("/personas") {
+                val persona = call.receive<Persona>()
+                call.respond(updatePersona(app.inject(), persona))
+            }
+
+            delete("/personas/{id}") {
+                val id = Id.decode(call.parameters["id"] ?: throw IllegalArgumentException("No id set"))
+                deletePersona(app.inject(), id)
+                call.respond(HttpStatusCode.NoContent)
+            }
+
+            get("/personas") {
+                call.respond(getPersonas(app.inject()))
             }
 
             static {

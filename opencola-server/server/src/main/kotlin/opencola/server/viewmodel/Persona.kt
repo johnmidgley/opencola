@@ -1,8 +1,12 @@
 package opencola.server.viewmodel
 
+import io.opencola.model.Id
+import io.opencola.security.decodePublicKey
 import io.opencola.security.encode
+import io.opencola.storage.AddressBookEntry
+import io.opencola.storage.PersonaAddressBookEntry
 import kotlinx.serialization.Serializable
-import io.opencola.model.Persona as ModelPersona
+import java.net.URI
 
 @Serializable
 data class Persona(
@@ -13,13 +17,26 @@ data class Persona(
     val imageUri: String?,
     val isActive: Boolean,
 ) {
-    constructor(modelPersona: ModelPersona) :
+    constructor(personaAddressBookEntry: PersonaAddressBookEntry) :
             this(
-                modelPersona.entityId.toString(),
-                modelPersona.name ?: "",
-                modelPersona.publicKey?.encode() ?: "",
-                modelPersona.uri.toString(),
-                modelPersona.imageUri.toString(),
-                modelPersona.getActive()
+                personaAddressBookEntry.entityId.toString(),
+                personaAddressBookEntry.name,
+                personaAddressBookEntry.publicKey.encode(),
+                personaAddressBookEntry.address.toString(),
+                personaAddressBookEntry.imageUri.toString(),
+                personaAddressBookEntry.isActive
             )
+
+    fun toAddressBookEntry() : AddressBookEntry {
+        val id = Id.decode(id)
+        return AddressBookEntry(
+            id,
+            id,
+            name,
+            decodePublicKey(publicKey),
+            URI(address),
+            imageUri?.let { URI(it) },
+            isActive
+        )
+    }
 }

@@ -13,7 +13,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
-import io.opencola.model.Authority
 import io.opencola.network.AbstractNetworkProvider
 import io.opencola.network.*
 import io.opencola.network.MessageEnvelope
@@ -21,6 +20,8 @@ import io.opencola.network.Response
 import io.opencola.security.*
 import io.opencola.storage.AddressBook
 import io.opencola.security.Encryptor
+import io.opencola.storage.AddressBookEntry
+import io.opencola.storage.PersonaAddressBookEntry
 import kotlinx.serialization.encodeToString
 import java.net.URI
 import kotlin.IllegalStateException
@@ -64,25 +65,22 @@ class HttpNetworkProvider(
         return
     }
 
-    override fun addPeer(peer: Authority) {
+    override fun addPeer(peer: AddressBookEntry) {
         // Nothing to do
     }
 
-    override fun removePeer(peer: Authority) {
+    override fun removePeer(peer: AddressBookEntry) {
         // Nothing to do
     }
 
     // Caller (Network Node) should check if peer is active
-    override fun sendRequest(from: Authority, to: Authority, request: Request): Response? {
+    override fun sendRequest(from: PersonaAddressBookEntry, to: AddressBookEntry, request: Request): Response? {
         if (!started) throw IllegalStateException("Provider is not started - can't sendRequest")
-
-        to.publicKey
-            ?: throw IllegalArgumentException("Can't send a request to a peer that does not have a public key")
 
         // TODO: Make sure to authority is actually remote (not local authority)
 
         try {
-            val urlString = "${to.uri}/networkNode"
+            val urlString = "${to.address}/networkNode"
             logger.info { "Sending request $request" }
 
             return runBlocking {

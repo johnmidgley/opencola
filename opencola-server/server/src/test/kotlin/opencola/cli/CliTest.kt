@@ -3,7 +3,6 @@ package opencola.cli
 import opencola.core.TestApplication
 import io.opencola.application.Application
 import io.opencola.application.loadConfig
-import io.opencola.model.Persona
 import io.opencola.model.ResourceEntity
 import io.opencola.model.Transaction
 import io.opencola.security.Signator
@@ -11,6 +10,7 @@ import io.opencola.storage.AddressBook
 import io.opencola.storage.EntityStore
 import io.opencola.storage.EntityStore.TransactionOrder
 import io.opencola.storage.ExposedEntityStore
+import io.opencola.storage.PersonaAddressBookEntry
 import opencola.server.LoginCredentials
 import opencola.server.getApplication
 import org.junit.Test
@@ -31,11 +31,11 @@ class CliTest {
     @Test
     fun testExportImportRoundTrip(){
         val app = TestApplication.instance
-        val authority = app.inject<AddressBook>().getAuthorities().filterIsInstance<Persona>().first()
+        val persona = app.inject<AddressBook>().getEntries().filterIsInstance<PersonaAddressBookEntry>().first()
 
         val entityStore0 = getTmpEntityStore(app)
         val resources = (0 until 5).map {
-            ResourceEntity(authority.authorityId, URI("https://$it"))
+            ResourceEntity(persona.personaId, URI("https://$it"))
         }
         resources.forEach{ entityStore0.updateEntities(it) }
 

@@ -2,8 +2,9 @@ package opencola.core.config
 
 import io.opencola.application.*
 import io.opencola.storage.AddressBook
-import io.opencola.model.Authority
-import io.opencola.model.Persona
+import io.opencola.model.Id
+import io.opencola.storage.AddressBookEntry
+import io.opencola.storage.PersonaAddressBookEntry
 import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.createDirectory
@@ -35,12 +36,21 @@ fun getApplications(
         Application.instance(ic.storagePath, ic.config, ic.keyPairs,"password").also { application ->
             // Connect to peers
             val addressBook = application.inject<AddressBook>()
-            val persona = addressBook.getAuthorities().filterIsInstance<Persona>().single()
+            val persona = addressBook.getEntries().filterIsInstance<PersonaAddressBookEntry>().single()
             instanceConfigs
                 .filter { it != ic }
                 .forEach {
-                    val peer = Authority(persona.entityId, it.keyPairs.single().public, it.address, it.name, tags = setOf("active"))
-                    addressBook.updateAuthority(peer)
+                    val keyPair = it.keyPairs.single()
+                    val peer = AddressBookEntry(
+                        persona.personaId,
+                        Id.ofPublicKey(keyPair.public),
+                        it.name,
+                        keyPair.public,
+                        it.address,
+                        null,
+                        true
+                    )
+                    addressBook.updateEntry(peer)
                 }
         }
     }

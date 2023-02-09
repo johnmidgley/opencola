@@ -2,11 +2,11 @@ package io.opencola.network
 
 import io.opencola.event.EventBus
 import io.opencola.event.Events
-import io.opencola.model.Authority
 import io.opencola.model.Id
-import io.opencola.model.Persona
 import io.opencola.network.NetworkNode.PeerStatus.*
 import io.opencola.storage.AddressBook
+import io.opencola.storage.AddressBookEntry
+import io.opencola.storage.PersonaAddressBookEntry
 import mu.KotlinLogging
 import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
@@ -38,7 +38,7 @@ class NetworkNode(
 
     @Synchronized
     private fun updatePeerStatus(peerId: Id, status: PeerStatus, suppressNotifications: Boolean = false): PeerStatus {
-        val peer = addressBook.getAuthorities().firstOrNull { it.entityId == peerId }
+        val peer = addressBook.getEntries().firstOrNull { it.entityId == peerId }
 
         // TODO: Is this check needed?
         if(peer == null) {
@@ -70,7 +70,7 @@ class NetworkNode(
         val response = router.handleRequest(from, to, request)
 
         // Since we received a request, the peer must be online
-        if(addressBook.getAuthority(to, from) !is Persona)
+        if(addressBook.getEntry(to, from) !is PersonaAddressBookEntry)
             updatePeerStatus(from, Online)
 
         response
@@ -89,8 +89,8 @@ class NetworkNode(
         provider.start()
     }
 
-    fun broadcastRequest(from: Persona, request: Request) {
-        val peers = addressBook.getAuthorities(true).distinctBy { it.entityId }
+    fun broadcastRequest(from: PersonaAddressBookEntry, request: Request) {
+        val peers = addressBook.getEntries().filter { it.isActive }.distinctBy { it.entityId }
         if (peers.isNotEmpty()) {
             logger.info { "Broadcasting request: $request" }
 
@@ -105,34 +105,36 @@ class NetworkNode(
         }
     }
 
-    private fun getProvider(peer: Authority) : NetworkProvider? {
-        val provider = peer.uri?.let { providers[it.scheme] }
+    private fun getProvider(peer: AddressBookEntry) : NetworkProvider? {
+        val provider = providers[peer.address.scheme]
 
         if(provider == null)
-            logger.warn { "No provider for ${peer.uri}" }
+            logger.warn { "No provider for ${peer.address}" }
 
         return provider
     }
 
-    private fun addPeer(peer: Authority) {
+    private fun addPeer(peer: AddressBookEntry) {
         getProvider(peer)?.addPeer(peer)
+            ?: logger.error { "No provider for ${peer.address}" }
     }
 
-    private fun removePeer(peer: Authority) {
+    private fun removePeer(peer: AddressBookEntry) {
         getProvider(peer)?.removePeer(peer)
+            ?: logger.error { "No provider for ${peer.address}" }
     }
 
-    private val peerUpdateHandler: (Authority?, Authority?) -> Unit = { previousAuthority, currentAuthority ->
-        if (previousAuthority != null && currentAuthority != null
-            && previousAuthority.getActive() != currentAuthority.getActive()
+    private val peerUpdateHandler: (AddressBookEntry?, AddressBookEntry?) -> Unit = { previousAddressBookEntry, currentAddressBookEntry ->
+        if (previousAddressBookEntry != null && currentAddressBookEntry != null
+            && previousAddressBookEntry.isActive != currentAddressBookEntry.isActive
         ) {
-            if (previousAuthority.getActive())
-                removePeer(previousAuthority)
+            if (previousAddressBookEntry.isActive)
+                removePeer(previousAddressBookEntry)
             else
-                addPeer(currentAuthority)
-        } else if (previousAuthority?.uri != currentAuthority?.uri) {
-            previousAuthority?.let { if(it.getActive()) removePeer(it) }
-            currentAuthority?.let { if(it.getActive()) addPeer(it) }
+                addPeer(currentAddressBookEntry)
+        } else if (previousAddressBookEntry?.address != currentAddressBookEntry?.address) {
+            previousAddressBookEntry?.let { if(it.isActive) removePeer(it) }
+            currentAddressBookEntry?.let { if(it.isActive) addPeer(it) }
         }
     }
 
@@ -151,14 +153,9 @@ class NetworkNode(
     }
 
     // TODO - peer should be Authority or peerId?
-    private fun sendRequest(from: Persona, to: Authority, request: Request) : Response? {
-        val peerUri = to.uri
-        if(peerUri == null) {
-            logger.warn { "Ignoring sendRequest to peer without uri: ${to.entityId}" }
-            return null
-        }
-
-        val provider = providers[peerUri.scheme] ?: throw IllegalStateException("No provider found for scheme: ${peerUri.scheme}")
+    private fun sendRequest(from: PersonaAddressBookEntry, to: AddressBookEntry, request: Request) : Response? {
+        val scheme = to.address.scheme
+        val provider = providers[scheme] ?: throw IllegalStateException("No provider found for scheme: $scheme")
         val response = provider.sendRequest(from, to, request)
 
         // TODO: This is really bad. If we successfully get transactions when the user was in an offline/unknown state,
@@ -176,9 +173,9 @@ class NetworkNode(
 
     // TODO - peer should be Authority or peerId?
     fun sendRequest(fromId: Id, toId: Id, request: Request) : Response? {
-        val persona = addressBook.getAuthority(fromId, fromId) as? Persona
+        val persona = addressBook.getEntry(fromId, fromId) as? PersonaAddressBookEntry
             ?: throw IllegalArgumentException("Can't send from message from non Persona")
-        val peer = addressBook.getAuthority(fromId, toId)
+        val peer = addressBook.getEntry(fromId, toId)
             ?: throw IllegalArgumentException("Attempt to send request to unknown peer")
 
         // TODO: Authority should be passed in

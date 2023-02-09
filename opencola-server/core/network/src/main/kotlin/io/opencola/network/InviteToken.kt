@@ -1,11 +1,11 @@
 package io.opencola.network
 
-import io.opencola.model.Authority
 import io.opencola.model.Id
 import io.opencola.security.PublicKeyByteArrayCodec
 import io.opencola.security.Signator
 import io.opencola.security.isValidSignature
 import io.opencola.serialization.*
+import io.opencola.storage.AddressBookEntry
 import io.opencola.util.Base58
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -98,16 +98,13 @@ data class InviteToken(
             }
         }
 
-        fun fromAuthority(authority: Authority): InviteToken {
-            val address =
-                authority.uri ?: throw IllegalArgumentException("Authority must have URI to create invite token")
-
+        fun fromAddressBookEntry(addressBookEntry: AddressBookEntry): InviteToken {
             return InviteToken(
-                authority.authorityId,
-                authority.name ?: "",
-                authority.publicKey!!,
-                address,
-                authority.imageUri ?: URI("")
+                addressBookEntry.personaId,
+                addressBookEntry.name,
+                addressBookEntry.publicKey,
+                addressBookEntry.address,
+                addressBookEntry.imageUri ?: URI("")
             )
         }
 

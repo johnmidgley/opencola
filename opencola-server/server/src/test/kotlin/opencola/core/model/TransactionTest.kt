@@ -7,6 +7,7 @@ import io.opencola.security.SIGNATURE_ALGO
 import io.opencola.security.Signator
 import io.opencola.security.sha256
 import io.opencola.storage.AddressBook
+import io.opencola.storage.PersonaAddressBookEntry
 import org.junit.Test
 import org.kodein.di.instance
 import java.io.ByteArrayInputStream
@@ -15,7 +16,7 @@ import kotlin.test.assertEquals
 
 class TransactionTest {
     private val app = TestApplication.instance
-    private val authority = app.inject<AddressBook>().getAuthorities().filterIsInstance<Persona>().first()
+    private val persona = app.inject<AddressBook>().getEntries().filterIsInstance<PersonaAddressBookEntry>().first()
     private val signator by app.injector.instance<Signator>()
 
     @Test
@@ -36,11 +37,11 @@ class TransactionTest {
 
     @Test
     fun testTransactionRoundTrip(){
-        val authorityId = authority.authorityId
+        val personaId = persona.personaId
         val entityId = Id.ofData("entityId".toByteArray())
         val value = Value("value".toByteArray())
-        val fact = Fact(authorityId, entityId, CoreAttribute.Name.spec, value, Operation.Add)
-        val transaction = Transaction.fromFacts(authorityId, listOf(fact))
+        val fact = Fact(personaId, entityId, CoreAttribute.Name.spec, value, Operation.Add)
+        val transaction = Transaction.fromFacts(personaId, listOf(fact))
         val signedTransaction = transaction.sign(signator)
 
         val encodedTransaction = ByteArrayOutputStream().use {
@@ -52,7 +53,7 @@ class TransactionTest {
             SignedTransaction.decode(it)
         }
 
-        decodedTransaction.isValidTransaction(authority.publicKey!!)
+        decodedTransaction.isValidTransaction(persona.publicKey)
         assertEquals(signedTransaction, decodedTransaction)
     }
 }

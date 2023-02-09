@@ -8,7 +8,9 @@ import io.opencola.util.nullOrElse
 import io.opencola.model.CoreAttribute.*
 import io.opencola.search.SearchIndex
 import io.opencola.storage.AddressBook
+import io.opencola.storage.AddressBookEntry
 import io.opencola.storage.EntityStore
+import io.opencola.storage.PersonaAddressBookEntry
 import opencola.server.handlers.EntityResult.*
 
 @Serializable
@@ -30,7 +32,7 @@ fun getPostedById(entities: List<Entity>): Id {
     }!!.authorityId
 }
 
-fun getSummary(authorityId: Id, entities: List<Entity>, idToAuthority: (Id) -> Authority?): Summary {
+fun getSummary(authorityId: Id, entities: List<Entity>, idToAuthority: (Id) -> AddressBookEntry?): Summary {
     val entity = entities.minByOrNull { if (it.authorityId == authorityId) 0 else 1 }!!
     val postedByAuthority = idToAuthority(getPostedById(entities))
 
@@ -75,8 +77,8 @@ fun factsToActions(comments: Map<Id, CommentEntity>, facts: List<Fact>): List<Ac
     }
 }
 
-fun entityActivities(authority: Authority, entity: Entity, comments: Map<Id, CommentEntity>): List<Activity> {
-    if (authority.entityId != entity.authorityId) {
+fun entityActivities(addressBookEntry: AddressBookEntry, entity: Entity, comments: Map<Id, CommentEntity>): List<Activity> {
+    if (addressBookEntry.entityId != entity.authorityId) {
         throw IllegalArgumentException("authorityId does not match entity")
     }
 
@@ -84,7 +86,7 @@ fun entityActivities(authority: Authority, entity: Entity, comments: Map<Id, Com
         .groupBy { it.transactionOrdinal }
         .map { (_, facts) ->
             Activity(
-                authority,
+                addressBookEntry,
                 facts.first().epochSecond!!,
                 factsToActions(comments, facts)
             )
@@ -92,7 +94,7 @@ fun entityActivities(authority: Authority, entity: Entity, comments: Map<Id, Com
 }
 
 fun activitiesByEntityId(
-    idToAuthority: (Id) -> Authority?,
+    idToAuthority: (Id) -> AddressBookEntry?,
     entities: Iterable<Entity>,
     comments: Map<Id, CommentEntity>
 ): Map<Id, List<Activity>> {
@@ -160,18 +162,17 @@ fun getComments(entityStore: EntityStore, entities: Iterable<Entity>): Map<Id, C
         .associateBy { it.entityId }
 }
 
-fun getAuthority(personaId: Id, addressBook: AddressBook, authorityId: Id): Authority? {
-    return addressBook.getAuthority(personaId, authorityId).nullOrElse {
-        it.also {
-            if (it.entityId == personaId) {
-                it.name = "You"
-            }
-        }
-    }
+fun getAddressBookMap(addressBook: AddressBook): Map<Id, AddressBookEntry> {
+    return addressBook.getEntries().map {
+        if(it is PersonaAddressBookEntry)
+            AddressBookEntry(it.personaId, it.entityId, "You", it.publicKey, it.address, it.imageUri, it.isActive)
+        else
+            it
+    }.associateBy { it.entityId }
 }
 
 fun getEntityResults(
-    authority: Authority,
+    persona: PersonaAddressBookEntry,
     entityStore: EntityStore,
     addressBook: AddressBook,
     entityIds: Set<Id>
@@ -180,9 +181,10 @@ fun getEntityResults(
         return emptyList()
     }
 
-    val idToAuthority: (Id) -> Authority? = { id -> getAuthority(authority.entityId, addressBook, id) }
+    val addressBookMap = getAddressBookMap(addressBook)
+    val idToAuthority: (Id) -> AddressBookEntry? = { id -> addressBookMap[id] }
     val entities =
-        entityStore.getEntities(emptySet(), entityIds).filter { isEntityIsVisible(authority.authorityId, it) }
+        entityStore.getEntities(emptySet(), entityIds).filter { isEntityIsVisible(persona.personaId, it) }
     val comments = getComments(entityStore, entities)
     val entitiesByEntityId = entities.groupBy { it.entityId }
     val activitiesByEntityId = activitiesByEntityId(idToAuthority, entities, comments)
@@ -193,19 +195,19 @@ fun getEntityResults(
             val entitiesForId = entitiesByEntityId[it]!!
             EntityResult(
                 it,
-                getSummary(authority.authorityId, entitiesForId, idToAuthority),
+                getSummary(persona.personaId, entitiesForId, idToAuthority),
                 activitiesByEntityId[it]!!
             )
         }
 }
 
 fun getEntityResult(
-    authority: Authority,
+    persona: PersonaAddressBookEntry,
     entityStore: EntityStore,
     addressBook: AddressBook,
     entityId: Id
 ): EntityResult? {
-    return getEntityResults(authority, entityStore, addressBook, setOf(entityId)).firstOrNull()
+    return getEntityResults(persona, entityStore, addressBook, setOf(entityId)).firstOrNull()
 }
 
 suspend fun handleGetFeed(
@@ -216,13 +218,13 @@ suspend fun handleGetFeed(
 ) {
     val personaIds = call.parameters["personaIds"]?.split(",")?.map { Id.decode(it) } ?: emptyList()
     val entityIds = getEntityIds(entityStore, personaIds, searchIndex, call.parameters["q"])
-    val authority = addressBook.getAuthorities().filterIsInstance<Persona>().first()
+    val persona = addressBook.getEntries().filterIsInstance<PersonaAddressBookEntry>().first()
 
     call.respond(
         FeedResult(
-            authority.authorityId,
+            persona.personaId,
             null,
-            getEntityResults(authority, entityStore, addressBook, entityIds)
+            getEntityResults(persona, entityStore, addressBook, entityIds)
         )
     )
 }

@@ -17,11 +17,11 @@ class PostTest {
 
     @Test
     fun testNewPost() {
-        val authority = app.getPersonas().first()
+        val persona = app.getPersonas().first()
         val entityStore by app.injector.instance<EntityStore>()
         val addressBook by app.injector.instance<AddressBook>()
         val entityPayload = EntityPayload("", "Name", "https://image.com", "description", true, "tag", "comment")
-        val result = newPost(authority, entityStore, addressBook, entityPayload)
+        val result = newPost(persona, entityStore, addressBook, entityPayload)
 
         assertNotNull(result)
 
@@ -34,7 +34,7 @@ class PostTest {
         assertEquals(1, activities.size)
 
         val activity = activities[0]
-        assertEquals(authority.authorityId.toString(), activity.authorityId)
+        assertEquals(persona.personaId.toString(), activity.authorityId)
 
         val actions = activity.actions
         assertEquals(4, actions.size)

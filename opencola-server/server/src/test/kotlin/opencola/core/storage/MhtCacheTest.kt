@@ -30,11 +30,11 @@ class MhtCacheTest {
         val message = path.inputStream().use { parseMime(it) } ?: throw RuntimeException("Unable to parse $path")
         val mhtmlPage = MhtmlPage(message)
 
-        val entity = updateResource(persona.authorityId, entityStore, fileStore, mhtmlPage, Actions())
-        val data = mhtCache.getData(persona.authorityId, entity.entityId)
+        val entity = updateResource(persona.personaId, entityStore, fileStore, mhtmlPage, Actions())
+        val data = mhtCache.getData(persona.personaId, entity.entityId)
         assertNotNull(data)
 
-        val part0 = mhtCache.getDataPart(persona.authorityId, entity.entityId, "0.html")
+        val part0 = mhtCache.getDataPart(persona.personaId, entity.entityId, "0.html")
         assertNotNull(part0)
     }
 }

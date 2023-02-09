@@ -74,7 +74,6 @@ open class PeerNetworkTest {
             addPeer(application1, application0)
 
             // Connection should trigger two index operations from transaction sharing
-            println("Waiting for Indexing")
             readUntil { it.contains("LuceneSearchIndex: Indexing") }
             readUntil { it.contains("LuceneSearchIndex: Indexing") }
 

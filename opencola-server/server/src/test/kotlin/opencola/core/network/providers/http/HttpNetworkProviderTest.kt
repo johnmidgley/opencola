@@ -4,6 +4,8 @@ import io.opencola.model.Authority
 import io.opencola.network.Request
 import io.opencola.network.providers.http.HttpNetworkProvider
 import io.opencola.security.generateKeyPair
+import io.opencola.storage.AddressBookEntry
+import io.opencola.storage.PersonaAddressBookEntry
 import opencola.server.PeerNetworkTest
 import org.junit.Test
 import kotlin.test.assertEquals
@@ -18,22 +20,22 @@ class HttpNetworkProviderTest : PeerNetworkTest() {
 
         try {
             val app = applicationNode.application
-            val authority = app.getPersonas().first()
+            val persona = app.getPersonas().first()
             val networkProvider = app.inject<HttpNetworkProvider>()
 
             val goodRequest = Request(Request.Method.GET, "/ping", null, null)
-            val response = networkProvider.sendRequest(authority, authority, goodRequest)
+            val response = networkProvider.sendRequest(persona, persona, goodRequest)
             assertNotNull(response)
             assertEquals("pong", response.message)
 
             val badKeyPair = generateKeyPair()
-            val badAuthority = Authority(badKeyPair.public, authority.uri!!, "Bad Authority")
+            val badAuthority = Authority(badKeyPair.public, persona.address, "Bad Authority")
 
             val badRequest = Request(Request.Method.GET, "/ping", null, null)
 
             // TODO: These should probably throw, rather than return null
-            assertNull(networkProvider.sendRequest(authority, badAuthority, badRequest))
-            assertNull(networkProvider.sendRequest(badAuthority, authority, badRequest))
+            assertNull(networkProvider.sendRequest(persona, AddressBookEntry(badAuthority), badRequest))
+            assertNull(networkProvider.sendRequest(PersonaAddressBookEntry(badAuthority, badKeyPair), persona, badRequest))
         } finally {
             applicationNode.stop()
         }
