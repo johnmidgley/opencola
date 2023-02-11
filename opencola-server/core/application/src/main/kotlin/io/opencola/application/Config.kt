@@ -1,6 +1,7 @@
 package io.opencola.application
 
 import com.sksamuel.hoplite.ConfigLoaderBuilder
+import com.sksamuel.hoplite.addEnvironmentSource
 import com.sksamuel.hoplite.addFileSource
 import io.opencola.event.EventBusConfig
 import io.opencola.network.NetworkConfig
@@ -40,6 +41,7 @@ fun Config.setNetwork(network: NetworkConfig): Config {
 
 fun loadConfig(configPath: Path): Config {
     return ConfigLoaderBuilder.default()
+        .addEnvironmentSource()
         .addFileSource(configPath.toFile())
         .build()
         .loadConfigOrThrow()
