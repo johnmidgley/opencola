@@ -13,13 +13,20 @@
       :on-keyUp #(if (= (.-key %) "Enter")
                    (on-enter @query!))}]))
 
-(defn search-header [query! on-enter header-actions]
+(defn persona-select [personas!]
+      [:td [:select {:id "persona-select" :title "Persona"}
+            (doall (for [persona @personas!]
+                ^{:key persona} [:option  {:value (:id persona)} (:name persona)]))
+            ^{:key "new"} [:option {:value "new"} "New..."]]])
+
+(defn search-header [personas! query! on-enter header-actions]
   [:div.search-header 
    [header-actions]
    [:table
     [:tbody
      [:tr
       [:td [:img {:src "../img/pull-tab.png" :width 50 :height 50 :on-click #(common/set-location "") }]]
+      [persona-select personas!]
       [:td [search-box query! on-enter]]]]]])
 
 

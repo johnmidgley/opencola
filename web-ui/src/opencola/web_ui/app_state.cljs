@@ -3,9 +3,11 @@
    [reagent.core :as reagent :refer [atom]]
    [opencola.web-ui.common :as common]))
 
+;; TODO: Merge all state into single atom?
 (defonce app-state 
   {
    :page-visible-atoms (apply hash-map (mapcat #(vector % (atom false)) [:feed :peers :error]))
+   :personas! (atom "")
    :query! (atom "")
    :feed! (atom {})
    :peers! (atom {})
@@ -37,6 +39,12 @@
    (:peers! app-state))
   ([peers]
    (reset! (peers!) peers)))
+
+(defn personas!
+  ([]
+   (:personas! app-state))
+  ([personas]
+   (reset! (personas!) personas)))
 
 (defn error! []
   (:error! app-state))

@@ -510,11 +510,11 @@
       (reset! creating-post!? false))
    #(error/set-error! edit-item! %)))
 
-(defn feed-page [feed! query! on-search]
+(defn feed-page [feed! personas! query! on-search]
   (let [creating-post?! (atom false)]
     (fn []
       [:div#opencola.feed-page
-       [search/search-header query! on-search (partial header-actions creating-post?!)]
+       [search/search-header personas! query! on-search (partial header-actions creating-post?!)]
        [error/error-control @feed!]
        (if @creating-post?!
          (let [edit-item! (atom (edit-item))]

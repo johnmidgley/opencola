@@ -173,11 +173,11 @@
      (doall (for [peer (:results @peers!)]
               ^{:key peer} [peer-item peers! peer]))]))
 
-(defn peer-page [peers! query! on-search!]
+(defn peer-page [peers! personas! query! on-search!]
   (let [adding-peer?! (atom false)]
     (fn []
       [:div.settings-page
-       [search/search-header query! on-search! (partial header-actions query! adding-peer?!)]
+       [search/search-header personas! query! on-search! (partial header-actions query! adding-peer?!)]
        [error/error-control @peers!]
        [peer-list peers! adding-peer?!]])))
 
