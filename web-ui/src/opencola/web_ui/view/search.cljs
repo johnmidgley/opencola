@@ -13,11 +13,19 @@
       :on-keyUp #(if (= (.-key %) "Enter")
                    (on-enter @query!))}]))
 
+
 (defn persona-select [personas!]
-      [:td [:select {:id "persona-select" :title "Persona"}
-            (doall (for [persona @personas!]
-                ^{:key persona} [:option  {:value (:id persona)} (:name persona)]))
-            ^{:key "new"} [:option {:value "new"} "New..."]]])
+  (let [persona (-> @personas! first :id)]
+   [:td [:select 
+               {:id "persona-select" 
+                :title "Persona"
+                :on-change #(println (-> % .-target .-value))
+                :value persona
+                }
+               (doall (for [persona @personas!]
+                        ^{:key persona} [:option  {:value (:id persona)} (:name persona)]))
+               (if persona
+                 ^{:key "manage"} [:option {:value "manage"} "Manage..."])]]))
 
 (defn search-header [personas! query! on-enter header-actions]
   [:div.search-header 

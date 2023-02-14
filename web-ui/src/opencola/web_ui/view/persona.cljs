@@ -4,6 +4,13 @@
    [opencola.web-ui.model.persona :as model]
    [opencola.web-ui.model.error :as error]))
 
+(defn init-personas [personas! on-success on-error]
+  (model/get-personas
+   (fn [personas] 
+     (reset! personas! personas)
+     (on-success))
+   #(on-error %)))
+
 (defn get-personas [personas!]
   (model/get-personas
    #(reset! personas! %)

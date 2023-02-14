@@ -62,13 +62,18 @@
   (when-let [el (get-app-element)]
     (mount el)))
 
+
+(defn init-personas []
+  (persona/init-personas 
+   (personas!)
+   #(feed/get-feed @(query!) (feed!))
+   #(error/set-error! (error!) %)))
+
 ;; conditionally start your application based on the presence of an "app" element
 ;; this is particularly helpful for testing this ns without launching the app
 #_(mount-app-element)
 (config/get-config #(do (mount-app-element)
-                        (persona/get-personas (personas!))
-                        (feed/get-feed @(query!) (feed!))
-                        #_(peer/get-peers (peers!))) 
+                        (init-personas)) 
                    #(error/set-error! (error!) %))
 
 ;; specify reload hook with ^:after-load metadata
