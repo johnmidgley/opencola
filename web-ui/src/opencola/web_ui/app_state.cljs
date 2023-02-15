@@ -7,7 +7,8 @@
 (defonce app-state 
   {
    :page-visible-atoms (apply hash-map (mapcat #(vector % (atom false)) [:feed :peers :error]))
-   :personas! (atom "")
+   :persona! (atom nil)
+   :personas! (atom [])
    :query! (atom "")
    :feed! (atom {})
    :peers! (atom {})
@@ -25,11 +26,29 @@
         page-atom! (page page-visible-atoms)]
     (common/select-atom (map second page-visible-atoms) page-atom!)))
 
+(defn get-page []
+   (->> 
+    (get-page-visible-atoms)
+    (filter #(-> % second deref))
+    ffirst))
+
+(defn persona!
+  ([]
+   (:persona! app-state))
+  ([persona]
+   (reset! (persona!) persona)))
+
+(defn personas!
+  ([]
+   (:personas! app-state))
+  ([personas]
+   (reset! (personas!) personas)))
+
 (defn query! 
   ([]
    (:query! app-state))
   ([query]
-   (reset! (query!) query) ))
+   (reset! (query!) query)))
 
 (defn feed! [] 
   (:feed! app-state))
@@ -39,12 +58,6 @@
    (:peers! app-state))
   ([peers]
    (reset! (peers!) peers)))
-
-(defn personas!
-  ([]
-   (:personas! app-state))
-  ([personas]
-   (reset! (personas!) personas)))
 
 (defn error! []
   (:error! app-state))

@@ -6,6 +6,7 @@
    [opencola.web-ui.model.peer :as model]
    [opencola.web-ui.view.search :as search]
    [opencola.web-ui.model.error :as error]
+   [opencola.web-ui.location :as location]
    [alphabase.base58 :as b58]
    [cljs.pprint :as pprint]))
 
@@ -20,7 +21,7 @@
   [:div.header-actions 
    [:img.header-icon {:src  "../img/add-peer.png" :on-click #(swap! adding-peer?! not)}]
    common/image-divider
-   [:img.header-icon {:src  "../img/feed.png" :on-click #(common/set-location (str "#/feed?q=" @query!))}]])
+   [:img.header-icon {:src  "../img/feed.png" :on-click #(location/set-page! :feed)}]])
 
 (defn map-to-token [m]
   (->> m (map (fn [[k v]] (str (name k) "=" v))) (interpose \|) (apply str)))
@@ -173,11 +174,17 @@
      (doall (for [peer (:results @peers!)]
               ^{:key peer} [peer-item peers! peer]))]))
 
-(defn peer-page [peers! personas! query! on-search!]
+(defn peer-page [peers! personas! persona! on-persona-select query! on-search!]
   (let [adding-peer?! (atom false)]
     (fn []
       [:div.settings-page
-       [search/search-header personas! query! on-search! (partial header-actions query! adding-peer?!)]
+       [search/search-header 
+        personas! 
+        persona! 
+        on-persona-select 
+        query! 
+        on-search! 
+        (partial header-actions query! adding-peer?!)]
        [error/error-control @peers!]
        [peer-list peers! adding-peer?!]])))
 

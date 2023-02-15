@@ -4,12 +4,13 @@
    [reagent.core :as reagent :refer [atom]]
    [reagent.dom :as rdom]
    [opencola.web-ui.config :as config]
-   [opencola.web-ui.app-state :as state :refer [personas! query! feed! peers! error!]]
+   [opencola.web-ui.app-state :as state :refer [personas! persona! query! feed! peers! error!]]
    [opencola.web-ui.common :as common]
    [opencola.web-ui.view.feed :as feed]
    [opencola.web-ui.view.persona :as persona]
    [opencola.web-ui.view.peer :as peer]
    [opencola.web-ui.model.error :as error]
+   [opencola.web-ui.location :as location]
    [secretary.core :as secretary :refer-macros [defroute]]
    [goog.events :as events])
   (:import [goog History]
@@ -20,19 +21,21 @@
 (secretary/set-config! :prefix "#")
 
 (defroute "/" []
-  (common/set-location "#/feed"))
+  (state/set-page! :feed)
+  (location/set-state-from-query-params nil))
 
 (defroute "/feed" [query-params]
   (let [query (or (:q query-params) "")]
-    (query! query)
     (if @config/config ; Needed when overriding host-url for dev
       (feed/get-feed query (feed!)))
-    (state/set-page! :feed)))
+    (state/set-page! :feed)
+    (location/set-state-from-query-params query-params)))
 
-(defroute "/peers" []
+(defroute "/peers" [query-params]
   (if @config/config
     (peer/get-peers (peers!)))
-  (state/set-page! :peers))
+  (state/set-page! :peers)
+  (location/set-state-from-query-params query-params))
 
 (defroute "*" []
   (state/set-page! :error))
@@ -40,16 +43,23 @@
 (defn get-app-element []
   (gdom/getElement "app"))
 
-(defn on-search [query feed!]
-  (common/set-location (str "#feed" (if (empty? query) "" (str "?q=" query)))))
+(defn on-search [query] 
+  (query! query)
+  (location/set-location-from-state))
+
+(defn on-persona-select [persona]
+  (if (= persona "manage")
+    (println "Manage Selected")
+    (persona! persona))
+  (location/set-location-from-state))
 
 (defn app []
   (fn []
     [:div.app
      (if (state/page-visible? :feed)
-       [feed/feed-page (feed!) (personas!) (query!)  #(on-search % (feed!))])
+       [feed/feed-page (feed!) (personas!) (persona!) on-persona-select (query!)  on-search])
      (if (state/page-visible? :peers)
-       [peer/peer-page (peers!) (personas!) (query!) #(on-search % (feed!))])
+       [peer/peer-page (peers!) (personas!) (persona!) on-persona-select (query!) on-search])
      (if (state/page-visible? :error)
        [:div.settings "404"])
      [error/error-control @(error!)]]))
@@ -62,19 +72,22 @@
   (when-let [el (get-app-element)]
     (mount el)))
 
-
 (defn init-personas []
   (persona/init-personas 
    (personas!)
-   #(feed/get-feed @(query!) (feed!))
+   (fn []
+     (persona! (-> @(personas!) first :id))
+     (location/set-location-from-state)
+     (feed/get-feed @(query!) (feed!)))
    #(error/set-error! (error!) %)))
 
 ;; conditionally start your application based on the presence of an "app" element
 ;; this is particularly helpful for testing this ns without launching the app
 #_(mount-app-element)
-(config/get-config #(do (mount-app-element)
-                        (init-personas)) 
-                   #(error/set-error! (error!) %))
+(config/get-config 
+ #(do (mount-app-element)
+      (init-personas)) 
+ #(error/set-error! (error!) %))
 
 ;; specify reload hook with ^:after-load metadata
 (defn ^:after-load on-reload []

@@ -12,7 +12,8 @@
    [opencola.web-ui.common :as common :refer [action-img]]
    [opencola.web-ui.view.search :as search]
    [opencola.web-ui.model.error :as error]
-   [opencola.web-ui.model.feed :as model]))
+   [opencola.web-ui.model.feed :as model]
+   [opencola.web-ui.location :as location]))
 
 
 ;; TODO: Look at https://github.com/Day8/re-com
@@ -496,7 +497,7 @@
    [:div.header-actions 
     [:img.header-icon {:src  "../img/new-post.png" :on-click #(swap! creating-post?! not)}]
     common/image-divider
-    [:img.header-icon {:src  "../img/peers.png" :on-click #(common/set-location "#/peers")}]])
+    [:img.header-icon {:src  "../img/peers.png" :on-click #(location/set-page! :peers)}]])
 
 
 (defn prepend-feed-item [feed! view-item]
@@ -510,11 +511,17 @@
       (reset! creating-post!? false))
    #(error/set-error! edit-item! %)))
 
-(defn feed-page [feed! personas! query! on-search]
+(defn feed-page [feed! personas! persona! on-persona-select query! on-search]
   (let [creating-post?! (atom false)]
     (fn []
       [:div#opencola.feed-page
-       [search/search-header personas! query! on-search (partial header-actions creating-post?!)]
+       [search/search-header 
+        personas! 
+        persona! 
+        on-persona-select 
+        query! 
+        on-search 
+        (partial header-actions creating-post?!)]
        [error/error-control @feed!]
        (if @creating-post?!
          (let [edit-item! (atom (edit-item))]

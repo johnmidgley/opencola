@@ -2,6 +2,7 @@
   (:require
    [reagent.core :as reagent :refer [atom]]
    [opencola.web-ui.model.persona :as model]
+   [opencola.web-ui.app-state :as state :refer [persona!]]
    [opencola.web-ui.model.error :as error]))
 
 (defn init-personas [personas! on-success on-error]

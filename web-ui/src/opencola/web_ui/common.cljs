@@ -22,12 +22,8 @@
             (reset! a! false))))
   (reset! atom! true))
 
-(defn set-location [path]
-  (set! (.. js/window -location) path))
-
 (defn action-img [name]
   [:img.action-img {:src (str "../img/" name ".png") :alt name :title name}])
-
 
 ;; https://github.com/reagent-project/reagent/blob/master/doc/CreatingReagentComponents.md
 (defn simple-mde [id text state!] 
