@@ -9,7 +9,8 @@
    [lambdaisland.uri :refer [uri]]
    [cljs.reader :as reader]
    [opencola.web-ui.config :as config]
-   [opencola.web-ui.common :as common :refer [action-img]]
+   [opencola.web-ui.common :refer [toggle-atom]]
+   [opencola.web-ui.view.common :refer [action-img md->component inline-divider image-divider simple-mde]]
    [opencola.web-ui.view.search :as search]
    [opencola.web-ui.model.error :as error]
    [opencola.web-ui.model.feed :as model]
@@ -155,7 +156,7 @@
         ":"]
        (if @editing?!
          [comment-control feed! entity-id comment-id text editing?!]
-         [:div.item-comment-container [common/md->component {:class "item-comment-text"} text]])]))))
+         [:div.item-comment-container [md->component {:class "item-comment-text"} text]])]))))
 
 (defn item-comments [preview-fn? expanded?! comment-actions feed! entity-id]
   (let [preview? (preview-fn?)
@@ -259,7 +260,7 @@
         highlight (some #(= authority-id (:authorityId %)) actions)]
     [:span 
      [:span {:class (if highlight "highlight") :on-click on-click} (action-img (name key))]
-     [:span {:on-click #(common/toggle-atom (map second action-expanded?) expanded?)} " " (count actions) 
+     [:span {:on-click #(toggle-atom (map second action-expanded?) expanded?)} " " (count actions) 
       (action-img (if @expanded? "hide" "show"))]])) 
 
 (defn save-item [feed! item]
@@ -318,13 +319,13 @@
             activities (:activities item)]  
         [:div.activities-summary
          [action-summary feed! :save action-expanded? activities #(save-item feed! item)]
-         common/inline-divider
+         inline-divider
          [action-summary feed! :like action-expanded? activities #(like-item feed! item)] 
-         common/inline-divider
+         inline-divider
          [action-summary feed! :tag action-expanded?  activities #(swap! tagging? not)] 
-         common/inline-divider
+         inline-divider
          [action-summary feed! :comment action-expanded? activities #(swap! commenting? not)]
-         common/inline-divider
+         inline-divider
          [edit-control editing?!]
          [:div.activity-block
           [tags-control feed! item tagging?]
@@ -365,7 +366,7 @@
        [item-name summary]
        [:div.item-body
         [item-image summary]
-        [common/md->component {:class "item-desc"}  (:description summary)]]
+        [md->component {:class "item-desc"}  (:description summary)]]
        [item-tags-summary (-> item :activities :tag)]
        [:div.posted-by "Posted by: " (:postedBy summary)]
        [item-activities feed! item editing?!]
@@ -405,7 +406,7 @@
   [:div.description-edit-control
        [:div.field-header "Description:"]
        [:div.item-desc 
-        [common/simple-mde (str (:entityId @edit-item!) "-desc") (:description @edit-item!) state!]]])
+        [simple-mde (str (:entityId @edit-item!) "-desc") (:description @edit-item!) state!]]])
 
 (defn comment-edit-control [edit-item!]
   [:div.comment-edit-control
@@ -496,7 +497,7 @@
 (defn header-actions [creating-post?!]
    [:div.header-actions 
     [:img.header-icon {:src  "../img/new-post.png" :on-click #(swap! creating-post?! not)}]
-    common/image-divider
+    image-divider
     [:img.header-icon {:src  "../img/peers.png" :on-click #(location/set-page! :peers)}]])
 
 

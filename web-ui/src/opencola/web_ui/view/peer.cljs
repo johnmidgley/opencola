@@ -2,7 +2,7 @@
   (:require
    [clojure.string :as string]
    [reagent.core :as reagent :refer [atom]]
-   [opencola.web-ui.common :as common :refer [action-img nbsp]]
+   [opencola.web-ui.view.common :refer [action-img nbsp image-divider input-text input-checkbox]]
    [opencola.web-ui.model.peer :as model]
    [opencola.web-ui.view.search :as search]
    [opencola.web-ui.model.error :as error]
@@ -11,16 +11,29 @@
    [cljs.pprint :as pprint]))
 
 
+;; These methods are not really view. They are more binders.
 (defn get-peers [peers!]
   (model/get-peers
    #(reset! peers! %)
    #(error/set-error! peers! %)))
 
+(defn update-peer [peers! peer!]
+  (model/update-peer
+   @peer!
+   #(reset! peers! %)
+   #(error/set-error! peer! %)))
+
+(defn delete-peer [peers! peer!]
+  (model/delete-peer
+   @peer!
+   #(reset! peers! %)
+   #(error/set-error! peer! %)))
+
 
 (defn header-actions [query! adding-peer?!]
   [:div.header-actions 
    [:img.header-icon {:src  "../img/add-peer.png" :on-click #(swap! adding-peer?! not)}]
-   common/image-divider
+   image-divider
    [:img.header-icon {:src  "../img/feed.png" :on-click #(location/set-page! :feed)}]])
 
 (defn map-to-token [m]
@@ -44,33 +57,6 @@
         kvs (map (fn [[k v]] [(keyword k) (if (= k "isActive") (to-boolean v) v)]) pairs)]
     (into {:isActive false} kvs)))
 
-(defn peer-value [peer! key editing?]
-  [:div.peer-value
-   [:input.peer-value
-    {:type "text"
-     :disabled (not editing?)
-     :value (key @peer!)
-     :on-change #(swap! peer! assoc-in [key] (-> % .-target .-value))}]])
-
-(defn peer-active [peer! editing?]
-  [:input
-   {:type "checkbox"
-    :disabled (not editing?)
-    :checked (:isActive @peer!)
-    :on-change #(swap! peer! assoc-in [:isActive] (-> % .-target .-checked))}])
-
-(defn update-peer [peers! peer!]
-  (model/update-peer
-   @peer!
-   #(reset! peers! %)
-   #(error/set-error! peer! %)))
-
-(defn delete-peer [peers! peer!]
-  (model/delete-peer
-   @peer!
-   #(reset! peers! %)
-   #(error/set-error! peer! %)))
-
 (defn peer-item [peers! peer adding-peer?!]
   (let [creating? adding-peer?!
         editing?! (atom creating?)
@@ -86,22 +72,22 @@
            [:tbody
             [:tr 
              [:td.peer-field [action-img "user"]] 
-             [:td [peer-value p! :name @editing?!]]]
+             [:td [input-text p! :name @editing?!]]]
             [:tr 
              [:td.peer-field [action-img "id"]] 
-             [:td [:span.id [peer-value p! :id creating?]]]]
+             [:td [:span.id [input-text p! :id creating?]]]]
             [:tr 
              [:td.peer-field [action-img "key"]] 
-             [:td [:span.key [peer-value p! :publicKey @editing?!]]]]
+             [:td [:span.key [input-text p! :publicKey @editing?!]]]]
             [:tr 
              [:td.peer-field [action-img "link"]] 
-             [:td [:span.uri [peer-value p! :address @editing?!]]]]
+             [:td [:span.uri [input-text p! :address @editing?!]]]]
             [:tr 
              [:td.peer-field [action-img "photo"]] 
-             [:td [:span.uri [peer-value p! :imageUri @editing?!]]]]
+             [:td [:span.uri [input-text p! :imageUri @editing?!]]]]
             [:tr 
              [:td.peer-field [action-img "refresh"]] 
-             [:td [peer-active p! @editing?!]]]]]]
+             [:td [input-checkbox p! :isActive @editing?!]]]]]]
          (if @editing?!
            [:div
             [error/error-control @p!]
