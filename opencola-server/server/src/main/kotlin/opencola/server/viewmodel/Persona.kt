@@ -23,7 +23,7 @@ data class Persona(
                 personaAddressBookEntry.name,
                 personaAddressBookEntry.publicKey.encode(),
                 personaAddressBookEntry.address.toString(),
-                personaAddressBookEntry.imageUri.toString(),
+                personaAddressBookEntry.imageUri?.toString(),
                 personaAddressBookEntry.isActive
             )
 

@@ -2,6 +2,7 @@
   (:require
    [clojure.string :as string]
    [reagent.core :as reagent :refer [atom]]
+   [opencola.web-ui.common :refer [to-boolean]]
    [opencola.web-ui.view.common :refer [action-img nbsp image-divider input-text input-checkbox]]
    [opencola.web-ui.model.peer :as model]
    [opencola.web-ui.view.search :as search]
@@ -29,8 +30,7 @@
    #(reset! peers! %)
    #(error/set-error! peer! %)))
 
-
-(defn header-actions [query! adding-peer?!]
+(defn header-actions [adding-peer?!]
   [:div.header-actions 
    [:img.header-icon {:src  "../img/add-peer.png" :on-click #(swap! adding-peer?! not)}]
    image-divider
@@ -43,14 +43,6 @@
   (if (:id peer)
     (map-to-token (dissoc peer :token))))
 
-(defn to-boolean [value]
-  (if value
-    (case (string/lower-case value)
-      "true" true
-      "false" false
-      value)
-    false))
-
 (defn token-to-peer [token]
   (let [parts (string/split token "|")
         pairs (map #(string/split % #"\=" 2) parts)
@@ -58,7 +50,7 @@
     (into {:isActive false} kvs)))
 
 (defn peer-item [peers! peer adding-peer?!]
-  (let [creating? adding-peer?!
+  (let [creating? adding-peer?! ;; TODO - looks like not needed
         editing?! (atom creating?)
         p! (atom peer)]
     (fn []
@@ -170,7 +162,7 @@
         on-persona-select 
         query! 
         on-search! 
-        (partial header-actions query! adding-peer?!)]
+        (partial header-actions adding-peer?!)]
        [error/error-control @peers!]
        [peer-list peers! adding-peer?!]])))
 

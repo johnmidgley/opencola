@@ -1,5 +1,6 @@
 (ns opencola.web-ui.common
   (:require
+   [clojure.string :as string]
    [goog.string :as gstring]
    [reagent.core :as reagent]
    [markdown-to-hiccup.core :as md2hic]
@@ -17,4 +18,12 @@
           (if (not= a! atom!)
             (reset! a! false))))
   (reset! atom! true))
+
+(defn to-boolean [value]
+  (if value
+    (case (string/lower-case value)
+      "true" true
+      "false" false
+      value)
+    false))
 

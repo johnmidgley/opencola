@@ -10,7 +10,7 @@
           {:id "persona-select" 
            :title "Persona"
            :on-change #(on-select (-> % .-target .-value))
-           :value (if @persona! @persona! "")}
+           :value (if @persona! @persona! "manage")}
           (doall (for [persona @personas!]
                    ^{:key persona} [:option  {:value (:id persona)} (:name persona)]))
           (if (not-empty @personas!) ;; Avoid flicker on init
