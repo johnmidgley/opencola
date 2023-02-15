@@ -8,14 +8,20 @@
             #(on-success %)
             #(on-error (error/error-result->str %))))
 
+(defn create-persona [persona on-success on-error]
+  (ajax/POST "personas"
+            persona
+            #(get-personas on-success on-error)
+            #(on-error (error/error-result->str %))))
+
 (defn update-persona [persona on-success on-error]
-  (ajax/PUT "persona"
+  (ajax/PUT "personas"
             persona
             #(get-personas on-success on-error)
             #(on-error (error/error-result->str %))))
 
 (defn delete-persona [persona on-success on-error]
   (ajax/DELETE 
-   (str "persona/" (:id persona))
+   (str "personas/" (:id persona))
    #(get-personas on-success on-error)
    #(on-error (error/error-result->str %))))

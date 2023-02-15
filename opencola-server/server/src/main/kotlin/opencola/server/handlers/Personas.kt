@@ -7,8 +7,6 @@ import io.opencola.storage.PersonaAddressBookEntry
 import opencola.server.viewmodel.Persona
 import java.net.URI
 
-
-
 fun createPersona(addressBook: AddressBook, persona: Persona) : Persona {
     require(persona.id.isBlank()) { "Persona id must be blank" }
     require(persona.name.isNotBlank()) { "Persona name must not be blank" }

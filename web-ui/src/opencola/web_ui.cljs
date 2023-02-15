@@ -37,6 +37,12 @@
   (state/set-page! :peers)
   (location/set-state-from-query-params query-params))
 
+(defroute "/personas" [query-params]
+  (if @config/config
+    (persona/get-personas (personas!)))
+  (state/set-page! :personas)
+  (persona! nil))
+
 (defroute "*" []
   (state/set-page! :error))
 
@@ -49,9 +55,13 @@
 
 (defn on-persona-select [persona]
   (if (= persona "manage")
-    (println "Manage Selected")
-    (persona! persona))
-  (location/set-location-from-state))
+    (do
+     (location/set-location "/#/personas"))
+    (do
+     (if (= :personas (state/get-page))
+       (state/set-page! :feed))
+     (persona! persona)
+     (location/set-location-from-state))))
 
 (defn app []
   (fn []
@@ -60,6 +70,8 @@
        [feed/feed-page (feed!) (personas!) (persona!) on-persona-select (query!)  on-search])
      (if (state/page-visible? :peers)
        [peer/peer-page (peers!) (personas!) (persona!) on-persona-select (query!) on-search])
+     (if (state/page-visible? :personas)
+       [persona/personas-page (personas!) (persona!) on-persona-select (query!) on-search])
      (if (state/page-visible? :error)
        [:div.settings "404"])
      [error/error-control @(error!)]]))

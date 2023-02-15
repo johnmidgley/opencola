@@ -13,6 +13,12 @@
      (on-success))
    #(on-error %)))
 
+(defn create-persona [personas! persona!]
+  (model/create-persona
+   @persona! ; Switch to non-atom
+   #(reset! personas! %)
+   #(error/set-error! personas! %)))
+
 (defn get-personas [personas!]
   (model/get-personas
    #(reset! personas! %)
@@ -34,9 +40,8 @@
   [:div.header-actions 
    [:img.header-icon {:src  "../img/add-peer.png" :on-click #(swap! adding-persona?! not)}]])
 
-(defn persona-item [personas! persona adding-persona?!]
-  (let [creating? adding-persona?! ;; TODO - looks like not needed
-        editing?! (atom creating?)
+(defn persona-item [personas! persona]
+  (let [editing?! (atom false)
         p! (atom persona)]
     (fn []
       (let [image-uri (:imageUri @p!)]
@@ -52,10 +57,10 @@
              [:td [input-text p! :name @editing?!]]]
             [:tr 
              [:td.peer-field [action-img "id"]] 
-             [:td [:span.id [input-text p! :id creating?]]]]
+             [:td [:span.id [input-text p! :id]]]]
             [:tr 
              [:td.peer-field [action-img "key"]] 
-             [:td [:span.key [input-text p! :publicKey @editing?!]]]]
+             [:td [:span.key [input-text p! :publicKey]]]]
             [:tr 
              [:td.peer-field [action-img "link"]] 
              [:td [:span.uri [input-text p! :address @editing?!]]]]
@@ -69,23 +74,62 @@
            [:div
             [error/error-control @p!]
             [:button
-             {:disabled (and (not adding-persona?!) (= @p! persona))
+             {:disabled (= @p! persona)
               :on-click #(do
                            (update-persona personas! p!)
-                           (if adding-persona?! (reset! adding-persona?! false)))} "Save"] " "
+                           )} "Save"] " "
             [:button {:on-click  #(do
                                     (reset! p! persona)
-                                    (if adding-persona?! (reset! adding-persona?! false))
                                     (reset! editing?! false))} "Cancel"] " "
-            (if (not creating?)
-              [:button.delete-button {:on-click #(delete-persona personas! p!)} "Delete"])]
+            [:button.delete-button {:on-click #(delete-persona personas! p!)} "Delete"]]
            [:div.edit-peer
             [:button {:on-click #(reset! editing?! true)} "Edit"]])]))))
+
+(def empty-persona
+  {:id ""  
+   :name "" 
+   :publicKey "" 
+   :address "ocr://relay.opencola.net" 
+   :imageUri "" 
+   :isActive true})
+
+(defn add-persona-item [personas! adding-persona?!]
+  (let [persona! (atom empty-persona )]
+    (fn []
+      (let [image-uri (:imageUri @persona!)]
+        [:div.peer-item
+         [:div.peer-img-box
+          [:img.peer-img 
+           {:src (if (not (empty? image-uri)) image-uri "../img/user.png")}]]
+         [:div.peer-info
+          [:table.peer-info
+           [:tbody
+            [:tr 
+             [:td.peer-field [action-img "user"]] 
+             [:td [input-text persona! :name  true]]]
+            [:tr 
+             [:td.peer-field [action-img "link"]] 
+             [:td [:span.uri [input-text persona! :address true]]]]
+            [:tr 
+             [:td.peer-field [action-img "photo"]] 
+             [:td [:span.uri [input-text persona! :imageUri true]]]]
+            [:tr 
+             [:td.peer-field [action-img "refresh"]] 
+             [:td [input-checkbox persona! :isActive true]]]]]]
+         [:div
+          [error/error-control @persona!]
+          [:button
+           {:disabled (= empty-persona @persona!)
+            :on-click #(do 
+                         (create-persona personas! persona!)
+                         (reset! adding-persona?! false))} 
+           "Save"] " "
+          [:button {:on-click  #(reset! adding-persona?! false)} "Cancel"] " "]]))))
 
 (defn persona-list [personas! adding-persona?!]
   (if @personas!
     [:div.peers 
-     #_(if @adding-persona?! [add-persona-item personas! adding-persona?!])
+     (if @adding-persona?! [add-persona-item personas! adding-persona?!])
      (doall (for [persona @personas!]
               ^{:key persona} [persona-item personas! persona]))]))
 

@@ -121,14 +121,14 @@
             [:tr
              [:td [:div.no-wrap "Give this token to your peer:"]]
              [:td {:width "100%"}
-              [:input.peer-value
+              [:input.input-text
                {:type "text"
                 :disabled true
                 :value @send-token!}]]]
             [:tr
              [:td [:div.no-wrap "Enter token from peer:"]]
              [:td
-              [:input.peer-value
+              [:input.input-text
                {:type "text"
                 :value @receive-token!
                 :on-change #(reset! receive-token! (-> % .-target .-value))}]]]
