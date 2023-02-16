@@ -13,19 +13,22 @@
 
 
 ;; These methods are not really view. They are more binders.
-(defn get-peers [peers!]
+(defn get-peers [persona-id peers!]
   (model/get-peers
+   persona-id
    #(reset! peers! %)
    #(error/set-error! peers! %)))
 
-(defn update-peer [peers! peer!]
+(defn update-peer [persona-id peers! peer!]
   (model/update-peer
+   persona-id
    @peer!
    #(reset! peers! %)
    #(error/set-error! peer! %)))
 
-(defn delete-peer [peers! peer!]
+(defn delete-peer [persona-id peers! peer!]
   (model/delete-peer
+   persona-id
    @peer!
    #(reset! peers! %)
    #(error/set-error! peer! %)))
@@ -49,7 +52,7 @@
         kvs (map (fn [[k v]] [(keyword k) (if (= k "isActive") (to-boolean v) v)]) pairs)]
     (into {:isActive false} kvs)))
 
-(defn peer-item [peers! peer adding-peer?!]
+(defn peer-item [persona-id peers! peer adding-peer?!]
   (let [creating? adding-peer?! ;; TODO - looks like not needed
         editing?! (atom creating?)
         p! (atom peer)]
@@ -86,31 +89,32 @@
             [:button
              {:disabled (and (not adding-peer?!) (= @p! peer)) 
               :on-click #(do
-                           (update-peer peers! p!)
+                           (update-peer persona-id peers! p!)
                            (if adding-peer?! (reset! adding-peer?! false)))} "Save"] " "
             [:button {:on-click  #(do
                                     (reset! p! peer)
                                     (if adding-peer?! (reset! adding-peer?! false))
                                     (reset! editing?! false))} "Cancel"] " "
             (if (not creating?)
-              [:button.delete-button {:on-click #(delete-peer peers! p!)} "Delete"])]
+              [:button.delete-button {:on-click #(delete-peer persona-id peers! p!)} "Delete"])]
            [:div.edit-peer
             [:button {:on-click #(reset! editing?! true)} "Edit"]])]))))
 
-(defn get-invite-token [token! add-error!]
+(defn get-invite-token [persona-id token! add-error!]
   (model/get-invite-token
+   persona-id
    #(reset! token! %)
    #(error/set-error! add-error! %)))
 
-(defn add-peer-item [peers! adding-peer?!]
+(defn add-peer-item [persona-id peers! adding-peer?!]
   (let [send-token! (atom "Loading...")
         receive-token! (atom "")
         peer! (atom nil)
         add-error! (atom {})]
-    (get-invite-token send-token! add-error!)
+    (get-invite-token persona-id send-token! add-error!)
     (fn []
       (if @peer!
-        [peer-item peers! @peer! adding-peer?!]
+        [peer-item persona-id peers! @peer! adding-peer?!]
         [:div.peer-item 
          [:div.peer-img-box
           [:img.peer-img 
@@ -144,13 +148,13 @@
              [:td
               [error/error-control @add-error!]]]]]]]))))
 
-(defn peer-list [peers! adding-peer?!]
+(defn peer-list [persona-id peers! adding-peer?!]
   (if @peers!
     [:div.peers 
-     (if @adding-peer?! [add-peer-item peers! adding-peer?!])
+     (if @adding-peer?! [add-peer-item persona-id peers! adding-peer?!])
      
      (doall (for [peer (:results @peers!)]
-              ^{:key peer} [peer-item peers! peer]))]))
+              ^{:key peer} [peer-item persona-id peers! peer]))]))
 
 (defn peer-page [peers! personas! persona! on-persona-select query! on-search!]
   (let [adding-peer?! (atom false)]
@@ -164,5 +168,5 @@
         on-search! 
         (partial header-actions adding-peer?!)]
        [error/error-control @peers!]
-       [peer-list peers! adding-peer?!]])))
+       [peer-list @persona! peers! adding-peer?!]])))
 

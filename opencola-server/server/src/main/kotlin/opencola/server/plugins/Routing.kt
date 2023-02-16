@@ -321,25 +321,32 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
                 handleGetFeed(call, app.inject(), app.inject(), app.inject())
             }
 
-            get("/peers") {
-                call.respond(getPeers(rootPersona, app.inject()))
+            fun getPersona(call: ApplicationCall): PersonaAddressBookEntry {
+                val personaId = call.parameters["personaId"]?.let { Id.decode(it) }
+                    ?: throw IllegalArgumentException("No personaId specified")
+                return app.inject<AddressBook>().getEntry(personaId, personaId) as? PersonaAddressBookEntry
+                    ?: throw IllegalArgumentException("Invalid personaId: $personaId")
+            }
+
+            get("/peers/{personaId}") {
+                call.respond(getPeers(getPersona(call), app.inject()))
             }
 
             // TODO: change token to inviteToken
-            get("/peers/token") {
+            get("/peers/{personaId}/token") {
                 val inviteToken =
-                    getInviteToken(rootPersona.entityId, app.inject(), app.inject(), app.inject())
+                    getInviteToken(getPersona(call).personaId, app.inject(), app.inject(), app.inject())
                 call.respond(TokenRequest(inviteToken))
             }
 
             post("/peers/token") {
                 val tokenRequest = call.receive<TokenRequest>()
-                call.respond(inviteTokenToPeer(rootPersona.entityId, tokenRequest.token))
+                call.respond(inviteTokenToPeer(app.inject(), tokenRequest.token))
             }
 
-            put("/peers") {
+            put("/peers/{personaId}") {
                 val peer = call.receive<Peer>()
-                updatePeer(rootPersona.entityId, app.inject(), app.inject(), app.inject(), peer)
+                updatePeer(getPersona(call).entityId, app.inject(), app.inject(), app.inject(), peer)
                 call.respond("{}")
             }
 

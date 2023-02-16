@@ -32,10 +32,11 @@
     (location/set-state-from-query-params query-params)))
 
 (defroute "/peers" [query-params]
-  (if @config/config
-    (peer/get-peers (peers!)))
   (state/set-page! :peers)
-  (location/set-state-from-query-params query-params))
+  (location/set-state-from-query-params query-params)
+  (if @config/config
+    (peer/get-peers @(persona!) (peers!)))
+)
 
 (defroute "/personas" [query-params]
   (if @config/config

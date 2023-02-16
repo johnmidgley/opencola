@@ -69,6 +69,7 @@ data class PeersResult(val authorityId: String, val pagingToken: String?, val re
 fun getPeers(persona: PersonaAddressBookEntry, addressBook: AddressBook): PeersResult {
     val peers = addressBook.getEntries()
         .filter{ it !is PersonaAddressBookEntry }
+        .filter { it.personaId == persona.personaId }
         .map {
         // TODO: Make name, public key and uri required for authority
         Peer(
@@ -129,11 +130,13 @@ fun getInviteToken(personaId: Id, addressBook: AddressBook, networkNode: Network
     return InviteToken.fromAddressBookEntry(persona).encodeBase58(signator)
 }
 
-fun inviteTokenToPeer(authorityId: Id, inviteToken: String): Peer {
+fun inviteTokenToPeer(addressBook: AddressBook, inviteToken: String): Peer {
     val decodedInviteToken = InviteToken.decodeBase58(inviteToken)
     val imageUri = if(decodedInviteToken.imageUri.toString().isBlank()) null else decodedInviteToken.imageUri
 
-    if(decodedInviteToken.authorityId == authorityId)
+    if(addressBook.getEntries()
+        .filterIsInstance<PersonaAddressBookEntry>()
+        .any { it.personaId == decodedInviteToken.authorityId })
         throw IllegalArgumentException("You can't invite yourself (┛ಠ_ಠ)┛彡┻━┻")
 
     return Peer(
