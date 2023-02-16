@@ -66,9 +66,9 @@
 
 
 ;; TODO: Change *-error to *-failure
-(defn save-entity [item on-success on-error]
+(defn save-entity [persona-id item on-success on-error]
   (ajax/POST 
-   (str "/entity/" (:entityId item))
+   (str "/entity/" (:entityId item) "?personaId=" persona-id)
    nil
    #(on-success (model-to-view-item %))
    #(on-error (error-result->str %))))

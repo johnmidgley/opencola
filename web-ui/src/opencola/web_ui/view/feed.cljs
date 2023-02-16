@@ -266,12 +266,13 @@
      [:span {:on-click #(toggle-atom (map second action-expanded?) expanded?)} " " (count actions) 
       (action-img (if @expanded? "hide" "show"))]])) 
 
-(defn save-item [feed! item]
+(defn save-item [persona-id feed! item]
   (let [authority-id (:authorityId @feed!)
         actions (-> item :activities :save)
         saved? (some #(= authority-id (:authorityId %)) actions)]
     (if (not saved?)
       (model/save-entity
+       persona-id
         item
         #(update-feed-item feed! %)
         #(update-feed-item feed! (error/set-error item %))))))
@@ -323,7 +324,7 @@
       (let [entity-id (:entityId item)
             activities (:activities item)]  
         [:div.activities-summary
-         [action-summary feed! :save action-expanded? activities #(save-item feed! item)]
+         [action-summary feed! :save action-expanded? activities #(save-item persona-id feed! item)]
          inline-divider
          [action-summary feed! :like action-expanded? activities #(like-item persona-id feed! item)] 
          inline-divider
