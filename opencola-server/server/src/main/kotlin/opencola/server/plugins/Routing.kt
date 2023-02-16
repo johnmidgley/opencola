@@ -190,6 +190,12 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
 
     routing {
         // Authentication from https://ktor.io/docs/session-auth.html
+        fun getPersona(call: ApplicationCall): PersonaAddressBookEntry {
+            val personaId = call.parameters["personaId"]?.let { Id.decode(it) }
+                ?: throw IllegalArgumentException("No personaId specified")
+            return app.inject<AddressBook>().getEntry(personaId, personaId) as? PersonaAddressBookEntry
+                ?: throw IllegalArgumentException("Invalid personaId: $personaId")
+        }
 
         get("/login") {
             if (call.request.origin.scheme != "https") {
@@ -246,28 +252,29 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             }
 
             get("/entity/{entityId}") {
-                // TODO: Authority should be passed (and authenticated) in header
-                getEntity(call, rootPersona, app.inject(), app.inject())
+                getEntity(call, getPersona(call), app.inject(), app.inject())
             }
 
             post("/entity/{entityId}") {
-                saveEntity(call, rootPersona, app.inject(), app.inject())
+                saveEntity(call, getPersona(call), app.inject(), app.inject())
             }
 
             put("/entity/{entityId}") {
-                updateEntity(call, rootPersona, app.inject(), app.inject())
+                updateEntity(call, getPersona(call), app.inject(), app.inject())
             }
 
             delete("/entity/{entityId}") {
-                deleteEntity(call, rootPersona, app.inject(), app.inject())
+                deleteEntity(call, getPersona(call), app.inject(), app.inject())
             }
 
             post("/entity/{entityId}/comment") {
-                addComment(call, rootPersona, app.inject(), app.inject())
+                addComment(call, getPersona(call), app.inject(), app.inject())
             }
 
             post("/post") {
-                newPost(call, rootPersona, app.inject(), app.inject())
+                newPost(getPersona(call), app.inject(), app.inject(), call.receive<EntityPayload>())?.also {
+                    call.respond(it)
+                }
             }
 
             delete("/comment/{commentId}") {
@@ -316,16 +323,9 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
                 handleGetActionsCall(call, rootPersona.personaId, app.inject())
             }
 
-            get("/feed") {
+            get("/feed/{personaId}") {
                 // TODO: Handle filtering of authorities
-                handleGetFeed(call, app.inject(), app.inject(), app.inject())
-            }
-
-            fun getPersona(call: ApplicationCall): PersonaAddressBookEntry {
-                val personaId = call.parameters["personaId"]?.let { Id.decode(it) }
-                    ?: throw IllegalArgumentException("No personaId specified")
-                return app.inject<AddressBook>().getEntry(personaId, personaId) as? PersonaAddressBookEntry
-                    ?: throw IllegalArgumentException("Invalid personaId: $personaId")
+                handleGetFeed(call, getPersona(call), app.inject(), app.inject(), app.inject())
             }
 
             get("/peers/{personaId}") {

@@ -29,30 +29,30 @@
       (set-query query)))
 
 
-(defn get-feed [query on-success on-error]
-  (ajax/GET (str "feed" "?q=" query) 
+(defn get-feed [persona-id query on-success on-error]
+  (ajax/GET (str "feed/" persona-id "?q=" query) 
             #(on-success (feed-to-view-model % query))
             #(on-error (error-result->str %)))) 
 
-(defn delete-entity [entity-id on-success on-error]
+(defn delete-entity [persona-id entity-id on-success on-error]
   (ajax/DELETE 
-   (str "entity/" entity-id)
+   (str "entity/" entity-id "?personaId=" persona-id)
    #(on-success (model-to-view-item %))
    #(on-error (error-result->str %))))
 
 
-(defn update-comment [entity-id comment-id text on-success on-error]
-  (ajax/POST (str "entity/" entity-id "/comment") 
+(defn update-comment [persona-id entity-id comment-id text on-success on-error]
+  (ajax/POST (str "entity/" entity-id "/comment?personaId=" persona-id) 
              {:commentId comment-id
               :text text}
              #(on-success (model-to-view-item %))
              #(on-error (error-result->str %))))
 
-(defn update-entity [item on-success on-error]
+(defn update-entity [persona-id item on-success on-error]
   ;; TODO - Weird to dissoc a view value here. Think about proper binder
   (let [item (dissoc item :error-message)]
    (ajax/PUT 
-    (str "/entity/" (:entityId item))
+    (str "entity/" (:entityId item) "?personaId=" persona-id)
     item
     #(on-success (model-to-view-item %))
     #(on-error (error-result->str %)))))
@@ -75,9 +75,9 @@
 
 
 
-(defn new-post [item on-success on-error]
+(defn new-post [persona-id item on-success on-error]
   (ajax/POST
-   (str "/post")
+   (str "post?personaId=" persona-id)
    item
    #(on-success (model-to-view-item %))
    #(on-error (error-result->str %))))

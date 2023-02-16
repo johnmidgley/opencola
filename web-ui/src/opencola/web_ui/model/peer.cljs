@@ -3,25 +3,25 @@
    [opencola.web-ui.ajax :as ajax]
    [opencola.web-ui.model.error :as error]))
 
-(defn get-peers [on-success on-error]
-  (ajax/GET "peers" 
+(defn get-peers [persona-id on-success on-error]
+  (ajax/GET (str "peers/" persona-id) 
             #(on-success %)
             #(on-error (error/error-result->str %))))
 
-(defn update-peer [peer on-success on-error]
-  (ajax/PUT "peers"
+(defn update-peer [persona-id peer on-success on-error]
+  (ajax/PUT (str "peers/" persona-id)
             peer
-            #(get-peers on-success on-error)
+            #(get-peers persona-id on-success on-error)
             #(on-error (error/error-result->str %))))
 
-(defn delete-peer [peer on-success on-error]
+(defn delete-peer [persona-id peer on-success on-error]
   (ajax/DELETE 
    (str "peers/" (:id peer))
-   #(get-peers on-success on-error)
+   #(get-peers persona-id on-success on-error)
    #(on-error (error/error-result->str %))))
 
-(defn get-invite-token [on-success on-error]
-  (ajax/GET "peers/token"
+(defn get-invite-token [persona-id on-success on-error]
+  (ajax/GET (str "peers/" persona-id "/token")
             #(on-success (:token %))
             #(on-error (error/error-result->str %))))
 

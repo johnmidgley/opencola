@@ -270,12 +270,12 @@ input.input-text {
     font-size: 13px;
 }
 
-.search-box {
-    padding-bottom: 7px;
-}
-
 .search-input {
     width: 200px;
+}
+
+#persona-select {
+    border: dotted 1px grey;
 }
 
 .no-wrap {

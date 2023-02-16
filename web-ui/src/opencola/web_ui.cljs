@@ -25,11 +25,11 @@
   (location/set-state-from-query-params nil))
 
 (defroute "/feed" [query-params]
+  (state/set-page! :feed)
+  (location/set-state-from-query-params query-params)
   (let [query (or (:q query-params) "")]
     (if @config/config ; Needed when overriding host-url for dev
-      (feed/get-feed query (feed!)))
-    (state/set-page! :feed)
-    (location/set-state-from-query-params query-params)))
+      (feed/get-feed @(persona!) query (feed!)))))
 
 (defroute "/peers" [query-params]
   (state/set-page! :peers)
@@ -91,7 +91,7 @@
    (fn []
      (persona! (-> @(personas!) first :id))
      (location/set-location-from-state)
-     (feed/get-feed @(query!) (feed!)))
+     (feed/get-feed @(persona!) @(query!) (feed!)))
    #(error/set-error! (error!) %)))
 
 ;; conditionally start your application based on the presence of an "app" element

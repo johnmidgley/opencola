@@ -266,7 +266,7 @@ fun newPost(
     return updateEntity(persona, entityStore, addressBook, PostEntity(persona.personaId), entityPayload)
 }
 
-suspend fun newPost(call: ApplicationCall, persona: PersonaAddressBookEntry, entityStore: EntityStore, addressBook: AddressBook) {
-    val entityPayload = call.receive<EntityPayload>()
-    newPost(persona, entityStore, addressBook, entityPayload).nullOrElse { call.respond(it) }
-}
+//suspend fun newPost(call: ApplicationCall, persona: PersonaAddressBookEntry, entityStore: EntityStore, addressBook: AddressBook) {
+//    val entityPayload = call.receive<EntityPayload>()
+//    newPost(persona, entityStore, addressBook, entityPayload).nullOrElse { call.respond(it) }
+//}

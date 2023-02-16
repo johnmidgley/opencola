@@ -212,13 +212,12 @@ fun getEntityResult(
 
 suspend fun handleGetFeed(
     call: ApplicationCall,
+    persona: PersonaAddressBookEntry,
     entityStore: EntityStore,
     searchIndex: SearchIndex,
     addressBook: AddressBook,
 ) {
-    val personaIds = call.parameters["personaIds"]?.split(",")?.map { Id.decode(it) } ?: emptyList()
-    val entityIds = getEntityIds(entityStore, personaIds, searchIndex, call.parameters["q"])
-    val persona = addressBook.getEntries().filterIsInstance<PersonaAddressBookEntry>().first()
+    val entityIds = getEntityIds(entityStore, listOf(persona.personaId), searchIndex, call.parameters["q"])
 
     call.respond(
         FeedResult(
