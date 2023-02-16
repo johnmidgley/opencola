@@ -67,7 +67,9 @@ data class PeersResult(val authorityId: String, val pagingToken: String?, val re
 }
 
 fun getPeers(persona: PersonaAddressBookEntry, addressBook: AddressBook): PeersResult {
-    val peers = addressBook.getEntries().map {
+    val peers = addressBook.getEntries()
+        .filter{ it !is PersonaAddressBookEntry }
+        .map {
         // TODO: Make name, public key and uri required for authority
         Peer(
             it.entityId,
@@ -84,6 +86,7 @@ fun getPeers(persona: PersonaAddressBookEntry, addressBook: AddressBook): PeersR
 
 fun deletePeer(addressBook: AddressBook, personaId: Id, peerId: Id) {
     logger.info { "Deleting Peer: personaId = $personaId, peerId = $peerId" }
+    require(addressBook.getEntry(personaId, peerId) !is PersonaAddressBookEntry)
     addressBook.deleteEntry(personaId, peerId)
 }
 
@@ -92,6 +95,7 @@ fun updatePeer(authorityId: Id, addressBook: AddressBook, networkNode: NetworkNo
     logger.info { "Updating peer: $peer" }
 
     val existingPeerAuthority = addressBook.getEntry(authorityId, Id.decode(peer.id))
+    require(existingPeerAuthority !is PersonaAddressBookEntry)
 
     if(Id.ofPublicKey(decodePublicKey(peer.publicKey)) != Id.decode(peer.id))
         throw IllegalArgumentException("Public key update not supported yet")

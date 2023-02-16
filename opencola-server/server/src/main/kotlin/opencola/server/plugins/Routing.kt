@@ -186,7 +186,7 @@ fun Application.configureBootstrapRouting(
 fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParams) {
     // TODO: Make and user general opencola.server
     val logger = KotlinLogging.logger("opencola.init")
-    val rootPersona = app.inject<AddressBook>().getEntries().filterIsInstance<PersonaAddressBookEntry>().single()
+    val rootPersona = app.inject<AddressBook>().getEntries().filterIsInstance<PersonaAddressBookEntry>().first()
 
     routing {
         // Authentication from https://ktor.io/docs/session-auth.html
@@ -209,9 +209,9 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             val username = formParameters["username"]
             val password = formParameters["password"]
 
-            if (username == null || username.isBlank())
+            if (username.isNullOrBlank())
                 loginPage(call, app.config.security.login.username, "Please enter a username")
-            if (password == null || password.isBlank()) {
+            if (password.isNullOrBlank()) {
                 loginPage(call, app.config.security.login.username, "Please enter a password")
             } else if (validateAuthorityKeyStorePassword(app.storagePath, password)) {
                 val authToken = AuthToken(username!!).encode(authEncryptionParams)

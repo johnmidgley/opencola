@@ -140,6 +140,7 @@ class AddressBook(private val storagePath: Path, private val keyStore: KeyStore)
             ?: throw IllegalStateException("Attempt to delete non existent authority: personaId=$personaId, id=$entityId")
 
         entityStore.deleteEntity(personaId, entityId)
+        keyStore.deleteKeyPair(entityId.toString())
         callUpdateHandlers(AddressBookEntry(previousAuthority), null)
     }
 

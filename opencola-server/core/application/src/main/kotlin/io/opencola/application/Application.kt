@@ -44,22 +44,18 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
         // TODO: Rename - not single keypair anymore. Maybe getOrCreateRootKeyPairs, but doesn't seem right.
         fun getOrCreateRootKeyPair(storagePath: Path, password: String): List<KeyPair> {
             val keyStore = KeyStore(storagePath.resolve("keystore.pks"), password)
-            val aliases = keyStore.getAliases()
 
-            val keyPair = if(aliases.isEmpty()) {
-                logger.info { "Creating new KeyPair" }
+            if(keyStore.getAliases().isEmpty()) {
                 generateKeyPair().also { keyStore.addKey(Id.ofPublicKey(it.public).toString(), it) }
-            } else if(aliases.size == 1) {
-                keyStore.getKeyPair(aliases.first())
-            } else {
-                throw IllegalStateException("Multiple keys found in keystore {${keyStore.path}}")
             }
 
-            if(keyPair == null) {
-                throw IllegalStateException("Unable to get key pair from keystore {${keyStore.path}}")
+            val keyPairs = keyStore.getAliases().mapNotNull { keyStore.getKeyPair(it) }
+
+            if(keyPairs.isEmpty()) {
+                throw IllegalStateException("No key pairs found in {${keyStore.path}}")
             }
 
-            return listOf(keyPair)
+            return keyPairs
         }
 
         fun getEntityStoreDB(storagePath: Path): Database {

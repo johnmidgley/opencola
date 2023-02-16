@@ -39,11 +39,15 @@ class KeyStore(val path: Path, password: String) : SecurityProviderDependent(), 
             store.load(null, passwordHash)
     }
 
-    fun addKey(alias: String, keyPair: KeyPair){
-        store.setKeyEntry(alias, keyPair.private, null, arrayOf(createCertificate(alias, keyPair)))
+    private fun saveStore() {
         path.outputStream().use {
             store.store(it, passwordHash)
         }
+    }
+
+    fun addKey(alias: String, keyPair: KeyPair){
+        store.setKeyEntry(alias, keyPair.private, null, arrayOf(createCertificate(alias, keyPair)))
+        saveStore()
     }
 
     private fun getEntry(alias: String): KeyStore.PrivateKeyEntry? {
@@ -52,6 +56,11 @@ class KeyStore(val path: Path, password: String) : SecurityProviderDependent(), 
 
     fun getKeyPair(alias: String): KeyPair? {
         return getEntry(alias)?.let { KeyPair(it.certificate.publicKey, it.privateKey) }
+    }
+
+    fun deleteKeyPair(alias: String) {
+        store.deleteEntry(alias)
+        saveStore()
     }
 
     fun getPrivateKey(alias: String): PrivateKey? {
