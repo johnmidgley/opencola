@@ -45,7 +45,7 @@ class ApplicationNode(val application: Application) : Node {
     }
 
     override fun postInviteToken(token: String): Peer {
-        return inviteTokenToPeer(application.getPersonas().single().entityId, token)
+        return inviteTokenToPeer(application.inject(), token)
     }
 
     override fun getPeers(): PeersResult {

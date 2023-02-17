@@ -37,7 +37,7 @@ class ApplicationTest : ApplicationTestBase() {
             ResourceEntity(persona.personaId, URI("http://opencola.org"), trust = 1.0F, like = true, rating = 1.0F)
         entityStore.updateEntities(entity)
 
-        val response = client.get("/entity/${entity.entityId}")
+        val response = client.get("/entity/${entity.entityId}?personaId=${persona.personaId}")
         assertEquals(HttpStatusCode.OK, response.status)
         val content = response.bodyAsText()
         val entityResult = Json.decodeFromString<EntityResult>(content)
@@ -142,12 +142,12 @@ class ApplicationTest : ApplicationTestBase() {
     fun testGetFeed() = testApplication {
         application { configure(this) }
 
-        val authority = application.getPersonas().first()
+        val persona = application.getPersonas().first()
         val entityStore = inject<EntityStore>()
         entityStore.resetStore()
 
         val uri = URI("https://opencola.org/${Id.new()}")
-        val entity = ResourceEntity(authority.personaId, uri)
+        val entity = ResourceEntity(persona.personaId, uri)
         entity.dataId = entity.dataId.plus(Id.new())
         entityStore.updateEntities(entity)
 
@@ -160,12 +160,12 @@ class ApplicationTest : ApplicationTestBase() {
         entity.rating = 0.5F
         entityStore.updateEntities(entity)
 
-        val comment = CommentEntity(authority.personaId, entity.entityId, "Test Comment")
+        val comment = CommentEntity(persona.personaId, entity.entityId, "Test Comment")
         entityStore.updateEntities(comment)
 
         // TODO: Add another authority
 
-        val response = client.get("/feed")
+        val response = client.get("/feed?personaId=${persona.personaId}")
         assertEquals(HttpStatusCode.OK, response.status)
         val content = response.bodyAsText()
         val feedResult = Json.decodeFromString<FeedResult>(content)
@@ -205,7 +205,7 @@ class ApplicationTest : ApplicationTestBase() {
             null
         )
 
-        val response = client.put("/entity/${resourceEntity.entityId}") {
+        val response = client.put("/entity/${resourceEntity.entityId}?personaId=${persona.personaId}") {
             headers.append(HttpHeaders.ContentType, ContentType.Application.Json.toString())
             setBody(Json.encodeToString(entity))
         }

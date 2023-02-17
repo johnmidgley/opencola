@@ -43,9 +43,9 @@ open class PeerNetworkTest {
     }
 
     private fun addPeer(applicationNode: ApplicationNode, peerApplicationNode: ApplicationNode) {
+        val app = applicationNode.application
         val inviteToken = peerApplicationNode.getInviteToken()
-        val authorityId = applicationNode.application.getPersonas().single().entityId
-        val peer = inviteTokenToPeer(authorityId, inviteToken)
+        val peer = inviteTokenToPeer(app.inject(), inviteToken)
         applicationNode.updatePeer(peer)
     }
 
