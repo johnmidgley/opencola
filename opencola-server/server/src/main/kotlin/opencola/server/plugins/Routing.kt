@@ -323,17 +323,17 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
                 handleGetActionsCall(call, rootPersona.personaId, app.inject())
             }
 
-            get("/feed/{personaId}") {
+            get("/feed") {
                 // TODO: Handle filtering of authorities
                 handleGetFeed(call, getPersona(call), app.inject(), app.inject(), app.inject())
             }
 
-            get("/peers/{personaId}") {
+            get("/peers") {
                 call.respond(getPeers(getPersona(call), app.inject()))
             }
 
             // TODO: change token to inviteToken
-            get("/peers/{personaId}/token") {
+            get("/peers/token") {
                 val inviteToken =
                     getInviteToken(getPersona(call).personaId, app.inject(), app.inject(), app.inject())
                 call.respond(TokenRequest(inviteToken))
@@ -344,7 +344,7 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
                 call.respond(inviteTokenToPeer(app.inject(), tokenRequest.token))
             }
 
-            put("/peers/{personaId}") {
+            put("/peers") {
                 val peer = call.receive<Peer>()
                 updatePeer(getPersona(call).entityId, app.inject(), app.inject(), app.inject(), peer)
                 call.respond("{}")

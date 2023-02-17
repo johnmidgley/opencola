@@ -30,7 +30,7 @@
 
 
 (defn get-feed [persona-id query on-success on-error]
-  (ajax/GET (str "feed/" persona-id "?q=" query) 
+  (ajax/GET (str "feed?personaId=" persona-id  "&q=" query "") 
             #(on-success (feed-to-view-model % query))
             #(on-error (error-result->str %)))) 
 
