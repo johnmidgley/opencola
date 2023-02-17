@@ -41,7 +41,7 @@ fun getSummary(authorityId: Id, entities: List<Entity>, idToAuthority: (Id) -> A
         entityAttributeAsString(entity, Uri.spec),
         entityAttributeAsString(entity, Description.spec),
         entityAttributeAsString(entity, ImageUri.spec),
-        if (postedByAuthority?.entityId == authorityId) "You" else postedByAuthority?.name,
+        postedByAuthority?.name,
         postedByAuthority?.imageUri?.toString()
     )
 }
@@ -165,7 +165,7 @@ fun getComments(entityStore: EntityStore, entities: Iterable<Entity>): Map<Id, C
 fun getAddressBookMap(addressBook: AddressBook): Map<Id, AddressBookEntry> {
     return addressBook.getEntries().map {
         if(it is PersonaAddressBookEntry)
-            AddressBookEntry(it.personaId, it.entityId, "You", it.publicKey, it.address, it.imageUri, it.isActive)
+            AddressBookEntry(it.personaId, it.entityId, "You (${it.name})", it.publicKey, it.address, it.imageUri, it.isActive)
         else
             it
     }.associateBy { it.entityId }
