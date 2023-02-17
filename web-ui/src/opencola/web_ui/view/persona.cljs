@@ -13,11 +13,13 @@
      (on-success))
    #(on-error %)))
 
-(defn create-persona [personas! persona!]
+(defn create-persona [personas! persona! on-success]
   (model/create-persona
-   @persona! ; Switch to non-atom
-   #(reset! personas! %)
-   #(error/set-error! personas! %)))
+   (dissoc @persona! :error)                          ; Switch to non-atom
+   #(do 
+      (reset! personas! %)
+      (on-success))
+   #(error/set-error! persona! %)))
 
 (defn get-personas [personas!]
   (model/get-personas
@@ -26,7 +28,7 @@
 
 (defn update-persona [personas! persona!]
   (model/update-persona
-   @persona!
+   (dissoc @persona! :error)
    #(reset! personas! %)
    #(error/set-error! persona! %)))
 
@@ -120,9 +122,7 @@
           [error/error-control @persona!]
           [:button
            {:disabled (= empty-persona @persona!)
-            :on-click #(do 
-                         (create-persona personas! persona!)
-                         (reset! adding-persona?! false))} 
+            :on-click #(create-persona personas! persona! (fn [] (reset! adding-persona?! false)))} 
            "Save"] " "
           [:button {:on-click  #(reset! adding-persona?! false)} "Cancel"] " "]]))))
 

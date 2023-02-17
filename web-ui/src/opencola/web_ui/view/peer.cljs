@@ -22,7 +22,7 @@
 (defn update-peer [persona-id peers! peer!]
   (model/update-peer
    persona-id
-   @peer!
+   (dissoc @peer! :error)
    #(reset! peers! %)
    #(error/set-error! peer! %)))
 
