@@ -5,6 +5,8 @@ import io.opencola.io.recursiveDelete
 import io.opencola.model.CoreAttribute.values
 import io.opencola.model.Entity
 import io.opencola.model.Id
+import org.apache.lucene.analysis.core.KeywordAnalyzer
+import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.document.Document
 import org.apache.lucene.document.Field
@@ -22,7 +24,9 @@ import java.util.*
 
 class LuceneSearchIndex(private val storagePath: Path) : AbstractSearchIndex() {
     private val logger = KotlinLogging.logger("LuceneSearchIndex")
-    private val analyzer = StandardAnalyzer()
+    private val analyzer = KeywordAnalyzer().let {
+        PerFieldAnalyzerWrapper(StandardAnalyzer(), mapOf("authorityId" to it, "entityId" to it, "id" to it))
+    }
 
     // TODO: How to close this?
     private val directory = FSDirectory.open(storagePath)

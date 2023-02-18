@@ -18,6 +18,7 @@ dependencies {
     implementation("org.apache.lucene:lucene-core:$luceneVersion")
     implementation("org.apache.lucene:lucene-queryparser:$luceneVersion")
     implementation("org.apache.lucene:lucene-backward-codecs:$luceneVersion")
+    implementation("org.apache.lucene:lucene-analysis-common:$luceneVersion")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
 }
