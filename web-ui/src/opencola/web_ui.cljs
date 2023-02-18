@@ -89,7 +89,8 @@
   (persona/init-personas 
    (personas!)
    (fn []
-     (persona! (-> @(personas!) first :id))
+     (if (not @(persona!))
+      (persona! (-> @(personas!) first :id)))
      (location/set-location-from-state)
      (feed/get-feed @(persona!) @(query!) (feed!)))
    #(error/set-error! (error!) %)))
