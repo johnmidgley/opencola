@@ -142,7 +142,8 @@ fun getEntityIds(entityStore: EntityStore, personaIds: List<Id>, searchIndex: Se
         ) // TODO: Config limit
         signedTransactions.flatMap { tx -> tx.transaction.transactionEntities.map { it.entityId } }
     } else {
-        searchIndex.search(query).map { it.entityId }
+        // TODO: Get add peers of personas to id list
+        searchIndex.search(personaIds, query).map { it.entityId }
     }
 
     return entityIds.toSet()

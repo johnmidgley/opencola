@@ -8,5 +8,5 @@ interface SearchIndex {
     fun destroy()
     fun add(entity: Entity)
     fun delete(authorityId: Id, entityId: Id)
-    fun search(query: String): List<SearchResult>
+    fun search(authorityIds: List<Id>, query: String): List<SearchResult>
 }

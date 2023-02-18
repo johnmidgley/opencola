@@ -190,12 +190,19 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
 
     routing {
         // Authentication from https://ktor.io/docs/session-auth.html
-        fun getPersona(call: ApplicationCall): PersonaAddressBookEntry {
+        fun expectPersona(call: ApplicationCall): PersonaAddressBookEntry {
             val personaId = call.parameters["personaId"]?.let { Id.decode(it) }
                 ?: throw IllegalArgumentException("No personaId specified")
             return app.inject<AddressBook>().getEntry(personaId, personaId) as? PersonaAddressBookEntry
                 ?: throw IllegalArgumentException("Invalid personaId: $personaId")
         }
+
+        fun getPersona(call: ApplicationCall): PersonaAddressBookEntry? {
+            val personaId = call.parameters["personaId"]?.let { Id.decode(it) } ?: return null
+            return app.inject<AddressBook>().getEntry(personaId, personaId) as? PersonaAddressBookEntry
+        }
+
+
 
         get("/login") {
             if (call.request.origin.scheme != "https") {
@@ -248,31 +255,32 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
                 val query = call.request.queryParameters["q"]
                     ?: throw IllegalArgumentException("No query (q) specified in parameters")
 
-                call.respond(handleSearch(app.inject(), app.inject(), query))
+                val personaIds = getPersona(call)?.let { listOf(it.personaId) } ?: emptyList()
+                call.respond(handleSearch(app.inject(), app.inject(), personaIds, query))
             }
 
             get("/entity/{entityId}") {
-                getEntity(call, getPersona(call), app.inject(), app.inject())
+                getEntity(call, expectPersona(call), app.inject(), app.inject())
             }
 
             post("/entity/{entityId}") {
-                saveEntity(call, getPersona(call), app.inject(), app.inject())
+                saveEntity(call, expectPersona(call), app.inject(), app.inject())
             }
 
             put("/entity/{entityId}") {
-                updateEntity(call, getPersona(call), app.inject(), app.inject())
+                updateEntity(call, expectPersona(call), app.inject(), app.inject())
             }
 
             delete("/entity/{entityId}") {
-                deleteEntity(call, getPersona(call), app.inject(), app.inject())
+                deleteEntity(call, expectPersona(call), app.inject(), app.inject())
             }
 
             post("/entity/{entityId}/comment") {
-                addComment(call, getPersona(call), app.inject(), app.inject())
+                addComment(call, expectPersona(call), app.inject(), app.inject())
             }
 
             post("/post") {
-                newPost(getPersona(call), app.inject(), app.inject(), call.receive<EntityPayload>())?.also {
+                newPost(expectPersona(call), app.inject(), app.inject(), call.receive<EntityPayload>())?.also {
                     call.respond(it)
                 }
             }
@@ -325,17 +333,17 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
 
             get("/feed") {
                 // TODO: Handle filtering of authorities
-                handleGetFeed(call, getPersona(call), app.inject(), app.inject(), app.inject())
+                handleGetFeed(call, expectPersona(call), app.inject(), app.inject(), app.inject())
             }
 
             get("/peers") {
-                call.respond(getPeers(getPersona(call), app.inject()))
+                call.respond(getPeers(expectPersona(call), app.inject()))
             }
 
             // TODO: change token to inviteToken
             get("/peers/token") {
                 val inviteToken =
-                    getInviteToken(getPersona(call).personaId, app.inject(), app.inject(), app.inject())
+                    getInviteToken(expectPersona(call).personaId, app.inject(), app.inject(), app.inject())
                 call.respond(TokenRequest(inviteToken))
             }
 
@@ -346,7 +354,7 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
 
             put("/peers") {
                 val peer = call.receive<Peer>()
-                updatePeer(getPersona(call).entityId, app.inject(), app.inject(), app.inject(), peer)
+                updatePeer(expectPersona(call).entityId, app.inject(), app.inject(), app.inject(), peer)
                 call.respond("{}")
             }
 

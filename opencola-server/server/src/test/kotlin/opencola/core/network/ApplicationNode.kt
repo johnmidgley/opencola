@@ -77,7 +77,7 @@ class ApplicationNode(val application: Application) : Node {
                             val entry = PersonaAddressBookEntry(
                                 it.personaId,
                                 it.entityId,
-                                it.name,
+                                name,
                                 it.publicKey,
                                 it.address,
                                 null,

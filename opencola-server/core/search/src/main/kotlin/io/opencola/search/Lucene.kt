@@ -1,10 +1,11 @@
 package io.opencola.search
 
 import io.opencola.model.CoreAttribute
+import io.opencola.model.Id
 import io.opencola.serialization.ByteArrayCodec
 import io.opencola.serialization.codecs.StringByteArrayCodec
 
-fun getLuceneQueryString(query: String) : String {
+fun getLuceneQueryString(authorityIds: List<Id>, query: String) : String {
     // TODO: play with fuzzy search (append ~ to terms) and support phrase "term1 term2" queries
     // https://www.lucenetutorial.com/lucene-query-syntax.html
     return CoreAttribute.values()
