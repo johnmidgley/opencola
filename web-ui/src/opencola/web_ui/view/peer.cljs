@@ -160,7 +160,8 @@
   (let [adding-peer?! (atom false)]
     (fn []
       [:div.settings-page
-       [search/search-header 
+       [search/search-header
+        :peers
         personas! 
         persona! 
         on-persona-select 

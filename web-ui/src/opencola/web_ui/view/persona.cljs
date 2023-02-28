@@ -139,6 +139,7 @@
     (fn []
       [:div.settings-page
        [search/search-header 
+        :personas
         personas! 
         persona! 
         on-persona-select 

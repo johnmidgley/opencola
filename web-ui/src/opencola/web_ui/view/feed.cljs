@@ -526,7 +526,8 @@
   (let [creating-post?! (atom false)]
     (fn []
       [:div#opencola.feed-page
-       [search/search-header 
+       [search/search-header
+        :feed
         personas! 
         persona! 
         on-persona-select 

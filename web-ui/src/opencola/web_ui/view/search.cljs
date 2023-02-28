@@ -4,13 +4,19 @@
    [opencola.web-ui.location :as location]))
 
 
-(defn persona-select [personas! persona! on-select]
+(defn selected-persona [page personas! persona!]
+  (case page
+    :personas "manage"
+    (if @persona! @persona! "all")))
+
+(defn persona-select [page personas! persona! on-select]
   (fn [] 
     [:td [:select 
           {:id "persona-select" 
            :title "Persona"
            :on-change #(on-select (-> % .-target .-value))
-           :value (if @persona! @persona! "manage")}
+           :value (selected-persona page personas! persona!)}
+          ^{:key "all"} [:option {:value ""} "All"]
           (doall (for [persona @personas!]
                    ^{:key persona} [:option  {:value (:id persona)} (:name persona)]))
           (if (not-empty @personas!) ;; Avoid flicker on init
@@ -26,14 +32,14 @@
                    (on-enter @query!))}]))
 
 
-(defn search-header [personas! persona! on-persona-select query! on-enter header-actions]
+(defn search-header [page personas! persona! on-persona-select query! on-enter header-actions]
   [:div.search-header 
    [header-actions]
    [:table
     [:tbody
      [:tr
       [:td [:img {:src "../img/pull-tab.png" :width 50 :height 50 :on-click #(location/set-location "") }]]
-      [persona-select personas! persona! on-persona-select]
+      [persona-select page personas! persona! on-persona-select]
       [:td [search-box query! on-enter]]]]]])
 
 
