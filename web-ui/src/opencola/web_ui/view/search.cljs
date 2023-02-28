@@ -16,7 +16,7 @@
            :title "Persona"
            :on-change #(on-select (-> % .-target .-value))
            :value (selected-persona page personas! persona!)}
-          ^{:key "all"} [:option {:value ""} "All"]
+          ^{:key "all"} [:option {:value "" :disabled (= page :peers)} "All"]
           (doall (for [persona @personas!]
                    ^{:key persona} [:option  {:value (:id persona)} (:name persona)]))
           (if (not-empty @personas!) ;; Avoid flicker on init

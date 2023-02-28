@@ -25,7 +25,7 @@ suspend fun getEntity(call: ApplicationCall, persona: PersonaAddressBookEntry, e
     // TODO: Authority should be passed (and authenticated) in header
     val stringId = call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified")
     val entityId = Id.decode(stringId)
-    val entityResult = getEntityResults(persona, entityStore, addressBook, setOf(entityId)).firstOrNull()
+    val entityResult = getEntityResults(setOf(persona.personaId), entityStore, addressBook, setOf(entityId), null).firstOrNull()
 
     if (entityResult != null)
         call.respond(entityResult)
@@ -43,7 +43,7 @@ suspend fun deleteEntity(
 
     logger.info { "Deleting $entityId" }
     entityStore.deleteEntity(persona.personaId, entityId)
-    val entity = getEntityResults(persona, entityStore, addressBook, setOf(entityId)).firstOrNull()
+    val entity = getEntityResults(setOf(persona.personaId), entityStore, addressBook, setOf(entityId), null).firstOrNull()
 
     if (entity == null)
     // Need to return something in JSON. Sending an {} means that the entity has been fully deleted (i.e. no other
@@ -89,7 +89,7 @@ fun updateEntity(
     else
         entityStore.updateEntities(entity, CommentEntity(entity.authorityId, entity.entityId, entityPayload.comment))
 
-    return getEntityResult(persona, entityStore, addressBook, entity.entityId)
+    return getEntityResult(persona.personaId, entityStore, addressBook, entity.entityId)
 }
 
 suspend fun updateEntity(
@@ -189,7 +189,7 @@ suspend fun addComment(
     val comment = call.receive<PostCommentPayload>()
 
     addComment(persona, entityStore, entityId, comment.commentId.nullOrElse { Id.decode(it) }, comment.text)
-    getEntityResults(persona, entityStore, addressBook, setOf(entityId))
+    getEntityResults(setOf(persona.personaId), entityStore, addressBook, setOf(entityId))
         .firstOrNull()
         .nullOrElse { call.respond(it) }
 }
@@ -213,7 +213,7 @@ suspend fun saveEntity(
         ?: throw IllegalArgumentException("Unable to save unknown entity: $entityId")
 
     entityStore.updateEntities(entity)
-    getEntityResults(persona, entityStore, addressBook, setOf(entityId))
+    getEntityResults(setOf(persona.personaId), entityStore, addressBook, setOf(entityId))
         .firstOrNull()
         .nullOrElse { call.respond(it) }
 }
@@ -241,7 +241,7 @@ fun newResourceFromUrl(
                 resource
             }
 
-        return getEntityResult(persona, entityStore, addressBook, entity.entityId)
+        return getEntityResult(persona.personaId, entityStore, addressBook, entity.entityId)
     } catch (e: Exception) {
         logger.error { e }
     }
@@ -265,8 +265,3 @@ fun newPost(
 
     return updateEntity(persona, entityStore, addressBook, PostEntity(persona.personaId), entityPayload)
 }
-
-//suspend fun newPost(call: ApplicationCall, persona: PersonaAddressBookEntry, entityStore: EntityStore, addressBook: AddressBook) {
-//    val entityPayload = call.receive<EntityPayload>()
-//    newPost(persona, entityStore, addressBook, entityPayload).nullOrElse { call.respond(it) }
-//}

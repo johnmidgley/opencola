@@ -19,7 +19,7 @@ fun getLuceneQueryString(query: String) : String {
 /**
  * Return a lucene query string for the given [authorityIds].
  */
-fun getLuceneQueryString(authorityIds: List<Id>): String {
+fun getLuceneQueryString(authorityIds: Set<Id>): String {
     return authorityIds.joinToString(" OR ") { "authorityId:\"$it\"" }
 }
 
@@ -27,7 +27,7 @@ fun getLuceneQueryString(authorityIds: List<Id>): String {
  * Returns a lucene query string for the given [query] and [authorityIds].
  * The query string is used to search the lucene index.
  */
-fun getLuceneQueryString(authorityIds: List<Id>, query: String): String {
+fun getLuceneQueryString(authorityIds: Set<Id>, query: String): String {
     // https://www.lucenetutorial.com/lucene-query-syntax.html
     val baseQuery = if (authorityIds.isEmpty()) "" else "(${getLuceneQueryString(authorityIds)}) AND"
     return "$baseQuery (${getLuceneQueryString(query)})"

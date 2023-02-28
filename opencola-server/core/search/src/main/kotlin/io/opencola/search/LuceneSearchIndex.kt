@@ -94,7 +94,7 @@ class LuceneSearchIndex(private val storagePath: Path) : AbstractSearchIndex() {
         }
     }
 
-    override fun search(authorityIds: List<Id>, query: String): List<SearchResult> {
+    override fun search(authorityIds: Set<Id>, query: String): List<SearchResult> {
         logger.info { "Searching: $query" }
 
         // TODO: This should probably be opened just once

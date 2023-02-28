@@ -503,11 +503,13 @@
      (doall (for [item  (:results @feed!)]
               ^{:key item} [feed-item persona-id feed! item]))]))
 
-(defn header-actions [creating-post?!]
+(defn header-actions [persona! creating-post?!]
    [:div.header-actions 
     [:img.header-icon {:src  "../img/new-post.png" :on-click #(swap! creating-post?! not)}]
-    image-divider
-    [:img.header-icon {:src  "../img/peers.png" :on-click #(location/set-page! :peers)}]])
+    (if true ;@persona!
+      [:span 
+       image-divider 
+       [:img.header-icon {:src  "../img/peers.png" :on-click #(location/set-page! :peers)}]])])
 
 
 (defn prepend-feed-item [feed! view-item]
@@ -533,7 +535,7 @@
         on-persona-select 
         query! 
         on-search 
-        (partial header-actions creating-post?!)]
+        (partial header-actions persona! creating-post?!)]
        [error/error-control @feed!]
        (if @creating-post?!
          (let [edit-item! (atom (edit-item))]

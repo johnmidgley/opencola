@@ -152,7 +152,6 @@
   (if @peers!
     [:div.peers 
      (if @adding-peer?! [add-peer-item persona-id peers! adding-peer?!])
-     
      (doall (for [peer (:results @peers!)]
               ^{:key peer} [peer-item persona-id peers! peer]))]))
 

@@ -34,9 +34,12 @@
 (defroute "/peers" [query-params]
   (state/set-page! :peers)
   (location/set-state-from-query-params query-params)
-  (if @config/config
-    (peer/get-peers @(persona!) (peers!)))
-)
+  (if (not @(persona!))
+    (do
+      (persona! (-> @(personas!) first :id))
+      (location/set-location-from-state))
+    (if @config/config
+      (peer/get-peers @(persona!) (peers!)))))
 
 (defroute "/personas" [query-params]
   (if @config/config
@@ -55,9 +58,9 @@
   (location/set-location-from-state))
 
 (defn on-persona-select [persona]
-  (if (= persona "manage")
-    (do
-     (location/set-location "/#/personas"))
+  (case persona
+    "" (location/set-location "/#/feed")
+    "manage" (location/set-location "/#/personas")
     (do
      (if (= :personas (state/get-page))
        (state/set-page! :feed))
@@ -89,8 +92,6 @@
   (persona/init-personas 
    (personas!)
    (fn []
-     (if (not @(persona!))
-      (persona! (-> @(personas!) first :id)))
      (location/set-location-from-state)
      (feed/get-feed @(persona!) @(query!) (feed!)))
    #(error/set-error! (error!) %)))

@@ -18,7 +18,7 @@ fun testIndex(authorityId: Id, searchIndex: SearchIndex) {
         ResourceEntity(authorityId, URI("http://www.site.com/page"), description = "Test description with $keyword")
     searchIndex.add(resourceEntity)
 
-    val results = searchIndex.search(emptyList(), keyword)
+    val results = searchIndex.search(emptySet(), keyword)
     assertEquals(1, results.size)
     assertEquals(resourceEntity.authorityId, results[0].authorityId)
     assertEquals(resourceEntity.entityId, results[0].entityId)
@@ -43,7 +43,7 @@ fun indexGameOfLife(authorityId: Id, searchIndex: SearchIndex) : ResourceEntity 
 
 fun testIndexResourceWithMhtml(authorityId: Id, searchIndex: SearchIndex) {
     val resourceEntity = indexGameOfLife(authorityId, searchIndex)
-    val results = searchIndex.search(emptyList(), "game of life")
+    val results = searchIndex.search(emptySet(), "game of life")
     assertEquals(1, results.size)
     assertEquals(resourceEntity.description, results[0].description)
 }
@@ -52,7 +52,7 @@ fun testRepeatIndexing(authorityId: Id, searchIndex: SearchIndex){
     indexGameOfLife(authorityId, searchIndex)
     val resourceEntity = indexGameOfLife(authorityId, searchIndex)
 
-    val results = searchIndex.search(emptyList(),"game of life")
+    val results = searchIndex.search(emptySet(),"game of life")
     assertEquals(1, results.size)
     assertEquals(resourceEntity.description, results[0].description)
 }

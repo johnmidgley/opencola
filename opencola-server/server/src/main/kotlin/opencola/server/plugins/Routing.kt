@@ -255,7 +255,7 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
                 val query = call.request.queryParameters["q"]
                     ?: throw IllegalArgumentException("No query (q) specified in parameters")
 
-                val personaIds = getPersona(call)?.let { listOf(it.personaId) } ?: emptyList()
+                val personaIds = getPersona(call)?.let { setOf(it.personaId) } ?: setOf()
                 call.respond(handleSearch(app.inject(), app.inject(), personaIds, query))
             }
 
@@ -332,8 +332,9 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             }
 
             get("/feed") {
-                // TODO: Handle filtering of authorities
-                handleGetFeed(call, expectPersona(call), app.inject(), app.inject(), app.inject())
+                val personaIds = getPersona(call)?.let { setOf(it.personaId) } ?: setOf()
+                val query = call.request.queryParameters["q"]
+                call.respond(handleGetFeed(personaIds, app.inject(), app.inject(), app.inject(), query))
             }
 
             get("/peers") {

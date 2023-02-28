@@ -14,13 +14,7 @@ import io.opencola.storage.PersonaAddressBookEntry
 import opencola.server.handlers.EntityResult.*
 
 @Serializable
-data class FeedResult(val authorityId: String, val pagingToken: String?, val results: List<EntityResult>) {
-    constructor(authorityId: Id, transactionId: Id?, results: List<EntityResult>) : this(
-        authorityId.toString(),
-        transactionId?.toString(),
-        results
-    )
-}
+data class FeedResult(val pagingToken: String?, val results: List<EntityResult>)
 
 fun entityAttributeAsString(entity: Entity, attribute: Attribute): String? {
     return entity.getValue(attribute.name).nullOrElse { attribute.codec.decode(it.bytes).toString() }
@@ -32,8 +26,8 @@ fun getPostedById(entities: List<Entity>): Id {
     }!!.authorityId
 }
 
-fun getSummary(authorityId: Id, entities: List<Entity>, idToAuthority: (Id) -> AddressBookEntry?): Summary {
-    val entity = entities.minByOrNull { if (it.authorityId == authorityId) 0 else 1 }!!
+fun getSummary(personaIds: Set<Id>, entities: List<Entity>, idToAuthority: (Id) -> AddressBookEntry?): Summary {
+    val entity = entities.minByOrNull { if (personaIds.contains(it.authorityId)) 0 else 1 }!!
     val postedByAuthority = idToAuthority(getPostedById(entities))
 
     return Summary(
@@ -119,18 +113,21 @@ fun activitiesByEntityId(
         .associate { it }
 }
 
-// TODO - All items should be visible in search (i.e. even un-liked)
 // TODO - Add unit tests for items with multiple authorities and make sure remote authority items are returned
-fun isEntityIsVisible(authorityId: Id, entity: Entity): Boolean {
+fun isEntityIsVisible(personaIds: Set<Id>, entity: Entity, query: String?): Boolean {
+    if (query != null)
+        return true
+
+    val entityIsFromPersona = personaIds.contains(entity.authorityId)
+
     return when (entity) {
-        // TODO: This hides unliked entities in search results
-        is ResourceEntity -> entity.authorityId != authorityId || entity.like != false
-        is PostEntity -> entity.authorityId != authorityId || entity.like != false
+        is ResourceEntity -> !entityIsFromPersona || entity.like != false
+        is PostEntity -> !entityIsFromPersona || entity.like != false
         else -> false
     }
 }
 
-fun getEntityIds(entityStore: EntityStore, personaIds: List<Id>, searchIndex: SearchIndex, query: String?): Set<Id> {
+fun getEntityIds(entityStore: EntityStore, personaIds: Set<Id>, searchIndex: SearchIndex, query: String?): Set<Id> {
     // TODO: This will generally result in an unpredictable number of entities, as single actions (like, comment, etc.)
     //  take a transaction. Fix this by requesting transaction batches until no more or 100 entities have been reached
     val entityIds = if (query == null || query.trim().isEmpty()) {
@@ -173,10 +170,11 @@ fun getAddressBookMap(addressBook: AddressBook): Map<Id, AddressBookEntry> {
 }
 
 fun getEntityResults(
-    persona: PersonaAddressBookEntry,
+    personaIds: Set<Id>,
     entityStore: EntityStore,
     addressBook: AddressBook,
-    entityIds: Set<Id>
+    entityIds: Set<Id>, // TODO: Could have emptySet() as default here
+    query: String? = null,
 ): List<EntityResult> {
     if (entityIds.isEmpty()) {
         return emptyList()
@@ -184,8 +182,7 @@ fun getEntityResults(
 
     val addressBookMap = getAddressBookMap(addressBook)
     val idToAuthority: (Id) -> AddressBookEntry? = { id -> addressBookMap[id] }
-    val entities =
-        entityStore.getEntities(emptySet(), entityIds).filter { isEntityIsVisible(persona.personaId, it) }
+    val entities = entityStore.getEntities(emptySet(), entityIds).filter { isEntityIsVisible(personaIds, it, query) }
     val comments = getComments(entityStore, entities)
     val entitiesByEntityId = entities.groupBy { it.entityId }
     val activitiesByEntityId = activitiesByEntityId(idToAuthority, entities, comments)
@@ -196,35 +193,28 @@ fun getEntityResults(
             val entitiesForId = entitiesByEntityId[it]!!
             EntityResult(
                 it,
-                getSummary(persona.personaId, entitiesForId, idToAuthority),
+                getSummary(personaIds, entitiesForId, idToAuthority),
                 activitiesByEntityId[it]!!
             )
         }
 }
 
 fun getEntityResult(
-    persona: PersonaAddressBookEntry,
+    personaId: Id,
     entityStore: EntityStore,
     addressBook: AddressBook,
     entityId: Id
 ): EntityResult? {
-    return getEntityResults(persona, entityStore, addressBook, setOf(entityId)).firstOrNull()
+    return getEntityResults(setOf(personaId), entityStore, addressBook, setOf(entityId), null).firstOrNull()
 }
 
-suspend fun handleGetFeed(
-    call: ApplicationCall,
-    persona: PersonaAddressBookEntry,
+fun handleGetFeed(
+    personaIds: Set<Id>,
     entityStore: EntityStore,
     searchIndex: SearchIndex,
     addressBook: AddressBook,
-) {
-    val entityIds = getEntityIds(entityStore, listOf(persona.personaId), searchIndex, call.parameters["q"])
-
-    call.respond(
-        FeedResult(
-            persona.personaId,
-            null,
-            getEntityResults(persona, entityStore, addressBook, entityIds)
-        )
-    )
+    query: String?
+): FeedResult {
+    val entityIds = getEntityIds(entityStore, personaIds, searchIndex, query)
+    return FeedResult(null, getEntityResults(personaIds, entityStore, addressBook, entityIds, query))
 }
