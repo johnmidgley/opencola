@@ -169,6 +169,13 @@ fun getAddressBookMap(addressBook: AddressBook): Map<Id, AddressBookEntry> {
     }.associateBy { it.entityId }
 }
 
+fun getPersonaId(addressBook: AddressBook,  activities: List<Activity>) : Id {
+    val authorities = addressBook.getEntries().filter { it.isActive }
+    return activities.maxByOrNull { it.epochSecond }?.let { activity ->
+        authorities.firstOrNull { it.entityId.toString() == activity.authorityId }?.personaId
+    } ?: authorities.first { it is PersonaAddressBookEntry }.personaId
+}
+
 fun getEntityResults(
     personaIds: Set<Id>,
     entityStore: EntityStore,
@@ -191,10 +198,12 @@ fun getEntityResults(
         .filter { entitiesByEntityId.containsKey(it) }
         .map {
             val entitiesForId = entitiesByEntityId[it]!!
+            val activities = activitiesByEntityId[it]!!
             EntityResult(
                 it,
+                getPersonaId(addressBook, activities),
                 getSummary(personaIds, entitiesForId, idToAuthority),
-                activitiesByEntityId[it]!!
+                activities
             )
         }
 }

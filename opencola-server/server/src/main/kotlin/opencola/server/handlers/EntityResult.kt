@@ -9,12 +9,14 @@ import kotlinx.serialization.Serializable
 // TODO - Replace Search Result
 data class EntityResult(
     val entityId: String,
+    val personaId: String,
     val summary: Summary,
     val activities: List<Activity>
 ) {
     // TODO: Remove dataId at top level - now part of activity, so any version can be accessed
-    constructor(entityId: Id, summary: Summary, activities: List<Activity>) : this(
+    constructor(entityId: Id, personaId: Id, summary: Summary, activities: List<Activity>) : this(
         entityId.toString(),
+        personaId.toString(),
         summary,
         activities
     )
@@ -53,6 +55,7 @@ data class EntityResult(
                     addressBookEntry.name,
                     addressBookEntry.address.authority ?: "",
                     epochSecond,
-                    actions)
+                    actions
+                )
     }
 }

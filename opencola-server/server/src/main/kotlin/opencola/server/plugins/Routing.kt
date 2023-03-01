@@ -332,7 +332,11 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             }
 
             get("/feed") {
-                val personaIds = getPersona(call)?.let { setOf(it.personaId) } ?: setOf()
+                val personaIds = getPersona(call)?.let { setOf(it.personaId) }
+                    ?: app.inject<AddressBook>()
+                        .getEntries()
+                        .filterIsInstance<PersonaAddressBookEntry>()
+                        .map { it.personaId }.toSet()
                 val query = call.request.queryParameters["q"]
                 call.respond(handleGetFeed(personaIds, app.inject(), app.inject(), app.inject(), query))
             }

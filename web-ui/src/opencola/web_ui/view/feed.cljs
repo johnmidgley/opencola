@@ -124,7 +124,7 @@
      #(update-feed-item feed! (remove-comment (error/clear-error item) comment-id))
      #(error/set-error! error! %))))
 
-(defn comment-control [persona-id feed! entity-id comment-id text expanded?!]
+(defn comment-control [persona-id! feed! entity-id comment-id text expanded?!]
   (let [text! (atom text)
         error! (atom {})]
     (fn []
@@ -135,18 +135,17 @@
                                         :value @text!
                                         :on-change #(reset! text! (-> % .-target .-value))}]
           [error/error-control @error!]
-          [:button {:on-click #(update-comment persona-id feed! entity-id comment-id @text! expanded?! error!)} 
+          [:button {:on-click #(update-comment @persona-id! feed! entity-id comment-id @text! expanded?! error!)} 
            "Save"] " "
           [:button {:on-click #(reset! expanded?! false)} "Cancel"]
           (if comment-id
             [:button.delete-button 
              {:on-click #(delete-comment feed! entity-id comment-id error!)} "Delete"])]]))))
 
-(defn item-comment [persona-id feed! entity-id comment-action]
+(defn item-comment [persona-id! feed! entity-id comment-action]
 (let [editing?! (atom false)]
   (fn []
-    (let [root-authority-id (:authorityId @feed!)
-          {authority-id :authorityId
+    (let [{authority-id :authorityId
            authority-name :authorityName
            epoch-second :epochSecond 
            text :value
@@ -154,14 +153,14 @@
       [:div.item-comment 
        [:div.item-attribution 
         authority-name " " (format-time epoch-second) " "
-        (if (= authority-id root-authority-id)
+        (if (= authority-id @persona-id!)
           [:span {:on-click #(reset! editing?! true)} [action-img "edit"]])
         ":"]
        (if @editing?!
-         [comment-control persona-id feed! entity-id comment-id text editing?!]
+         [comment-control persona-id! feed! entity-id comment-id text editing?!]
          [:div.item-comment-container [md->component {:class "item-comment-text"} text]])]))))
 
-(defn item-comments [persona-id preview-fn? expanded?! comment-actions feed! entity-id]
+(defn item-comments [persona-id! preview-fn? expanded?! comment-actions feed! entity-id]
   (let [preview? (preview-fn?)
         more (- (count comment-actions) 3)
         comment-actions (if preview? (take 3 comment-actions) comment-actions)]
@@ -169,7 +168,7 @@
       [:div.item-comments
        [:span {:on-click (fn [] (swap! expanded?! #(not %)))} "Comments:"]
        (doall (for [comment-action comment-actions]
-                ^{:key comment-action} [item-comment persona-id feed! entity-id comment-action]))
+                ^{:key comment-action} [item-comment persona-id! feed! entity-id comment-action]))
        [:div.item-comments-footer {:on-click (fn [] (swap! expanded?! #(not %)))}
         (if (> more 0)
           (if preview?
@@ -256,20 +255,18 @@
                 ^{:key like-action} [item-like like-action]))]]]))
 
 
-(defn action-summary [feed! key action-expanded? activities on-click]
-  (let [authority-id (:authorityId @feed!)
-        actions (key activities)
+(defn action-summary [persona-id! feed! key action-expanded? activities on-click]
+  (let [actions (key activities)
         expanded? (key action-expanded?)
-        highlight (some #(= authority-id (:authorityId %)) actions)]
+        highlight (some #(= @persona-id! (:authorityId %)) actions)]
     [:span 
      [:span {:class (if highlight "highlight") :on-click on-click} (action-img (name key))]
      [:span {:on-click #(toggle-atom (map second action-expanded?) expanded?)} " " (count actions) 
       (action-img (if @expanded? "hide" "show"))]])) 
 
 (defn save-item [persona-id feed! item]
-  (let [authority-id (:authorityId @feed!)
-        actions (-> item :activities :save)
-        saved? (some #(= authority-id (:authorityId %)) actions)]
+  (let [actions (-> item :activities :save)
+        saved? (some #(= persona-id (:authorityId %)) actions)]
     (if (not saved?)
       (model/save-entity
        persona-id
@@ -294,15 +291,14 @@
 
 
 (defn like-item [persona-id feed! item]
-   (let [authority-id (:authorityId @feed!)
-         actions (-> item :activities :like)
-         edit-item (edit-item authority-id item)
-         like (some #(if (= authority-id (:authorityId %)) (reader/read-string (:value %))) actions)]
+   (let [actions (-> item :activities :like)
+         edit-item (edit-item persona-id item)
+         like (some #(if (= persona-id (:authorityId %)) (reader/read-string (:value %))) actions)]
      (update-display-entity persona-id feed! (update-in edit-item [:like ] #(if % nil true)) item)))
 
 ;; TODO - Combing with tags-edit-control?
-(defn tags-control [persona-id feed! item tagging?!]
-  (let [edit-item!  (atom (edit-item (:authorityId @feed!) item))]
+(defn tags-control [persona-id! feed! item tagging?!]
+  (let [edit-item!  (atom (edit-item @persona-id! item))]
     (fn []
       (if @tagging?!
         [:div.tags-edit-control
@@ -312,11 +308,19 @@
            :value (:tags @edit-item!)
            :on-change #(swap! edit-item! assoc-in [:tags] (-> % .-target .-value))}]
          [error/error-control @edit-item!]
-         [:button {:on-click #(update-edit-entity persona-id feed! tagging?! edit-item! item)} "Save"] " "
+         [:button {:on-click #(update-edit-entity @persona-id! feed! tagging?! edit-item! item)} "Save"] " "
          [:button {:on-click #(reset! tagging?! false)} "Cancel"] " "]))))
 
-(defn item-activities [persona-id feed! item editing?!]
-  (let [action-expanded? (apply hash-map (mapcat #(vector % (atom false)) [:save :like :tag :comment]))
+(defn persona-select [personas! persona-id!]
+  [:select {:id "persona-select"
+            :on-change #(reset! persona-id! (-> % .-target .-value))
+            :value @persona-id!}
+   (doall (for [persona @personas!]
+            ^{:key persona} [:option  {:value (:id persona)} (:name persona)]))])
+
+(defn item-activities [feed-persona-id! personas! feed! item editing?!]
+  (let [persona-id! (atom (or @feed-persona-id! (:personaId item)))
+        action-expanded? (apply hash-map (mapcat #(vector % (atom false)) [:save :like :tag :comment]))
         commenting? (atom false)
         tagging? (atom false)
         preview-fn? (fn [] (every? #(not @%) (map second action-expanded?)))] 
@@ -324,22 +328,24 @@
       (let [entity-id (:entityId item)
             activities (:activities item)]  
         [:div.activities-summary
-         [action-summary feed! :save action-expanded? activities #(save-item persona-id feed! item)]
+         (if (not @feed-persona-id!)
+           [:span [persona-select personas! persona-id!] inline-divider])
+         [action-summary persona-id! feed! :save action-expanded? activities #(save-item @persona-id! feed! item)]
          inline-divider
-         [action-summary feed! :like action-expanded? activities #(like-item persona-id feed! item)] 
+         [action-summary persona-id! feed! :like action-expanded? activities #(like-item @persona-id! feed! item)] 
          inline-divider
-         [action-summary feed! :tag action-expanded?  activities #(swap! tagging? not)] 
+         [action-summary persona-id! feed! :tag action-expanded?  activities #(swap! tagging? not)] 
          inline-divider
-         [action-summary feed! :comment action-expanded? activities #(swap! commenting? not)]
+         [action-summary persona-id! feed! :comment action-expanded? activities #(swap! commenting? not)]
          inline-divider
          [edit-control editing?!]
          [:div.activity-block
-          [tags-control persona-id feed! item tagging?]
-          [comment-control persona-id feed! entity-id nil "" commenting?]
+          [tags-control persona-id! feed! item tagging?]
+          [comment-control persona-id! feed! entity-id nil "" commenting?]
           [item-saves (:save action-expanded?) (:save activities)]
           [item-likes (:like action-expanded?) (:like activities)]
           [item-tags (:tag action-expanded?) (:tag activities)] 
-          [item-comments persona-id preview-fn? (:comment action-expanded?) (:comment activities) feed! entity-id]]]))))
+          [item-comments persona-id! preview-fn? (:comment action-expanded?) (:comment activities) feed! entity-id]]]))))
 
 
 (defn item-name [summary]
@@ -363,7 +369,7 @@
          img
          [:a {:href item-uri :target "_blank"} img])])))
 
-(defn display-feed-item [persona-id feed! item editing?!]
+(defn display-feed-item [persona-id! personas! feed! item editing?!]
   (let [entity-id (:entityId item)
         summary (:summary item)
         item-uri (uri (:uri summary))]
@@ -375,7 +381,7 @@
         [md->component {:class "item-desc"}  (:description summary)]]
        [item-tags-summary (-> item :activities :tag)]
        [:div.posted-by "Posted by: " (:postedBy summary)]
-       [item-activities persona-id feed! item editing?!]
+       [item-activities persona-id! personas! feed! item editing?!]
        [error/error-control item]])))
 
 (defn name-edit-control [edit-item!]
@@ -468,26 +474,25 @@
 
 
 ;; TODO: Use keys to get 
-(defn edit-feed-item [persona-id feed! item editing?!]
-  (let [authority-id (:authorityId @feed!)
-        entity-id (:entityId item)
+(defn edit-feed-item [persona-id! feed! item editing?!]
+  (let [entity-id (:entityId item)
         summary (:summary item)
         item-uri (uri (:uri summary))
-        edit-item! (atom (edit-item (:authorityId @feed!) item))
-        deletable? (some #(= authority-id (:authorityId %)) (-> item :activities :save))]
+        edit-item! (atom (edit-item @persona-id! item))
+        deletable? (some #(= @persona-id! (:authorityId %)) (-> item :activities :save))]
     (edit-item-control 
      edit-item!
-     #(update-edit-entity persona-id feed! editing?! edit-item! item)
+     #(update-edit-entity @persona-id! feed! editing?! edit-item! item)
      #(reset! editing?! false)
-     (if deletable? #(delete-entity persona-id feed! editing?! item edit-item!)))))
+     (if deletable? #(delete-entity @persona-id! feed! editing?! item edit-item!)))))
 
 
-(defn feed-item [persona-id feed! item]
+(defn feed-item [persona-id! personas! feed! item]
   (let [editing?! (atom false)]
     (fn []
       (if @editing?! 
-        [edit-feed-item persona-id feed! item editing?!] 
-        [display-feed-item persona-id feed! item editing?!]))))
+        [edit-feed-item persona-id! feed! item editing?!] 
+        [display-feed-item persona-id! personas! feed! item editing?!]))))
 
 
 (defn feed-status [feed!]
@@ -496,12 +501,12 @@
      (when (not-empty query)
        (str (count (:results @feed!)) " results for '" query "'")))])
 
-(defn feed-list [persona-id feed!]
+(defn feed-list [persona-id! personas! feed!]
   (if @feed!
     [:div.feed
      [feed-status feed!]
      (doall (for [item  (:results @feed!)]
-              ^{:key item} [feed-item persona-id feed! item]))]))
+              ^{:key item} [feed-item persona-id! personas! feed! item]))]))
 
 (defn header-actions [persona! creating-post?!]
    [:div.header-actions 
@@ -524,23 +529,23 @@
       (reset! creating-post!? false))
    #(error/set-error! edit-item! %)))
 
-(defn feed-page [feed! personas! persona! on-persona-select query! on-search]
+(defn feed-page [feed! personas! persona-id! on-persona-select query! on-search]
   (let [creating-post?! (atom false)]
     (fn []
       [:div#opencola.feed-page
        [search/search-header
         :feed
         personas! 
-        persona! 
+        persona-id! 
         on-persona-select 
         query! 
         on-search 
-        (partial header-actions persona! creating-post?!)]
+        (partial header-actions persona-id! creating-post?!)]
        [error/error-control @feed!]
        (if @creating-post?!
          (let [edit-item! (atom (edit-item))]
            [edit-item-control
             edit-item!
-            #(new-post @persona! feed! creating-post?! edit-item!)
+            #(new-post @persona-id! feed! creating-post?! edit-item!)
             #(reset! creating-post?! false) nil]))
-       [feed-list @persona! feed!]])))
+       [feed-list persona-id! personas! feed!]])))
