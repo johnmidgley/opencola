@@ -72,7 +72,10 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
 
         private fun initAddressBook(injector: DI, personaKeyPairs: List<KeyPair>, networkConfig: NetworkConfig) {
             val addressBook by injector.instance<AddressBook>()
-            val personas = personaKeyPairs.map { PersonaAddressBookEntry(Authority(it.public, networkConfig.defaultAddress, "You"), it) }
+            val personas = personaKeyPairs.map {
+                val authority = Authority(it.public, networkConfig.defaultAddress, "You", tags = setOf("active"))
+                PersonaAddressBookEntry(authority, it)
+            }
 
             personas.forEach{
                 val addressBookPersona = addressBook.getEntry(it.personaId, it.entityId) ?: addressBook.updateEntry(it)
