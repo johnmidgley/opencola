@@ -4,6 +4,7 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
+import opencola.server.handlers.PersonasResult
 import opencola.server.viewmodel.Persona
 import kotlin.test.Test
 import kotlin.test.assertContains
@@ -18,7 +19,7 @@ class PersonasTest : ApplicationTestBase() {
 
         // Check for default Persona
         val persona = application.getPersonas().single()
-        val personas: List<Persona> = client.get("/personas").body()
+        val personas = client.get("/personas").body<PersonasResult>().items
         assertEquals(1, personas.size)
         assertEquals(persona.entityId.toString(), personas[0].id)
 
@@ -41,7 +42,7 @@ class PersonasTest : ApplicationTestBase() {
         assertEquals(newPersona1, newPersona2)
 
         // Check new Persona is returned in list
-        val personas1: List<Persona> = client.get("/personas").body()
+        val personas1 = client.get("/personas").body<PersonasResult>().items
         assertContains(personas1, newPersona1)
 
         // Delete new Persona
@@ -49,7 +50,7 @@ class PersonasTest : ApplicationTestBase() {
         assertEquals(HttpStatusCode.NoContent, deleteResponse.status)
 
         // Check that created Persona no longer returned in list
-        val personas2: List<Persona> = client.get("/personas").body()
+        val personas2 = client.get("/personas").body<PersonasResult>().items
         assertNull(personas2.firstOrNull { it.id == newPersona1.id })
     }
 }
