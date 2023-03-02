@@ -36,7 +36,7 @@
   (location/set-state-from-query-params query-params)
   (if (not @(persona!))
     (do
-      (persona! (-> @(personas!) first :id))
+      (persona! (-> @(personas!) :items first :id))
       (location/set-location-from-state))
     (if @config/config
       (peer/get-peers @(persona!) (peers!)))))

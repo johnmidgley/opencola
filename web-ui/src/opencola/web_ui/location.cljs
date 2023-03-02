@@ -26,9 +26,7 @@
 
 (defn set-location-from-state []
   (let [page (name (state/get-page))
-        params (params-from-state)
-        persona (persona!)
-        query (query!)]
+        params (params-from-state)]
     (set-location (str "#/" page (if (not-empty params) (str "?" params))))))
 
 (defn set-page! [page]

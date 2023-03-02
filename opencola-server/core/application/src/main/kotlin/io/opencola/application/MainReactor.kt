@@ -30,7 +30,7 @@ class MainReactor(
     }
 
     private fun updatePeerTransactions() {
-        val peers = addressBook.getEntries().filter { it.isActive }
+        val peers = addressBook.getEntries().filter { it !is PersonaAddressBookEntry && it.isActive }
 
         if(peers.isNotEmpty()) {
             logger.info { "Updating peer transactions" }
@@ -46,11 +46,11 @@ class MainReactor(
     }
 
     private fun requestTransactions(peer: AddressBookEntry) {
-        if(peer is PersonaAddressBookEntry ||
-            addressBook.getEntry(peer.personaId, peer.entityId) as? PersonaAddressBookEntry != null) {
-            logger.warn { "Attempt to request transactions from local persona" }
+        if(peer is PersonaAddressBookEntry)
+            throw IllegalArgumentException("Attempt to request transactions for local persona: ${peer.entityId}")
+
+        if(!peer.isActive)
             return
-        }
 
         var mostRecentTransactionId = entityStore.getLastTransactionId(peer.entityId)
 
@@ -90,7 +90,7 @@ class MainReactor(
         // TODO: Catch / handle this error and return appropriate forbidden / not authorized status
         // Since a peer can be connected to multiple personas, we arbitrarily pick the first peer
         val peer = addressBook.getEntries().firstOrNull { it.entityId == peerId }
-            ?: throw IllegalArgumentException("Attempt to request transactions for unknown peer: $peerId ")
+            ?: throw IllegalArgumentException("Attempt to request transactions for unknown peer: $peerId")
 
         // TODO: This blocks startup. Make fully async (and/or handle startup with event bus)
         // TODO: Remove all runBlocking - replace with appropriate executor
