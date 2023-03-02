@@ -130,7 +130,7 @@
   (if @personas!
     [:div.peers 
      (if @adding-persona?! [add-persona-item personas! adding-persona?!])
-     (doall (for [persona @personas!]
+     (doall (for [persona (:items @personas!)]
               ^{:key persona} [persona-item personas! persona]))]))
 
 
@@ -146,5 +146,5 @@
         query! 
         on-search! 
         (partial header-actions adding-persona?!)]
-       #_[error/error-control @peers!] ; make work
-       [persona-list personas! adding-persona?!]])))
+       [error/error-control @personas!] 
+       [persona-list  personas! adding-persona?!]])))

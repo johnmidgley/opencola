@@ -315,7 +315,7 @@
   [:select {:id "persona-select"
             :on-change #(reset! persona-id! (-> % .-target .-value))
             :value @persona-id!}
-   (doall (for [persona @personas!]
+   (doall (for [persona (:items @personas!)]
             ^{:key persona} [:option  {:value (:id persona)} (:name persona)]))])
 
 (defn item-activities [feed-persona-id! personas! feed! item editing?!]

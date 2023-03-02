@@ -4,8 +4,12 @@ import io.opencola.model.Id
 import io.opencola.security.generateKeyPair
 import io.opencola.storage.AddressBook
 import io.opencola.storage.PersonaAddressBookEntry
+import kotlinx.serialization.Serializable
 import opencola.server.viewmodel.Persona
 import java.net.URI
+
+@Serializable
+data class PersonasResult(val items: List<Persona>)
 
 fun createPersona(addressBook: AddressBook, persona: Persona) : Persona {
     require(persona.id.isBlank()) { "Persona id must be blank" }
@@ -45,6 +49,6 @@ fun deletePersona(addressBook: AddressBook, personaId: Id) {
     addressBook.deleteEntry(personaId, personaId)
 }
 
-fun getPersonas(addressBook: AddressBook) : List<Persona> {
-    return addressBook.getEntries().filterIsInstance<PersonaAddressBookEntry>().map { Persona(it) }
+fun getPersonas(addressBook: AddressBook) : PersonasResult {
+    return PersonasResult(addressBook.getEntries().filterIsInstance<PersonaAddressBookEntry>().map { Persona(it) })
 }
