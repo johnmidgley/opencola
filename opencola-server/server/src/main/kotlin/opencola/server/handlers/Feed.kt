@@ -1,7 +1,5 @@
 package opencola.server.handlers
 
-import io.ktor.server.application.*
-import io.ktor.server.response.*
 import io.opencola.model.*
 import kotlinx.serialization.Serializable
 import io.opencola.util.nullOrElse
@@ -113,26 +111,20 @@ fun activitiesByEntityId(
         .associate { it }
 }
 
-// TODO - Add unit tests for items with multiple authorities and make sure remote authority items are returned
-fun isEntityIsVisible(personaIds: Set<Id>, entity: Entity, query: String?): Boolean {
-    if (query != null)
-        return true
-
-    val entityIsFromPersona = personaIds.contains(entity.authorityId)
-
+fun isEntityIsVisible(entity: Entity): Boolean {
     return when (entity) {
-        is ResourceEntity -> !entityIsFromPersona || entity.like != false
-        is PostEntity -> !entityIsFromPersona || entity.like != false
+        is ResourceEntity -> true
+        is PostEntity -> true
         else -> false
     }
 }
 
-fun getEntityIds(entityStore: EntityStore, personaIds: Set<Id>, searchIndex: SearchIndex, query: String?): Set<Id> {
+fun getEntityIds(entityStore: EntityStore, authorityIds: Set<Id>, searchIndex: SearchIndex, query: String?): Set<Id> {
     // TODO: This will generally result in an unpredictable number of entities, as single actions (like, comment, etc.)
     //  take a transaction. Fix this by requesting transaction batches until no more or 100 entities have been reached
     val entityIds = if (query == null || query.trim().isEmpty()) {
         val signedTransactions = entityStore.getSignedTransactions(
-            personaIds,
+            authorityIds,
             null,
             EntityStore.TransactionOrder.TimeDescending,
             100
@@ -140,7 +132,7 @@ fun getEntityIds(entityStore: EntityStore, personaIds: Set<Id>, searchIndex: Sea
         signedTransactions.flatMap { tx -> tx.transaction.transactionEntities.map { it.entityId } }
     } else {
         // TODO: Get add peers of personas to id list
-        searchIndex.search(personaIds, query).map { it.entityId }
+        searchIndex.search(authorityIds, query).map { it.entityId }
     }
 
     return entityIds.toSet()
@@ -181,15 +173,15 @@ fun getEntityResults(
     entityStore: EntityStore,
     addressBook: AddressBook,
     entityIds: Set<Id>, // TODO: Could have emptySet() as default here
-    query: String? = null,
 ): List<EntityResult> {
     if (entityIds.isEmpty()) {
         return emptyList()
     }
 
+    val authorityIds = addressBook.getEntries().filter { it.personaId in personaIds }.map { it.entityId }.toSet()
     val addressBookMap = getAddressBookMap(addressBook)
     val idToAuthority: (Id) -> AddressBookEntry? = { id -> addressBookMap[id] }
-    val entities = entityStore.getEntities(emptySet(), entityIds).filter { isEntityIsVisible(personaIds, it, query) }
+    val entities = entityStore.getEntities(authorityIds, entityIds).filter { isEntityIsVisible(it) }
     val comments = getComments(entityStore, entities)
     val entitiesByEntityId = entities.groupBy { it.entityId }
     val activitiesByEntityId = activitiesByEntityId(idToAuthority, entities, comments)
@@ -214,7 +206,7 @@ fun getEntityResult(
     addressBook: AddressBook,
     entityId: Id
 ): EntityResult? {
-    return getEntityResults(setOf(personaId), entityStore, addressBook, setOf(entityId), null).firstOrNull()
+    return getEntityResults(setOf(personaId), entityStore, addressBook, setOf(entityId)).firstOrNull()
 }
 
 fun handleGetFeed(
@@ -224,6 +216,8 @@ fun handleGetFeed(
     addressBook: AddressBook,
     query: String?
 ): FeedResult {
-    val entityIds = getEntityIds(entityStore, personaIds, searchIndex, query)
-    return FeedResult(null, getEntityResults(personaIds, entityStore, addressBook, entityIds, query))
+    // TODO: This could be tightened up. We're accessing the address book multiple times. Could pass entries around instead
+    val authorityIds = addressBook.getEntries().filter { it.personaId in personaIds }.map { it.entityId }.toSet()
+    val entityIds = getEntityIds(entityStore, authorityIds, searchIndex, query)
+    return FeedResult(null, getEntityResults(authorityIds, entityStore, addressBook, entityIds))
 }

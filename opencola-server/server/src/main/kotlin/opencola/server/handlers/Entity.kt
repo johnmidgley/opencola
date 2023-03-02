@@ -25,7 +25,7 @@ suspend fun getEntity(call: ApplicationCall, persona: PersonaAddressBookEntry, e
     // TODO: Authority should be passed (and authenticated) in header
     val stringId = call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified")
     val entityId = Id.decode(stringId)
-    val entityResult = getEntityResults(setOf(persona.personaId), entityStore, addressBook, setOf(entityId), null).firstOrNull()
+    val entityResult = getEntityResults(setOf(persona.personaId), entityStore, addressBook, setOf(entityId)).firstOrNull()
 
     if (entityResult != null)
         call.respond(entityResult)
@@ -43,7 +43,7 @@ suspend fun deleteEntity(
 
     logger.info { "Deleting $entityId" }
     entityStore.deleteEntity(persona.personaId, entityId)
-    val entity = getEntityResults(setOf(persona.personaId), entityStore, addressBook, setOf(entityId), null).firstOrNull()
+    val entity = getEntityResults(setOf(persona.personaId), entityStore, addressBook, setOf(entityId)).firstOrNull()
 
     if (entity == null)
     // Need to return something in JSON. Sending an {} means that the entity has been fully deleted (i.e. no other
