@@ -113,7 +113,7 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
                 bindSingleton { Signator(instance()) }
                 bindSingleton { Encryptor(instance()) }
                 bindSingleton { AddressBook(storagePath, instance()) }
-                bindSingleton { RequestRouter(getDefaultRoutes(instance(), instance(), instance())) }
+                bindSingleton { RequestRouter(instance(), getDefaultRoutes(instance(), instance(), instance())) }
                 bindSingleton { HttpNetworkProvider(instance(), instance(), instance(), config.network) }
                 bindSingleton { OCRelayNetworkProvider(instance(), instance(), instance(), config.network) }
                 bindSingleton { NetworkNode(instance(),instance(), instance()) }
