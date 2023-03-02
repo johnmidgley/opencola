@@ -90,7 +90,10 @@ class NetworkNode(
     }
 
     fun broadcastRequest(from: PersonaAddressBookEntry, request: Request) {
-        val peers = addressBook.getEntries().filter { it.isActive }.distinctBy { it.entityId }
+        val peers = addressBook.getEntries()
+            .filter { it !is PersonaAddressBookEntry && it.isActive }
+            .distinctBy { it.entityId }
+
         if (peers.isNotEmpty()) {
             logger.info { "Broadcasting request: $request" }
 
@@ -125,7 +128,9 @@ class NetworkNode(
     }
 
     private val peerUpdateHandler: (AddressBookEntry?, AddressBookEntry?) -> Unit = { previousAddressBookEntry, currentAddressBookEntry ->
-        if (previousAddressBookEntry != null && currentAddressBookEntry != null
+        if(previousAddressBookEntry is PersonaAddressBookEntry || currentAddressBookEntry is PersonaAddressBookEntry) {
+            // Do nothing - Since personas are local, so they don't affect peer connections
+        } else if (previousAddressBookEntry != null && currentAddressBookEntry != null
             && previousAddressBookEntry.isActive != currentAddressBookEntry.isActive
         ) {
             if (previousAddressBookEntry.isActive)
@@ -152,8 +157,8 @@ class NetworkNode(
         logger.info { "Stopped" }
     }
 
-    // TODO - peer should be Authority or peerId?
     private fun sendRequest(from: PersonaAddressBookEntry, to: AddressBookEntry, request: Request) : Response? {
+        require(to !is PersonaAddressBookEntry)
         val scheme = to.address.scheme
         val provider = providers[scheme] ?: throw IllegalStateException("No provider found for scheme: $scheme")
         val response = provider.sendRequest(from, to, request)
