@@ -162,7 +162,7 @@ fun getAddressBookMap(addressBook: AddressBook): Map<Id, AddressBookEntry> {
 }
 
 fun getPersonaId(addressBook: AddressBook,  activities: List<Activity>) : Id {
-    val authorities = addressBook.getEntries().filter { it.isActive }
+    val authorities = addressBook.getEntries()
     return activities.maxByOrNull { it.epochSecond }?.let { activity ->
         authorities.firstOrNull { it.entityId.toString() == activity.authorityId }?.personaId
     } ?: authorities.first { it is PersonaAddressBookEntry }.personaId
