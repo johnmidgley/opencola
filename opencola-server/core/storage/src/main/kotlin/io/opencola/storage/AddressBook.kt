@@ -75,7 +75,8 @@ class AddressBook(private val storagePath: Path, private val keyStore: KeyStore)
             entry.publicKey,
             entry.address.normalize().trim(),
             entry.name,
-            imageUri = entry.imageUri
+            imageUri = entry.imageUri,
+            tags = if (entry.isActive) setOf(activeTag) else emptySet()
         )
     }
 
@@ -85,7 +86,7 @@ class AddressBook(private val storagePath: Path, private val keyStore: KeyStore)
         }
     }
 
-    private fun updateAuthority(authority: Authority, entry: AddressBookEntry) {
+    private fun updateAuthority(authority: Authority, entry: AddressBookEntry) : Authority {
         if (authority.publicKey != entry.publicKey)
             throw IllegalArgumentException("Public key cannot be updated")
 
@@ -93,28 +94,44 @@ class AddressBook(private val storagePath: Path, private val keyStore: KeyStore)
         authority.name = entry.name.blankToNull() ?: throw IllegalArgumentException("Name cannot be blank")
         authority.imageUri = entry.imageUri
         authority.tags = if (entry.isActive) setOf(activeTag) else emptySet()
+
+        return authority
     }
 
     // TODO: suppressUpdateHandler looks like it's misnamed - is it even ever used?
     fun updateEntry(entry: AddressBookEntry,
-                    suppressUpdateHandler: ((AddressBookEntry?, AddressBookEntry?) -> Unit)? = null) : AddressBookEntry {
-        val existingAuthority = entityStore.getEntity(entry.personaId, entry.entityId) as Authority?
-        val previousEntry = existingAuthority?.let { authorityToEntry(it) }
-        val authorityToUpdate = existingAuthority ?: entryToAuthority(entry)
-
-        // TODO: Force peers across personas to be the same
+                    suppressUpdateHandler: ((AddressBookEntry?, AddressBookEntry?) -> Unit)? = null
+    ) : AddressBookEntry {
+        // Persona private keys are stored in the key store
         updateKeyStore(entry)
-        updateAuthority(authorityToUpdate, entry)
 
-        return if (entityStore.updateEntities(authorityToUpdate) == null) {
-            // Nothing changed
-            entry
-        } else {
-            // Something changed - inform subscribers
-            authorityToEntry(entityStore.getEntity(entry.personaId, entry.entityId) as Authority).also {
-                callUpdateHandlers(previousEntry, it, suppressUpdateHandler)
+        // If we're updating a peer that is connected to more than one persona, we need to update all of them
+        // Since personas only have a single entry, with entityId = personaId, grabbing all authorities with the entity
+        // id grabs the correct list
+        val existingEntities = entityStore.getEntities(emptySet(), setOf(entry.entityId)).filterIsInstance<Authority>()
+
+        // Note: since peers with from personas (authorities) may be updated at the same time, we cannot do all
+        // updates in a single transaction, as transactions are bound to a single authority.
+        class Update(val previousEntry: AddressBookEntry?, val updatedAuthority: Authority)
+        existingEntities
+            .partition { it.authorityId == entry.personaId && it.entityId == entry.entityId }
+            .let { (exactMatch, otherPeers) ->
+                exactMatch
+                    .map { Update(authorityToEntry(it), updateAuthority(it, entry)) }
+                    .ifEmpty { listOf(Update(null, entryToAuthority(entry))) }
+                    .plus(otherPeers.map { Update(authorityToEntry(it), updateAuthority(it, entry)) })
+                    .forEach { update ->
+                        entityStore.updateEntities(update.updatedAuthority)?.let {
+                            val authority = update.updatedAuthority
+                            val updatedAuthority =
+                                entityStore.getEntity(authority.authorityId, authority.entityId) as Authority
+                            val updatedEntry = authorityToEntry(updatedAuthority)
+                            callUpdateHandlers(update.previousEntry, updatedEntry, suppressUpdateHandler)
+                        }
+                    }
             }
-        }
+
+        return authorityToEntry(entityStore.getEntity(entry.personaId, entry.entityId) as Authority)
     }
 
     fun getEntry(personaId: Id, id: Id) : AddressBookEntry? {
@@ -128,20 +145,24 @@ class AddressBook(private val storagePath: Path, private val keyStore: KeyStore)
     }
 
     fun deleteEntry(personaId: Id, entityId: Id) {
-        val personas = getEntries().filterIsInstance<PersonaAddressBookEntry>()
+        val entries = getEntries()
+        val personas = entries.filterIsInstance<PersonaAddressBookEntry>()
+        val deletingPersona = personaId == entityId
 
-        val persona = personas.firstOrNull { it.personaId == personaId && it.entityId == personaId }
-            ?: throw IllegalArgumentException("Invalid persona id: $personaId")
-
-        if(personas.count() == 1 && personaId == entityId)
+        if(deletingPersona && personas.singleOrNull()?.personaId == personaId){
             throw IllegalArgumentException("Can't delete only persona from address book.")
+        }
 
-        val previousAuthority = entityStore.getEntity(persona.personaId, entityId) as? Authority
-            ?: throw IllegalStateException("Attempt to delete non existent authority: personaId=$personaId, id=$entityId")
+       entries
+           .filter { it.personaId == personaId && (deletingPersona || it.entityId == entityId) }
+           .sortedByDescending { it.entityId == personaId }
+           .forEach{
+               entityStore.deleteEntity(it.personaId, it.entityId)
+               callUpdateHandlers(it, null)
+           }
 
-        entityStore.deleteEntity(personaId, entityId)
-        keyStore.deleteKeyPair(entityId.toString())
-        callUpdateHandlers(AddressBookEntry(previousAuthority), null)
+        if(deletingPersona)
+            keyStore.deleteKeyPair(personaId.toString())
     }
 
     override fun getPublicKey(alias: Id): PublicKey? {

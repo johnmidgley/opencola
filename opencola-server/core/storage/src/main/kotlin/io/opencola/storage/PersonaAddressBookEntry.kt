@@ -14,7 +14,7 @@ class PersonaAddressBookEntry(
     address: URI,
     imageUri: URI?,
     isActive: Boolean,
-    val keyPair: KeyPair
+    val keyPair: KeyPair // Maybe make private key - otherwise public key is redundant?
 ) : AddressBookEntry(personaId, entityId, name, publicKey, address, imageUri, isActive) {
     constructor(authority: Authority, keyPair: KeyPair) : this(
         authority.authorityId,
@@ -26,4 +26,18 @@ class PersonaAddressBookEntry(
         authority.getActive(),
         keyPair
     )
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        val other = other as? PersonaAddressBookEntry ?: return false
+        if(this.keyPair.public != other.keyPair.public) return false
+        if(this.keyPair.private != other.keyPair.private) return false
+        return super.equals(other)
+    }
+    override fun hashCode(): Int {
+        var result = super.hashCode()
+        result = 31 * result + keyPair.public.hashCode()
+        result = 31 * result + keyPair.private.hashCode()
+        return result
+    }
 }

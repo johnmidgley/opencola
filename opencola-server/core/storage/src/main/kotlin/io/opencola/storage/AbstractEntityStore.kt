@@ -177,7 +177,8 @@ abstract class AbstractEntityStore(
         else
             Value.emptyValue
     }
-    
+
+    // TODO: Should this be delete entities to allow for bulk deletes (i.e. within a single transaction)?
     override fun deleteEntity(authorityId: Id, entityId: Id) {
         getEntity(authorityId, entityId).nullOrElse { entity ->
             val facts = entity.getCurrentFacts()
