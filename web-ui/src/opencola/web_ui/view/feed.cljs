@@ -318,9 +318,8 @@
    (doall (for [persona (:items @personas!)]
             ^{:key persona} [:option  {:value (:id persona)} (:name persona)]))])
 
-(defn item-activities [feed-persona-id! personas! feed! item editing?!]
-  (let [persona-id! (atom (or @feed-persona-id! (:personaId item)))
-        action-expanded? (apply hash-map (mapcat #(vector % (atom false)) [:save :like :tag :comment]))
+(defn item-activities [persona-id! personas! feed! item editing?!]
+  (let [action-expanded? (apply hash-map (mapcat #(vector % (atom false)) [:save :like :tag :comment]))
         commenting? (atom false)
         tagging? (atom false)
         preview-fn? (fn [] (every? #(not @%) (map second action-expanded?)))] 
@@ -328,7 +327,7 @@
       (let [entity-id (:entityId item)
             activities (:activities item)]  
         [:div.activities-summary
-         (if (not @feed-persona-id!)
+         (if personas!
            [:span [persona-select personas! persona-id!] inline-divider])
          [action-summary persona-id! feed! :save action-expanded? activities #(save-item @persona-id! feed! item)]
          inline-divider
@@ -436,7 +435,8 @@
            :on-click (fn [] (swap! edit-item! update-in [:like] #(if % nil true)))} 
     (action-img "like")]])
 
-(defn edit-item-control [edit-item! on-save on-cancel on-delete]
+;; TODO: Put error in separate variable
+(defn edit-item-control [personas! persona-id! edit-item! on-save on-cancel on-delete]
   (let [description-state! (atom nil)]
     (fn []
       [:div.feed-item
@@ -448,9 +448,11 @@
        [tags-edit-control edit-item!]
        [comment-edit-control edit-item!]
        [error/error-control @edit-item!]
+       (if personas!
+         [:span [persona-select personas! persona-id!] " "])
        [:button {:on-click (fn []
                              (swap! edit-item! assoc-in [:description] (.value @description-state!))
-                             (on-save)) } "Save"] " "
+                             (on-save @persona-id!)) } "Save"] " "
        [:button {:on-click on-cancel} "Cancel"] " "
        (if on-delete
          [:button.delete-button {:on-click on-delete} "Delete"])])))
@@ -474,24 +476,27 @@
 
 
 ;; TODO: Use keys to get 
-(defn edit-feed-item [persona-id! feed! item editing?!]
+(defn edit-feed-item [personas! persona-id! feed! item editing?!]
   (let [entity-id (:entityId item)
         summary (:summary item)
         item-uri (uri (:uri summary))
         edit-item! (atom (edit-item @persona-id! item))
         deletable? (some #(= @persona-id! (:authorityId %)) (-> item :activities :save))]
-    (edit-item-control 
+    (edit-item-control
+     personas!
+     persona-id!
      edit-item!
      #(update-edit-entity @persona-id! feed! editing?! edit-item! item)
      #(reset! editing?! false)
      (if deletable? #(delete-entity @persona-id! feed! editing?! item edit-item!)))))
 
 
-(defn feed-item [persona-id! personas! feed! item]
-  (let [editing?! (atom false)]
+(defn feed-item [persona-id personas! feed! item]
+  (let [editing?! (atom false)
+        persona-id! (atom (or persona-id (:personaId item)))]
     (fn []
       (if @editing?! 
-        [edit-feed-item persona-id! feed! item editing?!] 
+        [edit-feed-item personas! persona-id! feed! item editing?!] 
         [display-feed-item persona-id! personas! feed! item editing?!]))))
 
 
@@ -506,7 +511,8 @@
     [:div.feed
      [feed-status feed!]
      (doall (for [item  (:results @feed!)]
-              ^{:key item} [feed-item persona-id! personas! feed! item]))]))
+              ^{:key [item @persona-id!]} 
+              [feed-item @persona-id! (if (not @persona-id!) personas!) feed! item]))]))
 
 (defn header-actions [persona! creating-post?!]
    [:div.header-actions 
@@ -529,6 +535,10 @@
       (reset! creating-post!? false))
    #(error/set-error! edit-item! %)))
 
+;; TODO: Make parameter ordering consistent. Some places have persona-id then personas, others
+;; are the other way around.
+;; TODO: Only pass atoms when necessary. There are some cases where the personas! is passed, when @personas! 
+;; would suffice
 (defn feed-page [feed! personas! persona-id! on-persona-select query! on-search]
   (let [creating-post?! (atom false)]
     (fn []
@@ -545,7 +555,9 @@
        (if @creating-post?!
          (let [edit-item! (atom (edit-item))]
            [edit-item-control
+            (if (not @persona-id!) personas!)
+            (atom (or @persona-id! (-> @personas! :items first :id)))
             edit-item!
-            #(new-post @persona-id! feed! creating-post?! edit-item!)
+            #(new-post % feed! creating-post?! edit-item!)
             #(reset! creating-post?! false) nil]))
        [feed-list persona-id! personas! feed!]])))
