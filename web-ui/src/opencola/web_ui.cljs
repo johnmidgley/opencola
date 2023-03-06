@@ -93,7 +93,8 @@
    (personas!)
    (fn []
      (location/set-location-from-state)
-     (feed/get-feed @(persona!) @(query!) (feed!)))
+     (feed/get-feed @(persona!) @(query!) (feed!))
+     (peer/get-peers @(persona!) (peers!)))
    #(error/set-error! (error!) %)))
 
 ;; conditionally start your application based on the presence of an "app" element
