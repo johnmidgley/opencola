@@ -2,7 +2,9 @@ package io.opencola.storage
 
 import mu.KotlinLogging
 import io.opencola.model.Authority
+import io.opencola.model.CoreAttribute
 import io.opencola.model.Id
+import io.opencola.model.Operation
 import io.opencola.security.KeyStore
 import io.opencola.security.PublicKeyProvider
 import io.opencola.security.Signator
@@ -20,11 +22,44 @@ class AddressBook(private val storagePath: Path, private val keyStore: KeyStore)
         }
     }
 
-    val logger = KotlinLogging.logger("AddressBook")
-
+    private val logger = KotlinLogging.logger("AddressBook")
     private val activeTag = "active"
     private val entityStore = ExposedEntityStore(SQLiteDB(storagePath.resolve("address-book.db")).db, Signator(keyStore), KeyStorePublicKeyProvider(keyStore))
     private val updateHandlers = CopyOnWriteArrayList<(AddressBookEntry?, AddressBookEntry?) -> Unit>()
+
+    init {
+        // Prior to personas, the default for the root authority was not activated by default, and an active check was
+        // not applied to incoming requests. If we leave this situation as is, when someone upgrades to personas, the
+        // single persona will be inactive, and will stop synchronizing with peers. We "fix" this by looking at the
+        // history of the address book, and if there has only ever been one persona
+        // (authority with authorityId == entityId), which has never been active (there is no fact for the persona
+        // asserting an active tag), we activate it.
+        val facts = entityStore.getFacts(emptySet(), emptySet())
+
+        val personaIds = facts
+            .filter { it.authorityId == it.entityId }
+            .map { it.authorityId }
+            .distinct()
+
+        if (personaIds.count() == 1) {
+            val personaId = personaIds.first()
+
+            val activeFact = facts.firstOrNull {
+                it.authorityId == personaId
+                        && it.entityId == personaId
+                        && it.attribute == CoreAttribute.Tags.spec
+                        && it.operation == Operation.Add
+                        && it.value.bytes.contentEquals(activeTag.toByteArray())
+            }
+
+            if(activeFact == null) {
+                logger.warn { "Activating persona $personaId" }
+                val persona = entityStore.getEntity(personaId, personaId) as Authority
+                persona.tags += activeTag
+                entityStore.updateEntities(persona)
+            }
+        }
+    }
 
     override fun toString(): String {
         val stringBuilder = StringBuilder("AddressBook($storagePath){\n")
