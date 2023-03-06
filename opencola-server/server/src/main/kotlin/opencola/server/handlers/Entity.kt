@@ -147,6 +147,8 @@ fun getOrCopyEntity(authorityId: Id, entityStore: EntityStore, entityId: Id): En
         else -> throw IllegalArgumentException("Don't know how to add ${existingEntity.javaClass.simpleName}")
     }
 
+    // TODO: Remove any calls to update entity after calling this (getOrCopyEntity)
+    entityStore.updateEntities(newEntity)
     return newEntity
 }
 
@@ -225,23 +227,19 @@ fun newResourceFromUrl(
     url: String
 ): EntityResult? {
     try {
-        val entity = getOrCopyEntity(persona.personaId, entityStore, Id.ofUri(URI(url)))
-            ?: run {
-                // TODO: What if URL isn't html?
-                val parser = HtmlParser(httpClient.get(url))
-                val resource = ResourceEntity(
-                    persona.personaId,
-                    URI(url),
-                    parser.parseTitle(),
-                    parser.parseDescription(),
-                    null, // TODO: Grab proper text
-                    parser.parseImageUri()
-                )
-                entityStore.updateEntities(resource)
-                resource
-            }
+        val resource = entityStore.getEntity(persona.personaId, Id.ofUri(URI(url)))
+            ?: ResourceEntity(persona.personaId, URI(url))
 
-        return getEntityResult(persona.personaId, entityStore, addressBook, entity.entityId)
+        // TODO: What if URL isn't html?
+        // TODO: If parsing fails, could call getOrCopyEntity(persona.personaId, entityStore, Id.ofUri(URI(url)))
+        val parser = HtmlParser(httpClient.get(url))
+
+        resource.name = parser.parseTitle()
+        resource.description = parser.parseDescription()
+        resource.imageUri = parser.parseImageUri()
+        entityStore.updateEntities(resource)
+
+        return getEntityResult(persona.personaId, entityStore, addressBook, resource.entityId)
     } catch (e: Exception) {
         logger.error { e }
     }
