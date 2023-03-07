@@ -23,7 +23,7 @@ data class Fact(
 ) {
     override fun toString(): String {
         val decodedValue = value.let { attribute.codec.decode(it.bytes) }
-        return "{ authorityId: $authorityId entityId: $entityId attribute: $attribute value: $decodedValue operation: $operation transactionOrdinal: $transactionOrdinal"
+        return "{ authorityId: $authorityId entityId: $entityId attribute: ${attribute.uri} value: $decodedValue operation: $operation transactionOrdinal: $transactionOrdinal }"
     }
 
     inline fun <reified T> decodeValue(): T {

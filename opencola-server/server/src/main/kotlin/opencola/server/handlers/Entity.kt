@@ -39,19 +39,8 @@ fun deleteEntity(
     entityId: Id,
 ): EntityResult? {
     logger.info { "Deleting $entityId" }
-//    val entity = entityStore.getEntity(persona.personaId, entityId)
-//    val allCommentIds = entity?.commentIds?.toSet() ?: emptySet()
-//    val personaCommentIds =
-//        if(allCommentIds.isEmpty())
-//            emptySet()
-//        else
-//            entityStore.getEntities(setOf(persona.personaId), allCommentIds).map { it.entityId }.toSet()
-//
-//    logger.info { "CommentIds: $personaCommentIds" }
-
     entityStore.deleteEntities(persona.personaId, entityId)
     return getEntityResults(setOf(persona.personaId), entityStore, addressBook, setOf(entityId)).firstOrNull()
-
 }
 
 @Serializable

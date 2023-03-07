@@ -161,7 +161,9 @@ abstract class AbstractEntityStore(
     @Synchronized
     private fun persistTransaction(authorityId: Id, facts: List<Fact>) : Pair<SignedTransaction, Long> {
         // TODO: Move validate to here
-        val allFacts = validateFacts(authorityId, facts.plus(computedFacts(facts)))
+        require(facts.isNotEmpty()) { "Attempt to persist transaction with no facts" }
+
+        val allFacts = validateFacts(authorityId, facts.plus(computedFacts(facts)).distinct())
         val signedTransaction = Transaction.fromFacts(getNextTransactionId(authorityId), allFacts).sign(signator)
         val transactionOrdinal = persistTransaction(signedTransaction)
         eventBus?.sendMessage(Events.NewTransaction.toString(), SignedTransaction.encode(signedTransaction))
@@ -198,7 +200,8 @@ abstract class AbstractEntityStore(
             } ?: emptyList()
         }
 
-        persistTransaction(authorityId, facts)
+        if(facts.isNotEmpty())
+            persistTransaction(authorityId, facts)
     }
 
     override fun addSignedTransactions(signedTransactions: List<SignedTransaction>) {
