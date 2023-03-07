@@ -192,7 +192,6 @@ fun Application.configureBootstrapRouting(
 fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParams) {
     // TODO: Make and user general opencola.server
     val logger = KotlinLogging.logger("opencola.init")
-    val rootPersona = app.inject<AddressBook>().getEntries().filterIsInstance<PersonaAddressBookEntry>().first()
 
     routing {
         // Authentication from https://ktor.io/docs/session-auth.html
@@ -303,7 +302,7 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
 
             delete("/comment/{commentId}") {
                 // TODO: Remove call and parse comment id out here, so handlers don't need to know anything about ktor
-                deleteComment(call, rootPersona, app.inject())
+                deleteComment(call, expectPersona(call), app.inject())
             }
 
             // TODO: Think about checking for no extra parameters
@@ -335,16 +334,16 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             }
 
             get("/data/{id}") {
-                handleGetDataCall(call, app.inject(), app.inject(), rootPersona.personaId)
+                handleGetDataCall(call, app.inject(), app.inject(), expectPersona(call).personaId)
             }
 
             get("/data/{id}/{partName}") {
                 // TODO: Add a parameters extension that gets the parameter value or throws an exception
-                handleGetDataPartCall(call, rootPersona.personaId, app.inject())
+                handleGetDataPartCall(call, expectPersona(call).personaId, app.inject())
             }
 
             get("/actions/{uri}") {
-                handleGetActionsCall(call, rootPersona.personaId, app.inject())
+                handleGetActionsCall(call, expectPersona(call).personaId, app.inject())
             }
 
             get("/feed") {
@@ -381,12 +380,12 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
 
             delete("/peers/{peerId}") {
                 val peerId = Id.decode(call.parameters["peerId"] ?: throw IllegalArgumentException("No id set"))
-                deletePeer(app.inject(), rootPersona.entityId, peerId)
+                deletePeer(app.inject(), expectPersona(call).entityId, peerId)
                 call.respond("{}")
             }
 
             post("/action") {
-                handlePostActionCall(call, rootPersona.personaId, app.inject(), app.inject())
+                handlePostActionCall(call, expectPersona(call).personaId, app.inject(), app.inject())
             }
 
             post("/personas") {

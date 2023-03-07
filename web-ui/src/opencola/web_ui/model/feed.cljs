@@ -58,9 +58,9 @@
     #(on-error (error-result->str %)))))
 
 
-(defn delete-comment [comment-id on-success on-error]  
+(defn delete-comment [persona-id comment-id on-success on-error]  
   (ajax/DELETE
-   (str "/comment/" comment-id)
+   (str "/comment/" comment-id "?personaId=" persona-id)
    on-success ;; Follow main pattern and just return whole item? Will mess up UI state, but could ignore result
    #(on-error (error-result->str %))))
 

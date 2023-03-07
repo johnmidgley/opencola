@@ -116,9 +116,10 @@
    #(update-feed-item feed! %)
    #(error/set-error! error! %)))
 
-(defn delete-comment [feed! entity-id comment-id error!]
+(defn delete-comment [feed! persona-id entity-id comment-id error!]
   (let [item (get-item @feed! entity-id)]
     (model/delete-comment
+     persona-id
      comment-id                          
      ;; TODO: Pass in error, instead of adding to item?
      #(update-feed-item feed! (remove-comment (error/clear-error item) comment-id))
@@ -140,7 +141,7 @@
           [:button {:on-click #(reset! expanded?! false)} "Cancel"]
           (if comment-id
             [:button.delete-button 
-             {:on-click #(delete-comment feed! entity-id comment-id error!)} "Delete"])]]))))
+             {:on-click #(delete-comment feed! @persona-id! entity-id comment-id error!)} "Delete"])]]))))
 
 (defn item-comment [persona-id! feed! entity-id comment-action]
 (let [editing?! (atom false)]

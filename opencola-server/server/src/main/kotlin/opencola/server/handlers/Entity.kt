@@ -184,7 +184,6 @@ fun addComment(
 
 suspend fun deleteComment(call: ApplicationCall, persona: PersonaAddressBookEntry, entityStore: EntityStore) {
     val commentId = Id.decode(call.parameters["commentId"] ?: throw IllegalArgumentException("No commentId specified"))
-
     entityStore.deleteEntities(persona.personaId, commentId)
     call.respondText("{}")
 }

@@ -75,6 +75,7 @@ class ApplicationTest : ApplicationTestBase() {
         val urlString = buildString {
             append("/actions/")
             append(encode(uri.toString(), "utf-8"))
+            append("?personaId=${authority.personaId}")
         }
 
         val response = client.get(urlString)
@@ -105,7 +106,7 @@ class ApplicationTest : ApplicationTestBase() {
 //        }
 
         val boundary = "WebAppBoundary"
-        val response = client.post("/action") {
+        val response = client.post("/action?personaId=${application.getPersonas().first().personaId}") {
             setBody(
                 MultiPartFormDataContent(
                     formData {
