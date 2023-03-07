@@ -178,14 +178,15 @@ abstract class AbstractEntityStore(
             Value.emptyValue
     }
 
-    // TODO: Should this be delete entities to allow for bulk deletes (i.e. within a single transaction)?
-    override fun deleteEntity(authorityId: Id, entityId: Id) {
-        getEntity(authorityId, entityId).nullOrElse { entity ->
-            val facts = entity.getCurrentFacts()
-                .map { Fact(authorityId, entityId, it.attribute, getDeletedValue(it), Operation.Retract) }
-
-            persistTransaction(authorityId, facts)
+    override fun deleteEntities(authorityId: Id, vararg entityIds: Id) {
+        val facts = entityIds.flatMap { entityId ->
+            getEntity(authorityId, entityId).nullOrElse { entity ->
+                entity.getCurrentFacts()
+                    .map { Fact(authorityId, it.entityId, it.attribute, getDeletedValue(it), Operation.Retract) }
+            } ?: emptyList()
         }
+
+        persistTransaction(authorityId, facts)
     }
 
     override fun addSignedTransactions(signedTransactions: List<SignedTransaction>) {

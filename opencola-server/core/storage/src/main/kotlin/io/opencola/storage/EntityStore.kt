@@ -20,7 +20,7 @@ interface EntityStore {
     // TODO: Replace getEntity with a call to getEntities
     fun getEntity(authorityId: Id, entityId: Id): Entity?
     fun getEntities(authorityIds: Set<Id>, entityIds: Set<Id>) : List<Entity>
-    fun deleteEntity(authorityId: Id, entityId: Id)
+    fun deleteEntities(authorityId: Id, vararg entityIds: Id)
     fun updateEntities(vararg entities: Entity) : SignedTransaction?
     fun addSignedTransactions(signedTransactions: List<SignedTransaction>)
     fun getSignedTransactions(authorityIds: Iterable<Id>, startTransactionId: Id?, order: TransactionOrder, limit: Int) : Iterable<SignedTransaction>

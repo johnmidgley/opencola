@@ -42,15 +42,26 @@ suspend fun deleteEntity(
     val entityId = Id.decode(stringId)
 
     logger.info { "Deleting $entityId" }
-    entityStore.deleteEntity(persona.personaId, entityId)
-    val entity = getEntityResults(setOf(persona.personaId), entityStore, addressBook, setOf(entityId)).firstOrNull()
+//    val entity = entityStore.getEntity(persona.personaId, entityId)
+//    val allCommentIds = entity?.commentIds?.toSet() ?: emptySet()
+//    val personaCommentIds =
+//        if(allCommentIds.isEmpty())
+//            emptySet()
+//        else
+//            entityStore.getEntities(setOf(persona.personaId), allCommentIds).map { it.entityId }.toSet()
+//
+//    logger.info { "CommentIds: $personaCommentIds" }
 
-    if (entity == null)
+
+    entityStore.deleteEntities(persona.personaId, entityId)
+    val entityResult = getEntityResults(setOf(persona.personaId), entityStore, addressBook, setOf(entityId)).firstOrNull()
+
+    if (entityResult == null)
     // Need to return something in JSON. Sending an {} means that the entity has been fully deleted (i.e. no other
     // peers have the item, so this is a final delete)
         call.respond("{}")
     else
-        call.respond(entity)
+        call.respond(entityResult)
 }
 
 @Serializable
@@ -199,7 +210,7 @@ suspend fun addComment(
 suspend fun deleteComment(call: ApplicationCall, persona: PersonaAddressBookEntry, entityStore: EntityStore) {
     val commentId = Id.decode(call.parameters["commentId"] ?: throw IllegalArgumentException("No commentId specified"))
 
-    entityStore.deleteEntity(persona.personaId, commentId)
+    entityStore.deleteEntities(persona.personaId, commentId)
     call.respondText("{}")
 }
 

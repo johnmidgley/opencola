@@ -46,7 +46,7 @@ class PeerTransactionTest : PeerNetworkTest() {
             assert(results1.matches.size == 1)
             assert(results1.matches[0].name == resource1.name)
 
-            entityStore0.deleteEntity(persona.personaId, resource1.entityId)
+            entityStore0.deleteEntities(persona.personaId, resource1.entityId)
             sleep(1000)
             val results2 = handleSearch(application1.inject(), application1.inject(), emptySet(),"other")
             assert(results2.matches.isEmpty())

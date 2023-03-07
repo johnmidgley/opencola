@@ -192,7 +192,7 @@ class AddressBook(private val storagePath: Path, private val keyStore: KeyStore)
            .filter { it.personaId == personaId && (deletingPersona || it.entityId == entityId) }
            .sortedByDescending { it.entityId == personaId }
            .forEach{
-               entityStore.deleteEntity(it.personaId, it.entityId)
+               entityStore.deleteEntities(it.personaId, it.entityId)
                callUpdateHandlers(it, null)
            }
 

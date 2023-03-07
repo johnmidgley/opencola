@@ -54,7 +54,7 @@ class EntityStoreTest {
             assertEquals(it.first.transactionOrdinal, it.second.transactionOrdinal)
         }
 
-        store2.deleteEntity(persona.personaId, entity.entityId)
+        store2.deleteEntities(persona.personaId, entity.entityId)
         assertEquals(null, store2.getEntity(persona.personaId, entity.entityId))
     }
 
@@ -204,7 +204,7 @@ class EntityStoreTest {
         assertEquals(1, resource1.commentIds.count())
         assertEquals(comment.entityId, resource1.commentIds.single())
 
-        entityStore.deleteEntity(persona.personaId, comment.entityId)
+        entityStore.deleteEntities(persona.personaId, comment.entityId)
         val resource2 = entityStore.getEntity(persona.personaId, resource.entityId)
         assertNotNull(resource2)
         assertEquals(0, resource2.commentIds.count())
