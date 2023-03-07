@@ -278,11 +278,21 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             }
 
             delete("/entity/{entityId}") {
-                deleteEntity(call, expectPersona(call), app.inject(), app.inject())
+                val entityId = call.parameters["entityId"]?.let { Id.decode(it) }
+                    ?: throw IllegalArgumentException("No entityId specified")
+
+                deleteEntity(app.inject(), app.inject(), expectPersona(call), entityId)?.let {
+                    call.respond(it)
+                } ?: call.respond("{}")
             }
 
             post("/entity/{entityId}/comment") {
-                addComment(call, expectPersona(call), app.inject(), app.inject())
+                val entityId = Id.decode(call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified"))
+                val comment = call.receive<PostCommentPayload>()
+
+                addComment(app.inject(), app.inject(), expectPersona(call), entityId, comment)?.let {
+                    call.respond(it)
+                }
             }
 
             post("/post") {

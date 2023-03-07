@@ -32,15 +32,12 @@ suspend fun getEntity(call: ApplicationCall, persona: PersonaAddressBookEntry, e
 }
 
 // TODO - investigate delete and then re-add. It seems to "restore" all previous saves. Is this good or bad?
-suspend fun deleteEntity(
-    call: ApplicationCall,
-    persona: PersonaAddressBookEntry,
+fun deleteEntity(
     entityStore: EntityStore,
-    addressBook: AddressBook
-) {
-    val stringId = call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified")
-    val entityId = Id.decode(stringId)
-
+    addressBook: AddressBook,
+    persona: PersonaAddressBookEntry,
+    entityId: Id,
+): EntityResult? {
     logger.info { "Deleting $entityId" }
 //    val entity = entityStore.getEntity(persona.personaId, entityId)
 //    val allCommentIds = entity?.commentIds?.toSet() ?: emptySet()
@@ -52,16 +49,9 @@ suspend fun deleteEntity(
 //
 //    logger.info { "CommentIds: $personaCommentIds" }
 
-
     entityStore.deleteEntities(persona.personaId, entityId)
-    val entityResult = getEntityResults(setOf(persona.personaId), entityStore, addressBook, setOf(entityId)).firstOrNull()
+    return getEntityResults(setOf(persona.personaId), entityStore, addressBook, setOf(entityId)).firstOrNull()
 
-    if (entityResult == null)
-    // Need to return something in JSON. Sending an {} means that the entity has been fully deleted (i.e. no other
-    // peers have the item, so this is a final delete)
-        call.respond("{}")
-    else
-        call.respond(entityResult)
 }
 
 @Serializable
@@ -192,19 +182,15 @@ fun addComment(
 @Serializable
 data class PostCommentPayload(val commentId: String? = null, val text: String)
 
-suspend fun addComment(
-    call: ApplicationCall,
-    persona: PersonaAddressBookEntry,
+fun addComment(
     entityStore: EntityStore,
-    addressBook: AddressBook
-) {
-    val entityId = Id.decode(call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified"))
-    val comment = call.receive<PostCommentPayload>()
-
+    addressBook: AddressBook,
+    persona: PersonaAddressBookEntry,
+    entityId: Id,
+    comment: PostCommentPayload
+): EntityResult? {
     addComment(persona, entityStore, entityId, comment.commentId.nullOrElse { Id.decode(it) }, comment.text)
-    getEntityResults(setOf(persona.personaId), entityStore, addressBook, setOf(entityId))
-        .firstOrNull()
-        .nullOrElse { call.respond(it) }
+    return getEntityResults(setOf(persona.personaId), entityStore, addressBook, setOf(entityId)).firstOrNull()
 }
 
 suspend fun deleteComment(call: ApplicationCall, persona: PersonaAddressBookEntry, entityStore: EntityStore) {
