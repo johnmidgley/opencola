@@ -296,7 +296,7 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             }
 
             post("/post") {
-                newPost(expectPersona(call), app.inject(), app.inject(), call.receive<EntityPayload>())?.also {
+                newPost(expectPersona(call), app.inject(), app.inject(), call.receive())?.also {
                     call.respond(it)
                 }
             }
