@@ -178,8 +178,20 @@ abstract class AbstractEntityStore(
             Value.emptyValue
     }
 
+    private fun getDependentEntityIds(personaId: Id, entityId: Id): Set<Id> {
+        val entity = getEntity(personaId, entityId)
+        val allCommentIds = entity?.commentIds?.toSet() ?: emptySet()
+
+        return if (allCommentIds.isEmpty())
+            emptySet()
+        else
+            getEntities(setOf(personaId), allCommentIds).map { it.entityId }.toSet()
+    }
+
     override fun deleteEntities(authorityId: Id, vararg entityIds: Id) {
-        val facts = entityIds.flatMap { entityId ->
+        val entityIdsWithDependents = entityIds.flatMap { getDependentEntityIds(authorityId, it) }.toSet() + entityIds
+
+        val facts = entityIdsWithDependents.flatMap { entityId ->
             getEntity(authorityId, entityId).nullOrElse { entity ->
                 entity.getCurrentFacts()
                     .map { Fact(authorityId, it.entityId, it.attribute, getDeletedValue(it), Operation.Retract) }

@@ -76,4 +76,24 @@ class EntityTest {
     fun testGetOrCopyPost(){
         saveEntity { PostEntity(it, "name", "description") } as PostEntity
     }
+
+    @Test
+    fun testDeleteEntityWithDependents() {
+        val app  = TestApplication.instance
+        val persona = TestApplication.instance.getPersonas().first()
+        val entityStore = app.inject<EntityStore>()
+        val addressBook = app.inject<AddressBook>()
+
+        // Make a post with a comment
+        val post = PostEntity(persona.personaId, "name", "description")
+        val comment = CommentEntity(persona.personaId, post.entityId, "comment")
+        entityStore.updateEntities(post, comment)
+        assertNotNull(entityStore.getEntity(persona.personaId, post.entityId))
+        assertNotNull(entityStore.getEntity(persona.personaId, comment.entityId))
+
+        // Delete the post and check that the comment is gone
+        deleteEntity(entityStore, addressBook, persona, post.entityId)
+        assertNull(entityStore.getEntity(persona.personaId, post.entityId))
+        assertNull(entityStore.getEntity(persona.personaId, comment.entityId))
+    }
 }
