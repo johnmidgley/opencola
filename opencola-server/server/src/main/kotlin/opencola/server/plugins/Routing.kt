@@ -80,6 +80,12 @@ fun Application.configureBootstrapRouting(
             }
         }
 
+        get("/login") {
+            // A call from the toolbar may attempt to log in. If the server hasn't started, we'll end up here,
+            // so we'll just redirect to the startup page.
+            call.respondRedirect("/")
+        }
+
         get("/newUser") {
             if (call.request.origin.scheme != "https") {
                 call.respondRedirect("https://localhost:${serverConfig.ssl!!.port}/newUser")
