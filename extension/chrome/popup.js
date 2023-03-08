@@ -13,24 +13,20 @@ function parseCookie(str) {
 }
 
 function setPersona(id) {
-    chrome.storage.sync.set({"persona-id": id}, () => {
-        console.log("Persona set to: " + id)
-    })
+    chrome.storage.sync.set({"persona-id": id}, () => {})
 }
 
 function getPersona(onSuccess, defaultPersonaId = null) {
     chrome.storage.sync.get("persona-id", (data) => {
-        let personaId = data["persona-id"]
-
-        onSuccess(personaId)
+        onSuccess(data["persona-id"])
     })
 }
 
-function setPersonaDefault(id) {
+function setPersonaDefault(personas) {
     // getPersonaId and if not set, set it to the default
     getPersona((personaId) => {
-        if (personaId == null || personaId == undefined || personaId == "")
-            setPersona(id)
+        if(personas.length > 0 && personas.find(p => p.id == personaId) == undefined)
+            setPersona(personas[0].id)
     })
 }
 
@@ -46,9 +42,7 @@ function getPersonas() {
             let personas = JSON.parse(this.responseText).items
             let select = document.getElementById("personas")
             select.onchange = function() { setPersona(this.value) }
-
-            if(personas.length > 0)
-                setPersonaDefault(personas[0].id)
+            setPersonaDefault(personas)
 
             for(let i = 0; i < personas.length; i++) {
                 let persona = personas[i]
@@ -59,8 +53,8 @@ function getPersonas() {
             }
 
             getPersona((personaId) => {
-                if(personaId != undefined)
-                select.value = personaId
+                if(personaId != undefined && personas.find(p => p.id == personaId) != undefined)
+                    select.value = personaId
             })
         } else {
           alert("Unable to authenticate extension.\n A login page will be opened.")
