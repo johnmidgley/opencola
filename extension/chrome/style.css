@@ -1,15 +1,7 @@
 body{
     height: 30px;
-    width: 172px;
-}
-
-button {
-    height: 30px;
-    width: 30px;
-    outline: none;
-    margin: 10px;
-    border: none;
-    border-radius: 2px;
+    width: 285px;
+    margin-top: 2px;
 }
 
 img.icon {
@@ -29,11 +21,6 @@ img.icon:checked {
     background-color: grey;
 }
 
-button.current {
-    box-shadow: 0 0 0 2px white,
-    0 0 0 4px black;
-}
-
 img.status {
     height: 25px;
     margin: 5px;
@@ -44,7 +31,11 @@ div.tooltip {
    display:table-cell;
 }
 
-select {
-    background-color: green;
-    width: 400px;
+select.persona-select {
+    height: 25px;
+    width: 100px;
+    outline: none;
+    border: dotted;
+    vertical-align: bottom;
+    margin: 8px;
 }

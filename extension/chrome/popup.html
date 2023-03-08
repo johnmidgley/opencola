@@ -1,18 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <link rel="stylesheet" href="button.css">
+    <link rel="stylesheet" href="style.css">
+    <title>OpenCola Toolbar</title>
 </head>
 <!-- TODO: This should be injected into the page rather than a popup. See https://www.youtube.com/watch?v=nvm3c6ilcN8&t=1149s -->
 
 <body>
-    <div style="display:table-row;">
-      <div class="tooltip" title="Status"><img class="status" id="status" src="images/yellow-light-icon.svg"/></div>
-      <div class="tooltip" title="Save"><img class="icon" id="save" src="images/save.png"/></div>
-      <div class="tooltip" title="Like"><img class="icon" id="like" src="images/like.png"/></div>
-      <div class="tooltip" title="Trust"><img class="icon" id="trust" src="images/trust.png"/></div>
-      <div class="tooltip" title="Search"><img class="icon" id="search" src="images/search.png"/></div>
+<div style="display:table-row;">
+    <div class="tooltip" title="Status">
+        <img class="status" id="status" src="images/yellow-light-icon.svg" alt="status"/>
     </div>
-    <script src="popup.js"></script>
+    <div class="tooltip" title="Persona" style="border: 0">
+        <label for="personas"></label>
+        <select class="persona-select" name="Personas" id="personas"></select>
+    </div>
+    <div class="tooltip" title="Save"><img class="icon" id="save" src="images/save.png" alt="Save"/></div>
+    <div class="tooltip" title="Like"><img class="icon" id="like" src="images/like.png" alt="Like"/></div>
+    <div class="tooltip" title="Trust"><img class="icon" id="trust" src="images/trust.png" alt="Trust"/></div>
+    <div class="tooltip" title="Search"><img class="icon" id="search" src="images/search.png" alt="Search"/></div>
+</div>
+<script src="popup.js"></script>
 </body>
 </html>
