@@ -442,27 +442,28 @@
            :on-click (fn [] (swap! edit-item! update-in [:like] #(if % nil true)))} 
     (action-img "like")]])
 
-;; TODO: Put error in separate variable
-(defn edit-item-control [personas! persona-id! edit-item! on-save on-cancel on-delete]
+;; TODO: Put error in separate variable - then create and manage edit-iten only in here
+(defn edit-item-control [personas! persona-id! item edit-item! on-save on-cancel on-delete]
   (let [description-state! (atom nil)]
     (fn []
-      [:div.feed-item
-       [:div.error (:error @edit-item!)]
-       [name-edit-control edit-item!]
-       [image-uri-edit-control edit-item!]
-       [description-edit-control edit-item! description-state!]
-       [like-edit-control edit-item!]
-       [tags-edit-control edit-item!]
-       [comment-edit-control edit-item!]
-       [error/error-control @edit-item!]
-       (if personas!
-         [:span [persona-select personas! persona-id!] " "])
-       [:button {:on-click (fn []
-                             (swap! edit-item! assoc-in [:description] (.value @description-state!))
-                             (on-save @persona-id!)) } "Save"] " "
-       [:button {:on-click on-cancel} "Cancel"] " "
-       (if on-delete
-         [:button.delete-button {:on-click on-delete} "Delete"])])))
+      (let [deletable? (some #(= @persona-id! (:authorityId %)) (-> item :activities :save))]
+        [:div.feed-item
+         [:div.error (:error @edit-item!)]
+         [name-edit-control edit-item!]
+         [image-uri-edit-control edit-item!]
+         [description-edit-control edit-item! description-state!]
+         [like-edit-control edit-item!]
+         [tags-edit-control edit-item!]
+         [comment-edit-control edit-item!]
+         [error/error-control @edit-item!]
+         (if personas!
+           [:span [persona-select personas! persona-id!] " "])
+         [:button {:on-click (fn []
+                               (swap! edit-item! assoc-in [:description] (.value @description-state!))
+                               (on-save @persona-id!)) } "Save"] " "
+         [:button {:on-click on-cancel} "Cancel"] " "
+         (if deletable?
+           [:button.delete-button {:on-click on-delete} "Delete"])]))))
 
 
 (defn delete-feed-item [feed! entity-id]
@@ -493,10 +494,11 @@
     (edit-item-control
      personas!
      persona-id!
+     item
      edit-item!
      #(update-edit-entity @persona-id! feed! editing?! edit-item! item)
      #(reset! editing?! false)
-     (if deletable? #(delete-entity @persona-id! feed! editing?! item edit-item!)))))
+     #(delete-entity @persona-id! feed! editing?! item edit-item!))))
 
 
 (defn feed-item [persona-id personas! feed! item]
@@ -566,6 +568,7 @@
            [edit-item-control
             (if (not @persona-id!) personas!)
             (atom (or @persona-id! (-> @personas! :items first :id)))
+            nil
             edit-item!
             #(new-post % feed! creating-post?! edit-item!)
             #(reset! creating-post?! false) nil]))
