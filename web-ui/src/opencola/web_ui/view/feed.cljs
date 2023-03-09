@@ -153,14 +153,17 @@
            authority-name :authorityName
            epoch-second :epochSecond 
            text :value
-           comment-id :id} comment-action]
+           comment-id :id} comment-action
+          editable? (= authority-id @persona-id!)]
+      (if (not editable?)
+        (reset! editing?! false))
       [:div.item-comment 
        [:div.item-attribution 
         authority-name " " (format-time epoch-second) " "
-        (if (= authority-id @persona-id!)
+        (if editable?
           [:span {:on-click #(reset! editing?! true)} [action-img "edit"]])
         ":"]
-       (if @editing?!
+       (if (and editable? @editing?!)
          [comment-control persona-id! feed! entity-id comment-id text editing?!]
          [:div.item-comment-container [md->component {:class "item-comment-text"} text]])]))))
 
