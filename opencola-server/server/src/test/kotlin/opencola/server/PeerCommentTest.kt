@@ -2,7 +2,7 @@ package opencola.server
 
 import io.opencola.model.ResourceEntity
 import io.opencola.storage.EntityStore
-import opencola.server.handlers.addComment
+import opencola.server.handlers.updateComment
 import org.junit.Test
 import org.kodein.di.instance
 import java.net.URI
@@ -39,7 +39,7 @@ class PeerCommentTest : PeerNetworkTest() {
         val entityStore1 by application1.injector.instance<EntityStore>()
         startServer(server1)
         Thread.sleep(1500)
-        val comment = addComment(persona1, entityStore1, resource0.entityId, null, "Comment")
+        val comment = updateComment(persona1, entityStore1, resource0.entityId, null, "Comment")
         val resource1 = entityStore1.getEntity(persona1.personaId, resource0.entityId) as ResourceEntity
 
         assertNotNull(resource1)

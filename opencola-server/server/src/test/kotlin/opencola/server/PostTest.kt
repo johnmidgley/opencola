@@ -3,6 +3,7 @@ package opencola.server
 import opencola.core.TestApplication
 import io.opencola.storage.AddressBook
 import io.opencola.storage.EntityStore
+import opencola.server.handlers.Context
 import opencola.server.handlers.EntityPayload
 import opencola.server.handlers.newPost
 import opencola.server.handlers.EntityResult
@@ -21,7 +22,7 @@ class PostTest {
         val entityStore by app.injector.instance<EntityStore>()
         val addressBook by app.injector.instance<AddressBook>()
         val entityPayload = EntityPayload("", "Name", "https://image.com", "description", true, "tag", "comment")
-        val result = newPost(persona, entityStore, addressBook, entityPayload)
+        val result = newPost(entityStore, addressBook, Context(""), persona, entityPayload)
 
         assertNotNull(result)
 

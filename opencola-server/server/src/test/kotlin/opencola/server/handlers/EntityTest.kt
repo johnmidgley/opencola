@@ -92,7 +92,7 @@ class EntityTest {
         assertNotNull(entityStore.getEntity(persona.personaId, comment.entityId))
 
         // Delete the post and check that the comment is gone
-        deleteEntity(entityStore, addressBook, persona, post.entityId)
+        deleteEntity(entityStore, addressBook, Context(""), persona, post.entityId)
         assertNull(entityStore.getEntity(persona.personaId, post.entityId))
         assertNull(entityStore.getEntity(persona.personaId, comment.entityId))
     }

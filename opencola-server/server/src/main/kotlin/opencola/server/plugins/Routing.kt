@@ -207,7 +207,9 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             return app.inject<AddressBook>().getEntry(personaId, personaId) as? PersonaAddressBookEntry
         }
 
-
+        fun getContext(call: ApplicationCall) : Context {
+            return Context(call.parameters["context"])
+        }
 
         get("/login") {
             if (call.request.origin.scheme != "https") {
@@ -269,18 +271,24 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             }
 
             post("/entity/{entityId}") {
-                saveEntity(call, expectPersona(call), app.inject(), app.inject())
+                val entityId = Id.decode(call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified"))
+                saveEntity(app.inject(), app.inject(), getContext(call), expectPersona(call), entityId)?.let {
+                    call.respond(it)
+                } ?: call.respond(HttpStatusCode.Unauthorized)
             }
 
             put("/entity/{entityId}") {
-                updateEntity(call, expectPersona(call), app.inject(), app.inject())
+                val entityPayload = call.receive<EntityPayload>()
+                updateEntity(app.inject(), app.inject(), getContext(call), expectPersona(call), entityPayload)?.let {
+                    call.respond(it)
+                } ?: call.respond(HttpStatusCode.Unauthorized)
             }
 
             delete("/entity/{entityId}") {
                 val entityId = call.parameters["entityId"]?.let { Id.decode(it) }
                     ?: throw IllegalArgumentException("No entityId specified")
 
-                deleteEntity(app.inject(), app.inject(), expectPersona(call), entityId)?.let {
+                deleteEntity(app.inject(), app.inject(), getContext(call), expectPersona(call), entityId)?.let {
                     call.respond(it)
                 } ?: call.respond("{}")
             }
@@ -289,13 +297,13 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
                 val entityId = Id.decode(call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified"))
                 val comment = call.receive<PostCommentPayload>()
 
-                addComment(app.inject(), app.inject(), expectPersona(call), entityId, comment)?.let {
+                updateComment(app.inject(), app.inject(), getContext(call), expectPersona(call), entityId, comment)?.let {
                     call.respond(it)
                 }
             }
 
             post("/post") {
-                newPost(expectPersona(call), app.inject(), app.inject(), call.receive())?.also {
+                newPost(app.inject(), app.inject(), getContext(call), expectPersona(call), call.receive())?.also {
                     call.respond(it)
                 }
             }

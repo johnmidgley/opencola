@@ -21,6 +21,7 @@
 
 (defn get-feed [persona-id query feed!]
   (model/get-feed
+   nil
    persona-id
    query
    #(reset! feed! %)
@@ -109,6 +110,7 @@
 
 (defn update-comment [persona-id feed! entity-id comment-id text editing?! error!]
   (model/update-comment 
+   (:context @feed!)
    persona-id
    entity-id 
    comment-id
@@ -119,6 +121,7 @@
 (defn delete-comment [feed! persona-id entity-id comment-id error!]
   (let [item (get-item @feed! entity-id)]
     (model/delete-comment
+     (:context @feed!)
      persona-id
      comment-id                          
      ;; TODO: Pass in error, instead of adding to item?
@@ -270,6 +273,7 @@
         saved? (some #(= persona-id (:authorityId %)) actions)]
     (if (not saved?)
       (model/save-entity
+       (:context @feed!)
        persona-id
         item
         #(update-feed-item feed! %)
@@ -278,6 +282,7 @@
 
 (defn update-display-entity [persona-id feed! edit-item item]
   (model/update-entity 
+   (:context @feed!)
    persona-id
    edit-item
    #(update-feed-item feed! %)
@@ -285,6 +290,7 @@
 
 (defn update-edit-entity [persona-id feed! editing?! edit-item! item]
   (model/update-entity 
+   (:context @feed!)
    persona-id
    @edit-item!
    #(update-feed-item feed! %)
@@ -466,6 +472,7 @@
 (defn delete-entity [persona-id feed! editing?! item edit-item!]
   (let [entity-id (:entityId item)]
     (model/delete-entity
+     (:context @feed!)
      persona-id
      entity-id
      (fn [item]
@@ -529,6 +536,7 @@
 
 (defn new-post [persona-id feed! creating-post!? edit-item!]
   (model/new-post
+   (:context @feed!)
    persona-id
    @edit-item!
    #(do 

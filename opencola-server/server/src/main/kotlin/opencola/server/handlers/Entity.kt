@@ -1,8 +1,6 @@
 package opencola.server.handlers
 
 import io.ktor.server.application.*
-import io.ktor.http.*
-import io.ktor.server.request.*
 import io.ktor.server.response.*
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
@@ -25,7 +23,7 @@ suspend fun getEntity(call: ApplicationCall, persona: PersonaAddressBookEntry, e
     // TODO: Authority should be passed (and authenticated) in header
     val stringId = call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified")
     val entityId = Id.decode(stringId)
-    val entityResult = getEntityResults(setOf(persona.personaId), entityStore, addressBook, setOf(entityId)).firstOrNull()
+    val entityResult = getEntityResult(entityStore, addressBook, Context(""), persona.personaId, entityId)
 
     if (entityResult != null)
         call.respond(entityResult)
@@ -35,12 +33,13 @@ suspend fun getEntity(call: ApplicationCall, persona: PersonaAddressBookEntry, e
 fun deleteEntity(
     entityStore: EntityStore,
     addressBook: AddressBook,
+    context: Context,
     persona: PersonaAddressBookEntry,
     entityId: Id,
 ): EntityResult? {
     logger.info { "Deleting $entityId" }
     entityStore.deleteEntities(persona.personaId, entityId)
-    return getEntityResults(setOf(persona.personaId), entityStore, addressBook, setOf(entityId)).firstOrNull()
+    return getEntityResult(entityStore, addressBook, context, persona.personaId, entityId)
 }
 
 @Serializable
@@ -55,9 +54,10 @@ data class EntityPayload(
 )
 
 fun updateEntity(
-    persona: PersonaAddressBookEntry,
     entityStore: EntityStore,
     addressBook: AddressBook,
+    context: Context,
+    persona: PersonaAddressBookEntry,
     entity: Entity,
     entityPayload: EntityPayload
 ): EntityResult? {
@@ -79,28 +79,25 @@ fun updateEntity(
     else
         entityStore.updateEntities(entity, CommentEntity(entity.authorityId, entity.entityId, entityPayload.comment))
 
-    return getEntityResult(persona.personaId, entityStore, addressBook, entity.entityId)
+    return getEntityResult(entityStore, addressBook, context, persona.entityId, entity.entityId)
 }
 
-suspend fun updateEntity(
-    call: ApplicationCall,
-    persona: PersonaAddressBookEntry,
+fun updateEntity(
     entityStore: EntityStore,
-    addressBook: AddressBook
-) {
-    val authorityId = persona.personaId
-    val entityPayload = call.receive<EntityPayload>()
+    addressBook: AddressBook,
+    context: Context,
+    persona: PersonaAddressBookEntry,
+    entityPayload: EntityPayload
+): EntityResult? {
     val entityId =
         Id.decode(entityPayload.entityId ?: throw IllegalArgumentException("No entityId specified for update"))
     logger.info { "Updating: $entityPayload" }
-
-    val entity = getOrCopyEntity(authorityId, entityStore, entityId)
-    if (entity == null) {
-        call.respond(HttpStatusCode.Unauthorized)
-        return
+    return getOrCopyEntity(persona.personaId, entityStore, entityId)?.let { entity ->
+        // TODO: getOrCopy has already copied the entity (if it didn't exist) in a different transaction. Consider
+        //  moving the getOrCopyEntity call into the updateEntity call and returning saving + update in a single
+        //  transaction
+        updateEntity(entityStore, addressBook, context, persona, entity, entityPayload)
     }
-
-    updateEntity(persona, entityStore, addressBook, entity, entityPayload).nullOrElse { call.respond(it) }
 }
 
 fun getOrCopyEntity(authorityId: Id, entityStore: EntityStore, entityId: Id): Entity? {
@@ -142,7 +139,7 @@ fun getOrCopyEntity(authorityId: Id, entityStore: EntityStore, entityId: Id): En
     return newEntity
 }
 
-fun addComment(
+fun updateComment(
     persona: PersonaAddressBookEntry,
     entityStore: EntityStore,
     entityId: Id,
@@ -171,15 +168,16 @@ fun addComment(
 @Serializable
 data class PostCommentPayload(val commentId: String? = null, val text: String)
 
-fun addComment(
+fun updateComment(
     entityStore: EntityStore,
     addressBook: AddressBook,
+    context: Context,
     persona: PersonaAddressBookEntry,
     entityId: Id,
     comment: PostCommentPayload
 ): EntityResult? {
-    addComment(persona, entityStore, entityId, comment.commentId.nullOrElse { Id.decode(it) }, comment.text)
-    return getEntityResults(setOf(persona.personaId), entityStore, addressBook, setOf(entityId)).firstOrNull()
+    updateComment(persona, entityStore, entityId, comment.commentId.nullOrElse { Id.decode(it) }, comment.text)
+    return getEntityResult(entityStore, addressBook, context, persona.personaId, entityId)
 }
 
 suspend fun deleteComment(call: ApplicationCall, persona: PersonaAddressBookEntry, entityStore: EntityStore) {
@@ -188,21 +186,18 @@ suspend fun deleteComment(call: ApplicationCall, persona: PersonaAddressBookEntr
     call.respondText("{}")
 }
 
-suspend fun saveEntity(
-    call: ApplicationCall,
-    persona: PersonaAddressBookEntry,
+fun saveEntity(
     entityStore: EntityStore,
-    addressBook: AddressBook
-) {
-    val entityId = Id.decode(call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified"))
-
+    addressBook: AddressBook,
+    context: Context,
+    persona: PersonaAddressBookEntry,
+    entityId: Id
+): EntityResult? {
     val entity = getOrCopyEntity(persona.personaId, entityStore, entityId)
         ?: throw IllegalArgumentException("Unable to save unknown entity: $entityId")
 
     entityStore.updateEntities(entity)
-    getEntityResults(setOf(persona.personaId), entityStore, addressBook, setOf(entityId))
-        .firstOrNull()
-        .nullOrElse { call.respond(it) }
+    return getEntityResult(entityStore, addressBook, context, persona.entityId, entityId)
 }
 
 fun newResourceFromUrl(
@@ -224,7 +219,7 @@ fun newResourceFromUrl(
         resource.imageUri = parser.parseImageUri()
         entityStore.updateEntities(resource)
 
-        return getEntityResult(persona.personaId, entityStore, addressBook, resource.entityId)
+        return getEntityResult(entityStore, addressBook, Context(""), persona.personaId, resource.entityId)
     } catch (e: Exception) {
         logger.error { e }
     }
@@ -233,9 +228,10 @@ fun newResourceFromUrl(
 }
 
 fun newPost(
-    persona: PersonaAddressBookEntry,
     entityStore: EntityStore,
     addressBook: AddressBook,
+    context: Context,
+    persona: PersonaAddressBookEntry,
     entityPayload: EntityPayload
 ): EntityResult? {
     val url = entityPayload.description?.trim()
@@ -246,5 +242,5 @@ fun newPost(
             return result
     }
 
-    return updateEntity(persona, entityStore, addressBook, PostEntity(persona.personaId), entityPayload)
+    return updateEntity(entityStore, addressBook, context, persona, PostEntity(persona.personaId), entityPayload)
 }

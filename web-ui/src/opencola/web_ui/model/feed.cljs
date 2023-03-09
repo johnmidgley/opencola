@@ -29,55 +29,52 @@
       (set-query query)))
 
 
-(defn get-feed [persona-id query on-success on-error]
-  (ajax/GET (str "feed?personaId=" persona-id  "&q=" query "") 
+(defn get-feed [context persona-id query on-success on-error]
+  (ajax/GET (str "feed?context=" context  "&personaId=" persona-id  "&q=" query "") 
             #(on-success (feed-to-view-model % query))
             #(on-error (error-result->str %)))) 
 
-(defn delete-entity [persona-id entity-id on-success on-error]
+(defn delete-entity [context persona-id entity-id on-success on-error]
   (ajax/DELETE 
-   (str "entity/" entity-id "?personaId=" persona-id)
+   (str "entity/" entity-id "?context=" context  "&personaId=" persona-id)
    #(on-success (model-to-view-item %))
    #(on-error (error-result->str %))))
 
 
-(defn update-comment [persona-id entity-id comment-id text on-success on-error]
-  (ajax/POST (str "entity/" entity-id "/comment?personaId=" persona-id) 
+(defn update-comment [context persona-id entity-id comment-id text on-success on-error]
+  (ajax/POST (str "entity/" entity-id "/comment?context=" context "&personaId=" persona-id) 
              {:commentId comment-id
               :text text}
              #(on-success (model-to-view-item %))
              #(on-error (error-result->str %))))
 
-(defn update-entity [persona-id item on-success on-error]
+(defn update-entity [context persona-id item on-success on-error]
   ;; TODO - Weird to dissoc a view value here. Think about proper binder
   (let [item (dissoc item :error-message)]
    (ajax/PUT 
-    (str "entity/" (:entityId item) "?personaId=" persona-id)
+    (str "entity/" (:entityId item) "?context=" context "&personaId=" persona-id)
     item
     #(on-success (model-to-view-item %))
     #(on-error (error-result->str %)))))
 
 
-(defn delete-comment [persona-id comment-id on-success on-error]  
+(defn delete-comment [context persona-id comment-id on-success on-error]  
   (ajax/DELETE
-   (str "/comment/" comment-id "?personaId=" persona-id)
+   (str "/comment/" comment-id "?context=" context "&personaId=" persona-id)
    on-success ;; Follow main pattern and just return whole item? Will mess up UI state, but could ignore result
    #(on-error (error-result->str %))))
 
-
 ;; TODO: Change *-error to *-failure
-(defn save-entity [persona-id item on-success on-error]
+(defn save-entity [context persona-id item on-success on-error]
   (ajax/POST 
-   (str "/entity/" (:entityId item) "?personaId=" persona-id)
+   (str "/entity/" (:entityId item) "?context=" context "&personaId=" persona-id)
    nil
    #(on-success (model-to-view-item %))
    #(on-error (error-result->str %))))
 
-
-
-(defn new-post [persona-id item on-success on-error]
+(defn new-post [context persona-id item on-success on-error]
   (ajax/POST
-   (str "post?personaId=" persona-id)
+   (str "post?context=" context "&personaId=" persona-id)
    item
    #(on-success (model-to-view-item %))
    #(on-error (error-result->str %))))

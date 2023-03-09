@@ -48,10 +48,10 @@ data class Id(private val bytes: ByteArray) {
     }
 
     companion object Factory : ByteArrayCodec<Id>, StreamSerializer<Id> {
+        // TODO: Should return Id? - empty string is not valid.
         fun decode(value: String): Id {
             return decode(
                 when (value.length) {
-
                     64 -> value.hexStringToByteArray()
                     else -> Base58.decode(value)
                 }

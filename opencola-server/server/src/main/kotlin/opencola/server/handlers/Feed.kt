@@ -9,10 +9,11 @@ import io.opencola.storage.AddressBook
 import io.opencola.storage.AddressBookEntry
 import io.opencola.storage.EntityStore
 import io.opencola.storage.PersonaAddressBookEntry
+import io.opencola.util.Base58
 import opencola.server.handlers.EntityResult.*
 
 @Serializable
-data class FeedResult(val pagingToken: String?, val results: List<EntityResult>)
+data class FeedResult(val context: String?, val pagingToken: String?, val results: List<EntityResult>)
 
 fun entityAttributeAsString(entity: Entity, attribute: Attribute): String? {
     return entity.getValue(attribute.name).nullOrElse { attribute.codec.decode(it.bytes).toString() }
@@ -201,12 +202,14 @@ fun getEntityResults(
 }
 
 fun getEntityResult(
-    personaId: Id,
     entityStore: EntityStore,
     addressBook: AddressBook,
+    context: Context,
+    personaId: Id,
     entityId: Id
 ): EntityResult? {
-    return getEntityResults(setOf(personaId), entityStore, addressBook, setOf(entityId)).firstOrNull()
+    val personaIds = context.getPersonaIds(personaId)
+    return getEntityResults(personaIds, entityStore, addressBook, setOf(entityId)).firstOrNull()
 }
 
 fun handleGetFeed(
@@ -219,5 +222,6 @@ fun handleGetFeed(
     // TODO: This could be tightened up. We're accessing the address book multiple times. Could pass entries around instead
     val authorityIds = addressBook.getEntries().filter { it.personaId in personaIds }.map { it.entityId }.toSet()
     val entityIds = getEntityIds(entityStore, authorityIds, searchIndex, query)
-    return FeedResult(null, getEntityResults(authorityIds, entityStore, addressBook, entityIds))
+    val context = Base58.encode(personaIds.joinToString { it.toString() }.toByteArray())
+    return FeedResult(context,null, getEntityResults(authorityIds, entityStore, addressBook, entityIds))
 }
