@@ -12,11 +12,13 @@ import io.opencola.storage.MhtCache
 
 private val logger = KotlinLogging.logger("DataHandler")
 
-suspend fun handleGetDataCall(call: ApplicationCall, entityStore: EntityStore, fileStore: FileStore, authorityId: Id) {
+suspend fun handleGetDataCall(call: ApplicationCall, entityStore: EntityStore, fileStore: FileStore) {
     val stringId = call.parameters["id"] ?: throw IllegalArgumentException("No id set")
     val entityId = Id.decode(stringId)
 
-    val dataEntity = entityStore.getEntity(authorityId, Id.decode(stringId)) as? DataEntity
+    val dataEntity = entityStore.getEntities(emptySet(), setOf(Id.decode(stringId)))
+        .filterIsInstance<DataEntity>()
+        .firstOrNull()
         ?: throw IllegalArgumentException("Unknown data entity: $stringId")
 
     logger.info { "MimeType: ${dataEntity.mimeType}" }
@@ -36,7 +38,7 @@ suspend fun handleGetDataCall(call: ApplicationCall, entityStore: EntityStore, f
     }
 }
 
-suspend fun handleGetDataPartCall(call: ApplicationCall, authorityId: Id, mhtCache: MhtCache) {
+suspend fun handleGetDataPartCall(call: ApplicationCall, authorityId: Id?, mhtCache: MhtCache) {
     // TODO: All handlers need to wrap like this?
     try {
         val stringId = call.parameters["id"] ?: throw IllegalArgumentException("No id set")

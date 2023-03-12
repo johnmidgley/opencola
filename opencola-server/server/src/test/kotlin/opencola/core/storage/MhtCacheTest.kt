@@ -31,7 +31,7 @@ class MhtCacheTest {
         val mhtmlPage = MhtmlPage(message)
 
         val entity = updateResource(persona.personaId, entityStore, fileStore, mhtmlPage, Actions())
-        val data = mhtCache.getData(persona.personaId, entity.entityId)
+        val data = mhtCache.getData(entity.entityId, persona.personaId)
         assertNotNull(data)
 
         val part0 = mhtCache.getDataPart(persona.personaId, entity.entityId, "0.html")

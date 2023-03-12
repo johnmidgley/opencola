@@ -342,12 +342,12 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             }
 
             get("/data/{id}") {
-                handleGetDataCall(call, app.inject(), app.inject(), expectPersona(call).personaId)
+                handleGetDataCall(call, app.inject(), app.inject())
             }
 
             get("/data/{id}/{partName}") {
                 // TODO: Add a parameters extension that gets the parameter value or throws an exception
-                handleGetDataPartCall(call, expectPersona(call).personaId, app.inject())
+                handleGetDataPartCall(call, getPersona(call)?.personaId, app.inject())
             }
 
             get("/actions/{uri}") {

@@ -12,9 +12,11 @@ import opencola.server.plugins.configureContentNegotiation
 import opencola.server.plugins.configureRouting
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
+import mu.KotlinLogging
 
-abstract class ApplicationTestBase {
+abstract class ApplicationTestBase(name: String = "ApplicationTest") {
     protected val application = TestApplication.instance
+    protected val logger = KotlinLogging.logger(name)
 
     protected inline fun <reified T> inject() : T {
         return application.inject()

@@ -95,6 +95,7 @@ class ApplicationTest : ApplicationTestBase() {
     // TODO: Add tests for Like and trust that use this code
     fun testSavePageThenSearch() = testApplication {
         application { configure(this) }
+        val persona = application.getPersonas().first()
         val mhtPath = TestApplication.applicationPath.resolve("../../sample-docs/Conway's Game of Life - Wikipedia.mht")
         val fileBytes = File(mhtPath.toString()).readBytes()
 
@@ -106,7 +107,7 @@ class ApplicationTest : ApplicationTestBase() {
 //        }
 
         val boundary = "WebAppBoundary"
-        val response = client.post("/action?personaId=${application.getPersonas().first().personaId}") {
+        val response = client.post("/action?personaId=${persona.personaId}") {
             setBody(
                 MultiPartFormDataContent(
                     formData {
@@ -129,6 +130,19 @@ class ApplicationTest : ApplicationTestBase() {
         assertEquals(HttpStatusCode.OK, searchResponse.status)
         val searchResults = Json.decodeFromString<SearchResults>(searchResponse.bodyAsText())
         assertEquals("Conway's Game of Life - Wikipedia", searchResults.matches.first().name)
+
+        val feedResponse = client.get("/feed?personaId=${application.getPersonas().first().personaId}&q=game")
+        assertEquals(HttpStatusCode.OK, feedResponse.status)
+        val feedResult = Json.decodeFromString<FeedResult>(feedResponse.bodyAsText())
+        assertEquals(1, feedResult.results.size)
+
+        // Also check that data for entity was saved
+        val dataId = feedResult.results[0].activities[0].actions[0].id
+        logger.info { "dataId: $dataId" }
+
+        val dataResponse = client.get("/data/$dataId")
+        assertEquals(HttpStatusCode.OK, dataResponse.status)
+
     }
 
     private fun getSingleActivity(feedResult: FeedResult, type: String): EntityResult.Activity {

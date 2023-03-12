@@ -23,19 +23,20 @@ class MhtCache(private val cachePath: Path, private val entityStore: EntityStore
     }
 
     // TODO: Move this to entityService, since it's general
-    private fun getDataEntity(authorityId: Id, entityId: Id): DataEntity? {
-        val entity = entityStore.getEntity(authorityId, entityId)
+    private fun getDataEntity(entityId: Id, authorityId: Id? = null): DataEntity? {
+        val entity = authorityId?.let { entityStore.getEntity(authorityId, entityId) }
+            ?: entityStore.getEntities(emptySet(), setOf(entityId)).filterIsInstance<DataEntity>().firstOrNull()
 
         return when (entity) {
             // TODO: This grabs an arbitrary dataId. Probably should grab most recent
-            is ResourceEntity -> entity.dataId.nullOrElse { entityStore.getEntity(authorityId, it.first()) }
+            is ResourceEntity -> entity.dataId.nullOrElse { entityStore.getEntity(authorityId!!, it.first()) }
             is DataEntity -> entity
             else -> null
         } as DataEntity?
     }
 
-    fun getData(authorityId: Id, entityId: Id): ByteArray? {
-        return getDataEntity(authorityId, entityId).nullOrElse { fileStore.read(it.entityId)  }
+    fun getData(entityId: Id, authorityId: Id? = null): ByteArray? {
+        return getDataEntity(entityId, authorityId).nullOrElse { fileStore.read(it.entityId)  }
     }
 
     private fun cachedPartPath(id: Id, partName: String): Path {
@@ -49,8 +50,8 @@ class MhtCache(private val cachePath: Path, private val entityStore: EntityStore
         }
     }
 
-    private fun cacheMhtParts(authorityId: Id, entityId: Id){
-        val data = getData(authorityId, entityId)
+    private fun cacheMhtParts(entityId: Id, authorityId: Id? = null){
+        val data = getData(entityId, authorityId)
 
         if(data == null){
             logger.warn { "No data available to cache for id: $entityId" }
@@ -80,9 +81,9 @@ class MhtCache(private val cachePath: Path, private val entityStore: EntityStore
         return if(partPath.exists()) partPath.readBytes() else null
     }
 
-    fun getDataPart(authorityId: Id, entityId: Id, partName: String): ByteArray? {
+    fun getDataPart(authorityId: Id?, entityId: Id, partName: String): ByteArray? {
         if(!isPartCached(entityId, partName)){
-            cacheMhtParts(authorityId, entityId)
+            cacheMhtParts(entityId, authorityId)
         }
 
         return getCachedPart(entityId, partName)
