@@ -70,6 +70,7 @@ class LuceneSearchIndex(private val storagePath: Path) : AbstractSearchIndex() {
         document.add(Field("entityId", entity.entityId.toString(), StringField.TYPE_STORED))
 
         // TODO: Probably need to manage multivalued fields (like tags) differently
+        // TODO: Check out Google Sentence Piece: https://github.com/levyfan/sentencepiece-jni
         values()
             .map{ it.spec }
             .filter { it.isIndexable }
