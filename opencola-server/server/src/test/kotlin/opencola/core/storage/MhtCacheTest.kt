@@ -1,6 +1,6 @@
 package opencola.core.storage
 
-import opencola.core.TestApplication
+import io.opencola.test.TestApplication
 import io.opencola.content.MhtmlPage
 import io.opencola.content.parseMime
 import io.opencola.model.Actions

@@ -1,7 +1,7 @@
 package opencola.server.handlers
 
 import io.opencola.model.*
-import opencola.core.TestApplication
+import io.opencola.test.TestApplication
 import io.opencola.storage.AddressBook
 import io.opencola.storage.AddressBookEntry
 import io.opencola.storage.EntityStore

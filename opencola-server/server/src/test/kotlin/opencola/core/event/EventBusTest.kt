@@ -1,6 +1,6 @@
 package opencola.core.event
 
-import opencola.core.TestApplication
+import io.opencola.test.TestApplication
 import io.opencola.event.EventBusConfig
 import io.opencola.event.EventBus
 import io.opencola.event.EventBus.Event

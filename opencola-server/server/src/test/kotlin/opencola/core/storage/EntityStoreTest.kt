@@ -1,6 +1,6 @@
 package opencola.core.storage
 
-import opencola.core.TestApplication
+import io.opencola.test.TestApplication
 import opencola.core.config.getApplications
 import io.opencola.event.EventBus
 import io.opencola.model.*

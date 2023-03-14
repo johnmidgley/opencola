@@ -1,5 +1,6 @@
 package opencola.server
 
+import io.opencola.test.TestApplication
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
@@ -11,7 +12,6 @@ import kotlinx.coroutines.delay
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import opencola.core.TestApplication
 import opencola.server.handlers.*
 import java.io.File
 import java.net.URI

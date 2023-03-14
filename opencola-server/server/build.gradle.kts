@@ -85,6 +85,7 @@ dependencies {
     implementation("io.ktor:ktor-client-cio-jvm:$ktorVersion")
     implementation("io.ktor:ktor-client-serialization-jvm:$ktorVersion")
 
+    testImplementation(project(":test"))
     testImplementation(project(":core:io"))
     testImplementation(project(":relay"))
     testImplementation(project(":relay:client"))

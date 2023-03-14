@@ -1,6 +1,6 @@
 package opencola.server
 
-import opencola.core.TestApplication
+import io.opencola.test.TestApplication
 import io.opencola.storage.AddressBook
 import io.opencola.storage.EntityStore
 import opencola.server.handlers.Context

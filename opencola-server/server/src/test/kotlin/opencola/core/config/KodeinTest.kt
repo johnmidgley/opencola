@@ -1,6 +1,6 @@
 package opencola.core.config
 
-import opencola.core.TestApplication
+import io.opencola.test.TestApplication
 import io.opencola.storage.AddressBook
 import org.junit.Test
 

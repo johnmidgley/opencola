@@ -2,7 +2,7 @@ package opencola.core.network
 
 import io.ktor.server.netty.*
 import io.opencola.application.*
-import opencola.core.TestApplication
+import io.opencola.test.TestApplication
 import io.opencola.event.EventBus
 import io.opencola.network.NetworkConfig
 import io.opencola.network.NetworkNode

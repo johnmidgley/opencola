@@ -1,12 +1,12 @@
 package opencola.server
 
+import io.opencola.test.TestApplication
 import io.ktor.client.*
 import io.ktor.server.application.*
 import io.ktor.server.application.Application
 import io.ktor.server.auth.*
 import io.ktor.server.sessions.*
 import io.ktor.server.testing.*
-import opencola.core.TestApplication
 import opencola.server.plugins.UserSession
 import opencola.server.plugins.configureContentNegotiation
 import opencola.server.plugins.configureRouting

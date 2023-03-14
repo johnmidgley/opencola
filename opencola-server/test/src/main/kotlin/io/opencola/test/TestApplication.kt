@@ -1,4 +1,4 @@
-package opencola.core
+package io.opencola.test
 
 import io.opencola.application.Application
 import io.opencola.application.loadConfig
