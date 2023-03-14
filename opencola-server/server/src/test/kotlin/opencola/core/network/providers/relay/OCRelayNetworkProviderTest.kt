@@ -57,7 +57,7 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
         println("Starting network node0")
         val networkNode0 = app0.inject<NetworkNode>().also { it.start(true) }
         println("Starting network node1")
-        val networkNode1 = app1.inject<NetworkNode>().also { it.start(true) }
+        app1.inject<NetworkNode>().also { it.start(true) }
 
         try {
             println("Testing ping: from=${app0Persona.entityId} to=${app1Persona.entityId}")
@@ -97,10 +97,10 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
             // TODO: Test bad signature
             // TODO: Configure request timeout so that tests can run more quickly
         } finally {
-            println("Stopping network node0")
-            networkNode0.stop()
-            println("Stopping network node1")
-            networkNode1.stop()
+            println("Stopping app0")
+            app0.close()
+            println("Stopping app1")
+            app1.close()
             println("Stopping relay server")
             webServer.stop(200, 200)
         }
@@ -170,10 +170,10 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
                     assertNull(result)
                 }
             } finally {
+                app0.close()
+                app1.close()
                 println("Closing relay client")
                 relayClient.close()
-                println("Stopping network node0")
-                networkNode0.stop()
                 println("Stopping relay server")
                 webServer.stop(200, 200)
             }

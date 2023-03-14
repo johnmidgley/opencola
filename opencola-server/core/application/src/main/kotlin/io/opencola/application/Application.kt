@@ -20,12 +20,13 @@ import org.jetbrains.exposed.sql.Database
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
 import org.kodein.di.instance
+import java.io.Closeable
 import java.io.File
 import java.nio.file.Path
 import java.security.KeyPair
 import kotlin.io.path.*
 
-class Application(val storagePath: Path, val config: Config, val injector: DI) {
+class Application(val storagePath: Path, val config: Config, val injector: DI) : Closeable {
     val logger = KotlinLogging.logger("opencola.${config.name}")
 
     inline fun <reified T : Any> inject() : T {
@@ -142,5 +143,10 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) {
             val personaKeyPairs = getOrCreateRootKeyPair(storagePath, password)
             return instance(storagePath, appConfig, personaKeyPairs, password)
         }
+    }
+
+    override fun close() {
+        inject<NetworkNode>().stop()
+        inject<EventBus>().stop()
     }
 }

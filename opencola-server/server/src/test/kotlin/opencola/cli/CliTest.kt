@@ -55,25 +55,30 @@ class CliTest {
     fun testDumpDefaultTransactions() {
         val storagePath = Path(System.getenv("HOME")).resolve(".opencola/storage")
         val config = loadConfig(storagePath.resolve("opencola-server.yaml"))
-        val app = getApplication(storagePath, config, LoginCredentials("oc", "password"))
-        val entityStore = app.inject<EntityStore>()
-        val authority = app.getPersonas().single()
-        exportTransactions(entityStore, storagePath.resolve("transactions.bin"), listOf(authority.entityId))
+        getApplication(storagePath, config, LoginCredentials("oc", "password")).use { app ->
+            val entityStore = app.inject<EntityStore>()
+            val authority = app.getPersonas().single()
+            exportTransactions(entityStore, storagePath.resolve("transactions.bin"), listOf(authority.entityId))
+        }
     }
 
     // Load transactions into test storage from "transactions.bin"
     fun testLoadTransactionsToTest() {
         val storagePath = Path(System.getProperty("user.dir")).resolve("src/main/storage")
         val config = loadConfig(storagePath.resolve("opencola-server.yaml"))
-        val app = getApplication(storagePath, config, LoginCredentials("oc", "password"))
-        val entityStore = app.inject<EntityStore>()
-        val authority = app.getPersonas().single()
-        val signator = app.inject<Signator>()
 
-        transactionsFromPath(storagePath.resolve("transactions.bin")).forEach {
-            val tx = it.transaction
-            val signedTransaction = Transaction(tx.id, authority.entityId, tx.transactionEntities, tx.epochSecond).sign(signator)
-            entityStore.addSignedTransactions(listOf(signedTransaction))
+
+        getApplication(storagePath, config, LoginCredentials("oc", "password")).use { app ->
+            val entityStore = app.inject<EntityStore>()
+            val authority = app.getPersonas().single()
+            val signator = app.inject<Signator>()
+
+            transactionsFromPath(storagePath.resolve("transactions.bin")).forEach {
+                val tx = it.transaction
+                val signedTransaction =
+                    Transaction(tx.id, authority.entityId, tx.transactionEntities, tx.epochSecond).sign(signator)
+                entityStore.addSignedTransactions(listOf(signedTransaction))
+            }
         }
     }
 }

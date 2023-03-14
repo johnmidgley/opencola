@@ -3,9 +3,7 @@ package opencola.core.network
 import io.ktor.server.netty.*
 import io.opencola.application.*
 import io.opencola.test.TestApplication
-import io.opencola.event.EventBus
 import io.opencola.network.NetworkConfig
-import io.opencola.network.NetworkNode
 import io.opencola.storage.AddressBook
 import io.opencola.storage.PersonaAddressBookEntry
 import opencola.server.AuthToken
@@ -30,8 +28,7 @@ class ApplicationNode(val application: Application) : Node {
     }
 
     override fun stop() {
-        application.inject<NetworkNode>().stop()
-        application.inject<EventBus>().stop()
+        application.close()
         server?.stop(500, 500)
     }
 

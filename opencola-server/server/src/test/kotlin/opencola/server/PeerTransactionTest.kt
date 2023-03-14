@@ -51,6 +51,7 @@ class PeerTransactionTest : PeerNetworkTest() {
             val results2 = handleSearch(application1.inject(), application1.inject(), emptySet(),"other")
             assert(results2.matches.isEmpty())
         } finally {
+            applications.forEach{ it.close() }
             server0.stop(1000, 1000)
             server1.stop(1000, 1000)
         }
@@ -96,6 +97,7 @@ class PeerTransactionTest : PeerNetworkTest() {
             assert(results0.matches.size == 1)
             assert(results0.matches[0].name == resource0.name)
         } finally {
+            applications.forEach{ it.close() }
             server0.stop(1000, 1000)
             server1.stop(1000, 1000)
         }
@@ -142,6 +144,8 @@ class PeerTransactionTest : PeerNetworkTest() {
             assertNotNull(resource0FromServer1)
             assertEquals(resourceEntity0.name, resource0FromServer1.name)
         } finally {
+            server0.application.close()
+            server1.application.close()
             server0.stop()
             server1.stop()
         }

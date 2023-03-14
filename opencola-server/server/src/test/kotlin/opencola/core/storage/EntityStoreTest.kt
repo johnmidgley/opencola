@@ -145,42 +145,47 @@ class EntityStoreTest {
     fun testGetFacts(){
         val applications = getApplications(TestApplication.storagePath, TestApplication.config, 6000, 2)
 
-        // Create some entities for first authority
-        val authority0 = applications[0].getPersonas().first()
-        val entityStore0 by applications[0].injector.instance<EntityStore>()
-        val entities0 = (0 until 2).map { ResourceEntity(authority0.personaId, URI("http://test/$it")) }
-        entityStore0.updateEntities(*entities0.toTypedArray<Entity>())
+        try {
+            // Create some entities for first authority
+            val authority0 = applications[0].getPersonas().first()
+            val entityStore0 by applications[0].injector.instance<EntityStore>()
+            val entities0 = (0 until 2).map { ResourceEntity(authority0.personaId, URI("http://test/$it")) }
+            entityStore0.updateEntities(*entities0.toTypedArray<Entity>())
 
-        // Add some entities from peer store with same entity ids
-        val authority1 = applications[1].getPersonas().first()
-        val entityStore1 by applications[1].injector.instance<EntityStore>()
-        val entities1 = (0 until 2).map { ResourceEntity(authority1.personaId, URI("http://test/$it")) }
-        val transaction = entityStore1.updateEntities(*entities1.toTypedArray<Entity>()) ?: throw RuntimeException("Unable to update entities")
-        entityStore0.addSignedTransactions(listOf(transaction))
+            // Add some entities from peer store with same entity ids
+            val authority1 = applications[1].getPersonas().first()
+            val entityStore1 by applications[1].injector.instance<EntityStore>()
+            val entities1 = (0 until 2).map { ResourceEntity(authority1.personaId, URI("http://test/$it")) }
+            val transaction = entityStore1.updateEntities(*entities1.toTypedArray<Entity>())
+                ?: throw RuntimeException("Unable to update entities")
+            entityStore0.addSignedTransactions(listOf(transaction))
 
-        val authority0Facts = entityStore0.getFacts(listOf(authority0.personaId), emptyList())
-        assert(authority0Facts.isNotEmpty())
-        assert(authority0Facts.all{ it.authorityId == authority0.personaId} )
-        assertNotNull(authority0Facts.firstOrNull{ it.entityId == entities0[0].entityId})
-        assertNotNull(authority0Facts.firstOrNull{ it.entityId == entities0[1].entityId})
+            val authority0Facts = entityStore0.getFacts(listOf(authority0.personaId), emptyList())
+            assert(authority0Facts.isNotEmpty())
+            assert(authority0Facts.all { it.authorityId == authority0.personaId })
+            assertNotNull(authority0Facts.firstOrNull { it.entityId == entities0[0].entityId })
+            assertNotNull(authority0Facts.firstOrNull { it.entityId == entities0[1].entityId })
 
-        val authority1Facts = entityStore0.getFacts(listOf(authority1.personaId), emptyList())
-        assert(authority1Facts.isNotEmpty())
-        assert(authority1Facts.all{ it.authorityId == authority1.personaId} )
-        assertNotNull(authority1Facts.firstOrNull{ it.entityId == entities1[0].entityId})
-        assertNotNull(authority1Facts.firstOrNull{ it.entityId == entities1[1].entityId})
+            val authority1Facts = entityStore0.getFacts(listOf(authority1.personaId), emptyList())
+            assert(authority1Facts.isNotEmpty())
+            assert(authority1Facts.all { it.authorityId == authority1.personaId })
+            assertNotNull(authority1Facts.firstOrNull { it.entityId == entities1[0].entityId })
+            assertNotNull(authority1Facts.firstOrNull { it.entityId == entities1[1].entityId })
 
-        val entity0Facts = entityStore0.getFacts(emptyList(), listOf(entities0[0].entityId))
-        assert(entity0Facts.isNotEmpty())
-        assertTrue { entity0Facts.all { it.entityId == entities0[0].entityId } }
-        assertTrue(entity0Facts.any{ it.authorityId == authority0.personaId} )
-        assertTrue(entity0Facts.any{ it.authorityId == authority1.personaId} )
+            val entity0Facts = entityStore0.getFacts(emptyList(), listOf(entities0[0].entityId))
+            assert(entity0Facts.isNotEmpty())
+            assertTrue { entity0Facts.all { it.entityId == entities0[0].entityId } }
+            assertTrue(entity0Facts.any { it.authorityId == authority0.personaId })
+            assertTrue(entity0Facts.any { it.authorityId == authority1.personaId })
 
-        val entity1Facts = entityStore0.getFacts(emptyList(), listOf(entities0[1].entityId))
-        assert(entity1Facts.isNotEmpty())
-        assertTrue { entity1Facts.all { it.entityId == entities0[1].entityId } }
-        assertTrue(entity1Facts.any{ it.authorityId == authority0.personaId} )
-        assertTrue(entity1Facts.any{ it.authorityId == authority1.personaId} )
+            val entity1Facts = entityStore0.getFacts(emptyList(), listOf(entities0[1].entityId))
+            assert(entity1Facts.isNotEmpty())
+            assertTrue { entity1Facts.all { it.entityId == entities0[1].entityId } }
+            assertTrue(entity1Facts.any { it.authorityId == authority0.personaId })
+            assertTrue(entity1Facts.any { it.authorityId == authority1.personaId })
+        } finally {
+            applications.forEach{ it.close() }
+        }
     }
 
     @Test
