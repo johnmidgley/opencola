@@ -52,7 +52,8 @@ fun equalsOtherThanPersonaId(source: AddressBookEntry, target: AddressBookEntry)
 }
 
 fun getFreshKeyStore() = KeyStore(TestApplication.getTmpFilePath("keystore.pks"), "password")
-fun getFreshAddressBook() = AddressBook(TestApplication.getTmpDirectory("addressbook"), getFreshKeyStore())
+fun getFreshAddressBook(keyStore: KeyStore = getFreshKeyStore()) =
+    AddressBook(TestApplication.getTmpDirectory("addressbook"), keyStore)
 
 class AddressBookTest {
     enum class Action {
@@ -75,10 +76,7 @@ class AddressBookTest {
             }
             Delete -> { assertNotNull(previousEntry); assertNull(currentEntry) }
         }
-
-
     }
-
 
     @Test
     fun testAddressBookCRUDL(){
@@ -112,6 +110,28 @@ class AddressBookTest {
         assertNull(addressBook.getEntry(peer.personaId, peer.entityId))
 
         addressBook.removeUpdateHandler(updateHandler)
+    }
+
+    @Test
+    fun testDeletePersona() {
+        val keyStore = getFreshKeyStore()
+        val addressBook = getFreshAddressBook(keyStore)
+        assertEquals(0, keyStore.getAliases().size)
+
+        // Create a persona
+        val persona0 = generatePersona("persona0").also { addressBook.updateEntry(it) }
+        val persona1 = generatePersona("persona1").also { addressBook.updateEntry(it) }
+
+        val aliases = keyStore.getAliases()
+        assertEquals(2, aliases.size)
+        assertContains(aliases, persona0.personaId.toString())
+        assertContains(aliases, persona1.personaId.toString())
+
+        addressBook.deleteEntry(persona0.personaId, persona0.entityId)
+        assertEquals(1, keyStore.getAliases().size)
+
+        // Shouldn't be able to delete the only persona in an address book
+        assertFails { addressBook.deleteEntry(persona1.personaId, persona1.entityId) }
     }
 
     @Test
