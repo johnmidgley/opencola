@@ -91,7 +91,7 @@ class ApplicationNode(val application: Application) : Node {
 
         // TODO: Move to interface or base class
         fun getBaseConfig(): Config {
-            val configPath = TestApplication.applicationPath.resolve("../../test/storage").resolve("opencola-test.yaml")
+            val configPath = TestApplication.projectHome.resolve("test/storage").resolve("opencola-test.yaml")
             return loadConfig(configPath)
         }
 
@@ -99,7 +99,7 @@ class ApplicationNode(val application: Application) : Node {
             if (!storagePath.exists()) {
                 File(storagePath.toString()).mkdirs()
                 val configPath =
-                    TestApplication.applicationPath.resolve("../../test/storage").resolve("opencola-test.yaml")
+                    TestApplication.projectHome.resolve("test/storage").resolve("opencola-test.yaml")
                 configPath.copyTo(storagePath.resolve("opencola-server.yaml"))
             }
 
@@ -124,7 +124,7 @@ class ApplicationNode(val application: Application) : Node {
         fun getNode(num: Int, persistent: Boolean = false, config: Config? = null): ApplicationNode {
             val storagePath =
                 if (persistent)
-                    TestApplication.applicationPath.resolve("../../test/storage/persistent/node-$num")
+                    TestApplication.projectHome.resolve("test/storage/persistent/node-$num")
                 else
                     TestApplication.storagePath.resolve("node-$num")
 

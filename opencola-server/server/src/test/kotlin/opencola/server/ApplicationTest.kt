@@ -96,7 +96,7 @@ class ApplicationTest : ApplicationTestBase() {
     fun testSavePageThenSearch() = testApplication {
         application { configure(this) }
         val persona = application.getPersonas().first()
-        val mhtPath = TestApplication.applicationPath.resolve("../../sample-docs/Conway's Game of Life - Wikipedia.mht")
+        val mhtPath = TestApplication.projectHome.resolve("sample-docs/Conway's Game of Life - Wikipedia.mht")
         val fileBytes = File(mhtPath.toString()).readBytes()
 
         // TODO: This should work, according to https://ktor.io/docs/testing.html#make-request

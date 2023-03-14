@@ -23,4 +23,5 @@ dependencies {
     implementation("org.kodein.di:kodein-di:$kodeinVersion")
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
+    testImplementation(project(":test"))
 }
