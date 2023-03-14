@@ -3,6 +3,7 @@ package io.opencola.application
 import mu.KotlinLogging
 import io.opencola.content.TextExtractor
 import io.opencola.event.EventBus
+import io.opencola.event.ExposedEventBus
 import io.opencola.event.Reactor
 import io.opencola.model.Authority
 import io.opencola.model.Id
@@ -124,7 +125,7 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) :
                 // TODO: Get cache name from config
                 bindSingleton { MhtCache(storagePath.resolve("mht-cache"), instance(), instance()) }
                 bindSingleton { MainReactor(instance(), instance(), instance(), instance()) }
-                bindSingleton { EventBus(storagePath, config.eventBus) }
+                bindSingleton { ExposedEventBus(storagePath, config.eventBus) }
             }
 
             initEventBus(injector)

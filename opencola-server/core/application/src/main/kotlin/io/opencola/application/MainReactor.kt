@@ -1,6 +1,6 @@
 package io.opencola.application
 
-import io.opencola.event.EventBus
+import io.opencola.event.Event
 import io.opencola.event.Events
 import io.opencola.event.Reactor
 import io.opencola.model.*
@@ -24,7 +24,7 @@ class MainReactor(
 ) : Reactor {
     private val logger = KotlinLogging.logger("MainReactor")
 
-    private fun handleNodeStarted(event: EventBus.Event){
+    private fun handleNodeStarted(event: Event){
         logger.info { event.name }
         updatePeerTransactions()
     }
@@ -97,7 +97,7 @@ class MainReactor(
          requestTransactions(peer)
     }
 
-    private fun handleNewTransaction(event: EventBus.Event){
+    private fun handleNewTransaction(event: Event){
         logger.info { "Handling new transaction" }
         val signedTransaction = ByteArrayInputStream(event.data).use{ SignedTransaction.decode(it) }
         indexTransaction(signedTransaction)
@@ -142,7 +142,7 @@ class MainReactor(
             }
     }
 
-    private fun handlePeerNotification(event: EventBus.Event){
+    private fun handlePeerNotification(event: Event){
         val notification = ByteArrayInputStream(event.data).use { Notification.decode(it) }
         logger.info { "Handling notification for peer ${notification.peerId} event: ${notification.event}" }
 
@@ -156,7 +156,7 @@ class MainReactor(
         }
     }
 
-    private fun handleNodeResume(event: EventBus.Event){
+    private fun handleNodeResume(event: Event){
         logger.info { event.name }
 
         // Restart network node so that connections are fresh
@@ -166,7 +166,7 @@ class MainReactor(
         // Request any transactions that may have been missed while suspended.
         updatePeerTransactions()
     }
-    override fun handleMessage(event: EventBus.Event) {
+    override fun handleMessage(event: Event) {
         logger.info { "Handling event: $event" }
 
         when(Events.valueOf(event.name)){

@@ -1,10 +1,7 @@
 package opencola.core.event
 
+import io.opencola.event.*
 import io.opencola.test.TestApplication
-import io.opencola.event.EventBusConfig
-import io.opencola.event.EventBus
-import io.opencola.event.EventBus.Event
-import io.opencola.event.Reactor
 import org.junit.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
@@ -26,7 +23,7 @@ class EventBusTest{
     @Test
     fun testEventBus(){
         val reactor = MessageReactor()
-        val eventBus = EventBus(TestApplication.storagePath, EventBusConfig())
+        val eventBus = ExposedEventBus(TestApplication.storagePath, EventBusConfig())
         eventBus.start(reactor)
 
         eventBus.sendMessage("1", "1".toByteArray())
