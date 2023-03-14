@@ -1,7 +1,5 @@
-package io.opencola.test
+package io.opencola.application
 
-import io.opencola.application.Application
-import io.opencola.application.loadConfig
 import io.opencola.model.Authority
 import io.opencola.search.SearchIndex
 import io.opencola.security.KeyStore

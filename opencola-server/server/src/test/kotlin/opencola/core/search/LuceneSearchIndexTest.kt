@@ -1,6 +1,6 @@
 package opencola.core.search
 
-import io.opencola.test.TestApplication
+import io.opencola.application.TestApplication
 import io.opencola.model.Id
 import io.opencola.search.LuceneSearchIndex
 import org.junit.Test

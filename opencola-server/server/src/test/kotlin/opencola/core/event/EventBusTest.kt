@@ -1,7 +1,7 @@
 package opencola.core.event
 
 import io.opencola.event.*
-import io.opencola.test.TestApplication
+import io.opencola.application.TestApplication
 import org.junit.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals

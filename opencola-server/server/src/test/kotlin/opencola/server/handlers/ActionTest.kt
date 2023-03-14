@@ -1,7 +1,7 @@
 package opencola.server.handlers
 
 
-import io.opencola.test.TestApplication
+import io.opencola.application.TestApplication
 import opencola.core.content.getMimeSnapshotForUrl
 import org.junit.Test
 import kotlin.io.path.Path

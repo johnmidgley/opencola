@@ -1,6 +1,6 @@
 package opencola.core.storage
 
-import io.opencola.test.TestApplication
+import io.opencola.application.TestApplication
 import io.opencola.model.Id
 import io.opencola.security.KeyStore
 import io.opencola.security.generateKeyPair

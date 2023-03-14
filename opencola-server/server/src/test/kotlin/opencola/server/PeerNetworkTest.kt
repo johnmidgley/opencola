@@ -3,7 +3,7 @@ package opencola.server
 import io.ktor.server.application.*
 import io.ktor.server.netty.*
 import mu.KotlinLogging
-import io.opencola.test.TestApplication
+import io.opencola.application.TestApplication
 import io.opencola.application.Application
 import io.opencola.io.StdoutMonitor
 import io.opencola.model.ResourceEntity

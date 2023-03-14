@@ -1,6 +1,6 @@
 package opencola.server
 
-import io.opencola.test.TestApplication
+import io.opencola.application.TestApplication
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*

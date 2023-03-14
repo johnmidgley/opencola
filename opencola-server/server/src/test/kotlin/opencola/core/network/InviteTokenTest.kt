@@ -1,6 +1,6 @@
 package opencola.core.network
 
-import io.opencola.test.TestApplication
+import io.opencola.application.TestApplication
 import io.opencola.network.InviteToken
 import io.opencola.security.Signator
 import opencola.server.handlers.getInviteToken

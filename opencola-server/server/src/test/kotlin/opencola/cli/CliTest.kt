@@ -1,6 +1,6 @@
 package opencola.cli
 
-import io.opencola.test.TestApplication
+import io.opencola.application.TestApplication
 import io.opencola.application.Application
 import io.opencola.application.loadConfig
 import io.opencola.model.ResourceEntity

@@ -1,6 +1,6 @@
 package opencola.server.handlers
 
-import io.opencola.test.TestApplication
+import io.opencola.application.TestApplication
 import org.junit.Test
 
 class FeedTest {
