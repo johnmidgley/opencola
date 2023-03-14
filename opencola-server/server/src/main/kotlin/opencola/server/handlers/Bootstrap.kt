@@ -2,11 +2,11 @@ package opencola.server.handlers
 
 import io.opencola.application.Application
 import io.opencola.application.SSLConfig
+import io.opencola.security.JavaKeyStore
 import mu.KotlinLogging
 import opencola.server.getSSLCertificateStore
 import java.nio.file.Path
 import kotlin.io.path.exists
-import io.opencola.security.KeyStore as OpenColaKeyStore
 
 private val logger = KotlinLogging.logger("bootstrap")
 
@@ -24,7 +24,7 @@ fun validateAuthorityKeyStorePassword(storagePath: Path, password: String): Bool
     try {
         val keyStorePath = getAuthorityStorePath(storagePath)
         if(keyStorePath.exists()) {
-            OpenColaKeyStore(keyStorePath, password)
+            JavaKeyStore(keyStorePath, password)
         }
     } catch (e: Exception) {
         if(password != "password")
@@ -37,7 +37,7 @@ fun validateAuthorityKeyStorePassword(storagePath: Path, password: String): Bool
 
 // TODO: Move to authority store specific place
 fun changeAuthorityKeyStorePassword(storagePath: Path, oldPassword: String, newPassword: String) {
-    OpenColaKeyStore(getAuthorityStorePath(storagePath), oldPassword).changePassword(newPassword)
+    JavaKeyStore(getAuthorityStorePath(storagePath), oldPassword).changePassword(newPassword)
 }
 
 fun isNewUser(storagePath: Path): Boolean {

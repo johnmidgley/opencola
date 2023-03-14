@@ -113,7 +113,7 @@ class EntityStoreAddressBook(private val storagePath: Path, private val keyStore
 
     private fun updateKeyStore(addressBookEntry: AddressBookEntry) {
         if (addressBookEntry is PersonaAddressBookEntry) {
-            keyStore.addKey(addressBookEntry.entityId.toString(), addressBookEntry.keyPair)
+            keyStore.addKeyPair(addressBookEntry.entityId.toString(), addressBookEntry.keyPair)
         }
     }
 

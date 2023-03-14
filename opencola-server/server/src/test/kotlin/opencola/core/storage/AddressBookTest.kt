@@ -2,6 +2,7 @@ package opencola.core.storage
 
 import io.opencola.application.TestApplication
 import io.opencola.model.Id
+import io.opencola.security.JavaKeyStore
 import io.opencola.security.KeyStore
 import io.opencola.security.generateKeyPair
 import io.opencola.storage.AddressBook
@@ -52,7 +53,7 @@ fun equalsOtherThanPersonaId(source: AddressBookEntry, target: AddressBookEntry)
     return true
 }
 
-fun getFreshKeyStore() = KeyStore(TestApplication.getTmpFilePath("keystore.pks"), "password")
+fun getFreshKeyStore() = JavaKeyStore(TestApplication.getTmpFilePath("keystore.pks"), "password")
 fun getFreshAddressBook(keyStore: KeyStore = getFreshKeyStore()) =
     EntityStoreAddressBook(TestApplication.getTmpDirectory("addressbook"), keyStore)
 

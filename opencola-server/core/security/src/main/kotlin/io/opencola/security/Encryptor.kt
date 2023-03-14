@@ -9,7 +9,7 @@ class Encryptor(private val keystore: KeyStore) {
     }
 
     fun decrypt(alias: String, bytes: ByteArray) : ByteArray {
-        val privateKey = keystore.getPrivateKey(alias)
+        val privateKey = keystore.getKeyPair(alias)?.private
             ?: throw RuntimeException("Unable to find private key for alias: $alias")
 
         return decrypt(privateKey, bytes)

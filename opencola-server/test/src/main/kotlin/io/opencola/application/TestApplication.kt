@@ -2,7 +2,7 @@ package io.opencola.application
 
 import io.opencola.model.Authority
 import io.opencola.search.SearchIndex
-import io.opencola.security.KeyStore
+import io.opencola.security.JavaKeyStore
 import io.opencola.security.decodePrivateKey
 import io.opencola.security.decodePublicKey
 import org.kodein.di.instance
@@ -39,12 +39,12 @@ object TestApplication {
 
     val instance by lazy {
         val authority = Authority(authorityPublicKey, URI("http://test"), "Test Authority")
-        val keyStore = KeyStore(
+        val keyStore = JavaKeyStore(
             storagePath.resolve("keystore.pks"),
             "password"
         )
         val keyPair = KeyPair(authorityPublicKey, authorityPrivateKey)
-        keyStore.addKey(authority.authorityId.toString(), keyPair)
+        keyStore.addKeyPair(authority.authorityId.toString(), keyPair)
         val instance =  Application.instance(storagePath, config, listOf(keyPair), "password")
         val index by instance.injector.instance<SearchIndex>()
 

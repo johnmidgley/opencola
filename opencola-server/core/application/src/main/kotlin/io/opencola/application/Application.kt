@@ -45,10 +45,10 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) :
 
         // TODO: Rename - not single keypair anymore. Maybe getOrCreateRootKeyPairs, but doesn't seem right.
         fun getOrCreateRootKeyPair(storagePath: Path, password: String): List<KeyPair> {
-            val keyStore = KeyStore(storagePath.resolve("keystore.pks"), password)
+            val keyStore = JavaKeyStore(storagePath.resolve("keystore.pks"), password)
 
             if(keyStore.getAliases().isEmpty()) {
-                generateKeyPair().also { keyStore.addKey(Id.ofPublicKey(it.public).toString(), it) }
+                generateKeyPair().also { keyStore.addKeyPair(Id.ofPublicKey(it.public).toString(), it) }
             }
 
             val keyPairs = keyStore.getAliases().mapNotNull { keyStore.getKeyPair(it) }
@@ -104,7 +104,7 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) :
                 File(storagePath.toString()).mkdirs()
             }
 
-            val keyStore = KeyStore(storagePath.resolve("keystore.pks"), password)
+            val keyStore = JavaKeyStore(storagePath.resolve("keystore.pks"), password)
             val fileStore = LocalFileStore(storagePath.resolve("filestore"))
             val entityStoreDB = getEntityStoreDB(storagePath)
 
