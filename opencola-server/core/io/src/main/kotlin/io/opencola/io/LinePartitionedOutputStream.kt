@@ -1,25 +1,36 @@
 package io.opencola.io
 
 import java.io.ByteArrayOutputStream
+import java.io.Closeable
 import java.io.OutputStream
 import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.TimeUnit
 
-class LinePartitionedOutputStream : OutputStream() {
+class LinePartitionedOutputStream : OutputStream(), Closeable {
     private var outStream = ByteArrayOutputStream()
-
     private val queue = ArrayBlockingQueue<String>(100)
 
     override fun write(b: Int) {
-        outStream.write(b)
         if (b.toChar() == '\n') {
             queue.add(outStream.toString())
+            outStream.close()
             outStream = ByteArrayOutputStream()
-        }
+        } else
+            outStream.write(b)
     }
 
-    // TODO: Add a timeout here - likely need to set a timer callback that sets a "timedOut" flag and puts
-    //  sentry value on the queue. getLine should then throw an exception on timedOut being set or the sentry value
-    fun getLine() : String {
-        return queue.take()
+    fun waitForLine(timeoutMilliseconds: Long? = null): String {
+        return if (timeoutMilliseconds == null)
+            queue.take()
+        else
+            queue.poll(timeoutMilliseconds, TimeUnit.MILLISECONDS)
+                ?: throw RuntimeException("Timeout waiting for line")
+    }
+
+    override fun close() {
+        if (outStream.size() > 0) {
+            queue.add(outStream.toString())
+            outStream.close()
+        }
     }
 }

@@ -1,29 +1,11 @@
 package io.opencola.io
 
+import io.ktor.utils.io.core.*
 import java.io.PrintStream
 
-fun readStdOut(echo: Boolean = true, until: (String) -> Boolean) {
-    val lineBasedOutputStream = LinePartitionedOutputStream()
-    val printStream = PrintStream(lineBasedOutputStream)
-    val stdout = System.out
-
-    try{
-        System.setOut(printStream)
-        while (true) {
-            val line = lineBasedOutputStream.getLine()
-            if(echo)
-                stdout.print(line)
-            if(until(line))
-                break
-        }
-    } finally {
-        System.setOut(stdout)
-    }
-}
-
-class StdoutMonitor(private val echo: Boolean = true) {
-    private val lineBasedOutputStream = LinePartitionedOutputStream()
-    private val printStream = PrintStream(lineBasedOutputStream)
+class StdoutMonitor(private val echo: Boolean = true, private val readTimeoutMilliseconds: Long? = null) : Closeable {
+    private val linePartitionedOutputStream = LinePartitionedOutputStream()
+    private val printStream = PrintStream(linePartitionedOutputStream)
     private val stdout: PrintStream = System.out
 
     init {
@@ -39,9 +21,9 @@ class StdoutMonitor(private val echo: Boolean = true) {
         }
     }
 
-    fun readUntil(until: (String) -> Boolean) {
+    fun readUntil(timeoutMilliseconds: Long? = null, until: (String) -> Boolean) {
         while (true) {
-            val line = lineBasedOutputStream.getLine()
+            val line = linePartitionedOutputStream.waitForLine(timeoutMilliseconds ?: readTimeoutMilliseconds)
             if(echo)
                 stdout.print(line)
             if(until(line))
@@ -49,7 +31,7 @@ class StdoutMonitor(private val echo: Boolean = true) {
         }
     }
 
-    fun close() {
+    override fun close() {
         System.setOut(stdout)
     }
 }
