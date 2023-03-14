@@ -19,18 +19,26 @@ class LinePartitionedOutputStream : OutputStream(), Closeable {
             outStream.write(b)
     }
 
+    override fun flush() {
+        if (outStream.size() > 0)
+            queue.add(outStream.toString())
+        super.flush()
+    }
+
+    override fun close() {
+        flush()
+        outStream.close()
+    }
+
+    fun readLine(): String? {
+        return queue.poll()
+    }
+
     fun waitForLine(timeoutMilliseconds: Long? = null): String {
         return if (timeoutMilliseconds == null)
             queue.take()
         else
             queue.poll(timeoutMilliseconds, TimeUnit.MILLISECONDS)
                 ?: throw RuntimeException("Timeout waiting for line")
-    }
-
-    override fun close() {
-        if (outStream.size() > 0) {
-            queue.add(outStream.toString())
-            outStream.close()
-        }
     }
 }

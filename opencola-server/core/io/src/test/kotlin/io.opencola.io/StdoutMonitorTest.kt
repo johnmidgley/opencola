@@ -8,7 +8,7 @@ class StdoutMonitorTest {
     fun testStdoutMonitor() {
         StdoutMonitor(readTimeoutMilliseconds = 500).use {
             println("Hello World")
-            it.readUntil { line -> line == "Hello World" }
+            it.waitUntil { line -> line == "Hello World" }
         }
     }
 
@@ -16,7 +16,7 @@ class StdoutMonitorTest {
     fun testStdoutMonitorTimeout() {
         assertFails {
             StdoutMonitor(readTimeoutMilliseconds = 500).use {
-                it.readUntil { line -> line == "Hello World" }
+                it.waitUntil { line -> line == "Hello World" }
             }
         }
     }

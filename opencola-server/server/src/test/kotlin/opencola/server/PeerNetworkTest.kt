@@ -52,7 +52,7 @@ open class PeerNetworkTest {
     fun testConnectAndReplicate(application0: ApplicationNode, application1: ApplicationNode) {
         val stdoutMonitor = StdoutMonitor(readTimeoutMilliseconds = 5000)
         val println: (Any?) -> Unit = { stdoutMonitor.println(it) }
-        val readUntil: ((String) -> Boolean) -> Unit = { stdoutMonitor.readUntil(null, it) }
+        val readUntil: ((String) -> Boolean) -> Unit = { stdoutMonitor.waitUntil(null, it) }
 
         try {
             println("Adding entity to application0")

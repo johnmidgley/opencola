@@ -83,6 +83,7 @@ class LuceneSearchIndex(private val storagePath: Path) : AbstractSearchIndex() {
             }
 
         indexDocuments(listOf(document))
+        logger.info { "Indexed authorityId: ${entity.authorityId} entityId: ${entity.entityId}" }
     }
 
     override fun delete(authorityId: Id, entityId: Id) {
