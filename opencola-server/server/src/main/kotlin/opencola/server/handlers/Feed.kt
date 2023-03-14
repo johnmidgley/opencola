@@ -25,8 +25,8 @@ fun getPostedById(entities: List<Entity>): Id {
     }!!.authorityId
 }
 
-fun getSummary(personaIds: Set<Id>, entities: List<Entity>, idToAuthority: (Id) -> AddressBookEntry?): Summary {
-    val entity = entities.minByOrNull { if (personaIds.contains(it.authorityId)) 0 else 1 }!!
+fun getSummary(entities: List<Entity>, idToAuthority: (Id) -> AddressBookEntry?): Summary {
+    val entity = entities.maxByOrNull { e -> e.getCurrentFacts().maxOfOrNull { it.transactionOrdinal!! }!! }!!
     val postedByAuthority = idToAuthority(getPostedById(entities))
 
     return Summary(
@@ -195,7 +195,7 @@ fun getEntityResults(
             EntityResult(
                 it,
                 getPersonaId(addressBook, activities),
-                getSummary(personaIds, entitiesForId, idToAuthority),
+                getSummary(entitiesForId, idToAuthority),
                 activities
             )
         }
