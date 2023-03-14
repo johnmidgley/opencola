@@ -6,6 +6,7 @@ import io.opencola.security.KeyStore
 import io.opencola.security.generateKeyPair
 import io.opencola.storage.AddressBook
 import io.opencola.storage.AddressBookEntry
+import io.opencola.storage.EntityStoreAddressBook
 import io.opencola.storage.PersonaAddressBookEntry
 import opencola.core.storage.AddressBookTest.Action.*
 import java.net.URI
@@ -53,7 +54,7 @@ fun equalsOtherThanPersonaId(source: AddressBookEntry, target: AddressBookEntry)
 
 fun getFreshKeyStore() = KeyStore(TestApplication.getTmpFilePath("keystore.pks"), "password")
 fun getFreshAddressBook(keyStore: KeyStore = getFreshKeyStore()) =
-    AddressBook(TestApplication.getTmpDirectory("addressbook"), keyStore)
+    EntityStoreAddressBook(TestApplication.getTmpDirectory("addressbook"), keyStore)
 
 class AddressBookTest {
     enum class Action {

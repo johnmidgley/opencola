@@ -114,7 +114,7 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) :
                 bindSingleton { TextExtractor() }
                 bindSingleton { Signator(instance()) }
                 bindSingleton { Encryptor(instance()) }
-                bindSingleton { AddressBook(storagePath, instance()) }
+                bindSingleton { EntityStoreAddressBook(storagePath, instance()) }
                 bindSingleton { RequestRouter(instance(), getDefaultRoutes(instance(), instance(), instance())) }
                 bindSingleton { HttpNetworkProvider(instance(), instance(), instance(), config.network) }
                 bindSingleton { OCRelayNetworkProvider(instance(), instance(), instance(), config.network) }
