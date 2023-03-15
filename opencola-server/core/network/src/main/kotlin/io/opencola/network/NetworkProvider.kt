@@ -26,6 +26,7 @@ interface NetworkProvider {
     fun setRequestHandler(handler: (Id, Id, Request) -> Response)
 }
 
+// TODO: just pass in keystore instead of signator and encryptor? Or maybe even just role into AddressBook?
 abstract class AbstractNetworkProvider(val addressBook: AddressBook,
                                        val signator: Signator,
                                        val encryptor: Encryptor,
