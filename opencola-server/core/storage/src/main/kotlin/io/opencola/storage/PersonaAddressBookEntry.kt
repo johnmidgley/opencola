@@ -29,10 +29,10 @@ class PersonaAddressBookEntry(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        val other = other as? PersonaAddressBookEntry ?: return false
-        if(this.keyPair.public != other.keyPair.public) return false
-        if(this.keyPair.private != other.keyPair.private) return false
-        return super.equals(other)
+        val that = other as? PersonaAddressBookEntry ?: return false
+        if(this.keyPair.public != that.keyPair.public) return false
+        if(this.keyPair.private != that.keyPair.private) return false
+        return super.equals(that)
     }
     override fun hashCode(): Int {
         var result = super.hashCode()

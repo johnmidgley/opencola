@@ -216,6 +216,28 @@ class EntityStoreTest {
     }
 
     @Test
+    fun testDeleteDependentsExposed() {
+        testDeleteDependents(getFreshExposeEntityStore())
+    }
+
+    private fun testDeleteDependents(entityStore: EntityStore){
+        val resource = ResourceEntity(persona.personaId, URI("https://opencola"))
+        entityStore.updateEntities(resource)
+
+        val comment = CommentEntity(persona.personaId, resource.entityId, "Comment")
+        entityStore.updateEntities(comment)
+
+        val comment1 = entityStore.getEntity(persona.personaId, comment.entityId)
+        assertNotNull(comment1)
+        assertEquals(comment, comment1)
+
+        entityStore.deleteEntities(persona.personaId, resource.entityId)
+        assertNull(entityStore.getEntity(persona.personaId, resource.entityId))
+        // Deletion of resource should have deleted the dependent comment too
+        assertNull(entityStore.getEntity(persona.personaId, comment.entityId))
+    }
+
+    @Test
     fun testSetAndNullFactsExposed() {
         testSetAndNullProperties(getFreshExposeEntityStore())
     }
