@@ -23,4 +23,5 @@ dependencies {
     implementation("org.apache.james:apache-mime4j-dom:$mime4jVersion")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
+    testImplementation(project(":test"))
 }

@@ -6,7 +6,6 @@ import io.opencola.network.providers.MockNetworkProvider
 import io.opencola.security.generateKeyPair
 import io.opencola.security.sign
 import io.opencola.storage.MockAddressBook
-import io.opencola.storage.PersonaAddressBookEntry
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -58,7 +57,7 @@ class NetworkNodeTest {
     @Test
     fun testSendRequestFromInactivePersona() {
         val context = getNetworkNode()
-        val persona = context.addressBook.addPersona("Persona0", false) as PersonaAddressBookEntry
+        val persona = context.addressBook.addPersona("Persona0", false)
         val peer = context.addressBook.addPeer(persona.personaId, "Peer0")
         context.provider.onSendRequest = { _, _, _ -> throw IllegalStateException("Should not be called") }
         assertNull(context.networkNode.sendRequest(persona.personaId, peer.entityId, pingRequest))
@@ -67,7 +66,7 @@ class NetworkNodeTest {
     @Test
     fun testSendRequestToInactivePeer() {
         val context = getNetworkNode()
-        val persona = context.addressBook.addPersona("Persona0") as PersonaAddressBookEntry
+        val persona = context.addressBook.addPersona("Persona0")
         val peer = context.addressBook.addPeer(persona.personaId, "Peer0", false)
         context.provider.onSendRequest = { _, _, _ -> throw IllegalStateException("Should not be called") }
         assertNull(context.networkNode.sendRequest(persona.personaId, peer.entityId, pingRequest))
@@ -76,7 +75,7 @@ class NetworkNodeTest {
     @Test
     fun testSendRequestToActivePeer() {
         val context = getNetworkNode()
-        val persona = context.addressBook.addPersona("Persona0") as PersonaAddressBookEntry
+        val persona = context.addressBook.addPersona("Persona0")
         val peer = context.addressBook.addPeer(persona.personaId, "Peer0")
         val response = Response(200, "pong")
         context.provider.onSendRequest = { _, _, _ -> response }
@@ -86,7 +85,7 @@ class NetworkNodeTest {
     @Test
     fun testSendValidMessage() {
         val context = getNetworkNode()
-        val persona = context.addressBook.addPersona("Persona0") as PersonaAddressBookEntry
+        val persona = context.addressBook.addPersona("Persona0")
         val peerKeyPair = generateKeyPair()
         val peer = context.addressBook.addPeer(persona.personaId, "Peer0", publicKey = peerKeyPair.public)
         val envelopeBytes = getEncodedEnvelope(peer.entityId, peerKeyPair.private, persona.personaId, pingRequest)
@@ -100,7 +99,7 @@ class NetworkNodeTest {
     @Test
     fun testReceiveMessageToInactivePersona() {
         val context = getNetworkNode()
-        val persona = context.addressBook.addPersona("Persona0", false) as PersonaAddressBookEntry
+        val persona = context.addressBook.addPersona("Persona0", false)
         val peerKeyPair = generateKeyPair()
         val peer = context.addressBook.addPeer(persona.personaId, "Peer0", publicKey = peerKeyPair.public)
         val envelopeBytes = getEncodedEnvelope(peer.entityId, peerKeyPair.private, persona.personaId, pingRequest)
@@ -110,10 +109,10 @@ class NetworkNodeTest {
     @Test
     fun testReceiveMessageFromInactivePeer() {
         val context = getNetworkNode()
-        val persona = context.addressBook.addPersona("Persona0") as PersonaAddressBookEntry
+        val persona = context.addressBook.addPersona("Persona0")
         val peerKeyPair = generateKeyPair()
         val peer = context.addressBook.addPeer(persona.personaId, "Peer0", false, peerKeyPair.public)
         val envelopeBytes = getEncodedEnvelope(peer.entityId, peerKeyPair.private, persona.personaId, pingRequest)
-        assertFails{ context.provider.handleMessage(envelopeBytes, false) }
+        assertFails { context.provider.handleMessage(envelopeBytes, false) }
     }
 }

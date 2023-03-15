@@ -1,32 +1,17 @@
 package io.opencola.storage
 
-import mu.KotlinLogging
 import io.opencola.model.Authority
 import io.opencola.model.CoreAttribute
 import io.opencola.model.Id
 import io.opencola.model.Operation
 import io.opencola.security.KeyStore
-import io.opencola.security.PublicKeyProvider
 import io.opencola.security.Signator
 import io.opencola.util.blankToNull
 import io.opencola.util.trim
-import java.lang.StringBuilder
 import java.nio.file.Path
-import java.security.PublicKey
-import java.util.concurrent.CopyOnWriteArrayList
 
-class EntityStoreAddressBook(private val storagePath: Path, private val keyStore: KeyStore) : AddressBook,
-    PublicKeyProvider<Id> {
-    class KeyStorePublicKeyProvider(private val keyStore: KeyStore) : PublicKeyProvider<Id> {
-        override fun getPublicKey(alias: Id): PublicKey? {
-            return keyStore.getPublicKey(alias.toString())
-        }
-    }
-
-    private val logger = KotlinLogging.logger("AddressBook")
-    private val activeTag = "active"
+class EntityStoreAddressBook(private val storagePath: Path, private val keyStore: KeyStore) : AbstractAddressBook() {
     private val entityStore = ExposedEntityStore(SQLiteDB(storagePath.resolve("address-book.db")).db, Signator(keyStore), KeyStorePublicKeyProvider(keyStore))
-    private val updateHandlers = CopyOnWriteArrayList<(AddressBookEntry?, AddressBookEntry?) -> Unit>()
 
     init {
         // Prior to personas, the default for the root authority was not activated by default, and an active check was
@@ -58,38 +43,6 @@ class EntityStoreAddressBook(private val storagePath: Path, private val keyStore
                 val persona = entityStore.getEntity(personaId, personaId) as Authority
                 persona.tags += activeTag
                 entityStore.updateEntities(persona)
-            }
-        }
-    }
-
-    override fun toString(): String {
-        val stringBuilder = StringBuilder("AddressBook($storagePath){\n")
-        val (personas, peers) = getEntries().partition { it is PersonaAddressBookEntry }
-
-        personas.forEach { stringBuilder.appendLine("\tPersona: $it") }
-        peers.forEach { stringBuilder.appendLine("\tPeer: $it") }
-        stringBuilder.appendLine("}")
-
-        return stringBuilder.toString()
-    }
-
-    override fun addUpdateHandler(handler: (AddressBookEntry?, AddressBookEntry?) -> Unit){
-        updateHandlers.add(handler)
-    }
-
-    override fun removeUpdateHandler(handler: (AddressBookEntry?, AddressBookEntry?) -> Unit){
-        updateHandlers.remove(handler)
-    }
-
-    private fun callUpdateHandlers(previousAuthority: AddressBookEntry?,
-                                   currentAuthority: AddressBookEntry?,
-                                   suppressUpdateHandler: ((AddressBookEntry?, AddressBookEntry?) -> Unit)? = null) {
-        updateHandlers.forEach {
-            try {
-                if(it != suppressUpdateHandler)
-                    it(previousAuthority, currentAuthority)
-            } catch (e: Exception) {
-                logger.error { "Error calling update handler: $e" }
             }
         }
     }
@@ -131,7 +84,7 @@ class EntityStoreAddressBook(private val storagePath: Path, private val keyStore
 
     // TODO: suppressUpdateHandler looks like it's misnamed - is it even ever used?
     override fun updateEntry(entry: AddressBookEntry,
-                    suppressUpdateHandler: ((AddressBookEntry?, AddressBookEntry?) -> Unit)?
+                             suppressUpdateHandler: ((AddressBookEntry?, AddressBookEntry?) -> Unit)?
     ) : AddressBookEntry {
         // Persona private keys are stored in the key store
         updateKeyStore(entry)
@@ -194,9 +147,5 @@ class EntityStoreAddressBook(private val storagePath: Path, private val keyStore
 
         if(deletingPersona)
             keyStore.deleteKeyPair(personaId.toString())
-    }
-
-    override fun getPublicKey(alias: Id): PublicKey? {
-        return getEntries().firstOrNull { it.entityId == alias }?.publicKey
     }
 }

@@ -4,7 +4,6 @@ import io.opencola.model.Id
 import io.opencola.security.KeyStore
 import io.opencola.security.MockKeyStore
 import io.opencola.security.generateKeyPair
-import java.net.URI
 import java.security.PublicKey
 
 class MockAddressBook(val keyStore: KeyStore = MockKeyStore()) : AddressBook {
@@ -55,21 +54,8 @@ class MockAddressBook(val keyStore: KeyStore = MockKeyStore()) : AddressBook {
         return getEntry(alias, alias)?.publicKey
     }
 
-    fun addPersona(name: String, isActive: Boolean = true): AddressBookEntry {
-        val personaId = Id.new()
-        val keyPair = generateKeyPair()
-        val personaAddressBookEntry = PersonaAddressBookEntry(
-            personaId,
-            personaId,
-            name,
-            keyPair.public,
-            URI("mock://$personaId"),
-            null,
-            isActive,
-            keyPair
-        )
-
-        return updateEntry(personaAddressBookEntry)
+    fun addPersona(name: String, isActive: Boolean = true): PersonaAddressBookEntry {
+        return createPersona(name, isActive).also { updateEntry(it) }
     }
 
     fun addPeer(personaId: Id,
@@ -77,17 +63,6 @@ class MockAddressBook(val keyStore: KeyStore = MockKeyStore()) : AddressBook {
                 isActive: Boolean = true,
                 publicKey: PublicKey = generateKeyPair().public
     ): AddressBookEntry {
-        val entityId = Id.new()
-        val addressBookEntry = AddressBookEntry(
-            personaId,
-            entityId,
-            name,
-            publicKey,
-            URI("mock://$entityId"),
-            null,
-            isActive,
-        )
-
-        return updateEntry(addressBookEntry)
+        return createPeer(personaId, name, isActive, publicKey).also { updateEntry(it) }
     }
 }
