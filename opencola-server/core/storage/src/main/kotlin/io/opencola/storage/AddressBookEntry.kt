@@ -14,23 +14,8 @@ open class AddressBookEntry(
     val imageUri: URI?,
     val isActive: Boolean,
 ) {
-    constructor(
-        default: AddressBookEntry,
-        name: String? = null,
-        address: URI? = null,
-        imageUri: URI? = null,
-        isActive: Boolean? = null,
-    ) : this(
-        default.personaId,
-        default.entityId,
-        name ?: default.name,
-        default.publicKey,
-        address ?: default.address,
-        imageUri ?: default.imageUri,
-        isActive ?: default.isActive
-    )
 
-    constructor(authority: Authority) : this(
+   constructor(authority: Authority) : this(
         authority.authorityId,
         authority.entityId,
         authority.name!!,
@@ -43,6 +28,21 @@ open class AddressBookEntry(
     init {
         require(address.scheme != null) { "Address must have scheme" }
     }
+
+    fun set(
+        name: String? = null,
+        address: URI? = null,
+        imageUri: URI? = null,
+        isActive: Boolean? = null,
+    ) : AddressBookEntry = AddressBookEntry(
+        personaId,
+        entityId,
+        name ?: this.name,
+        publicKey,
+        address ?: this.address,
+        imageUri ?: this.imageUri,
+        isActive ?: this.isActive
+    )
 
     override fun toString(): String {
          return "AddressBookEntry(personaId=$personaId, entityId=$entityId, name='$name', publicKey=${Id.ofPublicKey(publicKey)}, address=$address, imageUri=$imageUri, isActive=$isActive)"

@@ -27,6 +27,7 @@ data class Config(
 )
 
 // TODO: Use config layers instead of having to copy parts of config tree
+// Use set() pattern (see AddressBookEntry) instead of creating these specific functions
 fun Config.setName(name: String): Config {
     return Config(name, eventBus, server, security, search, network)
 }

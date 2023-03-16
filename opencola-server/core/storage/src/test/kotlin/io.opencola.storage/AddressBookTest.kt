@@ -44,7 +44,7 @@ class AddressBookTest {
         assert(peer1.equalsIgnoringPersona(addressBook.getEntry(persona1.entityId, peer0.entityId)))
 
         // Update all fields and verify change across personas
-        val peer3 = AddressBookEntry(peer0, "Name3", URI("mock://peer3"), URI("mock://peer3/image"), !peer0.isActive)
+        val peer3 = peer0.set("Name3", URI("mock://peer3"), URI("mock://peer3/image"), !peer0.isActive)
         addressBook.updateEntry(peer3)
         assert(peer3.equalsIgnoringPersona(addressBook.getEntry(persona0.entityId, peer0.entityId)))
         assert(peer3.equalsIgnoringPersona(addressBook.getEntry(persona1.entityId, peer0.entityId)))
