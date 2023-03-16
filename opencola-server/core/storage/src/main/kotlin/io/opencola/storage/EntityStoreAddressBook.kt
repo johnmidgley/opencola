@@ -47,6 +47,10 @@ class EntityStoreAddressBook(private val storagePath: Path, private val keyStore
         }
     }
 
+    override fun toString(): String {
+        return "EntityStoreAddressBook(storagePath=$storagePath)"
+    }
+
     private fun authorityToEntry(authority: Authority): AddressBookEntry {
         return keyStore.getKeyPair(authority.entityId.toString())?.let {
             PersonaAddressBookEntry(authority, it)
@@ -83,6 +87,7 @@ class EntityStoreAddressBook(private val storagePath: Path, private val keyStore
     }
 
     // TODO: suppressUpdateHandler looks like it's misnamed - is it even ever used?
+    // TODO: The synchronization code should be abstracted into AbstractAddressBook
     override fun updateEntry(entry: AddressBookEntry,
                              suppressUpdateHandler: ((AddressBookEntry?, AddressBookEntry?) -> Unit)?
     ) : AddressBookEntry {

@@ -2,6 +2,7 @@ val kotlinVersion: String by project
 val kodeinVersion: String by project
 val kotlinLoggingVersion:String by project
 val slf4jVersion: String by project
+val ktorVersion: String by project
 
 
 // TODO: jvm version should be set as project property
@@ -24,6 +25,7 @@ dependencies {
     implementation(project(":core:application"))
     implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
     implementation("org.kodein.di:kodein-di:$kodeinVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
 }

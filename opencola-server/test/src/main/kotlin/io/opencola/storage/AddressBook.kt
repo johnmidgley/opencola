@@ -37,3 +37,16 @@ fun createPeer(
         isActive,
     )
 }
+
+fun AddressBook.addPersona(name: String, isActive: Boolean = true): PersonaAddressBookEntry {
+    return createPersona(name, isActive).also { updateEntry(it) }
+}
+
+fun AddressBook.addPeer(personaId: Id,
+            name: String,
+            isActive: Boolean = true,
+            publicKey: PublicKey = generateKeyPair().public
+): AddressBookEntry {
+    return createPeer(personaId, name, isActive, publicKey).also { updateEntry(it) }
+}
+

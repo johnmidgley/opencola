@@ -14,6 +14,22 @@ open class AddressBookEntry(
     val imageUri: URI?,
     val isActive: Boolean,
 ) {
+    constructor(
+        default: AddressBookEntry,
+        name: String? = null,
+        address: URI? = null,
+        imageUri: URI? = null,
+        isActive: Boolean? = null,
+    ) : this(
+        default.personaId,
+        default.entityId,
+        name ?: default.name,
+        default.publicKey,
+        address ?: default.address,
+        imageUri ?: default.imageUri,
+        isActive ?: default.isActive
+    )
+
     constructor(authority: Authority) : this(
         authority.authorityId,
         authority.entityId,
@@ -49,6 +65,7 @@ open class AddressBookEntry(
 
         return true
     }
+
     override fun hashCode(): Int {
         var result = personaId.hashCode()
         result = 31 * result + entityId.hashCode()
@@ -58,5 +75,16 @@ open class AddressBookEntry(
         result = 31 * result + (imageUri?.hashCode() ?: 0)
         result = 31 * result + isActive.hashCode()
         return result
+    }
+
+    fun equalsIgnoringPersona(other: AddressBookEntry?): Boolean {
+        return if (other == null)
+            false
+        else
+            entityId == other.entityId
+                    && name == other.name
+                    && publicKey == other.publicKey
+                    && imageUri == other.imageUri
+                    && isActive == other.isActive
     }
 }

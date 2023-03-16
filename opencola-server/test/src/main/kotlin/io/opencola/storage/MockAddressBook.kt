@@ -3,7 +3,6 @@ package io.opencola.storage
 import io.opencola.model.Id
 import io.opencola.security.KeyStore
 import io.opencola.security.MockKeyStore
-import io.opencola.security.generateKeyPair
 import java.security.PublicKey
 
 class MockAddressBook(val keyStore: KeyStore = MockKeyStore()) : AddressBook {
@@ -52,17 +51,5 @@ class MockAddressBook(val keyStore: KeyStore = MockKeyStore()) : AddressBook {
 
     override fun getPublicKey(alias: Id): PublicKey? {
         return getEntry(alias, alias)?.publicKey
-    }
-
-    fun addPersona(name: String, isActive: Boolean = true): PersonaAddressBookEntry {
-        return createPersona(name, isActive).also { updateEntry(it) }
-    }
-
-    fun addPeer(personaId: Id,
-                name: String,
-                isActive: Boolean = true,
-                publicKey: PublicKey = generateKeyPair().public
-    ): AddressBookEntry {
-        return createPeer(personaId, name, isActive, publicKey).also { updateEntry(it) }
     }
 }
