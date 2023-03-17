@@ -2,7 +2,7 @@ package opencola.server.handlers
 
 import io.opencola.model.Id
 
-class Context(val personaIds: Set<Id>) {
+class Context(private val personaIds: Set<Id>) {
     constructor(context: String?) : this (
         context
             ?.split(",")
@@ -11,6 +11,8 @@ class Context(val personaIds: Set<Id>) {
             ?.toSet()
             ?: emptySet()
     )
+
+    constructor(vararg personaIds: Id) : this(personaIds.toSet())
 
     fun getPersonaIds(vararg defaultPersonaIds: Id): Set<Id> {
         return personaIds.ifEmpty { defaultPersonaIds.toSet() }

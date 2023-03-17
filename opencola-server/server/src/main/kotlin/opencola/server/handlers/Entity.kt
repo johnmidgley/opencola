@@ -44,13 +44,13 @@ fun deleteEntity(
 
 @Serializable
 data class EntityPayload(
-    val entityId: String?,
-    val name: String?,
-    val imageUri: String?,
-    val description: String?,
-    val like: Boolean?,
-    val tags: String?,
-    val comment: String?,
+    val entityId: String? = null,
+    val name: String? = null,
+    val imageUri: String? =null,
+    val description: String? = null,
+    val like: Boolean? = null,
+    val tags: String? = null,
+    val comment: String? = null,
 )
 
 fun updateEntity(
