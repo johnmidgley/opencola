@@ -213,7 +213,7 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
 
         get("/login") {
             if (call.request.origin.scheme != "https") {
-                call.respondRedirect("https://localhost:${app.config.server.ssl!!.port}/login")
+                call.respondRedirect("https://${call.request.host()}:${app.config.server.ssl!!.port}/login")
             } else {
                 val username = call.getAuthToken(authEncryptionParams)?.username ?: app.config.security.login.username
                 loginPage(call, username)
