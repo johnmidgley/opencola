@@ -45,7 +45,8 @@ class MockNetworkProvider(addressBook: AddressBook,
     }
 
     override fun sendRequest(from: PersonaAddressBookEntry, to: AddressBookEntry, request: Request): Response? {
-        return onSendRequest?.let { it(from, to, request) }
-            ?: throw IllegalStateException("onSendRequest not set")
+        onSendRequest?.let{
+            return it(from, to, request)
+        } ?: throw IllegalStateException("onSendRequest not set")
     }
 }

@@ -2,6 +2,8 @@ package io.opencola.network
 
 import io.opencola.model.Id
 import io.opencola.security.generateKeyPair
+import io.opencola.storage.AddressBookEntry
+import io.opencola.storage.PersonaAddressBookEntry
 import io.opencola.storage.addPeer
 import io.opencola.storage.addPersona
 import kotlinx.serialization.decodeFromString
@@ -89,5 +91,42 @@ class NetworkNodeTest {
         val peer = context.addressBook.addPeer(persona.personaId, "Peer0", false, peerKeyPair.public)
         val envelopeBytes = getEncodedEnvelope(peer.entityId, peerKeyPair.private, persona.personaId, pingRequest)
         assertFails { context.provider.handleMessage(envelopeBytes, false) }
+    }
+
+    @Test
+    fun testReceiveMessageFromValidPeerToWrongPersona() {
+        val context = NetworkNodeContext()
+        val persona0 = context.addressBook.addPersona("Persona0")
+        val peerKeyPair = generateKeyPair()
+        val peer = context.addressBook.addPeer(persona0.personaId, "Peer0", true, peerKeyPair.public)
+        val persona1 = context.addressBook.addPersona("Persona1")
+        val envelopeBytes = getEncodedEnvelope(peer.entityId, peerKeyPair.private, persona1.personaId, pingRequest)
+        assertFails { context.provider.handleMessage(envelopeBytes, false) }
+    }
+
+    private fun validateRecipient(validRecipients: Set<AddressBookEntry>) : (PersonaAddressBookEntry, AddressBookEntry, Request) -> Response? {
+        return { from: PersonaAddressBookEntry, to: AddressBookEntry, _: Request ->
+            if (!validRecipients.contains(to))
+                throw IllegalStateException("Invalid call to SendMessage: from: $from to: $to")
+            null
+        }
+    }
+
+    @Test
+    fun testBroadcast() {
+        val context = NetworkNodeContext()
+        val persona0 = context.addressBook.addPersona("Persona0")
+        val persona0Peer0 = context.addressBook.addPeer(persona0.personaId, "persona0Peer0")
+        val persona0Peer1 = context.addressBook.addPeer(persona0.personaId, "persona0Peer1")
+
+        val persona1 = context.addressBook.addPersona("Persona1")
+        val persona1Peer0 = context.addressBook.addPeer(persona1.personaId, "persona1Peer0")
+        val persona1Peer1 = context.addressBook.addPeer(persona1.personaId, "persona1Peer1")
+
+        context.provider.onSendRequest = validateRecipient(setOf(persona0Peer0, persona0Peer1))
+        context.networkNode.broadcastRequest(persona0, pingRequest)
+
+        context.provider.onSendRequest = validateRecipient(setOf(persona1Peer0, persona1Peer1))
+        context.networkNode.broadcastRequest(persona1, pingRequest)
     }
 }

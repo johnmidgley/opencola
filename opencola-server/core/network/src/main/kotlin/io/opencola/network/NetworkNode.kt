@@ -91,7 +91,7 @@ class NetworkNode(
 
     fun broadcastRequest(from: PersonaAddressBookEntry, request: Request) {
         val peers = addressBook.getEntries()
-            .filter { it !is PersonaAddressBookEntry && it.isActive }
+            .filter { it.personaId == from.personaId && it !is PersonaAddressBookEntry && it.isActive }
             .distinctBy { it.entityId }
 
         if (peers.isNotEmpty()) {

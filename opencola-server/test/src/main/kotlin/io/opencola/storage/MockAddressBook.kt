@@ -7,6 +7,11 @@ import java.security.PublicKey
 
 class MockAddressBook(val keyStore: KeyStore = MockKeyStore()) : AddressBook {
     private var _entries = List<AddressBookEntry>(0) { throw Exception("Not implemented") }
+
+    override fun toString(): String {
+        return _entries.map { it.toString() }.joinToString("\n")
+    }
+
     override fun addUpdateHandler(handler: (AddressBookEntry?, AddressBookEntry?) -> Unit) {
         TODO("Not yet implemented")
     }
@@ -20,7 +25,7 @@ class MockAddressBook(val keyStore: KeyStore = MockKeyStore()) : AddressBook {
         suppressUpdateHandler: ((AddressBookEntry?, AddressBookEntry?) -> Unit)?
     ): AddressBookEntry {
         _entries = _entries
-            .filter { it.personaId == entry.personaId && it.entityId != entry.entityId }
+            .filter { it.personaId != entry.personaId || it.entityId != entry.entityId }
             .plus(entry)
 
         if(entry is PersonaAddressBookEntry) {
