@@ -20,7 +20,7 @@ class NetworkNodeContext(
     val routes: List<Route> = listOf(Route(Request.Method.GET,"/ping") { _, _, _ -> Response(200, "pong") }),
     val router: RequestRouter = RequestRouter(addressBook, routes),
     val provider: MockNetworkProvider = MockNetworkProvider(addressBook, keyStore),
-    val networkNode: NetworkNode = NetworkNode(router, addressBook, eventBus).also { it.addProvider(provider) },
+    val networkNode: NetworkNode = NetworkNode(NetworkConfig(), router, addressBook, eventBus).also { it.addProvider(provider) },
 )
 
 // TODO: This should probably be the actual code used in main - but it depends on the address book.

@@ -16,6 +16,7 @@ import kotlin.collections.set
 //  back online. Ping when coming out of suspend, or ping / request transactions periodically?
 
 class NetworkNode(
+    private val config: NetworkConfig,
     private val router: RequestRouter,
     private val addressBook: AddressBook,
     private val eventBus: EventBus,
@@ -33,7 +34,9 @@ class NetworkNode(
         if(address.toString().isBlank()) throw IllegalArgumentException("Address cannot be empty")
         val scheme = address.scheme ?: throw IllegalArgumentException("Address must contain a scheme")
         val provider = providers[scheme] ?: throw IllegalArgumentException("No provider for: ${address.scheme}")
-        provider.validateAddress(address)
+
+        if(!config.offlineMode)
+            provider.validateAddress(address)
     }
 
     @Synchronized
@@ -86,10 +89,14 @@ class NetworkNode(
 
         provider.setRequestHandler(requestHandler)
         providers[scheme] = provider
-        provider.start()
+
+        if(!config.offlineMode)
+            provider.start()
     }
 
     fun broadcastRequest(from: PersonaAddressBookEntry, request: Request) {
+        if(config.offlineMode) return
+
         val peers = addressBook.getEntries()
             .filter { it.personaId == from.personaId && it !is PersonaAddressBookEntry && it.isActive }
             .distinctBy { it.entityId }
@@ -144,6 +151,11 @@ class NetworkNode(
     }
 
     fun start(waitUntilReady: Boolean = false) {
+        if(config.offlineMode) {
+            logger.warn { "Offline mode enabled, not starting network node" }
+            return
+        }
+
         logger.info { "Starting..." }
         providers.values.forEach { it.start(waitUntilReady) }
         addressBook.addUpdateHandler(peerUpdateHandler)
@@ -151,6 +163,8 @@ class NetworkNode(
     }
 
     fun stop() {
+        if(config.offlineMode) return
+
         logger.info { "Stopping..." }
         addressBook.removeUpdateHandler(peerUpdateHandler)
         providers.values.forEach{ it.stop() }
@@ -158,6 +172,8 @@ class NetworkNode(
     }
 
     private fun sendRequest(from: PersonaAddressBookEntry, to: AddressBookEntry, request: Request) : Response? {
+        if(config.offlineMode) return null
+
         require(to !is PersonaAddressBookEntry)
         val scheme = to.address.scheme
         val provider = providers[scheme] ?: throw IllegalStateException("No provider found for scheme: $scheme")
@@ -177,6 +193,8 @@ class NetworkNode(
     }
 
     fun sendRequest(fromId: Id, toId: Id, request: Request) : Response? {
+        if(config.offlineMode) return null
+
         val persona = addressBook.getEntry(fromId, fromId) as? PersonaAddressBookEntry
             ?: throw IllegalArgumentException("Attempt to send from message from non Persona: $fromId")
 

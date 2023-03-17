@@ -17,6 +17,7 @@ import java.io.ByteArrayInputStream
 
 // TODO: Invert this by having the reactor subscribe to events vs. being plugged in to the event bus
 class MainReactor(
+    private val networkConfig: NetworkConfig,
     private val entityStore: EntityStore,
     private val searchIndex: SearchIndex,
     private val networkNode: NetworkNode,
@@ -30,6 +31,8 @@ class MainReactor(
     }
 
     private fun updatePeerTransactions() {
+        if (networkConfig.offlineMode) return
+
         val peers = addressBook.getEntries().filter { it !is PersonaAddressBookEntry && it.isActive }
 
         if(peers.isNotEmpty()) {
@@ -46,6 +49,8 @@ class MainReactor(
     }
 
     private fun requestTransactions(peer: AddressBookEntry) {
+        if(networkConfig.offlineMode) return
+
         if(peer is PersonaAddressBookEntry)
             throw IllegalArgumentException("Attempt to request transactions for local persona: ${peer.entityId}")
 
@@ -84,6 +89,8 @@ class MainReactor(
     }
 
     private fun requestTransactions(peerId: Id) {
+        if(networkConfig.offlineMode) return
+
         //TODO: After requesting transactions, check to see if a new HEAD has been set (i.e. the transactions don't
         // chain to existing ones, which can happen if a peer deletes their store). If this happens, inform the user
         // and ask if "abandoned" transactions should be deleted.
@@ -97,7 +104,7 @@ class MainReactor(
          requestTransactions(peer)
     }
 
-    private fun handleNewTransaction(event: Event){
+    private fun handleNewTransaction(event: Event) {
         logger.info { "Handling new transaction" }
         val signedTransaction = ByteArrayInputStream(event.data).use{ SignedTransaction.decode(it) }
         indexTransaction(signedTransaction)
