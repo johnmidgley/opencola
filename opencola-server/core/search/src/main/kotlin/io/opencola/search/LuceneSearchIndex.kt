@@ -112,7 +112,7 @@ class LuceneSearchIndex(private val storagePath: Path) : AbstractSearchIndex(), 
             val indexSearcher = IndexSearcher(directoryReader)
             val parser = QueryParser("text", analyzer)
             val luceneQuery: Query = parser.parse(getLuceneQueryString(authorityIds, query))
-            val scoreDocs = indexSearcher.search(luceneQuery, 100).scoreDocs
+            val scoreDocs = indexSearcher.search(luceneQuery, maxResults).scoreDocs
 
             logger.info{ "Found ${scoreDocs.size} results"}
 
