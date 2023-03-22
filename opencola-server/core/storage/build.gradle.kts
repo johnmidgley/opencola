@@ -9,6 +9,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":core:system"))
     implementation(project(":core:util"))
     implementation(project(":core:serialization"))
     implementation(project(":core:model"))

@@ -147,6 +147,7 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) :
     }
 
     override fun close() {
+        // TODO: Make these Closeable
         inject<NetworkNode>().stop()
         inject<EventBus>().stop()
     }

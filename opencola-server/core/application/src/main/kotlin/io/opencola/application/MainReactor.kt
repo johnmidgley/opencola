@@ -15,6 +15,33 @@ import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import java.io.ByteArrayInputStream
 
+private val logger = KotlinLogging.logger("MainReactor")
+
+fun indexTransaction(
+    entityStore: EntityStore,
+    searchIndex: SearchIndex,
+    signedTransaction: SignedTransaction
+) {
+    logger.info { "Indexing transaction: ${signedTransaction.transaction.id}" }
+    val authorityId = signedTransaction.transaction.authorityId
+
+    signedTransaction.transaction.transactionEntities
+        .map { f -> f.entityId }
+        .distinct()
+        .forEach { entityId ->
+            val entity = entityStore.getEntity(authorityId, entityId)
+
+            if (entity == null) {
+                // Entity was deleted
+                searchIndex.delete(authorityId, entityId)
+            } else if (entity !is DataEntity) { // TODO: Should data entities be indexed?
+                //TODO: Archive will not be available - figure out what to do
+                // Call peer for data?
+                searchIndex.add(entity)
+            }
+        }
+}
+
 // TODO: Invert this by having the reactor subscribe to events vs. being plugged in to the event bus
 class MainReactor(
     private val networkConfig: NetworkConfig,
@@ -23,8 +50,6 @@ class MainReactor(
     private val networkNode: NetworkNode,
     private val addressBook: AddressBook,
 ) : Reactor {
-    private val logger = KotlinLogging.logger("MainReactor")
-
     private fun handleNodeStarted(event: Event){
         logger.info { event.name }
         updatePeerTransactions()
@@ -128,25 +153,7 @@ class MainReactor(
     }
 
     private fun indexTransaction(signedTransaction: SignedTransaction) {
-        logger.info { "Indexing transaction: ${signedTransaction.transaction.id}" }
-        val authorityId = signedTransaction.transaction.authorityId
-
-        signedTransaction.transaction.transactionEntities
-            .map { f -> f.entityId }
-            .distinct()
-            .forEach { entityId ->
-                val entity = entityStore.getEntity(authorityId, entityId)
-
-                if (entity == null) {
-                    // Entity was deleted
-                    searchIndex.delete(authorityId, entityId)
-                }
-                else if (entity !is DataEntity){ // TODO: Should data entities be indexed?
-                    //TODO: Archive will not be available - figure out what to do
-                    // Call peer for data?
-                    searchIndex.add(entity)
-                }
-            }
+        indexTransaction(entityStore, searchIndex, signedTransaction)
     }
 
     private fun handlePeerNotification(event: Event){

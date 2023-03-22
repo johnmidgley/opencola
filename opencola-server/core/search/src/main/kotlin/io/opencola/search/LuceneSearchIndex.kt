@@ -19,16 +19,16 @@ import org.apache.lucene.queryparser.classic.QueryParser
 import org.apache.lucene.search.IndexSearcher
 import org.apache.lucene.search.Query
 import org.apache.lucene.store.FSDirectory
+import java.io.Closeable
 import java.nio.file.Path
 import java.util.*
 
-class LuceneSearchIndex(private val storagePath: Path) : AbstractSearchIndex() {
+class LuceneSearchIndex(private val storagePath: Path) : AbstractSearchIndex(), Closeable {
     private val logger = KotlinLogging.logger("LuceneSearchIndex")
     private val analyzer = KeywordAnalyzer().let {
         PerFieldAnalyzerWrapper(StandardAnalyzer(), mapOf("authorityId" to it, "entityId" to it, "id" to it))
     }
 
-    // TODO: How to close this?
     private val directory = FSDirectory.open(storagePath)
 
     init{
@@ -57,6 +57,14 @@ class LuceneSearchIndex(private val storagePath: Path) : AbstractSearchIndex() {
                 writer.deleteDocuments(QueryParser("id", analyzer).parse(it.get("id")))
                 writer.addDocument(it)
             }
+
+            writer.flush()
+        }
+    }
+
+    fun forceMerge() {
+        IndexWriter(directory, IndexWriterConfig(analyzer)).use { writer ->
+            writer.forceMerge(1)
         }
     }
 
@@ -96,7 +104,7 @@ class LuceneSearchIndex(private val storagePath: Path) : AbstractSearchIndex() {
         }
     }
 
-    override fun search(authorityIds: Set<Id>, query: String): List<SearchResult> {
+    override fun search(authorityIds: Set<Id>, query: String, maxResults: Int): List<SearchResult> {
         logger.info { "Searching: $query" }
 
         // TODO: This should probably be opened just once
@@ -117,5 +125,9 @@ class LuceneSearchIndex(private val storagePath: Path) : AbstractSearchIndex() {
                 SearchResult(authorityId, entityId, name, description)
             }
         }
+    }
+
+    override fun close() {
+        directory.close()
     }
 }

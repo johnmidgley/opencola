@@ -8,5 +8,5 @@ interface SearchIndex {
     fun destroy()
     fun add(entity: Entity)
     fun delete(authorityId: Id, entityId: Id)
-    fun search(authorityIds: Set<Id>, query: String): List<SearchResult> // TODO: Reverse params and make authorityIds optional?
+    fun search(authorityIds: Set<Id>, query: String, maxResults: Int): List<SearchResult> // TODO: Reverse params and make authorityIds optional?
 }

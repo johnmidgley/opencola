@@ -66,6 +66,32 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         this.facts = facts.sortedBy { it.transactionOrdinal }
     }
 
+    fun String.limit(maxLength: Int): String {
+        return if (length > maxLength) {
+            substring(0, maxLength)
+        } else {
+            this
+        }
+    }
+    override fun toString(): String {
+        // build string
+        val sb = StringBuilder()
+        sb.appendLine("Entity: $authorityId:$entityId")
+        facts.forEach { f->
+            val value = f.attribute.codec.decode(f.value.bytes).toString()
+                .replace("\n", " ")
+                .limit(80)
+            sb.append("${f.attribute.name} | ")
+            sb.append("$value | ")
+            sb.append("${f.operation} | ")
+            sb.append("${f.epochSecond} | ")
+            sb.append("${f.transactionOrdinal} | ")
+            sb.appendLine()
+        }
+
+        return sb.toString()
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -75,6 +101,39 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         if (facts != other.facts) return false
 
         return true
+    }
+
+    fun diff(other: Entity): Iterable<Pair<Fact?, Fact?>> {
+        fun <T>Iterator<T>.nextOrNull(): T? = if (hasNext()) next() else null
+
+        val results = List<Pair<Fact?, Fact?>>(0) { Pair(null, null) }.toMutableList()
+        val iterator1 = getAllFacts().iterator()
+        val iterator2 = other.getAllFacts().iterator()
+        var fact1 = if (iterator1.hasNext()) iterator1.next() else null
+        var fact2 = if (iterator2.hasNext()) iterator2.next() else null
+
+        while(fact1 != null || fact2 != null) {
+            if(fact1 != fact2) {
+                if (fact1 == null) {
+                    results.add(Pair(null, fact2))
+                    fact2 = iterator2.nextOrNull()
+                } else if (fact2 == null) {
+                    results.add(Pair(fact1, null))
+                    fact1 = iterator1.nextOrNull()
+                } else if (fact1.transactionOrdinal!! < fact2.transactionOrdinal!!) {
+                    results.add(Pair(fact1, null))
+                    fact1 = iterator1.nextOrNull()
+                } else {
+                    results.add(Pair(null, fact2))
+                    fact2 = iterator2.nextOrNull()
+                }
+            } else {
+                fact1 = iterator1.nextOrNull()
+                fact2 = iterator2.nextOrNull()
+            }
+        }
+
+        return results
     }
 
     override fun hashCode(): Int {

@@ -18,6 +18,7 @@ include("server")
 include("relay:common")
 include("relay:server")
 include("relay:client")
+include("cli")
 include("test")
 
 project(":server").name = "opencola-server"

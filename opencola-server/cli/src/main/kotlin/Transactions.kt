@@ -1,4 +1,4 @@
-package opencola.cli
+package io.opencola.cli
 
 import io.opencola.application.Application
 import io.opencola.model.Id
@@ -10,10 +10,7 @@ import kotlin.io.path.Path
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 
-fun printUsage(){
-    println("Usage: oc TASK COMMAND [ARGS] ")
-}
-
+// TODO: Use EntityStore.getAllTransactions() instead of this (pull this logic inside)
 fun transactionsFromEntityStore(entityStore: EntityStore, authorityIds: Iterable<Id> = emptyList()) : Sequence<SignedTransaction> {
     val batchSize = 50
 
@@ -70,7 +67,7 @@ fun transactionsFromPath(path: Path): Sequence<SignedTransaction> {
 }
 
 fun importTransactions(entityStore: EntityStore, args: List<String>){
-        if(args.count() != 1){
+    if(args.count() != 1){
         println("import transactions should have exactly 1 argument - filename")
         return
     }
@@ -91,19 +88,4 @@ fun transactions(application: Application, args: Iterable<String>){
         else -> println("Unknown transaction command: $command")
     }
 
-}
-
-fun main(args: Array<String>) {
-    if(args.size < 2) {
-        printUsage()
-        return
-    }
-
-    val task = args[0]
-    // val taskArgs = args.asList().drop(1)
-
-    when(args[0]){
-        // "transactions" -> transactions(application, taskArgs)
-        else -> println("Unknown task: $task")
-    }
 }

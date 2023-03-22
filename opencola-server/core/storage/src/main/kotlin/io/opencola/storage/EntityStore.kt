@@ -14,6 +14,8 @@ interface EntityStore {
         TimeDescending,
     }
 
+    // TODO: Return Sequences instead of a Lists
+
     // TODO: Separate fact store from entity store?
     fun getFacts(authorityIds: Iterable<Id>, entityIds: Iterable<Id>) : List<Fact>
 
@@ -40,6 +42,30 @@ interface EntityStore {
 
     fun getSignedTransactions(authorityId: Id, startTransactionId: Id?, order: TransactionOrder, limit: Int) : Iterable<SignedTransaction> {
         return getSignedTransactions(listOf(authorityId), startTransactionId, order, limit)
+    }
+}
+
+
+// TODO: Pull this into interface
+fun EntityStore.getAllTransactions(authorityIds: Iterable<Id> = emptyList()): Sequence<SignedTransaction> {
+    val batchSize = 50
+
+    return sequence {
+        var transactions =
+            getSignedTransactions(authorityIds, null, EntityStore.TransactionOrder.IdAscending, batchSize)
+
+        while (true) {
+            transactions.forEach { yield(it) }
+            if (transactions.count() < batchSize) {
+                break
+            }
+            transactions = getSignedTransactions(
+                emptyList(),
+                transactions.last().transaction.id,
+                EntityStore.TransactionOrder.IdAscending,
+                batchSize + 1
+            ).drop(1)
+        }
     }
 }
 
