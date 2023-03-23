@@ -187,14 +187,6 @@ class ExposedEntityStore(
         }
     }
 
-    override fun resetStore(): EntityStore {
-        transaction(database) {
-            SchemaUtils.drop(facts, transactions)
-        }
-
-        return ExposedEntityStore(database, signator, publicKeyProvider, eventBus)
-    }
-
     private fun factFromResultRow(resultRow: ResultRow): Fact {
         return Fact(
             Id.decode(resultRow[facts.authorityId]),

@@ -22,11 +22,6 @@ class EntityStoreTest {
     private val sqLiteEntityStorePath = app.storagePath.resolve("${TestApplication.testRunName}.db")
     private val getSQLiteEntityStore = { ExposedEntityStore(SQLiteDB(sqLiteEntityStorePath).db, signator, addressBook, eventBus)  }
 
-    // TODO: Remove these and switch to functions below
-    init{
-        getSQLiteEntityStore().resetStore()
-    }
-
     private fun getFreshExposeEntityStore(): ExposedEntityStore {
         return ExposedEntityStore(SQLiteDB(TestApplication.getTmpFilePath(".db")).db, signator, addressBook, eventBus)
     }

@@ -159,7 +159,6 @@ class ApplicationTest : ApplicationTestBase() {
 
         val persona = application.getPersonas().first()
         val entityStore = inject<EntityStore>()
-        entityStore.resetStore()
 
         val uri = URI("https://opencola.org/${Id.new()}")
         val entity = ResourceEntity(persona.personaId, uri)
