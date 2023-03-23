@@ -4,7 +4,6 @@ import io.opencola.model.Id
 import io.opencola.security.MockKeyStore
 import io.opencola.storage.EntityStore
 import io.opencola.storage.ExposedEntityStoreContext
-import io.opencola.storage.getAllTransactions
 import java.nio.file.Path
 import kotlin.io.path.createDirectory
 

@@ -207,16 +207,6 @@ class ExposedEntityStore(
         )
     }
 
-    override fun getEntity(authorityId: Id, entityId: Id): Entity? {
-        return transaction(database) {
-            val facts = facts.select {
-                (facts.authorityId eq Id.encode(authorityId) and (facts.entityId eq Id.encode(entityId)))
-            }.map { factFromResultRow(it) }
-
-            if (facts.isNotEmpty()) Entity.fromFacts(facts) else null
-        }
-    }
-
     override fun persistTransaction(signedTransaction: SignedTransaction): Long {
         return transaction(database) {
             val transaction = signedTransaction.transaction

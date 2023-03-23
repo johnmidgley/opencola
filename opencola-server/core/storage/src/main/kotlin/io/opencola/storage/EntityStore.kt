@@ -19,8 +19,6 @@ interface EntityStore {
     // TODO: Separate fact store from entity store?
     fun getFacts(authorityIds: Iterable<Id>, entityIds: Iterable<Id>) : List<Fact>
 
-    // TODO: Replace getEntity with a call to getEntities
-    fun getEntity(authorityId: Id, entityId: Id): Entity?
     fun getEntities(authorityIds: Set<Id>, entityIds: Set<Id>) : List<Entity>
     fun deleteEntities(authorityId: Id, vararg entityIds: Id)
     fun updateEntities(vararg entities: Entity) : SignedTransaction?
@@ -28,7 +26,12 @@ interface EntityStore {
     fun getSignedTransactions(authorityIds: Iterable<Id>, startTransactionId: Id?, order: TransactionOrder, limit: Int) : Iterable<SignedTransaction>
 
     // SHOULD ONLY BE USED FOR TESTING OR IF YOU REALLY MEAN IT
+    // TODO: Remove this
     fun resetStore() : EntityStore
+
+    fun getEntity(authorityId: Id, entityId: Id): Entity? {
+        return getEntities(setOf(authorityId), setOf(entityId)).firstOrNull()
+    }
 
     fun getLastTransactionId(authorityId: Id): Id? {
         return getSignedTransactions(listOf(authorityId), null, TransactionOrder.IdDescending, 1)
@@ -43,29 +46,26 @@ interface EntityStore {
     fun getSignedTransactions(authorityId: Id, startTransactionId: Id?, order: TransactionOrder, limit: Int) : Iterable<SignedTransaction> {
         return getSignedTransactions(listOf(authorityId), startTransactionId, order, limit)
     }
-}
 
+    fun getAllTransactions(authorityIds: Iterable<Id> = emptyList(), batchSize: Int = 100): Sequence<SignedTransaction> {
+        return sequence {
+            var transactions =
+                getSignedTransactions(authorityIds, null, TransactionOrder.IdAscending, batchSize)
 
-// TODO: Pull this into interface
-fun EntityStore.getAllTransactions(authorityIds: Iterable<Id> = emptyList()): Sequence<SignedTransaction> {
-    val batchSize = 50
-
-    return sequence {
-        var transactions =
-            getSignedTransactions(authorityIds, null, EntityStore.TransactionOrder.IdAscending, batchSize)
-
-        while (true) {
-            transactions.forEach { yield(it) }
-            if (transactions.count() < batchSize) {
-                break
+            while (true) {
+                transactions.forEach { yield(it) }
+                if (transactions.count() < batchSize) {
+                    break
+                }
+                transactions = getSignedTransactions(
+                    emptyList(),
+                    transactions.last().transaction.id,
+                    TransactionOrder.IdAscending,
+                    batchSize + 1
+                ).drop(1)
             }
-            transactions = getSignedTransactions(
-                emptyList(),
-                transactions.last().transaction.id,
-                EntityStore.TransactionOrder.IdAscending,
-                batchSize + 1
-            ).drop(1)
         }
     }
 }
+
 
