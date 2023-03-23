@@ -21,7 +21,7 @@ fun search(entities: List<Entity>, query: String): List<Entity> {
 fun diffEntityStoreAndSearchIndex(entityStore: EntityStore, searchIndex: SearchIndex, authority: AddressBookEntry): Set<Id> {
     val entities = search(entityStore.getEntities(setOf(authority.entityId), emptySet()), "")
     val searchResults = searchIndex.search("", 1000, setOf(authority.entityId))
-    return entities.map { it.entityId }.toSet().minus(searchResults.items.map { it.entityId }.toSet())
+    return entities.map { it.entityId }.toSet().minus(searchResults.map { it.entityId }.toSet())
 }
 
 fun compareSearchIndexToEntityStore(storagePath: Path) {

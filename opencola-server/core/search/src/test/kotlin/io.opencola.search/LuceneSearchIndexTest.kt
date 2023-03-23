@@ -1,8 +1,7 @@
-package opencola.core.search
+package io.opencola.search
 
 import io.opencola.application.TestApplication
 import io.opencola.model.Id
-import io.opencola.search.LuceneSearchIndex
 import org.junit.Test
 
 class LuceneSearchIndexTest {
@@ -22,5 +21,10 @@ class LuceneSearchIndexTest {
     @Test
     fun testLuceneRepeatIndexing(){
         testRepeatIndexing(authorityId, luceneSearchIndex)
+    }
+
+    @Test
+    fun testLucenePaging(){
+        testPaging(luceneSearchIndex)
     }
 }

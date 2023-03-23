@@ -14,7 +14,7 @@ data class SearchResults(val query: String, val matches: List<SearchResult>)
 
 fun handleSearch(entityStore: EntityStore, searchIndex: SearchIndex, authorityIds: Set<Id>, query: String) : SearchResults {
     // TODO: Make search index take authority as parameter
-    val results = searchIndex.search(query, 100, authorityIds).items.map {
+    val results = searchIndex.search(query, 100, authorityIds, null).items.map {
         when (val entity = entityStore.getEntity(it.authorityId, it.entityId)){
             is ResourceEntity -> SearchResult(it.entityId.toString(), it.name, entity.uri.toString(), it.description)
             else -> SearchResult(it.entityId.toString(), it.name, "/entity/${it.authorityId}/${it.entityId}", it.description)

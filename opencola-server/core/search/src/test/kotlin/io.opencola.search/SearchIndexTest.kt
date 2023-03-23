@@ -1,14 +1,13 @@
-package opencola.core.search
+package io.opencola.search
 
+import io.opencola.application.TestApplication
 import io.opencola.content.MhtmlPage
 import io.opencola.content.TextExtractor
 import io.opencola.content.parseMime
 import io.opencola.util.nullOrElse
 import io.opencola.model.Id
 import io.opencola.model.ResourceEntity
-import io.opencola.search.SearchIndex
 import java.net.URI
-import kotlin.io.path.Path
 import kotlin.io.path.inputStream
 import kotlin.test.assertEquals
 
@@ -18,7 +17,7 @@ fun testIndex(authorityId: Id, searchIndex: SearchIndex) {
         ResourceEntity(authorityId, URI("http://www.site.com/page"), description = "Test description with $keyword")
     searchIndex.add(resourceEntity)
 
-    val results = searchIndex.search(keyword, 100).items
+    val results = searchIndex.search(keyword).toList()
     assertEquals(1, results.size)
     assertEquals(resourceEntity.authorityId, results[0].authorityId)
     assertEquals(resourceEntity.entityId, results[0].entityId)
@@ -27,9 +26,7 @@ fun testIndex(authorityId: Id, searchIndex: SearchIndex) {
 }
 
 fun indexGameOfLife(authorityId: Id, searchIndex: SearchIndex) : ResourceEntity {
-    val rootPath = Path(System.getProperty("user.dir"), "../..", "sample-docs").toString()
-
-    val path = Path(rootPath, "Conway's Game of Life - Wikipedia.mht")
+    val path = TestApplication.projectHome.resolve("sample-docs/Conway's Game of Life - Wikipedia.mht")
     val message = path.inputStream().use { parseMime(it) } ?: throw RuntimeException("Unable to parse $path")
     val mhtmlPage = MhtmlPage(message)
 
@@ -43,7 +40,7 @@ fun indexGameOfLife(authorityId: Id, searchIndex: SearchIndex) : ResourceEntity 
 
 fun testIndexResourceWithMhtml(authorityId: Id, searchIndex: SearchIndex) {
     val resourceEntity = indexGameOfLife(authorityId, searchIndex)
-    val results = searchIndex.search("game of life", 100).items
+    val results = searchIndex.search("game of life").toList()
     assertEquals(1, results.size)
     assertEquals(resourceEntity.description, results[0].description)
 }
@@ -52,7 +49,22 @@ fun testRepeatIndexing(authorityId: Id, searchIndex: SearchIndex){
     indexGameOfLife(authorityId, searchIndex)
     val resourceEntity = indexGameOfLife(authorityId, searchIndex)
 
-    val results = searchIndex.search("game of life", 100).items
+    val results = searchIndex.search("game of life", 100).toList()
     assertEquals(1, results.size)
     assertEquals(resourceEntity.description, results[0].description)
+}
+
+fun testPaging(searchIndex: SearchIndex) {
+    val authorityId = Id.ofData("testPaging".toByteArray())
+    val addedResources = (1..20).map { n ->
+        val resourceEntity = ResourceEntity(authorityId, URI("https://www.site.com/page/$n"), description = "testPaging $n")
+        resourceEntity.also { searchIndex.add(it) }
+    }
+    fun getDocNumber(description: String) = description.split(" ").last().toInt()
+    val sourceDocNumbers = addedResources.map { getDocNumber(it.description!!) }.toSet()
+    val destDocNumbers = searchIndex.search( "testPaging", 5, setOf(authorityId))
+        .map { getDocNumber(it.description!!) }
+        .toSet()
+
+    assertEquals(sourceDocNumbers, destDocNumbers)
 }

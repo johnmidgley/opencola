@@ -1,6 +1,8 @@
 val kotlinVersion: String by project
 val kotlinLoggingVersion:String by project
 val luceneVersion: String by project
+val mime4jVersion: String by project
+val logbackVersion: String by project
 
 plugins {
     kotlin("jvm") version "1.7.20"
@@ -21,4 +23,8 @@ dependencies {
     implementation("org.apache.lucene:lucene-analysis-common:$luceneVersion")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
+    testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
+    testImplementation(project(":test"))
+    testImplementation(project(":core:content"))
+    testImplementation("org.apache.james:apache-mime4j-dom:$mime4jVersion")
 }

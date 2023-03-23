@@ -5,6 +5,7 @@ import io.opencola.io.recursiveDelete
 import io.opencola.model.CoreAttribute.values
 import io.opencola.model.Entity
 import io.opencola.model.Id
+import io.opencola.util.Base58
 import org.apache.lucene.analysis.core.KeywordAnalyzer
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper
 import org.apache.lucene.analysis.standard.StandardAnalyzer
@@ -18,6 +19,7 @@ import org.apache.lucene.index.IndexWriterConfig
 import org.apache.lucene.queryparser.classic.QueryParser
 import org.apache.lucene.search.IndexSearcher
 import org.apache.lucene.search.Query
+import org.apache.lucene.search.ScoreDoc
 import org.apache.lucene.store.FSDirectory
 import java.io.Closeable
 import java.nio.file.Path
@@ -105,7 +107,16 @@ class LuceneSearchIndex(private val storagePath: Path) : AbstractSearchIndex(), 
         }
     }
 
-    override fun search(query: String, maxResults: Int, authorityIds: Set<Id>): SearchResults {
+    private fun getPagingToken(scoreDoc: ScoreDoc): String {
+        return Base58.encode( "${scoreDoc.doc}:${scoreDoc.score}:${scoreDoc.shardIndex}".toByteArray())
+    }
+
+    private fun getScoreDoc(pagingToken: String): ScoreDoc {
+        val (doc, score, shardIndex) = Base58.decode(pagingToken).toString(Charsets.UTF_8).split(":")
+        return ScoreDoc(doc.toInt(), score.toFloat(), shardIndex.toInt())
+    }
+
+    override fun search(query: String, maxResults: Int, authorityIds: Set<Id>, pagingToken: String?): SearchResults {
         logger.info { "Searching: $query" }
 
         // TODO: This should probably be opened just once - also use memory mapped (ask Ivan)
@@ -113,7 +124,12 @@ class LuceneSearchIndex(private val storagePath: Path) : AbstractSearchIndex(), 
             val indexSearcher = IndexSearcher(directoryReader)
             val parser = QueryParser("text", analyzer)
             val luceneQuery: Query = parser.parse(getLuceneQueryString(authorityIds, query))
-            val scoreDocs = indexSearcher.search(luceneQuery, maxResults).scoreDocs
+            val scoreDocs =
+                (if (pagingToken == null)
+                    indexSearcher.search(luceneQuery, maxResults)
+                else
+                    indexSearcher.searchAfter(getScoreDoc(pagingToken), luceneQuery, maxResults)).scoreDocs
+
 
             logger.info{ "Found ${scoreDocs.size} results"}
             val results = scoreDocs.map {
@@ -125,7 +141,8 @@ class LuceneSearchIndex(private val storagePath: Path) : AbstractSearchIndex(), 
                 SearchResult(authorityId, entityId, name, description)
             }
 
-            return SearchResults(null, results)
+            val outPagingToken = if(scoreDocs.size == maxResults) getPagingToken(scoreDocs.last()) else null
+            return SearchResults(outPagingToken, results)
         }
     }
 
