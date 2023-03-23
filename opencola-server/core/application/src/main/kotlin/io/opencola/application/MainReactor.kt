@@ -33,11 +33,11 @@ fun indexTransaction(
 
             if (entity == null) {
                 // Entity was deleted
-                searchIndex.delete(authorityId, entityId)
+                searchIndex.deleteEntities(authorityId, entityId)
             } else if (entity !is DataEntity) { // TODO: Should data entities be indexed?
                 //TODO: Archive will not be available - figure out what to do
                 // Call peer for data?
-                searchIndex.add(entity)
+                searchIndex.addEntities(entity)
             }
         }
 }

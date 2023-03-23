@@ -8,20 +8,20 @@ interface SearchIndex {
     fun create()
     fun destroy()
 
-    // TODO: change to addEntities, deleteEntities (with vararg entity Ids), getResults, getAllResults
-    fun add(entity: Entity) // TODO: Make varargs
-    fun delete(authorityId: Id, entityId: Id)
-    fun search(
+    // TODO: change to addEntities, deleteEntities (with vararg entity Ids),
+    fun addEntities(vararg entities: Entity)
+    fun deleteEntities(authorityId: Id, vararg entityIds: Id)
+    fun getResults(
         query: String,
         maxResults: Int,
         authorityIds: Set<Id> = emptySet(),
         pagingToken: String? = null
     ): SearchResults
 
-    fun search(query: String, resultBlockSize: Int = 100, authorityIds: Set<Id> = emptySet()) = sequence {
+    fun getAllResults(query: String, resultBlockSize: Int = 100, authorityIds: Set<Id> = emptySet()) = sequence {
         var token: String? = null
         do {
-            val results = search(query, resultBlockSize, authorityIds, token)
+            val results = getResults(query, resultBlockSize, authorityIds, token)
             results.items.forEach { yield(it) }
             token = results.pagingToken
         } while (token != null)

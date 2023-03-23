@@ -15,9 +15,9 @@ fun testIndex(authorityId: Id, searchIndex: SearchIndex) {
     val keyword = "keyword"
     val resourceEntity =
         ResourceEntity(authorityId, URI("http://www.site.com/page"), description = "Test description with $keyword")
-    searchIndex.add(resourceEntity)
+    searchIndex.addEntities(resourceEntity)
 
-    val results = searchIndex.search(keyword).toList()
+    val results = searchIndex.getAllResults(keyword).toList()
     assertEquals(1, results.size)
     assertEquals(resourceEntity.authorityId, results[0].authorityId)
     assertEquals(resourceEntity.entityId, results[0].entityId)
@@ -34,13 +34,13 @@ fun indexGameOfLife(authorityId: Id, searchIndex: SearchIndex) : ResourceEntity 
     val text = mhtmlPage.htmlText.nullOrElse { textExtractor.getBody(it.toByteArray()) }
     val resourceEntity = ResourceEntity(authorityId, mhtmlPage.uri, mhtmlPage.title, text = text)
 
-    searchIndex.add(resourceEntity)
+    searchIndex.addEntities(resourceEntity)
     return resourceEntity
 }
 
 fun testIndexResourceWithMhtml(authorityId: Id, searchIndex: SearchIndex) {
     val resourceEntity = indexGameOfLife(authorityId, searchIndex)
-    val results = searchIndex.search("game of life").toList()
+    val results = searchIndex.getAllResults("game of life").toList()
     assertEquals(1, results.size)
     assertEquals(resourceEntity.description, results[0].description)
 }
@@ -49,7 +49,7 @@ fun testRepeatIndexing(authorityId: Id, searchIndex: SearchIndex){
     indexGameOfLife(authorityId, searchIndex)
     val resourceEntity = indexGameOfLife(authorityId, searchIndex)
 
-    val results = searchIndex.search("game of life", 100).toList()
+    val results = searchIndex.getAllResults("game of life", 100).toList()
     assertEquals(1, results.size)
     assertEquals(resourceEntity.description, results[0].description)
 }
@@ -58,11 +58,11 @@ fun testPaging(searchIndex: SearchIndex) {
     val authorityId = Id.ofData("testPaging".toByteArray())
     val addedResources = (1..20).map { n ->
         val resourceEntity = ResourceEntity(authorityId, URI("https://www.site.com/page/$n"), description = "testPaging $n")
-        resourceEntity.also { searchIndex.add(it) }
+        resourceEntity.also { searchIndex.addEntities(it) }
     }
     fun getDocNumber(description: String) = description.split(" ").last().toInt()
     val sourceDocNumbers = addedResources.map { getDocNumber(it.description!!) }.toSet()
-    val destDocNumbers = searchIndex.search( "testPaging", 5, setOf(authorityId))
+    val destDocNumbers = searchIndex.getAllResults( "testPaging", 5, setOf(authorityId))
         .map { getDocNumber(it.description!!) }
         .toSet()
 

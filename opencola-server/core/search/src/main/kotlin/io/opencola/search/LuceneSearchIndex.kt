@@ -72,38 +72,46 @@ class LuceneSearchIndex(private val storagePath: Path) : AbstractSearchIndex(), 
     }
 
     // TODO: Make var-arg entity, so multiple docs can be indexed at once
-    override fun add(entity: Entity) {
-        logger.info { "Indexing authorityId: ${entity.authorityId} entityId: ${entity.entityId}" }
-        val id = getDocId(entity.authorityId, entity.entityId)
-        val document = Document()
-        document.add(Field("id", id, StringField.TYPE_STORED))
-        document.add(Field("authorityId", entity.authorityId.toString(), StringField.TYPE_STORED))
-        document.add(Field("entityId", entity.entityId.toString(), StringField.TYPE_STORED))
+    override fun addEntities(vararg entities: Entity) {
+        entities.forEach {logger.info { "Indexing authorityId: ${it.authorityId} entityId: ${it.entityId}" } }
 
-        // TODO: Probably need to manage multivalued fields (like tags) differently
-        // TODO: Check out Google Sentence Piece: https://github.com/levyfan/sentencepiece-jni
-        values()
-            .map{ it.spec }
-            .filter { it.isIndexable }
-            .map { Pair(it.name, getAttributeAsText(entity, it)) }
-            .filter { it.second != null && it.second!!.isNotBlank() }
-            .forEach {
-                // TODO: This doesn't work well for non string types - create typed dispatcher
-                val (name, value) = it
-                document.add(Field(name, value, TextField.TYPE_STORED))
-            }
+        val documents = entities.map { entity ->
+            val id = getDocId(entity.authorityId, entity.entityId)
+            val document = Document()
+            document.add(Field("id", id, StringField.TYPE_STORED))
+            document.add(Field("authorityId", entity.authorityId.toString(), StringField.TYPE_STORED))
+            document.add(Field("entityId", entity.entityId.toString(), StringField.TYPE_STORED))
 
-        indexDocuments(listOf(document))
-        logger.info { "Indexed authorityId: ${entity.authorityId} entityId: ${entity.entityId}" }
+            // TODO: Probably need to manage multivalued fields (like tags) differently
+            // TODO: Check out Google Sentence Piece: https://github.com/levyfan/sentencepiece-jni
+            values()
+                .map { it.spec }
+                .filter { it.isIndexable }
+                .map { Pair(it.name, getAttributeAsText(entity, it)) }
+                .filter { it.second != null && it.second!!.isNotBlank() }
+                .forEach {
+                    // TODO: This doesn't work well for non string types - create typed dispatcher
+                    val (name, value) = it
+                    document.add(Field(name, value, TextField.TYPE_STORED))
+                }
+
+            document
+        }
+
+        indexDocuments(documents)
+
+        entities.forEach { logger.info { "Indexed authorityId: ${it.authorityId} entityId: ${it.entityId}" } }
     }
 
-    override fun delete(authorityId: Id, entityId: Id) {
+    override fun deleteEntities(authorityId: Id, vararg entityIds: Id) {
         val indexWriterConfig = IndexWriterConfig(analyzer)
         indexWriterConfig.openMode = IndexWriterConfig.OpenMode.CREATE_OR_APPEND
 
         IndexWriter(directory, IndexWriterConfig(analyzer)).use{ writer ->
-            val id = getDocId(authorityId, entityId)
-            writer.deleteDocuments(QueryParser("id", analyzer).parse(id))
+            entityIds.forEach {entityId ->
+                val id = getDocId(authorityId, entityId)
+                writer.deleteDocuments(QueryParser("id", analyzer).parse(id))
+            }
         }
     }
 
@@ -116,7 +124,7 @@ class LuceneSearchIndex(private val storagePath: Path) : AbstractSearchIndex(), 
         return ScoreDoc(doc.toInt(), score.toFloat(), shardIndex.toInt())
     }
 
-    override fun search(query: String, maxResults: Int, authorityIds: Set<Id>, pagingToken: String?): SearchResults {
+    override fun getResults(query: String, maxResults: Int, authorityIds: Set<Id>, pagingToken: String?): SearchResults {
         logger.info { "Searching: $query" }
 
         // TODO: This should probably be opened just once - also use memory mapped (ask Ivan)
