@@ -104,7 +104,7 @@ class LuceneSearchIndex(private val storagePath: Path) : AbstractSearchIndex(), 
         }
     }
 
-    override fun search(authorityIds: Set<Id>, query: String, maxResults: Int): List<SearchResult> {
+    override fun search(query: String, maxResults: Int, authorityIds: Set<Id>): SearchResults {
         logger.info { "Searching: $query" }
 
         // TODO: This should probably be opened just once
@@ -115,8 +115,7 @@ class LuceneSearchIndex(private val storagePath: Path) : AbstractSearchIndex(), 
             val scoreDocs = indexSearcher.search(luceneQuery, maxResults).scoreDocs
 
             logger.info{ "Found ${scoreDocs.size} results"}
-
-            return scoreDocs.map {
+            val results = scoreDocs.map {
                 val document = indexSearcher.doc(it.doc)
                 val authorityId = Id.decode(document.get("authorityId"))
                 val entityId = Id.decode(document.get("entityId"))
@@ -124,6 +123,8 @@ class LuceneSearchIndex(private val storagePath: Path) : AbstractSearchIndex(), 
                 val description = document.get("description")
                 SearchResult(authorityId, entityId, name, description)
             }
+
+            return SearchResults(null, results)
         }
     }
 

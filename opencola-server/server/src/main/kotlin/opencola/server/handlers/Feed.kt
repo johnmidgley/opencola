@@ -133,7 +133,7 @@ fun getEntityIds(entityStore: EntityStore, authorityIds: Set<Id>, searchIndex: S
         signedTransactions.flatMap { tx -> tx.transaction.transactionEntities.map { it.entityId } }
     } else {
         // TODO: Get add peers of personas to id list
-        searchIndex.search(authorityIds, query, 100).map { it.entityId }
+        searchIndex.search(query, 100, authorityIds).items.map { it.entityId }
     }
 
     return entityIds.toSet()
