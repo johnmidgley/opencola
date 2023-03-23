@@ -4,8 +4,11 @@ import io.opencola.model.Entity
 import io.opencola.model.Id
 
 interface SearchIndex {
+    // TODO: remove
     fun create()
     fun destroy()
+
+    // TODO: change to addEntities, deleteEntities (with vararg entity Ids), getResults, getAllResults
     fun add(entity: Entity) // TODO: Make varargs
     fun delete(authorityId: Id, entityId: Id)
     fun search(
