@@ -34,6 +34,7 @@ class LuceneSearchIndex(private val storagePath: Path) : AbstractSearchIndex(), 
     init{
         logger.info { "Initializing Lucene Index" }
         create()
+        forceMerge()
     }
 
     override fun create() {
@@ -58,7 +59,7 @@ class LuceneSearchIndex(private val storagePath: Path) : AbstractSearchIndex(), 
                 writer.addDocument(it)
             }
 
-            writer.flush()
+            writer.commit()
         }
     }
 
@@ -107,7 +108,7 @@ class LuceneSearchIndex(private val storagePath: Path) : AbstractSearchIndex(), 
     override fun search(query: String, maxResults: Int, authorityIds: Set<Id>): SearchResults {
         logger.info { "Searching: $query" }
 
-        // TODO: This should probably be opened just once
+        // TODO: This should probably be opened just once - also use memory mapped (ask Ivan)
         DirectoryReader.open(directory).use { directoryReader ->
             val indexSearcher = IndexSearcher(directoryReader)
             val parser = QueryParser("text", analyzer)
