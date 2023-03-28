@@ -22,6 +22,7 @@ import io.opencola.storage.AddressBook
 import io.opencola.storage.PersonaAddressBookEntry
 import io.opencola.system.*
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.delay
 import mu.KotlinLogging
 import opencola.server.AuthToken
 import opencola.server.LoginCredentials
@@ -122,6 +123,7 @@ fun Application.configureBootstrapRouting(
                     autoStart()
                 }
                 startingPage(call, AuthToken(username).encode(authEncryptionParams))
+                delay(1000)
                 loginCredentials.complete(LoginCredentials(username, password.toString()))
             }
         }
