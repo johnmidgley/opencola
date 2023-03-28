@@ -11,7 +11,6 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
-import io.opencola.application.LoginConfig
 import io.opencola.application.ServerConfig
 import io.opencola.application.getResourceFilePath
 import io.opencola.util.nullOrElse
@@ -37,11 +36,12 @@ private fun ApplicationCall.getAuthToken(encryptionParams: EncryptionParams): Au
     return sessions.get<UserSession>()?.decodeAuthToken(encryptionParams)
 }
 
+private const val DEFAULT_USERNAME = "oc"
+
 // TODO: All routes should authenticate caller and authorize activity. Right now everything is open
 fun Application.configureBootstrapRouting(
     storagePath: Path,
     serverConfig: ServerConfig,
-    loginConfig: LoginConfig,
     authEncryptionParams: EncryptionParams,
     loginCredentials: CompletableDeferred<LoginCredentials>,
 ) {
@@ -57,26 +57,26 @@ fun Application.configureBootstrapRouting(
             } else if (call.request.origin.scheme != "https") {
                 call.respondRedirect("https://localhost:${serverConfig.ssl!!.port}")
             } else {
-                val username = call.getAuthToken(authEncryptionParams)?.username ?: loginConfig.username
-                startupForm(call, username)
+                // val username = call.getAuthToken(authEncryptionParams)?.username ?: loginConfig.username
+                startupForm(call)
             }
         }
 
         post("/") {
             val formParameters = call.receiveParameters()
-            val username = formParameters["username"]
+            // TODO: User should be able to choose username for higher (external) security.
+            //  This needs to be stored in the keystore, and a change username flow needs to be implemented.
+            val username = DEFAULT_USERNAME
             val password = formParameters["password"]
 
-            if (username.isNullOrBlank()) {
-                startupForm(call, loginConfig.username, "Please enter a username")
-            } else if (password.isNullOrBlank()) {
-                startupForm(call, username, "Please enter a password")
+            if (password.isNullOrBlank()) {
+                startupForm(call,  "Please enter a password")
             } else {
                 if (validateAuthorityKeyStorePassword(storagePath, password)) {
                     startingPage(call, AuthToken(username).encode(authEncryptionParams))
-                    loginCredentials.complete(LoginCredentials(username.toString(), password.toString()))
+                    loginCredentials.complete(LoginCredentials(username, password.toString()))
                 } else
-                    startupForm(call, username, "Bad password")
+                    startupForm(call, "Bad password")
             }
         }
 
@@ -90,7 +90,7 @@ fun Application.configureBootstrapRouting(
             if (call.request.origin.scheme != "https") {
                 call.respondRedirect("https://localhost:${serverConfig.ssl!!.port}/newUser")
             } else {
-                newUserForm(call, loginConfig.username)
+                newUserForm(call)
             }
         }
 
@@ -100,14 +100,12 @@ fun Application.configureBootstrapRouting(
             }
 
             val formParameters = call.receiveParameters()
-            val username = formParameters["username"]
+            val username = DEFAULT_USERNAME
             val password = formParameters["password"]
             val passwordConfirm = formParameters["passwordConfirm"]
             val autoStart = formParameters["autoStart"]?.toBoolean() ?: false
 
-            val error = if (username.isNullOrBlank())
-                "Please enter a username"
-            else if (password.isNullOrBlank() || passwordConfirm.isNullOrBlank())
+            val error = if (password.isNullOrBlank() || passwordConfirm.isNullOrBlank())
                 "You must include a new password and confirm it."
             else if (password == "password")
                 "Your password cannot be 'password'"
@@ -117,14 +115,14 @@ fun Application.configureBootstrapRouting(
                 null
 
             if (error != null) {
-                newUserForm(call, username!!, error)
+                newUserForm(call, error)
             } else {
                 changeAuthorityKeyStorePassword(storagePath, "password", password!!)
                 if (autoStart) {
                     autoStart()
                 }
-                startingPage(call, AuthToken(username!!).encode(authEncryptionParams))
-                loginCredentials.complete(LoginCredentials(username.toString(), password.toString()))
+                startingPage(call, AuthToken(username).encode(authEncryptionParams))
+                loginCredentials.complete(LoginCredentials(username, password.toString()))
             }
         }
 
@@ -215,8 +213,8 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             if (call.request.origin.scheme != "https") {
                 call.respondRedirect("https://${call.request.host()}:${app.config.server.ssl!!.port}/login")
             } else {
-                val username = call.getAuthToken(authEncryptionParams)?.username ?: app.config.security.login.username
-                loginPage(call, username)
+                // val username = call.getAuthToken(authEncryptionParams)?.username ?: app.config.security.login.username
+                loginPage(call)
             }
         }
 
@@ -226,19 +224,17 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             }
 
             val formParameters = call.receiveParameters()
-            val username = formParameters["username"]
+            val username = DEFAULT_USERNAME
             val password = formParameters["password"]
 
-            if (username.isNullOrBlank())
-                loginPage(call, app.config.security.login.username, "Please enter a username")
             if (password.isNullOrBlank()) {
-                loginPage(call, app.config.security.login.username, "Please enter a password")
+                loginPage(call, "Please enter a password")
             } else if (validateAuthorityKeyStorePassword(app.storagePath, password)) {
-                val authToken = AuthToken(username!!).encode(authEncryptionParams)
+                val authToken = AuthToken(username).encode(authEncryptionParams)
                 call.sessions.set(UserSession(authToken))
                 call.respondRedirect("/")
             } else {
-                loginPage(call, app.config.security.login.username, "Bad password")
+                loginPage(call, "Bad password")
             }
         }
 

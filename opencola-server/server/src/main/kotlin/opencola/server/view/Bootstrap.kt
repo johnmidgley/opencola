@@ -7,7 +7,7 @@ import io.opencola.system.runningInDocker
 import kotlinx.html.*
 import opencola.server.plugins.UserSession
 
-suspend fun startupForm(call: ApplicationCall, username: String, message: String? = null) {
+suspend fun startupForm(call: ApplicationCall, message: String? = null) {
     call.respondHtml {
         head {
             link {
@@ -20,13 +20,6 @@ suspend fun startupForm(call: ApplicationCall, username: String, message: String
                 if (message != null) {
                     p {
                         +message
-                    }
-                }
-                p {
-                    +"Username:"
-                    textInput {
-                        name = "username"
-                        value = username
                     }
                 }
                 p {
@@ -52,7 +45,7 @@ suspend fun startupForm(call: ApplicationCall, username: String, message: String
     }
 }
 
-suspend fun newUserForm(call: ApplicationCall, username: String, message: String? = null) {
+suspend fun newUserForm(call: ApplicationCall, message: String? = null) {
     call.respondHtml {
         head {
             link {
@@ -71,22 +64,11 @@ suspend fun newUserForm(call: ApplicationCall, username: String, message: String
                     }
                 } else {
                     p {
-                        +"Please set a username and password:"
+                        +"Please set a password to protect your private keys (be sure to not lose this - it can't be recovered!):"
                     }
                 }
 
                 table {
-                    tr {
-                        td {
-                            +"Username:"
-                        }
-                        td {
-                            textInput {
-                                name = "username"
-                                value = username
-                            }
-                        }
-                    }
                     tr {
                         td {
                             +"Password:"

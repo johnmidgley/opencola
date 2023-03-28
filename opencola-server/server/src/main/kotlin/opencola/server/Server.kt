@@ -145,7 +145,7 @@ suspend fun getLoginCredentials(
 
         module {
             configureHTTP()
-            configureBootstrapRouting(storagePath, serverConfig, loginConfig, authEncryptionParams, loginCredentials)
+            configureBootstrapRouting(storagePath, serverConfig, authEncryptionParams, loginCredentials)
             configureSessions()
         }
     }

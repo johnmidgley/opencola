@@ -4,7 +4,7 @@ import io.ktor.server.application.*
 import io.ktor.server.html.*
 import kotlinx.html.*
 
-suspend fun loginPage(call: ApplicationCall, username: String, message: String? = null) {
+suspend fun loginPage(call: ApplicationCall, message: String? = null) {
     call.respondHtml {
         head {
             link {
@@ -17,13 +17,6 @@ suspend fun loginPage(call: ApplicationCall, username: String, message: String? 
                 if (message != null) {
                     p {
                         +message
-                    }
-                }
-                p {
-                    +"Username:"
-                    textInput {
-                        name = "username"
-                        value = username
                     }
                 }
                 p {
