@@ -155,9 +155,11 @@
      (doall (for [peer (:results @peers!)]
               ^{:key peer} [peer-item persona-id peers! peer]))]))
 
+
 (defn peer-page [peers! personas! persona! on-persona-select query! on-search!]
   (let [adding-peer?! (atom false)]
     (fn []
+    (let [personas (into {} (map #(vector (:id %) %) (:items @personas!)))]
       [:div.settings-page
        [search/search-header
         :peers
@@ -168,5 +170,6 @@
         on-search! 
         (partial header-actions adding-peer?!)]
        [error/error-control @peers!]
-       [peer-list @persona! peers! adding-peer?!]])))
+       [:h2 "Peers (" (:name (personas @persona!)) ")"]
+       [peer-list @persona! peers! adding-peer?!]]))))
 

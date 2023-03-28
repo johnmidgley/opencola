@@ -147,4 +147,5 @@
         on-search! 
         (partial header-actions adding-persona?!)]
        [error/error-control @personas!] 
+       [:h2 "Personas"]
        [persona-list  personas! adding-persona?!]])))
