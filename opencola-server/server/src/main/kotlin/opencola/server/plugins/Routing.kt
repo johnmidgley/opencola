@@ -211,6 +211,15 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             return Context(call.parameters["context"])
         }
 
+        get("/cert") {
+            // FYI - linux only supports pem. Mac support both der and pem. Windows only supports der
+            val certType = if (getOS() == OS.Windows) "der" else "pem"
+            val certName = "opencola-ssl.$certType"
+            val certPath = app.storagePath.resolve("cert/$certName")
+            call.response.header("Content-Disposition", "attachment; filename=\"$certName\"")
+            call.respondBytes(certPath.readBytes(), ContentType("application", "x-x509-ca-cert"))
+        }
+
         get("/login") {
             if (call.request.origin.scheme != "https") {
                 call.respondRedirect("https://${call.request.host()}:${app.config.server.ssl!!.port}/login")
