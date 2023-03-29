@@ -11,7 +11,7 @@ echo "Copying distribution"
 cd ../install/opencola
 cp ../scripts/* .
 mkdir server
-cp -r ../../opencola-server/build/install/opencola-server/* server
+cp -r ../../opencola-server/server/build/install/opencola-server/* server
 
 echo "Copying config"
 #cp ../../opencola-server/opencola-server.yaml server
@@ -24,11 +24,11 @@ cp -r  ../../extension/chrome .
 
 echo "Creating storage"
 mkdir -p storage/cert
-cp ../../opencola-server/src/main/resources/storage/opencola-server.yaml storage/
-cp ../../opencola-server/src/main/resources/storage/cert/gen-ssl-cert storage/cert
-cp ../../opencola-server/src/main/resources/storage/cert/gen-ssl-cert.ps1 storage/cert
-cp ../../opencola-server/src/main/resources/storage/cert/install-cert storage/cert
-cp ../../opencola-server/src/main/resources/storage/cert/install-cert.ps1 storage/cert
+cp ../../opencola-server/server/src/main/resources/storage/opencola-server.yaml storage/
+cp ../../opencola-server/server/src/main/resources/storage/cert/gen-ssl-cert storage/cert
+cp ../../opencola-server/server/src/main/resources/storage/cert/gen-ssl-cert.ps1 storage/cert
+cp ../../opencola-server/server/src/main/resources/storage/cert/install-cert storage/cert
+cp ../../opencola-server/server/src/main/resources/storage/cert/install-cert.ps1 storage/cert
 echo "Done."
 
 cd ..
