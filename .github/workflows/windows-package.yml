@@ -40,7 +40,7 @@ jobs:
     #step: Build
     - name: Build with install script
       run: |
-        install
+        .\install.ps1
     
     #step: get the date for the build packages
     - name: Get date for build outputs
