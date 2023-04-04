@@ -2,6 +2,7 @@
   (:require
    [clojure.string :as string :refer [lower-case]]
    [goog.dom :as gdom]
+   [goog.net.XhrIo :as xhr]
    [reagent.core :as reagent :refer [atom]]
    [reagent.dom :as rdom]
    [cljs-time.coerce :as c]
@@ -147,25 +148,25 @@
              {:on-click #(delete-comment feed! @persona-id! entity-id comment-id error!)} "Delete"])]]))))
 
 (defn item-comment [persona-id! feed! entity-id comment-action]
-(let [editing?! (atom false)]
-  (fn []
-    (let [{authority-id :authorityId
-           authority-name :authorityName
-           epoch-second :epochSecond 
-           text :value
-           comment-id :id} comment-action
-          editable? (= authority-id @persona-id!)]
-      (if (not editable?)
-        (reset! editing?! false))
-      [:div.item-comment 
-       [:div.item-attribution 
-        authority-name " " (format-time epoch-second) " "
-        (if editable?
-          [:span {:on-click #(reset! editing?! true)} [action-img "edit"]])
-        ":"]
-       (if (and editable? @editing?!)
-         [comment-control persona-id! feed! entity-id comment-id text editing?!]
-         [:div.item-comment-container [md->component {:class "item-comment-text"} text]])]))))
+  (let [editing?! (atom false)]
+    (fn []
+      (let [{authority-id :authorityId
+             authority-name :authorityName
+             epoch-second :epochSecond 
+             text :value
+             comment-id :id} comment-action
+            editable? (= authority-id @persona-id!)]
+        (if (not editable?)
+          (reset! editing?! false))
+        [:div.item-comment 
+         [:div.item-attribution 
+          authority-name " " (format-time epoch-second) " "
+          (if editable?
+            [:span {:on-click #(reset! editing?! true)} [action-img "edit"]])
+          ":"]
+         (if (and editable? @editing?!)
+           [comment-control persona-id! feed! entity-id comment-id text editing?!]
+           [:div.item-comment-container [md->component {:class "item-comment-text"} text]])]))))
 
 (defn item-comments [persona-id! preview-fn? expanded?! comment-actions feed! entity-id]
   (let [preview? (preview-fn?)
@@ -232,8 +233,6 @@
      [:td (format-time epoch-second)]
      [:td.tag-cell (tag (:value tag-action))]]))
 
-
-
 (defn item-tags [expanded?! actions]
   (if @expanded?!
     [:div.item-tags
@@ -261,6 +260,55 @@
        (doall (for [like-action like-actions]
                 ^{:key like-action} [item-like like-action]))]]]))
 
+(defn select-files-control [selected-files!]
+  (fn []
+    [:div
+     [:input {:type "file"
+              :multiple true
+              :on-change #(reset! selected-files! (.. % -target -files))}]
+     [:ul (map-indexed (fn [i file]
+                         [:li {:key i} (.-name file)])
+                       @selected-files!)]]))
+
+;; TODO: Move to general utils
+(defn obj->clj
+  [obj]
+  (if (goog.isObject obj)
+    (-> (fn [result key]
+          (let [v (goog.object/get obj key)]
+            (if (= "function" (goog/typeOf v))
+              result
+              (assoc result key (obj->clj v)))))
+        (reduce {} (.getKeys goog/object obj)))
+    obj))
+
+(defn attachment-control [persona-id! feed! entity-id expanded?!]
+  (if @expanded?!
+  (let [selected-files! (atom [])]
+    [:div.attachment-control
+     [:div.attachment-control-header "Add attachment:"]
+     [select-files-control selected-files!]
+     [:div.attachment-control-footer
+      [:button {:on-click (fn [] (swap! expanded?! #(not %)))} "Cancel"]
+      [:button {:on-click (fn [] (println "Save"))} "Save"]]])))
+
+(defn item-attachment [action]
+  (let [{authority-name :authorityName
+         epoch-second :epochSecond
+         value :value} action]
+    [:tr.item-attribution
+     [:td (str authority-name)]
+     [:td (format-time epoch-second)]
+     [:td (str value)]]))
+
+(defn item-attachments [expanded?! attach-actions]
+  (if (and @expanded?!) 
+    [:div.item-attachments
+     [:div.list-header "Attachments:"]
+     [:table
+      [:tbody
+       (doall (for [action attach-actions]
+                ^{:key action} [item-attachment action]))]]]))
 
 (defn action-summary [persona-id! feed! key action-expanded? activities on-click]
   (let [actions (key activities)
@@ -321,6 +369,8 @@
          [:button {:on-click #(update-edit-entity @persona-id! feed! tagging?! edit-item! item)} "Save"] " "
          [:button {:on-click #(reset! tagging?! false)} "Cancel"] " "]))))
 
+
+
 (defn persona-select [personas! persona-id!]
   [:select {:id "persona-select"
             :on-change #(reset! persona-id! (-> % .-target .-value))
@@ -329,9 +379,10 @@
             ^{:key persona} [:option  {:value (:id persona)} (:name persona)]))])
 
 (defn item-activities [persona-id! personas! feed! item editing?!]
-  (let [action-expanded? (apply hash-map (mapcat #(vector % (atom false)) [:save :like :tag :comment]))
-        commenting? (atom false)
+  (let [action-expanded? (apply hash-map (mapcat #(vector % (atom false)) [:save :like :tag :comment :attach]))
         tagging? (atom false)
+        commenting? (atom false)
+        attaching? (atom false)
         preview-fn? (fn [] (every? #(not @%) (map second action-expanded?)))] 
     (fn [] 
       (let [entity-id (:entityId item)
@@ -347,14 +398,18 @@
          inline-divider
          [action-summary persona-id! feed! :comment action-expanded? activities #(swap! commenting? not)]
          inline-divider
+         [action-summary persona-id! feed! :attach action-expanded? activities #(swap! attaching? not)]
+         inline-divider
          [edit-control editing?!]
          [:div.activity-block
           [tags-control persona-id! feed! item tagging?]
           [comment-control persona-id! feed! entity-id nil "" commenting?]
+          [attachment-control persona-id! feed! entity-id attaching?]
           [item-saves (:save action-expanded?) (:save activities)]
           [item-likes (:like action-expanded?) (:like activities)]
           [item-tags (:tag action-expanded?) (:tag activities)] 
-          [item-comments persona-id! preview-fn? (:comment action-expanded?) (:comment activities) feed! entity-id]]]))))
+          [item-comments persona-id! preview-fn? (:comment action-expanded?) (:comment activities) feed! entity-id]
+          [item-attachments (:attach action-expanded?) (:attach activities)]]]))))
 
 
 (defn item-name [summary]
