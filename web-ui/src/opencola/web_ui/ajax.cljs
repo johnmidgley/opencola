@@ -43,3 +43,11 @@
         :format :json
         :response-format :json
         :error-handler error-handler}))
+
+(defn upload-files [path file-list]
+  (let [form-data (js/FormData.)]
+    (doseq [file (array-seq file-list)]
+      (.append form-data "file" file))
+    (ajax/POST (resolve-service-url path)
+               {:body form-data
+                :response-format :text})))

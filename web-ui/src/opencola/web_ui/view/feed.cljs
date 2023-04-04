@@ -1,8 +1,8 @@
 (ns opencola.web-ui.view.feed 
   (:require
+   [opencola.web-ui.ajax :as ajax] ;; TODO: Move out to file namespace
    [clojure.string :as string :refer [lower-case]]
    [goog.dom :as gdom]
-   [goog.net.XhrIo :as xhr]
    [reagent.core :as reagent :refer [atom]]
    [reagent.dom :as rdom]
    [cljs-time.coerce :as c]
@@ -260,37 +260,27 @@
        (doall (for [like-action like-actions]
                 ^{:key like-action} [item-like like-action]))]]]))
 
-(defn select-files-control [selected-files!]
+(defn select-files-control [file-list!]
   (fn []
     [:div
      [:input {:type "file"
               :multiple true
-              :on-change #(reset! selected-files! (.. % -target -files))}]
-     [:ul (map-indexed (fn [i file]
+              :on-change #(reset! file-list! (.. % -target -files))}]
+     #_[:ul (map-indexed (fn [i file]
                          [:li {:key i} (.-name file)])
-                       @selected-files!)]]))
-
-;; TODO: Move to general utils
-(defn obj->clj
-  [obj]
-  (if (goog.isObject obj)
-    (-> (fn [result key]
-          (let [v (goog.object/get obj key)]
-            (if (= "function" (goog/typeOf v))
-              result
-              (assoc result key (obj->clj v)))))
-        (reduce {} (.getKeys goog/object obj)))
-    obj))
+                       @file-list!)]]))
 
 (defn attachment-control [persona-id! feed! entity-id expanded?!]
   (if @expanded?!
-  (let [selected-files! (atom [])]
+  (let [file-list! (atom [])]
     [:div.attachment-control
      [:div.attachment-control-header "Add attachment:"]
-     [select-files-control selected-files!]
+     [select-files-control file-list!]
      [:div.attachment-control-footer
       [:button {:on-click (fn [] (swap! expanded?! #(not %)))} "Cancel"]
-      [:button {:on-click (fn [] (println "Save"))} "Save"]]])))
+      [:button {:on-click (fn [] 
+        (ajax/upload-files (str "/upload?personaId=" @persona-id!) @file-list!)
+      )} "Save"]]])))
 
 (defn item-attachment [action]
   (let [{authority-name :authorityName

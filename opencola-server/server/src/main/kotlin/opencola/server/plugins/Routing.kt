@@ -428,6 +428,15 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
                 call.respond(getPersonas(app.inject()))
             }
 
+            post("/upload"){
+                call.respond(
+                    handleUpload(
+                        app.inject(),
+                        app.inject(),
+                        expectPersona(call).personaId,
+                        call.receiveMultipart()))
+            }
+
             static {
                 val resourcePath = getResourceFilePath(
                     "web",
