@@ -141,7 +141,16 @@ enum class CoreAttribute(val spec: Attribute) {
             BytesByteArrayCodec as ByteArrayCodec<Any>,
             isIndexable = false,
         )
-    )
+    ),
+    AttachmentIds(
+        Attribute(
+            "attachmentIds",
+            URI("opencola://attributes/attachmentId"),
+            AttributeType.MultiValueSet,
+            Id as ByteArrayCodec<Any>,
+            isIndexable = false,
+            null)
+    ),
 }
 
 private val attributesByName = CoreAttribute.values().associateBy { it.spec.name }

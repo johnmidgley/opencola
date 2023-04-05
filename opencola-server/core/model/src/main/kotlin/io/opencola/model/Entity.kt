@@ -16,7 +16,8 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
     var like by booleanAttributeDelegate
     var rating by floatAttributeDelegate
     var tags by tagsAttributeDelegate
-    val commentIds by MultiValueSetOfIdAttributeDelegate // Read only, computed property
+    val commentIds by MultiValueSetOfIdAttributeDelegate //  Read only, computed property
+    var attachmentIds by MultiValueSetOfIdAttributeDelegate
 
     private var facts = emptyList<Fact>()
     fun getAllFacts(): List<Fact> {

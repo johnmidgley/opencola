@@ -7,7 +7,7 @@ import kotlin.test.*
 
 class EntityTest {
     @Test
-    fun testActorEntity(){
+    fun testAuthorityEntity(){
         val uri = URI("opencola://12345")
         val imageUri = URI("http://images/123456")
         val name = "name"
@@ -71,6 +71,21 @@ class EntityTest {
         assertEquals(computedFact1.attribute, CoreAttribute.CommentIds.spec)
         assertEquals(computedFact1.value, Value(Id.encode(comment1.entityId)))
         assertEquals(computedFact1.operation, Operation.Add)
+    }
+
+    @Test
+    fun testAttachments(){
+        val authorityId = Id.ofData("".toByteArray())
+        val entity = ResourceEntity(authorityId, URI("https://test.com"))
+
+        val attachmentId1 = Id.ofData("attachment1".toByteArray())
+        val attachmentId2 = Id.ofData("attachment2".toByteArray())
+
+        entity.attachmentIds = listOf(attachmentId1, attachmentId2, attachmentId1)
+
+        assertEquals(2, entity.attachmentIds.size)
+        assertContains(entity.attachmentIds, attachmentId1)
+        assertContains(entity.attachmentIds, attachmentId2)
     }
 
     @Test
