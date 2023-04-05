@@ -1,29 +1,33 @@
 (ns opencola.web-ui.view.attachments 
   (:require
-   [opencola.web-ui.ajax :as ajax] ;; TODO: Move out to file namespace
-   [reagent.core :as reagent :refer [atom]]))
+   [reagent.core :as reagent :refer [atom]]
+   [opencola.web-ui.time :refer [format-time]]
+   [opencola.web-ui.ajax :as ajax]))
 
 (defn select-files-control [file-list!]
   (fn []
-    [:div
-     [:input {:type "file"
-              :multiple true
-              :on-change #(reset! file-list! (.. % -target -files))}]
-     #_[:ul (map-indexed (fn [i file]
-                         [:li {:key i} (.-name file)])
-                       @file-list!)]]))
+    (let [input-id (str (random-uuid))]
+      [:div
+       [:input {:type "file"
+                :id input-id
+                :multiple true
+                :style {:display "none"}
+                :on-change #(reset! file-list! (.. % -target -files))}]
+       [:button {:on-click #(.click (js/document.getElementById input-id))} "Select Files"]
+       [:ul (map-indexed (fn [i file]
+                            (js/console.log file)
+                           [:li {:key i} (.-name file)])
+                         @file-list!)]])))
 
 (defn attachment-control [persona-id! feed! entity-id expanded?!]
   (if @expanded?!
   (let [file-list! (atom [])]
     [:div.attachment-control
-     [:div.attachment-control-header "Add attachment:"]
+     [:div.attachment-control-header "Attachments:"]
      [select-files-control file-list!]
      [:div.attachment-control-footer
-      [:button {:on-click (fn [] (swap! expanded?! #(not %)))} "Cancel"]
-      [:button {:on-click (fn [] 
-        (ajax/upload-files (str "/upload?personaId=" @persona-id!) @file-list!)
-      )} "Save"]]])))
+      [:button {:on-click (fn [] (ajax/upload-files (str "/upload?personaId=" @persona-id!) @file-list!))} "Save"]
+      [:button {:on-click (fn [] (swap! expanded?! #(not %)))} "Cancel"]]])))
 
 (defn item-attachment [action]
   (let [{authority-name :authorityName
