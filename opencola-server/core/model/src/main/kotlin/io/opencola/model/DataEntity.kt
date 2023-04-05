@@ -11,7 +11,8 @@ open class DataEntity : Entity {
     var mimeType by stringAttributeDelegate
 
     constructor(
-        authorityId: Id, dataId: Id,
+        authorityId: Id,
+        dataId: Id,
         mimeType: String,
         name: String? = null,
         description: String? = null,
