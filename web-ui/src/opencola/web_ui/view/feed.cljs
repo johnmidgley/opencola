@@ -11,7 +11,9 @@
    [cljs.reader :as reader]
    [opencola.web-ui.config :as config]
    [opencola.web-ui.common :refer [toggle-atom]]
+   [opencola.web-ui.time :refer [format-time]]
    [opencola.web-ui.view.common :refer [action-img md->component inline-divider image-divider simple-mde]]
+   [opencola.web-ui.view.attachments :refer [attachment-control item-attachments]]
    [opencola.web-ui.view.search :as search]
    [opencola.web-ui.model.error :as error]
    [opencola.web-ui.model.feed :as model]
@@ -27,16 +29,6 @@
    query
    #(reset! feed! %)
    #(error/set-error! feed! %)))
-
-(defn timezone-to-offset-seconds [[sign hours minutes seconds]]
-  (* (if (= sign :-) -1 1) (+ (* hours 3600) (* minutes 60) seconds)))
-
-(def timezone-offset-seconds (timezone-to-offset-seconds (:offset (cljs-time.core/default-time-zone))))
-
-(defn format-time [epoch-second]
-  (f/unparse 
-   (f/formatter "yyyy-MM-dd hh:mm A") 
-   (c/from-long (* (+ epoch-second timezone-offset-seconds) 1000))))
 
 (defn authority-actions-of-type [authority-id type item]
   (filter #(= authority-id (:authorityId %)) (-> item :activities type)))
@@ -259,46 +251,6 @@
       [:tbody
        (doall (for [like-action like-actions]
                 ^{:key like-action} [item-like like-action]))]]]))
-
-(defn select-files-control [file-list!]
-  (fn []
-    [:div
-     [:input {:type "file"
-              :multiple true
-              :on-change #(reset! file-list! (.. % -target -files))}]
-     #_[:ul (map-indexed (fn [i file]
-                         [:li {:key i} (.-name file)])
-                       @file-list!)]]))
-
-(defn attachment-control [persona-id! feed! entity-id expanded?!]
-  (if @expanded?!
-  (let [file-list! (atom [])]
-    [:div.attachment-control
-     [:div.attachment-control-header "Add attachment:"]
-     [select-files-control file-list!]
-     [:div.attachment-control-footer
-      [:button {:on-click (fn [] (swap! expanded?! #(not %)))} "Cancel"]
-      [:button {:on-click (fn [] 
-        (ajax/upload-files (str "/upload?personaId=" @persona-id!) @file-list!)
-      )} "Save"]]])))
-
-(defn item-attachment [action]
-  (let [{authority-name :authorityName
-         epoch-second :epochSecond
-         value :value} action]
-    [:tr.item-attribution
-     [:td (str authority-name)]
-     [:td (format-time epoch-second)]
-     [:td (str value)]]))
-
-(defn item-attachments [expanded?! attach-actions]
-  (if (and @expanded?!) 
-    [:div.item-attachments
-     [:div.list-header "Attachments:"]
-     [:table
-      [:tbody
-       (doall (for [action attach-actions]
-                ^{:key action} [item-attachment action]))]]]))
 
 (defn action-summary [persona-id! feed! key action-expanded? activities on-click]
   (let [actions (key activities)
