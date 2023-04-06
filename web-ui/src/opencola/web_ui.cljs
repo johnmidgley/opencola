@@ -5,7 +5,6 @@
    [reagent.dom :as rdom]
    [opencola.web-ui.config :as config]
    [opencola.web-ui.app-state :as state :refer [personas! persona! query! feed! peers! error!]]
-   [opencola.web-ui.common :as common]
    [opencola.web-ui.view.feed :as feed]
    [opencola.web-ui.view.persona :as persona]
    [opencola.web-ui.view.peer :as peer]
@@ -42,7 +41,7 @@
       (peer/get-peers @(persona!) (peers!)))))
 
 (defroute "/personas" [query-params]
-  (if @config/config
+  (when @config/config
     (persona/get-personas (personas!)))
   (state/set-page! :personas)
   (persona! nil))
