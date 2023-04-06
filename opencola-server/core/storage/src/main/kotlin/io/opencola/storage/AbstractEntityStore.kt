@@ -60,6 +60,10 @@ abstract class AbstractEntityStore(
     }
 
     override fun updateEntities(vararg entities: Entity): SignedTransaction? {
+        if(entities.isEmpty()){
+            return null
+        }
+
         entities.forEach { validateEntity(it) }
 
         if (entities.distinctBy { it.entityId }.size != entities.size) {
