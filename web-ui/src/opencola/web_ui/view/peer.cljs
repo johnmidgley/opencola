@@ -1,15 +1,11 @@
 (ns opencola.web-ui.view.peer 
-  (:require
-   [clojure.string :as string]
+  (:require 
    [reagent.core :as reagent :refer [atom]]
-   [opencola.web-ui.common :refer [to-boolean]]
-   [opencola.web-ui.view.common :refer [action-img nbsp image-divider input-text input-checkbox]]
+   [opencola.web-ui.view.common :refer [action-img image-divider input-text input-checkbox]]
    [opencola.web-ui.model.peer :as model]
    [opencola.web-ui.view.search :as search]
    [opencola.web-ui.model.error :as error]
-   [opencola.web-ui.location :as location]
-   [alphabase.base58 :as b58]
-   [cljs.pprint :as pprint]))
+   [opencola.web-ui.location :as location]))
 
 
 ;; These methods are not really view. They are more binders.
@@ -42,16 +38,6 @@
 (defn map-to-token [m]
   (->> m (map (fn [[k v]] (str (name k) "=" v))) (interpose \|) (apply str)))
 
-(defn peer-to-token [peer]
-  (if (:id peer)
-    (map-to-token (dissoc peer :token))))
-
-(defn token-to-peer [token]
-  (let [parts (string/split token "|")
-        pairs (map #(string/split % #"\=" 2) parts)
-        kvs (map (fn [[k v]] [(keyword k) (if (= k "isActive") (to-boolean v) v)]) pairs)]
-    (into {:isActive false} kvs)))
-
 (defn peer-item [persona-id peers! peer adding-peer?!]
   (let [creating? adding-peer?! ;; TODO - looks like not needed
         editing?! (atom creating?)
@@ -61,7 +47,7 @@
         [:div.peer-item
          [:div.peer-img-box
           [:img.peer-img 
-           {:src (if (not (empty? image-uri)) image-uri "../img/user.png")}]]
+           {:src (if (seq image-uri) image-uri "../img/user.png")}]]
          [:div.peer-info
           [:table.peer-info
            [:tbody
@@ -90,12 +76,12 @@
              {:disabled (and (not adding-peer?!) (= @p! peer)) 
               :on-click #(do
                            (update-peer persona-id peers! p!)
-                           (if adding-peer?! (reset! adding-peer?! false)))} "Save"] " "
+                           (when adding-peer?! (reset! adding-peer?! false)))} "Save"] " "
             [:button {:on-click  #(do
                                     (reset! p! peer)
-                                    (if adding-peer?! (reset! adding-peer?! false))
+                                    (when adding-peer?! (reset! adding-peer?! false))
                                     (reset! editing?! false))} "Cancel"] " "
-            (if (not creating?)
+            (when (not creating?)
               [:button.delete-button {:on-click #(delete-peer persona-id peers! p!)} "Delete"])]
            [:div.edit-peer
             [:button {:on-click #(reset! editing?! true)} "Edit"]])]))))
@@ -149,9 +135,9 @@
               [error/error-control @add-error!]]]]]]]))))
 
 (defn peer-list [persona-id peers! adding-peer?!]
-  (if @peers!
+  (when @peers!
     [:div.peers 
-     (if @adding-peer?! [add-peer-item persona-id peers! adding-peer?!])
+     (when @adding-peer?! [add-peer-item persona-id peers! adding-peer?!])
      (doall (for [peer (:results @peers!)]
               ^{:key peer} [peer-item persona-id peers! peer]))]))
 

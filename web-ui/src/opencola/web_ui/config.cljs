@@ -1,6 +1,5 @@
 (ns ^:figwheel-hooks opencola.web-ui.config
   (:require
-   [reagent.dom :as rdom]
    [ajax.core :refer [GET]]
    [opencola.web-ui.model.error :as error]))
 

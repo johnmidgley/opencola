@@ -33,7 +33,7 @@
      {:display-name  "my-component"
       
       :component-did-mount         
-      (fn [this] 
+      (fn [_] 
         ;; super ugly. Since SimpleMDE is a non-react, js component, we need some way to be able to 
         ;; get the text out. We do this by storing the object in an atom that can be accessed outside
         ;; of the react control. Might be better to just put a proxy object in the state. Not sure

@@ -1,10 +1,9 @@
 (ns ^:figwheel-hooks opencola.web-ui.view.search 
   (:require
-   [reagent.core :as reagent :refer [atom]]
    [opencola.web-ui.location :as location]))
 
 
-(defn selected-persona [page personas! persona!]
+(defn selected-persona [page persona!]
   (case page
     :personas "manage"
     (if @persona! @persona! "all")))
@@ -15,11 +14,11 @@
           {:id "persona-select" 
            :title "Persona"
            :on-change #(on-select (-> % .-target .-value))
-           :value (selected-persona page personas! persona!)}
+           :value (selected-persona page persona!)}
           ^{:key "all"} [:option {:value "" :disabled (= page :peers)} "All"]
           (doall (for [persona (:items @personas!)]
                    ^{:key persona} [:option  {:value (:id persona)} (:name persona)]))
-          (if (not-empty @personas!) ;; Avoid flicker on init
+          (when (not-empty @personas!) ;; Avoid flicker on init
             ^{:key "manage"} [:option {:value "manage"} "Manage..."])]]))
 
 (defn search-box [query! on-enter]
@@ -28,7 +27,7 @@
      {:type "text"
       :value @query!
       :on-change #(reset! query! (-> % .-target .-value))
-      :on-keyUp #(if (= (.-key %) "Enter")
+      :on-keyUp #(when (= (.-key %) "Enter")
                    (on-enter @query!))}]))
 
 

@@ -1,4 +1,4 @@
-(ns opencola.web-ui.view.attachments 
+(ns opencola.web-ui.view.attachments
   (:require
    [reagent.core :as reagent :refer [atom]]
    [opencola.web-ui.time :refer [format-time]]
@@ -8,7 +8,7 @@
 ;; TODO: Make this a table with file size
 (defn selected-files-table [file-list!]
   (fn []
-    (if (some? @file-list!)
+    (when (some? @file-list!)
       [:ul (map-indexed (fn [i file]
                           [:li {:key i} (.-name file)])
                         @file-list!)])))
@@ -25,23 +25,22 @@
        [:button {:on-click #(.click (js/document.getElementById input-id))} "Select Files"]])))
 
 (defn attachment-control [persona-id! feed! entity-id expanded?! update-feed-item on-error]
-  (if @expanded?!
+  (when @expanded?!
     (let [file-list! (atom [])]
       [:div.attachment-control
        [:div.attachment-control-header "Add Attachments:"]
        [selected-files-table file-list!]
        [select-files-control file-list!] " "
-       [:button {:on-click (fn [] 
+       [:button {:on-click (fn []
                              (model/add-attachments
                               (:context @feed!)
                               @persona-id!
                               entity-id
                               @file-list!
-                              (fn [item] 
+                              (fn [item]
                                 (update-feed-item feed! item)
                                 (reset! expanded?! false))
-                              on-error
-                              ))} "Attach"] " "
+                              on-error))} "Attach"] " "
        [:button {:on-click (fn [] (swap! expanded?! #(not %)))} "Cancel"]])))
 
 (defn item-attachment [action]
@@ -55,7 +54,7 @@
      [:td [:a {:href (ajax/resolve-service-url (str "data/" id)) :target "blank"} value]]]))
 
 (defn item-attachments [expanded?! attach-actions]
-  (if (and @expanded?!) 
+  (when @expanded?!
     [:div.item-attachments
      [:div.list-header "Attachments:"]
      [:table

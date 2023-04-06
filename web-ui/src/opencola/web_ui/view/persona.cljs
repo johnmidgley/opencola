@@ -50,7 +50,7 @@
         [:div.peer-item
          [:div.peer-img-box
           [:img.peer-img 
-           {:src (if (not (empty? image-uri)) image-uri "../img/user.png")}]]
+           {:src (if (seq image-uri) image-uri "../img/user.png")}]]
          [:div.peer-info
           [:table.peer-info
            [:tbody
@@ -102,7 +102,7 @@
         [:div.peer-item
          [:div.peer-img-box
           [:img.peer-img 
-           {:src (if (not (empty? image-uri)) image-uri "../img/user.png")}]]
+           {:src (if (seq image-uri) image-uri "../img/user.png")}]]
          [:div.peer-info
           [:table.peer-info
            [:tbody
@@ -127,9 +127,9 @@
           [:button {:on-click  #(reset! adding-persona?! false)} "Cancel"] " "]]))))
 
 (defn persona-list [personas! adding-persona?!]
-  (if @personas!
+  (when @personas!
     [:div.peers 
-     (if @adding-persona?! [add-persona-item personas! adding-persona?!])
+     (when @adding-persona?! [add-persona-item personas! adding-persona?!])
      (doall (for [persona (:items @personas!)]
               ^{:key persona} [persona-item personas! persona]))]))
 

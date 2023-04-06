@@ -1,7 +1,6 @@
 (ns ^:figwheel-hooks opencola.web-ui
   (:require
    [goog.dom :as gdom]
-   [reagent.core :as reagent :refer [atom]]
    [reagent.dom :as rdom]
    [opencola.web-ui.config :as config]
    [opencola.web-ui.app-state :as state :refer [personas! persona! query! feed! peers! error!]]
@@ -15,7 +14,6 @@
   (:import [goog History]
            [goog.history EventType]))
 
-
 ;; TODO: Move routing to separate file
 (secretary/set-config! :prefix "#")
 
@@ -27,7 +25,7 @@
   (state/set-page! :feed)
   (location/set-state-from-query-params query-params)
   (let [query (or (:q query-params) "")]
-    (if @config/config ; Needed when overriding host-url for dev
+    (when @config/config ; Needed when overriding host-url for dev
       (feed/get-feed @(persona!) query (feed!)))))
 
 (defroute "/peers" [query-params]
@@ -37,10 +35,10 @@
     (do
       (persona! (-> @(personas!) :items first :id))
       (location/set-location-from-state))
-    (if @config/config
+    (when @config/config
       (peer/get-peers @(persona!) (peers!)))))
 
-(defroute "/personas" [query-params]
+(defroute "/personas" []
   (when @config/config
     (persona/get-personas (personas!)))
   (state/set-page! :personas)
@@ -61,7 +59,7 @@
     "" (location/set-location "/#/feed")
     "manage" (location/set-location "/#/personas")
     (do
-     (if (= :personas (state/get-page))
+     (when (= :personas (state/get-page))
        (state/set-page! :feed))
      (persona! persona)
      (location/set-location-from-state))))
@@ -69,13 +67,13 @@
 (defn app []
   (fn []
     [:div.app
-     (if (state/page-visible? :feed)
+     (when (state/page-visible? :feed)
        [feed/feed-page (feed!) (personas!) (persona!) on-persona-select (query!)  on-search])
-     (if (state/page-visible? :peers)
+     (when (state/page-visible? :peers)
        [peer/peer-page (peers!) (personas!) (persona!) on-persona-select (query!) on-search])
-     (if (state/page-visible? :personas)
+     (when (state/page-visible? :personas)
        [persona/personas-page (personas!) (persona!) on-persona-select (query!) on-search])
-     (if (state/page-visible? :error)
+     (when (state/page-visible? :error)
        [:div.settings "404"])
      [error/error-control @(error!)]]))
 
