@@ -45,6 +45,9 @@
                       #(map (fn [i] (if (= entity-id (:entityId i)) view-item i)) %))]
     (reset! feed! updated-feed)))
 
+(defn set-item-error [feed! item error]
+  (update-feed-item feed! (error/set-error item error)))
+
 ;; TODO - Use https://clj-commons.org/camel-snake-kebab/
 ;; Be careful with like
 (defn edit-item 
@@ -188,7 +191,6 @@
         [:span
          [:a.action-link  {:href (data-url host data-id) :target "_blank"} [action-img "archive"]]])]]))
  
-
 (defn item-saves [expanded?! save-actions]
   (if @expanded?!
     [:div.item-saves
@@ -343,7 +345,7 @@
           [tags-control persona-id! feed! item tagging?]
           [comment-control persona-id! feed! entity-id nil "" commenting?]
           ;; TODO: Cleanup error handling + make update-feed-item general
-          [attachment-control persona-id! feed! entity-id attaching? update-feed-item #(update-feed-item feed! (error/set-error item %))]
+          [attachment-control persona-id! feed! entity-id attaching? update-feed-item #(set-item-error feed! item %)]
           [item-saves (:save action-expanded?) (:save activities)]
           [item-likes (:like action-expanded?) (:like activities)]
           [item-tags (:tag action-expanded?) (:tag activities)] 
