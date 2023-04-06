@@ -44,10 +44,13 @@
         :response-format :json
         :error-handler error-handler}))
 
-(defn upload-files [path file-list]
+(defn upload-files [path file-list success-handler error-handler]
   (let [form-data (js/FormData.)]
     (doseq [file (array-seq file-list)]
       (.append form-data "file" file))
     (ajax/POST (resolve-service-url path)
                {:body form-data
-                :response-format :text})))
+                :keywords? true
+                :response-format :json
+                :handler success-handler
+                :error-handler error-handler})))

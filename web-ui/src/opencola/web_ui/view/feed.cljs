@@ -272,7 +272,6 @@
         #(update-feed-item feed! %)
         #(update-feed-item feed! (error/set-error item %))))))
 
-
 (defn update-display-entity [persona-id feed! edit-item item]
   (model/update-entity 
    (:context @feed!)
@@ -288,7 +287,6 @@
    @edit-item!
    #(update-feed-item feed! %)
    #(error/set-error! edit-item! %)))
-
 
 (defn like-item [persona-id feed! item]
    (let [actions (-> item :activities :like)
@@ -310,8 +308,6 @@
          [error/error-control @edit-item!]
          [:button {:on-click #(update-edit-entity @persona-id! feed! tagging?! edit-item! item)} "Save"] " "
          [:button {:on-click #(reset! tagging?! false)} "Cancel"] " "]))))
-
-
 
 (defn persona-select [personas! persona-id!]
   [:select {:id "persona-select"
@@ -346,7 +342,8 @@
          [:div.activity-block
           [tags-control persona-id! feed! item tagging?]
           [comment-control persona-id! feed! entity-id nil "" commenting?]
-          [attachment-control persona-id! feed! entity-id attaching?]
+          ;; TODO: Cleanup error handling + make update-feed-item general
+          [attachment-control persona-id! feed! entity-id attaching? update-feed-item #(update-feed-item feed! (error/set-error item %))]
           [item-saves (:save action-expanded?) (:save activities)]
           [item-likes (:like action-expanded?) (:like activities)]
           [item-tags (:tag action-expanded?) (:tag activities)] 
