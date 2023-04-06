@@ -1,5 +1,6 @@
 package opencola.server.handlers
 
+import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import kotlinx.serialization.Serializable
@@ -13,6 +14,7 @@ import io.opencola.util.ifNullOrElse
 import io.opencola.util.nullOrElse
 import io.opencola.storage.AddressBook
 import io.opencola.storage.EntityStore
+import io.opencola.storage.FileStore
 import io.opencola.storage.PersonaAddressBookEntry
 import java.net.URI
 
@@ -243,4 +245,21 @@ fun newPost(
     }
 
     return updateEntity(entityStore, addressBook, context, persona, PostEntity(persona.personaId), entityPayload)
+}
+
+suspend fun addAttachment(
+    entityStore: EntityStore,
+    fileStore: FileStore,
+    addressBook: AddressBook,
+    context: Context,
+    personaId: Id,
+    entityId: Id,
+    multipart: MultiPartData
+): EntityResult? {
+    val dataEntities = getDataEntities(entityStore, fileStore, personaId, multipart)
+    val entity =
+        entityStore.getEntity(personaId, entityId) ?: throw IllegalArgumentException("Unknown entity: $entityId")
+    entity.attachmentIds += dataEntities.map { it.entityId }
+    entityStore.updateEntities(entity, *dataEntities.toTypedArray())
+    return getEntityResult(entityStore, addressBook, context, personaId, entityId)
 }

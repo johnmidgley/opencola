@@ -39,7 +39,7 @@ fun getSummary(entities: List<Entity>, idToAuthority: (Id) -> AddressBookEntry?)
     )
 }
 
-fun factToAction(comments: Map<Id, CommentEntity>, fact: Fact): Action? {
+fun factToAction(comments: Map<Id, CommentEntity>, attachments: Map<Id, DataEntity>, fact: Fact): Action? {
     return when (fact.attribute) {
         Type.spec -> Action(ActionType.Save, null, null)
         DataId.spec -> Action(ActionType.Save, fact.decodeValue(), null)
@@ -51,12 +51,15 @@ fun factToAction(comments: Map<Id, CommentEntity>, fact: Fact): Action? {
             val commentId = fact.decodeValue<Id>()
             Action(ActionType.Comment, commentId, comments.getValue(commentId).text)
         }
-
+        AttachmentIds.spec -> {
+            val attachmentId = fact.decodeValue<Id>()
+            Action(ActionType.Attach, attachmentId, attachments.getValue(attachmentId).name)
+        }
         else -> null
     }
 }
 
-fun factsToActions(comments: Map<Id, CommentEntity>, facts: List<Fact>): List<Action> {
+fun factsToActions(comments: Map<Id, CommentEntity>, attachments: Map<Id, DataEntity>, facts: List<Fact>): List<Action> {
     val factsByAttribute = facts.groupBy { it.attribute }
     val dataIdPresent = factsByAttribute[DataId.spec] != null
 
@@ -66,11 +69,16 @@ fun factsToActions(comments: Map<Id, CommentEntity>, facts: List<Fact>): List<Ac
             // When a dataId is present, don't double count the type property
             emptyList()
         } else
-            facts.mapNotNull { factToAction(comments, it) }
+            facts.mapNotNull { factToAction(comments, attachments, it) }
     }
 }
 
-fun entityActivities(addressBookEntry: AddressBookEntry, entity: Entity, comments: Map<Id, CommentEntity>): List<Activity> {
+fun entityActivities(
+    addressBookEntry: AddressBookEntry,
+    entity: Entity,
+    comments: Map<Id, CommentEntity>,
+    attachments: Map<Id, DataEntity>
+): List<Activity> {
     if (addressBookEntry.entityId != entity.authorityId) {
         throw IllegalArgumentException("authorityId does not match entity")
     }
@@ -81,7 +89,7 @@ fun entityActivities(addressBookEntry: AddressBookEntry, entity: Entity, comment
             Activity(
                 addressBookEntry,
                 facts.first().epochSecond!!,
-                factsToActions(comments, facts)
+                factsToActions(comments, attachments, facts)
             )
         }
 }
@@ -89,7 +97,8 @@ fun entityActivities(addressBookEntry: AddressBookEntry, entity: Entity, comment
 fun activitiesByEntityId(
     idToAuthority: (Id) -> AddressBookEntry?,
     entities: Iterable<Entity>,
-    comments: Map<Id, CommentEntity>
+    comments: Map<Id, CommentEntity>,
+    attachments: Map<Id, DataEntity>
 ): Map<Id, List<Activity>> {
     return entities
         .groupBy { it.entityId }
@@ -100,7 +109,8 @@ fun activitiesByEntityId(
                         entityActivities(
                             it,
                             entity,
-                            comments
+                            comments,
+                            attachments
                         )
                     }
                 }
@@ -139,17 +149,19 @@ fun getEntityIds(entityStore: EntityStore, authorityIds: Set<Id>, searchIndex: S
     return entityIds.toSet()
 }
 
-fun getComments(entityStore: EntityStore, entities: Iterable<Entity>): Map<Id, CommentEntity> {
-    val commentIds = entities
-        .flatMap { it.commentIds }
-        .toSet()
+fun <T : Entity> getChildren(
+    entityStore: EntityStore,
+    entities: Iterable<Entity>,
+    childrenSelector: (Entity) -> Iterable<Id>
+): Map<Id, T> {
+    val ids = entities.flatMap { childrenSelector(it) }.toSet()
 
-    if (commentIds.isEmpty()) {
+    if (ids.isEmpty()) {
         return emptyMap()
     }
 
-    return entityStore.getEntities(emptySet(), commentIds)
-        .mapNotNull { it as? CommentEntity }
+    return entityStore.getEntities(emptySet(), ids)
+        .mapNotNull { it as? T }
         .associateBy { it.entityId }
 }
 
@@ -183,9 +195,11 @@ fun getEntityResults(
     val addressBookMap = getAddressBookMap(addressBook)
     val idToAuthority: (Id) -> AddressBookEntry? = { id -> addressBookMap[id] }
     val entities = entityStore.getEntities(authorityIds, entityIds).filter { isEntityIsVisible(it) }
-    val comments = getComments(entityStore, entities)
+    // TODO: Can comments and attachments be rolled into 1 entityStore call?
+    val comments = getChildren<CommentEntity>(entityStore, entities, Entity::commentIds)
+    val attachments = getChildren<DataEntity>(entityStore, entities, Entity::attachmentIds)
     val entitiesByEntityId = entities.groupBy { it.entityId }
-    val activitiesByEntityId = activitiesByEntityId(idToAuthority, entities, comments)
+    val activitiesByEntityId = activitiesByEntityId(idToAuthority, entities, comments, attachments)
 
     return entityIds
         .filter { entitiesByEntityId.containsKey(it) }

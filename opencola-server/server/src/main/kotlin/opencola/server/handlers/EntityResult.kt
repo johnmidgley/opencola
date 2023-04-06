@@ -31,6 +31,7 @@ data class EntityResult(
         Rate,
         Tag,
         Comment,
+        Attach,
     }
 
     @Serializable

@@ -309,6 +309,22 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
                 }
             }
 
+            post("/entity/{entityId}/attachment") {
+                val entityId =
+                    Id.decode(call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified"))
+                addAttachment(
+                    app.inject(),
+                    app.inject(),
+                    app.inject(),
+                    getContext(call),
+                    expectPersona(call).entityId,
+                    entityId,
+                    call.receive()
+                )?.let {
+                    call.respond(it)
+                }
+            }
+
             post("/post") {
                 newPost(app.inject(), app.inject(), getContext(call), expectPersona(call), call.receive())?.also {
                     call.respond(it)
