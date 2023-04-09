@@ -12,6 +12,7 @@
             [opencola.web-ui.view.common :refer [action-img image-divider
                                                  inline-divider md->component
                                                  simple-mde]]
+            [opencola.web-ui.view.likes :refer [item-likes like-edit-control]]
             [opencola.web-ui.view.saves :refer [item-saves save-item]]
             [opencola.web-ui.view.search :as search]
             [opencola.web-ui.view.tags :refer [item-tags item-tags-summary]]
@@ -155,23 +156,6 @@
           (if preview?
             [:span.action "Show more" (action-img "show")]
             [:span.action "Show less" (action-img "hide")]))]])))
-
-(defn item-like [like-action]
-  (let [{authority-name :authorityName
-         epoch-second :epochSecond} like-action]
-    [:tr.item-attribution
-     [:td (str authority-name)]
-     [:td (format-time epoch-second)]]))
-
-;; TODO: Templatize this - same for saves and comments
-(defn item-likes [expanded?! like-actions]
-  (when @expanded?!
-    [:div.item-likes
-     [:div.list-header "Likes:"]
-     [:table
-      [:tbody
-       (doall (for [like-action like-actions]
-                ^{:key like-action} [item-like like-action]))]]]))
 
 (defn action-summary [persona-id! feed! key action-expanded? activities on-click]
   (let [actions (key activities)
@@ -340,13 +324,6 @@
      {:type "text"
       :value (:comment @edit-item!)
       :on-change #(swap! edit-item! assoc-in [:comment] (-> % .-target .-value))}]]])
-
-(defn like-edit-control [edit-item!]
-  [:div.like-edit-control
-   [:span.field-header "Like: "]
-   [:span {:class (when (:like @edit-item!) "highlight")
-           :on-click (fn [] (swap! edit-item! update-in [:like] #(if % nil true)))}
-    (action-img "like")]])
 
 ;; TODO: Put error in separate variable - then create and manage edit-iten only in here
 (defn edit-item-control [personas! persona-id! item edit-item! on-save on-cancel on-delete]
