@@ -12,6 +12,7 @@
             [opencola.web-ui.view.common :refer [action-img image-divider
                                                  inline-divider md->component
                                                  simple-mde]]
+            [opencola.web-ui.view.saves :refer [item-saves]]
             [opencola.web-ui.view.search :as search]
             [opencola.web-ui.view.tags :refer [item-tags item-tags-summary]]
             [reagent.core :as reagent :refer [atom]]))
@@ -66,10 +67,6 @@
       :like (some #(when (= authority-id (:authorityId %)) (reader/read-string (:value %))) likes)
       :tags (tags-as-string authority-id item)
       :comment ""})))
-
-(defn data-url [host data-id]
-  (when data-id
-    (str "/data/" data-id)))
 
 (defn edit-control [editing?!]
   [:span.edit-entity {:on-click #(reset! editing?! true)} (action-img "edit")])
@@ -158,28 +155,6 @@
           (if preview?
             [:span.action "Show more" (action-img "show")]
             [:span.action "Show less" (action-img "hide")]))]])))
-
-(defn item-save [save-action]
-  (let [{authority-name :authorityName
-         epoch-second :epochSecond
-         data-id :id
-         host :host} save-action]
-    [:tr.item-attribution
-     [:td authority-name " "]
-     [:td (format-time epoch-second)]
-     [:td
-      (when data-id
-        [:span
-         [:a.action-link  {:href (data-url host data-id) :target "_blank"} [action-img "archive"]]])]]))
-
-(defn item-saves [expanded?! save-actions]
-  (when @expanded?!
-    [:div.item-saves
-     [:div.list-header "Saves:"]
-     [:table
-      [:tbody
-       (doall (for [save-action save-actions]
-                ^{:key save-action} [item-save save-action]))]]]))
 
 (defn item-like [like-action]
   (let [{authority-name :authorityName
