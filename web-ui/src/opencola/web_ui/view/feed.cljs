@@ -84,7 +84,7 @@
                (filterv #(not= comment-id (:id %)) comments))))
 
 
-(defn update-comment [persona-id feed! entity-id comment-id text editing?! error!]
+(defn update-comment [persona-id feed! entity-id comment-id text error!]
   (model/update-comment
    (:context @feed!)
    persona-id
@@ -115,7 +115,7 @@
                                         :value @text!
                                         :on-change #(reset! text! (-> % .-target .-value))}]
           [error/error-control @error!]
-          [:button {:on-click #(update-comment @persona-id! feed! entity-id comment-id @text! expanded?! error!)}
+          [:button {:on-click #(update-comment @persona-id! feed! entity-id comment-id @text! error!)}
            "Save"] " "
           [:button {:on-click #(reset! expanded?! false)} "Cancel"]
           (when comment-id
@@ -158,7 +158,7 @@
             [:span.action "Show more" (action-img "show")]
             [:span.action "Show less" (action-img "hide")]))]])))
 
-(defn action-summary [persona-id! feed! key action-expanded? activities on-click]
+(defn action-summary [persona-id! key action-expanded? activities on-click]
   (let [actions (key activities)
         expanded? (key action-expanded?)
         highlight (some #(= @persona-id! (:authorityId %)) actions)]
@@ -217,15 +217,15 @@
         [:div.activities-summary
          (when personas!
            [:span [persona-select personas! persona-id!] inline-divider])
-         [action-summary persona-id! feed! :save action-expanded? activities #(save-item context @persona-id! item update-feed-item on-error)]
+         [action-summary persona-id! :save action-expanded? activities #(save-item context @persona-id! item update-feed-item on-error)]
          inline-divider
-         [action-summary persona-id! feed! :like action-expanded? activities #(like-item @persona-id! feed! item)]
+         [action-summary persona-id! :like action-expanded? activities #(like-item @persona-id! feed! item)]
          inline-divider
-         [action-summary persona-id! feed! :tag action-expanded?  activities #(swap! tagging? not)]
+         [action-summary persona-id! :tag action-expanded?  activities #(swap! tagging? not)]
          inline-divider
-         [action-summary persona-id! feed! :comment action-expanded? activities #(swap! commenting? not)]
+         [action-summary persona-id! :comment action-expanded? activities #(swap! commenting? not)]
          inline-divider
-         [action-summary persona-id! feed! :attach action-expanded? activities #(swap! attaching? not)]
+         [action-summary persona-id! :attach action-expanded? activities #(swap! attaching? not)]
          inline-divider
          [edit-control editing?!]
          [:div.activity-block
@@ -396,7 +396,7 @@
               ^{:key [item @persona-id!]}
               [feed-item @persona-id! (when (not @persona-id!) personas!) feed! item]))]))
 
-(defn header-actions [persona! creating-post?!]
+(defn header-actions [creating-post?!]
   [:div.header-actions
    [:img.header-icon {:src  "../img/new-post.png" :on-click #(swap! creating-post?! not)}]
    (when true ;@persona!
@@ -433,7 +433,7 @@
         on-persona-select
         query!
         on-search
-        (partial header-actions persona-id! creating-post?!)]
+        (partial header-actions creating-post?!)]
        [error/error-control @feed!]
        (when @creating-post?!
          (let [edit-item! (atom (edit-item))]
