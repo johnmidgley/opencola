@@ -83,17 +83,6 @@
              (fn [comments]
                (filterv #(not= comment-id (:id %)) comments))))
 
-
-(defn update-comment [persona-id feed! entity-id comment-id text error!]
-  (model/update-comment
-   (:context @feed!)
-   persona-id
-   entity-id
-   comment-id
-   text
-   #(update-feed-item feed! %)
-   #(error/set-error! error! %)))
-
 (defn delete-comment [feed! persona-id entity-id comment-id error!]
   (let [item (get-item @feed! entity-id)]
     (model/delete-comment
@@ -105,8 +94,11 @@
      #(error/set-error! error! %))))
 
 (defn comment-control [persona-id! feed! entity-id comment-id text expanded?!]
-  (let [text! (atom text)
-        error! (atom {})]
+  (let [context (:context @feed!)
+        text! (atom text)
+        error! (atom {})
+        update-feed-item #(update-feed-item feed! %)
+        on-error #(error/set-error! error! %)]
     (fn []
       (when @expanded?!
         [:div.item-comment
@@ -115,7 +107,7 @@
                                         :value @text!
                                         :on-change #(reset! text! (-> % .-target .-value))}]
           [error/error-control @error!]
-          [:button {:on-click #(update-comment @persona-id! feed! entity-id comment-id @text! error!)}
+          [:button {:on-click #(model/update-comment context @persona-id! entity-id comment-id @text! update-feed-item on-error)}
            "Save"] " "
           [:button {:on-click #(reset! expanded?! false)} "Cancel"]
           (when comment-id
