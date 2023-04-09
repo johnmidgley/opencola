@@ -12,7 +12,7 @@
             [opencola.web-ui.view.common :refer [action-img image-divider
                                                  inline-divider md->component
                                                  simple-mde]]
-            [opencola.web-ui.view.saves :refer [item-saves]]
+            [opencola.web-ui.view.saves :refer [item-saves save-item]]
             [opencola.web-ui.view.search :as search]
             [opencola.web-ui.view.tags :refer [item-tags item-tags-summary]]
             [reagent.core :as reagent :refer [atom]]))
@@ -182,17 +182,6 @@
      [:span {:on-click #(toggle-atom (map second action-expanded?) expanded?)} " " (count actions)
       (action-img (if @expanded? "hide" "show"))]]))
 
-(defn save-item [persona-id feed! item]
-  (let [actions (-> item :activities :save)
-        saved? (some #(= persona-id (:authorityId %)) actions)]
-    (when (not saved?)
-      (model/save-entity
-       (:context @feed!)
-       persona-id
-       item
-       #(update-feed-item feed! %)
-       #(update-feed-item feed! (error/set-error item %))))))
-
 (defn update-display-entity [persona-id feed! edit-item item]
   (model/update-entity
    (:context @feed!)
@@ -240,6 +229,9 @@
         tagging? (atom false)
         commenting? (atom false)
         attaching? (atom false)
+        context (:context @feed!)
+        update-feed-item #(update-feed-item feed! %)
+        on-error #(update-feed-item (error/set-error item %))
         preview-fn? (fn [] (every? #(not @%) (map second action-expanded?)))]
     (fn []
       (let [entity-id (:entityId item)
@@ -247,7 +239,7 @@
         [:div.activities-summary
          (when personas!
            [:span [persona-select personas! persona-id!] inline-divider])
-         [action-summary persona-id! feed! :save action-expanded? activities #(save-item @persona-id! feed! item)]
+         [action-summary persona-id! feed! :save action-expanded? activities #(save-item context @persona-id! item update-feed-item on-error)]
          inline-divider
          [action-summary persona-id! feed! :like action-expanded? activities #(like-item @persona-id! feed! item)]
          inline-divider

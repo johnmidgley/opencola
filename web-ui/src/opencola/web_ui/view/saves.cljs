@@ -1,5 +1,6 @@
 (ns opencola.web-ui.view.saves 
-  (:require [opencola.web-ui.time :refer [format-time]]
+  (:require [opencola.web-ui.model.feed :as model]
+            [opencola.web-ui.time :refer [format-time]]
             [opencola.web-ui.view.common :refer [action-img]]))
 
 (defn data-url [data-id]
@@ -26,3 +27,14 @@
       [:tbody
        (doall (for [save-action save-actions]
                 ^{:key save-action} [item-save save-action]))]]]))
+
+(defn save-item [context persona-id item on-success on-error]
+  (let [actions (-> item :activities :save)
+        saved? (some #(= persona-id (:authorityId %)) actions)]
+    (when (not saved?)
+      (model/save-entity
+       context
+       persona-id
+       item
+       #(on-success %)
+       #(on-error %)))))
