@@ -82,10 +82,10 @@
              (fn [comments]
                (filterv #(not= comment-id (:id %)) comments))))
 
-(defn comment-control [context persona-id! feed! entity-id comment-id text expanded?!]
-  (let [text! (atom text)
-        error! (atom {})
-        update-feed-item #(update-feed-item feed! %)
+(defn comment-control [context persona-id! item comment-id text expanded?! on-update]
+  (let [entity-id (:entityId item)
+        text! (atom text)
+        error! (atom {}) 
         on-error #(error/set-error! error! %)]
     (fn []
       (when @expanded?!
@@ -95,7 +95,7 @@
                                         :value @text!
                                         :on-change #(reset! text! (-> % .-target .-value))}]
           [error/error-control @error!]
-          [:button {:on-click #(model/update-comment context @persona-id! entity-id comment-id @text! update-feed-item on-error)}
+          [:button {:on-click #(model/update-comment context @persona-id! entity-id comment-id @text! on-update on-error)}
            "Save"] " "
           [:button {:on-click #(reset! expanded?! false)} "Cancel"]
           (when comment-id
@@ -104,7 +104,7 @@
                           context
                           @persona-id!
                           comment-id
-                          (fn [] (update-feed-item (remove-comment (get-item @feed! entity-id) comment-id)))
+                          (fn [] (on-update (remove-comment item comment-id)))
                           on-error)} "Delete"])]]))))
 
 (defn item-comment [context persona-id! feed! entity-id comment-action]
@@ -115,6 +115,8 @@
              epoch-second :epochSecond
              text :value
              comment-id :id} comment-action
+            item (get-item @feed! entity-id)
+            on-update #(update-feed-item feed! %)
             editable? (= authority-id @persona-id!)]
         (when (not editable?)
           (reset! editing?! false))
@@ -125,7 +127,7 @@
             [:span {:on-click #(reset! editing?! true)} [action-img "edit"]])
           ":"]
          (if (and editable? @editing?!)
-           [comment-control context persona-id! feed! entity-id comment-id text editing?!]
+           [comment-control context persona-id! item comment-id text editing?! on-update]
            [:div.item-comment-container [md->component {:class "item-comment-text"} text]])]))))
 
 (defn item-comments [context persona-id! preview-fn? expanded?! comment-actions feed! entity-id]
@@ -215,7 +217,7 @@
          [edit-control editing?!]
          [:div.activity-block
           [tags-control persona-id! feed! item tagging?]
-          [comment-control context persona-id! feed! entity-id nil "" commenting?]
+          [comment-control context persona-id! (get-item @feed! entity-id) nil "" commenting? update-feed-item]
           ;; TODO: Cleanup error handling + make update-feed-item general
           [attachment-control persona-id! feed! entity-id attaching? update-feed-item #(set-item-error feed! item %)]
           [item-saves (:save action-expanded?) (:save activities)]
