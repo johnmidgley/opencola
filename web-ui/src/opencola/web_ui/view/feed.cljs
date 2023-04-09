@@ -175,7 +175,7 @@
    #(update-feed-item feed! %)
    #(update-feed-item feed! (error/set-error item %))))
 
-(defn update-edit-entity [persona-id feed! editing?! edit-item! item]
+(defn update-edit-entity [persona-id feed! edit-item!]
   (model/update-entity
    (:context @feed!)
    persona-id
@@ -199,7 +199,7 @@
            :value (:tags @edit-item!)
            :on-change #(swap! edit-item! assoc-in [:tags] (-> % .-target .-value))}]
          [error/error-control @edit-item!]
-         [:button {:on-click #(update-edit-entity @persona-id! feed! tagging?! edit-item! item)} "Save"] " "
+         [:button {:on-click #(update-edit-entity @persona-id! feed! edit-item!)} "Save"] " "
          [:button {:on-click #(reset! tagging?! false)} "Cancel"] " "]))))
 
 (defn item-activities [persona-id! personas! feed! item editing?!]
@@ -368,7 +368,7 @@
      persona-id!
      item
      edit-item!
-     #(update-edit-entity @persona-id! feed! editing?! edit-item! item)
+     #(update-edit-entity @persona-id! feed! edit-item!)
      #(reset! editing?! false)
      #(delete-entity @persona-id! feed! editing?! item edit-item!))))
 
