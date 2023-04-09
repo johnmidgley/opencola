@@ -13,6 +13,7 @@
                                                  inline-divider md->component
                                                  simple-mde]]
             [opencola.web-ui.view.likes :refer [item-likes like-edit-control]]
+            [opencola.web-ui.view.persona :refer [persona-select]]
             [opencola.web-ui.view.saves :refer [item-saves save-item]]
             [opencola.web-ui.view.search :as search]
             [opencola.web-ui.view.tags :refer [item-tags item-tags-summary]]
@@ -201,13 +202,6 @@
          [:button {:on-click #(update-edit-entity @persona-id! feed! tagging?! edit-item! item)} "Save"] " "
          [:button {:on-click #(reset! tagging?! false)} "Cancel"] " "]))))
 
-(defn persona-select [personas! persona-id!]
-  [:select {:id "persona-select"
-            :on-change #(reset! persona-id! (-> % .-target .-value))
-            :value @persona-id!}
-   (doall (for [persona (:items @personas!)]
-            ^{:key persona} [:option  {:value (:id persona)} (:name persona)]))])
-
 (defn item-activities [persona-id! personas! feed! item editing?!]
   (let [action-expanded? (apply hash-map (mapcat #(vector % (atom false)) [:save :like :tag :comment :attach]))
         tagging? (atom false)
@@ -244,7 +238,6 @@
           [item-tags (:tag action-expanded?) (:tag activities)]
           [item-comments persona-id! preview-fn? (:comment action-expanded?) (:comment activities) feed! entity-id]
           [item-attachments (:attach action-expanded?) (:attach activities)]]]))))
-
 
 (defn item-name [summary]
   (let [item-uri (:uri summary)

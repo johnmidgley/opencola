@@ -38,6 +38,13 @@
    #(reset! personas! %)
    #(error/set-error! persona! %)))
 
+(defn persona-select [personas! persona-id!]
+  [:select {:id "persona-select"
+            :on-change #(reset! persona-id! (-> % .-target .-value))
+            :value @persona-id!}
+   (doall (for [persona (:items @personas!)]
+            ^{:key persona} [:option  {:value (:id persona)} (:name persona)]))])
+
 (defn header-actions [adding-persona?!]
   [:div.header-actions 
    [:img.header-icon {:src  "../img/add-peer.png" :on-click #(swap! adding-persona?! not)}]])
