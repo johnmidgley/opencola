@@ -76,16 +76,14 @@
 (defn get-item [feed entity-id]
   (->> feed :results (some #(when (= entity-id (:entityId %)) %))))
 
-
 (defn remove-comment [item comment-id]
   (update-in item
              [:activities :comment]
              (fn [comments]
                (filterv #(not= comment-id (:id %)) comments))))
 
-(defn comment-control [persona-id! feed! entity-id comment-id text expanded?!]
-  (let [context (:context @feed!)
-        text! (atom text)
+(defn comment-control [context persona-id! feed! entity-id comment-id text expanded?!]
+  (let [text! (atom text)
         error! (atom {})
         update-feed-item #(update-feed-item feed! %)
         on-error #(error/set-error! error! %)]
@@ -109,7 +107,7 @@
                           (fn [] (update-feed-item (remove-comment (get-item @feed! entity-id) comment-id)))
                           on-error)} "Delete"])]]))))
 
-(defn item-comment [persona-id! feed! entity-id comment-action]
+(defn item-comment [context persona-id! feed! entity-id comment-action]
   (let [editing?! (atom false)]
     (fn []
       (let [{authority-id :authorityId
@@ -127,10 +125,10 @@
             [:span {:on-click #(reset! editing?! true)} [action-img "edit"]])
           ":"]
          (if (and editable? @editing?!)
-           [comment-control persona-id! feed! entity-id comment-id text editing?!]
+           [comment-control context persona-id! feed! entity-id comment-id text editing?!]
            [:div.item-comment-container [md->component {:class "item-comment-text"} text]])]))))
 
-(defn item-comments [persona-id! preview-fn? expanded?! comment-actions feed! entity-id]
+(defn item-comments [context persona-id! preview-fn? expanded?! comment-actions feed! entity-id]
   (let [preview? (preview-fn?)
         more (- (count comment-actions) 3)
         comment-actions (if preview? (take 3 comment-actions) comment-actions)]
@@ -138,7 +136,7 @@
       [:div.item-comments
        [:span {:on-click (fn [] (swap! expanded?! #(not %)))} "Comments:"]
        (doall (for [comment-action comment-actions]
-                ^{:key comment-action} [item-comment persona-id! feed! entity-id comment-action]))
+                ^{:key comment-action} [item-comment context persona-id! feed! entity-id comment-action]))
        [:div.item-comments-footer {:on-click (fn [] (swap! expanded?! #(not %)))}
         (when (> more 0)
           (if preview?
@@ -217,13 +215,13 @@
          [edit-control editing?!]
          [:div.activity-block
           [tags-control persona-id! feed! item tagging?]
-          [comment-control persona-id! feed! entity-id nil "" commenting?]
+          [comment-control context persona-id! feed! entity-id nil "" commenting?]
           ;; TODO: Cleanup error handling + make update-feed-item general
           [attachment-control persona-id! feed! entity-id attaching? update-feed-item #(set-item-error feed! item %)]
           [item-saves (:save action-expanded?) (:save activities)]
           [item-likes (:like action-expanded?) (:like activities)]
           [item-tags (:tag action-expanded?) (:tag activities)]
-          [item-comments persona-id! preview-fn? (:comment action-expanded?) (:comment activities) feed! entity-id]
+          [item-comments context persona-id! preview-fn? (:comment action-expanded?) (:comment activities) feed! entity-id]
           [item-attachments (:attach action-expanded?) (:attach activities)]]]))))
 
 (defn item-name [summary]
