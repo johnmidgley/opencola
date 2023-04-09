@@ -107,7 +107,7 @@
                           (fn [] (on-update (remove-comment item comment-id)))
                           on-error)} "Delete"])]]))))
 
-(defn item-comment [context persona-id! feed! entity-id comment-action]
+(defn item-comment [context persona-id! item comment-action on-update]
   (let [editing?! (atom false)]
     (fn []
       (let [{authority-id :authorityId
@@ -115,8 +115,6 @@
              epoch-second :epochSecond
              text :value
              comment-id :id} comment-action
-            item (get-item @feed! entity-id)
-            on-update #(update-feed-item feed! %)
             editable? (= authority-id @persona-id!)]
         (when (not editable?)
           (reset! editing?! false))
@@ -133,12 +131,14 @@
 (defn item-comments [context persona-id! preview-fn? expanded?! comment-actions feed! entity-id]
   (let [preview? (preview-fn?)
         more (- (count comment-actions) 3)
-        comment-actions (if preview? (take 3 comment-actions) comment-actions)]
+        comment-actions (if preview? (take 3 comment-actions) comment-actions)
+        item (get-item @feed! entity-id)
+        on-update #(update-feed-item feed! %)]
     (when (or @expanded?! (and preview? (not-empty comment-actions)))
       [:div.item-comments
        [:span {:on-click (fn [] (swap! expanded?! #(not %)))} "Comments:"]
        (doall (for [comment-action comment-actions]
-                ^{:key comment-action} [item-comment context persona-id! feed! entity-id comment-action]))
+                ^{:key comment-action} [item-comment context persona-id! item comment-action on-update]))
        [:div.item-comments-footer {:on-click (fn [] (swap! expanded?! #(not %)))}
         (when (> more 0)
           (if preview?
