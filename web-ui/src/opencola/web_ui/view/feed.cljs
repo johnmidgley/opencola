@@ -198,13 +198,20 @@
        [item-activities persona-id! personas! feed! item editing?!]
        [error/error-control item]])))
 
-(defn name-edit-control [edit-item!]
-  [:div.item-name
-   [:div.field-header "Title:"]
-   [:input.item-link
-    {:type "text"
-     :value (:name @edit-item!)
-     :on-change #(swap! edit-item! assoc-in [:name] (-> % .-target .-value))}]])
+(defn on-change [item! key]
+  #(swap! item! assoc-in [key] %))
+
+(defn name-edit-control [name on-change]
+  (let [edit-name! (atom name)]
+    [:div.item-name
+     [:div.field-header "Title:"]
+     [:input.item-link
+      {:type "text"
+       :value @edit-name!
+       :on-change (fn [e]
+                    (let [val (-> e .-target .-value)]
+                      (reset! edit-name! val)
+                      (on-change val)))}]]))
 
 (defn image-uri-edit-control [edit-item!]
   (let [image-uri (:imageUri @edit-item!)]
@@ -247,13 +254,14 @@
   (let [description-state! (atom nil)
         expanded?! (atom false)
         tagging?! (atom false)
-        commenting?! (atom false)]
+        commenting?! (atom false)
+        on-change (partial on-change edit-item!)]
     (fn [] 
       (let [deletable? (some #(= @persona-id! (:authorityId %)) (-> item :activities :save))] 
         [:div.feed-item
          [:div.error (:error @edit-item!)]
          (when (or @expanded?! (seq (:name @edit-item!)))
-           [name-edit-control edit-item!])
+           [name-edit-control (:name @edit-item!) (on-change :name)])
          (when (or @expanded?! (seq (:imageUri @edit-item!)))
            [image-uri-edit-control edit-item!])
          (when @expanded?!
