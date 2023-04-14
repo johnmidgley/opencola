@@ -17,7 +17,8 @@
             [opencola.web-ui.view.persona :refer [persona-select]]
             [opencola.web-ui.view.saves :refer [item-saves save-item]]
             [opencola.web-ui.view.search :as search]
-            [opencola.web-ui.view.tags :refer [item-tags item-tags-summary]]
+            [opencola.web-ui.view.tags :refer [item-tags item-tags-summary
+                                               item-tags-summary-from-string]]
             [reagent.core :as reagent :refer [atom]]))
 
 
@@ -228,7 +229,7 @@
 
 (defn description-edit-control [edit-item! state!]
   [:div.description-edit-control
-   [:div.field-header "Description:"]
+   #_[:div.field-header "Description:"]
    [:div.item-desc
     [simple-mde (str (:entityId @edit-item!) "-desc") (:description @edit-item!) state!]]])
 
@@ -243,26 +244,47 @@
 
 ;; TODO: Put error in separate variable - then create and manage edit-iten only in here
 (defn edit-item-control [personas! persona-id! item edit-item! on-save on-cancel on-delete]
-  (let [description-state! (atom nil)]
-    (fn []
-      (let [deletable? (some #(= @persona-id! (:authorityId %)) (-> item :activities :save))]
+  (let [description-state! (atom nil)
+        expanded?! (atom false)
+        tagging?! (atom false)
+        commenting?! (atom false)]
+    (fn [] 
+      (let [deletable? (some #(= @persona-id! (:authorityId %)) (-> item :activities :save))] 
         [:div.feed-item
          [:div.error (:error @edit-item!)]
-         [name-edit-control edit-item!]
-         [image-uri-edit-control edit-item!]
-         [description-edit-control edit-item! description-state!]
-         [like-edit-control edit-item!]
-         [tags-edit-control edit-item!]
-         [comment-edit-control edit-item!]
+         (when (or @expanded?! (seq (:name @edit-item!)))
+           [name-edit-control edit-item!])
+         (when (or @expanded?! (seq (:imageUri @edit-item!)))
+           [image-uri-edit-control edit-item!])
+         (when @expanded?!
+           [:div.field-header "Description:"])
+         [description-edit-control edit-item! description-state!] 
+         [item-tags-summary-from-string (:tags @edit-item!)]
          [error/error-control @edit-item!]
-         (when personas!
-           [:span [persona-select personas! persona-id!] " "])
-         [:button {:on-click (fn []
-                               (swap! edit-item! assoc-in [:description] (.value @description-state!))
-                               (on-save @persona-id!))} "Save"] " "
-         [:button {:on-click on-cancel} "Cancel"] " "
-         (when deletable?
-           [:button.delete-button {:on-click on-delete} "Delete"])]))))
+         [:div.activities-summary
+          (when personas!
+            [:span [persona-select personas! persona-id!] " "] inline-divider) 
+          [:span {:on-click #(swap! expanded?! not)} [action-img "expand"]]
+          inline-divider
+          [like-edit-control edit-item!]
+          inline-divider
+          [:span {:on-click #(swap! tagging?! not)} [action-img "tag"]]
+          inline-divider
+          [:span {:on-click #(swap! commenting?! not)} [action-img "comment"]]
+          inline-divider
+          [action-img "attach"]] 
+         [:div 
+          (when @tagging?!
+            [tags-edit-control edit-item!])
+          (when @commenting?!
+            [comment-edit-control edit-item!])]
+         [:div
+          [:button {:on-click (fn []
+                                (swap! edit-item! assoc-in [:description] (.value @description-state!))
+                                (on-save @persona-id!))} "Save"] " "
+          [:button {:on-click on-cancel} "Cancel"] " "
+          (when deletable?
+            [:button.delete-button {:on-click on-delete} "Delete"])]]))))
 
 
 (defn delete-feed-item [feed! entity-id]

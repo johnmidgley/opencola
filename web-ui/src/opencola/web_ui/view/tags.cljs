@@ -1,6 +1,6 @@
 (ns opencola.web-ui.view.tags
-  (:require
-   [opencola.web-ui.time :refer [format-time]]))
+  (:require [clojure.string :as str]
+            [opencola.web-ui.time :refer [format-time]]))
 
 (defn tag [name]
   [:span.tag name])
@@ -10,6 +10,13 @@
     [:div.tags
      (interpose " "
                 (doall (for [name (distinct (map :value actions))]
+                         ^{:key name} [tag name])))]))
+
+(defn item-tags-summary-from-string [tags-string]
+  (let [tags (filter #(seq %) (str/split tags-string #"\s+"))] 
+    [:div.tags
+     (interpose " "
+                (doall (for [name (distinct tags)]
                          ^{:key name} [tag name])))]))
 
 (defn item-tag [tag-action]

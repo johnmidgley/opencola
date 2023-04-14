@@ -20,8 +20,6 @@
                 ^{:key like-action} [item-like like-action]))]]]))
 
 (defn like-edit-control [edit-item!]
-  [:div.like-edit-control
-   [:span.field-header "Like: "]
-   [:span {:class (when (:like @edit-item!) "highlight")
-           :on-click (fn [] (swap! edit-item! update-in [:like] #(if % nil true)))}
-    (action-img "like")]])
+  [:span {:class (when (:like @edit-item!) "highlight")
+          :on-click (fn [] (swap! edit-item! update-in [:like] #(if % nil true)))}
+   (action-img "like")])
