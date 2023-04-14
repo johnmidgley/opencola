@@ -201,17 +201,30 @@
 (defn on-change [item! key]
   #(swap! item! assoc-in [key] %))
 
-(defn name-edit-control [name on-change]
-  (let [edit-name! (atom name)]
-    [:div.item-name
-     [:div.field-header "Title:"]
-     [:input.item-link
-      {:type "text"
-       :value @edit-name!
-       :on-change (fn [e]
-                    (let [val (-> e .-target .-value)]
-                      (reset! edit-name! val)
-                      (on-change val)))}]]))
+(defn text-input [text on-change]
+  (let [edit-text! (atom text)]
+    [:input.text-input
+     {:type "text"
+      :value @edit-text!
+      :on-change (fn [e]
+                   (let [val (-> e .-target .-value)]
+                     (reset! edit-text! val)
+                     (on-change val)))}]))
+
+(defn text-area [text on-change]
+  (let [edit-text! (atom text)]
+    [:textarea.text-area
+     {:type "text"
+      :value @edit-text!
+      :on-change (fn [e]
+                   (let [val (-> e .-target .-value)]
+                     (reset! edit-text! val)
+                     (on-change val)))}]))
+
+(defn name-edit-control [name on-change] 
+  [:div.item-name
+   [:div.field-header "Title:"]
+   [text-input name on-change]])
 
 (defn image-uri-edit-control [edit-item!]
   (let [image-uri (:imageUri @edit-item!)]
@@ -226,13 +239,10 @@
         :value (:imageUri @edit-item!)
         :on-change #(swap! edit-item! assoc-in [:imageUri] (-> % .-target .-value))}]]]))
 
-(defn tags-edit-control [edit-item!]
+(defn tags-edit-control [tags on-change]
   [:div.tags-edit-control
    [:div.field-header "Tags:"]
-   [:input.tags-text
-    {:type "text"
-     :value (:tags @edit-item!)
-     :on-change #(swap! edit-item! assoc-in [:tags] (-> % .-target .-value))}]])
+   [text-input tags on-change]])
 
 (defn description-edit-control [edit-item! state!]
   [:div.description-edit-control
@@ -240,14 +250,11 @@
    [:div.item-desc
     [simple-mde (str (:entityId @edit-item!) "-desc") (:description @edit-item!) state!]]])
 
-(defn comment-edit-control [edit-item!]
+(defn comment-edit-control [comment on-change]
   [:div.comment-edit-control
    [:div.field-header "Comment:"]
    [:div
-    [:textarea.comment-text-edit
-     {:type "text"
-      :value (:comment @edit-item!)
-      :on-change #(swap! edit-item! assoc-in [:comment] (-> % .-target .-value))}]]])
+    [text-area comment on-change]]])
 
 ;; TODO: Put error in separate variable - then create and manage edit-iten only in here
 (defn edit-item-control [personas! persona-id! item edit-item! on-save on-cancel on-delete]
@@ -283,9 +290,9 @@
           [action-img "attach"]] 
          [:div 
           (when @tagging?!
-            [tags-edit-control edit-item!])
+            [tags-edit-control (:tags @edit-item!) (on-change :tags)])
           (when @commenting?!
-            [comment-edit-control edit-item!])]
+            [comment-edit-control (:comment @edit-item!) (on-change :comment)])]
          [:div
           [:button {:on-click (fn []
                                 (swap! edit-item! assoc-in [:description] (.value @description-state!))
