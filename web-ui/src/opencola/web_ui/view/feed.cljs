@@ -262,6 +262,7 @@
         expanded?! (atom false)
         tagging?! (atom false)
         commenting?! (atom false)
+        attaching?! (atom false)
         on-change (partial on-change edit-item!)]
     (fn [] 
       (let [deletable? (some #(= @persona-id! (:authorityId %)) (-> item :activities :save))] 
@@ -278,7 +279,7 @@
          [error/error-control @edit-item!]
          [:div.activities-summary
           (when personas!
-            [:span [persona-select personas! persona-id!] " "] inline-divider) 
+             [:span [persona-select personas! persona-id!] inline-divider]) 
           [:span {:on-click #(swap! expanded?! not)} [action-img "expand"]]
           inline-divider
           [like-edit-control edit-item!]
@@ -287,12 +288,14 @@
           inline-divider
           [:span {:on-click #(swap! commenting?! not)} [action-img "comment"]]
           inline-divider
-          [action-img "attach"]] 
+          [:span {:on-click #(swap! attaching?! not)} [action-img "attach"]]] 
          [:div 
           (when @tagging?!
             [tags-edit-control (:tags @edit-item!) (on-change :tags)])
           (when @commenting?!
             [comment-edit-control (:comment @edit-item!) (on-change :comment)])]
+         (when @attaching?!
+           [:span "Attaching"])
          [:div
           [:button {:on-click (fn []
                                 (swap! edit-item! assoc-in [:description] (.value @description-state!))
