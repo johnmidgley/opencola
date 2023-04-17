@@ -1,18 +1,17 @@
 (ns ^:figwheel-hooks opencola.web-ui.model.feed 
   (:require
-   [opencola.web-ui.ajax :as ajax]
-   [opencola.web-ui.model.error :as error]))
+   [opencola.web-ui.ajax :as ajax]))
 
-(defn error-result->str [{status :status text :status-text response :response}]
+(defn error-result->str [{status :status response :response}]
   (if (= 0 status)
     "Unable to connect to server. Please make sure it is running."
     (:message response)))
 
 (defn set-query [feed query]
-  (if query (assoc-in feed [:query] query)))
+  (when query (assoc-in feed [:query] query)))
 
 (defn model-to-view-item [model-item]
-  (if (not-empty model-item)
+  (when (not-empty model-item)
     (update model-item 
             :activities
             (fn [activities]
@@ -84,4 +83,11 @@
    (str "entity/" entity-id "/attachment?context=" context "&personaId=" persona-id)
    file-list
    #(on-success (model-to-view-item %))
+   #(on-error (error-result->str %))))
+
+(defn upload-files [persona-id file-list on-success on-error]
+  (ajax/upload-files
+   (str "upload?personaId=" persona-id) 
+   file-list
+   #(on-success %)
    #(on-error (error-result->str %))))
