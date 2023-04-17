@@ -24,23 +24,14 @@
                 :on-change #(reset! file-list! (.. % -target -files))}]
        [:button {:on-click #(.click (js/document.getElementById input-id))} "Select Files"]])))
 
-(defn attachment-control [persona-id! feed! entity-id expanded?! update-feed-item on-error]
+(defn attachment-control [expanded?! on-attach]
   (when @expanded?!
     (let [file-list! (atom [])]
       [:div.attachment-control
        [:div.attachment-control-header "Add Attachments:"]
        [selected-files-table file-list!]
        [select-files-control file-list!] " "
-       [:button {:on-click (fn []
-                             (model/add-attachments
-                              (:context @feed!)
-                              @persona-id!
-                              entity-id
-                              @file-list!
-                              (fn [item]
-                                (update-feed-item feed! item)
-                                (reset! expanded?! false))
-                              on-error))} "Attach"] " "
+       [:button {:on-click #(on-attach @file-list!)} "Attach"] " "
        [:button {:on-click (fn [] (swap! expanded?! #(not %)))} "Cancel"]])))
 
 (defn item-attachment [action]

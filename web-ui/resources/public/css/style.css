@@ -314,3 +314,7 @@ input.input-text {
     color: darkblue;
 }
 
+.edit-control-buttons {
+    margin-top: 10px;
+}
+

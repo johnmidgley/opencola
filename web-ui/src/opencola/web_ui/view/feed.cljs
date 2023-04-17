@@ -5,7 +5,7 @@
             [opencola.web-ui.common :refer [toggle-atom]]
             [opencola.web-ui.location :as location]
             [opencola.web-ui.model.error :as error]
-            [opencola.web-ui.model.feed :as model]
+            [opencola.web-ui.model.feed :as model :refer [upload-files]]
             [opencola.web-ui.view.attachments :refer [attachment-control
                                                       item-attachments]]
             [opencola.web-ui.view.comments :refer [comment-control
@@ -122,6 +122,7 @@
          [:button {:on-click #(update-edit-entity @persona-id! feed! edit-item!)} "Save"] " "
          [:button {:on-click #(reset! tagging?! false)} "Cancel"] " "]))))
 
+
 (defn item-activities [persona-id! personas! feed! item editing?!]
   (let [action-expanded? (apply hash-map (mapcat #(vector % (atom false)) [:save :like :tag :comment :attach]))
         tagging? (atom false)
@@ -152,7 +153,10 @@
           [tags-control persona-id! feed! item tagging?]
           [comment-control context persona-id! (get-item @feed! entity-id) nil "" commenting? update-feed-item]
           ;; TODO: Cleanup error handling + make update-feed-item general
-          [attachment-control persona-id! feed! entity-id attaching? update-feed-item #(set-item-error feed! item %)]
+          [attachment-control
+           attaching? 
+           #(model/add-attachments context @persona-id! entity-id % (fn [i] (update-feed-item i) (reset! attaching? false)) on-error)
+           update-feed-item #(set-item-error feed! item %)]
           [item-saves (:save action-expanded?) (:save activities)]
           [item-likes (:like action-expanded?) (:like activities)]
           [item-tags (:tag action-expanded?) (:tag activities)]
@@ -282,14 +286,10 @@
          [:div.activities-summary
           (when personas!
              [:span [persona-select personas! persona-id!] inline-divider]) 
-          [:span {:on-click #(swap! expanded?! not)} [action-img "expand"]]
-          inline-divider
-          [like-edit-control edit-item!]
-          inline-divider
-          [:span {:on-click #(swap! tagging?! not)} [action-img "tag"]]
-          inline-divider
-          [:span {:on-click #(swap! commenting?! not)} [action-img "comment"]]
-          inline-divider
+          [:span {:on-click #(swap! expanded?! not)} [action-img "expand"]] inline-divider
+          [like-edit-control edit-item!] inline-divider
+          [:span {:on-click #(swap! tagging?! not)} [action-img "tag"]] inline-divider
+          [:span {:on-click #(swap! commenting?! not)} [action-img "comment"]] inline-divider
           [:span {:on-click #(swap! attaching?! not)} [action-img "attach"]]] 
          [:div 
           (when @tagging?!
@@ -297,8 +297,9 @@
           (when @commenting?!
             [comment-edit-control (:comment @edit-item!) (on-change :comment)])]
          (when @attaching?!
-           [:span "Attaching"])
-         [:div
+           [attachment-control attaching?! 
+            (fn [fs] (upload-files @persona-id! fs #(println %) #(error/set-error @edit-item! %)))])
+         [:div.edit-control-buttons
           [:button {:on-click (fn []
                                 (swap! edit-item! assoc-in [:description] (.value @description-state!))
                                 (on-save @persona-id!))} "Save"] " "
@@ -333,7 +334,9 @@
      persona-id!
      item
      edit-item!
-     #(update-edit-entity @persona-id! feed! edit-item!)
+     (fn []
+       (update-edit-entity @persona-id! feed! edit-item!)
+       (reset! editing?! false))
      #(reset! editing?! false)
      #(delete-entity @persona-id! feed! editing?! item edit-item!))))
 
