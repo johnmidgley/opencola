@@ -265,14 +265,16 @@
         attaching?! (atom false)
         on-change (partial on-change edit-item!)]
     (fn [] 
-      (let [deletable? (some #(= @persona-id! (:authorityId %)) (-> item :activities :save))] 
+      (let [name-expanded? (or @expanded?! (seq (:name @edit-item!)))
+            image-url-expanded? (or @expanded?! (seq (:imageUri @edit-item!))) 
+            deletable? (some #(= @persona-id! (:authorityId %)) (-> item :activities :save))] 
         [:div.feed-item
          [:div.error (:error @edit-item!)]
-         (when (or @expanded?! (seq (:name @edit-item!)))
+         (when name-expanded?
            [name-edit-control (:name @edit-item!) (on-change :name)])
-         (when (or @expanded?! (seq (:imageUri @edit-item!)))
+         (when image-url-expanded?
            [image-uri-edit-control edit-item!])
-         (when @expanded?!
+         (when (or name-expanded? image-url-expanded?)
            [:div.field-header "Description:"])
          [description-edit-control edit-item! description-state!] 
          [item-tags-summary-from-string (:tags @edit-item!)]
