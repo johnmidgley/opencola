@@ -93,12 +93,6 @@ body {
     padding-top: 10px;
 }
 
-
-
-.item-comment-container {
-}
-
-
 .item-comment-edit {
    background-color: #EAEBE0;
    padding: 10px;
@@ -324,5 +318,10 @@ input.input-text {
 
 .attachment-link {
     text-decoration: none;
+}
+
+/* Used by the SimpleMDE component */
+.CodeMirror, .CodeMirror-scroll {
+	min-height: 100px;
 }
 
