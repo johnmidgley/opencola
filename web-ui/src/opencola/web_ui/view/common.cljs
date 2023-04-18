@@ -47,7 +47,7 @@
                          {:element (js/document.getElementById id)
                           :forceSync true
                           :placeholder "Type your post here (or paste a url)..."
-                          ; :autofocus true
+                          :autofocus true
                           :spellChecker false
                           :status false
                           }))))
