@@ -7,14 +7,13 @@
             [opencola.web-ui.model.error :as error]
             [opencola.web-ui.model.feed :as model :refer [upload-files
                                                           upload-result-to-attachments]]
-            [opencola.web-ui.view.attachments :refer [attachment-control
-                                                      attachments-preview
+            [opencola.web-ui.view.attachments :refer [attachments-preview
                                                       item-attachments]]
             [opencola.web-ui.view.comments :refer [comment-control
                                                    item-comments]]
-            [opencola.web-ui.view.common :refer [action-img image-divider
-                                                 inline-divider md->component
-                                                 simple-mde]]
+            [opencola.web-ui.view.common :refer [action-img hidden-file-input
+                                                 image-divider inline-divider
+                                                 md->component select-files-control simple-mde]]
             [opencola.web-ui.view.likes :refer [item-likes like-edit-control]]
             [opencola.web-ui.view.persona :refer [persona-select]]
             [opencola.web-ui.view.saves :refer [item-saves save-item]]
@@ -91,6 +90,12 @@
      [:span {:on-click #(toggle-atom (map second action-expanded?) expanded?)} " " (count actions)
       (action-img (if @expanded? "hide" "show"))]]))
 
+(defn attachment-summary [persona-id! action-expanded? activities on-change]
+  (let [input-id (str (random-uuid))]
+  [:span
+   [hidden-file-input input-id on-change]
+   [action-summary persona-id! :attach action-expanded? activities #(.click (js/document.getElementById input-id))]]))
+
 (defn update-display-entity [persona-id feed! edit-item item]
   (model/update-entity
    (:context @feed!)
@@ -131,11 +136,9 @@
   (let [action-expanded? (apply hash-map (mapcat #(vector % (atom false)) [:save :like :tag :comment :attach]))
         tagging? (atom false)
         commenting? (atom false)
-        attaching? (atom false)
         context (:context @feed!)
         update-feed-item #(update-feed-item feed! %)
         error! (atom nil)
-        on-error #(update-feed-item (error/set-error item %))
         preview-fn? (fn [] (every? #(not @%) (map second action-expanded?)))]
     (fn []
       (let [entity-id (:entityId item)
@@ -151,17 +154,12 @@
          inline-divider
          [action-summary persona-id! :comment action-expanded? activities #(swap! commenting? not)]
          inline-divider
-         [action-summary persona-id! :attach action-expanded? activities #(swap! attaching? not)]
+         [attachment-summary persona-id! action-expanded? activities #(model/add-attachments context @persona-id! entity-id % update-feed-item on-error)]
          inline-divider
          [edit-control editing?!]
          [:div.activity-block
           [tags-control persona-id! feed! item tagging?]
           [comment-control context persona-id! (get-item @feed! entity-id) nil "" commenting? update-feed-item]
-          ;; TODO: Cleanup error handling + make update-feed-item general
-          [attachment-control
-           attaching? 
-           #(model/add-attachments context @persona-id! entity-id % (fn [i] (update-feed-item i) (reset! attaching? false)) on-error)
-           update-feed-item #(set-item-error feed! item %)]
           [item-saves (:save action-expanded?) (:save activities)]
           [item-likes (:like action-expanded?) (:like activities)]
           [item-tags (:tag action-expanded?) (:tag activities)]
@@ -311,14 +309,12 @@
           [like-edit-control edit-item!] inline-divider
           [:span {:on-click #(swap! tagging?! not)} [action-img "tag"]] inline-divider
           [:span {:on-click #(swap! commenting?! not)} [action-img "comment"]] inline-divider
-          [:span {:on-click #(swap! attaching?! not)} [action-img "attach"]]] 
+          [select-files-control (action-img "attach") #(attach-files edit-item! persona-id! attaching?! %)]] 
          [:div 
           (when @tagging?!
             [tags-edit-control (:tags @edit-item!) (on-change :tags)])
           (when @commenting?!
             [comment-edit-control (:comment @edit-item!) (on-change :comment)])]
-         (when @attaching?!
-           [attachment-control attaching?! #(attach-files edit-item! persona-id! attaching?! %)])
          [:div.edit-control-buttons
           [:button {:on-click (fn []
                                 (swap! edit-item! assoc-in [:description] (.value @description-state!))

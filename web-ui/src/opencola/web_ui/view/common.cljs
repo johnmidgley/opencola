@@ -1,8 +1,8 @@
 (ns opencola.web-ui.view.common 
-  (:require
-   [goog.string :as gstring]
-   [reagent.core :as reagent]
-   [markdown-to-hiccup.core :as md2hic]))
+  (:require [clojure.string :as string]
+            [goog.string :as gstring]
+            [markdown-to-hiccup.core :as md2hic]
+            [reagent.core :as reagent]))
 
 (defn item-key []
   (let [new-key (random-uuid)]
@@ -58,6 +58,30 @@
 (defn md->component [attributes md-text]
   (let [hiccup (->> md-text (md2hic/md->hiccup) (md2hic/component))]
     (assoc hiccup 1 attributes)))
+
+(defn hidden-file-input [id on-change]
+  [:input {:type "file"
+           :id id
+           :multiple true
+           :style {:display "none"}
+           :on-change #(on-change (.. % -target -files))}])
+
+(defn select-files-control [content on-change]
+  (let [input-id (str (random-uuid))]
+    [:span {:on-click #(.click (js/document.getElementById input-id))}
+     [:input {:type "file"
+              :id input-id
+              :multiple true
+              :style {:display "none"}
+              :on-change #(on-change (.. % -target -files))}]
+     content]))
+
+(defn extenstion [filename]
+  (let [parts (string/split filename #"\.")]
+    (last parts)))
+
+(defn image? [filename]
+  (contains? #{"jpg" "jpeg" "png" "gif"} (extenstion filename)))
 
 
 
