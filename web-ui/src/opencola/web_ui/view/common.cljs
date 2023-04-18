@@ -46,7 +46,7 @@
                         (clj->js 
                          {:element (js/document.getElementById id)
                           :forceSync true
-                          :placeholder "Type your post here..."
+                          :placeholder "Type your post here (or paste a url)..."
                           ; :autofocus true
                           :spellChecker false
                           :status false
