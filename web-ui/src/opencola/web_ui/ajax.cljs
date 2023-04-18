@@ -38,10 +38,10 @@
 
 (defn DELETE [path success-handler error-handler]
   (ajax/DELETE (resolve-service-url path) 
-       {:handler success-handler
-        :keywords? true
+       {:keywords? true
         :format :json
         :response-format :json
+        :handler success-handler
         :error-handler error-handler}))
 
 (defn upload-files [path file-list success-handler error-handler]

@@ -5,8 +5,10 @@
             [opencola.web-ui.common :refer [toggle-atom]]
             [opencola.web-ui.location :as location]
             [opencola.web-ui.model.error :as error]
-            [opencola.web-ui.model.feed :as model :refer [upload-files]]
+            [opencola.web-ui.model.feed :as model :refer [upload-files
+                                                          upload-result-to-attachments]]
             [opencola.web-ui.view.attachments :refer [attachment-control
+                                                      attachments-preview
                                                       item-attachments]]
             [opencola.web-ui.view.comments :refer [comment-control
                                                    item-comments]]
@@ -59,6 +61,7 @@
     :imageUri ""
     :description ""
     :like nil
+    :attachments []
     :tags ""
     :comment ""})
   ([authority-id item]
@@ -69,6 +72,7 @@
       :imageUri (:imageUri summary)
       :description (:description summary)
       :like (some #(when (= authority-id (:authorityId %)) (reader/read-string (:value %))) likes)
+      :attachments (-> item :activities :attach)
       :tags (tags-as-string authority-id item)
       :comment ""})))
 
@@ -123,13 +127,14 @@
          [:button {:on-click #(reset! tagging?! false)} "Cancel"] " "]))))
 
 
-(defn item-activities [persona-id! personas! feed! item editing?!]
+(defn item-activities [persona-id! personas! feed! item editing?! on-error]
   (let [action-expanded? (apply hash-map (mapcat #(vector % (atom false)) [:save :like :tag :comment :attach]))
         tagging? (atom false)
         commenting? (atom false)
         attaching? (atom false)
         context (:context @feed!)
         update-feed-item #(update-feed-item feed! %)
+        error! (atom nil)
         on-error #(update-feed-item (error/set-error item %))
         preview-fn? (fn [] (every? #(not @%) (map second action-expanded?)))]
     (fn []
@@ -166,7 +171,12 @@
            (:comment activities) preview-fn?
            (:comment action-expanded?)
            update-feed-item]
-          [item-attachments (:attach action-expanded?) (:attach activities)]]]))))
+          [item-attachments
+           (:attach action-expanded?)
+           (:attach activities)
+           (fn [data-id]
+             (model/delete-attachment context @persona-id! entity-id data-id #(update-feed-item %) #(reset! error! %)))]
+          [error/error error!]]]))))
 
 (defn item-name [summary]
   (let [item-uri (:uri summary)
@@ -185,7 +195,7 @@
         img [:img.item-img {:src image-uri}]]
     (when image-uri
       [:div.item-img-box
-       (if (empty? item-uri)
+       (if (empty? item-uri) 
          img
          [:a {:href item-uri :target "_blank"} img])])))
 
@@ -197,6 +207,7 @@
        [:div.item-body
         [item-image summary]
         [md->component {:class "item-desc"}  (:description summary)]]
+       [attachments-preview (-> item :activities :attach)]
        [item-tags-summary (-> item :activities :tag)]
        [:div.posted-by "Posted by: " (:postedBy summary)]
        [item-activities persona-id! personas! feed! item editing?!]
@@ -260,6 +271,15 @@
    [:div
     [text-area comment on-change]]])
 
+(defn attach-files [edit-item! persona-id! attaching?! fs]
+  (upload-files
+   @persona-id!
+   fs
+   (fn [r]
+     (swap! edit-item! update-in [:attachments] (fn [as] (distinct (concat as (upload-result-to-attachments r)))))
+     (reset! attaching?! false))
+   #(error/set-error @edit-item! %)))
+
 ;; TODO: Put error in separate variable - then create and manage edit-iten only in here
 (defn edit-item-control [personas! persona-id! item edit-item! on-save on-cancel on-delete]
   (let [description-state! (atom nil)
@@ -281,6 +301,7 @@
          (when (or name-expanded? image-url-expanded?)
            [:div.field-header "Description:"])
          [description-edit-control edit-item! description-state!] 
+         [attachments-preview (:attachments @edit-item!)]
          [item-tags-summary-from-string (:tags @edit-item!)]
          [error/error-control @edit-item!]
          [:div.activities-summary
@@ -297,8 +318,7 @@
           (when @commenting?!
             [comment-edit-control (:comment @edit-item!) (on-change :comment)])]
          (when @attaching?!
-           [attachment-control attaching?! 
-            (fn [fs] (upload-files @persona-id! fs #(println %) #(error/set-error @edit-item! %)))])
+           [attachment-control attaching?! #(attach-files edit-item! persona-id! attaching?! %)])
          [:div.edit-control-buttons
           [:button {:on-click (fn []
                                 (swap! edit-item! assoc-in [:description] (.value @description-state!))

@@ -325,6 +325,24 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
                 }
             }
 
+            delete("/entity/{entityId}/attachment/{attachmentId}") {
+                val entityId =
+                    Id.decode(call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified"))
+                val attachmentId =
+                    Id.decode(call.parameters["attachmentId"] ?: throw IllegalArgumentException("No attachmentId specified"))
+
+                deleteAttachment(
+                    app.inject(),
+                    app.inject(),
+                    getContext(call),
+                    expectPersona(call).entityId,
+                    entityId,
+                    attachmentId
+                )?.let {
+                    call.respond(it)
+                }
+            }
+
             post("/post") {
                 newPost(app.inject(), app.inject(), getContext(call), expectPersona(call), call.receive())?.also {
                     call.respond(it)

@@ -4,8 +4,12 @@
    [reagent.core :as reagent]
    [markdown-to-hiccup.core :as md2hic]))
 
+(defn item-key []
+  (let [new-key (random-uuid)]
+    new-key))
 
 (def inline-divider [:span.divider " | "])
+(defn keyed-divider [] ^{:key (item-key)} [:span.divider " | "])
 (def image-divider [:img.divider {:src "../img/divider.png"}])
 (def nbsp (gstring/unescapeEntities "&nbsp;"))
 

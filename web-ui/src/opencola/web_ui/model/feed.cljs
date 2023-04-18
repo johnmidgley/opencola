@@ -1,11 +1,6 @@
 (ns ^:figwheel-hooks opencola.web-ui.model.feed 
-  (:require
-   [opencola.web-ui.ajax :as ajax]))
-
-(defn error-result->str [{status :status response :response}]
-  (if (= 0 status)
-    "Unable to connect to server. Please make sure it is running."
-    (:message response)))
+  (:require [opencola.web-ui.ajax :as ajax]
+            [opencola.web-ui.model.error :refer [error-result->str]]))
 
 (defn set-query [feed query]
   (when query (assoc-in feed [:query] query)))
@@ -21,6 +16,9 @@
                       (let [activity-no-actions (dissoc activity :actions)]
                         (map #(merge activity-no-actions %) (:actions activity)))))
                    (group-by #(keyword (:type %))))))))
+
+(defn view-to-model-item [view-item] 
+  (update-in view-item [:attachments] (fn [as] (map :id as))))
 
 (defn feed-to-view-model [feed query]
   (-> feed 
@@ -51,10 +49,10 @@
   ;; TODO - Weird to dissoc a view value here. Think about proper binder
   (let [item (dissoc item :error-message)]
    (ajax/PUT 
-    (str "entity/" (:entityId item) "?context=" context "&personaId=" persona-id)
-    item
-    #(on-success (model-to-view-item %))
-    #(on-error (error-result->str %)))))
+     (str "entity/" (:entityId item) "?context=" context "&personaId=" persona-id)
+     (view-to-model-item item)
+     #(on-success (model-to-view-item %))
+     #(on-error (error-result->str %)))))
 
 
 (defn delete-comment [context persona-id comment-id on-success on-error]  
@@ -74,7 +72,7 @@
 (defn new-post [context persona-id item on-success on-error]
   (ajax/POST
    (str "post?context=" context "&personaId=" persona-id)
-   item
+   (view-to-model-item item)
    #(on-success (model-to-view-item %))
    #(on-error (error-result->str %))))
 
@@ -84,6 +82,15 @@
    file-list
    #(on-success (model-to-view-item %))
    #(on-error (error-result->str %))))
+
+(defn delete-attachment [context persona-id entity-id attachment-id on-success on-error]
+  (ajax/DELETE
+    (str "entity/" entity-id "/attachment/" attachment-id "?context=" context "&personaId=" persona-id)
+    #(on-success (model-to-view-item %))
+    #(on-error (error-result->str %))))
+
+(defn upload-result-to-attachments [upload-result]
+  (map (fn [{:keys [id name]}] {:id id :value name}) (:items upload-result)))
 
 (defn upload-files [persona-id file-list on-success on-error]
   (ajax/upload-files

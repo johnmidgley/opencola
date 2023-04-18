@@ -318,3 +318,11 @@ input.input-text {
     margin-top: 10px;
 }
 
+.preview-img {
+    max-width: 100%;
+}
+
+.attachment-link {
+    text-decoration: none;
+}
+

@@ -53,6 +53,7 @@ data class EntityPayload(
     val like: Boolean? = null,
     val tags: String? = null,
     val comment: String? = null,
+    val attachments: List<String>? = null,
 )
 
 fun updateEntity(
@@ -75,6 +76,7 @@ fun updateEntity(
     entity.tags = entityPayload.tags
         .blankToNull()
         .ifNullOrElse(emptySet()) { it.split(" ").toSet() }
+    entity.attachmentIds = entityPayload.attachments?.map { Id.decode(it) } ?: emptyList()
 
     if (entityPayload.comment.isNullOrBlank())
         entityStore.updateEntities(entity)
@@ -261,5 +263,20 @@ suspend fun addAttachment(
         entityStore.getEntity(personaId, entityId) ?: throw IllegalArgumentException("Unknown entity: $entityId")
     entity.attachmentIds += dataEntities.map { it.entityId }
     entityStore.updateEntities(entity, *dataEntities.toTypedArray())
+    return getEntityResult(entityStore, addressBook, context, personaId, entityId)
+}
+
+fun deleteAttachment(
+    entityStore: EntityStore,
+    addressBook: AddressBook,
+    context: Context,
+    personaId: Id,
+    entityId: Id,
+    attachmentId: Id
+): EntityResult? {
+    val entity =
+        entityStore.getEntity(personaId, entityId) ?: throw IllegalArgumentException("Unknown entity: $entityId")
+    entity.attachmentIds -= attachmentId
+    entityStore.updateEntities(entity)
     return getEntityResult(entityStore, addressBook, context, personaId, entityId)
 }
