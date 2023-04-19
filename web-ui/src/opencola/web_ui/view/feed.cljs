@@ -127,7 +127,10 @@
            [:input.tags-text
             {:type "text"
              :value (:tags @edit-item!)
-             :on-KeyUp #(when (= (-> % .-keyCode) 13) (on-save))
+             :on-KeyUp #(case (-> % .-keyCode)
+                          13 (on-save)
+                          27 (reset! tagging?! false)
+                          false)
              :on-change #(swap! edit-item! assoc-in [:tags] (-> % .-target .-value))}]
            [error/error-control @edit-item!]
            [:button {:on-click on-save} "Save"] " "
