@@ -38,7 +38,7 @@
   (let [{:keys [id value]} attachment] 
     [:span [:a.attachment-link {:href (ajax/resolve-service-url (str "data/" id)) :target "blank"} value]]))
 
-(defn attachments-preview [attachments]
+(defn attachments-preview [attachments show-other?]
   ;; Partition attachments into images and other
   (let [groups (group-by attachment-is-image? attachments)
         images (get groups true)
@@ -46,6 +46,7 @@
     [:div.attachments-preview
      (doall (for [attachment images]
              ^{:key attachment} [image-preview attachment]))
-     (doall (interpose (keyed-divider)
-                  (for [attachment other]
-                    ^{:key attachment} [attachment-preview attachment])))]))
+     (when show-other?
+       (doall (interpose (keyed-divider)
+                         (for [attachment other]
+                           ^{:key attachment} [attachment-preview attachment]))))]))

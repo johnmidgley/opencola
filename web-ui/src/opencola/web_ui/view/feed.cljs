@@ -13,7 +13,7 @@
                                                    item-comments]]
             [opencola.web-ui.view.common :refer [action-img hidden-file-input
                                                  image-divider inline-divider
-                                                 md->component select-files-control simple-mde]]
+                                                 md->component select-files-control simple-mde text-area text-input]]
             [opencola.web-ui.view.likes :refer [item-likes like-edit-control]]
             [opencola.web-ui.view.persona :refer [persona-select]]
             [opencola.web-ui.view.saves :refer [item-saves save-item]]
@@ -120,16 +120,18 @@
 (defn tags-control [persona-id! feed! item tagging?!]
   (let [edit-item!  (atom (edit-item @persona-id! item))]
     (fn []
-      (when @tagging?!
-        [:div.tags-edit-control
-         [:div.field-header "Tags:"]
-         [:input.tags-text
-          {:type "text"
-           :value (:tags @edit-item!)
-           :on-change #(swap! edit-item! assoc-in [:tags] (-> % .-target .-value))}]
-         [error/error-control @edit-item!]
-         [:button {:on-click #(update-edit-entity @persona-id! feed! edit-item!)} "Save"] " "
-         [:button {:on-click #(reset! tagging?! false)} "Cancel"] " "]))))
+      (let [on-save #(update-edit-entity @persona-id! feed! edit-item!)]
+        (when @tagging?!
+          [:div.tags-edit-control
+           [:div.field-header "Tags:"]
+           [:input.tags-text
+            {:type "text"
+             :value (:tags @edit-item!)
+             :on-KeyUp #(when (= (-> % .-keyCode) 13) (on-save))
+             :on-change #(swap! edit-item! assoc-in [:tags] (-> % .-target .-value))}]
+           [error/error-control @edit-item!]
+           [:button {:on-click on-save} "Save"] " "
+           [:button {:on-click #(reset! tagging?! false)} "Cancel"] " "])))))
 
 
 (defn item-activities [persona-id! personas! feed! item editing?! on-error]
@@ -214,26 +216,6 @@
 (defn on-change [item! key]
   #(swap! item! assoc-in [key] %))
 
-(defn text-input [text on-change]
-  (let [edit-text! (atom text)]
-    [:input.text-input
-     {:type "text"
-      :value @edit-text!
-      :on-change (fn [e]
-                   (let [val (-> e .-target .-value)]
-                     (reset! edit-text! val)
-                     (on-change val)))}]))
-
-(defn text-area [text on-change]
-  (let [edit-text! (atom text)]
-    [:textarea.text-area
-     {:type "text"
-      :value @edit-text!
-      :on-change (fn [e]
-                   (let [val (-> e .-target .-value)]
-                     (reset! edit-text! val)
-                     (on-change val)))}]))
-
 (defn name-edit-control [name on-change] 
   [:div.item-name
    [:div.field-header "Title:"]
@@ -299,7 +281,7 @@
          (when (or name-expanded? image-url-expanded?)
            [:div.field-header "Description:"])
          [description-edit-control edit-item! description-state!] 
-         [attachments-preview (:attachments @edit-item!)]
+         [attachments-preview (:attachments @edit-item!) true]
          [item-tags-summary-from-string (:tags @edit-item!)]
          [error/error-control @edit-item!]
          [:div.activities-summary

@@ -84,6 +84,26 @@
 (defn image? [filename]
   (contains? #{"jpg" "jpeg" "png" "gif"} (extenstion filename)))
 
+(defn text-input [text on-change]
+  (let [edit-text! (atom text)]
+    [:input.text-input
+     {:type "text"
+      :value @edit-text!
+      :on-change (fn [e]
+                   (let [val (-> e .-target .-value)]
+                     (reset! edit-text! val)
+                     (on-change val)))}]))
+
+(defn text-area [text on-change]
+  (let [edit-text! (atom text)]
+    [:textarea.text-area
+     {:type "text"
+      :value @edit-text!
+      :on-change (fn [e]
+                   (let [val (-> e .-target .-value)]
+                     (reset! edit-text! val)
+                     (on-change val)))}]))
+
 
 
 
