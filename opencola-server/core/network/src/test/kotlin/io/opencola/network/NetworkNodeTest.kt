@@ -1,17 +1,14 @@
 package io.opencola.network
 
+import io.opencola.application.TestApplication
 import io.opencola.model.Id
 import io.opencola.security.generateKeyPair
-import io.opencola.storage.AddressBookEntry
-import io.opencola.storage.PersonaAddressBookEntry
-import io.opencola.storage.addPeer
-import io.opencola.storage.addPersona
+import io.opencola.storage.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.junit.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFails
-import kotlin.test.assertNull
+import java.util.UUID
+import kotlin.test.*
 
 
 class NetworkNodeTest {
@@ -128,5 +125,30 @@ class NetworkNodeTest {
 
         context.provider.onSendRequest = validateRecipient(setOf(persona1Peer0, persona1Peer1))
         context.networkNode.broadcastRequest(persona1, pingRequest)
+    }
+
+    @Test
+    fun testGetData() {
+        val fileStore = LocalFileStore(TestApplication.getTmpDirectory("-filestore"))
+        val context = NetworkNodeContext(routes = listOf(dataRoute(fileStore)))
+
+        // Create persona and peer
+        val persona = context.addressBook.addPersona("Persona0")
+        val peerKeyPair = generateKeyPair()
+        val peer = context.addressBook.addPeer(persona.personaId, "Peer0", publicKey = peerKeyPair.public)
+
+        // Add data to file store
+        val data = "Hello World ${UUID.randomUUID()}".toByteArray()
+        val id = fileStore.write(data)
+
+        // Request data as peer
+        val dataRequest = Request(Request.Method.GET, "/data",  parameters =  mapOf("id" to id.toString()))
+        val envelopeBytes = getEncodedEnvelope(peer.entityId, peerKeyPair.private, persona.personaId, dataRequest)
+        val responseBytes = context.provider.handleMessage(envelopeBytes, false)
+        val responseEnvelope = MessageEnvelope.decode(responseBytes)
+        val response = Json.decodeFromString<Response>(String(responseEnvelope.message.body)).body
+
+        assertNotNull(response)
+        assertContentEquals(data, response)
     }
 }

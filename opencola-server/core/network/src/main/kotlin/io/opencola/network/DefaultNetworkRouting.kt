@@ -9,6 +9,7 @@ import io.opencola.model.Id
 import io.opencola.model.SignedTransaction
 import io.opencola.storage.AddressBook
 import io.opencola.storage.EntityStore
+import io.opencola.storage.FileStore
 
 private val logger = KotlinLogging.logger("RequestRouting")
 
@@ -16,7 +17,7 @@ private val logger = KotlinLogging.logger("RequestRouting")
 fun handleNotification(addressBook: AddressBook, eventBus: EventBus, fromId: Id, toId: Id, notification: Notification) {
     logger.info { "Received notification: $notification" }
 
-    if(notification.peerId != fromId)
+    if (notification.peerId != fromId)
         throw IllegalArgumentException("Notification peerId does not match fromId: ${notification.peerId} != $fromId")
 
     addressBook.getEntry(toId, fromId)
@@ -45,7 +46,7 @@ fun handleGetTransactions(
 ): TransactionsResponse {
     logger.info { "handleGetTransactionsCall authorityId: $authorityId, peerId: $peerId, transactionId: $transactionId" }
 
-    if(addressBook.getEntry(authorityId, peerId) == null){
+    if (addressBook.getEntry(authorityId, peerId) == null) {
         throw RuntimeException("Unknown peer attempted to request transactions: $peerId")
     }
 
@@ -65,53 +66,83 @@ fun handleGetTransactions(
     return TransactionsResponse(transactionId, currentTransactionId, transactions.toList())
 }
 
+fun handleGetData(fileStore: FileStore, dataId: Id): ByteArray? {
+    return fileStore.read(dataId)
+}
+
+fun pingRoute(): Route {
+    return Route(
+        Request.Method.GET,
+        "/ping"
+    ) { _, _, _ -> Response(200, "pong") }
+}
+
+fun notificationsRoute(eventBus: EventBus, addressBook: AddressBook) : Route {
+    return Route(
+        Request.Method.POST,
+        "/notifications"
+    ) { from, to, request ->
+        val notification = request.decodeBody<Notification>()
+            ?: throw IllegalArgumentException("Body must contain Notification")
+
+        handleNotification(addressBook, eventBus, from, to, notification)
+        Response(200)
+    }
+}
+
+fun transactionsRoute(entityStore: EntityStore, addressBook: AddressBook) : Route {
+    return Route(
+        Request.Method.GET,
+        "/transactions"
+    ) { from, _, request ->
+        if (request.parameters == null) {
+            throw IllegalArgumentException("/transactions call requires parameters")
+        }
+
+        val authorityId =
+            Id.decode(request.parameters["authorityId"] ?: throw IllegalArgumentException("No authorityId set"))
+        val transactionId = request.parameters["mostRecentTransactionId"].nullOrElse { Id.decode(it) }
+        val numTransactions = request.parameters["numTransactions"].nullOrElse { it.toInt() }
+        val transactionResponse =
+            handleGetTransactions(
+                entityStore,
+                addressBook,
+                authorityId,
+                from,
+                transactionId,
+                numTransactions
+            )
+
+        response(200, "OK", null, transactionResponse)
+    }
+}
+
+fun dataRoute(fileStore: FileStore) : Route {
+    return Route(
+        Request.Method.GET,
+        "/data"
+    ) { _, _, request ->
+        if (request.parameters == null) {
+            throw IllegalArgumentException("/data call requires parameters")
+        }
+
+        val dataId = Id.decode(request.parameters["id"] ?: throw IllegalArgumentException("No dataId set"))
+        handleGetData(fileStore, dataId)?.let { Response(200, "OK", null, it) }
+            ?: Response(404, "Not Found")
+    }
+}
+
 fun getDefaultRoutes(
     eventBus: EventBus,
     entityStore: EntityStore,
     addressBook: AddressBook,
+    fileStore: FileStore,
 ): List<Route> {
 
     return listOf(
-        Route(
-            Request.Method.GET,
-            "/ping"
-        ) { _, _, _ -> Response(200, "pong") },
-        Route(
-            Request.Method.POST,
-            "/notifications"
-        ) { from, to, request ->
-            val notification = request.decodeBody<Notification>()
-                ?: throw IllegalArgumentException("Body must contain Notification")
-
-            handleNotification(addressBook, eventBus, from, to, notification)
-            Response(200)
-        },
-
-        Route(
-            Request.Method.GET,
-            "/transactions"
-        ) { from, _, request ->
-            if (request.parameters == null) {
-                throw IllegalArgumentException("/transactions call requires parameters")
-            }
-
-            val authorityId =
-                Id.decode(request.parameters["authorityId"] ?: throw IllegalArgumentException("No authorityId set"))
-            val transactionId = request.parameters["mostRecentTransactionId"].nullOrElse { Id.decode(it) }
-            val numTransactions = request.parameters["numTransactions"].nullOrElse { it.toInt() }
-
-
-            val transactionResponse =
-                handleGetTransactions(
-                    entityStore,
-                    addressBook,
-                    authorityId,
-                    from,
-                    transactionId,
-                    numTransactions
-                )
-
-            response(200, "OK", null, transactionResponse)
-        }
+        pingRoute(),
+        notificationsRoute(eventBus, addressBook),
+        transactionsRoute(entityStore, addressBook),
+        dataRoute(fileStore),
     )
 }

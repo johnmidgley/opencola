@@ -176,6 +176,7 @@ class OCRelayNetworkProvider(addressBook: AddressBook,
 
         return runBlocking {
             try {
+                // TODO: This is terrible. Byte data is sent as a string. Fix this when moving to messages
                 val messageBytes = Json.encodeToString(request).toByteArray()
                 val envelopeBytes = getEncodedEnvelope(from.entityId, to.entityId, messageBytes, false)
                 val client = connections[connectionParams]!!.client
