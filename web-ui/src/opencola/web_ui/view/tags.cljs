@@ -13,11 +13,12 @@
                          ^{:key name} [tag name])))]))
 
 (defn item-tags-summary-from-string [tags-string]
-  (let [tags (filter #(seq %) (str/split tags-string #"\s+"))] 
-    [:div.tags
-     (interpose " "
-                (doall (for [name (distinct tags)]
-                         ^{:key name} [tag name])))]))
+  (when (not (str/blank? tags-string))
+    (let [tags (filter #(seq %) (str/split tags-string #"\s+"))] 
+      [:div.tags
+       (interpose " "
+                  (doall (for [name (distinct tags)]
+                           ^{:key name} [tag name])))])))
 
 (defn item-tag [tag-action]
   (let [{authority-name :authorityName
