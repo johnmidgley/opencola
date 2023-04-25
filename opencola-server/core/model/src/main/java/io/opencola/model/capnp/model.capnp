@@ -23,19 +23,13 @@ struct Attribute {
   uri @0 :Text;
 }
 
-enum AttributeType {
-  singleValue @0;
-  multiValueSet @1;
-  multiValueList @2;
-}
-
 struct Value {
   bytes @0 :Data;
 }
 
 enum Operation {
   retract @0;
-    add @1;
+  add @1;
 }
 
 struct Transaction {
