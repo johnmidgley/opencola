@@ -41,6 +41,10 @@ cd capnproto-java
 make
 ```
 
+# Tools
+* [VS Code Syntax Highlighter](https://marketplace.visualstudio.com/items?itemName=xmonader.vscode-capnp)
+* [IntelliJ Syntax Highlighter](https://github.com/xmonader/sercapnp)
+
 # Compiling a schema
 Create a capnproto schema with java specifc annotations. The head of your schema file should look something like this:
 
