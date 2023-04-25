@@ -20,11 +20,7 @@ struct TransactionFact {
 }
 
 struct Attribute {
-  name @0 :Text;
-  uri @1 :Text;
-  type @2 :AttributeType;
-  codec @3 :Data;
-  isIndexable @4 :Bool;
+  uri @0 :Text;
 }
 
 enum AttributeType {
@@ -38,8 +34,8 @@ struct Value {
 }
 
 enum Operation {
-  add @0;
-  retract @1;
+  retract @0;
+    add @1;
 }
 
 struct Transaction {
