@@ -13,6 +13,7 @@ dependencies {
     implementation(project(":core:util"))
     implementation(project(":core:security"))
     implementation(project(":core:serialization"))
+    implementation("org.capnproto:runtime:0.1.15")
 
     implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:$kotlinxSerializationVersion")

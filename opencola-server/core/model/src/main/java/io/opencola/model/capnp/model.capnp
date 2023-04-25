@@ -1,7 +1,9 @@
 @0xb38c382d763e68ad;
+
 using Java = import "java.capnp";
-$Java.package("io.opencola.model");
-$Java.outerClassname("Transaction");
+$Java.package("io.opencola.model.capnp");
+$Java.outerClassname("Model");
+
 struct Id {
   bytes @0 :Data;
 }
