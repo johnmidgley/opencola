@@ -7,5 +7,9 @@ plugins {
 
 dependencies {
     implementation(project(":core:util"))
+    implementation("org.capnproto:runtime:0.1.15")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
+}
+repositories {
+    mavenCentral()
 }
