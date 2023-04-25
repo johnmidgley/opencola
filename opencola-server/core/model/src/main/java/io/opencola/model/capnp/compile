@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Change this to where you have capnproto-java built
+export CAPNPROTO_JAVA=~/dev/capnproto-java
+
+# Check that CAPNPROTO_JAVA/capnpc-java exists
+if ! [ -f "${CAPNPROTO_JAVA}/capnpc-java" ]; then
+    echo "capnpc-java not found"
+    exit 1
+fi
+
+# Check that capnp is installed
+if ! [ -x "$(command -v capnp)" ]; then
+    echo "capnp is not installed"
+    exit 1
+fi
+
+cp ${CAPNPROTO_JAVA}/compiler/src/main/schema/capnp/java.capnp .
+
+# Check that the command succeeded
+if [ $? -ne 0 ]; then
+    echo "Failed to copy java.capnp"
+    exit 1
+fi
+
+capnp compile -o$CAPNPROTO_JAVA/capnpc-java model.capnp
+rm java.capnp
+
+echo "Successfully compiled model.capnp to Java"
