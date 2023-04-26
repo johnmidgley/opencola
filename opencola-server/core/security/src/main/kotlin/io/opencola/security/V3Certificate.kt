@@ -38,13 +38,20 @@ fun getSanNames(sans: Iterable<String>): Array<GeneralName> {
     }.toTypedArray()
 }
 
-fun generateSelfSignedV3Certificate(dirName: String, sans: List<String> = emptyList(), keyPair: KeyPair = generateRSAKeyPair()): X509Certificate {
+fun generateSelfSignedV3Certificate(
+    dirName: String,
+    sans: List<String> = emptyList(),
+    keyPair: KeyPair = generateRSAKeyPair(),
+    lifetimeDays: Int = 365 * 10
+): X509Certificate {
     val extUtils = JcaX509ExtensionUtils()
     val v3CertGen = JcaX509v3CertificateBuilder(
         X500Name(dirName),
-        BigInteger(128, SecureRandom()), Date(System.currentTimeMillis()),
-        Date(System.currentTimeMillis() + 8640000000L),
-        X500Name(dirName), keyPair.public
+        BigInteger(128, SecureRandom()),
+        Date(System.currentTimeMillis()),
+        Date(System.currentTimeMillis() + (lifetimeDays * 86400000L)),
+        X500Name(dirName),
+        keyPair.public
     )
 
     v3CertGen.addExtension(
