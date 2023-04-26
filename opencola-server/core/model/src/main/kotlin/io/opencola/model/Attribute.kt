@@ -1,5 +1,6 @@
 package io.opencola.model
 
+import io.opencola.model.capnp.Model
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -43,6 +44,17 @@ data class Attribute(
             val ordinal = stream.read()
             return CoreAttribute.values().firstOrNull { it.ordinal == ordinal }?.spec
                 ?: throw RuntimeException("Attempt to decode attribute with invalid ordinal: $ordinal")
+        }
+
+        fun pack(attribute: Attribute,  builder: Model.Attribute.Builder) {
+            // TODO: Make union that allow for ordinal or uri
+            builder.setUri(attribute.uri.toString())
+        }
+
+        fun unpack(attribute: Model.Attribute.Reader): Attribute {
+            val attributeUri = URI(attribute.uri.toString())
+            return CoreAttribute.values().firstOrNull { it.spec.uri == attributeUri }?.spec
+                ?: throw RuntimeException("Attempt to decode unknown attribute: ${attribute.uri}")
         }
     }
 

@@ -23,5 +23,6 @@ enum class Operation {
 
             return values()[ordinal]
         }
+
     }
 }

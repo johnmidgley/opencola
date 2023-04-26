@@ -1,10 +1,14 @@
 package io.opencola.model
 
+import io.opencola.model.capnp.Model
 import kotlinx.serialization.Serializable
 import io.opencola.security.SIGNATURE_ALGO
 import io.opencola.security.Signator
 import io.opencola.security.isValidSignature
 import io.opencola.serialization.*
+import io.opencola.serialization.capnproto.pack as capnprotoPack
+import io.opencola.serialization.capnproto.unpack as capnprotoUnpack
+import org.capnproto.MessageBuilder
 import java.io.InputStream
 import java.io.OutputStream
 import java.security.PublicKey
@@ -30,6 +34,54 @@ data class Transaction(val id: Id,
     }
 
     @Serializable
+    data class TransactionFact(val attribute: Attribute, val value: Value, val operation: Operation) {
+        companion object Factory : StreamSerializer<TransactionFact> {
+            fun fromFact(fact: Fact): TransactionFact {
+                return TransactionFact(fact.attribute, fact.value, fact.operation)
+            }
+
+            override fun encode(stream: OutputStream, value: TransactionFact) {
+                Attribute.encode(stream, value.attribute)
+                Value.encode(stream, value.value)
+                Operation.encode(stream, value.operation)
+            }
+
+            override fun decode(stream: InputStream): TransactionFact {
+                return TransactionFact(Attribute.decode(stream), Value.decode(stream), Operation.decode(stream))
+            }
+
+            private fun packOperation(operation: Operation) : Model.Operation {
+                return when (operation) {
+                    Operation.Add -> Model.Operation.ADD
+                    Operation.Retract -> Model.Operation.RETRACT
+                }
+            }
+
+            private fun unpackOperation(operation: Model.Operation) : Operation {
+                return when (operation) {
+                    Model.Operation.ADD -> Operation.Add
+                    Model.Operation.RETRACT -> Operation.Retract
+                    else -> throw IllegalArgumentException("Unknown operation: $operation")
+                }
+            }
+
+            fun pack(transactionFact: TransactionFact, builder: Model.TransactionFact.Builder) {
+                Attribute.pack(transactionFact.attribute, builder.initAttribute())
+                Value.pack(transactionFact.value, builder.initValue())
+                builder.operation = packOperation(transactionFact.operation)
+            }
+
+            fun unpack(reader: Model.TransactionFact.Reader): TransactionFact {
+                return TransactionFact(
+                    Attribute.unpack(reader.attribute),
+                    Value.unpack(reader.value),
+                    unpackOperation(reader.operation)
+                )
+            }
+        }
+    }
+
+    @Serializable
     data class TransactionEntity(val entityId: Id, val facts: List<TransactionFact>){
         companion object Factory : StreamSerializer<TransactionEntity> {
             override fun encode(stream: OutputStream, value: TransactionEntity) {
@@ -43,26 +95,22 @@ data class Transaction(val id: Id,
             override fun decode(stream: InputStream): TransactionEntity {
                 return TransactionEntity(Id.decode(stream), stream.readInt().downTo(1).map { TransactionFact.decode(stream) } )
             }
-        }
-    }
 
-    @Serializable
-    data class TransactionFact(val attribute: Attribute, val value: Value, val operation: Operation) {
-         companion object Factory : StreamSerializer<TransactionFact> {
-            fun fromFact(fact: Fact): TransactionFact {
-                return TransactionFact(fact.attribute, fact.value, fact.operation)
+            fun pack(transactionEntity: TransactionEntity, builder: Model.TransactionEntity.Builder) {
+                Id.pack(transactionEntity.entityId, builder.initEntityId())
+                val facts = builder.initFacts(transactionEntity.facts.size)
+                transactionEntity.facts.forEachIndexed { index, transactionFact ->
+                    TransactionFact.pack(transactionFact, facts[index])
+                }
             }
 
-             override fun encode(stream: OutputStream, value: TransactionFact) {
-                 Attribute.encode(stream, value.attribute)
-                 Value.encode(stream, value.value)
-                 Operation.encode(stream, value.operation)
-             }
-
-             override fun decode(stream: InputStream): TransactionFact {
-                 return TransactionFact(Attribute.decode(stream), Value.decode(stream), Operation.decode(stream))
-             }
-         }
+            fun unpack(reader: Model.TransactionEntity.Reader): TransactionEntity {
+                return TransactionEntity(
+                    Id.unpack(reader.entityId),
+                    reader.facts.map { TransactionFact.unpack(it) }
+                )
+            }
+        }
     }
 
     companion object Factory : StreamSerializer<Transaction> {
@@ -99,10 +147,30 @@ data class Transaction(val id: Id,
         override fun decode(stream: InputStream): Transaction {
             return Transaction(Id.decode(stream), Id.decode(stream), stream.readInt().downTo(1).map { TransactionEntity.decode(stream) }, stream.readLong())
         }
+
+        fun pack(transaction: Transaction, builder: Model.Transaction.Builder) {
+            Id.pack(transaction.id, builder.initId())
+            Id.pack(transaction.authorityId, builder.initAuthorityId())
+            val transactionEntities = builder.initTransactionEntities(transaction.transactionEntities.size)
+            transaction.transactionEntities.forEachIndexed { index, transactionEntity ->
+                TransactionEntity.pack(transactionEntity, transactionEntities[index])
+            }
+            builder.epochSecond = transaction.epochSecond
+        }
+
+        fun unpack(reader: Model.Transaction.Reader): Transaction {
+            return Transaction(
+                Id.unpack(reader.id),
+                Id.unpack(reader.authorityId),
+                reader.transactionEntities.map { TransactionEntity.unpack(it) },
+                reader.epochSecond
+            )
+        }
     }
 }
 
 @Serializable
+// TODO: Make Signature type that has algorithm and signature value
 data class SignedTransaction(val transaction: Transaction, val algorithm: String, val signature: ByteArray) {
     fun isValidTransaction(publicKey: PublicKey): Boolean {
         return isValidSignature(publicKey, Transaction.encode(transaction), signature)
@@ -135,6 +203,26 @@ data class SignedTransaction(val transaction: Transaction, val algorithm: String
 
         override fun decode(stream: InputStream): SignedTransaction {
             return SignedTransaction(Transaction.decode(stream), String(stream.readByteArray()), stream.readByteArray())
+        }
+
+        fun pack(signedTransaction: SignedTransaction): ByteArray {
+            val messageBuilder = MessageBuilder()
+            val message = messageBuilder.initRoot(Model.SignedTransaction.factory)
+            Transaction.pack(signedTransaction.transaction, message.initTransaction())
+            val signature = message.initSignature()
+            signature.setAlgorithm(signedTransaction.algorithm)
+            signature.setBytes(signedTransaction.signature)
+            return capnprotoPack(messageBuilder)
+        }
+
+        fun unpack(bytes: ByteArray): SignedTransaction {
+            val reader = capnprotoUnpack(bytes).getRoot(Model.SignedTransaction.factory)
+
+            return SignedTransaction(
+                Transaction.unpack(reader.transaction),
+                reader.signature.algorithm.toString(),
+                reader.signature.bytes.toArray()
+            )
         }
     }
 }

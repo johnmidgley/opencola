@@ -5,7 +5,7 @@ import java.util.zip.Deflater
 import java.util.zip.Deflater.BEST_COMPRESSION
 import java.util.zip.Inflater
 
-fun compress(bytes: ByteArray?, level: Int = BEST_COMPRESSION, bufferSize: Int = 1024 * 16): ByteArray? {
+fun compress(bytes: ByteArray?, level: Int = BEST_COMPRESSION, bufferSize: Int = 1024 * 16): ByteArray {
     val compressor = Deflater().also {
         it.setLevel(level)
         it.setInput(bytes)
