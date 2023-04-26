@@ -2,11 +2,12 @@ package io.opencola.util
 
 import java.io.ByteArrayOutputStream
 import java.util.zip.Deflater
+import java.util.zip.Deflater.BEST_COMPRESSION
 import java.util.zip.Inflater
 
-fun compress(bytes: ByteArray?, bufferSize: Int = 1024 * 16): ByteArray? {
+fun compress(bytes: ByteArray?, level: Int = BEST_COMPRESSION, bufferSize: Int = 1024 * 16): ByteArray? {
     val compressor = Deflater().also {
-        it.setLevel(Deflater.BEST_COMPRESSION)
+        it.setLevel(level)
         it.setInput(bytes)
         it.finish()
     }
