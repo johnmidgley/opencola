@@ -9,7 +9,7 @@ import java.io.InputStream
 import java.io.OutputStream
 
 @Serializable
-data class TransactionEntity(val entityId: Id, val facts: List<TransactionFact>){
+data class TransactionEntity(val entityId: Id, val facts: List<TransactionFact>) {
     companion object Factory : StreamSerializer<TransactionEntity> {
         override fun encode(stream: OutputStream, value: TransactionEntity) {
             Id.encode(stream, value.entityId)
@@ -23,17 +23,17 @@ data class TransactionEntity(val entityId: Id, val facts: List<TransactionFact>)
             return TransactionEntity(Id.decode(stream), stream.readInt().downTo(1).map { TransactionFact.decode(stream) } )
         }
 
-        fun packProto(transactionEntity: TransactionEntity): ProtoModel.TransactionEntity {
+        fun toProto(transactionEntity: TransactionEntity): ProtoModel.TransactionEntity {
             return ProtoModel.TransactionEntity.newBuilder()
-                .setEntityId(Id.packProto(transactionEntity.entityId))
-                .addAllFacts(transactionEntity.facts.map { TransactionFact.packProto(it) })
+                .setEntityId(Id.toProto(transactionEntity.entityId))
+                .addAllFacts(transactionEntity.facts.map { TransactionFact.toProto(it) })
                 .build()
         }
 
-        fun unpackProto(transactionEntity: ProtoModel.TransactionEntity): TransactionEntity {
+        fun fromProto(transactionEntity: ProtoModel.TransactionEntity): TransactionEntity {
             return TransactionEntity(
-                Id.unpackProto(transactionEntity.entityId),
-                transactionEntity.factsList.map { TransactionFact.unpackProto(it) }
+                Id.fromProto(transactionEntity.entityId),
+                transactionEntity.factsList.map { TransactionFact.fromProto(it) }
             )
         }
     }

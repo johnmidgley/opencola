@@ -38,18 +38,18 @@ data class TransactionFact(val attribute: Attribute, val value: Value, val opera
             }
         }
 
-        fun packProto(transactionFact: TransactionFact): ProtoModel.TransactionFact {
+        fun toProto(transactionFact: TransactionFact): ProtoModel.TransactionFact {
             return ProtoModel.TransactionFact.newBuilder()
-                .setAttribute(Attribute.packProto(transactionFact.attribute))
-                .setValue(Value.packProto(transactionFact.value))
+                .setAttribute(Attribute.toProto(transactionFact.attribute))
+                .setValue(Value.toProto(transactionFact.value))
                 .setOperation(packOperationProto(transactionFact.operation))
                 .build()
         }
 
-        fun unpackProto(transactionFact: ProtoModel.TransactionFact): TransactionFact {
+        fun fromProto(transactionFact: ProtoModel.TransactionFact): TransactionFact {
             return TransactionFact(
-                Attribute.unpackProto(transactionFact.attribute),
-                Value.unpackProto(transactionFact.value),
+                Attribute.fromProto(transactionFact.attribute),
+                Value.fromProto(transactionFact.value),
                 unpackOperationProto(transactionFact.operation)
             )
         }

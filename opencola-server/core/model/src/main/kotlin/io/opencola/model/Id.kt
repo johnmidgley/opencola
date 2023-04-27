@@ -94,13 +94,13 @@ data class Id(private val bytes: ByteArray) {
             return Id(stream.readNBytes(idLengthInBytes))
         }
 
-        fun packProto(value: Id): ProtoModel.Id {
+        fun toProto(value: Id): ProtoModel.Id {
             return ProtoModel.Id.newBuilder()
                 .setBytes(ByteString.copyFrom(value.bytes))
                 .build()
         }
 
-        fun unpackProto(value: ProtoModel.Id): Id {
+        fun fromProto(value: ProtoModel.Id): Id {
             return Id(value.bytes.toByteArray())
         }
     }

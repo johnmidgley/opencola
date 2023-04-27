@@ -46,13 +46,13 @@ data class Attribute(
                 ?: throw RuntimeException("Attempt to decode attribute with invalid ordinal: $ordinal")
         }
 
-        fun packProto(attribute: Attribute): ProtoModel.Attribute {
+        fun toProto(attribute: Attribute): ProtoModel.Attribute {
             return ProtoModel.Attribute.newBuilder()
                 .setUri(attribute.uri.toString())
                 .build()
         }
 
-        fun unpackProto(attribute: ProtoModel.Attribute): Attribute {
+        fun fromProto(attribute: ProtoModel.Attribute): Attribute {
             val attributeUri = URI(attribute.uri)
             return CoreAttribute.values().firstOrNull { it.spec.uri == attributeUri }?.spec
                 ?: throw RuntimeException("Attempt to decode unknown attribute: ${attribute.uri}")

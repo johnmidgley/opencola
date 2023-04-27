@@ -63,21 +63,21 @@ data class Transaction(val id: Id,
             return Transaction(Id.decode(stream), Id.decode(stream), stream.readInt().downTo(1).map { TransactionEntity.decode(stream) }, stream.readLong())
         }
 
-        fun packProto(transaction: Transaction): io.opencola.model.protobuf.Model.Transaction? {
+        fun toProto(transaction: Transaction): io.opencola.model.protobuf.Model.Transaction? {
             return ProtoModel.Transaction.newBuilder()
-                .setId(Id.packProto(transaction.id))
-                .setAuthorityId(Id.packProto(transaction.authorityId))
-                .addAllTransactionEntities(transaction.transactionEntities.map { TransactionEntity.packProto(it) })
+                .setId(Id.toProto(transaction.id))
+                .setAuthorityId(Id.toProto(transaction.authorityId))
+                .addAllTransactionEntities(transaction.transactionEntities.map { TransactionEntity.toProto(it) })
                 .setEpochSecond(transaction.epochSecond)
                 .build()
 
         }
 
-        fun unpackProto(transaction: io.opencola.model.protobuf.Model.Transaction): Transaction {
+        fun fromProto(transaction: io.opencola.model.protobuf.Model.Transaction): Transaction {
             return Transaction(
-                Id.unpackProto(transaction.id),
-                Id.unpackProto(transaction.authorityId),
-                transaction.transactionEntitiesList.map { TransactionEntity.unpackProto(it) },
+                Id.fromProto(transaction.id),
+                Id.fromProto(transaction.authorityId),
+                transaction.transactionEntitiesList.map { TransactionEntity.fromProto(it) },
                 transaction.epochSecond
             )
         }

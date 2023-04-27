@@ -49,9 +49,9 @@ data class SignedTransaction(val transaction: Transaction, val algorithm: String
             return SignedTransaction(Transaction.decode(stream), String(stream.readByteArray()), stream.readByteArray())
         }
 
-        fun packProto(signedTransaction: SignedTransaction): ByteArray {
+        fun toProto(signedTransaction: SignedTransaction): ByteArray {
             val builder = ProtoModel.SignedTransaction.newBuilder()
-            builder.transaction = Transaction.packProto(signedTransaction.transaction)
+            builder.transaction = Transaction.toProto(signedTransaction.transaction)
             builder.signature = ProtoModel.Signature.newBuilder()
                 .setAlgorithm(signedTransaction.algorithm)
                 .setBytes(ByteString.copyFrom(signedTransaction.signature))
@@ -60,10 +60,10 @@ data class SignedTransaction(val transaction: Transaction, val algorithm: String
             return builder.build().toByteArray()
         }
 
-        fun unpackProto(bytes: ByteArray): SignedTransaction {
+        fun fromProto(bytes: ByteArray): SignedTransaction {
             val proto = ProtoModel.SignedTransaction.parseFrom(bytes)
             return SignedTransaction(
-                Transaction.unpackProto(proto.transaction),
+                Transaction.fromProto(proto.transaction),
                 proto.signature.algorithm,
                 proto.signature.bytes.toByteArray()
             )

@@ -40,13 +40,13 @@ data class Value(val bytes: ByteArray) {
             return if(bytes.isEmpty()) emptyValue else Value(bytes)
         }
 
-        fun packProto(value: Value): ProtoModel.Value {
+        fun toProto(value: Value): ProtoModel.Value {
             val builder = ProtoModel.Value.newBuilder()
             builder.setBytes(ByteString.copyFrom(value.bytes))
             return builder.build()
         }
 
-        fun unpackProto(value: ProtoModel.Value): Value {
+        fun fromProto(value: ProtoModel.Value): Value {
             return Value(value.bytes.toByteArray())
         }
     }
