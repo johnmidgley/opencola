@@ -1,6 +1,5 @@
 package io.opencola.model
 
-import io.opencola.model.capnp.Model
 import io.opencola.model.protobuf.Model as ProtoModel
 import io.opencola.serialization.StreamSerializer
 import io.opencola.serialization.readInt
@@ -22,21 +21,6 @@ data class TransactionEntity(val entityId: Id, val facts: List<TransactionFact>)
 
         override fun decode(stream: InputStream): TransactionEntity {
             return TransactionEntity(Id.decode(stream), stream.readInt().downTo(1).map { TransactionFact.decode(stream) } )
-        }
-
-        fun pack(transactionEntity: TransactionEntity, builder: Model.TransactionEntity.Builder) {
-            Id.pack(transactionEntity.entityId, builder.initEntityId())
-            val facts = builder.initFacts(transactionEntity.facts.size)
-            transactionEntity.facts.forEachIndexed { index, transactionFact ->
-                TransactionFact.pack(transactionFact, facts[index])
-            }
-        }
-
-        fun unpack(reader: Model.TransactionEntity.Reader): TransactionEntity {
-            return TransactionEntity(
-                Id.unpack(reader.entityId),
-                reader.facts.map { TransactionFact.unpack(it) }
-            )
         }
 
         fun packProto(transactionEntity: TransactionEntity): ProtoModel.TransactionEntity {

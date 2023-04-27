@@ -13,7 +13,6 @@ dependencies {
     implementation(project(":core:util"))
     implementation(project(":core:security"))
     implementation(project(":core:serialization"))
-    implementation("org.capnproto:runtime:0.1.15")
     implementation("com.google.protobuf:protobuf-java:3.22.2")
 
 

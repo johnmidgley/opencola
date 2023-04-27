@@ -1,7 +1,6 @@
 package io.opencola.model
 
 import com.google.protobuf.ByteString
-import io.opencola.model.capnp.Model
 import io.opencola.model.protobuf.Model as ProtoModel
 import io.opencola.security.SIGNATURE_ALGO
 import io.opencola.security.isValidSignature
@@ -9,7 +8,6 @@ import io.opencola.serialization.StreamSerializer
 import io.opencola.serialization.readByteArray
 import io.opencola.serialization.writeByteArray
 import kotlinx.serialization.Serializable
-import org.capnproto.MessageBuilder
 import java.io.InputStream
 import java.io.OutputStream
 import java.security.PublicKey
@@ -51,16 +49,6 @@ data class SignedTransaction(val transaction: Transaction, val algorithm: String
             return SignedTransaction(Transaction.decode(stream), String(stream.readByteArray()), stream.readByteArray())
         }
 
-        fun pack(signedTransaction: SignedTransaction): ByteArray {
-            val messageBuilder = MessageBuilder()
-            val message = messageBuilder.initRoot(Model.SignedTransaction.factory)
-            Transaction.pack(signedTransaction.transaction, message.initTransaction())
-            val signature = message.initSignature()
-            signature.setAlgorithm(signedTransaction.algorithm)
-            signature.setBytes(signedTransaction.signature)
-            return io.opencola.serialization.capnproto.pack(messageBuilder)
-        }
-
         fun packProto(signedTransaction: SignedTransaction): ByteArray {
             val builder = ProtoModel.SignedTransaction.newBuilder()
             builder.transaction = Transaction.packProto(signedTransaction.transaction)
@@ -78,16 +66,6 @@ data class SignedTransaction(val transaction: Transaction, val algorithm: String
                 Transaction.unpackProto(proto.transaction),
                 proto.signature.algorithm,
                 proto.signature.bytes.toByteArray()
-            )
-        }
-
-        fun unpack(bytes: ByteArray): SignedTransaction {
-            val reader = io.opencola.serialization.capnproto.unpack(bytes).getRoot(Model.SignedTransaction.factory)
-
-            return SignedTransaction(
-                Transaction.unpack(reader.transaction),
-                reader.signature.algorithm.toString(),
-                reader.signature.bytes.toArray()
             )
         }
     }

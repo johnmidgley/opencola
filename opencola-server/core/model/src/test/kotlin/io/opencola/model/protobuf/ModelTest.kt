@@ -1,4 +1,4 @@
-package io.opencola.model.capnp
+package io.opencola.model.protobuf
 
 import io.opencola.application.TestApplication
 import io.opencola.model.ResourceEntity
@@ -14,7 +14,7 @@ import kotlin.test.assertEquals
 
 class ModelTest {
     @Test
-    fun testCapnprotoSerialization() {
+    fun testProtobufSerialization() {
         val context = ExposedEntityStoreContext(TestApplication.getTmpDirectory(".storage"))
         val persona = context.addressBook.addPersona("Persona0", false)
         val entity0 = ResourceEntity(persona.personaId, URI("mock://entity0"), "entity0", "description0", "text0")
@@ -24,11 +24,6 @@ class ModelTest {
         val encoded = SignedTransaction.encode(signedTransaction)
         val compressedEncoded = compress(encoded)
 
-        val packed = SignedTransaction.pack(signedTransaction)
-        val compressedPacked = compress(packed)
-        val unpacked = SignedTransaction.unpack(packed)
-        assertEquals(signedTransaction, unpacked)
-
         val protoPacked = SignedTransaction.packProto(signedTransaction)
         val protoCompressed = compress(protoPacked)
         val protoUnpacked = SignedTransaction.unpackProto(protoPacked)
@@ -36,8 +31,6 @@ class ModelTest {
 
         println("encoded: ${encoded.size} bytes")
         println("compressedEncoded: ${compressedEncoded.size} bytes")
-        println("packed: ${packed.size} bytes")
-        println("compressedPacked: ${compressedPacked.size} bytes")
         println("protoPacked: ${protoPacked.size} bytes")
         println("protoCompressed: ${protoCompressed.size} bytes")
 

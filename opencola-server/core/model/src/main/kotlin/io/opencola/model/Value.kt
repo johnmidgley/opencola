@@ -1,7 +1,6 @@
 package io.opencola.model
 
 import com.google.protobuf.ByteString
-import io.opencola.model.capnp.Model
 import io.opencola.model.protobuf.Model as ProtoModel
 import kotlinx.serialization.Serializable
 import io.opencola.serialization.*
@@ -39,14 +38,6 @@ data class Value(val bytes: ByteArray) {
         override fun decode(stream: InputStream): Value {
             val bytes = stream.readByteArray()
             return if(bytes.isEmpty()) emptyValue else Value(bytes)
-        }
-
-        fun pack(value: Value, message: Model.Value.Builder) {
-            message.setBytes(value.bytes)
-        }
-
-        fun unpack(message: Model.Value.Reader): Value {
-            return Value(message.bytes.toArray())
         }
 
         fun packProto(value: Value): ProtoModel.Value {

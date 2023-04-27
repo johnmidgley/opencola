@@ -1,6 +1,5 @@
 package io.opencola.model
 
-import io.opencola.model.capnp.Model
 import io.opencola.model.protobuf.Model as ProtoModel
 import io.opencola.serialization.StreamSerializer
 import kotlinx.serialization.Serializable
@@ -24,21 +23,6 @@ data class TransactionFact(val attribute: Attribute, val value: Value, val opera
             return TransactionFact(Attribute.decode(stream), Value.decode(stream), Operation.decode(stream))
         }
 
-        private fun packOperation(operation: Operation) : Model.Operation {
-            return when (operation) {
-                Operation.Add -> Model.Operation.ADD
-                Operation.Retract -> Model.Operation.RETRACT
-            }
-        }
-
-        private fun unpackOperation(operation: Model.Operation) : Operation {
-            return when (operation) {
-                Model.Operation.ADD -> Operation.Add
-                Model.Operation.RETRACT -> Operation.Retract
-                else -> throw IllegalArgumentException("Unknown operation: $operation")
-            }
-        }
-
         private fun packOperationProto(operation: Operation) : ProtoModel.Operation {
             return when (operation) {
                 Operation.Add -> ProtoModel.Operation.ADD
@@ -52,20 +36,6 @@ data class TransactionFact(val attribute: Attribute, val value: Value, val opera
                 ProtoModel.Operation.RETRACT -> Operation.Retract
                 else -> throw IllegalArgumentException("Unknown operation: $operation")
             }
-        }
-
-        fun pack(transactionFact: TransactionFact, builder: Model.TransactionFact.Builder) {
-            Attribute.pack(transactionFact.attribute, builder.initAttribute())
-            Value.pack(transactionFact.value, builder.initValue())
-            builder.operation = packOperation(transactionFact.operation)
-        }
-
-        fun unpack(reader: Model.TransactionFact.Reader): TransactionFact {
-            return TransactionFact(
-                Attribute.unpack(reader.attribute),
-                Value.unpack(reader.value),
-                unpackOperation(reader.operation)
-            )
         }
 
         fun packProto(transactionFact: TransactionFact): ProtoModel.TransactionFact {
