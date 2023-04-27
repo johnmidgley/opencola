@@ -1,6 +1,8 @@
 package io.opencola.model
 
+import com.google.protobuf.ByteString
 import io.opencola.model.capnp.Model
+import io.opencola.model.protobuf.Model as ProtoModel
 import kotlinx.serialization.Serializable
 import io.opencola.util.Base58
 import io.opencola.util.toByteArray
@@ -99,6 +101,16 @@ data class Id(private val bytes: ByteArray) {
 
         fun unpack(reader: Model.Id.Reader): Id {
             return Id(reader.bytes.toArray())
+        }
+
+        fun packProto(value: Id): ProtoModel.Id {
+            return ProtoModel.Id.newBuilder()
+                .setBytes(ByteString.copyFrom(value.bytes))
+                .build()
+        }
+
+        fun unpackProto(value: ProtoModel.Id): Id {
+            return Id(value.bytes.toByteArray())
         }
     }
 }

@@ -1,6 +1,7 @@
 package io.opencola.model
 
 import io.opencola.model.capnp.Model
+import io.opencola.model.protobuf.Model as ProtoModel
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -53,6 +54,18 @@ data class Attribute(
 
         fun unpack(attribute: Model.Attribute.Reader): Attribute {
             val attributeUri = URI(attribute.uri.toString())
+            return CoreAttribute.values().firstOrNull { it.spec.uri == attributeUri }?.spec
+                ?: throw RuntimeException("Attempt to decode unknown attribute: ${attribute.uri}")
+        }
+
+        fun packProto(attribute: Attribute): ProtoModel.Attribute {
+            return ProtoModel.Attribute.newBuilder()
+                .setUri(attribute.uri.toString())
+                .build()
+        }
+
+        fun unpackProto(attribute: ProtoModel.Attribute): Attribute {
+            val attributeUri = URI(attribute.uri)
             return CoreAttribute.values().firstOrNull { it.spec.uri == attributeUri }?.spec
                 ?: throw RuntimeException("Attempt to decode unknown attribute: ${attribute.uri}")
         }

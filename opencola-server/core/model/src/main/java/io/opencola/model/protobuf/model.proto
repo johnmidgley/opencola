@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package io.opencola.model.protobuf;
+
+message Attribute {
+  string uri = 1;
+}
+
+message Value {
+  bytes bytes = 1;
+}
+
+enum Operation {
+  RETRACT = 0;
+  ADD = 1;
+}
+
+message TransactionFact {
+  Attribute attribute = 1;
+  Value value = 2;
+  Operation operation = 3;
+}
+
+message Id {
+  bytes bytes = 1;
+}
+
+message TransactionEntity {
+  Id entityId = 1;
+  repeated TransactionFact facts = 2;
+}
+
+message Transaction {
+  Id id = 1;
+  Id authorityId = 2;
+  repeated TransactionEntity transactionEntities = 3;
+  uint64 epochSecond = 4;
+}
+
+message Signature {
+  string algorithm = 1;
+  bytes bytes = 2;
+}
+
+message SignedTransaction {
+  Transaction transaction = 1;
+  Signature signature = 2;
+}

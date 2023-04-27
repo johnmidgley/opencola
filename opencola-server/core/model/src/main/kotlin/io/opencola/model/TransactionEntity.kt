@@ -1,6 +1,7 @@
 package io.opencola.model
 
 import io.opencola.model.capnp.Model
+import io.opencola.model.protobuf.Model as ProtoModel
 import io.opencola.serialization.StreamSerializer
 import io.opencola.serialization.readInt
 import io.opencola.serialization.writeInt
@@ -35,6 +36,20 @@ data class TransactionEntity(val entityId: Id, val facts: List<TransactionFact>)
             return TransactionEntity(
                 Id.unpack(reader.entityId),
                 reader.facts.map { TransactionFact.unpack(it) }
+            )
+        }
+
+        fun packProto(transactionEntity: TransactionEntity): ProtoModel.TransactionEntity {
+            return ProtoModel.TransactionEntity.newBuilder()
+                .setEntityId(Id.packProto(transactionEntity.entityId))
+                .addAllFacts(transactionEntity.facts.map { TransactionFact.packProto(it) })
+                .build()
+        }
+
+        fun unpackProto(transactionEntity: ProtoModel.TransactionEntity): TransactionEntity {
+            return TransactionEntity(
+                Id.unpackProto(transactionEntity.entityId),
+                transactionEntity.factsList.map { TransactionFact.unpackProto(it) }
             )
         }
     }

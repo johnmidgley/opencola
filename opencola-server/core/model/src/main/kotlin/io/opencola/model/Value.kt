@@ -1,6 +1,8 @@
 package io.opencola.model
 
+import com.google.protobuf.ByteString
 import io.opencola.model.capnp.Model
+import io.opencola.model.protobuf.Model as ProtoModel
 import kotlinx.serialization.Serializable
 import io.opencola.serialization.*
 import java.io.ByteArrayInputStream
@@ -45,6 +47,16 @@ data class Value(val bytes: ByteArray) {
 
         fun unpack(message: Model.Value.Reader): Value {
             return Value(message.bytes.toArray())
+        }
+
+        fun packProto(value: Value): ProtoModel.Value {
+            val builder = ProtoModel.Value.newBuilder()
+            builder.setBytes(ByteString.copyFrom(value.bytes))
+            return builder.build()
+        }
+
+        fun unpackProto(value: ProtoModel.Value): Value {
+            return Value(value.bytes.toByteArray())
         }
     }
 }

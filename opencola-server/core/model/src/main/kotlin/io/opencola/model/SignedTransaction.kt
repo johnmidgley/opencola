@@ -1,6 +1,8 @@
 package io.opencola.model
 
+import com.google.protobuf.ByteString
 import io.opencola.model.capnp.Model
+import io.opencola.model.protobuf.Model as ProtoModel
 import io.opencola.security.SIGNATURE_ALGO
 import io.opencola.security.isValidSignature
 import io.opencola.serialization.StreamSerializer
@@ -26,6 +28,7 @@ data class SignedTransaction(val transaction: Transaction, val algorithm: String
         other as SignedTransaction
 
         if (transaction != other.transaction) return false
+        if (algorithm != other.algorithm) return false
         if (!signature.contentEquals(other.signature)) return false
 
         return true
@@ -56,6 +59,26 @@ data class SignedTransaction(val transaction: Transaction, val algorithm: String
             signature.setAlgorithm(signedTransaction.algorithm)
             signature.setBytes(signedTransaction.signature)
             return io.opencola.serialization.capnproto.pack(messageBuilder)
+        }
+
+        fun packProto(signedTransaction: SignedTransaction): ByteArray {
+            val builder = ProtoModel.SignedTransaction.newBuilder()
+            builder.transaction = Transaction.packProto(signedTransaction.transaction)
+            builder.signature = ProtoModel.Signature.newBuilder()
+                .setAlgorithm(signedTransaction.algorithm)
+                .setBytes(ByteString.copyFrom(signedTransaction.signature))
+                .build()
+
+            return builder.build().toByteArray()
+        }
+
+        fun unpackProto(bytes: ByteArray): SignedTransaction {
+            val proto = ProtoModel.SignedTransaction.parseFrom(bytes)
+            return SignedTransaction(
+                Transaction.unpackProto(proto.transaction),
+                proto.signature.algorithm,
+                proto.signature.bytes.toByteArray()
+            )
         }
 
         fun unpack(bytes: ByteArray): SignedTransaction {

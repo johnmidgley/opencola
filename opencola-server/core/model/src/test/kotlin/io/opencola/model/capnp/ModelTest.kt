@@ -22,17 +22,25 @@ class ModelTest {
         val signedTransaction = context.entityStore.updateEntities(entity0, entity1)!!
 
         val encoded = SignedTransaction.encode(signedTransaction)
-        val packed = SignedTransaction.pack(signedTransaction)
-        val unpacked = SignedTransaction.unpack(packed)
-
         val compressedEncoded = compress(encoded)
+
+        val packed = SignedTransaction.pack(signedTransaction)
         val compressedPacked = compress(packed)
+        val unpacked = SignedTransaction.unpack(packed)
+        assertEquals(signedTransaction, unpacked)
+
+        val protoPacked = SignedTransaction.packProto(signedTransaction)
+        val protoCompressed = compress(protoPacked)
+        val protoUnpacked = SignedTransaction.unpackProto(protoPacked)
+        assertEquals(signedTransaction, protoUnpacked)
 
         println("encoded: ${encoded.size} bytes")
         println("compressedEncoded: ${compressedEncoded.size} bytes")
         println("packed: ${packed.size} bytes")
         println("compressedPacked: ${compressedPacked.size} bytes")
+        println("protoPacked: ${protoPacked.size} bytes")
+        println("protoCompressed: ${protoCompressed.size} bytes")
 
-        assertEquals(signedTransaction, unpacked)
+
     }
 }

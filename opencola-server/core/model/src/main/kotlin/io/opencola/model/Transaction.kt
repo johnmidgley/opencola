@@ -1,6 +1,7 @@
 package io.opencola.model
 
 import io.opencola.model.capnp.Model
+import io.opencola.model.protobuf.Model as ProtoModel
 import kotlinx.serialization.Serializable
 import io.opencola.security.SIGNATURE_ALGO
 import io.opencola.security.Signator
@@ -71,6 +72,25 @@ data class Transaction(val id: Id,
                 TransactionEntity.pack(transactionEntity, transactionEntities[index])
             }
             builder.epochSecond = transaction.epochSecond
+        }
+
+        fun packProto(transaction: Transaction): io.opencola.model.protobuf.Model.Transaction? {
+            return ProtoModel.Transaction.newBuilder()
+                .setId(Id.packProto(transaction.id))
+                .setAuthorityId(Id.packProto(transaction.authorityId))
+                .addAllTransactionEntities(transaction.transactionEntities.map { TransactionEntity.packProto(it) })
+                .setEpochSecond(transaction.epochSecond)
+                .build()
+
+        }
+
+        fun unpackProto(transaction: io.opencola.model.protobuf.Model.Transaction): Transaction {
+            return Transaction(
+                Id.unpackProto(transaction.id),
+                Id.unpackProto(transaction.authorityId),
+                transaction.transactionEntitiesList.map { TransactionEntity.unpackProto(it) },
+                transaction.epochSecond
+            )
         }
 
         fun unpack(reader: Model.Transaction.Reader): Transaction {

@@ -1,6 +1,7 @@
 package io.opencola.model
 
 import io.opencola.model.capnp.Model
+import io.opencola.model.protobuf.Model as ProtoModel
 import io.opencola.serialization.StreamSerializer
 import kotlinx.serialization.Serializable
 import java.io.InputStream
@@ -38,6 +39,21 @@ data class TransactionFact(val attribute: Attribute, val value: Value, val opera
             }
         }
 
+        private fun packOperationProto(operation: Operation) : ProtoModel.Operation {
+            return when (operation) {
+                Operation.Add -> ProtoModel.Operation.ADD
+                Operation.Retract -> ProtoModel.Operation.RETRACT
+            }
+        }
+
+        fun unpackOperationProto(operation: ProtoModel.Operation) : Operation {
+            return when (operation) {
+                ProtoModel.Operation.ADD -> Operation.Add
+                ProtoModel.Operation.RETRACT -> Operation.Retract
+                else -> throw IllegalArgumentException("Unknown operation: $operation")
+            }
+        }
+
         fun pack(transactionFact: TransactionFact, builder: Model.TransactionFact.Builder) {
             Attribute.pack(transactionFact.attribute, builder.initAttribute())
             Value.pack(transactionFact.value, builder.initValue())
@@ -49,6 +65,22 @@ data class TransactionFact(val attribute: Attribute, val value: Value, val opera
                 Attribute.unpack(reader.attribute),
                 Value.unpack(reader.value),
                 unpackOperation(reader.operation)
+            )
+        }
+
+        fun packProto(transactionFact: TransactionFact): ProtoModel.TransactionFact {
+            return ProtoModel.TransactionFact.newBuilder()
+                .setAttribute(Attribute.packProto(transactionFact.attribute))
+                .setValue(Value.packProto(transactionFact.value))
+                .setOperation(packOperationProto(transactionFact.operation))
+                .build()
+        }
+
+        fun unpackProto(transactionFact: ProtoModel.TransactionFact): TransactionFact {
+            return TransactionFact(
+                Attribute.unpackProto(transactionFact.attribute),
+                Value.unpackProto(transactionFact.value),
+                unpackOperationProto(transactionFact.operation)
             )
         }
     }
