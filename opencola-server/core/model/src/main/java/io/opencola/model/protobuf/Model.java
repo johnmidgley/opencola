@@ -5518,19 +5518,18 @@ public final class Model {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>.io.opencola.model.protobuf.Transaction transaction = 1;</code>
-     * @return Whether the transaction field is set.
-     */
-    boolean hasTransaction();
-    /**
-     * <code>.io.opencola.model.protobuf.Transaction transaction = 1;</code>
+     * <pre>
+     *From https://protobuf.dev/overview/:
+     * When protocol buffers are serialized, the same data can have many different binary serializations.
+     *You cannot compare two messages for equality without fully parsing them.
+     *In order for a signature to validated, then, the exact bytes of the serialized transaction must be preserved.
+     *This is why we use the bytes type here, rather than a Transaction message.
+     * </pre>
+     *
+     * <code>bytes transaction = 1;</code>
      * @return The transaction.
      */
-    io.opencola.model.protobuf.Model.Transaction getTransaction();
-    /**
-     * <code>.io.opencola.model.protobuf.Transaction transaction = 1;</code>
-     */
-    io.opencola.model.protobuf.Model.TransactionOrBuilder getTransactionOrBuilder();
+    com.google.protobuf.ByteString getTransaction();
 
     /**
      * <code>.io.opencola.model.protobuf.Signature signature = 2;</code>
@@ -5560,6 +5559,7 @@ public final class Model {
       super(builder);
     }
     private SignedTransaction() {
+      transaction_ = com.google.protobuf.ByteString.EMPTY;
     }
 
     @java.lang.Override
@@ -5593,16 +5593,8 @@ public final class Model {
               done = true;
               break;
             case 10: {
-              io.opencola.model.protobuf.Model.Transaction.Builder subBuilder = null;
-              if (transaction_ != null) {
-                subBuilder = transaction_.toBuilder();
-              }
-              transaction_ = input.readMessage(io.opencola.model.protobuf.Model.Transaction.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(transaction_);
-                transaction_ = subBuilder.buildPartial();
-              }
 
+              transaction_ = input.readBytes();
               break;
             }
             case 18: {
@@ -5651,29 +5643,22 @@ public final class Model {
     }
 
     public static final int TRANSACTION_FIELD_NUMBER = 1;
-    private io.opencola.model.protobuf.Model.Transaction transaction_;
+    private com.google.protobuf.ByteString transaction_;
     /**
-     * <code>.io.opencola.model.protobuf.Transaction transaction = 1;</code>
-     * @return Whether the transaction field is set.
-     */
-    @java.lang.Override
-    public boolean hasTransaction() {
-      return transaction_ != null;
-    }
-    /**
-     * <code>.io.opencola.model.protobuf.Transaction transaction = 1;</code>
+     * <pre>
+     *From https://protobuf.dev/overview/:
+     * When protocol buffers are serialized, the same data can have many different binary serializations.
+     *You cannot compare two messages for equality without fully parsing them.
+     *In order for a signature to validated, then, the exact bytes of the serialized transaction must be preserved.
+     *This is why we use the bytes type here, rather than a Transaction message.
+     * </pre>
+     *
+     * <code>bytes transaction = 1;</code>
      * @return The transaction.
      */
     @java.lang.Override
-    public io.opencola.model.protobuf.Model.Transaction getTransaction() {
-      return transaction_ == null ? io.opencola.model.protobuf.Model.Transaction.getDefaultInstance() : transaction_;
-    }
-    /**
-     * <code>.io.opencola.model.protobuf.Transaction transaction = 1;</code>
-     */
-    @java.lang.Override
-    public io.opencola.model.protobuf.Model.TransactionOrBuilder getTransactionOrBuilder() {
-      return getTransaction();
+    public com.google.protobuf.ByteString getTransaction() {
+      return transaction_;
     }
 
     public static final int SIGNATURE_FIELD_NUMBER = 2;
@@ -5716,8 +5701,8 @@ public final class Model {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (transaction_ != null) {
-        output.writeMessage(1, getTransaction());
+      if (!transaction_.isEmpty()) {
+        output.writeBytes(1, transaction_);
       }
       if (signature_ != null) {
         output.writeMessage(2, getSignature());
@@ -5731,9 +5716,9 @@ public final class Model {
       if (size != -1) return size;
 
       size = 0;
-      if (transaction_ != null) {
+      if (!transaction_.isEmpty()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, getTransaction());
+          .computeBytesSize(1, transaction_);
       }
       if (signature_ != null) {
         size += com.google.protobuf.CodedOutputStream
@@ -5754,11 +5739,8 @@ public final class Model {
       }
       io.opencola.model.protobuf.Model.SignedTransaction other = (io.opencola.model.protobuf.Model.SignedTransaction) obj;
 
-      if (hasTransaction() != other.hasTransaction()) return false;
-      if (hasTransaction()) {
-        if (!getTransaction()
-            .equals(other.getTransaction())) return false;
-      }
+      if (!getTransaction()
+          .equals(other.getTransaction())) return false;
       if (hasSignature() != other.hasSignature()) return false;
       if (hasSignature()) {
         if (!getSignature()
@@ -5775,10 +5757,8 @@ public final class Model {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      if (hasTransaction()) {
-        hash = (37 * hash) + TRANSACTION_FIELD_NUMBER;
-        hash = (53 * hash) + getTransaction().hashCode();
-      }
+      hash = (37 * hash) + TRANSACTION_FIELD_NUMBER;
+      hash = (53 * hash) + getTransaction().hashCode();
       if (hasSignature()) {
         hash = (37 * hash) + SIGNATURE_FIELD_NUMBER;
         hash = (53 * hash) + getSignature().hashCode();
@@ -5916,12 +5896,8 @@ public final class Model {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        if (transactionBuilder_ == null) {
-          transaction_ = null;
-        } else {
-          transaction_ = null;
-          transactionBuilder_ = null;
-        }
+        transaction_ = com.google.protobuf.ByteString.EMPTY;
+
         if (signatureBuilder_ == null) {
           signature_ = null;
         } else {
@@ -5954,11 +5930,7 @@ public final class Model {
       @java.lang.Override
       public io.opencola.model.protobuf.Model.SignedTransaction buildPartial() {
         io.opencola.model.protobuf.Model.SignedTransaction result = new io.opencola.model.protobuf.Model.SignedTransaction(this);
-        if (transactionBuilder_ == null) {
-          result.transaction_ = transaction_;
-        } else {
-          result.transaction_ = transactionBuilder_.build();
-        }
+        result.transaction_ = transaction_;
         if (signatureBuilder_ == null) {
           result.signature_ = signature_;
         } else {
@@ -6012,8 +5984,8 @@ public final class Model {
 
       public Builder mergeFrom(io.opencola.model.protobuf.Model.SignedTransaction other) {
         if (other == io.opencola.model.protobuf.Model.SignedTransaction.getDefaultInstance()) return this;
-        if (other.hasTransaction()) {
-          mergeTransaction(other.getTransaction());
+        if (other.getTransaction() != com.google.protobuf.ByteString.EMPTY) {
+          setTransaction(other.getTransaction());
         }
         if (other.hasSignature()) {
           mergeSignature(other.getSignature());
@@ -6047,123 +6019,62 @@ public final class Model {
         return this;
       }
 
-      private io.opencola.model.protobuf.Model.Transaction transaction_;
-      private com.google.protobuf.SingleFieldBuilderV3<
-          io.opencola.model.protobuf.Model.Transaction, io.opencola.model.protobuf.Model.Transaction.Builder, io.opencola.model.protobuf.Model.TransactionOrBuilder> transactionBuilder_;
+      private com.google.protobuf.ByteString transaction_ = com.google.protobuf.ByteString.EMPTY;
       /**
-       * <code>.io.opencola.model.protobuf.Transaction transaction = 1;</code>
-       * @return Whether the transaction field is set.
-       */
-      public boolean hasTransaction() {
-        return transactionBuilder_ != null || transaction_ != null;
-      }
-      /**
-       * <code>.io.opencola.model.protobuf.Transaction transaction = 1;</code>
+       * <pre>
+       *From https://protobuf.dev/overview/:
+       * When protocol buffers are serialized, the same data can have many different binary serializations.
+       *You cannot compare two messages for equality without fully parsing them.
+       *In order for a signature to validated, then, the exact bytes of the serialized transaction must be preserved.
+       *This is why we use the bytes type here, rather than a Transaction message.
+       * </pre>
+       *
+       * <code>bytes transaction = 1;</code>
        * @return The transaction.
        */
-      public io.opencola.model.protobuf.Model.Transaction getTransaction() {
-        if (transactionBuilder_ == null) {
-          return transaction_ == null ? io.opencola.model.protobuf.Model.Transaction.getDefaultInstance() : transaction_;
-        } else {
-          return transactionBuilder_.getMessage();
-        }
+      @java.lang.Override
+      public com.google.protobuf.ByteString getTransaction() {
+        return transaction_;
       }
       /**
-       * <code>.io.opencola.model.protobuf.Transaction transaction = 1;</code>
+       * <pre>
+       *From https://protobuf.dev/overview/:
+       * When protocol buffers are serialized, the same data can have many different binary serializations.
+       *You cannot compare two messages for equality without fully parsing them.
+       *In order for a signature to validated, then, the exact bytes of the serialized transaction must be preserved.
+       *This is why we use the bytes type here, rather than a Transaction message.
+       * </pre>
+       *
+       * <code>bytes transaction = 1;</code>
+       * @param value The transaction to set.
+       * @return This builder for chaining.
        */
-      public Builder setTransaction(io.opencola.model.protobuf.Model.Transaction value) {
-        if (transactionBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          transaction_ = value;
-          onChanged();
-        } else {
-          transactionBuilder_.setMessage(value);
-        }
-
+      public Builder setTransaction(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        transaction_ = value;
+        onChanged();
         return this;
       }
       /**
-       * <code>.io.opencola.model.protobuf.Transaction transaction = 1;</code>
-       */
-      public Builder setTransaction(
-          io.opencola.model.protobuf.Model.Transaction.Builder builderForValue) {
-        if (transactionBuilder_ == null) {
-          transaction_ = builderForValue.build();
-          onChanged();
-        } else {
-          transactionBuilder_.setMessage(builderForValue.build());
-        }
-
-        return this;
-      }
-      /**
-       * <code>.io.opencola.model.protobuf.Transaction transaction = 1;</code>
-       */
-      public Builder mergeTransaction(io.opencola.model.protobuf.Model.Transaction value) {
-        if (transactionBuilder_ == null) {
-          if (transaction_ != null) {
-            transaction_ =
-              io.opencola.model.protobuf.Model.Transaction.newBuilder(transaction_).mergeFrom(value).buildPartial();
-          } else {
-            transaction_ = value;
-          }
-          onChanged();
-        } else {
-          transactionBuilder_.mergeFrom(value);
-        }
-
-        return this;
-      }
-      /**
-       * <code>.io.opencola.model.protobuf.Transaction transaction = 1;</code>
+       * <pre>
+       *From https://protobuf.dev/overview/:
+       * When protocol buffers are serialized, the same data can have many different binary serializations.
+       *You cannot compare two messages for equality without fully parsing them.
+       *In order for a signature to validated, then, the exact bytes of the serialized transaction must be preserved.
+       *This is why we use the bytes type here, rather than a Transaction message.
+       * </pre>
+       *
+       * <code>bytes transaction = 1;</code>
+       * @return This builder for chaining.
        */
       public Builder clearTransaction() {
-        if (transactionBuilder_ == null) {
-          transaction_ = null;
-          onChanged();
-        } else {
-          transaction_ = null;
-          transactionBuilder_ = null;
-        }
-
-        return this;
-      }
-      /**
-       * <code>.io.opencola.model.protobuf.Transaction transaction = 1;</code>
-       */
-      public io.opencola.model.protobuf.Model.Transaction.Builder getTransactionBuilder() {
         
+        transaction_ = getDefaultInstance().getTransaction();
         onChanged();
-        return getTransactionFieldBuilder().getBuilder();
-      }
-      /**
-       * <code>.io.opencola.model.protobuf.Transaction transaction = 1;</code>
-       */
-      public io.opencola.model.protobuf.Model.TransactionOrBuilder getTransactionOrBuilder() {
-        if (transactionBuilder_ != null) {
-          return transactionBuilder_.getMessageOrBuilder();
-        } else {
-          return transaction_ == null ?
-              io.opencola.model.protobuf.Model.Transaction.getDefaultInstance() : transaction_;
-        }
-      }
-      /**
-       * <code>.io.opencola.model.protobuf.Transaction transaction = 1;</code>
-       */
-      private com.google.protobuf.SingleFieldBuilderV3<
-          io.opencola.model.protobuf.Model.Transaction, io.opencola.model.protobuf.Model.Transaction.Builder, io.opencola.model.protobuf.Model.TransactionOrBuilder> 
-          getTransactionFieldBuilder() {
-        if (transactionBuilder_ == null) {
-          transactionBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              io.opencola.model.protobuf.Model.Transaction, io.opencola.model.protobuf.Model.Transaction.Builder, io.opencola.model.protobuf.Model.TransactionOrBuilder>(
-                  getTransaction(),
-                  getParentForChildren(),
-                  isClean());
-          transaction_ = null;
-        }
-        return transactionBuilder_;
+        return this;
       }
 
       private io.opencola.model.protobuf.Model.Signature signature_;
@@ -6403,11 +6314,10 @@ public final class Model {
       "tities\030\003 \003(\0132-.io.opencola.model.protobu" +
       "f.TransactionEntity\022\023\n\013epochSecond\030\004 \001(\004" +
       "\"-\n\tSignature\022\021\n\talgorithm\030\001 \001(\t\022\r\n\005byte" +
-      "s\030\002 \001(\014\"\213\001\n\021SignedTransaction\022<\n\013transac" +
-      "tion\030\001 \001(\0132\'.io.opencola.model.protobuf." +
-      "Transaction\0228\n\tsignature\030\002 \001(\0132%.io.open" +
-      "cola.model.protobuf.Signature*!\n\tOperati" +
-      "on\022\013\n\007RETRACT\020\000\022\007\n\003ADD\020\001b\006proto3"
+      "s\030\002 \001(\014\"b\n\021SignedTransaction\022\023\n\013transact" +
+      "ion\030\001 \001(\014\0228\n\tsignature\030\002 \001(\0132%.io.openco" +
+      "la.model.protobuf.Signature*!\n\tOperation" +
+      "\022\013\n\007RETRACT\020\000\022\007\n\003ADD\020\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

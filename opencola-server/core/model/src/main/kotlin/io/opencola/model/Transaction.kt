@@ -83,6 +83,14 @@ data class Transaction(val id: Id,
                 value.epochSecond
             )
         }
+
+        fun toByteArray(value: Transaction): ByteArray {
+            return toProto(value).toByteArray()
+        }
+
+        fun fromByteArray(value: ByteArray): Transaction {
+            return fromProto(ProtoModel.Transaction.parseFrom(value))
+        }
     }
 }
 

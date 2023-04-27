@@ -43,6 +43,15 @@ message Signature {
 }
 
 message SignedTransaction {
-  Transaction transaction = 1;
+  /*
+  From https://protobuf.dev/overview/:
+
+  * When protocol buffers are serialized, the same data can have many different binary serializations.
+  You cannot compare two messages for equality without fully parsing them.
+
+  In order for a signature to validated, then, the exact bytes of the serialized transaction must be preserved, which
+  is why we use a bytes type here, rather than a Transaction message.
+   */
+  bytes transaction = 1;
   Signature signature = 2;
 }

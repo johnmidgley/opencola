@@ -39,7 +39,7 @@ data class SignedTransaction(val transaction: Transaction, val algorithm: String
         return result
     }
 
-    companion object Factory :
+    companion object:
         StreamSerializer<SignedTransaction>,
         ProtoSerializable<SignedTransaction, ProtoModel.SignedTransaction> {
         override fun encode(stream: OutputStream, value: SignedTransaction) {
@@ -54,7 +54,7 @@ data class SignedTransaction(val transaction: Transaction, val algorithm: String
 
         override fun toProto(value: SignedTransaction): ProtoModel.SignedTransaction {
             val builder = ProtoModel.SignedTransaction.newBuilder()
-            builder.transaction = Transaction.toProto(value.transaction)
+            builder.transaction = Transaction.toProto(value.transaction).toByteString()
             builder.signature = ProtoModel.Signature.newBuilder()
                 .setAlgorithm(value.algorithm)
                 .setBytes(ByteString.copyFrom(value.signature))
@@ -65,7 +65,7 @@ data class SignedTransaction(val transaction: Transaction, val algorithm: String
 
         override fun fromProto(value: ProtoModel.SignedTransaction): SignedTransaction {
             return SignedTransaction(
-                Transaction.fromProto(value.transaction),
+                Transaction.fromProto(ProtoModel.Transaction.parseFrom(value.transaction)),
                 value.signature.algorithm,
                 value.signature.bytes.toByteArray()
             )
