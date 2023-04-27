@@ -24,9 +24,9 @@ class ModelTest {
         val encoded = SignedTransaction.encode(signedTransaction)
         val compressedEncoded = compress(encoded)
 
-        val protoPacked = SignedTransaction.toProto(signedTransaction)
+        val protoPacked = SignedTransaction.toBytes(signedTransaction)
         val protoCompressed = compress(protoPacked)
-        val protoUnpacked = SignedTransaction.fromProto(protoPacked)
+        val protoUnpacked = SignedTransaction.fromBytes(protoPacked)
         assertEquals(signedTransaction, protoUnpacked)
 
         println("encoded: ${encoded.size} bytes")

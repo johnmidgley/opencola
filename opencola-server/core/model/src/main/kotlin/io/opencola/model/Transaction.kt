@@ -28,7 +28,9 @@ data class Transaction(val id: Id,
         return SignedTransaction(this, SIGNATURE_ALGO, signator.signBytes(authorityId.toString(), encode(this)))
     }
 
-    companion object Factory : StreamSerializer<Transaction> {
+    companion object Factory :
+        StreamSerializer<Transaction>,
+        ProtoSerializable<Transaction, ProtoModel.Transaction>{
         fun fromFacts(id: Id, facts: List<Fact>, epochSecond: Long = Instant.now().epochSecond) : Transaction {
             val (authorityId, transactionEntities) = toTransactionEntities(facts)
             return Transaction(id, authorityId, transactionEntities, epochSecond)
@@ -63,22 +65,22 @@ data class Transaction(val id: Id,
             return Transaction(Id.decode(stream), Id.decode(stream), stream.readInt().downTo(1).map { TransactionEntity.decode(stream) }, stream.readLong())
         }
 
-        fun toProto(transaction: Transaction): io.opencola.model.protobuf.Model.Transaction? {
+        override fun toProto(value: Transaction): ProtoModel.Transaction {
             return ProtoModel.Transaction.newBuilder()
-                .setId(Id.toProto(transaction.id))
-                .setAuthorityId(Id.toProto(transaction.authorityId))
-                .addAllTransactionEntities(transaction.transactionEntities.map { TransactionEntity.toProto(it) })
-                .setEpochSecond(transaction.epochSecond)
+                .setId(Id.toProto(value.id))
+                .setAuthorityId(Id.toProto(value.authorityId))
+                .addAllTransactionEntities(value.transactionEntities.map { TransactionEntity.toProto(it) })
+                .setEpochSecond(value.epochSecond)
                 .build()
 
         }
 
-        fun fromProto(transaction: io.opencola.model.protobuf.Model.Transaction): Transaction {
+        override fun fromProto(value: ProtoModel.Transaction): Transaction {
             return Transaction(
-                Id.fromProto(transaction.id),
-                Id.fromProto(transaction.authorityId),
-                transaction.transactionEntitiesList.map { TransactionEntity.fromProto(it) },
-                transaction.epochSecond
+                Id.fromProto(value.id),
+                Id.fromProto(value.authorityId),
+                value.transactionEntitiesList.map { TransactionEntity.fromProto(it) },
+                value.epochSecond
             )
         }
     }

@@ -4,6 +4,7 @@ import com.google.protobuf.ByteString
 import io.opencola.model.protobuf.Model as ProtoModel
 import io.opencola.security.SIGNATURE_ALGO
 import io.opencola.security.isValidSignature
+import io.opencola.serialization.ProtoSerializable
 import io.opencola.serialization.StreamSerializer
 import io.opencola.serialization.readByteArray
 import io.opencola.serialization.writeByteArray
@@ -38,7 +39,9 @@ data class SignedTransaction(val transaction: Transaction, val algorithm: String
         return result
     }
 
-    companion object Factory : StreamSerializer<SignedTransaction> {
+    companion object Factory :
+        StreamSerializer<SignedTransaction>,
+        ProtoSerializable<SignedTransaction, ProtoModel.SignedTransaction> {
         override fun encode(stream: OutputStream, value: SignedTransaction) {
             Transaction.encode(stream, value.transaction)
             stream.writeByteArray(SIGNATURE_ALGO.toByteArray())
@@ -49,24 +52,32 @@ data class SignedTransaction(val transaction: Transaction, val algorithm: String
             return SignedTransaction(Transaction.decode(stream), String(stream.readByteArray()), stream.readByteArray())
         }
 
-        fun toProto(signedTransaction: SignedTransaction): ByteArray {
+        override fun toProto(value: SignedTransaction): ProtoModel.SignedTransaction {
             val builder = ProtoModel.SignedTransaction.newBuilder()
-            builder.transaction = Transaction.toProto(signedTransaction.transaction)
+            builder.transaction = Transaction.toProto(value.transaction)
             builder.signature = ProtoModel.Signature.newBuilder()
-                .setAlgorithm(signedTransaction.algorithm)
-                .setBytes(ByteString.copyFrom(signedTransaction.signature))
+                .setAlgorithm(value.algorithm)
+                .setBytes(ByteString.copyFrom(value.signature))
                 .build()
 
-            return builder.build().toByteArray()
+            return builder.build()
         }
 
-        fun fromProto(bytes: ByteArray): SignedTransaction {
-            val proto = ProtoModel.SignedTransaction.parseFrom(bytes)
+        override fun fromProto(value: ProtoModel.SignedTransaction): SignedTransaction {
             return SignedTransaction(
-                Transaction.fromProto(proto.transaction),
-                proto.signature.algorithm,
-                proto.signature.bytes.toByteArray()
+                Transaction.fromProto(value.transaction),
+                value.signature.algorithm,
+                value.signature.bytes.toByteArray()
             )
+        }
+
+        // TODO: toBytes can easily be moved to ProtobufSerializable. Not sure if fromBytes can be moved due to type erasure
+        fun toBytes(value: SignedTransaction): ByteArray {
+            return toProto(value).toByteArray()
+        }
+
+        fun fromBytes(bytes: ByteArray): SignedTransaction {
+            return fromProto(ProtoModel.SignedTransaction.parseFrom(bytes))
         }
     }
 }

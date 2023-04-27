@@ -28,7 +28,7 @@ data class Value(val bytes: ByteArray) {
         return bytes.contentHashCode()
     }
 
-    companion object Factory : StreamSerializer<Value> {
+    companion object Factory : StreamSerializer<Value>, ProtoSerializable<Value, ProtoModel.Value> {
         val emptyValue = Value("".toByteArray())
 
         override fun encode(stream: OutputStream, value: Value) {
@@ -40,13 +40,13 @@ data class Value(val bytes: ByteArray) {
             return if(bytes.isEmpty()) emptyValue else Value(bytes)
         }
 
-        fun toProto(value: Value): ProtoModel.Value {
+        override fun toProto(value: Value): ProtoModel.Value {
             val builder = ProtoModel.Value.newBuilder()
             builder.setBytes(ByteString.copyFrom(value.bytes))
             return builder.build()
         }
 
-        fun fromProto(value: ProtoModel.Value): Value {
+        override fun fromProto(value: ProtoModel.Value): Value {
             return Value(value.bytes.toByteArray())
         }
     }

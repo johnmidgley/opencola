@@ -1,5 +1,6 @@
 package io.opencola.model
 
+import io.opencola.serialization.ProtoSerializable
 import io.opencola.model.protobuf.Model as ProtoModel
 import io.opencola.serialization.StreamSerializer
 import kotlinx.serialization.Serializable
@@ -8,7 +9,9 @@ import java.io.OutputStream
 
 @Serializable
 data class TransactionFact(val attribute: Attribute, val value: Value, val operation: Operation) {
-    companion object Factory : StreamSerializer<TransactionFact> {
+    companion object Factory :
+        StreamSerializer<TransactionFact>,
+        ProtoSerializable<TransactionFact, ProtoModel.TransactionFact> {
         fun fromFact(fact: Fact): TransactionFact {
             return TransactionFact(fact.attribute, fact.value, fact.operation)
         }
@@ -24,19 +27,19 @@ data class TransactionFact(val attribute: Attribute, val value: Value, val opera
         }
 
 
-        fun toProto(transactionFact: TransactionFact): ProtoModel.TransactionFact {
+        override fun toProto(value: TransactionFact): ProtoModel.TransactionFact {
             return ProtoModel.TransactionFact.newBuilder()
-                .setAttribute(Attribute.toProto(transactionFact.attribute))
-                .setValue(Value.toProto(transactionFact.value))
-                .setOperation(Operation.toProto(transactionFact.operation))
+                .setAttribute(Attribute.toProto(value.attribute))
+                .setValue(Value.toProto(value.value))
+                .setOperation(Operation.toProto(value.operation))
                 .build()
         }
 
-        fun fromProto(transactionFact: ProtoModel.TransactionFact): TransactionFact {
+        override fun fromProto(value: ProtoModel.TransactionFact): TransactionFact {
             return TransactionFact(
-                Attribute.fromProto(transactionFact.attribute),
-                Value.fromProto(transactionFact.value),
-                Operation.fromProto(transactionFact.operation)
+                Attribute.fromProto(value.attribute),
+                Value.fromProto(value.value),
+                Operation.fromProto(value.operation)
             )
         }
     }

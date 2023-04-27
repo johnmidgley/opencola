@@ -1,5 +1,6 @@
 package io.opencola.model
 
+import io.opencola.serialization.ProtoSerializable
 import io.opencola.model.protobuf.Model as ProtoModel
 import io.opencola.serialization.StreamSerializer
 import io.opencola.serialization.readInt
@@ -10,7 +11,9 @@ import java.io.OutputStream
 
 @Serializable
 data class TransactionEntity(val entityId: Id, val facts: List<TransactionFact>) {
-    companion object Factory : StreamSerializer<TransactionEntity> {
+    companion object Factory :
+        StreamSerializer<TransactionEntity>,
+        ProtoSerializable<TransactionEntity, ProtoModel.TransactionEntity>{
         override fun encode(stream: OutputStream, value: TransactionEntity) {
             Id.encode(stream, value.entityId)
             stream.writeInt(value.facts.size)
@@ -23,17 +26,17 @@ data class TransactionEntity(val entityId: Id, val facts: List<TransactionFact>)
             return TransactionEntity(Id.decode(stream), stream.readInt().downTo(1).map { TransactionFact.decode(stream) } )
         }
 
-        fun toProto(transactionEntity: TransactionEntity): ProtoModel.TransactionEntity {
+        override fun toProto(value: TransactionEntity): ProtoModel.TransactionEntity {
             return ProtoModel.TransactionEntity.newBuilder()
-                .setEntityId(Id.toProto(transactionEntity.entityId))
-                .addAllFacts(transactionEntity.facts.map { TransactionFact.toProto(it) })
+                .setEntityId(Id.toProto(value.entityId))
+                .addAllFacts(value.facts.map { TransactionFact.toProto(it) })
                 .build()
         }
 
-        fun fromProto(transactionEntity: ProtoModel.TransactionEntity): TransactionEntity {
+        override fun fromProto(value: ProtoModel.TransactionEntity): TransactionEntity {
             return TransactionEntity(
-                Id.fromProto(transactionEntity.entityId),
-                transactionEntity.factsList.map { TransactionFact.fromProto(it) }
+                Id.fromProto(value.entityId),
+                value.factsList.map { TransactionFact.fromProto(it) }
             )
         }
     }
