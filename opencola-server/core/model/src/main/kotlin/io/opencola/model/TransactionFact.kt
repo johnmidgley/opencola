@@ -23,26 +23,12 @@ data class TransactionFact(val attribute: Attribute, val value: Value, val opera
             return TransactionFact(Attribute.decode(stream), Value.decode(stream), Operation.decode(stream))
         }
 
-        private fun packOperationProto(operation: Operation) : ProtoModel.Operation {
-            return when (operation) {
-                Operation.Add -> ProtoModel.Operation.ADD
-                Operation.Retract -> ProtoModel.Operation.RETRACT
-            }
-        }
-
-        fun unpackOperationProto(operation: ProtoModel.Operation) : Operation {
-            return when (operation) {
-                ProtoModel.Operation.ADD -> Operation.Add
-                ProtoModel.Operation.RETRACT -> Operation.Retract
-                else -> throw IllegalArgumentException("Unknown operation: $operation")
-            }
-        }
 
         fun toProto(transactionFact: TransactionFact): ProtoModel.TransactionFact {
             return ProtoModel.TransactionFact.newBuilder()
                 .setAttribute(Attribute.toProto(transactionFact.attribute))
                 .setValue(Value.toProto(transactionFact.value))
-                .setOperation(packOperationProto(transactionFact.operation))
+                .setOperation(Operation.toProto(transactionFact.operation))
                 .build()
         }
 
@@ -50,7 +36,7 @@ data class TransactionFact(val attribute: Attribute, val value: Value, val opera
             return TransactionFact(
                 Attribute.fromProto(transactionFact.attribute),
                 Value.fromProto(transactionFact.value),
-                unpackOperationProto(transactionFact.operation)
+                Operation.fromProto(transactionFact.operation)
             )
         }
     }
