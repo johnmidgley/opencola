@@ -5522,8 +5522,8 @@ public final class Model {
      *From https://protobuf.dev/overview/:
      * When protocol buffers are serialized, the same data can have many different binary serializations.
      *You cannot compare two messages for equality without fully parsing them.
-     *In order for a signature to validated, then, the exact bytes of the serialized transaction must be preserved.
-     *This is why we use the bytes type here, rather than a Transaction message.
+     *In order for a signature to validated, then, the exact bytes of the serialized transaction must be preserved, which
+     *is why we use a bytes type here, rather than a Transaction message.
      * </pre>
      *
      * <code>bytes transaction = 1;</code>
@@ -5649,8 +5649,8 @@ public final class Model {
      *From https://protobuf.dev/overview/:
      * When protocol buffers are serialized, the same data can have many different binary serializations.
      *You cannot compare two messages for equality without fully parsing them.
-     *In order for a signature to validated, then, the exact bytes of the serialized transaction must be preserved.
-     *This is why we use the bytes type here, rather than a Transaction message.
+     *In order for a signature to validated, then, the exact bytes of the serialized transaction must be preserved, which
+     *is why we use a bytes type here, rather than a Transaction message.
      * </pre>
      *
      * <code>bytes transaction = 1;</code>
@@ -6025,8 +6025,8 @@ public final class Model {
        *From https://protobuf.dev/overview/:
        * When protocol buffers are serialized, the same data can have many different binary serializations.
        *You cannot compare two messages for equality without fully parsing them.
-       *In order for a signature to validated, then, the exact bytes of the serialized transaction must be preserved.
-       *This is why we use the bytes type here, rather than a Transaction message.
+       *In order for a signature to validated, then, the exact bytes of the serialized transaction must be preserved, which
+       *is why we use a bytes type here, rather than a Transaction message.
        * </pre>
        *
        * <code>bytes transaction = 1;</code>
@@ -6041,8 +6041,8 @@ public final class Model {
        *From https://protobuf.dev/overview/:
        * When protocol buffers are serialized, the same data can have many different binary serializations.
        *You cannot compare two messages for equality without fully parsing them.
-       *In order for a signature to validated, then, the exact bytes of the serialized transaction must be preserved.
-       *This is why we use the bytes type here, rather than a Transaction message.
+       *In order for a signature to validated, then, the exact bytes of the serialized transaction must be preserved, which
+       *is why we use a bytes type here, rather than a Transaction message.
        * </pre>
        *
        * <code>bytes transaction = 1;</code>
@@ -6063,8 +6063,8 @@ public final class Model {
        *From https://protobuf.dev/overview/:
        * When protocol buffers are serialized, the same data can have many different binary serializations.
        *You cannot compare two messages for equality without fully parsing them.
-       *In order for a signature to validated, then, the exact bytes of the serialized transaction must be preserved.
-       *This is why we use the bytes type here, rather than a Transaction message.
+       *In order for a signature to validated, then, the exact bytes of the serialized transaction must be preserved, which
+       *is why we use a bytes type here, rather than a Transaction message.
        * </pre>
        *
        * <code>bytes transaction = 1;</code>

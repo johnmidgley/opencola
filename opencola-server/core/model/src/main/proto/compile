@@ -6,7 +6,7 @@ if ! [ -x "$(command -v protoc)" ]; then
     exit 1
 fi
 
-protoc  --java_out=../../../../  model.proto
+protoc  --java_out=../java  model.proto
 
 # Check error code
 if [ $? -ne 0 ]; then
