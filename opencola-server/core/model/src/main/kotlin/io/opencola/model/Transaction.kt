@@ -2,7 +2,6 @@ package io.opencola.model
 
 import io.opencola.model.protobuf.Model as ProtoModel
 import kotlinx.serialization.Serializable
-import io.opencola.security.SIGNATURE_ALGO
 import io.opencola.security.Signator
 import io.opencola.serialization.*
 import java.io.InputStream
@@ -25,7 +24,8 @@ data class Transaction(val id: Id,
         // This is probably not the right way to serialize. Likely should create a serializer / provider that can be
         // configured to serialize in an appropriate format.
         // TODO: Validate transaction
-        return SignedTransaction(this, SIGNATURE_ALGO, signator.signBytes(authorityId.toString(), encode(this)))
+        val signature = signator.signBytes(authorityId.toString(), encode(this))
+        return SignedTransaction(this, signature.algorithm, signature.bytes)
     }
 
     companion object Factory :

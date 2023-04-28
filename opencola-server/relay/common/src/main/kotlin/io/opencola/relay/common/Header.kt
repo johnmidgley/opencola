@@ -1,6 +1,7 @@
 package io.opencola.relay.common
 
 import io.opencola.model.Id
+import io.opencola.security.SIGNATURE_ALGO
 import io.opencola.security.Signature
 import io.opencola.security.publicKeyFromBytes
 import io.opencola.serialization.StreamSerializer
@@ -29,7 +30,7 @@ class Header(val from: PublicKey, val sessionId: UUID, val signature: Signature)
             return Header(
                 publicKeyFromBytes(stream.readByteArray()),
                 UUIDByteArrayCodecCodec.decode(stream.readByteArray()),
-                Signature(stream.readByteArray())
+                Signature(SIGNATURE_ALGO, stream.readByteArray())
             )
         }
     }

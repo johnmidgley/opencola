@@ -64,7 +64,7 @@ abstract class AbstractClient(
         val challengeBytes = socketSession.readSizedByteArray()
 
         // Sign challenge and send back
-        socketSession.writeSizedByteArray(sign(keyPair.private, challengeBytes))
+        socketSession.writeSizedByteArray(sign(keyPair.private, challengeBytes).bytes)
 
         val authenticationResponse = IntByteArrayCodec.decode(socketSession.readSizedByteArray())
         if (authenticationResponse != 0) {

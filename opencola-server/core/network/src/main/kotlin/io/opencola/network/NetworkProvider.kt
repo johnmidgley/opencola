@@ -41,7 +41,7 @@ abstract class AbstractNetworkProvider(val addressBook: AddressBook,
     fun getEncodedEnvelope(fromId: Id, toId: Id, messageBytes: ByteArray, encryptMessage: Boolean): ByteArray {
         val toAuthority = addressBook.getEntry(fromId, toId)
             ?: throw IllegalArgumentException("$fromId does not have $toId as peer")
-        val message = Message(fromId, messageBytes, signator.signBytes(fromId.toString(), messageBytes))
+        val message = Message(fromId, messageBytes, signator.signBytes(fromId.toString(), messageBytes).bytes)
         return MessageEnvelope(toId, message).encode(if (encryptMessage) toAuthority.publicKey else null)
     }
 

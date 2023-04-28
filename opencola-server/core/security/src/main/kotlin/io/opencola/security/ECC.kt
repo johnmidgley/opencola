@@ -27,11 +27,12 @@ fun generateKeyPair() : KeyPair {
     return g.generateKeyPair()
 }
 
-fun sign(privateKey: PrivateKey, data: ByteArray): ByteArray {
-    val ecdsaSign = java.security.Signature.getInstance(SIGNATURE_ALGO)
-    ecdsaSign.initSign(privateKey)
-    ecdsaSign.update(data)
-    return ecdsaSign.sign()
+fun sign(privateKey: PrivateKey, data: ByteArray, algorithm: String = SIGNATURE_ALGO): Signature {
+    val ecdsaSign = java.security.Signature.getInstance(algorithm).also {
+        it.initSign(privateKey)
+        it.update(data)
+    }
+    return Signature(algorithm, ecdsaSign.sign())
 }
 
 fun encrypt(publicKey: PublicKey, bytes: ByteArray) : ByteArray {
@@ -55,11 +56,15 @@ fun decrypt(privateKey: PrivateKey, bytes: ByteArray) : ByteArray {
     }
 }
 
-fun isValidSignature(publicKey: PublicKey, data: ByteArray, signature: ByteArray): Boolean {
-    val ecdsaVerify = java.security.Signature.getInstance(SIGNATURE_ALGO)
+fun isValidSignature(publicKey: PublicKey, data: ByteArray, signature: ByteArray, algorithm: String = SIGNATURE_ALGO): Boolean {
+    val ecdsaVerify = java.security.Signature.getInstance(algorithm)
     ecdsaVerify.initVerify(publicKey)
     ecdsaVerify.update(data)
     return ecdsaVerify.verify(signature)
+}
+
+fun isValidSignature(publicKey: PublicKey, data: ByteArray, signature: Signature): Boolean {
+    return isValidSignature(publicKey, data, signature.bytes, signature.algorithm)
 }
 
 fun getKeyFactory(): KeyFactory {

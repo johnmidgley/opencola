@@ -26,6 +26,6 @@ class NetworkNodeContext(
 // TODO: This should probably be the actual code used in main - but it depends on the address book.
 fun getEncodedEnvelope(fromId: Id, fromPrivateKey: PrivateKey, toId: Id, request: Request): ByteArray {
     val messageBytes = Json.encodeToString(request).toByteArray()
-    val message = Message(fromId, messageBytes, sign(fromPrivateKey, messageBytes))
+    val message = Message(fromId, messageBytes, sign(fromPrivateKey, messageBytes).bytes)
     return MessageEnvelope(toId, message).encode()
 }
