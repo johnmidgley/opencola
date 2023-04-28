@@ -202,14 +202,14 @@ class ExposedEntityStore(
     override fun persistTransaction(signedTransaction: SignedTransaction): Long {
         return transaction(database) {
             val transaction = signedTransaction.transaction
-            val transactionsId = transactions.insert {
+            val ordinal = transactions.insert {
                 it[transactionId] = Id.encode(transaction.id)
                 it[authorityId] = Id.encode(transaction.authorityId)
                 it[epochSecond] = transaction.epochSecond
                 it[encoded] = ExposedBlob(SignedTransaction.encode(signedTransaction))
             } get transactions.id
 
-            val transactionFacts = transaction.getFacts(transactionsId.value)
+            val transactionFacts = transaction.getFacts(ordinal.value)
             transactionFacts
                 .forEach { fact ->
                 facts.insert {
@@ -219,11 +219,11 @@ class ExposedEntityStore(
                     it[value] = ExposedBlob(fact.value.bytes)
                     it[operation] = fact.operation
                     it[epochSecond] = transaction.epochSecond
-                    it[transactionOrdinal] = transactionsId.value
+                    it[transactionOrdinal] = ordinal.value
                 }
             }
 
-            transactionsId.value
+            ordinal.value
         }
     }
 

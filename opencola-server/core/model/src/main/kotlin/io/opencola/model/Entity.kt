@@ -5,7 +5,6 @@ import io.opencola.model.AttributeType.*
 import java.net.URI
 import java.util.*
 
-
 abstract class Entity(val authorityId: Id, val entityId: Id) {
     private var type by stringAttributeDelegate
     var name by stringAttributeDelegate
@@ -145,7 +144,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
     }
 
      private fun getFact(propertyName: String, key: UUID?, value: Value?): Pair<Attribute, Fact?> {
-        val attribute = getAttributeByName(propertyName)
+        val attribute = Attributes.getAttributeByName(propertyName)
             ?: throw IllegalArgumentException("Attempt to access unknown property $propertyName")
 
         when(attribute.type){
@@ -165,7 +164,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
     }
 
     private fun getCurrentAttributeFacts(propertyName: String): Pair<Attribute, List<Fact>> {
-        val attribute = getAttributeByName(propertyName)
+        val attribute = Attributes.getAttributeByName(propertyName)
             ?: throw IllegalArgumentException("Attempt to access unknown property $propertyName")
 
         val factList = facts

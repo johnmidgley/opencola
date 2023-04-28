@@ -3,7 +3,10 @@ syntax = "proto3";
 package io.opencola.model.protobuf;
 
 message Attribute {
-  string uri = 1;
+  oneof value {
+    uint32 ordinal = 1;
+    string uri = 2;
+  }
 }
 
 message Value {

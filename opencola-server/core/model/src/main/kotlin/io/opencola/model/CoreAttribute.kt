@@ -153,11 +153,6 @@ enum class CoreAttribute(val spec: Attribute) {
     ),
 }
 
-private val attributesByName = CoreAttribute.values().associateBy { it.spec.name }
-
-fun getAttributeByName(name: String): Attribute? {
-    return attributesByName[name]?.spec
-}
 
 
 

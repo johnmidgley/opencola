@@ -127,16 +127,34 @@ public final class Model {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>string uri = 1;</code>
+     * <code>uint32 ordinal = 1;</code>
+     * @return Whether the ordinal field is set.
+     */
+    boolean hasOrdinal();
+    /**
+     * <code>uint32 ordinal = 1;</code>
+     * @return The ordinal.
+     */
+    int getOrdinal();
+
+    /**
+     * <code>string uri = 2;</code>
+     * @return Whether the uri field is set.
+     */
+    boolean hasUri();
+    /**
+     * <code>string uri = 2;</code>
      * @return The uri.
      */
     java.lang.String getUri();
     /**
-     * <code>string uri = 1;</code>
+     * <code>string uri = 2;</code>
      * @return The bytes for uri.
      */
     com.google.protobuf.ByteString
         getUriBytes();
+
+    public io.opencola.model.protobuf.Model.Attribute.ValueCase getValueCase();
   }
   /**
    * Protobuf type {@code io.opencola.model.protobuf.Attribute}
@@ -151,7 +169,6 @@ public final class Model {
       super(builder);
     }
     private Attribute() {
-      uri_ = "";
     }
 
     @java.lang.Override
@@ -184,10 +201,15 @@ public final class Model {
             case 0:
               done = true;
               break;
-            case 10: {
+            case 8: {
+              valueCase_ = 1;
+              value_ = input.readUInt32();
+              break;
+            }
+            case 18: {
               java.lang.String s = input.readStringRequireUtf8();
-
-              uri_ = s;
+              valueCase_ = 2;
+              value_ = s;
               break;
             }
             default: {
@@ -222,38 +244,114 @@ public final class Model {
               io.opencola.model.protobuf.Model.Attribute.class, io.opencola.model.protobuf.Model.Attribute.Builder.class);
     }
 
-    public static final int URI_FIELD_NUMBER = 1;
-    private volatile java.lang.Object uri_;
+    private int valueCase_ = 0;
+    private java.lang.Object value_;
+    public enum ValueCase
+        implements com.google.protobuf.Internal.EnumLite,
+            com.google.protobuf.AbstractMessage.InternalOneOfEnum {
+      ORDINAL(1),
+      URI(2),
+      VALUE_NOT_SET(0);
+      private final int value;
+      private ValueCase(int value) {
+        this.value = value;
+      }
+      /**
+       * @param value The number of the enum to look for.
+       * @return The enum associated with the given number.
+       * @deprecated Use {@link #forNumber(int)} instead.
+       */
+      @java.lang.Deprecated
+      public static ValueCase valueOf(int value) {
+        return forNumber(value);
+      }
+
+      public static ValueCase forNumber(int value) {
+        switch (value) {
+          case 1: return ORDINAL;
+          case 2: return URI;
+          case 0: return VALUE_NOT_SET;
+          default: return null;
+        }
+      }
+      public int getNumber() {
+        return this.value;
+      }
+    };
+
+    public ValueCase
+    getValueCase() {
+      return ValueCase.forNumber(
+          valueCase_);
+    }
+
+    public static final int ORDINAL_FIELD_NUMBER = 1;
     /**
-     * <code>string uri = 1;</code>
-     * @return The uri.
+     * <code>uint32 ordinal = 1;</code>
+     * @return Whether the ordinal field is set.
      */
     @java.lang.Override
+    public boolean hasOrdinal() {
+      return valueCase_ == 1;
+    }
+    /**
+     * <code>uint32 ordinal = 1;</code>
+     * @return The ordinal.
+     */
+    @java.lang.Override
+    public int getOrdinal() {
+      if (valueCase_ == 1) {
+        return (java.lang.Integer) value_;
+      }
+      return 0;
+    }
+
+    public static final int URI_FIELD_NUMBER = 2;
+    /**
+     * <code>string uri = 2;</code>
+     * @return Whether the uri field is set.
+     */
+    public boolean hasUri() {
+      return valueCase_ == 2;
+    }
+    /**
+     * <code>string uri = 2;</code>
+     * @return The uri.
+     */
     public java.lang.String getUri() {
-      java.lang.Object ref = uri_;
+      java.lang.Object ref = "";
+      if (valueCase_ == 2) {
+        ref = value_;
+      }
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
-        uri_ = s;
+        if (valueCase_ == 2) {
+          value_ = s;
+        }
         return s;
       }
     }
     /**
-     * <code>string uri = 1;</code>
+     * <code>string uri = 2;</code>
      * @return The bytes for uri.
      */
-    @java.lang.Override
     public com.google.protobuf.ByteString
         getUriBytes() {
-      java.lang.Object ref = uri_;
+      java.lang.Object ref = "";
+      if (valueCase_ == 2) {
+        ref = value_;
+      }
       if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        uri_ = b;
+        if (valueCase_ == 2) {
+          value_ = b;
+        }
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
@@ -274,8 +372,12 @@ public final class Model {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getUriBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, uri_);
+      if (valueCase_ == 1) {
+        output.writeUInt32(
+            1, (int)((java.lang.Integer) value_));
+      }
+      if (valueCase_ == 2) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, value_);
       }
       unknownFields.writeTo(output);
     }
@@ -286,8 +388,13 @@ public final class Model {
       if (size != -1) return size;
 
       size = 0;
-      if (!getUriBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, uri_);
+      if (valueCase_ == 1) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(
+              1, (int)((java.lang.Integer) value_));
+      }
+      if (valueCase_ == 2) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, value_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -304,8 +411,19 @@ public final class Model {
       }
       io.opencola.model.protobuf.Model.Attribute other = (io.opencola.model.protobuf.Model.Attribute) obj;
 
-      if (!getUri()
-          .equals(other.getUri())) return false;
+      if (!getValueCase().equals(other.getValueCase())) return false;
+      switch (valueCase_) {
+        case 1:
+          if (getOrdinal()
+              != other.getOrdinal()) return false;
+          break;
+        case 2:
+          if (!getUri()
+              .equals(other.getUri())) return false;
+          break;
+        case 0:
+        default:
+      }
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -317,8 +435,18 @@ public final class Model {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      hash = (37 * hash) + URI_FIELD_NUMBER;
-      hash = (53 * hash) + getUri().hashCode();
+      switch (valueCase_) {
+        case 1:
+          hash = (37 * hash) + ORDINAL_FIELD_NUMBER;
+          hash = (53 * hash) + getOrdinal();
+          break;
+        case 2:
+          hash = (37 * hash) + URI_FIELD_NUMBER;
+          hash = (53 * hash) + getUri().hashCode();
+          break;
+        case 0:
+        default:
+      }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -452,8 +580,8 @@ public final class Model {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        uri_ = "";
-
+        valueCase_ = 0;
+        value_ = null;
         return this;
       }
 
@@ -480,7 +608,13 @@ public final class Model {
       @java.lang.Override
       public io.opencola.model.protobuf.Model.Attribute buildPartial() {
         io.opencola.model.protobuf.Model.Attribute result = new io.opencola.model.protobuf.Model.Attribute(this);
-        result.uri_ = uri_;
+        if (valueCase_ == 1) {
+          result.value_ = value_;
+        }
+        if (valueCase_ == 2) {
+          result.value_ = value_;
+        }
+        result.valueCase_ = valueCase_;
         onBuilt();
         return result;
       }
@@ -529,9 +663,20 @@ public final class Model {
 
       public Builder mergeFrom(io.opencola.model.protobuf.Model.Attribute other) {
         if (other == io.opencola.model.protobuf.Model.Attribute.getDefaultInstance()) return this;
-        if (!other.getUri().isEmpty()) {
-          uri_ = other.uri_;
-          onChanged();
+        switch (other.getValueCase()) {
+          case ORDINAL: {
+            setOrdinal(other.getOrdinal());
+            break;
+          }
+          case URI: {
+            valueCase_ = 2;
+            value_ = other.value_;
+            onChanged();
+            break;
+          }
+          case VALUE_NOT_SET: {
+            break;
+          }
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -561,43 +706,118 @@ public final class Model {
         }
         return this;
       }
+      private int valueCase_ = 0;
+      private java.lang.Object value_;
+      public ValueCase
+          getValueCase() {
+        return ValueCase.forNumber(
+            valueCase_);
+      }
 
-      private java.lang.Object uri_ = "";
+      public Builder clearValue() {
+        valueCase_ = 0;
+        value_ = null;
+        onChanged();
+        return this;
+      }
+
+
       /**
-       * <code>string uri = 1;</code>
+       * <code>uint32 ordinal = 1;</code>
+       * @return Whether the ordinal field is set.
+       */
+      public boolean hasOrdinal() {
+        return valueCase_ == 1;
+      }
+      /**
+       * <code>uint32 ordinal = 1;</code>
+       * @return The ordinal.
+       */
+      public int getOrdinal() {
+        if (valueCase_ == 1) {
+          return (java.lang.Integer) value_;
+        }
+        return 0;
+      }
+      /**
+       * <code>uint32 ordinal = 1;</code>
+       * @param value The ordinal to set.
+       * @return This builder for chaining.
+       */
+      public Builder setOrdinal(int value) {
+        valueCase_ = 1;
+        value_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>uint32 ordinal = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearOrdinal() {
+        if (valueCase_ == 1) {
+          valueCase_ = 0;
+          value_ = null;
+          onChanged();
+        }
+        return this;
+      }
+
+      /**
+       * <code>string uri = 2;</code>
+       * @return Whether the uri field is set.
+       */
+      @java.lang.Override
+      public boolean hasUri() {
+        return valueCase_ == 2;
+      }
+      /**
+       * <code>string uri = 2;</code>
        * @return The uri.
        */
+      @java.lang.Override
       public java.lang.String getUri() {
-        java.lang.Object ref = uri_;
+        java.lang.Object ref = "";
+        if (valueCase_ == 2) {
+          ref = value_;
+        }
         if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
-          uri_ = s;
+          if (valueCase_ == 2) {
+            value_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
         }
       }
       /**
-       * <code>string uri = 1;</code>
+       * <code>string uri = 2;</code>
        * @return The bytes for uri.
        */
+      @java.lang.Override
       public com.google.protobuf.ByteString
           getUriBytes() {
-        java.lang.Object ref = uri_;
+        java.lang.Object ref = "";
+        if (valueCase_ == 2) {
+          ref = value_;
+        }
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
-          uri_ = b;
+          if (valueCase_ == 2) {
+            value_ = b;
+          }
           return b;
         } else {
           return (com.google.protobuf.ByteString) ref;
         }
       }
       /**
-       * <code>string uri = 1;</code>
+       * <code>string uri = 2;</code>
        * @param value The uri to set.
        * @return This builder for chaining.
        */
@@ -606,23 +826,25 @@ public final class Model {
         if (value == null) {
     throw new NullPointerException();
   }
-  
-        uri_ = value;
+  valueCase_ = 2;
+        value_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string uri = 1;</code>
+       * <code>string uri = 2;</code>
        * @return This builder for chaining.
        */
       public Builder clearUri() {
-        
-        uri_ = getDefaultInstance().getUri();
-        onChanged();
+        if (valueCase_ == 2) {
+          valueCase_ = 0;
+          value_ = null;
+          onChanged();
+        }
         return this;
       }
       /**
-       * <code>string uri = 1;</code>
+       * <code>string uri = 2;</code>
        * @param value The bytes for uri to set.
        * @return This builder for chaining.
        */
@@ -632,8 +854,8 @@ public final class Model {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-        
-        uri_ = value;
+        valueCase_ = 2;
+        value_ = value;
         onChanged();
         return this;
       }
@@ -6298,26 +6520,27 @@ public final class Model {
   static {
     java.lang.String[] descriptorData = {
       "\n\013model.proto\022\032io.opencola.model.protobu" +
-      "f\"\030\n\tAttribute\022\013\n\003uri\030\001 \001(\t\"\026\n\005Value\022\r\n\005" +
-      "bytes\030\001 \001(\014\"\267\001\n\017TransactionFact\0228\n\tattri" +
-      "bute\030\001 \001(\0132%.io.opencola.model.protobuf." +
-      "Attribute\0220\n\005value\030\002 \001(\0132!.io.opencola.m" +
-      "odel.protobuf.Value\0228\n\toperation\030\003 \001(\0162%" +
-      ".io.opencola.model.protobuf.Operation\"\023\n" +
-      "\002Id\022\r\n\005bytes\030\001 \001(\014\"\201\001\n\021TransactionEntity" +
-      "\0220\n\010entityId\030\001 \001(\0132\036.io.opencola.model.p" +
-      "rotobuf.Id\022:\n\005facts\030\002 \003(\0132+.io.opencola." +
-      "model.protobuf.TransactionFact\"\317\001\n\013Trans" +
-      "action\022*\n\002id\030\001 \001(\0132\036.io.opencola.model.p" +
-      "rotobuf.Id\0223\n\013authorityId\030\002 \001(\0132\036.io.ope" +
-      "ncola.model.protobuf.Id\022J\n\023transactionEn" +
-      "tities\030\003 \003(\0132-.io.opencola.model.protobu" +
-      "f.TransactionEntity\022\023\n\013epochSecond\030\004 \001(\004" +
-      "\"-\n\tSignature\022\021\n\talgorithm\030\001 \001(\t\022\r\n\005byte" +
-      "s\030\002 \001(\014\"b\n\021SignedTransaction\022\023\n\013transact" +
-      "ion\030\001 \001(\014\0228\n\tsignature\030\002 \001(\0132%.io.openco" +
-      "la.model.protobuf.Signature*!\n\tOperation" +
-      "\022\013\n\007RETRACT\020\000\022\007\n\003ADD\020\001b\006proto3"
+      "f\"6\n\tAttribute\022\021\n\007ordinal\030\001 \001(\rH\000\022\r\n\003uri" +
+      "\030\002 \001(\tH\000B\007\n\005value\"\026\n\005Value\022\r\n\005bytes\030\001 \001(" +
+      "\014\"\267\001\n\017TransactionFact\0228\n\tattribute\030\001 \001(\013" +
+      "2%.io.opencola.model.protobuf.Attribute\022" +
+      "0\n\005value\030\002 \001(\0132!.io.opencola.model.proto" +
+      "buf.Value\0228\n\toperation\030\003 \001(\0162%.io.openco" +
+      "la.model.protobuf.Operation\"\023\n\002Id\022\r\n\005byt" +
+      "es\030\001 \001(\014\"\201\001\n\021TransactionEntity\0220\n\010entity" +
+      "Id\030\001 \001(\0132\036.io.opencola.model.protobuf.Id" +
+      "\022:\n\005facts\030\002 \003(\0132+.io.opencola.model.prot" +
+      "obuf.TransactionFact\"\317\001\n\013Transaction\022*\n\002" +
+      "id\030\001 \001(\0132\036.io.opencola.model.protobuf.Id" +
+      "\0223\n\013authorityId\030\002 \001(\0132\036.io.opencola.mode" +
+      "l.protobuf.Id\022J\n\023transactionEntities\030\003 \003" +
+      "(\0132-.io.opencola.model.protobuf.Transact" +
+      "ionEntity\022\023\n\013epochSecond\030\004 \001(\004\"-\n\tSignat" +
+      "ure\022\021\n\talgorithm\030\001 \001(\t\022\r\n\005bytes\030\002 \001(\014\"b\n" +
+      "\021SignedTransaction\022\023\n\013transaction\030\001 \001(\014\022" +
+      "8\n\tsignature\030\002 \001(\0132%.io.opencola.model.p" +
+      "rotobuf.Signature*!\n\tOperation\022\013\n\007RETRAC" +
+      "T\020\000\022\007\n\003ADD\020\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -6328,7 +6551,7 @@ public final class Model {
     internal_static_io_opencola_model_protobuf_Attribute_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_model_protobuf_Attribute_descriptor,
-        new java.lang.String[] { "Uri", });
+        new java.lang.String[] { "Ordinal", "Uri", "Value", });
     internal_static_io_opencola_model_protobuf_Value_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_io_opencola_model_protobuf_Value_fieldAccessorTable = new
