@@ -163,12 +163,15 @@ abstract class AbstractEntityStore(
     // It is critical that this function is synchronized and not bypassed. It determines the next transaction
     // id, which needs to be unique, and does a final consistency / conflict check that can't be done in the DB
     @Synchronized
-    private fun persistTransaction(authorityId: Id, facts: List<Fact>) : Pair<SignedTransaction, Long> {
+    private fun persistTransaction(authorityId: Id, facts: List<Fact>): Pair<SignedTransaction, Long> {
         // TODO: Move validate to here
         require(facts.isNotEmpty()) { "Attempt to persist transaction with no facts" }
 
         val allFacts = validateFacts(authorityId, facts.plus(computedFacts(facts)).distinct())
-        val signedTransaction = Transaction.fromFacts(getNextTransactionId(authorityId), allFacts).sign(signator)
+        val signedTransaction = SignedTransaction.fromTransaction(
+            signator,
+            Transaction.fromFacts(getNextTransactionId(authorityId), allFacts)
+        )
         val transactionOrdinal = persistTransaction(signedTransaction)
         eventBus?.sendMessage(Events.NewTransaction.toString(), SignedTransaction.encode(signedTransaction))
 

@@ -2,7 +2,6 @@ package io.opencola.model
 
 import io.opencola.model.protobuf.Model as ProtoModel
 import kotlinx.serialization.Serializable
-import io.opencola.security.Signator
 import io.opencola.serialization.*
 import java.io.InputStream
 import java.io.OutputStream
@@ -14,18 +13,15 @@ data class Transaction(val id: Id,
                        val transactionEntities: List<TransactionEntity>,
                        val epochSecond: Long = Instant.now().epochSecond) {
 
+    init {
+        // TODO: Validate transaction
+        require(transactionEntities.isNotEmpty()) { "Transaction must have at least one entity" }
+    }
+
     fun getFacts(transactionOrdinal: Long? = null): List<Fact> {
         return transactionEntities.flatMap { entity ->
             entity.facts.map { Fact(authorityId, entity.entityId, it.attribute, it.value, it.operation, epochSecond, transactionOrdinal) }
         }
-    }
-
-    fun sign(signator: Signator) : SignedTransaction {
-        // This is probably not the right way to serialize. Likely should create a serializer / provider that can be
-        // configured to serialize in an appropriate format.
-        // TODO: Validate transaction
-        val signature = signator.signBytes(authorityId.toString(), encode(this))
-        return SignedTransaction(this, signature.algorithm, signature.bytes)
     }
 
     companion object Factory :

@@ -3,6 +3,7 @@ package io.opencola.model
 import com.google.protobuf.ByteString
 import io.opencola.model.protobuf.Model as ProtoModel
 import io.opencola.security.SIGNATURE_ALGO
+import io.opencola.security.Signator
 import io.opencola.security.isValidSignature
 import io.opencola.serialization.ProtoSerializable
 import io.opencola.serialization.StreamSerializer
@@ -14,7 +15,8 @@ import java.io.OutputStream
 import java.security.PublicKey
 
 @Serializable
-// TODO: Make Signature type that has algorithm and signature value
+// TODO: Make Signature type that has algorithm and signature value - but need to wait until entity store
+//  migration is complete - as old transactions depend on Json serialization of this class as is
 data class SignedTransaction(val transaction: Transaction, val algorithm: String, val signature: ByteArray) {
     fun isValidTransaction(publicKey: PublicKey): Boolean {
         return isValidSignature(publicKey, Transaction.encode(transaction), signature)
@@ -28,9 +30,7 @@ data class SignedTransaction(val transaction: Transaction, val algorithm: String
 
         if (transaction != other.transaction) return false
         if (algorithm != other.algorithm) return false
-        if (!signature.contentEquals(other.signature)) return false
-
-        return true
+        return signature.contentEquals(other.signature)
     }
 
     override fun hashCode(): Int {
@@ -50,6 +50,11 @@ data class SignedTransaction(val transaction: Transaction, val algorithm: String
 
         override fun decode(stream: InputStream): SignedTransaction {
             return SignedTransaction(Transaction.decode(stream), String(stream.readByteArray()), stream.readByteArray())
+        }
+
+        fun fromTransaction(signator: Signator, transaction: Transaction): SignedTransaction {
+            val signature = signator.signBytes(transaction.authorityId.toString(), Transaction.encode(transaction))
+            return SignedTransaction(transaction, signature.algorithm, signature.bytes)
         }
 
         override fun toProto(value: SignedTransaction): ProtoModel.SignedTransaction {
