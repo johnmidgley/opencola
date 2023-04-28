@@ -42,7 +42,8 @@ class TransactionTest {
         val value = Value("value".toByteArray())
         val fact = Fact(personaId, entityId, CoreAttribute.Name.spec, value, Operation.Add)
         val transaction = Transaction.fromFacts(personaId, listOf(fact))
-        val signedTransaction = SignedTransaction.fromTransaction(signator, transaction)
+        val signature = signator.signBytes(transaction.authorityId.toString(), Transaction.encode(transaction))
+        val signedTransaction = SignedTransaction(transaction, signature.algorithm, signature.bytes)
 
         val encodedTransaction = ByteArrayOutputStream().use {
             SignedTransaction.encode(it, signedTransaction)

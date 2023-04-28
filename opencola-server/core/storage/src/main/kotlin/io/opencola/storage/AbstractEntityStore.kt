@@ -160,6 +160,10 @@ abstract class AbstractEntityStore(
             .ifNotNullOrElse({ Id.ofData(SignedTransaction.encode(it)) }, { getFirstTransactionId(authorityId) })
     }
 
+    private fun signTransaction(transaction: Transaction) : SignedTransaction {
+        val signature = signator.signBytes(transaction.authorityId.toString(), Transaction.encode(transaction))
+        return SignedTransaction(transaction, signature.algorithm, signature.bytes)
+    }
     // It is critical that this function is synchronized and not bypassed. It determines the next transaction
     // id, which needs to be unique, and does a final consistency / conflict check that can't be done in the DB
     @Synchronized
@@ -168,10 +172,7 @@ abstract class AbstractEntityStore(
         require(facts.isNotEmpty()) { "Attempt to persist transaction with no facts" }
 
         val allFacts = validateFacts(authorityId, facts.plus(computedFacts(facts)).distinct())
-        val signedTransaction = SignedTransaction.fromTransaction(
-            signator,
-            Transaction.fromFacts(getNextTransactionId(authorityId), allFacts)
-        )
+        val signedTransaction = signTransaction(Transaction.fromFacts(getNextTransactionId(authorityId), allFacts))
         val transactionOrdinal = persistTransaction(signedTransaction)
         eventBus?.sendMessage(Events.NewTransaction.toString(), SignedTransaction.encode(signedTransaction))
 

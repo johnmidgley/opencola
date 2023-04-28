@@ -3,7 +3,6 @@ package io.opencola.model
 import com.google.protobuf.ByteString
 import io.opencola.model.protobuf.Model as ProtoModel
 import io.opencola.security.SIGNATURE_ALGO
-import io.opencola.security.Signator
 import io.opencola.security.isValidSignature
 import io.opencola.serialization.ProtoSerializable
 import io.opencola.serialization.StreamSerializer
@@ -50,11 +49,6 @@ data class SignedTransaction(val transaction: Transaction, val algorithm: String
 
         override fun decode(stream: InputStream): SignedTransaction {
             return SignedTransaction(Transaction.decode(stream), String(stream.readByteArray()), stream.readByteArray())
-        }
-
-        fun fromTransaction(signator: Signator, transaction: Transaction): SignedTransaction {
-            val signature = signator.signBytes(transaction.authorityId.toString(), Transaction.encode(transaction))
-            return SignedTransaction(transaction, signature.algorithm, signature.bytes)
         }
 
         override fun toProto(value: SignedTransaction): ProtoModel.SignedTransaction {
