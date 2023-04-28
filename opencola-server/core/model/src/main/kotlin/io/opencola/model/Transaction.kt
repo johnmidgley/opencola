@@ -3,6 +3,7 @@ package io.opencola.model
 import io.opencola.model.protobuf.Model as ProtoModel
 import kotlinx.serialization.Serializable
 import io.opencola.serialization.*
+import io.opencola.serialization.protobuf.ProtoSerializable
 import java.io.InputStream
 import java.io.OutputStream
 import java.time.Instant
@@ -26,7 +27,7 @@ data class Transaction(val id: Id,
 
     companion object Factory :
         StreamSerializer<Transaction>,
-        ProtoSerializable<Transaction, ProtoModel.Transaction>{
+        ProtoSerializable<Transaction, ProtoModel.Transaction> {
         fun fromFacts(id: Id, facts: List<Fact>, epochSecond: Long = Instant.now().epochSecond) : Transaction {
             val (authorityId, transactionEntities) = toTransactionEntities(facts)
             return Transaction(id, authorityId, transactionEntities, epochSecond)

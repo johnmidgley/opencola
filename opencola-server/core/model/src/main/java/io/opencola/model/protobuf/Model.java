@@ -917,10 +917,183 @@ public final class Model {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>bytes bytes = 1;</code>
+     * <code>int32 ocType = 1;</code>
+     * @return The ocType.
+     */
+    int getOcType();
+
+    /**
+     * <code>double double = 3;</code>
+     * @return Whether the double field is set.
+     */
+    boolean hasDouble();
+    /**
+     * <code>double double = 3;</code>
+     * @return The double.
+     */
+    double getDouble();
+
+    /**
+     * <code>float float = 4;</code>
+     * @return Whether the float field is set.
+     */
+    boolean hasFloat();
+    /**
+     * <code>float float = 4;</code>
+     * @return The float.
+     */
+    float getFloat();
+
+    /**
+     * <code>int32 int32 = 5;</code>
+     * @return Whether the int32 field is set.
+     */
+    boolean hasInt32();
+    /**
+     * <code>int32 int32 = 5;</code>
+     * @return The int32.
+     */
+    int getInt32();
+
+    /**
+     * <code>int64 int64 = 6;</code>
+     * @return Whether the int64 field is set.
+     */
+    boolean hasInt64();
+    /**
+     * <code>int64 int64 = 6;</code>
+     * @return The int64.
+     */
+    long getInt64();
+
+    /**
+     * <code>uint32 uint32 = 7;</code>
+     * @return Whether the uint32 field is set.
+     */
+    boolean hasUint32();
+    /**
+     * <code>uint32 uint32 = 7;</code>
+     * @return The uint32.
+     */
+    int getUint32();
+
+    /**
+     * <code>uint64 uint64 = 8;</code>
+     * @return Whether the uint64 field is set.
+     */
+    boolean hasUint64();
+    /**
+     * <code>uint64 uint64 = 8;</code>
+     * @return The uint64.
+     */
+    long getUint64();
+
+    /**
+     * <code>sint32 sint32 = 9;</code>
+     * @return Whether the sint32 field is set.
+     */
+    boolean hasSint32();
+    /**
+     * <code>sint32 sint32 = 9;</code>
+     * @return The sint32.
+     */
+    int getSint32();
+
+    /**
+     * <code>sint64 sint64 = 10;</code>
+     * @return Whether the sint64 field is set.
+     */
+    boolean hasSint64();
+    /**
+     * <code>sint64 sint64 = 10;</code>
+     * @return The sint64.
+     */
+    long getSint64();
+
+    /**
+     * <code>fixed32 fixed32 = 11;</code>
+     * @return Whether the fixed32 field is set.
+     */
+    boolean hasFixed32();
+    /**
+     * <code>fixed32 fixed32 = 11;</code>
+     * @return The fixed32.
+     */
+    int getFixed32();
+
+    /**
+     * <code>fixed64 fixed64 = 12;</code>
+     * @return Whether the fixed64 field is set.
+     */
+    boolean hasFixed64();
+    /**
+     * <code>fixed64 fixed64 = 12;</code>
+     * @return The fixed64.
+     */
+    long getFixed64();
+
+    /**
+     * <code>sfixed32 sfixed32 = 13;</code>
+     * @return Whether the sfixed32 field is set.
+     */
+    boolean hasSfixed32();
+    /**
+     * <code>sfixed32 sfixed32 = 13;</code>
+     * @return The sfixed32.
+     */
+    int getSfixed32();
+
+    /**
+     * <code>sfixed64 sfixed64 = 14;</code>
+     * @return Whether the sfixed64 field is set.
+     */
+    boolean hasSfixed64();
+    /**
+     * <code>sfixed64 sfixed64 = 14;</code>
+     * @return The sfixed64.
+     */
+    long getSfixed64();
+
+    /**
+     * <code>bool bool = 15;</code>
+     * @return Whether the bool field is set.
+     */
+    boolean hasBool();
+    /**
+     * <code>bool bool = 15;</code>
+     * @return The bool.
+     */
+    boolean getBool();
+
+    /**
+     * <code>string string = 16;</code>
+     * @return Whether the string field is set.
+     */
+    boolean hasString();
+    /**
+     * <code>string string = 16;</code>
+     * @return The string.
+     */
+    java.lang.String getString();
+    /**
+     * <code>string string = 16;</code>
+     * @return The bytes for string.
+     */
+    com.google.protobuf.ByteString
+        getStringBytes();
+
+    /**
+     * <code>bytes bytes = 17;</code>
+     * @return Whether the bytes field is set.
+     */
+    boolean hasBytes();
+    /**
+     * <code>bytes bytes = 17;</code>
      * @return The bytes.
      */
     com.google.protobuf.ByteString getBytes();
+
+    public io.opencola.model.protobuf.Model.Value.ValueCase getValueCase();
   }
   /**
    * Protobuf type {@code io.opencola.model.protobuf.Value}
@@ -935,7 +1108,6 @@ public final class Model {
       super(builder);
     }
     private Value() {
-      bytes_ = com.google.protobuf.ByteString.EMPTY;
     }
 
     @java.lang.Override
@@ -968,9 +1140,85 @@ public final class Model {
             case 0:
               done = true;
               break;
-            case 10: {
+            case 8: {
 
-              bytes_ = input.readBytes();
+              ocType_ = input.readInt32();
+              break;
+            }
+            case 25: {
+              valueCase_ = 3;
+              value_ = input.readDouble();
+              break;
+            }
+            case 37: {
+              valueCase_ = 4;
+              value_ = input.readFloat();
+              break;
+            }
+            case 40: {
+              valueCase_ = 5;
+              value_ = input.readInt32();
+              break;
+            }
+            case 48: {
+              valueCase_ = 6;
+              value_ = input.readInt64();
+              break;
+            }
+            case 56: {
+              valueCase_ = 7;
+              value_ = input.readUInt32();
+              break;
+            }
+            case 64: {
+              valueCase_ = 8;
+              value_ = input.readUInt64();
+              break;
+            }
+            case 72: {
+              valueCase_ = 9;
+              value_ = input.readSInt32();
+              break;
+            }
+            case 80: {
+              valueCase_ = 10;
+              value_ = input.readSInt64();
+              break;
+            }
+            case 93: {
+              valueCase_ = 11;
+              value_ = input.readFixed32();
+              break;
+            }
+            case 97: {
+              valueCase_ = 12;
+              value_ = input.readFixed64();
+              break;
+            }
+            case 109: {
+              valueCase_ = 13;
+              value_ = input.readSFixed32();
+              break;
+            }
+            case 113: {
+              valueCase_ = 14;
+              value_ = input.readSFixed64();
+              break;
+            }
+            case 120: {
+              valueCase_ = 15;
+              value_ = input.readBool();
+              break;
+            }
+            case 130: {
+              java.lang.String s = input.readStringRequireUtf8();
+              valueCase_ = 16;
+              value_ = s;
+              break;
+            }
+            case 138: {
+              valueCase_ = 17;
+              value_ = input.readBytes();
               break;
             }
             default: {
@@ -1005,15 +1253,428 @@ public final class Model {
               io.opencola.model.protobuf.Model.Value.class, io.opencola.model.protobuf.Model.Value.Builder.class);
     }
 
-    public static final int BYTES_FIELD_NUMBER = 1;
-    private com.google.protobuf.ByteString bytes_;
+    private int valueCase_ = 0;
+    private java.lang.Object value_;
+    public enum ValueCase
+        implements com.google.protobuf.Internal.EnumLite,
+            com.google.protobuf.AbstractMessage.InternalOneOfEnum {
+      DOUBLE(3),
+      FLOAT(4),
+      INT32(5),
+      INT64(6),
+      UINT32(7),
+      UINT64(8),
+      SINT32(9),
+      SINT64(10),
+      FIXED32(11),
+      FIXED64(12),
+      SFIXED32(13),
+      SFIXED64(14),
+      BOOL(15),
+      STRING(16),
+      BYTES(17),
+      VALUE_NOT_SET(0);
+      private final int value;
+      private ValueCase(int value) {
+        this.value = value;
+      }
+      /**
+       * @param value The number of the enum to look for.
+       * @return The enum associated with the given number.
+       * @deprecated Use {@link #forNumber(int)} instead.
+       */
+      @java.lang.Deprecated
+      public static ValueCase valueOf(int value) {
+        return forNumber(value);
+      }
+
+      public static ValueCase forNumber(int value) {
+        switch (value) {
+          case 3: return DOUBLE;
+          case 4: return FLOAT;
+          case 5: return INT32;
+          case 6: return INT64;
+          case 7: return UINT32;
+          case 8: return UINT64;
+          case 9: return SINT32;
+          case 10: return SINT64;
+          case 11: return FIXED32;
+          case 12: return FIXED64;
+          case 13: return SFIXED32;
+          case 14: return SFIXED64;
+          case 15: return BOOL;
+          case 16: return STRING;
+          case 17: return BYTES;
+          case 0: return VALUE_NOT_SET;
+          default: return null;
+        }
+      }
+      public int getNumber() {
+        return this.value;
+      }
+    };
+
+    public ValueCase
+    getValueCase() {
+      return ValueCase.forNumber(
+          valueCase_);
+    }
+
+    public static final int OCTYPE_FIELD_NUMBER = 1;
+    private int ocType_;
     /**
-     * <code>bytes bytes = 1;</code>
+     * <code>int32 ocType = 1;</code>
+     * @return The ocType.
+     */
+    @java.lang.Override
+    public int getOcType() {
+      return ocType_;
+    }
+
+    public static final int DOUBLE_FIELD_NUMBER = 3;
+    /**
+     * <code>double double = 3;</code>
+     * @return Whether the double field is set.
+     */
+    @java.lang.Override
+    public boolean hasDouble() {
+      return valueCase_ == 3;
+    }
+    /**
+     * <code>double double = 3;</code>
+     * @return The double.
+     */
+    @java.lang.Override
+    public double getDouble() {
+      if (valueCase_ == 3) {
+        return (java.lang.Double) value_;
+      }
+      return 0D;
+    }
+
+    public static final int FLOAT_FIELD_NUMBER = 4;
+    /**
+     * <code>float float = 4;</code>
+     * @return Whether the float field is set.
+     */
+    @java.lang.Override
+    public boolean hasFloat() {
+      return valueCase_ == 4;
+    }
+    /**
+     * <code>float float = 4;</code>
+     * @return The float.
+     */
+    @java.lang.Override
+    public float getFloat() {
+      if (valueCase_ == 4) {
+        return (java.lang.Float) value_;
+      }
+      return 0F;
+    }
+
+    public static final int INT32_FIELD_NUMBER = 5;
+    /**
+     * <code>int32 int32 = 5;</code>
+     * @return Whether the int32 field is set.
+     */
+    @java.lang.Override
+    public boolean hasInt32() {
+      return valueCase_ == 5;
+    }
+    /**
+     * <code>int32 int32 = 5;</code>
+     * @return The int32.
+     */
+    @java.lang.Override
+    public int getInt32() {
+      if (valueCase_ == 5) {
+        return (java.lang.Integer) value_;
+      }
+      return 0;
+    }
+
+    public static final int INT64_FIELD_NUMBER = 6;
+    /**
+     * <code>int64 int64 = 6;</code>
+     * @return Whether the int64 field is set.
+     */
+    @java.lang.Override
+    public boolean hasInt64() {
+      return valueCase_ == 6;
+    }
+    /**
+     * <code>int64 int64 = 6;</code>
+     * @return The int64.
+     */
+    @java.lang.Override
+    public long getInt64() {
+      if (valueCase_ == 6) {
+        return (java.lang.Long) value_;
+      }
+      return 0L;
+    }
+
+    public static final int UINT32_FIELD_NUMBER = 7;
+    /**
+     * <code>uint32 uint32 = 7;</code>
+     * @return Whether the uint32 field is set.
+     */
+    @java.lang.Override
+    public boolean hasUint32() {
+      return valueCase_ == 7;
+    }
+    /**
+     * <code>uint32 uint32 = 7;</code>
+     * @return The uint32.
+     */
+    @java.lang.Override
+    public int getUint32() {
+      if (valueCase_ == 7) {
+        return (java.lang.Integer) value_;
+      }
+      return 0;
+    }
+
+    public static final int UINT64_FIELD_NUMBER = 8;
+    /**
+     * <code>uint64 uint64 = 8;</code>
+     * @return Whether the uint64 field is set.
+     */
+    @java.lang.Override
+    public boolean hasUint64() {
+      return valueCase_ == 8;
+    }
+    /**
+     * <code>uint64 uint64 = 8;</code>
+     * @return The uint64.
+     */
+    @java.lang.Override
+    public long getUint64() {
+      if (valueCase_ == 8) {
+        return (java.lang.Long) value_;
+      }
+      return 0L;
+    }
+
+    public static final int SINT32_FIELD_NUMBER = 9;
+    /**
+     * <code>sint32 sint32 = 9;</code>
+     * @return Whether the sint32 field is set.
+     */
+    @java.lang.Override
+    public boolean hasSint32() {
+      return valueCase_ == 9;
+    }
+    /**
+     * <code>sint32 sint32 = 9;</code>
+     * @return The sint32.
+     */
+    @java.lang.Override
+    public int getSint32() {
+      if (valueCase_ == 9) {
+        return (java.lang.Integer) value_;
+      }
+      return 0;
+    }
+
+    public static final int SINT64_FIELD_NUMBER = 10;
+    /**
+     * <code>sint64 sint64 = 10;</code>
+     * @return Whether the sint64 field is set.
+     */
+    @java.lang.Override
+    public boolean hasSint64() {
+      return valueCase_ == 10;
+    }
+    /**
+     * <code>sint64 sint64 = 10;</code>
+     * @return The sint64.
+     */
+    @java.lang.Override
+    public long getSint64() {
+      if (valueCase_ == 10) {
+        return (java.lang.Long) value_;
+      }
+      return 0L;
+    }
+
+    public static final int FIXED32_FIELD_NUMBER = 11;
+    /**
+     * <code>fixed32 fixed32 = 11;</code>
+     * @return Whether the fixed32 field is set.
+     */
+    @java.lang.Override
+    public boolean hasFixed32() {
+      return valueCase_ == 11;
+    }
+    /**
+     * <code>fixed32 fixed32 = 11;</code>
+     * @return The fixed32.
+     */
+    @java.lang.Override
+    public int getFixed32() {
+      if (valueCase_ == 11) {
+        return (java.lang.Integer) value_;
+      }
+      return 0;
+    }
+
+    public static final int FIXED64_FIELD_NUMBER = 12;
+    /**
+     * <code>fixed64 fixed64 = 12;</code>
+     * @return Whether the fixed64 field is set.
+     */
+    @java.lang.Override
+    public boolean hasFixed64() {
+      return valueCase_ == 12;
+    }
+    /**
+     * <code>fixed64 fixed64 = 12;</code>
+     * @return The fixed64.
+     */
+    @java.lang.Override
+    public long getFixed64() {
+      if (valueCase_ == 12) {
+        return (java.lang.Long) value_;
+      }
+      return 0L;
+    }
+
+    public static final int SFIXED32_FIELD_NUMBER = 13;
+    /**
+     * <code>sfixed32 sfixed32 = 13;</code>
+     * @return Whether the sfixed32 field is set.
+     */
+    @java.lang.Override
+    public boolean hasSfixed32() {
+      return valueCase_ == 13;
+    }
+    /**
+     * <code>sfixed32 sfixed32 = 13;</code>
+     * @return The sfixed32.
+     */
+    @java.lang.Override
+    public int getSfixed32() {
+      if (valueCase_ == 13) {
+        return (java.lang.Integer) value_;
+      }
+      return 0;
+    }
+
+    public static final int SFIXED64_FIELD_NUMBER = 14;
+    /**
+     * <code>sfixed64 sfixed64 = 14;</code>
+     * @return Whether the sfixed64 field is set.
+     */
+    @java.lang.Override
+    public boolean hasSfixed64() {
+      return valueCase_ == 14;
+    }
+    /**
+     * <code>sfixed64 sfixed64 = 14;</code>
+     * @return The sfixed64.
+     */
+    @java.lang.Override
+    public long getSfixed64() {
+      if (valueCase_ == 14) {
+        return (java.lang.Long) value_;
+      }
+      return 0L;
+    }
+
+    public static final int BOOL_FIELD_NUMBER = 15;
+    /**
+     * <code>bool bool = 15;</code>
+     * @return Whether the bool field is set.
+     */
+    @java.lang.Override
+    public boolean hasBool() {
+      return valueCase_ == 15;
+    }
+    /**
+     * <code>bool bool = 15;</code>
+     * @return The bool.
+     */
+    @java.lang.Override
+    public boolean getBool() {
+      if (valueCase_ == 15) {
+        return (java.lang.Boolean) value_;
+      }
+      return false;
+    }
+
+    public static final int STRING_FIELD_NUMBER = 16;
+    /**
+     * <code>string string = 16;</code>
+     * @return Whether the string field is set.
+     */
+    public boolean hasString() {
+      return valueCase_ == 16;
+    }
+    /**
+     * <code>string string = 16;</code>
+     * @return The string.
+     */
+    public java.lang.String getString() {
+      java.lang.Object ref = "";
+      if (valueCase_ == 16) {
+        ref = value_;
+      }
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (valueCase_ == 16) {
+          value_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>string string = 16;</code>
+     * @return The bytes for string.
+     */
+    public com.google.protobuf.ByteString
+        getStringBytes() {
+      java.lang.Object ref = "";
+      if (valueCase_ == 16) {
+        ref = value_;
+      }
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        if (valueCase_ == 16) {
+          value_ = b;
+        }
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int BYTES_FIELD_NUMBER = 17;
+    /**
+     * <code>bytes bytes = 17;</code>
+     * @return Whether the bytes field is set.
+     */
+    @java.lang.Override
+    public boolean hasBytes() {
+      return valueCase_ == 17;
+    }
+    /**
+     * <code>bytes bytes = 17;</code>
      * @return The bytes.
      */
     @java.lang.Override
     public com.google.protobuf.ByteString getBytes() {
-      return bytes_;
+      if (valueCase_ == 17) {
+        return (com.google.protobuf.ByteString) value_;
+      }
+      return com.google.protobuf.ByteString.EMPTY;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -1030,8 +1691,67 @@ public final class Model {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!bytes_.isEmpty()) {
-        output.writeBytes(1, bytes_);
+      if (ocType_ != 0) {
+        output.writeInt32(1, ocType_);
+      }
+      if (valueCase_ == 3) {
+        output.writeDouble(
+            3, (double)((java.lang.Double) value_));
+      }
+      if (valueCase_ == 4) {
+        output.writeFloat(
+            4, (float)((java.lang.Float) value_));
+      }
+      if (valueCase_ == 5) {
+        output.writeInt32(
+            5, (int)((java.lang.Integer) value_));
+      }
+      if (valueCase_ == 6) {
+        output.writeInt64(
+            6, (long)((java.lang.Long) value_));
+      }
+      if (valueCase_ == 7) {
+        output.writeUInt32(
+            7, (int)((java.lang.Integer) value_));
+      }
+      if (valueCase_ == 8) {
+        output.writeUInt64(
+            8, (long)((java.lang.Long) value_));
+      }
+      if (valueCase_ == 9) {
+        output.writeSInt32(
+            9, (int)((java.lang.Integer) value_));
+      }
+      if (valueCase_ == 10) {
+        output.writeSInt64(
+            10, (long)((java.lang.Long) value_));
+      }
+      if (valueCase_ == 11) {
+        output.writeFixed32(
+            11, (int)((java.lang.Integer) value_));
+      }
+      if (valueCase_ == 12) {
+        output.writeFixed64(
+            12, (long)((java.lang.Long) value_));
+      }
+      if (valueCase_ == 13) {
+        output.writeSFixed32(
+            13, (int)((java.lang.Integer) value_));
+      }
+      if (valueCase_ == 14) {
+        output.writeSFixed64(
+            14, (long)((java.lang.Long) value_));
+      }
+      if (valueCase_ == 15) {
+        output.writeBool(
+            15, (boolean)((java.lang.Boolean) value_));
+      }
+      if (valueCase_ == 16) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 16, value_);
+      }
+      if (valueCase_ == 17) {
+        output.writeBytes(
+            17, (com.google.protobuf.ByteString) value_);
       }
       unknownFields.writeTo(output);
     }
@@ -1042,9 +1762,82 @@ public final class Model {
       if (size != -1) return size;
 
       size = 0;
-      if (!bytes_.isEmpty()) {
+      if (ocType_ != 0) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(1, bytes_);
+          .computeInt32Size(1, ocType_);
+      }
+      if (valueCase_ == 3) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeDoubleSize(
+              3, (double)((java.lang.Double) value_));
+      }
+      if (valueCase_ == 4) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeFloatSize(
+              4, (float)((java.lang.Float) value_));
+      }
+      if (valueCase_ == 5) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(
+              5, (int)((java.lang.Integer) value_));
+      }
+      if (valueCase_ == 6) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(
+              6, (long)((java.lang.Long) value_));
+      }
+      if (valueCase_ == 7) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(
+              7, (int)((java.lang.Integer) value_));
+      }
+      if (valueCase_ == 8) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt64Size(
+              8, (long)((java.lang.Long) value_));
+      }
+      if (valueCase_ == 9) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeSInt32Size(
+              9, (int)((java.lang.Integer) value_));
+      }
+      if (valueCase_ == 10) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeSInt64Size(
+              10, (long)((java.lang.Long) value_));
+      }
+      if (valueCase_ == 11) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeFixed32Size(
+              11, (int)((java.lang.Integer) value_));
+      }
+      if (valueCase_ == 12) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeFixed64Size(
+              12, (long)((java.lang.Long) value_));
+      }
+      if (valueCase_ == 13) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeSFixed32Size(
+              13, (int)((java.lang.Integer) value_));
+      }
+      if (valueCase_ == 14) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeSFixed64Size(
+              14, (long)((java.lang.Long) value_));
+      }
+      if (valueCase_ == 15) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(
+              15, (boolean)((java.lang.Boolean) value_));
+      }
+      if (valueCase_ == 16) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(16, value_);
+      }
+      if (valueCase_ == 17) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(
+              17, (com.google.protobuf.ByteString) value_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -1061,8 +1854,75 @@ public final class Model {
       }
       io.opencola.model.protobuf.Model.Value other = (io.opencola.model.protobuf.Model.Value) obj;
 
-      if (!getBytes()
-          .equals(other.getBytes())) return false;
+      if (getOcType()
+          != other.getOcType()) return false;
+      if (!getValueCase().equals(other.getValueCase())) return false;
+      switch (valueCase_) {
+        case 3:
+          if (java.lang.Double.doubleToLongBits(getDouble())
+              != java.lang.Double.doubleToLongBits(
+                  other.getDouble())) return false;
+          break;
+        case 4:
+          if (java.lang.Float.floatToIntBits(getFloat())
+              != java.lang.Float.floatToIntBits(
+                  other.getFloat())) return false;
+          break;
+        case 5:
+          if (getInt32()
+              != other.getInt32()) return false;
+          break;
+        case 6:
+          if (getInt64()
+              != other.getInt64()) return false;
+          break;
+        case 7:
+          if (getUint32()
+              != other.getUint32()) return false;
+          break;
+        case 8:
+          if (getUint64()
+              != other.getUint64()) return false;
+          break;
+        case 9:
+          if (getSint32()
+              != other.getSint32()) return false;
+          break;
+        case 10:
+          if (getSint64()
+              != other.getSint64()) return false;
+          break;
+        case 11:
+          if (getFixed32()
+              != other.getFixed32()) return false;
+          break;
+        case 12:
+          if (getFixed64()
+              != other.getFixed64()) return false;
+          break;
+        case 13:
+          if (getSfixed32()
+              != other.getSfixed32()) return false;
+          break;
+        case 14:
+          if (getSfixed64()
+              != other.getSfixed64()) return false;
+          break;
+        case 15:
+          if (getBool()
+              != other.getBool()) return false;
+          break;
+        case 16:
+          if (!getString()
+              .equals(other.getString())) return false;
+          break;
+        case 17:
+          if (!getBytes()
+              .equals(other.getBytes())) return false;
+          break;
+        case 0:
+        default:
+      }
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -1074,8 +1934,80 @@ public final class Model {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      hash = (37 * hash) + BYTES_FIELD_NUMBER;
-      hash = (53 * hash) + getBytes().hashCode();
+      hash = (37 * hash) + OCTYPE_FIELD_NUMBER;
+      hash = (53 * hash) + getOcType();
+      switch (valueCase_) {
+        case 3:
+          hash = (37 * hash) + DOUBLE_FIELD_NUMBER;
+          hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+              java.lang.Double.doubleToLongBits(getDouble()));
+          break;
+        case 4:
+          hash = (37 * hash) + FLOAT_FIELD_NUMBER;
+          hash = (53 * hash) + java.lang.Float.floatToIntBits(
+              getFloat());
+          break;
+        case 5:
+          hash = (37 * hash) + INT32_FIELD_NUMBER;
+          hash = (53 * hash) + getInt32();
+          break;
+        case 6:
+          hash = (37 * hash) + INT64_FIELD_NUMBER;
+          hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+              getInt64());
+          break;
+        case 7:
+          hash = (37 * hash) + UINT32_FIELD_NUMBER;
+          hash = (53 * hash) + getUint32();
+          break;
+        case 8:
+          hash = (37 * hash) + UINT64_FIELD_NUMBER;
+          hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+              getUint64());
+          break;
+        case 9:
+          hash = (37 * hash) + SINT32_FIELD_NUMBER;
+          hash = (53 * hash) + getSint32();
+          break;
+        case 10:
+          hash = (37 * hash) + SINT64_FIELD_NUMBER;
+          hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+              getSint64());
+          break;
+        case 11:
+          hash = (37 * hash) + FIXED32_FIELD_NUMBER;
+          hash = (53 * hash) + getFixed32();
+          break;
+        case 12:
+          hash = (37 * hash) + FIXED64_FIELD_NUMBER;
+          hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+              getFixed64());
+          break;
+        case 13:
+          hash = (37 * hash) + SFIXED32_FIELD_NUMBER;
+          hash = (53 * hash) + getSfixed32();
+          break;
+        case 14:
+          hash = (37 * hash) + SFIXED64_FIELD_NUMBER;
+          hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+              getSfixed64());
+          break;
+        case 15:
+          hash = (37 * hash) + BOOL_FIELD_NUMBER;
+          hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+              getBool());
+          break;
+        case 16:
+          hash = (37 * hash) + STRING_FIELD_NUMBER;
+          hash = (53 * hash) + getString().hashCode();
+          break;
+        case 17:
+          hash = (37 * hash) + BYTES_FIELD_NUMBER;
+          hash = (53 * hash) + getBytes().hashCode();
+          break;
+        case 0:
+        default:
+      }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -1209,8 +2141,10 @@ public final class Model {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        bytes_ = com.google.protobuf.ByteString.EMPTY;
+        ocType_ = 0;
 
+        valueCase_ = 0;
+        value_ = null;
         return this;
       }
 
@@ -1237,7 +2171,53 @@ public final class Model {
       @java.lang.Override
       public io.opencola.model.protobuf.Model.Value buildPartial() {
         io.opencola.model.protobuf.Model.Value result = new io.opencola.model.protobuf.Model.Value(this);
-        result.bytes_ = bytes_;
+        result.ocType_ = ocType_;
+        if (valueCase_ == 3) {
+          result.value_ = value_;
+        }
+        if (valueCase_ == 4) {
+          result.value_ = value_;
+        }
+        if (valueCase_ == 5) {
+          result.value_ = value_;
+        }
+        if (valueCase_ == 6) {
+          result.value_ = value_;
+        }
+        if (valueCase_ == 7) {
+          result.value_ = value_;
+        }
+        if (valueCase_ == 8) {
+          result.value_ = value_;
+        }
+        if (valueCase_ == 9) {
+          result.value_ = value_;
+        }
+        if (valueCase_ == 10) {
+          result.value_ = value_;
+        }
+        if (valueCase_ == 11) {
+          result.value_ = value_;
+        }
+        if (valueCase_ == 12) {
+          result.value_ = value_;
+        }
+        if (valueCase_ == 13) {
+          result.value_ = value_;
+        }
+        if (valueCase_ == 14) {
+          result.value_ = value_;
+        }
+        if (valueCase_ == 15) {
+          result.value_ = value_;
+        }
+        if (valueCase_ == 16) {
+          result.value_ = value_;
+        }
+        if (valueCase_ == 17) {
+          result.value_ = value_;
+        }
+        result.valueCase_ = valueCase_;
         onBuilt();
         return result;
       }
@@ -1286,8 +2266,75 @@ public final class Model {
 
       public Builder mergeFrom(io.opencola.model.protobuf.Model.Value other) {
         if (other == io.opencola.model.protobuf.Model.Value.getDefaultInstance()) return this;
-        if (other.getBytes() != com.google.protobuf.ByteString.EMPTY) {
-          setBytes(other.getBytes());
+        if (other.getOcType() != 0) {
+          setOcType(other.getOcType());
+        }
+        switch (other.getValueCase()) {
+          case DOUBLE: {
+            setDouble(other.getDouble());
+            break;
+          }
+          case FLOAT: {
+            setFloat(other.getFloat());
+            break;
+          }
+          case INT32: {
+            setInt32(other.getInt32());
+            break;
+          }
+          case INT64: {
+            setInt64(other.getInt64());
+            break;
+          }
+          case UINT32: {
+            setUint32(other.getUint32());
+            break;
+          }
+          case UINT64: {
+            setUint64(other.getUint64());
+            break;
+          }
+          case SINT32: {
+            setSint32(other.getSint32());
+            break;
+          }
+          case SINT64: {
+            setSint64(other.getSint64());
+            break;
+          }
+          case FIXED32: {
+            setFixed32(other.getFixed32());
+            break;
+          }
+          case FIXED64: {
+            setFixed64(other.getFixed64());
+            break;
+          }
+          case SFIXED32: {
+            setSfixed32(other.getSfixed32());
+            break;
+          }
+          case SFIXED64: {
+            setSfixed64(other.getSfixed64());
+            break;
+          }
+          case BOOL: {
+            setBool(other.getBool());
+            break;
+          }
+          case STRING: {
+            valueCase_ = 16;
+            value_ = other.value_;
+            onChanged();
+            break;
+          }
+          case BYTES: {
+            setBytes(other.getBytes());
+            break;
+          }
+          case VALUE_NOT_SET: {
+            break;
+          }
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -1317,18 +2364,702 @@ public final class Model {
         }
         return this;
       }
+      private int valueCase_ = 0;
+      private java.lang.Object value_;
+      public ValueCase
+          getValueCase() {
+        return ValueCase.forNumber(
+            valueCase_);
+      }
 
-      private com.google.protobuf.ByteString bytes_ = com.google.protobuf.ByteString.EMPTY;
+      public Builder clearValue() {
+        valueCase_ = 0;
+        value_ = null;
+        onChanged();
+        return this;
+      }
+
+
+      private int ocType_ ;
       /**
-       * <code>bytes bytes = 1;</code>
-       * @return The bytes.
+       * <code>int32 ocType = 1;</code>
+       * @return The ocType.
        */
       @java.lang.Override
-      public com.google.protobuf.ByteString getBytes() {
-        return bytes_;
+      public int getOcType() {
+        return ocType_;
       }
       /**
-       * <code>bytes bytes = 1;</code>
+       * <code>int32 ocType = 1;</code>
+       * @param value The ocType to set.
+       * @return This builder for chaining.
+       */
+      public Builder setOcType(int value) {
+        
+        ocType_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>int32 ocType = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearOcType() {
+        
+        ocType_ = 0;
+        onChanged();
+        return this;
+      }
+
+      /**
+       * <code>double double = 3;</code>
+       * @return Whether the double field is set.
+       */
+      public boolean hasDouble() {
+        return valueCase_ == 3;
+      }
+      /**
+       * <code>double double = 3;</code>
+       * @return The double.
+       */
+      public double getDouble() {
+        if (valueCase_ == 3) {
+          return (java.lang.Double) value_;
+        }
+        return 0D;
+      }
+      /**
+       * <code>double double = 3;</code>
+       * @param value The double to set.
+       * @return This builder for chaining.
+       */
+      public Builder setDouble(double value) {
+        valueCase_ = 3;
+        value_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>double double = 3;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearDouble() {
+        if (valueCase_ == 3) {
+          valueCase_ = 0;
+          value_ = null;
+          onChanged();
+        }
+        return this;
+      }
+
+      /**
+       * <code>float float = 4;</code>
+       * @return Whether the float field is set.
+       */
+      public boolean hasFloat() {
+        return valueCase_ == 4;
+      }
+      /**
+       * <code>float float = 4;</code>
+       * @return The float.
+       */
+      public float getFloat() {
+        if (valueCase_ == 4) {
+          return (java.lang.Float) value_;
+        }
+        return 0F;
+      }
+      /**
+       * <code>float float = 4;</code>
+       * @param value The float to set.
+       * @return This builder for chaining.
+       */
+      public Builder setFloat(float value) {
+        valueCase_ = 4;
+        value_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>float float = 4;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearFloat() {
+        if (valueCase_ == 4) {
+          valueCase_ = 0;
+          value_ = null;
+          onChanged();
+        }
+        return this;
+      }
+
+      /**
+       * <code>int32 int32 = 5;</code>
+       * @return Whether the int32 field is set.
+       */
+      public boolean hasInt32() {
+        return valueCase_ == 5;
+      }
+      /**
+       * <code>int32 int32 = 5;</code>
+       * @return The int32.
+       */
+      public int getInt32() {
+        if (valueCase_ == 5) {
+          return (java.lang.Integer) value_;
+        }
+        return 0;
+      }
+      /**
+       * <code>int32 int32 = 5;</code>
+       * @param value The int32 to set.
+       * @return This builder for chaining.
+       */
+      public Builder setInt32(int value) {
+        valueCase_ = 5;
+        value_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>int32 int32 = 5;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearInt32() {
+        if (valueCase_ == 5) {
+          valueCase_ = 0;
+          value_ = null;
+          onChanged();
+        }
+        return this;
+      }
+
+      /**
+       * <code>int64 int64 = 6;</code>
+       * @return Whether the int64 field is set.
+       */
+      public boolean hasInt64() {
+        return valueCase_ == 6;
+      }
+      /**
+       * <code>int64 int64 = 6;</code>
+       * @return The int64.
+       */
+      public long getInt64() {
+        if (valueCase_ == 6) {
+          return (java.lang.Long) value_;
+        }
+        return 0L;
+      }
+      /**
+       * <code>int64 int64 = 6;</code>
+       * @param value The int64 to set.
+       * @return This builder for chaining.
+       */
+      public Builder setInt64(long value) {
+        valueCase_ = 6;
+        value_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>int64 int64 = 6;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearInt64() {
+        if (valueCase_ == 6) {
+          valueCase_ = 0;
+          value_ = null;
+          onChanged();
+        }
+        return this;
+      }
+
+      /**
+       * <code>uint32 uint32 = 7;</code>
+       * @return Whether the uint32 field is set.
+       */
+      public boolean hasUint32() {
+        return valueCase_ == 7;
+      }
+      /**
+       * <code>uint32 uint32 = 7;</code>
+       * @return The uint32.
+       */
+      public int getUint32() {
+        if (valueCase_ == 7) {
+          return (java.lang.Integer) value_;
+        }
+        return 0;
+      }
+      /**
+       * <code>uint32 uint32 = 7;</code>
+       * @param value The uint32 to set.
+       * @return This builder for chaining.
+       */
+      public Builder setUint32(int value) {
+        valueCase_ = 7;
+        value_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>uint32 uint32 = 7;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearUint32() {
+        if (valueCase_ == 7) {
+          valueCase_ = 0;
+          value_ = null;
+          onChanged();
+        }
+        return this;
+      }
+
+      /**
+       * <code>uint64 uint64 = 8;</code>
+       * @return Whether the uint64 field is set.
+       */
+      public boolean hasUint64() {
+        return valueCase_ == 8;
+      }
+      /**
+       * <code>uint64 uint64 = 8;</code>
+       * @return The uint64.
+       */
+      public long getUint64() {
+        if (valueCase_ == 8) {
+          return (java.lang.Long) value_;
+        }
+        return 0L;
+      }
+      /**
+       * <code>uint64 uint64 = 8;</code>
+       * @param value The uint64 to set.
+       * @return This builder for chaining.
+       */
+      public Builder setUint64(long value) {
+        valueCase_ = 8;
+        value_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>uint64 uint64 = 8;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearUint64() {
+        if (valueCase_ == 8) {
+          valueCase_ = 0;
+          value_ = null;
+          onChanged();
+        }
+        return this;
+      }
+
+      /**
+       * <code>sint32 sint32 = 9;</code>
+       * @return Whether the sint32 field is set.
+       */
+      public boolean hasSint32() {
+        return valueCase_ == 9;
+      }
+      /**
+       * <code>sint32 sint32 = 9;</code>
+       * @return The sint32.
+       */
+      public int getSint32() {
+        if (valueCase_ == 9) {
+          return (java.lang.Integer) value_;
+        }
+        return 0;
+      }
+      /**
+       * <code>sint32 sint32 = 9;</code>
+       * @param value The sint32 to set.
+       * @return This builder for chaining.
+       */
+      public Builder setSint32(int value) {
+        valueCase_ = 9;
+        value_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>sint32 sint32 = 9;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearSint32() {
+        if (valueCase_ == 9) {
+          valueCase_ = 0;
+          value_ = null;
+          onChanged();
+        }
+        return this;
+      }
+
+      /**
+       * <code>sint64 sint64 = 10;</code>
+       * @return Whether the sint64 field is set.
+       */
+      public boolean hasSint64() {
+        return valueCase_ == 10;
+      }
+      /**
+       * <code>sint64 sint64 = 10;</code>
+       * @return The sint64.
+       */
+      public long getSint64() {
+        if (valueCase_ == 10) {
+          return (java.lang.Long) value_;
+        }
+        return 0L;
+      }
+      /**
+       * <code>sint64 sint64 = 10;</code>
+       * @param value The sint64 to set.
+       * @return This builder for chaining.
+       */
+      public Builder setSint64(long value) {
+        valueCase_ = 10;
+        value_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>sint64 sint64 = 10;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearSint64() {
+        if (valueCase_ == 10) {
+          valueCase_ = 0;
+          value_ = null;
+          onChanged();
+        }
+        return this;
+      }
+
+      /**
+       * <code>fixed32 fixed32 = 11;</code>
+       * @return Whether the fixed32 field is set.
+       */
+      public boolean hasFixed32() {
+        return valueCase_ == 11;
+      }
+      /**
+       * <code>fixed32 fixed32 = 11;</code>
+       * @return The fixed32.
+       */
+      public int getFixed32() {
+        if (valueCase_ == 11) {
+          return (java.lang.Integer) value_;
+        }
+        return 0;
+      }
+      /**
+       * <code>fixed32 fixed32 = 11;</code>
+       * @param value The fixed32 to set.
+       * @return This builder for chaining.
+       */
+      public Builder setFixed32(int value) {
+        valueCase_ = 11;
+        value_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>fixed32 fixed32 = 11;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearFixed32() {
+        if (valueCase_ == 11) {
+          valueCase_ = 0;
+          value_ = null;
+          onChanged();
+        }
+        return this;
+      }
+
+      /**
+       * <code>fixed64 fixed64 = 12;</code>
+       * @return Whether the fixed64 field is set.
+       */
+      public boolean hasFixed64() {
+        return valueCase_ == 12;
+      }
+      /**
+       * <code>fixed64 fixed64 = 12;</code>
+       * @return The fixed64.
+       */
+      public long getFixed64() {
+        if (valueCase_ == 12) {
+          return (java.lang.Long) value_;
+        }
+        return 0L;
+      }
+      /**
+       * <code>fixed64 fixed64 = 12;</code>
+       * @param value The fixed64 to set.
+       * @return This builder for chaining.
+       */
+      public Builder setFixed64(long value) {
+        valueCase_ = 12;
+        value_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>fixed64 fixed64 = 12;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearFixed64() {
+        if (valueCase_ == 12) {
+          valueCase_ = 0;
+          value_ = null;
+          onChanged();
+        }
+        return this;
+      }
+
+      /**
+       * <code>sfixed32 sfixed32 = 13;</code>
+       * @return Whether the sfixed32 field is set.
+       */
+      public boolean hasSfixed32() {
+        return valueCase_ == 13;
+      }
+      /**
+       * <code>sfixed32 sfixed32 = 13;</code>
+       * @return The sfixed32.
+       */
+      public int getSfixed32() {
+        if (valueCase_ == 13) {
+          return (java.lang.Integer) value_;
+        }
+        return 0;
+      }
+      /**
+       * <code>sfixed32 sfixed32 = 13;</code>
+       * @param value The sfixed32 to set.
+       * @return This builder for chaining.
+       */
+      public Builder setSfixed32(int value) {
+        valueCase_ = 13;
+        value_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>sfixed32 sfixed32 = 13;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearSfixed32() {
+        if (valueCase_ == 13) {
+          valueCase_ = 0;
+          value_ = null;
+          onChanged();
+        }
+        return this;
+      }
+
+      /**
+       * <code>sfixed64 sfixed64 = 14;</code>
+       * @return Whether the sfixed64 field is set.
+       */
+      public boolean hasSfixed64() {
+        return valueCase_ == 14;
+      }
+      /**
+       * <code>sfixed64 sfixed64 = 14;</code>
+       * @return The sfixed64.
+       */
+      public long getSfixed64() {
+        if (valueCase_ == 14) {
+          return (java.lang.Long) value_;
+        }
+        return 0L;
+      }
+      /**
+       * <code>sfixed64 sfixed64 = 14;</code>
+       * @param value The sfixed64 to set.
+       * @return This builder for chaining.
+       */
+      public Builder setSfixed64(long value) {
+        valueCase_ = 14;
+        value_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>sfixed64 sfixed64 = 14;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearSfixed64() {
+        if (valueCase_ == 14) {
+          valueCase_ = 0;
+          value_ = null;
+          onChanged();
+        }
+        return this;
+      }
+
+      /**
+       * <code>bool bool = 15;</code>
+       * @return Whether the bool field is set.
+       */
+      public boolean hasBool() {
+        return valueCase_ == 15;
+      }
+      /**
+       * <code>bool bool = 15;</code>
+       * @return The bool.
+       */
+      public boolean getBool() {
+        if (valueCase_ == 15) {
+          return (java.lang.Boolean) value_;
+        }
+        return false;
+      }
+      /**
+       * <code>bool bool = 15;</code>
+       * @param value The bool to set.
+       * @return This builder for chaining.
+       */
+      public Builder setBool(boolean value) {
+        valueCase_ = 15;
+        value_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>bool bool = 15;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearBool() {
+        if (valueCase_ == 15) {
+          valueCase_ = 0;
+          value_ = null;
+          onChanged();
+        }
+        return this;
+      }
+
+      /**
+       * <code>string string = 16;</code>
+       * @return Whether the string field is set.
+       */
+      @java.lang.Override
+      public boolean hasString() {
+        return valueCase_ == 16;
+      }
+      /**
+       * <code>string string = 16;</code>
+       * @return The string.
+       */
+      @java.lang.Override
+      public java.lang.String getString() {
+        java.lang.Object ref = "";
+        if (valueCase_ == 16) {
+          ref = value_;
+        }
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (valueCase_ == 16) {
+            value_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string string = 16;</code>
+       * @return The bytes for string.
+       */
+      @java.lang.Override
+      public com.google.protobuf.ByteString
+          getStringBytes() {
+        java.lang.Object ref = "";
+        if (valueCase_ == 16) {
+          ref = value_;
+        }
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          if (valueCase_ == 16) {
+            value_ = b;
+          }
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string string = 16;</code>
+       * @param value The string to set.
+       * @return This builder for chaining.
+       */
+      public Builder setString(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  valueCase_ = 16;
+        value_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string string = 16;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearString() {
+        if (valueCase_ == 16) {
+          valueCase_ = 0;
+          value_ = null;
+          onChanged();
+        }
+        return this;
+      }
+      /**
+       * <code>string string = 16;</code>
+       * @param value The bytes for string to set.
+       * @return This builder for chaining.
+       */
+      public Builder setStringBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        valueCase_ = 16;
+        value_ = value;
+        onChanged();
+        return this;
+      }
+
+      /**
+       * <code>bytes bytes = 17;</code>
+       * @return Whether the bytes field is set.
+       */
+      public boolean hasBytes() {
+        return valueCase_ == 17;
+      }
+      /**
+       * <code>bytes bytes = 17;</code>
+       * @return The bytes.
+       */
+      public com.google.protobuf.ByteString getBytes() {
+        if (valueCase_ == 17) {
+          return (com.google.protobuf.ByteString) value_;
+        }
+        return com.google.protobuf.ByteString.EMPTY;
+      }
+      /**
+       * <code>bytes bytes = 17;</code>
        * @param value The bytes to set.
        * @return This builder for chaining.
        */
@@ -1336,19 +3067,21 @@ public final class Model {
         if (value == null) {
     throw new NullPointerException();
   }
-  
-        bytes_ = value;
+  valueCase_ = 17;
+        value_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>bytes bytes = 1;</code>
+       * <code>bytes bytes = 17;</code>
        * @return This builder for chaining.
        */
       public Builder clearBytes() {
-        
-        bytes_ = getDefaultInstance().getBytes();
-        onChanged();
+        if (valueCase_ == 17) {
+          valueCase_ = 0;
+          value_ = null;
+          onChanged();
+        }
         return this;
       }
       @java.lang.Override
@@ -6521,26 +8254,33 @@ public final class Model {
     java.lang.String[] descriptorData = {
       "\n\013model.proto\022\032io.opencola.model.protobu" +
       "f\"6\n\tAttribute\022\021\n\007ordinal\030\001 \001(\rH\000\022\r\n\003uri" +
-      "\030\002 \001(\tH\000B\007\n\005value\"\026\n\005Value\022\r\n\005bytes\030\001 \001(" +
-      "\014\"\267\001\n\017TransactionFact\0228\n\tattribute\030\001 \001(\013" +
-      "2%.io.opencola.model.protobuf.Attribute\022" +
-      "0\n\005value\030\002 \001(\0132!.io.opencola.model.proto" +
-      "buf.Value\0228\n\toperation\030\003 \001(\0162%.io.openco" +
-      "la.model.protobuf.Operation\"\023\n\002Id\022\r\n\005byt" +
-      "es\030\001 \001(\014\"\201\001\n\021TransactionEntity\0220\n\010entity" +
-      "Id\030\001 \001(\0132\036.io.opencola.model.protobuf.Id" +
-      "\022:\n\005facts\030\002 \003(\0132+.io.opencola.model.prot" +
-      "obuf.TransactionFact\"\317\001\n\013Transaction\022*\n\002" +
-      "id\030\001 \001(\0132\036.io.opencola.model.protobuf.Id" +
-      "\0223\n\013authorityId\030\002 \001(\0132\036.io.opencola.mode" +
-      "l.protobuf.Id\022J\n\023transactionEntities\030\003 \003" +
-      "(\0132-.io.opencola.model.protobuf.Transact" +
-      "ionEntity\022\023\n\013epochSecond\030\004 \001(\004\"-\n\tSignat" +
-      "ure\022\021\n\talgorithm\030\001 \001(\t\022\r\n\005bytes\030\002 \001(\014\"b\n" +
-      "\021SignedTransaction\022\023\n\013transaction\030\001 \001(\014\022" +
-      "8\n\tsignature\030\002 \001(\0132%.io.opencola.model.p" +
-      "rotobuf.Signature*!\n\tOperation\022\013\n\007RETRAC" +
-      "T\020\000\022\007\n\003ADD\020\001b\006proto3"
+      "\030\002 \001(\tH\000B\007\n\005value\"\256\002\n\005Value\022\016\n\006ocType\030\001 " +
+      "\001(\005\022\020\n\006double\030\003 \001(\001H\000\022\017\n\005float\030\004 \001(\002H\000\022\017" +
+      "\n\005int32\030\005 \001(\005H\000\022\017\n\005int64\030\006 \001(\003H\000\022\020\n\006uint" +
+      "32\030\007 \001(\rH\000\022\020\n\006uint64\030\010 \001(\004H\000\022\020\n\006sint32\030\t" +
+      " \001(\021H\000\022\020\n\006sint64\030\n \001(\022H\000\022\021\n\007fixed32\030\013 \001(" +
+      "\007H\000\022\021\n\007fixed64\030\014 \001(\006H\000\022\022\n\010sfixed32\030\r \001(\017" +
+      "H\000\022\022\n\010sfixed64\030\016 \001(\020H\000\022\016\n\004bool\030\017 \001(\010H\000\022\020" +
+      "\n\006string\030\020 \001(\tH\000\022\017\n\005bytes\030\021 \001(\014H\000B\007\n\005val" +
+      "ue\"\267\001\n\017TransactionFact\0228\n\tattribute\030\001 \001(" +
+      "\0132%.io.opencola.model.protobuf.Attribute" +
+      "\0220\n\005value\030\002 \001(\0132!.io.opencola.model.prot" +
+      "obuf.Value\0228\n\toperation\030\003 \001(\0162%.io.openc" +
+      "ola.model.protobuf.Operation\"\023\n\002Id\022\r\n\005by" +
+      "tes\030\001 \001(\014\"\201\001\n\021TransactionEntity\0220\n\010entit" +
+      "yId\030\001 \001(\0132\036.io.opencola.model.protobuf.I" +
+      "d\022:\n\005facts\030\002 \003(\0132+.io.opencola.model.pro" +
+      "tobuf.TransactionFact\"\317\001\n\013Transaction\022*\n" +
+      "\002id\030\001 \001(\0132\036.io.opencola.model.protobuf.I" +
+      "d\0223\n\013authorityId\030\002 \001(\0132\036.io.opencola.mod" +
+      "el.protobuf.Id\022J\n\023transactionEntities\030\003 " +
+      "\003(\0132-.io.opencola.model.protobuf.Transac" +
+      "tionEntity\022\023\n\013epochSecond\030\004 \001(\004\"-\n\tSigna" +
+      "ture\022\021\n\talgorithm\030\001 \001(\t\022\r\n\005bytes\030\002 \001(\014\"b" +
+      "\n\021SignedTransaction\022\023\n\013transaction\030\001 \001(\014" +
+      "\0228\n\tsignature\030\002 \001(\0132%.io.opencola.model." +
+      "protobuf.Signature*!\n\tOperation\022\013\n\007RETRA" +
+      "CT\020\000\022\007\n\003ADD\020\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -6557,7 +8297,7 @@ public final class Model {
     internal_static_io_opencola_model_protobuf_Value_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_model_protobuf_Value_descriptor,
-        new java.lang.String[] { "Bytes", });
+        new java.lang.String[] { "OcType", "Double", "Float", "Int32", "Int64", "Uint32", "Uint64", "Sint32", "Sint64", "Fixed32", "Fixed64", "Sfixed32", "Sfixed64", "Bool", "String", "Bytes", "Value", });
     internal_static_io_opencola_model_protobuf_TransactionFact_descriptor =
       getDescriptor().getMessageTypes().get(2);
     internal_static_io_opencola_model_protobuf_TransactionFact_fieldAccessorTable = new

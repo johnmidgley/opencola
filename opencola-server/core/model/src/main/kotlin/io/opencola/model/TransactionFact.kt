@@ -1,6 +1,6 @@
 package io.opencola.model
 
-import io.opencola.serialization.ProtoSerializable
+import io.opencola.serialization.protobuf.ProtoSerializable
 import io.opencola.model.protobuf.Model as ProtoModel
 import io.opencola.serialization.StreamSerializer
 import kotlinx.serialization.Serializable

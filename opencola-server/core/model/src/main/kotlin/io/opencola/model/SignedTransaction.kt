@@ -4,7 +4,7 @@ import com.google.protobuf.ByteString
 import io.opencola.model.protobuf.Model as ProtoModel
 import io.opencola.security.SIGNATURE_ALGO
 import io.opencola.security.isValidSignature
-import io.opencola.serialization.ProtoSerializable
+import io.opencola.serialization.protobuf.ProtoSerializable
 import io.opencola.serialization.StreamSerializer
 import io.opencola.serialization.readByteArray
 import io.opencola.serialization.writeByteArray

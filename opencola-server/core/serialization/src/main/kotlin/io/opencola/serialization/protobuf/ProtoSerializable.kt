@@ -1,4 +1,4 @@
-package io.opencola.serialization
+package io.opencola.serialization.protobuf
 
 import com.google.protobuf.GeneratedMessageV3
 

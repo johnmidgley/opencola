@@ -10,7 +10,24 @@ message Attribute {
 }
 
 message Value {
-  bytes bytes = 1;
+  int32 ocType = 1;
+  oneof value {
+    double double = 3;
+    float float = 4;
+    int32 int32 = 5;
+    int64 int64 = 6;
+    uint32 uint32 = 7;
+    uint64 uint64 = 8;
+    sint32 sint32 = 9;
+    sint64 sint64 = 10;
+    fixed32 fixed32 = 11;
+    fixed64 fixed64 = 12;
+    sfixed32 sfixed32 = 13;
+    sfixed64 sfixed64 = 14;
+    bool bool = 15;
+    string string = 16;
+    bytes bytes = 17;
+  }
 }
 
 enum Operation {

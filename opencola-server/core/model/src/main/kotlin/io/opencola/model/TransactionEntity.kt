@@ -1,6 +1,6 @@
 package io.opencola.model
 
-import io.opencola.serialization.ProtoSerializable
+import io.opencola.serialization.protobuf.ProtoSerializable
 import io.opencola.model.protobuf.Model as ProtoModel
 import io.opencola.serialization.StreamSerializer
 import io.opencola.serialization.readInt
@@ -13,7 +13,7 @@ import java.io.OutputStream
 data class TransactionEntity(val entityId: Id, val facts: List<TransactionFact>) {
     companion object Factory :
         StreamSerializer<TransactionEntity>,
-        ProtoSerializable<TransactionEntity, ProtoModel.TransactionEntity>{
+        ProtoSerializable<TransactionEntity, ProtoModel.TransactionEntity> {
         override fun encode(stream: OutputStream, value: TransactionEntity) {
             Id.encode(stream, value.entityId)
             stream.writeInt(value.facts.size)
