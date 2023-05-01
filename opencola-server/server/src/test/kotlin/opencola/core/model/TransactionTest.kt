@@ -3,7 +3,6 @@ package opencola.core.model
 import io.opencola.model.*
 import io.opencola.application.TestApplication
 import io.opencola.model.value.StringValue
-import io.opencola.model.value.emptyValue
 import io.opencola.util.toHexString
 import io.opencola.security.SIGNATURE_ALGO
 import io.opencola.security.Signator
@@ -25,7 +24,7 @@ class TransactionTest {
     fun testTransactionStructure(){
         val stableStructureHash = "3960f25b533fedf4cda71a701553a4bf7fef02689a0b5bb7a335de3bd6c6efbd"
         val id = Id.ofData("".toByteArray())
-        val fact = Fact(id, id, CoreAttribute.Type.spec, emptyValue, Operation.Add)
+        val fact = Fact(id, id, CoreAttribute.Type.spec, StringValue("").asAnyValue() , Operation.Add)
         val transaction = Transaction.fromFacts(id, listOf(fact), 0)
         val signedTransaction = SignedTransaction(transaction, SIGNATURE_ALGO, "".toByteArray())
 
