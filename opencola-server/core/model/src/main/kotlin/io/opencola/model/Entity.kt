@@ -2,6 +2,9 @@ package io.opencola.model
 
 import mu.KotlinLogging
 import io.opencola.model.AttributeType.*
+import io.opencola.model.value.MultiValueListItem
+import io.opencola.model.value.Value
+import io.opencola.model.value.emptyValue
 import java.net.URI
 import java.util.*
 
@@ -15,8 +18,8 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
     var like by booleanAttributeDelegate
     var rating by floatAttributeDelegate
     var tags by tagsAttributeDelegate
-    val commentIds by MultiValueSetOfIdAttributeDelegate //  Read only, computed property
-    var attachmentIds by MultiValueSetOfIdAttributeDelegate
+    val commentIds by MultiValueSetAttributeDelegate<Id>(CoreAttribute.CommentIds.spec) //  Read only, computed property
+    var attachmentIds by MultiValueSetAttributeDelegate<Id>(CoreAttribute.AttachmentIds.spec)
 
     private var facts = emptyList<Fact>()
     fun getAllFacts(): List<Fact> {
@@ -42,7 +45,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         trust: Float? = null,
         like: Boolean? = null,
         rating: Float? = null,
-        tags: Set<String>? = null,
+        tags: List<String>? = null,
     ) : this(authorityId, entityId) {
         this.name = name
         this.description = description
@@ -78,7 +81,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         val sb = StringBuilder()
         sb.appendLine("Entity: $authorityId:$entityId")
         facts.forEach { f->
-            val value = f.attribute.codec.decode(f.value.bytes).toString()
+            val value = f.value.get().toString()
                 .replace("\n", " ")
                 .limit(80)
             sb.append("${f.attribute.name} | ")
@@ -143,7 +146,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         return result
     }
 
-     private fun getFact(propertyName: String, key: UUID?, value: Value?): Pair<Attribute, Fact?> {
+     private fun getFact(propertyName: String, key: UUID?, value: Value<Any>?): Pair<Attribute, Fact?> {
         val attribute = Attributes.getAttributeByName(propertyName)
             ?: throw IllegalArgumentException("Attempt to access unknown property $propertyName")
 
@@ -155,7 +158,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
 
         val fact = facts
             .lastOrNull { it.attribute == attribute
-                    && (key == null || MultiValueListItem.keyOf(it.value) == key)
+                    && (key == null || (it.value as MultiValueListItem<Any>).key == key)
                     && (attribute.type != MultiValueSet || value == null || it.value == value)
             }
             ?.let { if(it.operation == Operation.Add) it else null }
@@ -175,7 +178,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
                 when(attribute.type){
                     SingleValue -> throw IllegalArgumentException("Cannot call getFacts for single valued properties (${attribute.name}). Call getFact instead.")
                     MultiValueSet -> it.value
-                    MultiValueList -> MultiValueListItem.keyOf(it.value)
+                    MultiValueList -> (it.value as MultiValueListItem<Any>).key
                 }
             }
             .map { (_, attributeFacts) -> attributeFacts.last() }
@@ -185,26 +188,26 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         return Pair(attribute, factList)
     }
 
-    fun getValue(propertyName: String): Value? {
+    fun getValue(propertyName: String): Value<Any>? {
         val (_, fact) = getFact(propertyName, null, null)
         return fact?.value
     }
 
-    fun getMultiValue(propertyName: String, key: UUID) : MultiValueListItem? {
+     fun <T> getMultiValue(propertyName: String, key: UUID) : MultiValueListItem<T>? {
         val (_, fact) = getFact(propertyName, key, null)
-        return fact?.let { MultiValueListItem.fromValue(it.value) }
+        return fact?.let { it.value as MultiValueListItem<T> }
     }
 
-    fun getListValues(propertyName: String): List<MultiValueListItem> {
+    fun getListValues(propertyName: String): List<MultiValueListItem<Any>> {
         val (attribute, facts) = getCurrentAttributeFacts(propertyName)
 
         if(attribute.type != MultiValueList)
             throw IllegalArgumentException("Attempt to getListValues for non list attribute (${attribute.name})")
 
-        return facts.map { MultiValueListItem.fromValue(it.value) }
+        return facts.map { it.value as MultiValueListItem<Any> }
     }
 
-    fun getSetValues(propertyName: String): List<Value> {
+    fun getSetValues(propertyName: String): List<Value<Any>> {
         val (attribute, facts) = getCurrentAttributeFacts(propertyName)
 
         if(attribute.type != MultiValueSet)
@@ -213,16 +216,17 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         return facts.map { it.value }
     }
 
-    private fun valueToStore(key: UUID?, value: Value?): Value {
-        val storableValue = value ?: Value.emptyValue
+    private fun valueToStore(key: UUID?, value: Value<Any>?): Value<Any> {
+        // TODO: Is empty value needed?
+        val storableValue = value ?: emptyValue
 
         return if (key == null)
             storableValue
         else
-            MultiValueListItem(key, storableValue.bytes).toValue()
+            MultiValueListItem(key, storableValue)
     }
 
-    private fun setValue(propertyName: String, key: UUID?, value: Value?): Fact? {
+    private fun setValue(propertyName: String, key: UUID?, value: Value<Any>?): Fact? {
         val (attribute, currentFact) = getFact(propertyName, key, value)
 
         if(currentFact == null){
@@ -253,7 +257,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         return newFact
     }
 
-    internal fun deleteValue(propertyName: String, key: UUID?, value: Value?) : Fact? {
+    internal fun deleteValue(propertyName: String, key: UUID?, value: Value<Any>?) : Fact? {
         val (attribute, fact) = getFact(propertyName, key, value)
 
         if(fact != null && fact.operation != Operation.Retract){
@@ -271,11 +275,11 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         return null
     }
 
-    internal fun setValue(propertyName: String, value: Value?) : Fact? {
+    internal fun setValue(propertyName: String, value: Value<Any>?) : Fact? {
         return setValue(propertyName, null, value)
     }
 
-    internal fun setMultiValue(propertyName: String, key: UUID, value: Value?) : Fact? {
+    internal fun setMultiValue(propertyName: String, key: UUID, value: Value<Any>?) : Fact? {
         return setValue(propertyName, key, value)
     }
 
@@ -298,7 +302,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
             when (fact.attribute.type) {
                 SingleValue -> fact.attribute
                 MultiValueSet -> Pair(fact.attribute, fact.value)
-                MultiValueList -> Pair(fact.attribute, MultiValueListItem.keyOf(fact.value))
+                MultiValueList -> Pair(fact.attribute, (fact.value as MultiValueListItem<Any>).key)
             }
         }
 
@@ -365,7 +369,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
             val typeFact = currentFacts.lastOrNull { it.attribute == CoreAttribute.Type.spec }
                 ?: throw IllegalStateException("Entity has no type")
 
-            return when (val type = CoreAttribute.Type.spec.codec.decode(typeFact.value.bytes).toString()) {
+            return when (val type = typeFact.value.get().toString()) {
                 // TODO: Use fully qualified names
                 Authority::class.simpleName -> Authority(sortedFacts)
                 ResourceEntity::class.simpleName -> ResourceEntity(sortedFacts)

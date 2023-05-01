@@ -16,6 +16,13 @@ object Attributes {
         return attributesByUri[uri]?.spec
     }
 
+    private val attributesByUriString = CoreAttribute.values().associateBy { it.spec.uri.toString() }
+
+    // Useful in tight loops where there is no URI representation (e.g. a DB)
+    fun getAttributeByUriString(uriString: String): Attribute? {
+        return attributesByUriString[uriString]?.spec
+    }
+
     private val attributeToOrdinal =
         CoreAttribute.values().mapIndexed { index, coreAttribute -> coreAttribute.spec to index }.toMap()
 

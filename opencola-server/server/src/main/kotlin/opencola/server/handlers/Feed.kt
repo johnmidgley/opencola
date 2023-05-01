@@ -16,7 +16,7 @@ import opencola.server.handlers.EntityResult.*
 data class FeedResult(val context: String?, val pagingToken: String?, val results: List<EntityResult>)
 
 fun entityAttributeAsString(entity: Entity, attribute: Attribute): String? {
-    return entity.getValue(attribute.name).nullOrElse { attribute.codec.decode(it.bytes).toString() }
+    return entity.getValue(attribute.name).nullOrElse { it.get().toString() }
 }
 
 fun getPostedById(entities: List<Entity>): Id {
@@ -42,17 +42,17 @@ fun getSummary(entities: List<Entity>, idToAuthority: (Id) -> AddressBookEntry?)
 fun factToAction(comments: Map<Id, CommentEntity>, attachments: Map<Id, DataEntity>, fact: Fact): Action? {
     return when (fact.attribute) {
         Type.spec -> Action(ActionType.Save, null, null)
-        DataId.spec -> Action(ActionType.Save, fact.decodeValue(), null)
-        Trust.spec -> Action(ActionType.Trust, null, fact.decodeValue())
-        Like.spec -> Action(ActionType.Like, null, fact.decodeValue())
-        Rating.spec -> Action(ActionType.Rate, null, fact.decodeValue())
-        Tags.spec -> Action(ActionType.Tag, null, fact.decodeValue())
+        DataId.spec -> Action(ActionType.Save, fact.unwrapValue(), null)
+        Trust.spec -> Action(ActionType.Trust, null, fact.unwrapValue())
+        Like.spec -> Action(ActionType.Like, null, fact.unwrapValue())
+        Rating.spec -> Action(ActionType.Rate, null, fact.unwrapValue())
+        Tags.spec -> Action(ActionType.Tag, null, fact.unwrapValue())
         CommentIds.spec -> {
-            val commentId = fact.decodeValue<Id>()
+            val commentId = fact.unwrapValue<Id>()
             Action(ActionType.Comment, commentId, comments.getValue(commentId).text)
         }
         AttachmentIds.spec -> {
-            val attachmentId = fact.decodeValue<Id>()
+            val attachmentId = fact.unwrapValue<Id>()
             Action(ActionType.Attach, attachmentId, attachments.getValue(attachmentId).name)
         }
         else -> null

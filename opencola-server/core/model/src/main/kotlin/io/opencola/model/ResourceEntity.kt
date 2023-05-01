@@ -4,7 +4,7 @@ import java.net.URI
 
 open class ResourceEntity : Entity {
     var uri by nonResettableUriAttributeDelegate
-    var dataId by MultiValueSetOfIdAttributeDelegate
+    var dataId by MultiValueSetAttributeDelegate<Id>(CoreAttribute.DataId.spec)
 
     constructor(authorityId: Id,
                 uri: URI,
@@ -13,7 +13,7 @@ open class ResourceEntity : Entity {
                 text: String? = null,
                 imageUri: URI? = null,
                 trust: Float? = null,
-                tags: Set<String>? = null,
+                tags: List<String>? = null,
                 like: Boolean? = null,
                 rating: Float? = null,
     ) : super(authorityId, Id.ofUri(uri), name, description, text, imageUri, trust, like, rating, tags){

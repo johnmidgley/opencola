@@ -1,97 +1,52 @@
 package io.opencola.model
 
-import io.opencola.security.PublicKeyByteArrayCodec
-import io.opencola.serialization.*
-import io.opencola.serialization.codecs.*
+import io.opencola.model.value.*
 import kotlin.reflect.KProperty
 
-class AttributeDelegate<T>(val codec: ByteArrayCodec<T>, val resettable: Boolean = true) {
+class AttributeDelegate<T>(val valueWrapper: ValueWrapper<T>, val resettable: Boolean = true) {
     operator fun getValue(thisRef: Entity, property: KProperty<*>): T? {
-        return thisRef.getValue(property.name)?.bytes?.let { codec.decode(it) }
+        return thisRef.getValue(property.name)?.let { valueWrapper.unwrap(it as Value<T>) as? T }
     }
 
     operator fun setValue(thisRef: Entity, property: KProperty<*>, value: T?) {
         if(!resettable && getValue(thisRef, property) != null)
              throw IllegalStateException("Attempt to reset a non resettable property: ${property.name}")
 
-        thisRef.setValue(property.name, value?.let { Value(codec.encode(it as T)) })
+        thisRef.setValue(property.name, value?.let { valueWrapper.wrap(it) as Value<Any> })
     }
 }
 
 // TODO - validate all fields (i.e. ratings should be between 0 and 1.0)
-val nonResettableIdAttributeDelegate = AttributeDelegate(Id, false)
-val booleanAttributeDelegate = AttributeDelegate(BooleanByteArrayCodec)
-val floatAttributeDelegate = AttributeDelegate(FloatByteArrayCodec)
-val stringAttributeDelegate = AttributeDelegate(StringByteArrayCodec)
-val nonResettableUriAttributeDelegate = AttributeDelegate(UriByteArrayCodec, false)
-val uriAttributeDelegate = AttributeDelegate(UriByteArrayCodec)
-val imageUriAttributeDelegate = AttributeDelegate(UriByteArrayCodec)
+val nonResettableIdAttributeDelegate = AttributeDelegate(IdValue, false)
+val booleanAttributeDelegate = AttributeDelegate(BooleanValue)
+val floatAttributeDelegate = AttributeDelegate(FloatValue)
+val stringAttributeDelegate = AttributeDelegate(StringValue)
+val nonResettableUriAttributeDelegate = AttributeDelegate(UriValue, false)
+val uriAttributeDelegate = AttributeDelegate(UriValue)
+val imageUriAttributeDelegate = AttributeDelegate(UriValue)
 val tagsAttributeDelegate = MultiValueSetAttributeDelegate<String>(CoreAttribute.Tags.spec)
-val publicKeyAttributeDelegate = AttributeDelegate(PublicKeyByteArrayCodec)
-val byteArrayAttributeDelegate = AttributeDelegate(BytesByteArrayCodec)
+val publicKeyAttributeDelegate = AttributeDelegate(PublicKeyValue)
+val byteArrayAttributeDelegate = AttributeDelegate(ByteArrayValue)
 
 @Suppress("UNCHECKED_CAST")
 class MultiValueSetAttributeDelegate<T> (val attribute: Attribute) {
-    operator fun getValue(thisRef: Entity, property: KProperty<*>): Set<T> {
+    // Returns a list so that the set can be ordered, but it will not contain duplicates
+    operator fun getValue(thisRef: Entity, property: KProperty<*>): List<T> {
         return thisRef
             .getSetValues(property.name)
-            .map { attribute.codec.decode(it.bytes) as T }
-            .toSet()
+            .map { attribute.valueWrapper.unwrap(it) as T }
     }
 
-    operator fun setValue(thisRef: Entity, property: KProperty<*>, value: Set<T>) {
+    // Tales a list so that the set can be ordered, but it will not allow duplicates
+    operator fun setValue(thisRef: Entity, property: KProperty<*>, value: List<T>) {
         // Update any present values
-        value.forEach { thisRef.setValue(property.name, Value(attribute.codec.encode(it as Any))) }
+        value.forEach { thisRef.setValue(property.name, attribute.valueWrapper.wrap(it as Any)) }
 
         // Delete any removed values
         thisRef
-            .getSetValues(property.name).map { attribute.codec.decode(it.bytes) }
+            .getSetValues(property.name)
             .toSet()
-            .minus(value.toSet())
-            .forEach { thisRef.deleteValue(property.name, null, Value(attribute.codec.encode(it!!))) }
-    }
-}
-
-// TODO: Move to MultiValueSetAttributeDelegate<T> template
-object MultiValueSetOfIdAttributeDelegate {
-    operator fun getValue(thisRef: Entity, property: KProperty<*>): List<Id> {
-        return thisRef.getSetValues(property.name).map { Id.decode(it.bytes) }
-    }
-
-    operator fun setValue(thisRef: Entity, property: KProperty<*>, value: List<Id>) {
-        // Update any present values
-        value.forEach { id ->
-            thisRef.setValue(property.name, Value(Id.encode(id)))
-        }
-
-        // Delete any removed values
-        thisRef
-            .getSetValues(property.name).map { Id.decode(it.bytes) }
-            .toSet()
-            .minus(value.toSet())
-            .forEach { thisRef.deleteValue(property.name, null, Value(Id.encode(it))) }
-    }
-}
-
-object MultiValueListOfStringAttributeDelegate {
-    operator fun getValue(thisRef: Entity, property: KProperty<*>): List<MultiValueListOfStringItem> {
-        return thisRef.getListValues(property.name).map { MultiValueListOfStringItem.fromMultiValue(it) }
-    }
-
-    operator fun setValue(thisRef: Entity, property: KProperty<*>, value: List<MultiValueListOfStringItem>) {
-        // Update any present values
-        value.forEach { multiValueString ->
-            thisRef.setMultiValue(
-                property.name,
-                multiValueString.key,
-                multiValueString.value?.toByteArray()?.let { Value(it) })
-        }
-
-        // Delete any removed values
-        thisRef
-            .getListValues(property.name).map { it.key }
-            .toSet()
-            .minus(value.map { it.key }.toSet())
-            .forEach { thisRef.deleteValue(property.name, it, null) }
+            .minus(value.map { attribute.valueWrapper.wrap(it as Any) }.toSet())
+            .forEach { thisRef.deleteValue(property.name, null, it) }
     }
 }

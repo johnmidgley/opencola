@@ -2,6 +2,7 @@ package io.opencola.model
 
 import io.opencola.serialization.protobuf.ProtoType
 
+// TODO: Move to value?
 enum class ValueType(val protoType: ProtoType) {
     ANY(ProtoType.ANY),
     BOOLEAN(ProtoType.BOOL),
@@ -15,4 +16,5 @@ enum class ValueType(val protoType: ProtoType) {
     URI(ProtoType.STRING),
     UUID(ProtoType.BYTES),
     ID(ProtoType.BYTES),
+    PUBLIC_KEY(ProtoType.BYTES),
 }

@@ -1,6 +1,7 @@
 package opencola.model
 
 import io.opencola.model.*
+import io.opencola.model.value.IdValue
 import io.opencola.security.generateKeyPair
 import java.net.URI
 import kotlin.test.*
@@ -15,7 +16,7 @@ class EntityTest {
         val publicKey = generateKeyPair().public
         val like = true
         val trust = .75F
-        val tags = listOf("this", "that").toSet()
+        val tags = listOf("this", "that")
         val rating = .37F
         val networkToken = "networkToken".toByteArray()
 
@@ -69,7 +70,7 @@ class EntityTest {
         assertEquals(computedFact1.authorityId, authorityId)
         assertEquals(computedFact1.entityId, entity.entityId)
         assertEquals(computedFact1.attribute, CoreAttribute.CommentIds.spec)
-        assertEquals(computedFact1.value, Value(Id.encode(comment1.entityId)))
+        assertEquals(computedFact1.value as IdValue, IdValue(comment1.entityId))
         assertEquals(computedFact1.operation, Operation.Add)
     }
 

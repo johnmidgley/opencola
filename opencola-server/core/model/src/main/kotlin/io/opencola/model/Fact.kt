@@ -1,6 +1,6 @@
 package io.opencola.model
 
-import kotlinx.serialization.Serializable
+import io.opencola.model.value.Value
 import io.opencola.serialization.StreamSerializer
 import io.opencola.serialization.readLong
 import io.opencola.serialization.writeLong
@@ -11,23 +11,24 @@ import java.io.OutputStream
 // TODO: Intern ids and attributes
 // TODO: Think about making this only usable from inside the entity store, so that transaction ids can be controlled
 //  SubjectiveFact (add subject), and TransactionFact (add transaction id / epoch) - just one? Transaction fact? Subjective fact with epoch?
-@Serializable
+// @Serializable
 data class Fact(
     val authorityId: Id,
     val entityId: Id,
     val attribute: Attribute,
-    val value: Value,
+    val value: Value<Any>,
     val operation: Operation,
     val epochSecond: Long? = null,
     val transactionOrdinal: Long? = null,
 ) {
     override fun toString(): String {
-        val decodedValue = value.let { attribute.codec.decode(it.bytes) }
-        return "{ authorityId: $authorityId entityId: $entityId attribute: ${attribute.uri} value: $decodedValue operation: $operation transactionOrdinal: $transactionOrdinal }"
+        val unwrappedValue = attribute.valueWrapper.unwrap(value)
+        return "{ authorityId: $authorityId entityId: $entityId attribute: ${attribute.uri} value: $unwrappedValue operation: $operation transactionOrdinal: $transactionOrdinal }"
     }
 
-    inline fun <reified T> decodeValue(): T {
-        return attribute.codec.decode(value.bytes) as T
+    // TODO: Remove?
+    inline fun <reified T> unwrapValue(): T {
+        return attribute.valueWrapper.unwrap(value) as T
     }
 
     companion object Factory : StreamSerializer<Fact> {
@@ -42,22 +43,22 @@ data class Fact(
             Id.encode(stream, value.authorityId)
             Id.encode(stream, value.entityId)
             Attribute.encode(stream, value.attribute)
-            Value.encode(stream, value.value)
+            value.attribute.valueWrapper.encode(stream, value.value)
             Operation.encode(stream, value.operation)
             stream.writeLong(value.epochSecond)
             stream.writeLong(value.transactionOrdinal)
         }
 
         override fun decode(stream: InputStream): Fact {
-            return Fact(
-                Id.decode(stream),
-                Id.decode(stream),
-                Attribute.decode(stream),
-                Value.decode(stream),
-                Operation.decode(stream),
-                stream.readLong(),
-                stream.readLong()
-            )
+            val authorityId = Id.decode(stream)
+            val entityId = Id.decode(stream)
+            val attribute = Attribute.decode(stream)
+            val value = attribute.valueWrapper.wrap(attribute.valueWrapper.decode(stream))
+            val operation = Operation.decode(stream)
+            val epochSecond = stream.readLong()
+            val transactionOrdinal = stream.readLong()
+
+            return Fact(authorityId, entityId, attribute, value, operation, epochSecond, transactionOrdinal)
         }
 
     }

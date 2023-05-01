@@ -14,3 +14,16 @@ fun ByteArray.append(other: ByteArray) : ByteArray {
         it.toByteArray()
     }
 }
+
+fun ByteArray.compareTo(other: ByteArray): Int {
+    val minLength = minOf(this.size, other.size)
+
+    for (i in 0 until minLength) {
+        val result = this[i].compareTo(other[i])
+        if (result != 0) {
+            return result
+        }
+    }
+
+    return this.size.compareTo(other.size)
+}

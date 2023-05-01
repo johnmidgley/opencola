@@ -4,6 +4,7 @@ import io.opencola.model.Authority
 import io.opencola.model.CoreAttribute
 import io.opencola.model.Id
 import io.opencola.model.Operation
+import io.opencola.model.value.StringValue
 import io.opencola.security.KeyStore
 import io.opencola.security.Signator
 import io.opencola.util.blankToNull
@@ -35,7 +36,7 @@ class EntityStoreAddressBook(private val storagePath: Path, private val keyStore
                         && it.entityId == personaId
                         && it.attribute == CoreAttribute.Tags.spec
                         && it.operation == Operation.Add
-                        && it.value.bytes.contentEquals(activeTag.toByteArray())
+                        && (it.value as StringValue).get() == activeTag
             }
 
             if(activeFact == null) {
@@ -64,7 +65,7 @@ class EntityStoreAddressBook(private val storagePath: Path, private val keyStore
             entry.address.normalize().trim(),
             entry.name,
             imageUri = entry.imageUri,
-            tags = if (entry.isActive) setOf(activeTag) else emptySet()
+            tags = if (entry.isActive) listOf(activeTag) else emptyList()
         )
     }
 
@@ -81,7 +82,7 @@ class EntityStoreAddressBook(private val storagePath: Path, private val keyStore
         authority.uri = entry.address.normalize().trim()
         authority.name = entry.name.blankToNull() ?: throw IllegalArgumentException("Name cannot be blank")
         authority.imageUri = entry.imageUri
-        authority.tags = if (entry.isActive) setOf(activeTag) else emptySet()
+        authority.tags = if (entry.isActive) listOf(activeTag) else emptyList()
 
         return authority
     }

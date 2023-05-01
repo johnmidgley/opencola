@@ -4,15 +4,19 @@ import io.opencola.serialization.ByteArrayCodec
 import java.nio.ByteBuffer
 
 object BooleanByteArrayCodec : ByteArrayCodec<Boolean> {
-    // TODO: Can these be bytes instead?
-    private const val FALSE = 0
-    private const val TRUE = 1
+    private val FALSE = toByteArray(0.toByte())
+    private val TRUE = toByteArray(1.toByte())
+
+    fun toByteArray(value: Byte): ByteArray {
+        return ByteBuffer.allocate(1).put(0, value).array()
+    }
 
     override fun encode(value: Boolean): ByteArray {
-        return ByteBuffer.allocate(Int.SIZE_BYTES).putInt(if (value) TRUE else FALSE).array()
+        return if (value) TRUE else FALSE
     }
 
     override fun decode(value: ByteArray): Boolean {
-        return ByteBuffer.wrap(value).int == TRUE
+        require(value.size == 1)
+        return value[0] == TRUE[0]
     }
 }

@@ -1,14 +1,13 @@
 package io.opencola.model
 
 import io.opencola.model.protobuf.Model as ProtoModel
-import kotlinx.serialization.Serializable
 import io.opencola.serialization.*
 import io.opencola.serialization.protobuf.ProtoSerializable
 import java.io.InputStream
 import java.io.OutputStream
 import java.time.Instant
 
-@Serializable
+// @Serializable
 data class Transaction(val id: Id,
                        val authorityId: Id,
                        val transactionEntities: List<TransactionEntity>,

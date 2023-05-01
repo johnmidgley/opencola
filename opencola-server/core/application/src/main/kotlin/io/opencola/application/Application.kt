@@ -75,7 +75,7 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) :
         private fun initAddressBook(injector: DI, personaKeyPairs: List<KeyPair>, networkConfig: NetworkConfig) {
             val addressBook by injector.instance<AddressBook>()
             val personas = personaKeyPairs.map {
-                val authority = Authority(it.public, networkConfig.defaultAddress, "You", tags = setOf("active"))
+                val authority = Authority(it.public, networkConfig.defaultAddress, "You", tags = listOf("active"))
                 PersonaAddressBookEntry(authority, it)
             }
 

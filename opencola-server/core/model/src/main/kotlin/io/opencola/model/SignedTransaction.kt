@@ -8,12 +8,11 @@ import io.opencola.serialization.protobuf.ProtoSerializable
 import io.opencola.serialization.StreamSerializer
 import io.opencola.serialization.readByteArray
 import io.opencola.serialization.writeByteArray
-import kotlinx.serialization.Serializable
 import java.io.InputStream
 import java.io.OutputStream
 import java.security.PublicKey
 
-@Serializable
+// @Serializable
 // TODO: Make Signature type that has algorithm and signature value - but need to wait until entity store
 //  migration is complete - as old transactions depend on Json serialization of this class as is
 data class SignedTransaction(val transaction: Transaction, val algorithm: String, val signature: ByteArray) {

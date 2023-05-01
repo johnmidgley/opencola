@@ -21,13 +21,13 @@ open class Authority : Entity {
         trust: Float? = null,
         like: Boolean? = null,
         rating: Float? = null,
-        tags: Set<String>? = null,
+        tags: List<String>? = null,
     ) : super(authorityId, Id.ofPublicKey(publicKey), name, description, text, imageUri, trust, like, rating, tags) {
         this.uri = uri
         this.publicKey = publicKey
     }
 
-    constructor(
+        constructor(
         publicKey: PublicKey,
         uri: URI,
         name: String,
@@ -37,7 +37,7 @@ open class Authority : Entity {
         trust: Float? = null,
         like: Boolean? = null,
         rating: Float? = null,
-        tags: Set<String>? = null,
+        tags: List<String>? = null,
     ) : this(Id.ofPublicKey(publicKey), publicKey, uri, name, description, text, imageUri, trust, like, rating, tags)
 
     constructor(facts: List<Fact>) : super(facts)

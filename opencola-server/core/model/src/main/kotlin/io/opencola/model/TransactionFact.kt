@@ -1,14 +1,14 @@
 package io.opencola.model
 
+import io.opencola.model.value.Value
 import io.opencola.serialization.protobuf.ProtoSerializable
 import io.opencola.model.protobuf.Model as ProtoModel
 import io.opencola.serialization.StreamSerializer
-import kotlinx.serialization.Serializable
 import java.io.InputStream
 import java.io.OutputStream
 
-@Serializable
-data class TransactionFact(val attribute: Attribute, val value: Value, val operation: Operation) {
+// @Serializable
+data class TransactionFact(val attribute: Attribute, val value: Value<Any>, val operation: Operation) {
     companion object Factory :
         StreamSerializer<TransactionFact>,
         ProtoSerializable<TransactionFact, ProtoModel.TransactionFact> {
@@ -18,29 +18,35 @@ data class TransactionFact(val attribute: Attribute, val value: Value, val opera
 
         override fun encode(stream: OutputStream, value: TransactionFact) {
             Attribute.encode(stream, value.attribute)
-            Value.encode(stream, value.value)
+            value.attribute.valueWrapper.encode(stream, value.value.get())
             Operation.encode(stream, value.operation)
         }
 
         override fun decode(stream: InputStream): TransactionFact {
-            return TransactionFact(Attribute.decode(stream), Value.decode(stream), Operation.decode(stream))
+            val attribute = Attribute.decode(stream)
+            val valueWrapper = attribute.valueWrapper
+            val value = valueWrapper.wrap(valueWrapper.decode(stream))
+            val operation = Operation.decode(stream)
+
+            return TransactionFact(attribute, value, operation)
         }
 
 
         override fun toProto(value: TransactionFact): ProtoModel.TransactionFact {
             return ProtoModel.TransactionFact.newBuilder()
                 .setAttribute(Attribute.toProto(value.attribute))
-                .setValue(Value.toProto(value.value))
+                .setValue(value.attribute.valueWrapper.toProto(value.value))
                 .setOperation(Operation.toProto(value.operation))
                 .build()
         }
 
         override fun fromProto(value: ProtoModel.TransactionFact): TransactionFact {
-            return TransactionFact(
-                Attribute.fromProto(value.attribute),
-                Value.fromProto(value.value),
-                Operation.fromProto(value.operation)
-            )
+            val attribute = Attribute.fromProto(value.attribute)
+            val valueWrapper = attribute.valueWrapper
+            val wrappedValue = valueWrapper.wrap(valueWrapper.fromProto(value.value))
+            val operation = Operation.fromProto(value.operation)
+
+            return TransactionFact(attribute, wrappedValue, operation)
         }
     }
 }

@@ -1,6 +1,5 @@
 package io.opencola.network
 
-import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import io.opencola.event.EventBus
 import io.opencola.event.Events
@@ -26,7 +25,6 @@ fun handleNotification(addressBook: AddressBook, eventBus: EventBus, fromId: Id,
     eventBus.sendMessage(Events.PeerNotification.toString(), notification.encode())
 }
 
-@Serializable
 data class TransactionsResponse(
     val startTransactionId: Id?,
     val currentTransactionId: Id?,

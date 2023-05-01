@@ -4,6 +4,8 @@ import mu.KotlinLogging
 import io.opencola.event.EventBus
 import io.opencola.event.Events
 import io.opencola.model.*
+import io.opencola.model.value.Value
+import io.opencola.model.value.emptyValue
 import io.opencola.security.PublicKeyProvider
 import io.opencola.util.ifNotNullOrElse
 import io.opencola.util.nullOrElse
@@ -118,7 +120,7 @@ abstract class AbstractEntityStore(
                             && it.entityId == fact.entityId
                             && it.attribute == fact.attribute
                             && it.operation == fact.operation
-                            && it.value.bytes.contentEquals(fact.value.bytes)
+                            && it.value == fact.value
                 }
             Operation.Retract ->
                 // Don't allow superfluous retractions
@@ -127,7 +129,7 @@ abstract class AbstractEntityStore(
                             && it.entityId == fact.entityId
                             && it.attribute == fact.attribute
                             && it.operation == Operation.Add
-                            && (it.attribute.type == AttributeType.SingleValue || it.value.bytes.contentEquals(fact.value.bytes))
+                            && (it.attribute.type == AttributeType.SingleValue || it.value == fact.value)
                 }
         }
     }
@@ -179,13 +181,13 @@ abstract class AbstractEntityStore(
         return Pair(signedTransaction, transactionOrdinal)
     }
 
-    private fun getDeletedValue(fact: Fact) : Value {
+    private fun getDeletedValue(fact: Fact) : Value<Any> {
         return if(fact.attribute.type != AttributeType.SingleValue
             || fact.attribute == CoreAttribute.Type.spec
             || fact.attribute == CoreAttribute.ParentId.spec)
             fact.value
         else
-            Value.emptyValue
+            emptyValue
     }
 
     private fun getDependentEntityIds(personaId: Id, entityId: Id): Set<Id> {

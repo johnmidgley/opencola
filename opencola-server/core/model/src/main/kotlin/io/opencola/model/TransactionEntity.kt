@@ -5,11 +5,10 @@ import io.opencola.model.protobuf.Model as ProtoModel
 import io.opencola.serialization.StreamSerializer
 import io.opencola.serialization.readInt
 import io.opencola.serialization.writeInt
-import kotlinx.serialization.Serializable
 import java.io.InputStream
 import java.io.OutputStream
 
-@Serializable
+// @Serializable
 data class TransactionEntity(val entityId: Id, val facts: List<TransactionFact>) {
     companion object Factory :
         StreamSerializer<TransactionEntity>,

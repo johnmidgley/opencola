@@ -17,6 +17,6 @@ fun getAuthorityEntity(subjectId: Id) : Authority {
         .89F,
         true,
         .75F,
-        setOf("programming", "educational"),
+        listOf("programming", "educational"),
     )
 }

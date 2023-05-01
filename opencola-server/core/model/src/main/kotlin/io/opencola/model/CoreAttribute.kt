@@ -1,8 +1,6 @@
 package io.opencola.model
 
-import io.opencola.security.PublicKeyByteArrayCodec
-import io.opencola.serialization.*
-import io.opencola.serialization.codecs.*
+import io.opencola.model.value.*
 import java.net.URI
 
 // NOTE: In order to be properly searchable, attributes should be added to the search schema.
@@ -14,7 +12,7 @@ enum class CoreAttribute(val spec: Attribute) {
         Attribute(
             URI("opencola://attributes/type"),
             AttributeType.SingleValue,
-            StringByteArrayCodec as ByteArrayCodec<Any>,
+            StringValue as ValueWrapper<Any>,
             isIndexable = false
         )
     ),
@@ -22,7 +20,7 @@ enum class CoreAttribute(val spec: Attribute) {
         Attribute(
             URI("opencola://attributes/mimeType"),
             AttributeType.SingleValue,
-            StringByteArrayCodec as ByteArrayCodec<Any>,
+            StringValue as ValueWrapper<Any>,
             isIndexable = false
         )
     ),
@@ -30,7 +28,7 @@ enum class CoreAttribute(val spec: Attribute) {
         Attribute(
             URI("opencola://attributes/uri"),
             AttributeType.SingleValue,
-            UriByteArrayCodec as ByteArrayCodec<Any>,
+            UriValue as ValueWrapper<Any>,
             isIndexable = false
         )
     ),
@@ -38,7 +36,7 @@ enum class CoreAttribute(val spec: Attribute) {
         Attribute(
             URI("opencola://attributes/dataId"),
             AttributeType.MultiValueSet,
-            Id as ByteArrayCodec<Any>,
+            IdValue as ValueWrapper<Any>,
             isIndexable = false
         )
     ),
@@ -46,7 +44,7 @@ enum class CoreAttribute(val spec: Attribute) {
         Attribute(
             URI("opencola://attributes/publicKey"),
             AttributeType.SingleValue,
-            PublicKeyByteArrayCodec as ByteArrayCodec<Any>,
+            PublicKeyValue as ValueWrapper<Any>,
             isIndexable = false
         )
     ),
@@ -54,7 +52,7 @@ enum class CoreAttribute(val spec: Attribute) {
         Attribute(
             URI("opencola://attributes/name"),
             AttributeType.SingleValue,
-            StringByteArrayCodec as ByteArrayCodec<Any>,
+            StringValue as ValueWrapper<Any>,
             isIndexable = true
         )
     ),
@@ -62,7 +60,7 @@ enum class CoreAttribute(val spec: Attribute) {
         Attribute(
             URI("opencola://attributes/description"),
             AttributeType.SingleValue,
-            StringByteArrayCodec as ByteArrayCodec<Any>,
+            StringValue as ValueWrapper<Any>,
             isIndexable = true
         )
     ),
@@ -72,7 +70,7 @@ enum class CoreAttribute(val spec: Attribute) {
         Attribute(
             URI("opencola://attributes/text"),
             AttributeType.SingleValue,
-            StringByteArrayCodec as ByteArrayCodec<Any>,
+            StringValue as ValueWrapper<Any>,
             isIndexable = true
         )
     ),
@@ -80,7 +78,7 @@ enum class CoreAttribute(val spec: Attribute) {
         Attribute(
             URI("opencola://attributes/imageUri"),
             AttributeType.SingleValue,
-            UriByteArrayCodec as ByteArrayCodec<Any>,
+            UriValue as ValueWrapper<Any>,
             isIndexable = false
         )
     ),
@@ -88,7 +86,7 @@ enum class CoreAttribute(val spec: Attribute) {
         Attribute(
             URI("opencola://attributes/tags"),
             AttributeType.MultiValueSet,
-            StringByteArrayCodec as ByteArrayCodec<Any>,
+            StringValue as ValueWrapper<Any>,
             isIndexable = true
         )
     ),
@@ -96,7 +94,7 @@ enum class CoreAttribute(val spec: Attribute) {
         Attribute(
             URI("opencola://attributes/trust"),
             AttributeType.SingleValue,
-            FloatByteArrayCodec as ByteArrayCodec<Any>,
+            FloatValue as ValueWrapper<Any>,
             isIndexable = true
         )
     ),
@@ -104,7 +102,7 @@ enum class CoreAttribute(val spec: Attribute) {
         Attribute(
             URI("opencola://attributes/like"),
             AttributeType.SingleValue,
-            BooleanByteArrayCodec as ByteArrayCodec<Any>,
+            BooleanValue as ValueWrapper<Any>,
             isIndexable = true
         )
     ),
@@ -112,7 +110,7 @@ enum class CoreAttribute(val spec: Attribute) {
         Attribute(
             URI("opencola://attributes/rating"),
             AttributeType.SingleValue,
-            FloatByteArrayCodec as ByteArrayCodec<Any>,
+            FloatValue as ValueWrapper<Any>,
             isIndexable = true
         )
     ),
@@ -120,7 +118,7 @@ enum class CoreAttribute(val spec: Attribute) {
       Attribute(
           URI("opencola://attributes/parentId"),
           AttributeType.SingleValue,
-          Id as ByteArrayCodec<Any>,
+          IdValue as ValueWrapper<Any>,
           isIndexable = false,
       )
     ),
@@ -129,7 +127,7 @@ enum class CoreAttribute(val spec: Attribute) {
             "commentIds",
             URI("opencola://attributes/commentId"),
             AttributeType.MultiValueSet,
-            Id as ByteArrayCodec<Any>,
+            IdValue as ValueWrapper<Any>,
             isIndexable = false,
             computeEntityCommentIds
         )
@@ -138,7 +136,7 @@ enum class CoreAttribute(val spec: Attribute) {
         Attribute(
             URI("opencola://attributes/networkToken"),
             AttributeType.SingleValue,
-            BytesByteArrayCodec as ByteArrayCodec<Any>,
+            ByteArrayValue as ValueWrapper<Any>,
             isIndexable = false,
         )
     ),
@@ -147,7 +145,7 @@ enum class CoreAttribute(val spec: Attribute) {
             "attachmentIds",
             URI("opencola://attributes/attachmentId"),
             AttributeType.MultiValueSet,
-            Id as ByteArrayCodec<Any>,
+            IdValue as ValueWrapper<Any>,
             isIndexable = false,
             null)
     ),

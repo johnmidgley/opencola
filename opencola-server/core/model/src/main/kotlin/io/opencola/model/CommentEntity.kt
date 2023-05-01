@@ -1,5 +1,7 @@
 package io.opencola.model
 
+import io.opencola.model.value.IdValue
+import io.opencola.model.value.StringValue
 import java.net.URI
 
 class CommentEntity : Entity {
@@ -15,7 +17,7 @@ class CommentEntity : Entity {
         trust: Float? = null,
         like: Boolean? = null,
         rating: Float? = null,
-        tags: Set<String>? = null,
+        tags: List<String>? = null,
     ) : super(authorityId, Id.new(), name, description, text, imageUri, trust, like, rating, tags) {
         this.parentId = parentId
     }
@@ -23,17 +25,20 @@ class CommentEntity : Entity {
     constructor(facts: List<Fact>) : super(facts)
 }
 
-private val commentTypeValue = Value(CoreAttribute.Type.spec.codec.encode(CommentEntity::class.java.simpleName))
+private val commentTypeValue = StringValue(CommentEntity::class.java.simpleName)
 
 val computeEntityCommentIds: (Iterable<Fact>) -> Iterable<Fact> = { facts ->
+    val typeAttribute = CoreAttribute.Type.spec
     facts
-        .filter { it.attribute == CoreAttribute.Type.spec && it.value == commentTypeValue }
+        .filter { fact ->
+            fact.attribute == typeAttribute && fact.value as? StringValue == commentTypeValue
+        }
         .map { fact ->
             facts.single { it.authorityId == fact.authorityId && it.entityId == fact.entityId && it.attribute == CoreAttribute.ParentId.spec }
         }
         .map {
-            val parentId = CoreAttribute.ParentId.spec.codec.decode(it.value.bytes) as Id
-            val commentIdValue = Value(CoreAttribute.CommentIds.spec.codec.encode(it.entityId))
+            val parentId = CoreAttribute.ParentId.spec.valueWrapper.unwrap(it.value) as Id
+            val commentIdValue = IdValue(it.entityId).asAnyValue()
             Fact(it.authorityId, parentId, CoreAttribute.CommentIds.spec, commentIdValue, it.operation)
         }
 }

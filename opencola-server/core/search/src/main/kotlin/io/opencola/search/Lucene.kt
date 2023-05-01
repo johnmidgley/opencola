@@ -2,6 +2,7 @@ package io.opencola.search
 
 import io.opencola.model.CoreAttribute
 import io.opencola.model.Id
+import io.opencola.model.value.StringValue
 import io.opencola.serialization.ByteArrayCodec
 import io.opencola.serialization.codecs.StringByteArrayCodec
 
@@ -9,11 +10,15 @@ import io.opencola.serialization.codecs.StringByteArrayCodec
  * Return a lucene query string for the given [query].
  */
 fun getLuceneQueryString(query: String) : String {
+    throw Exception("Check this!!")
+
     return CoreAttribute.values()
         .map { it.spec }
         // TODO: Fix this hack that identifies text search fields
-        .filter { it.isIndexable && it.codec == StringByteArrayCodec as ByteArrayCodec<*> }
+
+        .filter { it.isIndexable && it.valueWrapper.javaClass == StringValue.Wrapper::class.java }
         .joinToString(" ") { "${it.name}:\"$query\"~10000" }
+
 }
 
 /**

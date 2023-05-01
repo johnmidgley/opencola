@@ -1,12 +1,18 @@
 package io.opencola.serialization
 
-import io.opencola.serialization.codecs.IntByteArrayCodec
-import io.opencola.serialization.codecs.LongByteArrayCodec
-import io.opencola.serialization.codecs.UUIDByteArrayCodecCodec
+import io.opencola.serialization.codecs.*
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI
 import java.util.*
+
+fun OutputStream.writeBoolean(value: Boolean) {
+    write(BooleanByteArrayCodec.encode(value))
+}
+
+fun InputStream.readBoolean() : Boolean {
+    return BooleanByteArrayCodec.decode(readNBytes(1))
+}
 
 fun OutputStream.writeInt(value: Int){
     write(IntByteArrayCodec.encode(value))
@@ -23,6 +29,15 @@ fun OutputStream.writeLong(value: Long){
 fun InputStream.readLong() : Long {
     return LongByteArrayCodec.decode(readNBytes(Long.SIZE_BYTES))
 }
+
+fun OutputStream.writeFloat(value: Float){
+    write(FloatByteArrayCodec.encode(value))
+}
+
+fun InputStream.readFloat() : Float {
+    return FloatByteArrayCodec.decode(readNBytes(Float.SIZE_BYTES))
+}
+
 
 fun OutputStream.writeUUID(value: UUID){
     write(UUIDByteArrayCodecCodec.encode(value))

@@ -1,5 +1,6 @@
 package io.opencola.model
 
+import io.opencola.model.value.ValueWrapper
 import io.opencola.model.protobuf.Model as ProtoModel
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -8,7 +9,6 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import io.opencola.serialization.ByteArrayCodec
 import io.opencola.serialization.StreamSerializer
 import java.io.InputStream
 import java.io.OutputStream
@@ -26,12 +26,12 @@ data class Attribute(
     val name: String,
     val uri: URI,
     val type: AttributeType,
-    val codec: ByteArrayCodec<Any>,
+    val valueWrapper: ValueWrapper<Any>,
     val isIndexable: Boolean,
     val computeFacts: ((Iterable<Fact>) -> Iterable<Fact>)?
 ) {
-    constructor(uri: URI, type: AttributeType, codec: ByteArrayCodec<Any>, isIndexable: Boolean, computeFacts: ((Iterable<Fact>) -> Iterable<Fact>)? = null) :
-            this(uri.path.split("/").last(), uri, type, codec, isIndexable, computeFacts)
+    constructor(uri: URI, type: AttributeType, valueWrapper: ValueWrapper<Any>, isIndexable: Boolean, computeFacts: ((Iterable<Fact>) -> Iterable<Fact>)? = null) :
+            this(uri.path.split("/").last(), uri, type, valueWrapper, isIndexable, computeFacts)
 
     companion object Factory : StreamSerializer<Attribute> {
         override fun encode(stream: OutputStream, value: Attribute) {

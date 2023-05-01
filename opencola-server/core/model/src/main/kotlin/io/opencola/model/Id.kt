@@ -3,13 +3,11 @@ package io.opencola.model
 import com.google.protobuf.ByteString
 import io.opencola.model.protobuf.Model as ProtoModel
 import kotlinx.serialization.Serializable
-import io.opencola.util.Base58
-import io.opencola.util.toByteArray
-import io.opencola.util.toHexString
 import io.opencola.security.sha256
 import io.opencola.serialization.ByteArrayCodec
 import io.opencola.serialization.StreamSerializer
-import io.opencola.util.hexStringToByteArray
+import io.opencola.serialization.protobuf.ProtoSerializable
+import io.opencola.util.*
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI
@@ -20,7 +18,7 @@ import java.util.*
 private val idLengthInBytes = sha256("").size
 
 @Serializable
-data class Id(private val bytes: ByteArray) {
+data class Id(private val bytes: ByteArray) : Comparable<Id> {
     init{
         assert(bytes.size == idLengthInBytes) { "Invalid id - size = ${bytes.size} but should be $idLengthInBytes" }
     }
@@ -42,6 +40,10 @@ data class Id(private val bytes: ByteArray) {
         return bytes.contentHashCode()
     }
 
+    override fun compareTo(other: Id): Int {
+        return bytes.compareTo(other.bytes)
+    }
+
     override fun equals(other: Any?): Boolean {
         return if(other is Id)
             return bytes.contentEquals(other.bytes)
@@ -49,7 +51,7 @@ data class Id(private val bytes: ByteArray) {
             false
     }
 
-    companion object Factory : ByteArrayCodec<Id>, StreamSerializer<Id> {
+    companion object Factory : ByteArrayCodec<Id>, StreamSerializer<Id>, ProtoSerializable<Id, ProtoModel.Id> {
         // TODO: Should return Id? - empty string is not valid.
         fun decode(value: String): Id {
             return decode(
@@ -94,13 +96,13 @@ data class Id(private val bytes: ByteArray) {
             return Id(stream.readNBytes(idLengthInBytes))
         }
 
-        fun toProto(value: Id): ProtoModel.Id {
+        override fun toProto(value: Id): ProtoModel.Id {
             return ProtoModel.Id.newBuilder()
                 .setBytes(ByteString.copyFrom(value.bytes))
                 .build()
         }
 
-        fun fromProto(value: ProtoModel.Id): Id {
+        override fun fromProto(value: ProtoModel.Id): Id {
             return Id(value.bytes.toByteArray())
         }
     }

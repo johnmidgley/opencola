@@ -240,7 +240,7 @@ class EntityStoreTest {
     private fun testSetAndNullProperties(entityStore: EntityStore) {
         val resource = ResourceEntity(
             persona.personaId, URI("http://opencola.io/"), "Name", "Description",
-            "Text", URI("http://image.com"), 0.5F, setOf("hi"), true, .7F)
+            "Text", URI("http://image.com"), 0.5F, listOf("hi"), true, .7F)
 
         entityStore.updateEntities(resource)
         val resource1 = entityStore.getEntity(persona.personaId, resource.entityId) as? ResourceEntity
@@ -263,7 +263,7 @@ class EntityStoreTest {
         resource1.text = null
         resource1.imageUri = null
         resource1.trust = null
-        resource1.tags = emptySet()
+        resource1.tags = emptyList()
         resource1.like = null
         resource1.rating = null
         entityStore.updateEntities(resource1)
@@ -278,7 +278,7 @@ class EntityStoreTest {
         assertNull(resource2.text)
         assertNull(resource2.imageUri)
         assertNull(resource2.trust)
-        assertEquals(emptySet(), resource1.tags)
+        assertEquals(emptyList(), resource1.tags)
         assertNull(resource2.like)
         assertNull(resource2.rating)
 
@@ -305,9 +305,9 @@ class EntityStoreTest {
         // Test detection of duplicate multi value set property
         val resource3 = entityStore.getEntity(persona.personaId, resource0.entityId)!!
         val resource4 = entityStore.getEntity(persona.personaId, resource0.entityId)!!
-        resource3.tags = setOf("this", "that")
+        resource3.tags = listOf("this", "that")
         entityStore.updateEntities(resource3)
-        resource4.tags = setOf("this")
+        resource4.tags = listOf("this")
         assertFails { entityStore.updateEntities(resource4) }
 
         // Test detection of duplicate single value property

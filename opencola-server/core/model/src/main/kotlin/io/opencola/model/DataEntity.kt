@@ -21,7 +21,7 @@ open class DataEntity : Entity {
         trust: Float? = null,
         like: Boolean? = null,
         rating: Float? = null,
-        tags: Set<String>? = null,
+        tags: List<String>? = null,
         ) : super(authorityId, dataId, name, description, text, imageUri, trust, like, rating, tags){
         this.mimeType = mimeType
     }

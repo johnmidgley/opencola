@@ -29,6 +29,7 @@ class ExposedEntityStore(
     // This would likely be an issue only when storing data for large sets of users (millions to billions?)
     // TODO: Magic numbers (32, 128) should come from config
     // TODO: Normalize attribute
+    // TODO: Break out attribute into separate table
     private class Facts(name: String = "Facts") : LongIdTable(name) {
         val authorityId = binary("authorityId", 32).index()
         val entityId = binary("entityId", 32).index()
@@ -188,11 +189,13 @@ class ExposedEntityStore(
     }
 
     private fun factFromResultRow(resultRow: ResultRow): Fact {
+        val attribute = Attributes.getAttributeByUriString(resultRow[facts.attribute])!!
+
         return Fact(
             Id.decode(resultRow[facts.authorityId]),
             Id.decode(resultRow[facts.entityId]),
-            CoreAttribute.values().single { a -> a.spec.uri.toString() == resultRow[facts.attribute] }.spec,
-            Value(resultRow[facts.value].bytes),
+            attribute,
+            attribute.valueWrapper.let {it.wrap(it.decode(resultRow[facts.value].bytes)) },
             resultRow[facts.operation],
             resultRow[facts.epochSecond],
             resultRow[facts.transactionOrdinal]
@@ -216,7 +219,7 @@ class ExposedEntityStore(
                     it[authorityId] = Id.encode(fact.authorityId)
                     it[entityId] = Id.encode(fact.entityId)
                     it[attribute] = fact.attribute.uri.toString()
-                    it[value] = ExposedBlob(fact.value.bytes)
+                    it[value] = ExposedBlob(fact.attribute.valueWrapper.encode(fact.value.get()))
                     it[operation] = fact.operation
                     it[epochSecond] = transaction.epochSecond
                     it[transactionOrdinal] = ordinal.value

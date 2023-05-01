@@ -10,7 +10,7 @@ class PostEntity : Entity {
                 text: String? = null,
                 imageUri: URI? = null,
                 trust: Float? = null,
-                tags: Set<String>? = null,
+                tags: List<String>? = null,
                 like: Boolean? = null,
                 rating: Float? = null,
     ) : super(authorityId, entityId, name, description, text, imageUri, trust, like, rating, tags)
@@ -21,7 +21,7 @@ class PostEntity : Entity {
                 text: String? = null,
                 imageUri: URI? = null,
                 trust: Float? = null,
-                tags: Set<String>? = null,
+                tags: List<String>? = null,
                 like: Boolean? = null,
                 rating: Float? = null
     ) : this(authorityId, Id.new(), name, description, text, imageUri, trust, tags, like, rating)
