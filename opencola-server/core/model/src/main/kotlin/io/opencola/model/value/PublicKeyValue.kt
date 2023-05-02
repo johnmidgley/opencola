@@ -4,7 +4,6 @@ import com.google.protobuf.ByteString
 import io.opencola.model.ValueType
 import io.opencola.model.protobuf.Model
 import io.opencola.security.PublicKeyByteArrayCodec
-import io.opencola.util.compareTo
 import java.security.PublicKey
 
 class PublicKeyValue(value: PublicKey) : Value<PublicKey>(value) {
@@ -37,10 +36,5 @@ class PublicKeyValue(value: PublicKey) : Value<PublicKey>(value) {
             require(value is PublicKeyValue)
             return value.get()
         }
-    }
-
-    override fun compareTo(other: Value<PublicKey>): Int {
-        if(other !is PublicKeyValue) return -1
-        return this.value.encoded.compareTo(other.value.encoded)
     }
 }

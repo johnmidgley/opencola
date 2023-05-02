@@ -35,9 +35,4 @@ class StringValue(value: String) : Value<String>(value) {
             return value.get()
         }
     }
-
-    override fun compareTo(other: Value<String>): Int {
-        if(other !is StringValue) return -1
-        return value.compareTo(other.value)
-    }
 }

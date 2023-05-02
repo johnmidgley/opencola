@@ -47,7 +47,7 @@ interface ValueWrapper<T> : ByteArrayCodec<T>, ProtoSerializable<T, ProtoModel.V
 
 // TODO: See if @Serializable can be added back to Transaction et. al
 @Serializable
-abstract class Value<T>(val value: T) : Comparable<Value<T>> {
+abstract class Value<T>(val value: T) {
     fun get(): T {
         return value
     }
@@ -57,26 +57,21 @@ abstract class Value<T>(val value: T) : Comparable<Value<T>> {
     }
 
     override fun equals(other: Any?): Boolean {
-        if(other == null) return false
+        if (other == null) return false
         if (this === other) return true
         if (other !is Value<*>) return false
+        if (javaClass != other.javaClass) return false
         return value == other.value
     }
 
     override fun hashCode(): Int {
-        var result = super.hashCode()
-        result = 31 * result + value.hashCode()
-        return result
+        return value.hashCode()
     }
 }
 
+
 // TODO: Make value wrapper and remove toValue, keyOf and fromValue
 class MultiValueListItem<T>(val key: UUID, value: T) : Value<T>(value) {
-    override fun compareTo(other: Value<T>): Int {
-        if(other !is MultiValueListItem<T>) return 1
-        return key.compareTo(other.key)
-    }
-
     override fun equals(other: Any?): Boolean {
         if(this === other) return true
         if(other == null) return false

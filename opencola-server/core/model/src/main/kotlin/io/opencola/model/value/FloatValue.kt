@@ -33,9 +33,4 @@ class FloatValue(value: Float) : Value<Float>(value) {
             return value.get()
         }
     }
-
-    override fun compareTo(other: Value<Float>): Int {
-        if(other !is FloatValue) return -1
-        return value.compareTo(other.value)
-    }
 }

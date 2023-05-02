@@ -1,11 +1,9 @@
 package io.opencola.model.value
 
-
 import com.google.protobuf.ByteString
 import io.opencola.model.ValueType
 import io.opencola.serialization.codecs.BytesByteArrayCodec
 import io.opencola.model.protobuf.Model as ProtoModel
-import io.opencola.util.compareTo
 
 class ByteArrayValue(value: ByteArray) : Value<ByteArray>(value) {
     companion object : ValueWrapper<ByteArray> {
@@ -37,11 +35,6 @@ class ByteArrayValue(value: ByteArray) : Value<ByteArray>(value) {
             require(value is ByteArrayValue)
             return value.get()
         }
-    }
-
-    override fun compareTo(other: Value<ByteArray>): Int {
-        if(other !is ByteArrayValue) return -1
-        return value.compareTo(other.value)
     }
 
     override fun equals(other: Any?): Boolean {

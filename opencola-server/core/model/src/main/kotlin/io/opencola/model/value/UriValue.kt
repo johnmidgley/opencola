@@ -35,9 +35,4 @@ class UriValue(value: URI) : Value<URI>(value) {
             return value.get()
         }
     }
-
-    override fun compareTo(other: Value<URI>): Int {
-        if(other !is UriValue) return -1
-        return value.compareTo(other.value)
-    }
 }

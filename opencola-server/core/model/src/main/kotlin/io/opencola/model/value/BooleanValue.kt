@@ -4,6 +4,7 @@ import io.opencola.model.ValueType
 import io.opencola.model.protobuf.Model
 import io.opencola.serialization.codecs.BooleanByteArrayCodec
 
+// TODO: Is it possible to templatize these Value classes?
 class BooleanValue(value: Boolean) : Value<Boolean>(value) {
     companion object : ValueWrapper<Boolean> {
         override fun encode(value: Boolean): ByteArray {
@@ -34,10 +35,5 @@ class BooleanValue(value: Boolean) : Value<Boolean>(value) {
             require(value is BooleanValue)
             return value.get()
         }
-    }
-
-    override fun compareTo(other: Value<Boolean>): Int {
-        if(other !is BooleanValue) return -1
-        return value.compareTo(other.value)
     }
 }

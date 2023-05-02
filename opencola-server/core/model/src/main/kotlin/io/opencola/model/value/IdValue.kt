@@ -36,9 +36,4 @@ class IdValue(value: Id) : Value<Id>(value) {
             return value.get()
         }
     }
-
-    override fun compareTo(other: Value<Id>): Int {
-        if(other !is IdValue) return -1
-        return value.compareTo(other.value)
-    }
 }
