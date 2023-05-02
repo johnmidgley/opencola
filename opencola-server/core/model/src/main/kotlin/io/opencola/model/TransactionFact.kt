@@ -35,7 +35,7 @@ data class TransactionFact(val attribute: Attribute, val value: Value<Any>, val 
         override fun toProto(value: TransactionFact): ProtoModel.TransactionFact {
             return ProtoModel.TransactionFact.newBuilder()
                 .setAttribute(Attribute.toProto(value.attribute))
-                .setValue(value.attribute.valueWrapper.toProto(value.value))
+                .setValue(value.attribute.valueWrapper.toProto(value.value.get()))
                 .setOperation(Operation.toProto(value.operation))
                 .build()
         }
