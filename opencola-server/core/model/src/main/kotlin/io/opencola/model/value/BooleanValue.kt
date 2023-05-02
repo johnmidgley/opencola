@@ -2,19 +2,16 @@ package io.opencola.model.value
 
 import io.opencola.model.ValueType
 import io.opencola.model.protobuf.Model
-import io.opencola.serialization.readBoolean
-import io.opencola.serialization.writeBoolean
-import java.io.InputStream
-import java.io.OutputStream
+import io.opencola.serialization.codecs.BooleanByteArrayCodec
 
 class BooleanValue(value: Boolean) : Value<Boolean>(value) {
     companion object : ValueWrapper<Boolean> {
-        override fun encode(stream: OutputStream, value: Boolean) {
-            stream.writeBoolean(value)
+        override fun encode(value: Boolean): ByteArray {
+            return BooleanByteArrayCodec.encode(value)
         }
 
-        override fun decode(stream: InputStream): Boolean {
-            return stream.readBoolean()
+        override fun decode(value: ByteArray): Boolean {
+            return BooleanByteArrayCodec.decode(value)
         }
 
         override fun toProto(value: Boolean): Model.Value {

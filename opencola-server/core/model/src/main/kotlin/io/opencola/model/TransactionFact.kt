@@ -18,14 +18,14 @@ data class TransactionFact(val attribute: Attribute, val value: Value<Any>, val 
 
         override fun encode(stream: OutputStream, value: TransactionFact) {
             Attribute.encode(stream, value.attribute)
-            value.attribute.valueWrapper.encode(stream, value.value.get())
+            value.attribute.valueWrapper.encode(stream, value.value)
             Operation.encode(stream, value.operation)
         }
 
         override fun decode(stream: InputStream): TransactionFact {
             val attribute = Attribute.decode(stream)
             val valueWrapper = attribute.valueWrapper
-            val value = valueWrapper.wrap(valueWrapper.decode(stream))
+            val value = valueWrapper.decode(stream)
             val operation = Operation.decode(stream)
 
             return TransactionFact(attribute, value, operation)

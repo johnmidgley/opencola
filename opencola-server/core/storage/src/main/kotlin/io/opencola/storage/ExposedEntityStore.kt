@@ -195,7 +195,7 @@ class ExposedEntityStore(
             Id.decode(resultRow[facts.authorityId]),
             Id.decode(resultRow[facts.entityId]),
             attribute,
-            attribute.valueWrapper.let {it.wrap(it.decode(resultRow[facts.value].bytes)) },
+            attribute.valueWrapper.decodeAny(resultRow[facts.value].bytes),
             resultRow[facts.operation],
             resultRow[facts.epochSecond],
             resultRow[facts.transactionOrdinal]
@@ -219,7 +219,7 @@ class ExposedEntityStore(
                     it[authorityId] = Id.encode(fact.authorityId)
                     it[entityId] = Id.encode(fact.entityId)
                     it[attribute] = fact.attribute.uri.toString()
-                    it[value] = ExposedBlob(fact.attribute.valueWrapper.encode(fact.value.get()))
+                    it[value] = ExposedBlob(fact.attribute.valueWrapper.encodeAny(fact.value))
                     it[operation] = fact.operation
                     it[epochSecond] = transaction.epochSecond
                     it[transactionOrdinal] = ordinal.value

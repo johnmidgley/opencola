@@ -4,17 +4,15 @@ import com.google.protobuf.ByteString
 import io.opencola.model.Id
 import io.opencola.model.ValueType
 import io.opencola.model.protobuf.Model
-import java.io.InputStream
-import java.io.OutputStream
 
 class IdValue(value: Id) : Value<Id>(value) {
     companion object Factory : ValueWrapper<Id> {
-        override fun encode(stream: OutputStream, value: Id) {
-            Id.encode(stream, value)
+        override fun encode(value: Id): ByteArray {
+            return Id.encode(value)
         }
 
-        override fun decode(stream: InputStream): Id {
-            return Id.decode(stream)
+        override fun decode(value: ByteArray): Id {
+            return Id.decode(value)
         }
 
         override fun toProto(value: Id): Model.Value {

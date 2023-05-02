@@ -3,21 +3,18 @@ package io.opencola.model.value
 
 import com.google.protobuf.ByteString
 import io.opencola.model.ValueType
+import io.opencola.serialization.codecs.BytesByteArrayCodec
 import io.opencola.model.protobuf.Model as ProtoModel
-import io.opencola.serialization.readByteArray
-import io.opencola.serialization.writeByteArray
 import io.opencola.util.compareTo
-import java.io.InputStream
-import java.io.OutputStream
 
 class ByteArrayValue(value: ByteArray) : Value<ByteArray>(value) {
     companion object : ValueWrapper<ByteArray> {
-        override fun encode(stream: OutputStream, value: ByteArray) {
-            stream.writeByteArray(value)
+        override fun encode(value: ByteArray): ByteArray {
+            return BytesByteArrayCodec.encode(value)
         }
 
-        override fun decode(stream: InputStream): ByteArray {
-            return stream.readByteArray()
+        override fun decode(value: ByteArray): ByteArray {
+            return BytesByteArrayCodec.decode(value)
         }
 
         override fun toProto(value: ByteArray): ProtoModel.Value {

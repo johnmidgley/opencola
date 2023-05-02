@@ -3,22 +3,18 @@ package io.opencola.model.value
 import com.google.protobuf.ByteString
 import io.opencola.model.ValueType
 import io.opencola.model.protobuf.Model
-import io.opencola.security.publicKeyFromBytes
-import io.opencola.serialization.readByteArray
-import io.opencola.serialization.writeByteArray
+import io.opencola.security.PublicKeyByteArrayCodec
 import io.opencola.util.compareTo
-import java.io.InputStream
-import java.io.OutputStream
 import java.security.PublicKey
 
 class PublicKeyValue(value: PublicKey) : Value<PublicKey>(value) {
     companion object : ValueWrapper<PublicKey> {
-        override fun encode(stream: OutputStream, value: PublicKey) {
-            stream.writeByteArray(value.encoded)
+        override fun encode(value: PublicKey): ByteArray {
+            return PublicKeyByteArrayCodec.encode(value)
         }
 
-        override fun decode(stream: InputStream): PublicKey {
-            return publicKeyFromBytes(stream.readByteArray())
+        override fun decode(value: ByteArray): PublicKey {
+            return PublicKeyByteArrayCodec.decode(value)
         }
 
         override fun toProto(value: PublicKey): Model.Value {

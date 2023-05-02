@@ -1,18 +1,15 @@
 package io.opencola.model.value
 
-import io.opencola.serialization.readFloat
-import io.opencola.serialization.writeFloat
-import java.io.InputStream
-import java.io.OutputStream
+import io.opencola.serialization.codecs.FloatByteArrayCodec
 
 class FloatValue(value: Float) : Value<Float>(value) {
     companion object : ValueWrapper<Float> {
-        override fun encode(stream: OutputStream, value: Float) {
-            stream.writeFloat(value)
+        override fun encode(value: Float): ByteArray {
+            return FloatByteArrayCodec.encode(value)
         }
 
-        override fun decode(stream: InputStream): Float {
-            return stream.readFloat()
+        override fun decode(value: ByteArray): Float {
+            return FloatByteArrayCodec.decode(value)
         }
 
         override fun toProto(value: Float): io.opencola.model.protobuf.Model.Value {

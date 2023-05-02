@@ -1,20 +1,17 @@
 package io.opencola.model.value
 
 import io.opencola.model.ValueType
+import io.opencola.serialization.codecs.StringByteArrayCodec
 import io.opencola.model.protobuf.Model as ProtoModel
-import io.opencola.serialization.readString
-import io.opencola.serialization.writeString
-import java.io.InputStream
-import java.io.OutputStream
 
 class StringValue(value: String) : Value<String>(value) {
     companion object Wrapper : ValueWrapper<String> {
-        override fun encode(stream: OutputStream, value: String) {
-            stream.writeString(value)
+        override fun encode(value: String): ByteArray {
+            return StringByteArrayCodec.encode(value)
         }
 
-        override fun decode(stream: InputStream): String {
-            return stream.readString()
+        override fun decode(value: ByteArray): String {
+            return StringByteArrayCodec.decode(value)
         }
 
         override fun toProto(value: String): ProtoModel.Value {

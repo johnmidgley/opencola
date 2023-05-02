@@ -1,20 +1,17 @@
 package io.opencola.model.value
 
+import io.opencola.serialization.codecs.UriByteArrayCodec
 import io.opencola.model.protobuf.Model as ProtoModel
-import io.opencola.serialization.readUri
-import io.opencola.serialization.writeUri
-import java.io.InputStream
-import java.io.OutputStream
 import java.net.URI
 
 class UriValue(value: URI) : Value<URI>(value) {
     companion object : ValueWrapper<URI> {
-        override fun encode(stream: OutputStream, value: URI) {
-            stream.writeUri(value)
+        override fun encode(value: URI): ByteArray {
+            return UriByteArrayCodec.encode(value)
         }
 
-        override fun decode(stream: InputStream): URI {
-            return stream.readUri()
+        override fun decode(value: ByteArray): URI {
+            return UriByteArrayCodec.decode(value)
         }
 
         override fun toProto(value: URI): ProtoModel.Value {
