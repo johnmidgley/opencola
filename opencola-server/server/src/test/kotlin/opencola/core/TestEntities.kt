@@ -12,7 +12,7 @@ fun getAuthorityEntity(subjectId: Id) : Authority {
         URI("http://scatch.com"),
         "Scratch",
         "Cool online programming!",
-        "",
+        "text",
         URI("http://scratch.com/favicon"),
         .89F,
         true,
