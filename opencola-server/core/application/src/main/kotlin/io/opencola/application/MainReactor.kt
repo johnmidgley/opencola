@@ -95,7 +95,9 @@ class MainReactor(
                 baseParams.plus(Pair("mostRecentTransactionId", mostRecentTransactionId.toString()))
 
             val request = Request(Request.Method.GET, "/transactions", null, params)
-            val transactionsResponse = networkNode.sendRequest(peer.personaId, peer.entityId, request)?.decodeBody<TransactionsResponse>()
+            val transactionsResponse = networkNode.sendRequest(peer.personaId, peer.entityId, request)?.body?.let {
+             TransactionsResponse.decode(it)
+            }
 
             if (transactionsResponse == null || transactionsResponse.transactions.isEmpty()) {
                 logger.info { "No transactions received from ${peer.name}" }

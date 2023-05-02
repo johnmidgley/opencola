@@ -1,10 +1,6 @@
 package io.opencola.network
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import io.opencola.util.nullOrElse
 
 @Serializable
 data class Response(
@@ -16,16 +12,4 @@ data class Response(
     override fun toString(): String {
         return "Response(status=$status, message=$message, headers=$headers, body.size=${body?.size})"
     }
-    inline fun <reified T> decodeBody(): T? {
-        return body.nullOrElse { Json.decodeFromString<T>(String(it)) }
-    }
-}
-
-inline fun <reified T> response(
-    status: Int,
-    message: String? = null,
-    headers: Map<String, String>? = null,
-    body: T
-): Response {
-    return Response(status, message, headers, Json.encodeToString(body).toByteArray())
 }

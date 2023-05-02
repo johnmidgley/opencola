@@ -6,9 +6,14 @@ import io.opencola.event.Events
 import io.opencola.util.nullOrElse
 import io.opencola.model.Id
 import io.opencola.model.SignedTransaction
+import io.opencola.serialization.readByteArray
+import io.opencola.serialization.readInt
+import io.opencola.serialization.writeByteArray
+import io.opencola.serialization.writeInt
 import io.opencola.storage.AddressBook
 import io.opencola.storage.EntityStore
 import io.opencola.storage.FileStore
+import java.io.ByteArrayOutputStream
 
 private val logger = KotlinLogging.logger("RequestRouting")
 
@@ -28,8 +33,31 @@ fun handleNotification(addressBook: AddressBook, eventBus: EventBus, fromId: Id,
 data class TransactionsResponse(
     val startTransactionId: Id?,
     val currentTransactionId: Id?,
-    val transactions: List<SignedTransaction>
-)
+    val transactions: List<SignedTransaction>,
+) {
+    companion object {
+        fun encode(value: TransactionsResponse) : ByteArray {
+            return ByteArrayOutputStream().use {outputStream ->
+                outputStream.writeByteArray(value.startTransactionId?.let{ Id.encode(it) } ?: ByteArray(0))
+                outputStream.writeByteArray(value.currentTransactionId?.let{ Id.encode(it) }?: ByteArray(0))
+                outputStream.writeInt(value.transactions.size)
+                value.transactions.forEach { it ->
+                    outputStream.write( SignedTransaction.encode(it))
+                }
+                outputStream.toByteArray()
+            }
+        }
+
+        fun decode(bytes: ByteArray) : TransactionsResponse {
+            val inputStream = bytes.inputStream()
+            val startTransactionId = inputStream.readByteArray().let { if (it.isEmpty()) null else Id.decode(it) }
+            val currentTransactionId = inputStream.readByteArray().let { if (it.isEmpty()) null else Id.decode(it) }
+            val numTransactions = inputStream.readInt()
+            val transactions = (0 until numTransactions).map { SignedTransaction.decode(inputStream) }
+            return TransactionsResponse(startTransactionId, currentTransactionId, transactions)
+        }
+    }
+}
 
 //TODO: This should return transactions until the root transaction, not all transactions for the authority in the
 // store, as the user a peer may have deleted their store, which creates a new HEAD. Only the transaction for the
@@ -111,7 +139,7 @@ fun transactionsRoute(entityStore: EntityStore, addressBook: AddressBook) : Rout
                 numTransactions
             )
 
-        response(200, "OK", null, transactionResponse)
+        Response(200, "OK", null, TransactionsResponse.encode(transactionResponse))
     }
 }
 
