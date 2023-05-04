@@ -13,10 +13,9 @@ class StdoutMonitor(private val echo: Boolean = true, private val readTimeoutMil
     }
 
     @Synchronized
-    fun println(message: Any?) {
+    fun printlnAndFlush(message: Any?) {
         val output = message.toString()
         printStream.println(output)
-        flush()
     }
 
     fun waitUntil(timeoutMilliseconds: Long? = null, until: (String) -> Boolean) {

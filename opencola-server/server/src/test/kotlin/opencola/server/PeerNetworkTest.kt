@@ -51,8 +51,7 @@ open class PeerNetworkTest {
 
     fun testConnectAndReplicate(application0: ApplicationNode, application1: ApplicationNode) {
         val stdoutMonitor = StdoutMonitor(readTimeoutMilliseconds = 5000)
-        val println: (Any?) -> Unit = { stdoutMonitor.println(it) }
-        val readUntil: ((String) -> Boolean) -> Unit = { stdoutMonitor.waitUntil(null, it) }
+        val waitUntil = { text: String -> stdoutMonitor.waitUntil(text) }
 
         try {
             println("Adding entity to application0")
@@ -69,13 +68,14 @@ open class PeerNetworkTest {
             // Note this will trigger an expected error in the logs, since it will trigger a transaction request, but
             // app0 isn't known to app1 yet
             addPeer(application0, application1)
-            readUntil { it.contains("Completed requesting transactions from") }
+            waitUntil("Completed requesting transactions from")
             println("Adding application0 as peer to application1")
             addPeer(application1, application0)
 
             // Connection should trigger two index operations from transaction sharing
-            readUntil { it.contains("LuceneSearchIndex: Indexing") }
-            readUntil { it.contains("LuceneSearchIndex: Indexing") }
+            println("Waiting for index operations to complete")
+            waitUntil ("LuceneSearchIndex: Indexing")
+            waitUntil("LuceneSearchIndex: Indexing")
 
             println("Verifying replication")
             assertEquals(entityStore0.getEntity(resource1.authorityId, resource1.entityId)?.name, resource1.name)
