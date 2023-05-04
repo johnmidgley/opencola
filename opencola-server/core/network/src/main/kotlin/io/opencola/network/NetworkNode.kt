@@ -3,7 +3,6 @@ package io.opencola.network
 import io.opencola.event.EventBus
 import io.opencola.event.Events
 import io.opencola.model.Id
-import io.opencola.network.NetworkNode.PeerStatus.*
 import io.opencola.storage.AddressBook
 import io.opencola.storage.AddressBookEntry
 import io.opencola.storage.PersonaAddressBookEntry
@@ -24,10 +23,18 @@ class NetworkNode(
     private val logger = KotlinLogging.logger("NetworkNode")
     private val peerStatuses = ConcurrentHashMap<Id, PeerStatus>()
 
-    private enum class PeerStatus {
-        Unknown,
-        Offline,
-        Online,
+    private data class PeerStatus(val lastSeenEpochSeconds: Long? = null, val waitingForTransactions: Boolean = false) {
+        fun setLastSeenEpochSeconds(epochSeconds: Long): PeerStatus {
+            return PeerStatus(epochSeconds, waitingForTransactions)
+        }
+
+        fun setWaitingForTransactions(waitingForTransactions: Boolean): PeerStatus {
+            return PeerStatus(lastSeenEpochSeconds, waitingForTransactions)
+        }
+
+        companion object {
+            val default = PeerStatus()
+        }
     }
 
     fun validatePeerAddress(address: URI) {
@@ -40,22 +47,28 @@ class NetworkNode(
     }
 
     @Synchronized
-    private fun updatePeerStatus(peerId: Id, status: PeerStatus, suppressNotifications: Boolean = false): PeerStatus {
+    private fun updatePeerStatus(
+        peerId: Id,
+        suppressNotifications: Boolean = false,
+        update: (PeerStatus) -> PeerStatus
+    ): PeerStatus? {
         val peer = addressBook.getEntries().firstOrNull { it.entityId == peerId }
 
         // TODO: Is this check needed?
         if(peer == null) {
             logger.warn("Attempt to update status for unknown peer: $peerId")
-            return Unknown
+            return null
         }
 
-        peerStatuses.getOrDefault(peerId, Unknown).let { previousStatus ->
-            if(status != previousStatus) {
-                logger.info { "Updating peer ${peer.name} to $status" }
-                peerStatuses[peerId] = status
+        peerStatuses.getOrDefault(peerId, PeerStatus.default).let { previousStatus ->
+            val newStatus = update(previousStatus)
+
+            if(newStatus != previousStatus) {
+                logger.info { "Updating peer ${peer.name} to $newStatus" }
+                peerStatuses[peerId] = newStatus
 
                 // TODO: Why ignore anything but online?
-                if (!suppressNotifications && status == Online) {
+                if (!suppressNotifications && previousStatus.lastSeenEpochSeconds == null && newStatus.lastSeenEpochSeconds != null) {
                     eventBus.sendMessage(
                         Events.PeerNotification.toString(),
                         Notification(peerId, PeerEvent.Online).encode()
@@ -67,14 +80,17 @@ class NetworkNode(
         }
     }
 
+    private fun touchLastSeen(peerId: Id) {
+        updatePeerStatus(peerId) { it.setLastSeenEpochSeconds(System.currentTimeMillis() / 1000) }
+    }
+
     private val providers = ConcurrentHashMap<String, NetworkProvider>()
 
     private val requestHandler: (Id, Id, Request) -> Response = { from, to, request ->
         val response = router.handleRequest(from, to, request)
 
-        // Since we received a request, the peer must be online
         if(addressBook.getEntry(to, from) !is PersonaAddressBookEntry)
-            updatePeerStatus(from, Online)
+            touchLastSeen(from)
 
         response
     }
@@ -107,10 +123,8 @@ class NetworkNode(
             // TODO: This is currently called in the background from the event bus, so ok, but
             //  should switch to making these requests from a pool of peer threads
             peers.forEach { peer ->
-                if (listOf(Unknown, Online).contains(peerStatuses.getOrDefault(peer.entityId, Unknown))) {
-                    // TODO: Make batched, to limit simultaneous connections
-                    sendRequest(from, peer, request)
-                }
+                // TODO: Make batched, to limit simultaneous connections
+                sendRequest(from, peer, request)
             }
         }
     }
@@ -182,12 +196,10 @@ class NetworkNode(
         // TODO: This is really bad. If we successfully get transactions when the user was in an offline/unknown state,
         //  setting their state to online would trigger another transactions request, which we want to avoid. Doing it
         //  this way is super ugly. Figure out a better way
-        val suppressNotifications = request.path == "/transactions"
+        // val suppressNotifications = request.path == "/transactions"
 
-        if (response == null || response.status < 400)
-            // Don't update status for calls that made it to a peer but result in an error. In particular, this
-            // avoids a peer transition from offline to online when a call fails for authorization reasons
-            updatePeerStatus(to.entityId, if (response == null) Offline else Online, suppressNotifications)
+        if (response != null)
+            touchLastSeen(to.entityId)
 
         return response
     }
