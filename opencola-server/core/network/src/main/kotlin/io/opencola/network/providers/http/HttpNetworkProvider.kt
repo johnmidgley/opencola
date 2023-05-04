@@ -15,7 +15,7 @@ import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import io.opencola.network.AbstractNetworkProvider
 import io.opencola.network.*
-import io.opencola.network.MessageEnvelope
+import io.opencola.network.message.MessageEnvelope
 import io.opencola.network.Response
 import io.opencola.security.*
 import io.opencola.storage.AddressBook
@@ -96,7 +96,7 @@ class HttpNetworkProvider(
 
                 val envelope =
                     MessageEnvelope.decode(httpResponse.body(), encryptor).also { validateMessageEnvelope(it) }
-                val response = Json.decodeFromString<Response>(String(envelope.message.body))
+                val response = Json.decodeFromString<Response>(String(envelope.signedMessage.message))
                 logger.info { "Response: $response" }
                 response
             }

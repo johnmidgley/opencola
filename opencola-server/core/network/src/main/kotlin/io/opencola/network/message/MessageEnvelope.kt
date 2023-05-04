@@ -1,4 +1,4 @@
-package io.opencola.network
+package io.opencola.network.message
 
 import io.opencola.model.Id
 import io.opencola.security.Encryptor
@@ -9,9 +9,9 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.security.PublicKey
 
-class MessageEnvelope(val to: Id, val message: Message) {
+class MessageEnvelope(val to: Id, val signedMessage: SignedMessage) {
     fun encode(encryptForPublicKey: PublicKey? = null) : ByteArray {
-        val messageBytes = message.encode().let { msg -> encryptForPublicKey?.let { encrypt(it, msg) } ?: msg }
+        val messageBytes = signedMessage.encode().let { msg -> encryptForPublicKey?.let { encrypt(it, msg) } ?: msg }
 
         return ByteArrayOutputStream().use {
             Id.encode(it, to)
@@ -25,7 +25,7 @@ class MessageEnvelope(val to: Id, val message: Message) {
             return ByteArrayInputStream(envelopeBytes).use {
                 val id = Id.decode(it)
                 val messageBytes = it.readByteArray().let { bytes -> encryptor?.decrypt(id.toString(), bytes) ?: bytes }
-                MessageEnvelope(id, Message.decode(messageBytes))
+                MessageEnvelope(id, SignedMessage.decode(messageBytes))
             }
         }
     }

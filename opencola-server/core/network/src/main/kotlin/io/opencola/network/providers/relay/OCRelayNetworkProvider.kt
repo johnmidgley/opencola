@@ -3,7 +3,7 @@ package io.opencola.network.providers.relay
 import io.opencola.network.NetworkConfig
 import io.opencola.network.*
 import io.opencola.network.AbstractNetworkProvider
-import io.opencola.network.MessageEnvelope
+import io.opencola.network.message.MessageEnvelope
 import io.opencola.network.Response
 import io.opencola.security.Encryptor
 import io.opencola.security.Signator
@@ -183,7 +183,7 @@ class OCRelayNetworkProvider(addressBook: AddressBook,
                 client.sendMessage(peerPublicKey, envelopeBytes)?.let {
                     // We don't need to validate sender - OC relay enforces that response is from correct sender
                     val responseEnvelope = MessageEnvelope.decode(it).also { e -> validateMessageEnvelope(e) }
-                    Json.decodeFromString<Response>(String(responseEnvelope.message.body))
+                    Json.decodeFromString<Response>(String(responseEnvelope.signedMessage.message))
                 }
             } catch (e: Exception) {
                 logger.error { "sendRequest: $e" }

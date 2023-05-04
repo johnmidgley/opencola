@@ -1,6 +1,8 @@
 package io.opencola.network
 
 import io.opencola.model.Id
+import io.opencola.network.message.MessageEnvelope
+import io.opencola.network.message.SignedMessage
 import io.opencola.security.*
 import io.opencola.storage.AddressBook
 import io.opencola.security.Encryptor
@@ -41,12 +43,12 @@ abstract class AbstractNetworkProvider(val addressBook: AddressBook,
     fun getEncodedEnvelope(fromId: Id, toId: Id, messageBytes: ByteArray, encryptMessage: Boolean): ByteArray {
         val toAuthority = addressBook.getEntry(fromId, toId)
             ?: throw IllegalArgumentException("$fromId does not have $toId as peer")
-        val message = Message(fromId, messageBytes, signator.signBytes(fromId.toString(), messageBytes).bytes)
-        return MessageEnvelope(toId, message).encode(if (encryptMessage) toAuthority.publicKey else null)
+        val signedMessage = SignedMessage(fromId, messageBytes, signator.signBytes(fromId.toString(), messageBytes).bytes)
+        return MessageEnvelope(toId, signedMessage).encode(if (encryptMessage) toAuthority.publicKey else null)
     }
 
     fun validateMessageEnvelope(messageEnvelope: MessageEnvelope) {
-        val message = messageEnvelope.message
+        val message = messageEnvelope.signedMessage
 
         // TODO: Change all if / throw IllegalArgumentException to require
         if(addressBook.getEntry(messageEnvelope.to, messageEnvelope.to) !is PersonaAddressBookEntry) {
@@ -56,7 +58,7 @@ abstract class AbstractNetworkProvider(val addressBook: AddressBook,
         val fromPersona = addressBook.getEntry(messageEnvelope.to, message.from)
             ?: throw IllegalArgumentException("Message is from unknown peer: ${message.from}")
 
-        if(!isValidSignature(fromPersona.publicKey, message.body, message.signature)) {
+        if(!isValidSignature(fromPersona.publicKey, message.message, message.signature)) {
             throw IllegalArgumentException("Received message from $fromPersona with invalid signature")
         }
     }
@@ -66,8 +68,8 @@ abstract class AbstractNetworkProvider(val addressBook: AddressBook,
         val handler = this.handler ?: throw IllegalStateException("Call to handleRequest when handler has not been set")
         val encryptor = if (useEncryption) this.encryptor else null
         val envelope = MessageEnvelope.decode(envelopeBytes, encryptor).also { validateMessageEnvelope(it) }
-        val response =  handler(envelope.message.from, envelope.to, Json.decodeFromString(String(envelope.message.body)))
+        val response =  handler(envelope.signedMessage.from, envelope.to, Json.decodeFromString(String(envelope.signedMessage.message)))
 
-        return getEncodedEnvelope(envelope.to, envelope.message.from, Json.encodeToString(response).toByteArray(), useEncryption)
+        return getEncodedEnvelope(envelope.to, envelope.signedMessage.from, Json.encodeToString(response).toByteArray(), useEncryption)
     }
 }

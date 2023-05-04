@@ -2,6 +2,7 @@ package io.opencola.network
 
 import io.opencola.application.TestApplication
 import io.opencola.model.Id
+import io.opencola.network.message.MessageEnvelope
 import io.opencola.security.generateKeyPair
 import io.opencola.storage.*
 import kotlinx.serialization.decodeFromString
@@ -65,7 +66,7 @@ class NetworkNodeTest {
         val envelopeBytes = getEncodedEnvelope(peer.entityId, peerKeyPair.private, persona.personaId, pingRequest)
         val responseBytes = context.provider.handleMessage(envelopeBytes, false)
         val responseEnvelope = MessageEnvelope.decode(responseBytes)
-        val response = Json.decodeFromString<Response>(String(responseEnvelope.message.body))
+        val response = Json.decodeFromString<Response>(String(responseEnvelope.signedMessage.message))
         assertEquals(200, response.status)
         assertEquals("pong", response.message)
     }
@@ -146,7 +147,7 @@ class NetworkNodeTest {
         val envelopeBytes = getEncodedEnvelope(peer.entityId, peerKeyPair.private, persona.personaId, dataRequest)
         val responseBytes = context.provider.handleMessage(envelopeBytes, false)
         val responseEnvelope = MessageEnvelope.decode(responseBytes)
-        val response = Json.decodeFromString<Response>(String(responseEnvelope.message.body)).body
+        val response = Json.decodeFromString<Response>(String(responseEnvelope.signedMessage.message)).body
 
         assertNotNull(response)
         assertContentEquals(data, response)
