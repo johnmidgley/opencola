@@ -14,10 +14,13 @@ data class SecurityConfig(val login: LoginConfig = LoginConfig())
 data class SolrConfig(val baseUrl: String, val connectionTimeoutMillis: Int, val socketTimeoutMillis: Int)
 data class SearchConfig(val solr: SolrConfig?)
 data class Resources(val allowEdit: Boolean = false)
+data class ResumeConfig(val enabled: Boolean = true, val desiredDelayMillis: Long = 10000, val maxDelayMillis: Long =30000)
+data class SystemConfig(val resume: ResumeConfig = ResumeConfig())
 
 
 data class Config(
     val name: String,
+    val system: SystemConfig = SystemConfig(),
     val eventBus: EventBusConfig = EventBusConfig(),
     val server: ServerConfig,
     val security: SecurityConfig,
@@ -29,15 +32,15 @@ data class Config(
 // TODO: Use config layers instead of having to copy parts of config tree
 // Use set() pattern (see AddressBookEntry) instead of creating these specific functions
 fun Config.setName(name: String): Config {
-    return Config(name, eventBus, server, security, search, network)
+    return Config(name, system, eventBus, server, security, search, network)
 }
 
 fun Config.setServer(server: ServerConfig): Config {
-    return Config(name, eventBus, server, security, search, network)
+    return Config(name, system, eventBus, server, security, search, network)
 }
 
 fun Config.setNetwork(network: NetworkConfig): Config {
-    return Config(name, eventBus, server, security, search, network)
+    return Config(name, system, eventBus, server, security, search, network)
 }
 
 fun loadConfig(configPath: Path): Config {

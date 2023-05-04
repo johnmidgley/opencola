@@ -1,5 +1,9 @@
 name: test
 
+system:
+  resume:
+    enabled: false
+
 eventBus:
   name: "event-bus"
   maxRetries: 3

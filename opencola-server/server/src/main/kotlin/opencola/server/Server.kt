@@ -57,9 +57,19 @@ fun getApplication(
 fun onServerStarted(application: Application) {
     val hostAddress = Inet4Address.getLocalHost().hostAddress
     application.inject<NetworkNode>().start()
-    application.inject<EventBus>().let {
-        it.sendMessage(Events.NodeStarted.toString())
-        detectResume { it.sendMessage(Events.NodeResume.toString()) }
+    application.inject<EventBus>().let {eventBus ->
+        eventBus.sendMessage(Events.NodeStarted.toString())
+        application.config.system.resume.let{
+            if(it.enabled) {
+                logger.info{ "Resume detection enabled" }
+                detectResume(
+                    it.desiredDelayMillis,
+                    it.maxDelayMillis
+                ) { eventBus.sendMessage(Events.NodeResume.toString()) }
+            } else
+                logger.info { "Resume detection disabled" }
+        }
+
     }
 
     logger.info { "Server started: http://$hostAddress:${application.config.server.port}" }
