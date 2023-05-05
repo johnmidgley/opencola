@@ -1,7 +1,7 @@
 package io.opencola.model
 
 import io.opencola.model.value.ValueWrapper
-import io.opencola.model.protobuf.Model as ProtoModel
+import io.opencola.serialization.protobuf.Model as ProtoModel
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind

@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package io.opencola.model.protobuf;
+package io.opencola.serialization.protobuf;
 
 message Attribute {
   oneof value {

@@ -1,7 +1,7 @@
 package io.opencola.model
 
 import com.google.protobuf.ByteString
-import io.opencola.model.protobuf.Model as ProtoModel
+import io.opencola.serialization.protobuf.Model as ProtoModel
 import io.opencola.security.SIGNATURE_ALGO
 import io.opencola.security.isValidSignature
 import io.opencola.serialization.protobuf.ProtoSerializable

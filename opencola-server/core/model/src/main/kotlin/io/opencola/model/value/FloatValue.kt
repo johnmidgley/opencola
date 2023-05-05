@@ -1,6 +1,8 @@
 package io.opencola.model.value
 
+import io.opencola.model.ValueType.FLOAT
 import io.opencola.serialization.codecs.FloatByteArrayCodec
+import io.opencola.serialization.protobuf.Model as ProtoModel
 
 class FloatValue(value: Float) : Value<Float>(value) {
     companion object : ValueWrapper<Float> {
@@ -12,15 +14,15 @@ class FloatValue(value: Float) : Value<Float>(value) {
             return FloatByteArrayCodec.decode(value)
         }
 
-        override fun toProto(value: Float): io.opencola.model.protobuf.Model.Value {
-            return io.opencola.model.protobuf.Model.Value.newBuilder()
-                .setOcType(io.opencola.model.ValueType.FLOAT.ordinal)
+        override fun toProto(value: Float): ProtoModel.Value {
+            return ProtoModel.Value.newBuilder()
+                .setOcType(FLOAT.ordinal)
                 .setFloat(value)
                 .build()
         }
 
-        override fun fromProto(value: io.opencola.model.protobuf.Model.Value): Float {
-            require(value.ocType == io.opencola.model.ValueType.FLOAT.ordinal)
+        override fun fromProto(value: ProtoModel.Value): Float {
+            require(value.ocType == FLOAT.ordinal)
             return value.float
         }
 

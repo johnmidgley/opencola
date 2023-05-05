@@ -1,7 +1,7 @@
 package io.opencola.model
 
 import io.opencola.serialization.protobuf.ProtoSerializable
-import io.opencola.model.protobuf.Model as ProtoModel
+import io.opencola.serialization.protobuf.Model as ProtoModel
 import io.opencola.serialization.StreamSerializer
 import io.opencola.serialization.readInt
 import io.opencola.serialization.writeInt

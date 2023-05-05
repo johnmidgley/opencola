@@ -1,7 +1,8 @@
 package io.opencola.model.value
 
+import io.opencola.model.ValueType
 import io.opencola.serialization.codecs.UriByteArrayCodec
-import io.opencola.model.protobuf.Model as ProtoModel
+import io.opencola.serialization.protobuf.Model as ProtoModel
 import java.net.URI
 
 class UriValue(value: URI) : Value<URI>(value) {
@@ -16,13 +17,13 @@ class UriValue(value: URI) : Value<URI>(value) {
 
         override fun toProto(value: URI): ProtoModel.Value {
             return ProtoModel.Value.newBuilder()
-                .setOcType(io.opencola.model.ValueType.URI.ordinal)
+                .setOcType(ValueType.URI.ordinal)
                 .setString(value.toString())
                 .build()
         }
 
         override fun fromProto(value: ProtoModel.Value): URI {
-            require(value.ocType == io.opencola.model.ValueType.URI.ordinal)
+            require(value.ocType == ValueType.URI.ordinal)
             return URI.create(value.string)
         }
 

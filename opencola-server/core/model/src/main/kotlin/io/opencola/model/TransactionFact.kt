@@ -2,7 +2,7 @@ package io.opencola.model
 
 import io.opencola.model.value.Value
 import io.opencola.serialization.protobuf.ProtoSerializable
-import io.opencola.model.protobuf.Model as ProtoModel
+import io.opencola.serialization.protobuf.Model as ProtoModel
 import io.opencola.serialization.StreamSerializer
 import java.io.InputStream
 import java.io.OutputStream

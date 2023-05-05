@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package io.opencola.serialization.protobuf;
+
+import "model.proto";
+
+message SignedMessage {
+  Id id = 1;
+  bytes message = 2;
+  bytes signature = 3;
+}
+
+message MessageEnvelope {
+  Id id = 1;
+  SignedMessage message = 2;
+}
+
+message TransactionsRequest {
+  Id mostRecentTransactionId = 1;
+}
+
+message Transactions {
+  repeated SignedMessage transactions = 1;
+}

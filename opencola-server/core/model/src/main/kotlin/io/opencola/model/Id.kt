@@ -1,7 +1,7 @@
 package io.opencola.model
 
 import com.google.protobuf.ByteString
-import io.opencola.model.protobuf.Model as ProtoModel
+import io.opencola.serialization.protobuf.Model as ProtoModel
 import kotlinx.serialization.Serializable
 import io.opencola.security.sha256
 import io.opencola.serialization.ByteArrayCodec

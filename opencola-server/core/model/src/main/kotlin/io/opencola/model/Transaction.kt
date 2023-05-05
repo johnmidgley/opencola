@@ -1,6 +1,6 @@
 package io.opencola.model
 
-import io.opencola.model.protobuf.Model as ProtoModel
+import io.opencola.serialization.protobuf.Model as ProtoModel
 import io.opencola.serialization.*
 import io.opencola.serialization.protobuf.ProtoSerializable
 import java.io.InputStream
