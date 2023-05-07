@@ -1,7 +1,7 @@
 package io.opencola.model.value
 
 import com.google.protobuf.ByteString
-import io.opencola.model.ValueType.BYTES
+import io.opencola.model.value.ValueType.BYTES
 import io.opencola.serialization.codecs.BytesByteArrayCodec
 import io.opencola.serialization.protobuf.Model as ProtoModel
 

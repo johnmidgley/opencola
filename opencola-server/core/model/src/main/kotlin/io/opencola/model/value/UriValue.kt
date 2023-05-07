@@ -1,6 +1,5 @@
 package io.opencola.model.value
 
-import io.opencola.model.ValueType
 import io.opencola.serialization.codecs.UriByteArrayCodec
 import io.opencola.serialization.protobuf.Model as ProtoModel
 import java.net.URI

@@ -3,6 +3,9 @@ package io.opencola.network
 import io.opencola.event.EventBus
 import io.opencola.event.Events
 import io.opencola.model.Id
+import io.opencola.network.message.UnsignedMessage
+import io.opencola.network.message.SignedMessage
+import io.opencola.security.Signator
 import io.opencola.storage.AddressBook
 import io.opencola.storage.AddressBookEntry
 import io.opencola.storage.PersonaAddressBookEntry
@@ -19,6 +22,7 @@ class NetworkNode(
     private val router: RequestRouter,
     private val addressBook: AddressBook,
     private val eventBus: EventBus,
+    private val signator: Signator,
 ) {
     private val logger = KotlinLogging.logger("NetworkNode")
     private val peerStatuses = ConcurrentHashMap<Id, PeerStatus>()
@@ -86,13 +90,16 @@ class NetworkNode(
 
     private val providers = ConcurrentHashMap<String, NetworkProvider>()
 
-    private val requestHandler: (Id, Id, Request) -> Response = { from, to, request ->
-        val response = router.handleRequest(from, to, request)
-
+    private val requestHandler: (Id, Id, SignedMessage) -> Unit = { from, to, signedMessage ->
+        try {
+            router.handleRequest(from, to, signedMessage)
+        } catch (e: Exception) {
+            logger.error(e) { "Error handling signedMessage: $signedMessage" }
+        }
         if(addressBook.getEntry(to, from) !is PersonaAddressBookEntry)
             touchLastSeen(from)
 
-        response
+        TODO("Check if caller is trapping exceptions")
     }
 
     fun addProvider(provider: NetworkProvider) {
@@ -110,7 +117,7 @@ class NetworkNode(
             provider.start()
     }
 
-    fun broadcastRequest(from: PersonaAddressBookEntry, request: Request) {
+    fun broadcastMessage(from: PersonaAddressBookEntry, message: UnsignedMessage) {
         if(config.offlineMode) return
 
         val peers = addressBook.getEntries()
@@ -118,13 +125,13 @@ class NetworkNode(
             .distinctBy { it.entityId }
 
         if (peers.isNotEmpty()) {
-            logger.info { "Broadcasting request: $request" }
+            logger.info { "Broadcasting request: ${message.type}" }
 
             // TODO: This is currently called in the background from the event bus, so ok, but
             //  should switch to making these requests from a pool of peer threads
             peers.forEach { peer ->
                 // TODO: Make batched, to limit simultaneous connections
-                sendRequest(from, peer, request)
+                sendMessage(from, peer, message)
             }
         }
     }
@@ -185,27 +192,22 @@ class NetworkNode(
         logger.info { "Stopped" }
     }
 
-    private fun sendRequest(from: PersonaAddressBookEntry, to: AddressBookEntry, request: Request) : Response? {
-        if(config.offlineMode) return null
-
+    private fun sendMessage(from: PersonaAddressBookEntry, to: AddressBookEntry, message: UnsignedMessage) {
         require(to !is PersonaAddressBookEntry)
+        if(config.offlineMode) return
+
+        val signedMessage = SignedMessage(
+            from.personaId,
+            message,
+            signator.signBytes(from.personaId.toString(), message.payload))
         val scheme = to.address.scheme
         val provider = providers[scheme] ?: throw IllegalStateException("No provider found for scheme: $scheme")
-        val response = provider.sendRequest(from, to, request)
 
-        // TODO: This is really bad. If we successfully get transactions when the user was in an offline/unknown state,
-        //  setting their state to online would trigger another transactions request, which we want to avoid. Doing it
-        //  this way is super ugly. Figure out a better way
-        // val suppressNotifications = request.path == "/transactions"
-
-        if (response != null)
-            touchLastSeen(to.entityId)
-
-        return response
+        provider.sendMessage(from, to, signedMessage)
     }
 
-    fun sendRequest(fromId: Id, toId: Id, request: Request) : Response? {
-        if(config.offlineMode) return null
+    fun sendMessage(fromId: Id, toId: Id, message: UnsignedMessage) {
+        if(config.offlineMode) return
 
         val persona = addressBook.getEntry(fromId, fromId) as? PersonaAddressBookEntry
             ?: throw IllegalArgumentException("Attempt to send from message from non Persona: $fromId")
@@ -217,12 +219,8 @@ class NetworkNode(
             throw IllegalArgumentException("Attempt to send request to local persona: $peer")
 
         if(!(persona.isActive && peer.isActive))
-            return null
+            return
 
-        return sendRequest(persona, peer, request)?.also {
-            if (it.status >= 400) {
-                logger.warn { it }
-            }
-        }
+        sendMessage(persona, peer, message)
     }
 }

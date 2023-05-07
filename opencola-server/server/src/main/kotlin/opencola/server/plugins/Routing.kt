@@ -494,7 +494,9 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
 
         post("/networkNode") {
             val envelopeBytes = call.receive<ByteArray>()
-            call.respondBytes(app.inject<HttpNetworkProvider>().handleMessage(envelopeBytes, useEncryption = true))
+            app.inject<HttpNetworkProvider>().handleMessage(envelopeBytes, useEncryption = true)
+            TODO("Should there be any response?")
+            // call.respondBytes(app.inject<HttpNetworkProvider>().handleMessage(envelopeBytes, useEncryption = true))
         }
     }
 }

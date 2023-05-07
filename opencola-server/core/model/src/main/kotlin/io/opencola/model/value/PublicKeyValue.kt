@@ -1,7 +1,7 @@
 package io.opencola.model.value
 
 import com.google.protobuf.ByteString
-import io.opencola.model.ValueType.PUBLIC_KEY
+import io.opencola.model.value.ValueType.PUBLIC_KEY
 import io.opencola.serialization.protobuf.Model
 import io.opencola.security.PublicKeyByteArrayCodec
 import java.security.PublicKey

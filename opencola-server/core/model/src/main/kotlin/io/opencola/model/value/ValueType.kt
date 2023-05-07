@@ -1,4 +1,4 @@
-package io.opencola.model
+package io.opencola.model.value
 
 import io.opencola.serialization.protobuf.ProtoType
 

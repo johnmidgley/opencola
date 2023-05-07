@@ -36,7 +36,6 @@ abstract class AbstractClient(
     private var _state = Initialized
     private val connectionMutex = Mutex()
     private val openMutex = Mutex(true)
-    private val sessions = ConcurrentHashMap<UUID, CompletableDeferred<ByteArray?>>()
     private var connectionFailures = 0
     private var listenJob: Job? = null
 
@@ -110,32 +109,17 @@ abstract class AbstractClient(
         }
     }
 
-    private suspend fun handleMessage(payload: ByteArray, handler: suspend (PublicKey, ByteArray) -> ByteArray) {
+    private suspend fun handleMessage(payload: ByteArray, handler: suspend (PublicKey, ByteArray) -> Unit) {
         try {
             logger.info { "Handling message" }
             val message = Message.decode(decrypt(keyPair.private, payload)).validate()
-            val sessionResult = sessions[message.header.sessionId]
-
-            logger.info { "Received message: ${message.header}" }
-
-            if(sessionResult != null) {
-                sessions.remove(message.header.sessionId)
-                // TODO: Handle late arriving responses
-                sessionResult.complete(message.body)
-            } else {
-                // respondToMMessage will apply request timeout
-                // TODO: It is a bad assumption that unrecognized session ids indicate a request that needs a response.
-                //  This can happen in a partitioning situation, where a response with an unknown session id is received.
-                //  FIX THIS in next version of relay protocol. For now, it will result in an error that won't be
-                //  responded to
-                respondToMessage(message.header, handler(message.header.from, message.body))
-            }
+            handler(message.header.from, message.body)
         } catch(e: Exception){
             logger.error { "Exception in handleMessage: $e" }
         }
     }
 
-    override suspend fun open(messageHandler: suspend (PublicKey, ByteArray) -> ByteArray) = coroutineScope {
+    override suspend fun open(messageHandler: suspend (PublicKey, ByteArray) -> Unit) = coroutineScope {
         if (_state != Initialized) {
             throw IllegalStateException("Client has already been opened")
         }
@@ -172,33 +156,30 @@ abstract class AbstractClient(
         logger.info { "Closed - $name" }
     }
 
-    override suspend fun sendMessage(to: PublicKey, body: ByteArray): ByteArray? {
+    override suspend fun sendMessage(to: PublicKey, body: ByteArray) {
         val message = Message(keyPair, UUID.randomUUID(), body)
         val envelope = MessageEnvelope(to, message)
         val deferredResult = CompletableDeferred<ByteArray?>()
 
         logger.info { "Sending message: ${message.header}" }
 
-        return try {
-            sessions[message.header.sessionId] = deferredResult
-
+        try {
+            // TODO: Should there be a limit on the size of messages?
             withTimeout(requestTimeoutMilliseconds) {
                 getConnection().writeSizedByteArray(MessageEnvelope.encode(envelope))
-                deferredResult.await()
             }
         } catch (e: ConnectException) {
             logger.error { "Failed connect when sending message" }
-            null
         } catch (e: TimeoutCancellationException) {
             logger.warn { "Timeout sending message to: ${Id.ofPublicKey(to)}" }
-            null
         } catch (e: CancellationException) {
             // Let exception flow through
-            null
         } catch (e: Exception) {
             logger.error { "Unexpected exception when sending message $e" }
-            null
         }
+
+        TODO("Should there be a timeout above? Probably should be really high, depending on size of message")
+
     }
 
     override suspend fun respondToMessage(messageHeader: Header, body: ByteArray) {

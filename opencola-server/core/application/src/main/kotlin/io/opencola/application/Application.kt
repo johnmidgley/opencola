@@ -118,7 +118,7 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) :
                 bindSingleton { RequestRouter(instance(), getDefaultRoutes(instance(), instance(), instance(), instance())) }
                 bindSingleton { HttpNetworkProvider(instance(), instance(), instance(), config.network) }
                 bindSingleton { OCRelayNetworkProvider(instance(), instance(), instance(), config.network) }
-                bindSingleton { NetworkNode(config.network, instance(),instance(), instance()) }
+                bindSingleton { NetworkNode(config.network, instance(),instance(), instance(), instance()) }
                 bindSingleton { LuceneSearchIndex(storagePath.resolve("lucene")) }
                 bindSingleton { ExposedEntityStore(entityStoreDB, instance(), instance(), instance()) }
                 // TODO: Add unit tests for MhtCache

@@ -1,6 +1,6 @@
 package io.opencola.model.value
 
-import io.opencola.model.ValueType.FLOAT
+import io.opencola.model.value.ValueType.FLOAT
 import io.opencola.serialization.codecs.FloatByteArrayCodec
 import io.opencola.serialization.protobuf.Model as ProtoModel
 

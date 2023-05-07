@@ -1,5 +1,6 @@
 package io.opencola.security
 
+// TODO: Get rid of this and pass around address book?
 class Signator(private val keystore: KeyStore) {
     fun signBytes(alias: String, bytes: ByteArray): Signature {
         // TODO: Sign bytes or hash of bytes? Check performance diff

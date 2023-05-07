@@ -1,6 +1,6 @@
 package io.opencola.model.value
 
-import io.opencola.model.ValueType.BOOLEAN
+import io.opencola.model.value.ValueType.BOOLEAN
 import io.opencola.serialization.protobuf.Model
 import io.opencola.serialization.codecs.BooleanByteArrayCodec
 

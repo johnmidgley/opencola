@@ -94,22 +94,23 @@ class MainReactor(
             else
                 baseParams.plus(Pair("mostRecentTransactionId", mostRecentTransactionId.toString()))
 
-            val request = Request(Request.Method.GET, "/transactions", null, params)
-            val transactionsResponse = networkNode.sendRequest(peer.personaId, peer.entityId, request)?.body?.let {
-             TransactionsResponse.decode(it)
-            }
-
-            if (transactionsResponse == null || transactionsResponse.transactions.isEmpty()) {
-                logger.info { "No transactions received from ${peer.name}" }
-                break
-            }
-
-            logger.info { "Adding ${transactionsResponse.transactions.count()} transactions from ${peer.name}" }
-            entityStore.addSignedTransactions(transactionsResponse.transactions)
-            mostRecentTransactionId = transactionsResponse.transactions.last().transaction.id
-
-            if (mostRecentTransactionId == transactionsResponse.currentTransactionId)
-                break
+            TODO("Prepare proto request and handle response in message handler")
+//            val request = Request(Request.Method.GET, "/transactions", null, params)
+//            val transactionsResponse = networkNode.sendMessage(peer.personaId, peer.entityId, request)?.body?.let {
+//             TransactionsResponse.decode(it)
+//            }
+//
+//            if (transactionsResponse == null || transactionsResponse.transactions.isEmpty()) {
+//                logger.info { "No transactions received from ${peer.name}" }
+//                break
+//            }
+//
+//            logger.info { "Adding ${transactionsResponse.transactions.count()} transactions from ${peer.name}" }
+//            entityStore.addSignedTransactions(transactionsResponse.transactions)
+//            mostRecentTransactionId = transactionsResponse.transactions.last().transaction.id
+//
+//            if (mostRecentTransactionId == transactionsResponse.currentTransactionId)
+//                break
         }
 
         logger.info { "Completed requesting transactions from: ${peer.name}" }
@@ -139,19 +140,20 @@ class MainReactor(
         val authorityId = signedTransaction.transaction.authorityId
         val persona = addressBook.getEntry(authorityId,authorityId) as? PersonaAddressBookEntry
 
-        if(persona != null) {
-            // Transaction originated locally, so inform peers
-            val request = request(
-                Request.Method.POST,
-                "/notifications",
-                null,
-                null,
-                Notification(signedTransaction.transaction.authorityId, PeerEvent.NewTransaction)
-            )
-
-            // TODO: authority should come from transaction
-            networkNode.broadcastRequest(persona, request)
-        }
+        TODO("Replace with broadcastMessage")
+//        if(persona != null) {
+//            // Transaction originated locally, so inform peers
+//            val request = request(
+//                Request.Method.POST,
+//                "/notifications",
+//                null,
+//                null,
+//                Notification(signedTransaction.transaction.authorityId, PeerEvent.NewTransaction)
+//            )
+//
+//            // TODO: authority should come from transaction
+//            networkNode.broadcastRequest(persona, request)
+//        }
     }
 
     private fun indexTransaction(signedTransaction: SignedTransaction) {

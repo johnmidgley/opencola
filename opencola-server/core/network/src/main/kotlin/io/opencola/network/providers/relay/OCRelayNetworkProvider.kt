@@ -1,10 +1,8 @@
 package io.opencola.network.providers.relay
 
 import io.opencola.network.NetworkConfig
-import io.opencola.network.*
 import io.opencola.network.AbstractNetworkProvider
-import io.opencola.network.message.MessageEnvelope
-import io.opencola.network.Response
+import io.opencola.network.message.SignedMessage
 import io.opencola.security.Encryptor
 import io.opencola.security.Signator
 import io.opencola.storage.AddressBook
@@ -13,9 +11,6 @@ import io.opencola.relay.client.WebSocketClient
 import io.opencola.storage.AddressBookEntry
 import io.opencola.storage.PersonaAddressBookEntry
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import java.net.URI
 import java.security.KeyPair
@@ -148,7 +143,7 @@ class OCRelayNetworkProvider(addressBook: AddressBook,
 
     // TODO: Since to Authority has a persona associated with it, do we need the from Authority?
     // TODO: Should from and to be entries of ids?
-    override fun sendRequest(from: PersonaAddressBookEntry, to: AddressBookEntry, request: Request): Response? {
+    override fun sendMessage(from: PersonaAddressBookEntry, to: AddressBookEntry, signedMessage: SignedMessage) {
         val peerUri = to.address
 
         if(peerUri.scheme != openColaRelayScheme) {
@@ -172,24 +167,18 @@ class OCRelayNetworkProvider(addressBook: AddressBook,
             addClient(connectionParams)
         }
 
-        logger.info { "Sending request from: ${from.name} to: ${to.name } request: $request" }
+        logger.info { "Sending request from: ${from.name} to: ${to.name } request: $signedMessage" }
 
-        return runBlocking {
+        runBlocking {
             try {
-                // TODO: This is terrible. Byte data is sent as a string. Fix this when moving to messages
-                val messageBytes = Json.encodeToString(request).toByteArray()
-                val envelopeBytes = getEncodedEnvelope(from.entityId, to.entityId, messageBytes, false)
-                val client = connections[connectionParams]!!.client
-                client.sendMessage(peerPublicKey, envelopeBytes)?.let {
-                    // We don't need to validate sender - OC relay enforces that response is from correct sender
-                    val responseEnvelope = MessageEnvelope.decode(it).also { e -> validateMessageEnvelope(e) }
-                    Json.decodeFromString<Response>(String(responseEnvelope.signedMessage.message))
-                }
+                TODO("Fix this")
+//                val messageBytes = Json.encodeToString(signedMessage).toByteArray()
+//                val envelopeBytes = getEncodedEnvelope(from.entityId, to.entityId, messageBytes, false)
+//                val client = connections[connectionParams]!!.client
+//                client.sendMessage(peerPublicKey, envelopeBytes)
             } catch (e: Exception) {
                 logger.error { "sendRequest: $e" }
-                null
             }
-
         }
     }
 }

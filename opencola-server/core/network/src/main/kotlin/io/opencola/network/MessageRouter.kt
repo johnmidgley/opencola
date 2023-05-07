@@ -1,11 +1,12 @@
 package io.opencola.network
 
 import io.opencola.model.Id
+import io.opencola.network.message.SignedMessage
 import io.opencola.storage.AddressBook
 import io.opencola.storage.PersonaAddressBookEntry
 import mu.KotlinLogging
 
-class Route(val method: Request.Method, val path: String, val handler: (Id, Id, Request) -> Response)
+class Route(val messageType: String, val handler: (Id, Id, SignedMessage) -> Unit)
 
 // TODO: This should be wrapped by a RequestRouter that marks nodes as online upon successful request
 // TODO: Rename requestHandler?
@@ -13,7 +14,7 @@ class RequestRouter(private val addressBook: AddressBook, private val routes: Li
     private val logger = KotlinLogging.logger("RequestRouter")
 
     // TODO: Make response optional? When not present, should ignore.
-    fun handleRequest(from: Id, to: Id, request: Request) : Response {
+    fun handleRequest(from: Id, to: Id, signedMessage: SignedMessage) {
         val peer = addressBook.getEntry(to, from)
             ?: throw IllegalArgumentException("Received request from unknown peer (from: $from to $to)")
 
@@ -27,18 +28,16 @@ class RequestRouter(private val addressBook: AddressBook, private val routes: Li
             throw IllegalArgumentException("Received request to inactive persona (from: $from to: $to)")
 
 
-        val handler = routes.firstOrNull { it.method == request.method && it.path == request.path }?.handler
-            ?: "No handler specified for ${request.method} ${request.path}".let {
+        val handler = routes.firstOrNull { it.messageType == signedMessage.message.type }?.handler
+            ?: "No handler specified for ${signedMessage.message.type}".let {
                 logger.error { it }
-                return Response(404, it, null)
+                return
             }
 
-        return try{
-            handler(from, to, request)
+        return try {
+            handler(from, to, signedMessage)
         } catch (e: Exception){
             logger.error { "Handler encountered error: $e" }
-            // TODO: What should be exposed to caller?
-            Response(500, e.toString(), null)
         }
     }
 }

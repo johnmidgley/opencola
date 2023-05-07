@@ -1,8 +1,7 @@
 package io.opencola.network.providers
 
 import io.opencola.network.AbstractNetworkProvider
-import io.opencola.network.Request
-import io.opencola.network.Response
+import io.opencola.network.message.SignedMessage
 import io.opencola.security.Encryptor
 import io.opencola.security.KeyStore
 import io.opencola.security.Signator
@@ -15,7 +14,7 @@ class MockNetworkProvider(addressBook: AddressBook,
                           keyStore: KeyStore
 ) : AbstractNetworkProvider(addressBook, Signator(keyStore), Encryptor(keyStore)) {
     private val logger = mu.KotlinLogging.logger("MockNetworkProvider")
-    var onSendRequest: ((PersonaAddressBookEntry, AddressBookEntry, Request) -> Response?) ?= null
+    var onSendMessage: ((PersonaAddressBookEntry, AddressBookEntry, SignedMessage) -> Unit)? = null
 
     override fun start(waitUntilReady: Boolean) {
         logger.info { "Starting MockNetworkProvider" }
@@ -44,9 +43,9 @@ class MockNetworkProvider(addressBook: AddressBook,
         logger.info { "Removing peer: $peer" }
     }
 
-    override fun sendRequest(from: PersonaAddressBookEntry, to: AddressBookEntry, request: Request): Response? {
-        onSendRequest?.let{
-            return it(from, to, request)
+    override fun sendMessage(from: PersonaAddressBookEntry, to: AddressBookEntry, signedMessage: SignedMessage) {
+        onSendMessage?.let{
+            it(from, to, signedMessage)
         } ?: throw IllegalStateException("onSendRequest not set")
     }
 }

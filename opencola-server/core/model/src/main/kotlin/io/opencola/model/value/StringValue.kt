@@ -1,6 +1,6 @@
 package io.opencola.model.value
 
-import io.opencola.model.ValueType.STRING
+import io.opencola.model.value.ValueType.STRING
 import io.opencola.serialization.codecs.StringByteArrayCodec
 import io.opencola.serialization.protobuf.Model as ProtoModel
 

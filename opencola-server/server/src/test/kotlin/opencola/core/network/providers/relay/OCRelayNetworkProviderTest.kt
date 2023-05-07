@@ -3,7 +3,9 @@ package opencola.core.network.providers.relay
 import io.opencola.application.Application
 import io.opencola.model.Id
 import io.opencola.network.NetworkNode
-import io.opencola.network.Request
+import io.opencola.network.emptyByteArray
+import io.opencola.network.message.UnsignedMessage
+import io.opencola.network.message.PingMessage
 import io.opencola.network.providers.relay.OCRelayNetworkProvider
 import io.opencola.storage.AddressBook
 import io.opencola.relay.client.WebSocketClient
@@ -16,13 +18,13 @@ import kotlinx.coroutines.runBlocking
 import opencola.server.PeerNetworkTest
 import org.junit.Test
 import java.net.URI
-import kotlin.test.assertEquals
 import kotlin.test.assertFails
-import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class OCRelayNetworkProviderTest : PeerNetworkTest() {
     private val ocRelayUri = URI("ocr://0.0.0.0")
+    val pingMessage = PingMessage().toMessage()
+
 
     private fun setPeerAddressToRelay(addressBook: AddressBook, peerId: Id) : AddressBookEntry {
         val peer = addressBook.getEntries().firstOrNull { it.entityId == peerId } ?:
@@ -59,26 +61,27 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
         println("Starting network node1")
         app1.inject<NetworkNode>().also { it.start(true) }
 
+        TODO("Fix response checks")
+
         try {
             println("Testing ping: from=${app0Persona.entityId} to=${app1Persona.entityId}")
             run {
                 val response =
-                    networkNode0.sendRequest(app0Persona.entityId, app1Persona.entityId, Request(Request.Method.GET, "/ping"))
-                assertNotNull(response)
-                assertEquals("pong", response.message)
+                    networkNode0.sendMessage(app0Persona.entityId, app1Persona.entityId, pingMessage)
+
             }
 
             println("Testing bad 'from' id")
             run {
                 assertFails {
-                    networkNode0.sendRequest(Id.new(), app1Persona.entityId, Request(Request.Method.GET, "/ping"))
+                    networkNode0.sendMessage(Id.new(), app1Persona.entityId, pingMessage)
                 }
             }
 
             println("Testing bad 'to' id")
             run {
                 assertFails {
-                    networkNode0.sendRequest(app0Persona.entityId, Id.new(), Request(Request.Method.GET, "/ping"))
+                    networkNode0.sendMessage(app0Persona.entityId, Id.new(), pingMessage)
                 }
             }
 
@@ -162,7 +165,7 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
                     val envelope = relayProvider.getEncodedEnvelope(
                         app0.getPersonas().single().entityId,
                         app1.getPersonas().single().entityId,
-                        "bad message".toByteArray(),
+                        UnsignedMessage("bad message", emptyByteArray),
                         false
                     )
 

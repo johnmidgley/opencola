@@ -48,7 +48,7 @@ class ConnectionTest {
 
     private suspend fun open(
         client: RelayClient,
-        messageHandler: suspend (PublicKey, ByteArray) -> ByteArray = { _, _ -> client.name!!.toByteArray() }
+        messageHandler: suspend (PublicKey, ByteArray) -> Unit = { _, _ -> client.name!!.toByteArray() }
     ) = coroutineScope {
         launch { client.open(messageHandler) }
     }
@@ -71,8 +71,9 @@ class ConnectionTest {
                 }
 
             val peerResponse = client0.sendMessage(client1.publicKey, "hello".toByteArray())
-            assertNotNull(peerResponse)
-            assertEquals("hello client1", String(peerResponse))
+            TODO("Rework this since no longer get responses")
+//            assertNotNull(peerResponse)
+//            assertEquals("hello client1", String(peerResponse))
 
             server.stop()
             listOf(client0, client1).forEach { it.close() }
@@ -94,8 +95,9 @@ class ConnectionTest {
                 .also { launch { it.open { _, p -> p.append(" client1".toByteArray()) } }; it.waitUntilOpen() }
 
             client0.sendMessage(client1.publicKey, "hello".toByteArray()).also {
-                assertNotNull(it)
-                assertEquals("hello client1", String(it))
+                TODO("Rework this since no longer get responses")
+//                assertNotNull(it)
+//                assertEquals("hello client1", String(it))
             }
 
             client0.close()
@@ -120,7 +122,8 @@ class ConnectionTest {
 
                 val peerResponse0 = client0.sendMessage(client1.publicKey, "hello".toByteArray())
                 assertNotNull(peerResponse0)
-                assertEquals("hello client1", String(peerResponse0))
+                TODO("Rework this since no longer get responses")
+                //assertEquals("hello client1", String(peerResponse0))
 
                 relayServer0.stop()
 
@@ -131,7 +134,8 @@ class ConnectionTest {
 
                 val peerResponse2 = client0.sendMessage(client1.publicKey, "hello".toByteArray())
                 assertNotNull(peerResponse2)
-                assertEquals("hello client1", String(peerResponse2))
+
+                // assertEquals("hello client1", String(peerResponse2))
             } finally {
                 client0?.close()
                 client1?.close()
@@ -157,7 +161,8 @@ class ConnectionTest {
             println("Sending message")
             val peerResponse0 = client0.sendMessage(client1.publicKey, "hello".toByteArray())
             assertNotNull(peerResponse0)
-            assertEquals("hello client1", String(peerResponse0))
+            TODO("Rework this since no longer get responses")
+            // assertEquals("hello client1", String(peerResponse0))
 
             println("Partitioning client")
             client1.close()
@@ -173,7 +178,7 @@ class ConnectionTest {
             println("Verifying rejoin")
             val peerResponse2 = client0.sendMessage(client1.publicKey, "hello".toByteArray())
             assertNotNull(peerResponse2)
-            assertEquals("hello client1", String(peerResponse2))
+            // assertEquals("hello client1", String(peerResponse2))
 
             client0.close()
             client1.close()
@@ -207,7 +212,8 @@ class ConnectionTest {
 
                         val response = sendClient.sendMessage(receiveClient.publicKey, "hello".toByteArray())
                         assertNotNull(response)
-                        assertEquals("client$receiver", String(response))
+                        TODO("Rework this since no longer get responses")
+                        // assertEquals("client$receiver", String(response))
                     }
                 }
             }.parallelStream()

@@ -20,7 +20,7 @@ class MessageEnvelope(val to: Id, val signedMessage: SignedMessage) {
         }
     }
 
-    companion object Factory {
+    companion object {
         fun decode(envelopeBytes: ByteArray, encryptor: Encryptor? = null): MessageEnvelope {
             return ByteArrayInputStream(envelopeBytes).use {
                 val id = Id.decode(it)

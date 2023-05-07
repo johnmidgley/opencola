@@ -2,7 +2,7 @@ package io.opencola.model.value
 
 import com.google.protobuf.ByteString
 import io.opencola.model.Id
-import io.opencola.model.ValueType.*
+import io.opencola.model.value.ValueType.*
 import io.opencola.serialization.protobuf.Model
 
 class IdValue(value: Id) : Value<Id>(value) {

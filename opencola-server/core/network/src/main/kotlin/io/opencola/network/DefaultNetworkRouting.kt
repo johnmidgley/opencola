@@ -3,7 +3,6 @@ package io.opencola.network
 import mu.KotlinLogging
 import io.opencola.event.EventBus
 import io.opencola.event.Events
-import io.opencola.util.nullOrElse
 import io.opencola.model.Id
 import io.opencola.model.SignedTransaction
 import io.opencola.serialization.readByteArray
@@ -97,64 +96,62 @@ fun handleGetData(fileStore: FileStore, dataId: Id): ByteArray? {
 }
 
 fun pingRoute(): Route {
-    return Route(
-        Request.Method.GET,
-        "/ping"
-    ) { _, _, _ -> Response(200, "pong") }
+    return Route("ping") { _, _, _ -> TODO("Handle ping") }
 }
 
-fun notificationsRoute(eventBus: EventBus, addressBook: AddressBook) : Route {
-    return Route(
-        Request.Method.POST,
-        "/notifications"
-    ) { from, to, request ->
-        val notification = request.decodeBody<Notification>()
-            ?: throw IllegalArgumentException("Body must contain Notification")
+fun pongRoute(): Route {
+    return Route("pong") { _, _, _ -> TODO("Handle pong") }
+}
 
-        handleNotification(addressBook, eventBus, from, to, notification)
-        Response(200)
+fun putNotificationsRoute(eventBus: EventBus, addressBook: AddressBook) : Route {
+    return Route("notifications") { from, to, message ->
+        TODO("handle notifications")
+//        handleNotification(addressBook, eventBus, from, to, notification)
     }
 }
 
-fun transactionsRoute(entityStore: EntityStore, addressBook: AddressBook) : Route {
+fun getTransactionsRoute(entityStore: EntityStore, addressBook: AddressBook) : Route {
     return Route(
-        Request.Method.GET,
-        "/transactions"
-    ) { from, _, request ->
-        if (request.parameters == null) {
-            throw IllegalArgumentException("/transactions call requires parameters")
-        }
-
-        val authorityId =
-            Id.decode(request.parameters["authorityId"] ?: throw IllegalArgumentException("No authorityId set"))
-        val transactionId = request.parameters["mostRecentTransactionId"].nullOrElse { Id.decode(it) }
-        val numTransactions = request.parameters["numTransactions"].nullOrElse { it.toInt() }
-        val transactionResponse =
-            handleGetTransactions(
-                entityStore,
-                addressBook,
-                authorityId,
-                from,
-                transactionId,
-                numTransactions
-            )
-
-        Response(200, "OK", null, TransactionsResponse.encode(transactionResponse))
+        "getTransactions"
+    ) { from, _, message ->
+    TODO("handle getTransactions")
+//        val authorityId =
+//            Id.decode(request.parameters["authorityId"] ?: throw IllegalArgumentException("No authorityId set"))
+//        val transactionId = request.parameters["mostRecentTransactionId"].nullOrElse { Id.decode(it) }
+//        val numTransactions = request.parameters["numTransactions"].nullOrElse { it.toInt() }
+//        val transactionResponse =
+//            handleGetTransactions(
+//                entityStore,
+//                addressBook,
+//                authorityId,
+//                from,
+//                transactionId,
+//                numTransactions
+//            )
     }
 }
 
-fun dataRoute(fileStore: FileStore) : Route {
+fun putTransactionsRoute(entityStore: EntityStore, addressBook: AddressBook) : Route {
     return Route(
-        Request.Method.GET,
-        "/data"
-    ) { _, _, request ->
-        if (request.parameters == null) {
-            throw IllegalArgumentException("/data call requires parameters")
-        }
+        "putTransactions"
+    ) { from, _, message ->
+        TODO("handle putTransactions")
+    }
+}
 
-        val dataId = Id.decode(request.parameters["id"] ?: throw IllegalArgumentException("No dataId set"))
-        handleGetData(fileStore, dataId)?.let { Response(200, "OK", null, it) }
-            ?: Response(404, "Not Found")
+fun getDataRoute(fileStore: FileStore) : Route {
+    return Route(
+        "getData"
+    ) { _, _, message ->
+        TODO("handle getData")
+    }
+}
+
+fun putDataRoute(fileStore: FileStore) : Route {
+    return Route(
+        "putData"
+    ) { _, _, message ->
+        TODO("handle putData")
     }
 }
 
@@ -167,8 +164,11 @@ fun getDefaultRoutes(
 
     return listOf(
         pingRoute(),
-        notificationsRoute(eventBus, addressBook),
-        transactionsRoute(entityStore, addressBook),
-        dataRoute(fileStore),
+        pongRoute(),
+        putNotificationsRoute(eventBus, addressBook),
+        getTransactionsRoute(entityStore, addressBook),
+        putTransactionsRoute(entityStore, addressBook),
+        getDataRoute(fileStore),
+        putDataRoute(fileStore),
     )
 }

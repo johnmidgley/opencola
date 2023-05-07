@@ -2,40 +2,39 @@ package io.opencola.network
 
 import io.opencola.application.TestApplication
 import io.opencola.model.Id
-import io.opencola.network.message.MessageEnvelope
+import io.opencola.network.message.GetDataMessage
+import io.opencola.network.message.PingMessage
+import io.opencola.network.message.SignedMessage
 import io.opencola.security.generateKeyPair
 import io.opencola.storage.*
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 import org.junit.Test
 import java.util.UUID
 import kotlin.test.*
 
 
 class NetworkNodeTest {
-    private val pingRequest = Request(Request.Method.GET, "/ping")
+    val pingMessage = PingMessage().toMessage()
 
     @Test
     fun testSendRequestFromInvalidPersona() {
         val context = NetworkNodeContext()
         val id = Id.new()
-        assertFails { context.networkNode.sendRequest(id, id, pingRequest) }
+        assertFails { context.networkNode.sendMessage(id, id, pingMessage) }
     }
 
     @Test
     fun testSendRequestToUnknownPeer() {
         val context = NetworkNodeContext()
-        val persona = context.addressBook.addPersona("Persona0")
-        assertFails { context.networkNode.sendRequest(persona.personaId, Id.new(), pingRequest) }
+        assertFails { context.networkNode.sendMessage(context.persona.personaId, Id.new(), pingMessage) }
     }
 
     @Test
     fun testSendRequestFromInactivePersona() {
         val context = NetworkNodeContext()
-        val persona = context.addressBook.addPersona("Persona0", false)
+        val persona = context.addressBook.addPersona("InactivePersona", false)
         val peer = context.addressBook.addPeer(persona.personaId, "Peer0")
-        context.provider.onSendRequest = { _, _, _ -> throw IllegalStateException("Should not be called") }
-        assertNull(context.networkNode.sendRequest(persona.personaId, peer.entityId, pingRequest))
+        context.provider.onSendMessage = { _, _, _ -> throw IllegalStateException("Should not be called") }
+        assertNull(context.networkNode.sendMessage(persona.personaId, peer.entityId, pingMessage))
     }
 
     @Test
@@ -43,8 +42,8 @@ class NetworkNodeTest {
         val context = NetworkNodeContext()
         val persona = context.addressBook.addPersona("Persona0")
         val peer = context.addressBook.addPeer(persona.personaId, "Peer0", false)
-        context.provider.onSendRequest = { _, _, _ -> throw IllegalStateException("Should not be called") }
-        assertNull(context.networkNode.sendRequest(persona.personaId, peer.entityId, pingRequest))
+        context.provider.onSendMessage = { _, _, _ -> throw IllegalStateException("Should not be called") }
+        assertNull(context.networkNode.sendMessage(persona.personaId, peer.entityId, pingMessage))
     }
 
     @Test
@@ -52,9 +51,10 @@ class NetworkNodeTest {
         val context = NetworkNodeContext()
         val persona = context.addressBook.addPersona("Persona0")
         val peer = context.addressBook.addPeer(persona.personaId, "Peer0")
-        val response = Response(200, "pong")
-        context.provider.onSendRequest = { _, _, _ -> response }
-        assertEquals(response, context.networkNode.sendRequest(persona.personaId, peer.entityId, pingRequest))
+        var response = false
+        context.provider.onSendMessage = { _, _, _ -> response = true }
+        context.networkNode.sendMessage(persona.personaId, peer.entityId, pingMessage)
+        assertTrue(response)
     }
 
     @Test
@@ -63,12 +63,9 @@ class NetworkNodeTest {
         val persona = context.addressBook.addPersona("Persona0")
         val peerKeyPair = generateKeyPair()
         val peer = context.addressBook.addPeer(persona.personaId, "Peer0", publicKey = peerKeyPair.public)
-        val envelopeBytes = getEncodedEnvelope(peer.entityId, peerKeyPair.private, persona.personaId, pingRequest)
+        val envelopeBytes = context.provider.getEncodedEnvelope(peer.entityId, persona.personaId, pingMessage, false)
         val responseBytes = context.provider.handleMessage(envelopeBytes, false)
-        val responseEnvelope = MessageEnvelope.decode(responseBytes)
-        val response = Json.decodeFromString<Response>(String(responseEnvelope.signedMessage.message))
-        assertEquals(200, response.status)
-        assertEquals("pong", response.message)
+        TODO("Check response message, pong, is sent")
     }
 
     @Test
@@ -77,7 +74,7 @@ class NetworkNodeTest {
         val persona = context.addressBook.addPersona("Persona0", false)
         val peerKeyPair = generateKeyPair()
         val peer = context.addressBook.addPeer(persona.personaId, "Peer0", publicKey = peerKeyPair.public)
-        val envelopeBytes = getEncodedEnvelope(peer.entityId, peerKeyPair.private, persona.personaId, pingRequest)
+        val envelopeBytes = context.provider.getEncodedEnvelope(peer.entityId, persona.personaId, pingMessage, false)
         assertFails { context.provider.handleMessage(envelopeBytes, false) }
     }
 
@@ -87,7 +84,7 @@ class NetworkNodeTest {
         val persona = context.addressBook.addPersona("Persona0")
         val peerKeyPair = generateKeyPair()
         val peer = context.addressBook.addPeer(persona.personaId, "Peer0", false, peerKeyPair.public)
-        val envelopeBytes = getEncodedEnvelope(peer.entityId, peerKeyPair.private, persona.personaId, pingRequest)
+        val envelopeBytes = context.provider.getEncodedEnvelope(peer.entityId, persona.personaId, pingMessage, false)
         assertFails { context.provider.handleMessage(envelopeBytes, false) }
     }
 
@@ -98,15 +95,14 @@ class NetworkNodeTest {
         val peerKeyPair = generateKeyPair()
         val peer = context.addressBook.addPeer(persona0.personaId, "Peer0", true, peerKeyPair.public)
         val persona1 = context.addressBook.addPersona("Persona1")
-        val envelopeBytes = getEncodedEnvelope(peer.entityId, peerKeyPair.private, persona1.personaId, pingRequest)
+        val envelopeBytes = context.provider.getEncodedEnvelope(peer.entityId, persona1.personaId, pingMessage, false)
         assertFails { context.provider.handleMessage(envelopeBytes, false) }
     }
 
-    private fun validateRecipient(validRecipients: Set<AddressBookEntry>) : (PersonaAddressBookEntry, AddressBookEntry, Request) -> Response? {
-        return { from: PersonaAddressBookEntry, to: AddressBookEntry, _: Request ->
+    private fun validateRecipient(validRecipients: Set<AddressBookEntry>) : (PersonaAddressBookEntry, AddressBookEntry, SignedMessage) -> Unit {
+        return { from: PersonaAddressBookEntry, to: AddressBookEntry, _: SignedMessage ->
             if (!validRecipients.contains(to))
                 throw IllegalStateException("Invalid call to SendMessage: from: $from to: $to")
-            null
         }
     }
 
@@ -121,17 +117,18 @@ class NetworkNodeTest {
         val persona1Peer0 = context.addressBook.addPeer(persona1.personaId, "persona1Peer0")
         val persona1Peer1 = context.addressBook.addPeer(persona1.personaId, "persona1Peer1")
 
-        context.provider.onSendRequest = validateRecipient(setOf(persona0Peer0, persona0Peer1))
-        context.networkNode.broadcastRequest(persona0, pingRequest)
+        val thing = validateRecipient(setOf(persona0Peer0, persona0Peer1))
+        context.provider.onSendMessage = validateRecipient(setOf(persona0Peer0, persona0Peer1))
+        context.networkNode.broadcastMessage(persona0, pingMessage)
 
-        context.provider.onSendRequest = validateRecipient(setOf(persona1Peer0, persona1Peer1))
-        context.networkNode.broadcastRequest(persona1, pingRequest)
+        context.provider.onSendMessage = validateRecipient(setOf(persona1Peer0, persona1Peer1))
+        context.networkNode.broadcastMessage(persona1, pingMessage)
     }
 
     @Test
     fun testGetData() {
         val fileStore = LocalFileStore(TestApplication.getTmpDirectory("-filestore"))
-        val context = NetworkNodeContext(routes = listOf(dataRoute(fileStore)))
+        val context = NetworkNodeContext(routes = listOf(getDataRoute(fileStore)))
 
         // Create persona and peer
         val persona = context.addressBook.addPersona("Persona0")
@@ -143,13 +140,9 @@ class NetworkNodeTest {
         val id = fileStore.write(data)
 
         // Request data as peer
-        val dataRequest = Request(Request.Method.GET, "/data",  parameters =  mapOf("id" to id.toString()))
-        val envelopeBytes = getEncodedEnvelope(peer.entityId, peerKeyPair.private, persona.personaId, dataRequest)
-        val responseBytes = context.provider.handleMessage(envelopeBytes, false)
-        val responseEnvelope = MessageEnvelope.decode(responseBytes)
-        val response = Json.decodeFromString<Response>(String(responseEnvelope.signedMessage.message)).body
 
-        assertNotNull(response)
-        assertContentEquals(data, response)
+        val message = GetDataMessage(setOf(id)).toMessage()
+        val envelopeBytes = context.provider.getEncodedEnvelope(peer.entityId, persona.personaId, message, false)
+        TODO("Check that correct response message is sent")
     }
 }
