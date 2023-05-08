@@ -3025,27 +3025,27 @@ public final class Message {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>repeated .io.opencola.serialization.protobuf.SignedMessage transactions = 1;</code>
+     * <code>repeated .io.opencola.serialization.protobuf.SignedTransaction transactions = 1;</code>
      */
-    java.util.List<io.opencola.serialization.protobuf.Message.SignedMessage> 
+    java.util.List<io.opencola.serialization.protobuf.Model.SignedTransaction> 
         getTransactionsList();
     /**
-     * <code>repeated .io.opencola.serialization.protobuf.SignedMessage transactions = 1;</code>
+     * <code>repeated .io.opencola.serialization.protobuf.SignedTransaction transactions = 1;</code>
      */
-    io.opencola.serialization.protobuf.Message.SignedMessage getTransactions(int index);
+    io.opencola.serialization.protobuf.Model.SignedTransaction getTransactions(int index);
     /**
-     * <code>repeated .io.opencola.serialization.protobuf.SignedMessage transactions = 1;</code>
+     * <code>repeated .io.opencola.serialization.protobuf.SignedTransaction transactions = 1;</code>
      */
     int getTransactionsCount();
     /**
-     * <code>repeated .io.opencola.serialization.protobuf.SignedMessage transactions = 1;</code>
+     * <code>repeated .io.opencola.serialization.protobuf.SignedTransaction transactions = 1;</code>
      */
-    java.util.List<? extends io.opencola.serialization.protobuf.Message.SignedMessageOrBuilder> 
+    java.util.List<? extends io.opencola.serialization.protobuf.Model.SignedTransactionOrBuilder> 
         getTransactionsOrBuilderList();
     /**
-     * <code>repeated .io.opencola.serialization.protobuf.SignedMessage transactions = 1;</code>
+     * <code>repeated .io.opencola.serialization.protobuf.SignedTransaction transactions = 1;</code>
      */
-    io.opencola.serialization.protobuf.Message.SignedMessageOrBuilder getTransactionsOrBuilder(
+    io.opencola.serialization.protobuf.Model.SignedTransactionOrBuilder getTransactionsOrBuilder(
         int index);
   }
   /**
@@ -3097,11 +3097,11 @@ public final class Message {
               break;
             case 10: {
               if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                transactions_ = new java.util.ArrayList<io.opencola.serialization.protobuf.Message.SignedMessage>();
+                transactions_ = new java.util.ArrayList<io.opencola.serialization.protobuf.Model.SignedTransaction>();
                 mutable_bitField0_ |= 0x00000001;
               }
               transactions_.add(
-                  input.readMessage(io.opencola.serialization.protobuf.Message.SignedMessage.parser(), extensionRegistry));
+                  input.readMessage(io.opencola.serialization.protobuf.Model.SignedTransaction.parser(), extensionRegistry));
               break;
             }
             default: {
@@ -3140,41 +3140,41 @@ public final class Message {
     }
 
     public static final int TRANSACTIONS_FIELD_NUMBER = 1;
-    private java.util.List<io.opencola.serialization.protobuf.Message.SignedMessage> transactions_;
+    private java.util.List<io.opencola.serialization.protobuf.Model.SignedTransaction> transactions_;
     /**
-     * <code>repeated .io.opencola.serialization.protobuf.SignedMessage transactions = 1;</code>
+     * <code>repeated .io.opencola.serialization.protobuf.SignedTransaction transactions = 1;</code>
      */
     @java.lang.Override
-    public java.util.List<io.opencola.serialization.protobuf.Message.SignedMessage> getTransactionsList() {
+    public java.util.List<io.opencola.serialization.protobuf.Model.SignedTransaction> getTransactionsList() {
       return transactions_;
     }
     /**
-     * <code>repeated .io.opencola.serialization.protobuf.SignedMessage transactions = 1;</code>
+     * <code>repeated .io.opencola.serialization.protobuf.SignedTransaction transactions = 1;</code>
      */
     @java.lang.Override
-    public java.util.List<? extends io.opencola.serialization.protobuf.Message.SignedMessageOrBuilder> 
+    public java.util.List<? extends io.opencola.serialization.protobuf.Model.SignedTransactionOrBuilder> 
         getTransactionsOrBuilderList() {
       return transactions_;
     }
     /**
-     * <code>repeated .io.opencola.serialization.protobuf.SignedMessage transactions = 1;</code>
+     * <code>repeated .io.opencola.serialization.protobuf.SignedTransaction transactions = 1;</code>
      */
     @java.lang.Override
     public int getTransactionsCount() {
       return transactions_.size();
     }
     /**
-     * <code>repeated .io.opencola.serialization.protobuf.SignedMessage transactions = 1;</code>
+     * <code>repeated .io.opencola.serialization.protobuf.SignedTransaction transactions = 1;</code>
      */
     @java.lang.Override
-    public io.opencola.serialization.protobuf.Message.SignedMessage getTransactions(int index) {
+    public io.opencola.serialization.protobuf.Model.SignedTransaction getTransactions(int index) {
       return transactions_.get(index);
     }
     /**
-     * <code>repeated .io.opencola.serialization.protobuf.SignedMessage transactions = 1;</code>
+     * <code>repeated .io.opencola.serialization.protobuf.SignedTransaction transactions = 1;</code>
      */
     @java.lang.Override
-    public io.opencola.serialization.protobuf.Message.SignedMessageOrBuilder getTransactionsOrBuilder(
+    public io.opencola.serialization.protobuf.Model.SignedTransactionOrBuilder getTransactionsOrBuilder(
         int index) {
       return transactions_.get(index);
     }
@@ -3521,22 +3521,22 @@ public final class Message {
       }
       private int bitField0_;
 
-      private java.util.List<io.opencola.serialization.protobuf.Message.SignedMessage> transactions_ =
+      private java.util.List<io.opencola.serialization.protobuf.Model.SignedTransaction> transactions_ =
         java.util.Collections.emptyList();
       private void ensureTransactionsIsMutable() {
         if (!((bitField0_ & 0x00000001) != 0)) {
-          transactions_ = new java.util.ArrayList<io.opencola.serialization.protobuf.Message.SignedMessage>(transactions_);
+          transactions_ = new java.util.ArrayList<io.opencola.serialization.protobuf.Model.SignedTransaction>(transactions_);
           bitField0_ |= 0x00000001;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          io.opencola.serialization.protobuf.Message.SignedMessage, io.opencola.serialization.protobuf.Message.SignedMessage.Builder, io.opencola.serialization.protobuf.Message.SignedMessageOrBuilder> transactionsBuilder_;
+          io.opencola.serialization.protobuf.Model.SignedTransaction, io.opencola.serialization.protobuf.Model.SignedTransaction.Builder, io.opencola.serialization.protobuf.Model.SignedTransactionOrBuilder> transactionsBuilder_;
 
       /**
-       * <code>repeated .io.opencola.serialization.protobuf.SignedMessage transactions = 1;</code>
+       * <code>repeated .io.opencola.serialization.protobuf.SignedTransaction transactions = 1;</code>
        */
-      public java.util.List<io.opencola.serialization.protobuf.Message.SignedMessage> getTransactionsList() {
+      public java.util.List<io.opencola.serialization.protobuf.Model.SignedTransaction> getTransactionsList() {
         if (transactionsBuilder_ == null) {
           return java.util.Collections.unmodifiableList(transactions_);
         } else {
@@ -3544,7 +3544,7 @@ public final class Message {
         }
       }
       /**
-       * <code>repeated .io.opencola.serialization.protobuf.SignedMessage transactions = 1;</code>
+       * <code>repeated .io.opencola.serialization.protobuf.SignedTransaction transactions = 1;</code>
        */
       public int getTransactionsCount() {
         if (transactionsBuilder_ == null) {
@@ -3554,9 +3554,9 @@ public final class Message {
         }
       }
       /**
-       * <code>repeated .io.opencola.serialization.protobuf.SignedMessage transactions = 1;</code>
+       * <code>repeated .io.opencola.serialization.protobuf.SignedTransaction transactions = 1;</code>
        */
-      public io.opencola.serialization.protobuf.Message.SignedMessage getTransactions(int index) {
+      public io.opencola.serialization.protobuf.Model.SignedTransaction getTransactions(int index) {
         if (transactionsBuilder_ == null) {
           return transactions_.get(index);
         } else {
@@ -3564,10 +3564,10 @@ public final class Message {
         }
       }
       /**
-       * <code>repeated .io.opencola.serialization.protobuf.SignedMessage transactions = 1;</code>
+       * <code>repeated .io.opencola.serialization.protobuf.SignedTransaction transactions = 1;</code>
        */
       public Builder setTransactions(
-          int index, io.opencola.serialization.protobuf.Message.SignedMessage value) {
+          int index, io.opencola.serialization.protobuf.Model.SignedTransaction value) {
         if (transactionsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -3581,10 +3581,10 @@ public final class Message {
         return this;
       }
       /**
-       * <code>repeated .io.opencola.serialization.protobuf.SignedMessage transactions = 1;</code>
+       * <code>repeated .io.opencola.serialization.protobuf.SignedTransaction transactions = 1;</code>
        */
       public Builder setTransactions(
-          int index, io.opencola.serialization.protobuf.Message.SignedMessage.Builder builderForValue) {
+          int index, io.opencola.serialization.protobuf.Model.SignedTransaction.Builder builderForValue) {
         if (transactionsBuilder_ == null) {
           ensureTransactionsIsMutable();
           transactions_.set(index, builderForValue.build());
@@ -3595,9 +3595,9 @@ public final class Message {
         return this;
       }
       /**
-       * <code>repeated .io.opencola.serialization.protobuf.SignedMessage transactions = 1;</code>
+       * <code>repeated .io.opencola.serialization.protobuf.SignedTransaction transactions = 1;</code>
        */
-      public Builder addTransactions(io.opencola.serialization.protobuf.Message.SignedMessage value) {
+      public Builder addTransactions(io.opencola.serialization.protobuf.Model.SignedTransaction value) {
         if (transactionsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -3611,10 +3611,10 @@ public final class Message {
         return this;
       }
       /**
-       * <code>repeated .io.opencola.serialization.protobuf.SignedMessage transactions = 1;</code>
+       * <code>repeated .io.opencola.serialization.protobuf.SignedTransaction transactions = 1;</code>
        */
       public Builder addTransactions(
-          int index, io.opencola.serialization.protobuf.Message.SignedMessage value) {
+          int index, io.opencola.serialization.protobuf.Model.SignedTransaction value) {
         if (transactionsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -3628,10 +3628,10 @@ public final class Message {
         return this;
       }
       /**
-       * <code>repeated .io.opencola.serialization.protobuf.SignedMessage transactions = 1;</code>
+       * <code>repeated .io.opencola.serialization.protobuf.SignedTransaction transactions = 1;</code>
        */
       public Builder addTransactions(
-          io.opencola.serialization.protobuf.Message.SignedMessage.Builder builderForValue) {
+          io.opencola.serialization.protobuf.Model.SignedTransaction.Builder builderForValue) {
         if (transactionsBuilder_ == null) {
           ensureTransactionsIsMutable();
           transactions_.add(builderForValue.build());
@@ -3642,10 +3642,10 @@ public final class Message {
         return this;
       }
       /**
-       * <code>repeated .io.opencola.serialization.protobuf.SignedMessage transactions = 1;</code>
+       * <code>repeated .io.opencola.serialization.protobuf.SignedTransaction transactions = 1;</code>
        */
       public Builder addTransactions(
-          int index, io.opencola.serialization.protobuf.Message.SignedMessage.Builder builderForValue) {
+          int index, io.opencola.serialization.protobuf.Model.SignedTransaction.Builder builderForValue) {
         if (transactionsBuilder_ == null) {
           ensureTransactionsIsMutable();
           transactions_.add(index, builderForValue.build());
@@ -3656,10 +3656,10 @@ public final class Message {
         return this;
       }
       /**
-       * <code>repeated .io.opencola.serialization.protobuf.SignedMessage transactions = 1;</code>
+       * <code>repeated .io.opencola.serialization.protobuf.SignedTransaction transactions = 1;</code>
        */
       public Builder addAllTransactions(
-          java.lang.Iterable<? extends io.opencola.serialization.protobuf.Message.SignedMessage> values) {
+          java.lang.Iterable<? extends io.opencola.serialization.protobuf.Model.SignedTransaction> values) {
         if (transactionsBuilder_ == null) {
           ensureTransactionsIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -3671,7 +3671,7 @@ public final class Message {
         return this;
       }
       /**
-       * <code>repeated .io.opencola.serialization.protobuf.SignedMessage transactions = 1;</code>
+       * <code>repeated .io.opencola.serialization.protobuf.SignedTransaction transactions = 1;</code>
        */
       public Builder clearTransactions() {
         if (transactionsBuilder_ == null) {
@@ -3684,7 +3684,7 @@ public final class Message {
         return this;
       }
       /**
-       * <code>repeated .io.opencola.serialization.protobuf.SignedMessage transactions = 1;</code>
+       * <code>repeated .io.opencola.serialization.protobuf.SignedTransaction transactions = 1;</code>
        */
       public Builder removeTransactions(int index) {
         if (transactionsBuilder_ == null) {
@@ -3697,16 +3697,16 @@ public final class Message {
         return this;
       }
       /**
-       * <code>repeated .io.opencola.serialization.protobuf.SignedMessage transactions = 1;</code>
+       * <code>repeated .io.opencola.serialization.protobuf.SignedTransaction transactions = 1;</code>
        */
-      public io.opencola.serialization.protobuf.Message.SignedMessage.Builder getTransactionsBuilder(
+      public io.opencola.serialization.protobuf.Model.SignedTransaction.Builder getTransactionsBuilder(
           int index) {
         return getTransactionsFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .io.opencola.serialization.protobuf.SignedMessage transactions = 1;</code>
+       * <code>repeated .io.opencola.serialization.protobuf.SignedTransaction transactions = 1;</code>
        */
-      public io.opencola.serialization.protobuf.Message.SignedMessageOrBuilder getTransactionsOrBuilder(
+      public io.opencola.serialization.protobuf.Model.SignedTransactionOrBuilder getTransactionsOrBuilder(
           int index) {
         if (transactionsBuilder_ == null) {
           return transactions_.get(index);  } else {
@@ -3714,9 +3714,9 @@ public final class Message {
         }
       }
       /**
-       * <code>repeated .io.opencola.serialization.protobuf.SignedMessage transactions = 1;</code>
+       * <code>repeated .io.opencola.serialization.protobuf.SignedTransaction transactions = 1;</code>
        */
-      public java.util.List<? extends io.opencola.serialization.protobuf.Message.SignedMessageOrBuilder> 
+      public java.util.List<? extends io.opencola.serialization.protobuf.Model.SignedTransactionOrBuilder> 
            getTransactionsOrBuilderList() {
         if (transactionsBuilder_ != null) {
           return transactionsBuilder_.getMessageOrBuilderList();
@@ -3725,33 +3725,33 @@ public final class Message {
         }
       }
       /**
-       * <code>repeated .io.opencola.serialization.protobuf.SignedMessage transactions = 1;</code>
+       * <code>repeated .io.opencola.serialization.protobuf.SignedTransaction transactions = 1;</code>
        */
-      public io.opencola.serialization.protobuf.Message.SignedMessage.Builder addTransactionsBuilder() {
+      public io.opencola.serialization.protobuf.Model.SignedTransaction.Builder addTransactionsBuilder() {
         return getTransactionsFieldBuilder().addBuilder(
-            io.opencola.serialization.protobuf.Message.SignedMessage.getDefaultInstance());
+            io.opencola.serialization.protobuf.Model.SignedTransaction.getDefaultInstance());
       }
       /**
-       * <code>repeated .io.opencola.serialization.protobuf.SignedMessage transactions = 1;</code>
+       * <code>repeated .io.opencola.serialization.protobuf.SignedTransaction transactions = 1;</code>
        */
-      public io.opencola.serialization.protobuf.Message.SignedMessage.Builder addTransactionsBuilder(
+      public io.opencola.serialization.protobuf.Model.SignedTransaction.Builder addTransactionsBuilder(
           int index) {
         return getTransactionsFieldBuilder().addBuilder(
-            index, io.opencola.serialization.protobuf.Message.SignedMessage.getDefaultInstance());
+            index, io.opencola.serialization.protobuf.Model.SignedTransaction.getDefaultInstance());
       }
       /**
-       * <code>repeated .io.opencola.serialization.protobuf.SignedMessage transactions = 1;</code>
+       * <code>repeated .io.opencola.serialization.protobuf.SignedTransaction transactions = 1;</code>
        */
-      public java.util.List<io.opencola.serialization.protobuf.Message.SignedMessage.Builder> 
+      public java.util.List<io.opencola.serialization.protobuf.Model.SignedTransaction.Builder> 
            getTransactionsBuilderList() {
         return getTransactionsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          io.opencola.serialization.protobuf.Message.SignedMessage, io.opencola.serialization.protobuf.Message.SignedMessage.Builder, io.opencola.serialization.protobuf.Message.SignedMessageOrBuilder> 
+          io.opencola.serialization.protobuf.Model.SignedTransaction, io.opencola.serialization.protobuf.Model.SignedTransaction.Builder, io.opencola.serialization.protobuf.Model.SignedTransactionOrBuilder> 
           getTransactionsFieldBuilder() {
         if (transactionsBuilder_ == null) {
           transactionsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-              io.opencola.serialization.protobuf.Message.SignedMessage, io.opencola.serialization.protobuf.Message.SignedMessage.Builder, io.opencola.serialization.protobuf.Message.SignedMessageOrBuilder>(
+              io.opencola.serialization.protobuf.Model.SignedTransaction, io.opencola.serialization.protobuf.Model.SignedTransaction.Builder, io.opencola.serialization.protobuf.Model.SignedTransactionOrBuilder>(
                   transactions_,
                   ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
@@ -4657,12 +4657,12 @@ public final class Message {
       "encryptionTransformation\030\002 \001(\t\022\017\n\007messag" +
       "e\030\003 \001(\014\"a\n\026GetTransactionsMessage\022G\n\027mos" +
       "tRecentTransactionId\030\001 \001(\0132&.io.opencola" +
-      ".serialization.protobuf.Id\"a\n\026PutTransac" +
-      "tionsMessage\022G\n\014transactions\030\001 \003(\01321.io." +
-      "opencola.serialization.protobuf.SignedMe" +
-      "ssage\"E\n\016GetDataMessage\0223\n\003ids\030\001 \003(\0132&.i" +
-      "o.opencola.serialization.protobuf.Idb\006pr" +
-      "oto3"
+      ".serialization.protobuf.Id\"e\n\026PutTransac" +
+      "tionsMessage\022K\n\014transactions\030\001 \003(\01325.io." +
+      "opencola.serialization.protobuf.SignedTr" +
+      "ansaction\"E\n\016GetDataMessage\0223\n\003ids\030\001 \003(\013" +
+      "2&.io.opencola.serialization.protobuf.Id" +
+      "b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

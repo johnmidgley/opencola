@@ -27,7 +27,7 @@ message GetTransactionsMessage {
 }
 
 message PutTransactionsMessage {
-  repeated SignedMessage transactions = 1;
+  repeated SignedTransaction transactions = 1;
 }
 
 message GetDataMessage {

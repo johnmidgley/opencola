@@ -2,6 +2,7 @@ val kotlinVersion: String by project
 val kotlinLoggingVersion: String by project
 val exposedVersion: String by project
 val mime4jVersion: String by project
+val protobufVersion: String by project
 
 plugins {
     kotlin("jvm") version "1.7.20"
@@ -22,6 +23,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
     implementation("org.apache.james:apache-mime4j-dom:$mime4jVersion")
+    implementation("com.google.protobuf:protobuf-java:$protobufVersion")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
     testImplementation(project(":test"))

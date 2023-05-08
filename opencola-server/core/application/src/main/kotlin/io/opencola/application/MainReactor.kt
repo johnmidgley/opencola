@@ -3,17 +3,24 @@ package io.opencola.application
 import io.opencola.event.Event
 import io.opencola.event.Events
 import io.opencola.event.Reactor
-import io.opencola.model.*
-import io.opencola.network.*
-import io.opencola.storage.AddressBook
-import io.opencola.storage.EntityStore
+import io.opencola.model.DataEntity
+import io.opencola.model.Id
+import io.opencola.model.SignedTransaction
+import io.opencola.network.NetworkConfig
+import io.opencola.network.NetworkNode
+import io.opencola.network.Notification
+import io.opencola.network.PeerEvent
+import io.opencola.network.message.PutTransactionsMessage
 import io.opencola.search.SearchIndex
+import io.opencola.storage.AddressBook
 import io.opencola.storage.AddressBookEntry
+import io.opencola.storage.EntityStore
 import io.opencola.storage.PersonaAddressBookEntry
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import java.io.ByteArrayInputStream
+import io.opencola.serialization.protobuf.Model as ProtoModel
 
 private val logger = KotlinLogging.logger("MainReactor")
 
@@ -134,26 +141,16 @@ class MainReactor(
 
     private fun handleNewTransaction(event: Event) {
         logger.info { "Handling new transaction" }
-        val signedTransaction = ByteArrayInputStream(event.data).use{ SignedTransaction.decode(it) }
+        val signedTransaction = SignedTransaction.fromProto(ProtoModel.SignedTransaction.parseFrom(event.data))
         indexTransaction(signedTransaction)
 
         val authorityId = signedTransaction.transaction.authorityId
-        val persona = addressBook.getEntry(authorityId,authorityId) as? PersonaAddressBookEntry
+        val persona = addressBook.getEntry(authorityId, authorityId) as? PersonaAddressBookEntry
 
-        TODO("Replace with broadcastMessage")
-//        if(persona != null) {
-//            // Transaction originated locally, so inform peers
-//            val request = request(
-//                Request.Method.POST,
-//                "/notifications",
-//                null,
-//                null,
-//                Notification(signedTransaction.transaction.authorityId, PeerEvent.NewTransaction)
-//            )
-//
-//            // TODO: authority should come from transaction
-//            networkNode.broadcastRequest(persona, request)
-//        }
+        if(persona != null) {
+            // Transaction originated locally, so inform peers
+            networkNode.broadcastMessage(persona, PutTransactionsMessage(event.data))
+        }
     }
 
     private fun indexTransaction(signedTransaction: SignedTransaction) {

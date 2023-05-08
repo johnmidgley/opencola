@@ -176,7 +176,9 @@ abstract class AbstractEntityStore(
         val allFacts = validateFacts(authorityId, facts.plus(computedFacts(facts)).distinct())
         val signedTransaction = signTransaction(Transaction.fromFacts(getNextTransactionId(authorityId), allFacts))
         val transactionOrdinal = persistTransaction(signedTransaction)
-        eventBus?.sendMessage(Events.NewTransaction.toString(), SignedTransaction.encode(signedTransaction))
+
+        // TODO: Once switched over to all protobuf, just use SignedTransaction.encode
+        eventBus?.sendMessage(Events.NewTransaction.toString(), SignedTransaction.toProto(signedTransaction).toByteArray())
 
         return Pair(signedTransaction, transactionOrdinal)
     }
@@ -224,7 +226,8 @@ abstract class AbstractEntityStore(
                 throw IllegalArgumentException("Transaction ${it.transaction.id} failed to validate from $transactionAuthorityId")
 
             persistTransaction(it)
-            eventBus?.sendMessage(Events.NewTransaction.toString(), SignedTransaction.encode(it))
+            // TODO: Once switched over to all protobuf, just use SignedTransaction.encode
+            eventBus?.sendMessage(Events.NewTransaction.toString(), SignedTransaction.toProto(it).toByteArray())
         }
     }
 }
