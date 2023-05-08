@@ -24,9 +24,11 @@ data class Transaction(val id: Id,
         }
     }
 
-    companion object Factory :
-        StreamSerializer<Transaction>,
-        ProtoSerializable<Transaction, ProtoModel.Transaction> {
+    fun toProto() : ProtoModel.Transaction {
+        return toProto(this)
+    }
+
+    companion object : StreamSerializer<Transaction>, ProtoSerializable<Transaction, ProtoModel.Transaction> {
         fun fromFacts(id: Id, facts: List<Fact>, epochSecond: Long = Instant.now().epochSecond) : Transaction {
             val (authorityId, transactionEntities) = toTransactionEntities(facts)
             return Transaction(id, authorityId, transactionEntities, epochSecond)

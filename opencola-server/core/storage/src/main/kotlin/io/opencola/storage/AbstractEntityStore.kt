@@ -164,7 +164,7 @@ abstract class AbstractEntityStore(
 
     private fun signTransaction(transaction: Transaction) : SignedTransaction {
         val signature = signator.signBytes(transaction.authorityId.toString(), Transaction.encode(transaction))
-        return SignedTransaction(transaction, signature.algorithm, signature.bytes)
+        return SignedTransaction(transaction, signature)
     }
     // It is critical that this function is synchronized and not bypassed. It determines the next transaction
     // id, which needs to be unique, and does a final consistency / conflict check that can't be done in the DB

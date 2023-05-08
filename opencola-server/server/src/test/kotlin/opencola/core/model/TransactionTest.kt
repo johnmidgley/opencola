@@ -6,6 +6,7 @@ import io.opencola.model.value.StringValue
 import io.opencola.util.toHexString
 import io.opencola.security.SIGNATURE_ALGO
 import io.opencola.security.Signator
+import io.opencola.security.Signature
 import io.opencola.security.sha256
 import io.opencola.storage.AddressBook
 import io.opencola.storage.PersonaAddressBookEntry
@@ -26,7 +27,7 @@ class TransactionTest {
         val id = Id.ofData("".toByteArray())
         val fact = Fact(id, id, CoreAttribute.Type.spec, StringValue("").asAnyValue() , Operation.Add)
         val transaction = Transaction.fromFacts(id, listOf(fact), 0)
-        val signedTransaction = SignedTransaction(transaction, SIGNATURE_ALGO, "".toByteArray())
+        val signedTransaction = SignedTransaction(transaction, Signature(SIGNATURE_ALGO, "".toByteArray()))
 
         val hash = ByteArrayOutputStream().use {
             SignedTransaction.encode(it, signedTransaction)
@@ -44,7 +45,7 @@ class TransactionTest {
         val fact = Fact(personaId, entityId, CoreAttribute.Name.spec, value.asAnyValue(), Operation.Add)
         val transaction = Transaction.fromFacts(personaId, listOf(fact))
         val signature = signator.signBytes(transaction.authorityId.toString(), Transaction.encode(transaction))
-        val signedTransaction = SignedTransaction(transaction, signature.algorithm, signature.bytes)
+        val signedTransaction = SignedTransaction(transaction, Signature(signature.algorithm, signature.bytes))
 
         val encodedTransaction = ByteArrayOutputStream().use {
             SignedTransaction.encode(it, signedTransaction)
