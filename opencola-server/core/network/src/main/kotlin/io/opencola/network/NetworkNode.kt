@@ -3,7 +3,7 @@ package io.opencola.network
 import io.opencola.event.EventBus
 import io.opencola.event.Events
 import io.opencola.model.Id
-import io.opencola.network.message.UnsignedMessage
+import io.opencola.network.message.Message
 import io.opencola.network.message.SignedMessage
 import io.opencola.security.Signator
 import io.opencola.storage.AddressBook
@@ -91,15 +91,11 @@ class NetworkNode(
     private val providers = ConcurrentHashMap<String, NetworkProvider>()
 
     private val requestHandler: (Id, Id, SignedMessage) -> Unit = { from, to, signedMessage ->
-        try {
-            router.handleRequest(from, to, signedMessage)
-        } catch (e: Exception) {
-            logger.error(e) { "Error handling signedMessage: $signedMessage" }
-        }
         if(addressBook.getEntry(to, from) !is PersonaAddressBookEntry)
             touchLastSeen(from)
 
-        TODO("Check if caller is trapping exceptions")
+        // to / from are validated in handleRequest
+        router.handleRequest(from, to, signedMessage)
     }
 
     fun addProvider(provider: NetworkProvider) {
@@ -117,7 +113,7 @@ class NetworkNode(
             provider.start()
     }
 
-    fun broadcastMessage(from: PersonaAddressBookEntry, message: UnsignedMessage) {
+    fun broadcastMessage(from: PersonaAddressBookEntry, message: Message) {
         if(config.offlineMode) return
 
         val peers = addressBook.getEntries()
@@ -192,15 +188,16 @@ class NetworkNode(
         logger.info { "Stopped" }
     }
 
-    fun signMessage(from: PersonaAddressBookEntry, message: UnsignedMessage): SignedMessage {
+    fun signMessage(from: PersonaAddressBookEntry, message: Message): SignedMessage {
+        val unsignedMessage = message.toUnsignedMessage()
         return SignedMessage(
             from.personaId,
-            message,
-            signator.signBytes(from.personaId.toString(), message.payload)
+            unsignedMessage,
+            signator.signBytes(from.personaId.toString(), unsignedMessage.payload)
         )
     }
 
-    private fun sendMessage(from: PersonaAddressBookEntry, to: AddressBookEntry, message: UnsignedMessage) {
+    private fun sendMessage(from: PersonaAddressBookEntry, to: AddressBookEntry, message: Message) {
         require(to !is PersonaAddressBookEntry)
         if(config.offlineMode) return
 
@@ -211,7 +208,7 @@ class NetworkNode(
         provider.sendMessage(from, to, signMessage(from, message))
     }
 
-    fun sendMessage(fromId: Id, toId: Id, message: UnsignedMessage) {
+    fun sendMessage(fromId: Id, toId: Id, message: Message) {
         if(config.offlineMode) return
 
         val persona = addressBook.getEntry(fromId, fromId) as? PersonaAddressBookEntry

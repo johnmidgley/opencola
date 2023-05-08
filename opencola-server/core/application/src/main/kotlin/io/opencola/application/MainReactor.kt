@@ -10,6 +10,7 @@ import io.opencola.network.NetworkConfig
 import io.opencola.network.NetworkNode
 import io.opencola.network.Notification
 import io.opencola.network.PeerEvent
+import io.opencola.network.message.GetTransactionsMessage
 import io.opencola.network.message.PutTransactionsMessage
 import io.opencola.search.SearchIndex
 import io.opencola.storage.AddressBook
@@ -57,7 +58,7 @@ class MainReactor(
     private val networkNode: NetworkNode,
     private val addressBook: AddressBook,
 ) : Reactor {
-    private fun handleNodeStarted(event: Event){
+    private fun handleNodeStarted(event: Event) {
         logger.info { event.name }
         updatePeerTransactions()
     }
@@ -67,7 +68,7 @@ class MainReactor(
 
         val peers = addressBook.getEntries().filter { it !is PersonaAddressBookEntry && it.isActive }
 
-        if(peers.isNotEmpty()) {
+        if (peers.isNotEmpty()) {
             logger.info { "Updating peer transactions" }
 
             // TODO: Swap runBlocking with adding to peerExecutor
@@ -81,27 +82,27 @@ class MainReactor(
     }
 
     private fun requestTransactions(peer: AddressBookEntry) {
-        if(networkConfig.offlineMode) return
+        if (networkConfig.offlineMode) return
 
-        if(peer is PersonaAddressBookEntry)
+        if (peer is PersonaAddressBookEntry)
             throw IllegalArgumentException("Attempt to request transactions for local persona: ${peer.entityId}")
 
-        if(!peer.isActive)
+        if (!peer.isActive)
             return
 
-        var mostRecentTransactionId = entityStore.getLastTransactionId(peer.entityId)
+        val mostRecentTransactionId = entityStore.getLastTransactionId(peer.entityId)
+        networkNode.sendMessage(peer.personaId, peer.entityId, GetTransactionsMessage(mostRecentTransactionId))
 
-        // TODO - Config max batches
-        // TODO: Set reasonable max batches and batch sizes
-        for (batch in 1..10000) {
-            logger.info { "Requesting transactions from ${peer.name} - Batch $batch" }
-            val baseParams = mapOf("authorityId" to peer.entityId.toString())
-            val params = if(mostRecentTransactionId == null)
-                baseParams
-            else
-                baseParams.plus(Pair("mostRecentTransactionId", mostRecentTransactionId.toString()))
-
-            TODO("Prepare proto request and handle response in message handler")
+//        // TODO - Config max batches
+//        // TODO: Set reasonable max batches and batch sizes
+//        for (batch in 1..10000) {
+//            logger.info { "Requesting transactions from ${peer.name} - Batch $batch" }
+//            val baseParams = mapOf("authorityId" to peer.entityId.toString())
+//            val params = if (mostRecentTransactionId == null)
+//                baseParams
+//            else
+//                baseParams.plus(Pair("mostRecentTransactionId", mostRecentTransactionId.toString()))
+//
 //            val request = Request(Request.Method.GET, "/transactions", null, params)
 //            val transactionsResponse = networkNode.sendMessage(peer.personaId, peer.entityId, request)?.body?.let {
 //             TransactionsResponse.decode(it)
@@ -118,13 +119,13 @@ class MainReactor(
 //
 //            if (mostRecentTransactionId == transactionsResponse.currentTransactionId)
 //                break
-        }
+//        }
 
         logger.info { "Completed requesting transactions from: ${peer.name}" }
     }
 
     private fun requestTransactions(peerId: Id) {
-        if(networkConfig.offlineMode) return
+        if (networkConfig.offlineMode) return
 
         //TODO: After requesting transactions, check to see if a new HEAD has been set (i.e. the transactions don't
         // chain to existing ones, which can happen if a peer deletes their store). If this happens, inform the user
@@ -136,7 +137,7 @@ class MainReactor(
 
         // TODO: This blocks startup. Make fully async (and/or handle startup with event bus)
         // TODO: Remove all runBlocking - replace with appropriate executor
-         requestTransactions(peer)
+        requestTransactions(peer)
     }
 
     private fun handleNewTransaction(event: Event) {
@@ -147,9 +148,9 @@ class MainReactor(
         val authorityId = signedTransaction.transaction.authorityId
         val persona = addressBook.getEntry(authorityId, authorityId) as? PersonaAddressBookEntry
 
-        if(persona != null) {
+        if (persona != null) {
             // Transaction originated locally, so inform peers
-            networkNode.broadcastMessage(persona, PutTransactionsMessage(event.data))
+            networkNode.broadcastMessage(persona, PutTransactionsMessage(listOf(event.data)))
         }
     }
 
@@ -157,21 +158,21 @@ class MainReactor(
         indexTransaction(entityStore, searchIndex, signedTransaction)
     }
 
-    private fun handlePeerNotification(event: Event){
+    private fun handlePeerNotification(event: Event) {
         val notification = ByteArrayInputStream(event.data).use { Notification.decode(it) }
         logger.info { "Handling notification for peer ${notification.peerId} event: ${notification.event}" }
 
         // TODO: A peer that is connected via multiple personas should only send one notification, since broadcasts
         //  are sent to distinct peers. Think about a test for this.
 
-        when(notification.event){
+        when (notification.event) {
             PeerEvent.Added -> requestTransactions(notification.peerId)
             PeerEvent.Online -> requestTransactions(notification.peerId)
             PeerEvent.NewTransaction -> requestTransactions(notification.peerId)
         }
     }
 
-    private fun handleNodeResume(event: Event){
+    private fun handleNodeResume(event: Event) {
         logger.info { event.name }
 
         // Restart network node so that connections are fresh
@@ -181,10 +182,11 @@ class MainReactor(
         // Request any transactions that may have been missed while suspended.
         updatePeerTransactions()
     }
+
     override fun handleMessage(event: Event) {
         logger.info { "Handling event: $event" }
 
-        when(Events.valueOf(event.name)){
+        when (Events.valueOf(event.name)) {
             Events.NodeStarted -> handleNodeStarted(event)
             Events.NodeResume -> handleNodeResume(event)
             Events.NewTransaction -> handleNewTransaction(event)

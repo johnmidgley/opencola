@@ -141,7 +141,7 @@ class NetworkNodeTest {
 
         // Request data as peer
 
-        val message = GetDataMessage(setOf(id)).toMessage()
+        val message = GetDataMessage(setOf(id)).toUnsignedMessage()
         val envelopeBytes = context.provider.getEncodedEnvelope(peer.entityId, persona.personaId, message, false)
         TODO("Check that correct response message is sent")
     }

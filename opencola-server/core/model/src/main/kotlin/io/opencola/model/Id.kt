@@ -51,6 +51,10 @@ data class Id(private val bytes: ByteArray) : Comparable<Id> {
             false
     }
 
+    fun toProto() : ProtoModel.Id {
+        return Factory.toProto(this)
+    }
+
     companion object Factory : ByteArrayCodec<Id>, StreamSerializer<Id>, ProtoSerializable<Id, ProtoModel.Id> {
         // TODO: Should return Id? - empty string is not valid.
         fun decode(value: String): Id {

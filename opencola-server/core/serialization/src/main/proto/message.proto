@@ -5,9 +5,14 @@ package io.opencola.serialization.protobuf;
 import "security.proto";
 import "model.proto";
 
+message MessageHeader {
+  Id mostRecentTransactionId = 1;
+}
+
 message UnsignedMessage {
-  string type = 1;
-  bytes payload = 2;
+  MessageHeader header = 1;
+  string type = 2;
+  bytes payload = 3;
 }
 
 message SignedMessage {
@@ -24,10 +29,12 @@ message MessageEnvelope {
 
 message GetTransactionsMessage {
   Id mostRecentTransactionId = 1;
+  int32 maxTransactions = 2;
 }
 
 message PutTransactionsMessage {
-  repeated SignedTransaction transactions = 1;
+  // Transactions are sent as bytes to preserve signatures
+  repeated bytes signedTransactions = 1;
 }
 
 message GetDataMessage {

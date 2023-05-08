@@ -28,8 +28,8 @@ class RequestRouter(private val addressBook: AddressBook, private val routes: Li
             throw IllegalArgumentException("Received request to inactive persona (from: $from to: $to)")
 
 
-        val handler = routes.firstOrNull { it.messageType == signedMessage.message.type }?.handler
-            ?: "No handler specified for ${signedMessage.message.type}".let {
+        val handler = routes.firstOrNull { it.messageType == signedMessage.body.type }?.handler
+            ?: "No handler specified for ${signedMessage.body.type}".let {
                 logger.error { it }
                 return
             }
@@ -38,6 +38,7 @@ class RequestRouter(private val addressBook: AddressBook, private val routes: Li
             handler(from, to, signedMessage)
         } catch (e: Exception){
             logger.error { "Handler encountered error: $e" }
+            throw e
         }
     }
 }

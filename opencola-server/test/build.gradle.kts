@@ -29,5 +29,6 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
     implementation("org.kodein.di:kodein-di:$kodeinVersion")
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
+    implementation(project(mapOf("path" to ":core:io")))
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
 }

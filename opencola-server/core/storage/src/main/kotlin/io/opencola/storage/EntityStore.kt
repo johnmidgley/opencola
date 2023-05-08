@@ -22,6 +22,7 @@ interface EntityStore {
     fun getEntities(authorityIds: Set<Id>, entityIds: Set<Id>) : List<Entity>
     fun deleteEntities(authorityId: Id, vararg entityIds: Id)
     fun updateEntities(vararg entities: Entity) : SignedTransaction?
+    // TODO: Should this be 'put' instead of 'add'?
     fun addSignedTransactions(signedTransactions: List<SignedTransaction>)
     fun getSignedTransactions(authorityIds: Iterable<Id>, startTransactionId: Id?, order: TransactionOrder, limit: Int) : Iterable<SignedTransaction>
 

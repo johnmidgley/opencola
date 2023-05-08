@@ -225,6 +225,7 @@ abstract class AbstractEntityStore(
             if (!it.isValidTransaction(publicKey))
                 throw IllegalArgumentException("Transaction ${it.transaction.id} failed to validate from $transactionAuthorityId")
 
+            logger.info { "Adding transaction ${it.transaction.id} from $transactionAuthorityId" }
             persistTransaction(it)
             // TODO: Once switched over to all protobuf, just use SignedTransaction.encode
             eventBus?.sendMessage(Events.NewTransaction.toString(), SignedTransaction.toProto(it).toByteArray())

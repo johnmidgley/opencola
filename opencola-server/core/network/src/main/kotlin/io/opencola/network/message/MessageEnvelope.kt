@@ -4,12 +4,17 @@ import io.opencola.model.Id
 import io.opencola.security.Encryptor
 import io.opencola.serialization.protobuf.Message as ProtoMessage
 import com.google.protobuf.ByteString
+import io.opencola.security.PublicKeyProvider
+import io.opencola.security.encrypt
 
 class MessageEnvelope(val to: Id, val signedMessage: SignedMessage) {
-    fun encode(encryptor: Encryptor? = null) : ByteArray {
+    fun encode(publicKeyProvider: PublicKeyProvider<Id>?): ByteArray {
         val toAlias = to.toString()
         val encodedSignedBytes = signedMessage.encode()
-        val encryption = encryptor?.let { encryptor.encrypt(toAlias, encodedSignedBytes) }
+        val encryption = publicKeyProvider?.let {
+            publicKeyProvider.getPublicKey(to)?.let { encrypt(it, encodedSignedBytes) }
+                ?: throw RuntimeException("Unable to find public key for alias: $toAlias")
+        }
         val messageBytes = encryption?.bytes ?: encodedSignedBytes
 
         return ProtoMessage.MessageEnvelope.newBuilder()
@@ -37,7 +42,8 @@ class MessageEnvelope(val to: Id, val signedMessage: SignedMessage) {
                 }
             } ?: messageBytes
 
-            return MessageEnvelope(to, SignedMessage.fromProto(ProtoMessage.SignedMessage.parseFrom(signedMessageBytes)))
+            return MessageEnvelope(to, SignedMessage.fromProto(ProtoMessage.SignedMessage.parseFrom(signedMessageBytes))
+            )
         }
     }
 }

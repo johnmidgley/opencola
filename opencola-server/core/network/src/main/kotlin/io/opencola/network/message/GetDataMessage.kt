@@ -5,15 +5,7 @@ import io.opencola.model.Id
 import io.opencola.serialization.protobuf.Message as ProtoMessage
 import io.opencola.serialization.protobuf.ProtoSerializable
 
-class GetDataMessage(val ids: Set<Id>) {
-    fun toProto(): ProtoMessage.UnsignedMessage {
-        return toProto(this)
-    }
-
-    fun toMessage() : UnsignedMessage {
-        return UnsignedMessage("GetDataMessage", toProto().toByteArray())
-    }
-
+class GetDataMessage(val ids: Set<Id>) : Message("GetDataMessage") {
     companion object : ProtoSerializable<GetDataMessage, ProtoMessage.UnsignedMessage>  {
         override fun toProto(value: GetDataMessage): ProtoMessage.UnsignedMessage {
             val bytes = ProtoMessage.GetDataMessage
@@ -33,5 +25,9 @@ class GetDataMessage(val ids: Set<Id>) {
             val proto = ProtoMessage.GetDataMessage.parseFrom(value.payload)
             return GetDataMessage(proto.idsList.map { Id.fromProto(it) }.toSet())
         }
+    }
+
+    override fun toProto(): ProtoMessage.UnsignedMessage {
+        return toProto(this)
     }
 }

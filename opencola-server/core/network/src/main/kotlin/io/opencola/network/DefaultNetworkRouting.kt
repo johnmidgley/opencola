@@ -1,10 +1,11 @@
 package io.opencola.network
 
-import mu.KotlinLogging
 import io.opencola.event.EventBus
 import io.opencola.event.Events
 import io.opencola.model.Id
 import io.opencola.model.SignedTransaction
+import io.opencola.network.message.GetTransactionsMessage
+import io.opencola.network.message.PutTransactionsMessage
 import io.opencola.serialization.readByteArray
 import io.opencola.serialization.readInt
 import io.opencola.serialization.writeByteArray
@@ -12,6 +13,7 @@ import io.opencola.serialization.writeInt
 import io.opencola.storage.AddressBook
 import io.opencola.storage.EntityStore
 import io.opencola.storage.FileStore
+import mu.KotlinLogging
 import java.io.ByteArrayOutputStream
 
 private val logger = KotlinLogging.logger("RequestRouting")
@@ -35,19 +37,19 @@ data class TransactionsResponse(
     val transactions: List<SignedTransaction>,
 ) {
     companion object {
-        fun encode(value: TransactionsResponse) : ByteArray {
-            return ByteArrayOutputStream().use {outputStream ->
-                outputStream.writeByteArray(value.startTransactionId?.let{ Id.encode(it) } ?: ByteArray(0))
-                outputStream.writeByteArray(value.currentTransactionId?.let{ Id.encode(it) }?: ByteArray(0))
+        fun encode(value: TransactionsResponse): ByteArray {
+            return ByteArrayOutputStream().use { outputStream ->
+                outputStream.writeByteArray(value.startTransactionId?.let { Id.encode(it) } ?: ByteArray(0))
+                outputStream.writeByteArray(value.currentTransactionId?.let { Id.encode(it) } ?: ByteArray(0))
                 outputStream.writeInt(value.transactions.size)
                 value.transactions.forEach { it ->
-                    outputStream.write( SignedTransaction.encode(it))
+                    outputStream.write(SignedTransaction.encode(it))
                 }
                 outputStream.toByteArray()
             }
         }
 
-        fun decode(bytes: ByteArray) : TransactionsResponse {
+        fun decode(bytes: ByteArray): TransactionsResponse {
             val inputStream = bytes.inputStream()
             val startTransactionId = inputStream.readByteArray().let { if (it.isEmpty()) null else Id.decode(it) }
             val currentTransactionId = inputStream.readByteArray().let { if (it.isEmpty()) null else Id.decode(it) }
@@ -103,18 +105,29 @@ fun pongRoute(): Route {
     return Route("pong") { _, _, _ -> TODO("Handle pong") }
 }
 
-fun putNotificationsRoute(eventBus: EventBus, addressBook: AddressBook) : Route {
+fun putNotificationsRoute(eventBus: EventBus, addressBook: AddressBook): Route {
     return Route("notifications") { from, to, message ->
         TODO("handle notifications")
 //        handleNotification(addressBook, eventBus, from, to, notification)
     }
 }
 
-fun getTransactionsRoute(entityStore: EntityStore, addressBook: AddressBook) : Route {
+fun getTransactionsRoute(entityStore: EntityStore, addressBook: AddressBook): Route {
     return Route(
-        "getTransactions"
-    ) { from, _, message ->
-    TODO("handle getTransactions")
+        GetTransactionsMessage.messageType
+    ) { from, to, message ->
+        val getTransactionsMessage = GetTransactionsMessage.fromPayload(message.body.payload)
+
+        val transactionResponse =  handleGetTransactions(
+            entityStore,
+            addressBook,
+            to,
+            from,
+            getTransactionsMessage.mostRecentTransactionId,
+            getTransactionsMessage.maxTransactions
+        )
+
+        TODO("handle getTransactions")
 //        val authorityId =
 //            Id.decode(request.parameters["authorityId"] ?: throw IllegalArgumentException("No authorityId set"))
 //        val transactionId = request.parameters["mostRecentTransactionId"].nullOrElse { Id.decode(it) }
@@ -131,15 +144,17 @@ fun getTransactionsRoute(entityStore: EntityStore, addressBook: AddressBook) : R
     }
 }
 
-fun putTransactionsRoute(entityStore: EntityStore, addressBook: AddressBook) : Route {
+fun putTransactionsRoute(entityStore: EntityStore, addressBook: AddressBook): Route {
     return Route(
-        "putTransactions"
+        PutTransactionsMessage.messageType
     ) { from, _, message ->
-        TODO("handle putTransactions")
+        val signedTransactions = PutTransactionsMessage(message.body.payload).getSignedTransactions()
+        logger.info { "Received ${signedTransactions.size} transactions from $from" }
+        entityStore.addSignedTransactions(signedTransactions)
     }
 }
 
-fun getDataRoute(fileStore: FileStore) : Route {
+fun getDataRoute(fileStore: FileStore): Route {
     return Route(
         "getData"
     ) { _, _, message ->
@@ -147,7 +162,7 @@ fun getDataRoute(fileStore: FileStore) : Route {
     }
 }
 
-fun putDataRoute(fileStore: FileStore) : Route {
+fun putDataRoute(fileStore: FileStore): Route {
     return Route(
         "putData"
     ) { _, _, message ->

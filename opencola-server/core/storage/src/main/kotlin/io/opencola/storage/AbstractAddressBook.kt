@@ -40,6 +40,7 @@ abstract class AbstractAddressBook : AddressBook {
     protected fun callUpdateHandlers(previousEntry: AddressBookEntry?,
                                    currentEntry: AddressBookEntry?,
                                    suppressUpdateHandler: ((AddressBookEntry?, AddressBookEntry?) -> Unit)? = null) {
+        logger.info { "Address book update: $previousEntry -> $currentEntry" }
         updateHandlers.forEach {
             try {
                 if(it != suppressUpdateHandler)

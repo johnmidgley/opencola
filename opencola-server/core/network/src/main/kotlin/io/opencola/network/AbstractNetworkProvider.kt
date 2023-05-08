@@ -29,7 +29,7 @@ abstract class AbstractNetworkProvider(
     fun getEncodedEnvelope(fromId: Id, toId: Id, signedMessage: SignedMessage, encryptMessage: Boolean): ByteArray {
         addressBook.getEntry(fromId, fromId) ?: throw IllegalArgumentException("FromId $fromId is not a persona")
         addressBook.getEntry(fromId, toId) ?: throw IllegalArgumentException("$fromId does not have $toId as peer")
-        return MessageEnvelope(toId, signedMessage).encode(if (encryptMessage) encryptor else null)
+        return MessageEnvelope(toId, signedMessage).encode(if (encryptMessage) addressBook else null)
     }
 
     // TODO: This should be removed. Signing should be done centrally by the NetworkNode
@@ -53,7 +53,7 @@ abstract class AbstractNetworkProvider(
         val fromPersona = addressBook.getEntry(messageEnvelope.to, signedMessage.from)
             ?: throw IllegalArgumentException("Message is from unknown peer: ${signedMessage.from}")
 
-        if (!isValidSignature(fromPersona.publicKey, signedMessage.message.payload, signedMessage.signature)) {
+        if (!isValidSignature(fromPersona.publicKey, signedMessage.body.payload, signedMessage.signature)) {
             throw IllegalArgumentException("Received message from $fromPersona with invalid signature")
         }
     }

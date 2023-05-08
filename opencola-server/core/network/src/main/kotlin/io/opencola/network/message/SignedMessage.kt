@@ -7,9 +7,9 @@ import io.opencola.serialization.protobuf.Message
 import io.opencola.serialization.protobuf.ProtoSerializable
 import io.opencola.serialization.protobuf.Message as ProtoMessage
 
-class SignedMessage(val from: Id, val message: UnsignedMessage, val signature: Signature) {
+class SignedMessage(val from: Id, val body: UnsignedMessage, val signature: Signature) {
     override fun toString(): String {
-        return "SignedMessage(from=$from, message=$message, signature=$signature)"
+        return "SignedMessage(from=$from, message=$body, signature=$signature)"
     }
     constructor(from: Id, message: UnsignedMessage, signator: Signator) : this(
         from,
@@ -25,7 +25,7 @@ class SignedMessage(val from: Id, val message: UnsignedMessage, val signature: S
         override fun toProto(value: SignedMessage): Message.SignedMessage {
             return Message.SignedMessage.newBuilder()
                 .setFrom(Id.toProto(value.from))
-                .setMessage(UnsignedMessage.toProto(value.message).toByteString())
+                .setMessage(UnsignedMessage.toProto(value.body).toByteString())
                 .setSignature(Signature.toProto(value.signature))
                 .build()
         }

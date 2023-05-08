@@ -8,6 +8,7 @@ import io.opencola.application.Application
 import io.opencola.io.StdoutMonitor
 import io.opencola.model.ResourceEntity
 import io.opencola.storage.EntityStore
+import io.opencola.storage.waitForAddressBookAdd
 import opencola.core.network.ApplicationNode
 import opencola.server.handlers.inviteTokenToPeer
 import java.net.URI
@@ -68,7 +69,7 @@ open class PeerNetworkTest {
             // Note this will trigger an expected error in the logs, since it will trigger a transaction request, but
             // app0 isn't known to app1 yet
             addPeer(application0, application1)
-            waitUntil("Completed requesting transactions from")
+            stdoutMonitor.waitForAddressBookAdd(authority0.entityId, authority1.entityId)
             println("Adding application0 as peer to application1")
             addPeer(application1, application0)
 

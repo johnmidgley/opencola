@@ -1,5 +1,6 @@
 package io.opencola.storage
 
+import io.opencola.io.StdoutMonitor
 import io.opencola.model.Id
 import io.opencola.security.generateKeyPair
 import java.net.URI
@@ -49,4 +50,9 @@ fun AddressBook.addPeer(personaId: Id,
 ): AddressBookEntry {
     return createPeer(personaId, name, isActive, publicKey).also { updateEntry(it) }
 }
+
+fun StdoutMonitor.waitForAddressBookAdd(personaId: Id, peerId: Id) {
+    waitUntil {it.contains("Address book update: null -> AddressBookEntry(personaId=$personaId, entityId=$peerId") }
+}
+
 
