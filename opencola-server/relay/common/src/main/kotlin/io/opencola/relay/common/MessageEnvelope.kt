@@ -11,7 +11,7 @@ import java.io.OutputStream
 import java.security.PublicKey
 
 class MessageEnvelope(val to: PublicKey, val message: ByteArray) {
-    constructor(to: PublicKey, message: Message) : this(to, encrypt(to, Message.encode(message)))
+    constructor(to: PublicKey, message: Message) : this(to, encrypt(to, Message.encode(message)).bytes)
 
     companion object : StreamSerializer<MessageEnvelope> {
         override fun encode(stream: OutputStream, value: MessageEnvelope) {

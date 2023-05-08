@@ -13,7 +13,7 @@ import kotlin.test.*
 
 
 class NetworkNodeTest {
-    val pingMessage = PingMessage().toMessage()
+    val pingMessage = PingMessage()
 
     @Test
     fun testSendRequestFromInvalidPersona() {

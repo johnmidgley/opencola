@@ -192,18 +192,23 @@ class NetworkNode(
         logger.info { "Stopped" }
     }
 
+    fun signMessage(from: PersonaAddressBookEntry, message: UnsignedMessage): SignedMessage {
+        return SignedMessage(
+            from.personaId,
+            message,
+            signator.signBytes(from.personaId.toString(), message.payload)
+        )
+    }
+
     private fun sendMessage(from: PersonaAddressBookEntry, to: AddressBookEntry, message: UnsignedMessage) {
         require(to !is PersonaAddressBookEntry)
         if(config.offlineMode) return
 
-        val signedMessage = SignedMessage(
-            from.personaId,
-            message,
-            signator.signBytes(from.personaId.toString(), message.payload))
-        val scheme = to.address.scheme
-        val provider = providers[scheme] ?: throw IllegalStateException("No provider found for scheme: $scheme")
+        val provider = to.address.scheme.let { scheme ->
+            providers[scheme] ?: throw IllegalStateException("No provider found for scheme: $scheme")
+        }
 
-        provider.sendMessage(from, to, signedMessage)
+        provider.sendMessage(from, to, signMessage(from, message))
     }
 
     fun sendMessage(fromId: Id, toId: Id, message: UnsignedMessage) {

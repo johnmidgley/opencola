@@ -35,25 +35,31 @@ fun sign(privateKey: PrivateKey, data: ByteArray, algorithm: String = SIGNATURE_
     return Signature(algorithm, ecdsaSign.sign())
 }
 
-fun encrypt(publicKey: PublicKey, bytes: ByteArray) : ByteArray {
-    return ByteArrayOutputStream().use{
-        val cipher = Cipher.getInstance(ENCRYPTION_TRANSFORMATION).also { it.init(Cipher.ENCRYPT_MODE, publicKey) }
+fun encrypt(publicKey: PublicKey, bytes: ByteArray, transformation: String = ENCRYPTION_TRANSFORMATION) : Encryption {
+    val encryptedBytes =  ByteArrayOutputStream().use{
+        val cipher = Cipher.getInstance(transformation).also { it.init(Cipher.ENCRYPT_MODE, publicKey) }
         it.writeByteArray(cipher.parameters.encoded)
         it.writeByteArray(cipher.doFinal(bytes))
         it.toByteArray()
     }
+
+    return Encryption(transformation, encryptedBytes)
 }
 
-fun decrypt(privateKey: PrivateKey, bytes: ByteArray) : ByteArray {
+fun decrypt(privateKey: PrivateKey, bytes: ByteArray, transformation: String = ENCRYPTION_TRANSFORMATION) : ByteArray {
     ByteArrayInputStream(bytes).use{ stream ->
         val encodedParameters = stream.readByteArray()
         val cipherBytes = stream.readByteArray()
         val params = AlgorithmParameters.getInstance("IES").also { it.init(encodedParameters) }
 
-        return Cipher.getInstance(ENCRYPTION_TRANSFORMATION)
+        return Cipher.getInstance(transformation)
             .also { it.init(Cipher.DECRYPT_MODE, privateKey, params) }
             .doFinal(cipherBytes)
     }
+}
+
+fun decrypt(privateKey: PrivateKey, encryption: Encryption) : ByteArray {
+    return decrypt(privateKey, encryption.bytes, encryption.transformation)
 }
 
 fun isValidSignature(publicKey: PublicKey, data: ByteArray, signature: ByteArray, algorithm: String = SIGNATURE_ALGO): Boolean {
