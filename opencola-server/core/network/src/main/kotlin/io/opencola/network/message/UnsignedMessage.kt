@@ -1,10 +1,15 @@
 package io.opencola.network.message
 
-import io.opencola.serialization.*
-import java.io.InputStream
-import java.io.OutputStream
+import com.google.protobuf.ByteString
+import io.opencola.serialization.protobuf.Message
+import io.opencola.serialization.protobuf.ProtoSerializable
+import io.opencola.serialization.protobuf.Message as ProtoMessage
 
-class UnsignedMessage(val type: String, val payload: ByteArray) {
+open class UnsignedMessage(val type: String, val payload: ByteArray) {
+    override fun toString(): String {
+        return "UnsignedMessage(type='$type', payload=${payload.size} bytes)"
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -21,14 +26,16 @@ class UnsignedMessage(val type: String, val payload: ByteArray) {
         return result
     }
 
-    companion object : StreamSerializer<UnsignedMessage> {
-        override fun encode(stream: OutputStream, value: UnsignedMessage) {
-            stream.writeString(value.type)
-            stream.writeByteArray(value.payload)
+    companion object : ProtoSerializable<UnsignedMessage, ProtoMessage.UnsignedMessage> {
+        override fun toProto(value: UnsignedMessage): Message.UnsignedMessage {
+            return Message.UnsignedMessage.newBuilder()
+                .setType(value.type)
+                .setPayload(ByteString.copyFrom(value.payload))
+                .build()
         }
 
-        override fun decode(stream: InputStream): UnsignedMessage {
-            return UnsignedMessage(stream.readString(), stream.readByteArray())
+        override fun fromProto(value: Message.UnsignedMessage): UnsignedMessage {
+            return UnsignedMessage(value.type, value.payload.toByteArray())
         }
     }
 }

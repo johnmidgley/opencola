@@ -39,7 +39,7 @@ class AuthTokenTest {
 
     @Test
     fun testInvalidToken() {
-        val encoded = encrypt(keyPair.public, "invalid".toByteArray()).let { Base58.encode(it) }
+        val encoded = encrypt(keyPair.public, "invalid".toByteArray()).let { Base58.encode(it.bytes) }
         val decoded = AuthToken.decode(AuthToken.encryptionParams, encoded)
         assert(decoded == null)
     }

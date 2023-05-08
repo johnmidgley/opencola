@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package io.opencola.serialization.protobuf;
 
+import "security.proto";
+
 message Attribute {
   oneof value {
     uint32 ordinal = 1;
@@ -55,11 +57,6 @@ message Transaction {
   Id authorityId = 2;
   repeated TransactionEntity transactionEntities = 3;
   uint64 epochSecond = 4;
-}
-
-message Signature {
-  string algorithm = 1;
-  bytes bytes = 2;
 }
 
 message SignedTransaction {

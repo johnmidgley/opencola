@@ -2,6 +2,7 @@ package io.opencola.model
 
 import com.google.protobuf.ByteString
 import io.opencola.serialization.protobuf.Model as ProtoModel
+import io.opencola.serialization.protobuf.Security as ProtoSecurity
 import io.opencola.security.SIGNATURE_ALGO
 import io.opencola.security.isValidSignature
 import io.opencola.serialization.protobuf.ProtoSerializable
@@ -53,7 +54,7 @@ data class SignedTransaction(val transaction: Transaction, val algorithm: String
         override fun toProto(value: SignedTransaction): ProtoModel.SignedTransaction {
             val builder = ProtoModel.SignedTransaction.newBuilder()
             builder.transaction = Transaction.toProto(value.transaction).toByteString()
-            builder.signature = ProtoModel.Signature.newBuilder()
+            builder.signature = ProtoSecurity.Signature.newBuilder()
                 .setAlgorithm(value.algorithm)
                 .setBytes(ByteString.copyFrom(value.signature))
                 .build()

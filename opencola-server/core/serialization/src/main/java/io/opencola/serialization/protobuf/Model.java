@@ -6826,648 +6826,6 @@ public final class Model {
 
   }
 
-  public interface SignatureOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:io.opencola.serialization.protobuf.Signature)
-      com.google.protobuf.MessageOrBuilder {
-
-    /**
-     * <code>string algorithm = 1;</code>
-     * @return The algorithm.
-     */
-    java.lang.String getAlgorithm();
-    /**
-     * <code>string algorithm = 1;</code>
-     * @return The bytes for algorithm.
-     */
-    com.google.protobuf.ByteString
-        getAlgorithmBytes();
-
-    /**
-     * <code>bytes bytes = 2;</code>
-     * @return The bytes.
-     */
-    com.google.protobuf.ByteString getBytes();
-  }
-  /**
-   * Protobuf type {@code io.opencola.serialization.protobuf.Signature}
-   */
-  public static final class Signature extends
-      com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:io.opencola.serialization.protobuf.Signature)
-      SignatureOrBuilder {
-  private static final long serialVersionUID = 0L;
-    // Use Signature.newBuilder() to construct.
-    private Signature(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
-      super(builder);
-    }
-    private Signature() {
-      algorithm_ = "";
-      bytes_ = com.google.protobuf.ByteString.EMPTY;
-    }
-
-    @java.lang.Override
-    @SuppressWarnings({"unused"})
-    protected java.lang.Object newInstance(
-        UnusedPrivateParameter unused) {
-      return new Signature();
-    }
-
-    @java.lang.Override
-    public final com.google.protobuf.UnknownFieldSet
-    getUnknownFields() {
-      return this.unknownFields;
-    }
-    private Signature(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              algorithm_ = s;
-              break;
-            }
-            case 18: {
-
-              bytes_ = input.readBytes();
-              break;
-            }
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
-    public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
-      return io.opencola.serialization.protobuf.Model.internal_static_io_opencola_serialization_protobuf_Signature_descriptor;
-    }
-
-    @java.lang.Override
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-        internalGetFieldAccessorTable() {
-      return io.opencola.serialization.protobuf.Model.internal_static_io_opencola_serialization_protobuf_Signature_fieldAccessorTable
-          .ensureFieldAccessorsInitialized(
-              io.opencola.serialization.protobuf.Model.Signature.class, io.opencola.serialization.protobuf.Model.Signature.Builder.class);
-    }
-
-    public static final int ALGORITHM_FIELD_NUMBER = 1;
-    private volatile java.lang.Object algorithm_;
-    /**
-     * <code>string algorithm = 1;</code>
-     * @return The algorithm.
-     */
-    @java.lang.Override
-    public java.lang.String getAlgorithm() {
-      java.lang.Object ref = algorithm_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        algorithm_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string algorithm = 1;</code>
-     * @return The bytes for algorithm.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getAlgorithmBytes() {
-      java.lang.Object ref = algorithm_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        algorithm_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-
-    public static final int BYTES_FIELD_NUMBER = 2;
-    private com.google.protobuf.ByteString bytes_;
-    /**
-     * <code>bytes bytes = 2;</code>
-     * @return The bytes.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString getBytes() {
-      return bytes_;
-    }
-
-    private byte memoizedIsInitialized = -1;
-    @java.lang.Override
-    public final boolean isInitialized() {
-      byte isInitialized = memoizedIsInitialized;
-      if (isInitialized == 1) return true;
-      if (isInitialized == 0) return false;
-
-      memoizedIsInitialized = 1;
-      return true;
-    }
-
-    @java.lang.Override
-    public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
-      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(algorithm_)) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, algorithm_);
-      }
-      if (!bytes_.isEmpty()) {
-        output.writeBytes(2, bytes_);
-      }
-      unknownFields.writeTo(output);
-    }
-
-    @java.lang.Override
-    public int getSerializedSize() {
-      int size = memoizedSize;
-      if (size != -1) return size;
-
-      size = 0;
-      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(algorithm_)) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, algorithm_);
-      }
-      if (!bytes_.isEmpty()) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(2, bytes_);
-      }
-      size += unknownFields.getSerializedSize();
-      memoizedSize = size;
-      return size;
-    }
-
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
-      if (obj == this) {
-       return true;
-      }
-      if (!(obj instanceof io.opencola.serialization.protobuf.Model.Signature)) {
-        return super.equals(obj);
-      }
-      io.opencola.serialization.protobuf.Model.Signature other = (io.opencola.serialization.protobuf.Model.Signature) obj;
-
-      if (!getAlgorithm()
-          .equals(other.getAlgorithm())) return false;
-      if (!getBytes()
-          .equals(other.getBytes())) return false;
-      if (!unknownFields.equals(other.unknownFields)) return false;
-      return true;
-    }
-
-    @java.lang.Override
-    public int hashCode() {
-      if (memoizedHashCode != 0) {
-        return memoizedHashCode;
-      }
-      int hash = 41;
-      hash = (19 * hash) + getDescriptor().hashCode();
-      hash = (37 * hash) + ALGORITHM_FIELD_NUMBER;
-      hash = (53 * hash) + getAlgorithm().hashCode();
-      hash = (37 * hash) + BYTES_FIELD_NUMBER;
-      hash = (53 * hash) + getBytes().hashCode();
-      hash = (29 * hash) + unknownFields.hashCode();
-      memoizedHashCode = hash;
-      return hash;
-    }
-
-    public static io.opencola.serialization.protobuf.Model.Signature parseFrom(
-        java.nio.ByteBuffer data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static io.opencola.serialization.protobuf.Model.Signature parseFrom(
-        java.nio.ByteBuffer data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static io.opencola.serialization.protobuf.Model.Signature parseFrom(
-        com.google.protobuf.ByteString data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static io.opencola.serialization.protobuf.Model.Signature parseFrom(
-        com.google.protobuf.ByteString data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static io.opencola.serialization.protobuf.Model.Signature parseFrom(byte[] data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static io.opencola.serialization.protobuf.Model.Signature parseFrom(
-        byte[] data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static io.opencola.serialization.protobuf.Model.Signature parseFrom(java.io.InputStream input)
-        throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseWithIOException(PARSER, input);
-    }
-    public static io.opencola.serialization.protobuf.Model.Signature parseFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseWithIOException(PARSER, input, extensionRegistry);
-    }
-    public static io.opencola.serialization.protobuf.Model.Signature parseDelimitedFrom(java.io.InputStream input)
-        throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseDelimitedWithIOException(PARSER, input);
-    }
-    public static io.opencola.serialization.protobuf.Model.Signature parseDelimitedFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
-    }
-    public static io.opencola.serialization.protobuf.Model.Signature parseFrom(
-        com.google.protobuf.CodedInputStream input)
-        throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseWithIOException(PARSER, input);
-    }
-    public static io.opencola.serialization.protobuf.Model.Signature parseFrom(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseWithIOException(PARSER, input, extensionRegistry);
-    }
-
-    @java.lang.Override
-    public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder() {
-      return DEFAULT_INSTANCE.toBuilder();
-    }
-    public static Builder newBuilder(io.opencola.serialization.protobuf.Model.Signature prototype) {
-      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
-    }
-    @java.lang.Override
-    public Builder toBuilder() {
-      return this == DEFAULT_INSTANCE
-          ? new Builder() : new Builder().mergeFrom(this);
-    }
-
-    @java.lang.Override
-    protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
-      Builder builder = new Builder(parent);
-      return builder;
-    }
-    /**
-     * Protobuf type {@code io.opencola.serialization.protobuf.Signature}
-     */
-    public static final class Builder extends
-        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:io.opencola.serialization.protobuf.Signature)
-        io.opencola.serialization.protobuf.Model.SignatureOrBuilder {
-      public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
-        return io.opencola.serialization.protobuf.Model.internal_static_io_opencola_serialization_protobuf_Signature_descriptor;
-      }
-
-      @java.lang.Override
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-          internalGetFieldAccessorTable() {
-        return io.opencola.serialization.protobuf.Model.internal_static_io_opencola_serialization_protobuf_Signature_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(
-                io.opencola.serialization.protobuf.Model.Signature.class, io.opencola.serialization.protobuf.Model.Signature.Builder.class);
-      }
-
-      // Construct using io.opencola.serialization.protobuf.Model.Signature.newBuilder()
-      private Builder() {
-        maybeForceBuilderInitialization();
-      }
-
-      private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
-        super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
-        }
-      }
-      @java.lang.Override
-      public Builder clear() {
-        super.clear();
-        algorithm_ = "";
-
-        bytes_ = com.google.protobuf.ByteString.EMPTY;
-
-        return this;
-      }
-
-      @java.lang.Override
-      public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
-        return io.opencola.serialization.protobuf.Model.internal_static_io_opencola_serialization_protobuf_Signature_descriptor;
-      }
-
-      @java.lang.Override
-      public io.opencola.serialization.protobuf.Model.Signature getDefaultInstanceForType() {
-        return io.opencola.serialization.protobuf.Model.Signature.getDefaultInstance();
-      }
-
-      @java.lang.Override
-      public io.opencola.serialization.protobuf.Model.Signature build() {
-        io.opencola.serialization.protobuf.Model.Signature result = buildPartial();
-        if (!result.isInitialized()) {
-          throw newUninitializedMessageException(result);
-        }
-        return result;
-      }
-
-      @java.lang.Override
-      public io.opencola.serialization.protobuf.Model.Signature buildPartial() {
-        io.opencola.serialization.protobuf.Model.Signature result = new io.opencola.serialization.protobuf.Model.Signature(this);
-        result.algorithm_ = algorithm_;
-        result.bytes_ = bytes_;
-        onBuilt();
-        return result;
-      }
-
-      @java.lang.Override
-      public Builder clone() {
-        return super.clone();
-      }
-      @java.lang.Override
-      public Builder setField(
-          com.google.protobuf.Descriptors.FieldDescriptor field,
-          java.lang.Object value) {
-        return super.setField(field, value);
-      }
-      @java.lang.Override
-      public Builder clearField(
-          com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return super.clearField(field);
-      }
-      @java.lang.Override
-      public Builder clearOneof(
-          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return super.clearOneof(oneof);
-      }
-      @java.lang.Override
-      public Builder setRepeatedField(
-          com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, java.lang.Object value) {
-        return super.setRepeatedField(field, index, value);
-      }
-      @java.lang.Override
-      public Builder addRepeatedField(
-          com.google.protobuf.Descriptors.FieldDescriptor field,
-          java.lang.Object value) {
-        return super.addRepeatedField(field, value);
-      }
-      @java.lang.Override
-      public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof io.opencola.serialization.protobuf.Model.Signature) {
-          return mergeFrom((io.opencola.serialization.protobuf.Model.Signature)other);
-        } else {
-          super.mergeFrom(other);
-          return this;
-        }
-      }
-
-      public Builder mergeFrom(io.opencola.serialization.protobuf.Model.Signature other) {
-        if (other == io.opencola.serialization.protobuf.Model.Signature.getDefaultInstance()) return this;
-        if (!other.getAlgorithm().isEmpty()) {
-          algorithm_ = other.algorithm_;
-          onChanged();
-        }
-        if (other.getBytes() != com.google.protobuf.ByteString.EMPTY) {
-          setBytes(other.getBytes());
-        }
-        this.mergeUnknownFields(other.unknownFields);
-        onChanged();
-        return this;
-      }
-
-      @java.lang.Override
-      public final boolean isInitialized() {
-        return true;
-      }
-
-      @java.lang.Override
-      public Builder mergeFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        io.opencola.serialization.protobuf.Model.Signature parsedMessage = null;
-        try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (io.opencola.serialization.protobuf.Model.Signature) e.getUnfinishedMessage();
-          throw e.unwrapIOException();
-        } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
-        return this;
-      }
-
-      private java.lang.Object algorithm_ = "";
-      /**
-       * <code>string algorithm = 1;</code>
-       * @return The algorithm.
-       */
-      public java.lang.String getAlgorithm() {
-        java.lang.Object ref = algorithm_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          algorithm_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
-      }
-      /**
-       * <code>string algorithm = 1;</code>
-       * @return The bytes for algorithm.
-       */
-      public com.google.protobuf.ByteString
-          getAlgorithmBytes() {
-        java.lang.Object ref = algorithm_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          algorithm_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string algorithm = 1;</code>
-       * @param value The algorithm to set.
-       * @return This builder for chaining.
-       */
-      public Builder setAlgorithm(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
-        algorithm_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string algorithm = 1;</code>
-       * @return This builder for chaining.
-       */
-      public Builder clearAlgorithm() {
-        
-        algorithm_ = getDefaultInstance().getAlgorithm();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string algorithm = 1;</code>
-       * @param value The bytes for algorithm to set.
-       * @return This builder for chaining.
-       */
-      public Builder setAlgorithmBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        algorithm_ = value;
-        onChanged();
-        return this;
-      }
-
-      private com.google.protobuf.ByteString bytes_ = com.google.protobuf.ByteString.EMPTY;
-      /**
-       * <code>bytes bytes = 2;</code>
-       * @return The bytes.
-       */
-      @java.lang.Override
-      public com.google.protobuf.ByteString getBytes() {
-        return bytes_;
-      }
-      /**
-       * <code>bytes bytes = 2;</code>
-       * @param value The bytes to set.
-       * @return This builder for chaining.
-       */
-      public Builder setBytes(com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
-        bytes_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>bytes bytes = 2;</code>
-       * @return This builder for chaining.
-       */
-      public Builder clearBytes() {
-        
-        bytes_ = getDefaultInstance().getBytes();
-        onChanged();
-        return this;
-      }
-      @java.lang.Override
-      public final Builder setUnknownFields(
-          final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return super.setUnknownFields(unknownFields);
-      }
-
-      @java.lang.Override
-      public final Builder mergeUnknownFields(
-          final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return super.mergeUnknownFields(unknownFields);
-      }
-
-
-      // @@protoc_insertion_point(builder_scope:io.opencola.serialization.protobuf.Signature)
-    }
-
-    // @@protoc_insertion_point(class_scope:io.opencola.serialization.protobuf.Signature)
-    private static final io.opencola.serialization.protobuf.Model.Signature DEFAULT_INSTANCE;
-    static {
-      DEFAULT_INSTANCE = new io.opencola.serialization.protobuf.Model.Signature();
-    }
-
-    public static io.opencola.serialization.protobuf.Model.Signature getDefaultInstance() {
-      return DEFAULT_INSTANCE;
-    }
-
-    private static final com.google.protobuf.Parser<Signature>
-        PARSER = new com.google.protobuf.AbstractParser<Signature>() {
-      @java.lang.Override
-      public Signature parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new Signature(input, extensionRegistry);
-      }
-    };
-
-    public static com.google.protobuf.Parser<Signature> parser() {
-      return PARSER;
-    }
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<Signature> getParserForType() {
-      return PARSER;
-    }
-
-    @java.lang.Override
-    public io.opencola.serialization.protobuf.Model.Signature getDefaultInstanceForType() {
-      return DEFAULT_INSTANCE;
-    }
-
-  }
-
   public interface SignedTransactionOrBuilder extends
       // @@protoc_insertion_point(interface_extends:io.opencola.serialization.protobuf.SignedTransaction)
       com.google.protobuf.MessageOrBuilder {
@@ -7495,11 +6853,11 @@ public final class Model {
      * <code>.io.opencola.serialization.protobuf.Signature signature = 2;</code>
      * @return The signature.
      */
-    io.opencola.serialization.protobuf.Model.Signature getSignature();
+    io.opencola.serialization.protobuf.Security.Signature getSignature();
     /**
      * <code>.io.opencola.serialization.protobuf.Signature signature = 2;</code>
      */
-    io.opencola.serialization.protobuf.Model.SignatureOrBuilder getSignatureOrBuilder();
+    io.opencola.serialization.protobuf.Security.SignatureOrBuilder getSignatureOrBuilder();
   }
   /**
    * Protobuf type {@code io.opencola.serialization.protobuf.SignedTransaction}
@@ -7553,11 +6911,11 @@ public final class Model {
               break;
             }
             case 18: {
-              io.opencola.serialization.protobuf.Model.Signature.Builder subBuilder = null;
+              io.opencola.serialization.protobuf.Security.Signature.Builder subBuilder = null;
               if (signature_ != null) {
                 subBuilder = signature_.toBuilder();
               }
-              signature_ = input.readMessage(io.opencola.serialization.protobuf.Model.Signature.parser(), extensionRegistry);
+              signature_ = input.readMessage(io.opencola.serialization.protobuf.Security.Signature.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(signature_);
                 signature_ = subBuilder.buildPartial();
@@ -7617,7 +6975,7 @@ public final class Model {
     }
 
     public static final int SIGNATURE_FIELD_NUMBER = 2;
-    private io.opencola.serialization.protobuf.Model.Signature signature_;
+    private io.opencola.serialization.protobuf.Security.Signature signature_;
     /**
      * <code>.io.opencola.serialization.protobuf.Signature signature = 2;</code>
      * @return Whether the signature field is set.
@@ -7631,14 +6989,14 @@ public final class Model {
      * @return The signature.
      */
     @java.lang.Override
-    public io.opencola.serialization.protobuf.Model.Signature getSignature() {
-      return signature_ == null ? io.opencola.serialization.protobuf.Model.Signature.getDefaultInstance() : signature_;
+    public io.opencola.serialization.protobuf.Security.Signature getSignature() {
+      return signature_ == null ? io.opencola.serialization.protobuf.Security.Signature.getDefaultInstance() : signature_;
     }
     /**
      * <code>.io.opencola.serialization.protobuf.Signature signature = 2;</code>
      */
     @java.lang.Override
-    public io.opencola.serialization.protobuf.Model.SignatureOrBuilder getSignatureOrBuilder() {
+    public io.opencola.serialization.protobuf.Security.SignatureOrBuilder getSignatureOrBuilder() {
       return getSignature();
     }
 
@@ -8032,9 +7390,9 @@ public final class Model {
         return this;
       }
 
-      private io.opencola.serialization.protobuf.Model.Signature signature_;
+      private io.opencola.serialization.protobuf.Security.Signature signature_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          io.opencola.serialization.protobuf.Model.Signature, io.opencola.serialization.protobuf.Model.Signature.Builder, io.opencola.serialization.protobuf.Model.SignatureOrBuilder> signatureBuilder_;
+          io.opencola.serialization.protobuf.Security.Signature, io.opencola.serialization.protobuf.Security.Signature.Builder, io.opencola.serialization.protobuf.Security.SignatureOrBuilder> signatureBuilder_;
       /**
        * <code>.io.opencola.serialization.protobuf.Signature signature = 2;</code>
        * @return Whether the signature field is set.
@@ -8046,9 +7404,9 @@ public final class Model {
        * <code>.io.opencola.serialization.protobuf.Signature signature = 2;</code>
        * @return The signature.
        */
-      public io.opencola.serialization.protobuf.Model.Signature getSignature() {
+      public io.opencola.serialization.protobuf.Security.Signature getSignature() {
         if (signatureBuilder_ == null) {
-          return signature_ == null ? io.opencola.serialization.protobuf.Model.Signature.getDefaultInstance() : signature_;
+          return signature_ == null ? io.opencola.serialization.protobuf.Security.Signature.getDefaultInstance() : signature_;
         } else {
           return signatureBuilder_.getMessage();
         }
@@ -8056,7 +7414,7 @@ public final class Model {
       /**
        * <code>.io.opencola.serialization.protobuf.Signature signature = 2;</code>
        */
-      public Builder setSignature(io.opencola.serialization.protobuf.Model.Signature value) {
+      public Builder setSignature(io.opencola.serialization.protobuf.Security.Signature value) {
         if (signatureBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -8073,7 +7431,7 @@ public final class Model {
        * <code>.io.opencola.serialization.protobuf.Signature signature = 2;</code>
        */
       public Builder setSignature(
-          io.opencola.serialization.protobuf.Model.Signature.Builder builderForValue) {
+          io.opencola.serialization.protobuf.Security.Signature.Builder builderForValue) {
         if (signatureBuilder_ == null) {
           signature_ = builderForValue.build();
           onChanged();
@@ -8086,11 +7444,11 @@ public final class Model {
       /**
        * <code>.io.opencola.serialization.protobuf.Signature signature = 2;</code>
        */
-      public Builder mergeSignature(io.opencola.serialization.protobuf.Model.Signature value) {
+      public Builder mergeSignature(io.opencola.serialization.protobuf.Security.Signature value) {
         if (signatureBuilder_ == null) {
           if (signature_ != null) {
             signature_ =
-              io.opencola.serialization.protobuf.Model.Signature.newBuilder(signature_).mergeFrom(value).buildPartial();
+              io.opencola.serialization.protobuf.Security.Signature.newBuilder(signature_).mergeFrom(value).buildPartial();
           } else {
             signature_ = value;
           }
@@ -8118,7 +7476,7 @@ public final class Model {
       /**
        * <code>.io.opencola.serialization.protobuf.Signature signature = 2;</code>
        */
-      public io.opencola.serialization.protobuf.Model.Signature.Builder getSignatureBuilder() {
+      public io.opencola.serialization.protobuf.Security.Signature.Builder getSignatureBuilder() {
         
         onChanged();
         return getSignatureFieldBuilder().getBuilder();
@@ -8126,23 +7484,23 @@ public final class Model {
       /**
        * <code>.io.opencola.serialization.protobuf.Signature signature = 2;</code>
        */
-      public io.opencola.serialization.protobuf.Model.SignatureOrBuilder getSignatureOrBuilder() {
+      public io.opencola.serialization.protobuf.Security.SignatureOrBuilder getSignatureOrBuilder() {
         if (signatureBuilder_ != null) {
           return signatureBuilder_.getMessageOrBuilder();
         } else {
           return signature_ == null ?
-              io.opencola.serialization.protobuf.Model.Signature.getDefaultInstance() : signature_;
+              io.opencola.serialization.protobuf.Security.Signature.getDefaultInstance() : signature_;
         }
       }
       /**
        * <code>.io.opencola.serialization.protobuf.Signature signature = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          io.opencola.serialization.protobuf.Model.Signature, io.opencola.serialization.protobuf.Model.Signature.Builder, io.opencola.serialization.protobuf.Model.SignatureOrBuilder> 
+          io.opencola.serialization.protobuf.Security.Signature, io.opencola.serialization.protobuf.Security.Signature.Builder, io.opencola.serialization.protobuf.Security.SignatureOrBuilder> 
           getSignatureFieldBuilder() {
         if (signatureBuilder_ == null) {
           signatureBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              io.opencola.serialization.protobuf.Model.Signature, io.opencola.serialization.protobuf.Model.Signature.Builder, io.opencola.serialization.protobuf.Model.SignatureOrBuilder>(
+              io.opencola.serialization.protobuf.Security.Signature, io.opencola.serialization.protobuf.Security.Signature.Builder, io.opencola.serialization.protobuf.Security.SignatureOrBuilder>(
                   getSignature(),
                   getParentForChildren(),
                   isClean());
@@ -8234,11 +7592,6 @@ public final class Model {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_io_opencola_serialization_protobuf_Transaction_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_io_opencola_serialization_protobuf_Signature_descriptor;
-  private static final 
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_io_opencola_serialization_protobuf_Signature_fieldAccessorTable;
-  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_io_opencola_serialization_protobuf_SignedTransaction_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -8253,40 +7606,40 @@ public final class Model {
   static {
     java.lang.String[] descriptorData = {
       "\n\013model.proto\022\"io.opencola.serialization" +
-      ".protobuf\"6\n\tAttribute\022\021\n\007ordinal\030\001 \001(\rH" +
-      "\000\022\r\n\003uri\030\002 \001(\tH\000B\007\n\005value\"\256\002\n\005Value\022\016\n\006o" +
-      "cType\030\001 \001(\005\022\020\n\006double\030\003 \001(\001H\000\022\017\n\005float\030\004" +
-      " \001(\002H\000\022\017\n\005int32\030\005 \001(\005H\000\022\017\n\005int64\030\006 \001(\003H\000" +
-      "\022\020\n\006uint32\030\007 \001(\rH\000\022\020\n\006uint64\030\010 \001(\004H\000\022\020\n\006" +
-      "sint32\030\t \001(\021H\000\022\020\n\006sint64\030\n \001(\022H\000\022\021\n\007fixe" +
-      "d32\030\013 \001(\007H\000\022\021\n\007fixed64\030\014 \001(\006H\000\022\022\n\010sfixed" +
-      "32\030\r \001(\017H\000\022\022\n\010sfixed64\030\016 \001(\020H\000\022\016\n\004bool\030\017" +
-      " \001(\010H\000\022\020\n\006string\030\020 \001(\tH\000\022\017\n\005bytes\030\021 \001(\014H" +
-      "\000B\007\n\005value\"\317\001\n\017TransactionFact\022@\n\tattrib" +
-      "ute\030\001 \001(\0132-.io.opencola.serialization.pr" +
-      "otobuf.Attribute\0228\n\005value\030\002 \001(\0132).io.ope" +
-      "ncola.serialization.protobuf.Value\022@\n\top" +
-      "eration\030\003 \001(\0162-.io.opencola.serializatio" +
-      "n.protobuf.Operation\"\023\n\002Id\022\r\n\005bytes\030\001 \001(" +
-      "\014\"\221\001\n\021TransactionEntity\0228\n\010entityId\030\001 \001(" +
-      "\0132&.io.opencola.serialization.protobuf.I" +
-      "d\022B\n\005facts\030\002 \003(\01323.io.opencola.serializa" +
-      "tion.protobuf.TransactionFact\"\347\001\n\013Transa" +
-      "ction\0222\n\002id\030\001 \001(\0132&.io.opencola.serializ" +
-      "ation.protobuf.Id\022;\n\013authorityId\030\002 \001(\0132&" +
-      ".io.opencola.serialization.protobuf.Id\022R" +
-      "\n\023transactionEntities\030\003 \003(\01325.io.opencol" +
-      "a.serialization.protobuf.TransactionEnti" +
-      "ty\022\023\n\013epochSecond\030\004 \001(\004\"-\n\tSignature\022\021\n\t" +
-      "algorithm\030\001 \001(\t\022\r\n\005bytes\030\002 \001(\014\"j\n\021Signed" +
-      "Transaction\022\023\n\013transaction\030\001 \001(\014\022@\n\tsign" +
-      "ature\030\002 \001(\0132-.io.opencola.serialization." +
-      "protobuf.Signature*!\n\tOperation\022\013\n\007RETRA" +
-      "CT\020\000\022\007\n\003ADD\020\001b\006proto3"
+      ".protobuf\032\016security.proto\"6\n\tAttribute\022\021" +
+      "\n\007ordinal\030\001 \001(\rH\000\022\r\n\003uri\030\002 \001(\tH\000B\007\n\005valu" +
+      "e\"\256\002\n\005Value\022\016\n\006ocType\030\001 \001(\005\022\020\n\006double\030\003 " +
+      "\001(\001H\000\022\017\n\005float\030\004 \001(\002H\000\022\017\n\005int32\030\005 \001(\005H\000\022" +
+      "\017\n\005int64\030\006 \001(\003H\000\022\020\n\006uint32\030\007 \001(\rH\000\022\020\n\006ui" +
+      "nt64\030\010 \001(\004H\000\022\020\n\006sint32\030\t \001(\021H\000\022\020\n\006sint64" +
+      "\030\n \001(\022H\000\022\021\n\007fixed32\030\013 \001(\007H\000\022\021\n\007fixed64\030\014" +
+      " \001(\006H\000\022\022\n\010sfixed32\030\r \001(\017H\000\022\022\n\010sfixed64\030\016" +
+      " \001(\020H\000\022\016\n\004bool\030\017 \001(\010H\000\022\020\n\006string\030\020 \001(\tH\000" +
+      "\022\017\n\005bytes\030\021 \001(\014H\000B\007\n\005value\"\317\001\n\017Transacti" +
+      "onFact\022@\n\tattribute\030\001 \001(\0132-.io.opencola." +
+      "serialization.protobuf.Attribute\0228\n\005valu" +
+      "e\030\002 \001(\0132).io.opencola.serialization.prot" +
+      "obuf.Value\022@\n\toperation\030\003 \001(\0162-.io.openc" +
+      "ola.serialization.protobuf.Operation\"\023\n\002" +
+      "Id\022\r\n\005bytes\030\001 \001(\014\"\221\001\n\021TransactionEntity\022" +
+      "8\n\010entityId\030\001 \001(\0132&.io.opencola.serializ" +
+      "ation.protobuf.Id\022B\n\005facts\030\002 \003(\01323.io.op" +
+      "encola.serialization.protobuf.Transactio" +
+      "nFact\"\347\001\n\013Transaction\0222\n\002id\030\001 \001(\0132&.io.o" +
+      "pencola.serialization.protobuf.Id\022;\n\013aut" +
+      "horityId\030\002 \001(\0132&.io.opencola.serializati" +
+      "on.protobuf.Id\022R\n\023transactionEntities\030\003 " +
+      "\003(\01325.io.opencola.serialization.protobuf" +
+      ".TransactionEntity\022\023\n\013epochSecond\030\004 \001(\004\"" +
+      "j\n\021SignedTransaction\022\023\n\013transaction\030\001 \001(" +
+      "\014\022@\n\tsignature\030\002 \001(\0132-.io.opencola.seria" +
+      "lization.protobuf.Signature*!\n\tOperation" +
+      "\022\013\n\007RETRACT\020\000\022\007\n\003ADD\020\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
+          io.opencola.serialization.protobuf.Security.getDescriptor(),
         });
     internal_static_io_opencola_serialization_protobuf_Attribute_descriptor =
       getDescriptor().getMessageTypes().get(0);
@@ -8324,18 +7677,13 @@ public final class Model {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_serialization_protobuf_Transaction_descriptor,
         new java.lang.String[] { "Id", "AuthorityId", "TransactionEntities", "EpochSecond", });
-    internal_static_io_opencola_serialization_protobuf_Signature_descriptor =
-      getDescriptor().getMessageTypes().get(6);
-    internal_static_io_opencola_serialization_protobuf_Signature_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_io_opencola_serialization_protobuf_Signature_descriptor,
-        new java.lang.String[] { "Algorithm", "Bytes", });
     internal_static_io_opencola_serialization_protobuf_SignedTransaction_descriptor =
-      getDescriptor().getMessageTypes().get(7);
+      getDescriptor().getMessageTypes().get(6);
     internal_static_io_opencola_serialization_protobuf_SignedTransaction_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_serialization_protobuf_SignedTransaction_descriptor,
         new java.lang.String[] { "Transaction", "Signature", });
+    io.opencola.serialization.protobuf.Security.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

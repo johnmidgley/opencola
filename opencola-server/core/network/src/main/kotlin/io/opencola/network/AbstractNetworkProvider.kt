@@ -11,36 +11,49 @@ import io.opencola.storage.AddressBook
 import io.opencola.storage.PersonaAddressBookEntry
 
 // TODO: just pass in keystore instead of signator and encryptor? Or maybe even just role into AddressBook?
-abstract class AbstractNetworkProvider(val addressBook: AddressBook,
-                                       val signator: Signator,
-                                       val encryptor: Encryptor,
+abstract class AbstractNetworkProvider(
+    val addressBook: AddressBook,
+    val signator: Signator,
+    val encryptor: Encryptor,
 ) : NetworkProvider {
-    var handler: ((Id, Id, SignedMessage) -> Unit)? = null
+    private var handler: ((Id, Id, SignedMessage) -> Unit)? = null
     var started = false
 
     override fun setRequestHandler(handler: (Id, Id, SignedMessage) -> Unit) {
         this.handler = handler
     }
 
+    // TODO: Remove this and create a new handler for testing
+    fun getRequestHandler() = this.handler
+
+    fun getEncodedEnvelope(fromId: Id, toId: Id, signedMessage: SignedMessage, encryptMessage: Boolean): ByteArray {
+        addressBook.getEntry(fromId, fromId) ?: throw IllegalArgumentException("FromId $fromId is not a persona")
+        addressBook.getEntry(fromId, toId) ?: throw IllegalArgumentException("$fromId does not have $toId as peer")
+        return MessageEnvelope(toId, signedMessage).encode(if (encryptMessage) encryptor else null)
+    }
+
+    // TODO: This should be removed. Signing should be done centrally by the NetworkNode
     fun getEncodedEnvelope(fromId: Id, toId: Id, message: UnsignedMessage, encryptMessage: Boolean): ByteArray {
-        val toAuthority = addressBook.getEntry(fromId, toId)
-            ?: throw IllegalArgumentException("$fromId does not have $toId as peer")
-        val signedMessage = SignedMessage(fromId, message, signator.signBytes(fromId.toString(), message.payload))
-        return MessageEnvelope(toId, signedMessage).encode(if (encryptMessage) toAuthority.publicKey else null)
+        return getEncodedEnvelope(
+            fromId,
+            toId,
+            SignedMessage(fromId, message, signator.signBytes(fromId.toString(), message.payload)),
+            encryptMessage
+        )
     }
 
     fun validateMessageEnvelope(messageEnvelope: MessageEnvelope) {
         val signedMessage = messageEnvelope.signedMessage
 
         // TODO: Change all if / throw IllegalArgumentException to require
-        if(addressBook.getEntry(messageEnvelope.to, messageEnvelope.to) !is PersonaAddressBookEntry) {
+        if (addressBook.getEntry(messageEnvelope.to, messageEnvelope.to) !is PersonaAddressBookEntry) {
             throw IllegalArgumentException("Received message for non local authority: ${messageEnvelope.to}")
         }
 
         val fromPersona = addressBook.getEntry(messageEnvelope.to, signedMessage.from)
             ?: throw IllegalArgumentException("Message is from unknown peer: ${signedMessage.from}")
 
-        if(!isValidSignature(fromPersona.publicKey, signedMessage.message.payload, signedMessage.signature)) {
+        if (!isValidSignature(fromPersona.publicKey, signedMessage.message.payload, signedMessage.signature)) {
             throw IllegalArgumentException("Received message from $fromPersona with invalid signature")
         }
     }

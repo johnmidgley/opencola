@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package io.opencola.serialization.protobuf;
 
+import "security.proto";
 import "model.proto";
 
 message UnsignedMessage {
@@ -10,14 +11,15 @@ message UnsignedMessage {
 }
 
 message SignedMessage {
-  Id id = 1;
+  Id from = 1;
   bytes message = 2;
-  bytes signature = 3;
+  Signature signature = 3;
 }
 
 message MessageEnvelope {
   Id id = 1;
-  SignedMessage message = 2;
+  string encryptionTransformation = 2;
+  bytes message = 3;
 }
 
 message GetTransactionsMessage {

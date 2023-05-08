@@ -3,12 +3,14 @@ package io.opencola.network.message
 import io.opencola.model.Id
 import io.opencola.security.Signator
 import io.opencola.security.Signature
-import io.opencola.serialization.*
-
-import java.io.InputStream
-import java.io.OutputStream
+import io.opencola.serialization.protobuf.Message
+import io.opencola.serialization.protobuf.ProtoSerializable
+import io.opencola.serialization.protobuf.Message as ProtoMessage
 
 class SignedMessage(val from: Id, val message: UnsignedMessage, val signature: Signature) {
+    override fun toString(): String {
+        return "SignedMessage(from=$from, message=$message, signature=$signature)"
+    }
     constructor(from: Id, message: UnsignedMessage, signator: Signator) : this(
         from,
         message,
@@ -16,22 +18,23 @@ class SignedMessage(val from: Id, val message: UnsignedMessage, val signature: S
     )
 
     fun encode(): ByteArray {
-        return Factory.encode(this)
+        return toProto(this).toByteArray()
     }
 
-    companion object Factory: StreamSerializer<SignedMessage> {
-        override fun encode(stream: OutputStream, value: SignedMessage) {
-            TODO("Replace with protobuf")
-            Id.encode(stream, value.from)
-            UnsignedMessage.encode(stream, value.message)
-            Signature.encode(value.signature)
+    companion object Factory : ProtoSerializable<SignedMessage, ProtoMessage.SignedMessage> {
+        override fun toProto(value: SignedMessage): Message.SignedMessage {
+            return Message.SignedMessage.newBuilder()
+                .setFrom(Id.toProto(value.from))
+                .setMessage(UnsignedMessage.toProto(value.message).toByteString())
+                .setSignature(Signature.toProto(value.signature))
+                .build()
         }
 
-        override fun decode(stream: InputStream): SignedMessage {
+        override fun fromProto(value: Message.SignedMessage): SignedMessage {
             return SignedMessage(
-                Id.decode(stream),
-                UnsignedMessage.decode(stream),
-                Signature.decode(stream)
+                Id.fromProto(value.from),
+                UnsignedMessage.fromProto(Message.UnsignedMessage.parseFrom(value.message)),
+                Signature.fromProto(value.signature)
             )
         }
     }

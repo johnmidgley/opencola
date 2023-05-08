@@ -72,8 +72,6 @@ class HttpNetworkProvider(
     override fun sendMessage(from: PersonaAddressBookEntry, to: AddressBookEntry, signedMessage: SignedMessage) {
         if (!started) throw IllegalStateException("Provider is not started - can't sendRequest")
 
-        // TODO: Make sure to authority is actually remote (not local authority)
-
         try {
             val urlString = "${to.address}/networkNode"
             logger.info { "Sending request $signedMessage" }
@@ -81,10 +79,10 @@ class HttpNetworkProvider(
             return runBlocking {
                 val httpResponse = httpClient.post(urlString) {
                     contentType(ContentType.Application.OctetStream)
-                    TODO("Encode body")
-//                    val encryptedPayload =
-//                        getEncodedEnvelope(from.entityId, to.entityId, Json.encodeToString(signedMessage).toByteArray(), true)
-//                    setBody(encryptedPayload)
+                    signedMessage.encode()
+                    val encryptedPayload =
+                        getEncodedEnvelope(from.entityId, to.entityId, signedMessage, true)
+                    setBody(encryptedPayload)
                 }
 
                 if (httpResponse.status != HttpStatusCode.OK)
@@ -94,6 +92,7 @@ class HttpNetworkProvider(
             logger.info { "${to.name} appears to be offline." }
         } catch (e: Exception) {
             logger.error { "sendRequest: $e" }
+            throw e
         }
     }
 }

@@ -1,17 +1,21 @@
 package io.opencola.security
 
-class Encryptor(private val keystore: KeyStore) {
-    fun encrypt(alias: String, bytes: ByteArray) : ByteArray {
-        val publicKey = keystore.getPublicKey(alias)
-            ?: throw RuntimeException("Unable to find public key for alias: $alias")
+import java.security.PublicKey
 
-        return encrypt(publicKey, bytes)
+class Encryptor(private val keystore: KeyStore) {
+    private fun getPublicKey(alias: String) : PublicKey {
+        return keystore.getPublicKey(alias)
+            ?: throw RuntimeException("Unable to find public key for alias: $alias")
     }
 
-    fun decrypt(alias: String, bytes: ByteArray) : ByteArray {
+    fun encrypt(alias: String, bytes: ByteArray, transformation: String = ENCRYPTION_TRANSFORMATION) : Encryption {
+        return encrypt(getPublicKey(alias), bytes, transformation)
+    }
+
+    fun decrypt(alias: String, bytes: ByteArray, transformation: String = ENCRYPTION_TRANSFORMATION) : ByteArray {
         val privateKey = keystore.getKeyPair(alias)?.private
             ?: throw RuntimeException("Unable to find private key for alias: $alias")
 
-        return decrypt(privateKey, bytes)
+        return decrypt(privateKey, bytes, transformation)
     }
 }

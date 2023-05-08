@@ -23,7 +23,7 @@ import kotlin.test.assertNull
 
 class OCRelayNetworkProviderTest : PeerNetworkTest() {
     private val ocRelayUri = URI("ocr://0.0.0.0")
-    val pingMessage = PingMessage().toMessage()
+    private val pingMessage = PingMessage()
 
 
     private fun setPeerAddressToRelay(addressBook: AddressBook, peerId: Id) : AddressBookEntry {
