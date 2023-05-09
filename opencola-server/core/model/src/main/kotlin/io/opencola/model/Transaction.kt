@@ -24,6 +24,10 @@ data class Transaction(val id: Id,
         }
     }
 
+    fun encode(): ByteArray {
+        return encode(this)
+    }
+
     fun toProto() : ProtoModel.Transaction {
         return toProto(this)
     }

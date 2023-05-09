@@ -1,8 +1,10 @@
 package io.opencola.model
 
+import com.google.protobuf.ByteString
 import io.opencola.serialization.protobuf.Model as ProtoModel
 import io.opencola.security.Signature
 import io.opencola.security.isValidSignature
+import io.opencola.serialization.EncodingFormat
 import io.opencola.serialization.protobuf.ProtoSerializable
 import io.opencola.serialization.StreamSerializer
 import io.opencola.serialization.readByteArray
@@ -11,16 +13,12 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.security.PublicKey
 
-data class SignedTransaction(val transaction: Transaction, val signature: Signature) {
-    // The payload is the raw bytes that were signed. Needed to guarantee signature validity
-    // This can be removed once the database is migrated to use protobuf, at which point
-    // the constructor can just take the payload as a parameter
-    var payload: ByteArray? = null
-        private set
-
-    fun isValidTransaction(publicKey: PublicKey): Boolean {
-        return isValidSignature(publicKey, Transaction.encode(transaction), signature)
-    }
+data class SignedTransaction(
+    val encodingFormat: EncodingFormat,
+    val encodedTransaction: ByteArray,
+    val signature: Signature
+) {
+    val transaction: Transaction by lazy { decodeTransaction() }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -28,21 +26,34 @@ data class SignedTransaction(val transaction: Transaction, val signature: Signat
 
         other as SignedTransaction
 
-        if (transaction != other.transaction) return false
+        if (!encodedTransaction.contentEquals(other.encodedTransaction)) return false
         return signature == other.signature
     }
 
     override fun hashCode(): Int {
-        var result = transaction.hashCode()
+        var result = encodedTransaction.contentHashCode()
         result = 31 * result + signature.hashCode()
         return result
     }
 
-    companion object:
+    fun isValidTransaction(publicKey: PublicKey): Boolean {
+        return isValidSignature(publicKey, encodedTransaction, signature)
+    }
+
+    private fun decodeTransaction(): Transaction {
+        return when(encodingFormat) {
+            EncodingFormat.OC -> Transaction.decode(encodedTransaction)
+            EncodingFormat.PROTOBUF -> Transaction.fromProto(ProtoModel.Transaction.parseFrom(encodedTransaction))
+            else -> throw IllegalArgumentException("Unknown encoding format: $encodingFormat")
+        }
+    }
+
+    companion object :
         StreamSerializer<SignedTransaction>,
         ProtoSerializable<SignedTransaction, ProtoModel.SignedTransaction> {
         override fun encode(stream: OutputStream, value: SignedTransaction) {
-            Transaction.encode(stream, value.transaction)
+            require(value.encodingFormat == EncodingFormat.OC)
+            stream.writeByteArray(value.encodedTransaction)
             value.signature.let {
                 stream.writeByteArray(it.algorithm.toByteArray())
                 stream.writeByteArray(it.bytes)
@@ -50,36 +61,38 @@ data class SignedTransaction(val transaction: Transaction, val signature: Signat
         }
 
         override fun decode(stream: InputStream): SignedTransaction {
-            val transaction = Transaction.decode(stream)
+            val transactionBytes = stream.readByteArray()
             val signature = Signature(
                 String(stream.readByteArray()),
                 stream.readByteArray()
             )
 
-            return SignedTransaction(transaction, signature)
+            return SignedTransaction(EncodingFormat.OC, transactionBytes, signature)
         }
 
         override fun toProto(value: SignedTransaction): ProtoModel.SignedTransaction {
+            require(value.encodingFormat == EncodingFormat.PROTOBUF)
             val builder = ProtoModel.SignedTransaction.newBuilder()
-            builder.transaction = value.transaction.toProto().toByteString()
+            builder.transaction = ByteString.copyFrom(value.encodedTransaction)
             builder.signature = value.signature.toProto()
             return builder.build()
         }
 
         override fun fromProto(value: ProtoModel.SignedTransaction): SignedTransaction {
             return SignedTransaction(
-                Transaction.fromProto(ProtoModel.Transaction.parseFrom(value.transaction)),
+                EncodingFormat.PROTOBUF,
+                value.transaction.toByteArray(),
                 Signature.fromProto(value.signature)
             )
         }
 
         // TODO: toBytes can easily be moved to ProtobufSerializable. Not sure if fromBytes can be moved due to type erasure
         fun toBytes(value: SignedTransaction): ByteArray {
-            return toProto(value).toByteArray().also { value.payload = it }
+            return toProto(value).toByteArray()
         }
 
         fun fromBytes(bytes: ByteArray): SignedTransaction {
-            return fromProto(ProtoModel.SignedTransaction.parseFrom(bytes)).also { it.payload = bytes }
+            return fromProto(ProtoModel.SignedTransaction.parseFrom(bytes))
         }
     }
 }

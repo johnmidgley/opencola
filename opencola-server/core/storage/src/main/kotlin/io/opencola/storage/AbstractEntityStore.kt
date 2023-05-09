@@ -10,6 +10,7 @@ import io.opencola.security.PublicKeyProvider
 import io.opencola.util.ifNotNullOrElse
 import io.opencola.util.nullOrElse
 import io.opencola.security.Signator
+import io.opencola.serialization.EncodingFormat
 import io.opencola.storage.EntityStore.TransactionOrder
 
 // TODO: Should support multiple authorities
@@ -17,7 +18,8 @@ abstract class AbstractEntityStore(
     val signator: Signator,
     val publicKeyProvider: PublicKeyProvider<Id>,
     val eventBus: EventBus?,
-    ) : EntityStore {
+    val transactionEncodingFormat: EncodingFormat,
+) : EntityStore {
     // TODO: Assumes transaction has been validated. Cleanup?
     protected abstract fun persistTransaction(signedTransaction: SignedTransaction): Long
 
@@ -62,7 +64,7 @@ abstract class AbstractEntityStore(
     }
 
     override fun updateEntities(vararg entities: Entity): SignedTransaction? {
-        if(entities.isEmpty()){
+        if (entities.isEmpty()) {
             return null
         }
 
@@ -74,7 +76,7 @@ abstract class AbstractEntityStore(
 
         val authorityIds = entities.map { it.authorityId }.toSet()
 
-        if(authorityIds.size != 1){
+        if (authorityIds.size != 1) {
             logAndThrow(RuntimeException("Attempt to commit changes to multiple authorities."))
         }
 
@@ -90,13 +92,12 @@ abstract class AbstractEntityStore(
             return null
         }
 
-        val (signedTransaction, transactionOrdinal) = persistTransaction(authorityId , uncommittedFacts)
-
+        val persistTransactionResult = persistTransaction(authorityId, uncommittedFacts)
         entities.forEach {
-            it.commitFacts(signedTransaction.transaction.epochSecond, transactionOrdinal)
+            it.commitFacts(persistTransactionResult.epochSecond, persistTransactionResult.transactionOrdinal)
         }
 
-        return signedTransaction
+        return persistTransactionResult.signedTransaction
     }
 
     override fun getEntities(authorityIds: Set<Id>, entityIds: Set<Id>): List<Entity> {
@@ -105,7 +106,7 @@ abstract class AbstractEntityStore(
             .mapNotNull { Entity.fromFacts(it.value) }
     }
 
-    private  fun computedFacts(facts: Iterable<Fact>) : List<Fact> {
+    private fun computedFacts(facts: Iterable<Fact>): List<Fact> {
         return CoreAttribute.values().flatMap { attribute ->
             attribute.spec.computeFacts.ifNotNullOrElse({ it(facts) }, { emptyList() })
         }
@@ -122,6 +123,7 @@ abstract class AbstractEntityStore(
                             && it.operation == fact.operation
                             && it.value == fact.value
                 }
+
             Operation.Retract ->
                 // Don't allow superfluous retractions
                 facts.any {
@@ -134,18 +136,18 @@ abstract class AbstractEntityStore(
         }
     }
 
-    private fun validateFacts(authorityId: Id, facts: List<Fact>) : List<Fact> {
+    private fun validateFacts(authorityId: Id, facts: List<Fact>): List<Fact> {
         // TODO: Since there are already "bad" facts out there, this will likely create an issue of blowing
         //  up anybody that gets bad facts. Figure out how to fix. Likely need to rebuild transaction chain then
         //  dis/reconnect to peers. Other option is to gracefully handle bad facts, but only from peers
         val transactionFactsByEntity = facts.groupBy { it.entityId }
         val existingEntities = getEntities(setOf(authorityId), transactionFactsByEntity.keys)
 
-        existingEntities.forEach{ entity ->
+        existingEntities.forEach { entity ->
             val currentFacts = entity.getCurrentFacts()
             val transactionsFacts = transactionFactsByEntity[entity.entityId]!!
 
-            if (transactionsFacts.any { !validFact(currentFacts, it) }){
+            if (transactionsFacts.any { !validFact(currentFacts, it) }) {
                 throw IllegalArgumentException("Detected duplicate fact")
             }
         }
@@ -156,37 +158,59 @@ abstract class AbstractEntityStore(
     // TODO: !!! Clean up validation !!!
 
     // DO NOT use this outside of persistTransaction
-    private fun getNextTransactionId(authorityId: Id) : Id {
+    private fun getNextTransactionId(authorityId: Id): Id {
         return getSignedTransactions(listOf(authorityId), null, TransactionOrder.IdDescending, 1)
             .firstOrNull()
             .ifNotNullOrElse({ Id.ofData(SignedTransaction.encode(it)) }, { getFirstTransactionId(authorityId) })
     }
 
-    private fun signTransaction(transaction: Transaction) : SignedTransaction {
-        val signature = signator.signBytes(transaction.authorityId.toString(), Transaction.encode(transaction))
-        return SignedTransaction(transaction, signature)
+    private fun encodeTransaction(encodingFormat: EncodingFormat, transaction: Transaction): ByteArray {
+        return when(encodingFormat) {
+            EncodingFormat.OC -> Transaction.encode(transaction)
+            EncodingFormat.PROTOBUF -> Transaction.toByteArray(transaction)
+            else -> throw IllegalArgumentException("Unsupported encoding format: $transactionEncodingFormat")
+        }
     }
+
+    private fun signTransaction(transaction: Transaction): SignedTransaction {
+        val encodedTransaction = encodeTransaction(transactionEncodingFormat, transaction)
+        val signature = signator.signBytes(transaction.authorityId.toString(), encodedTransaction)
+        return SignedTransaction(transactionEncodingFormat, encodedTransaction, signature)
+    }
+
+    data class PersistTransactionResult(
+        val transactionOrdinal: Long,
+        val epochSecond: Long,
+        val signedTransaction: SignedTransaction
+    )
+
     // It is critical that this function is synchronized and not bypassed. It determines the next transaction
     // id, which needs to be unique, and does a final consistency / conflict check that can't be done in the DB
     @Synchronized
-    private fun persistTransaction(authorityId: Id, facts: List<Fact>): Pair<SignedTransaction, Long> {
+    private fun persistTransaction(authorityId: Id, facts: List<Fact>): PersistTransactionResult {
         // TODO: Move validate to here
         require(facts.isNotEmpty()) { "Attempt to persist transaction with no facts" }
 
         val allFacts = validateFacts(authorityId, facts.plus(computedFacts(facts)).distinct())
-        val signedTransaction = signTransaction(Transaction.fromFacts(getNextTransactionId(authorityId), allFacts))
+        val transaction = Transaction.fromFacts(getNextTransactionId(authorityId), allFacts)
+        val signedTransaction = signTransaction(transaction)
         val transactionOrdinal = persistTransaction(signedTransaction)
 
         // TODO: Once switched over to all protobuf, just use SignedTransaction.encode
-        eventBus?.sendMessage(Events.NewTransaction.toString(), SignedTransaction.toProto(signedTransaction).toByteArray())
+        eventBus?.sendMessage(
+            Events.NewTransaction.toString(),
+            SignedTransaction.toProto(signedTransaction).toByteArray()
+        )
 
-        return Pair(signedTransaction, transactionOrdinal)
+        return PersistTransactionResult(transactionOrdinal, transaction.epochSecond, signedTransaction)
+
     }
 
-    private fun getDeletedValue(fact: Fact) : Value<Any> {
-        return if(fact.attribute.type != AttributeType.SingleValue
+    private fun getDeletedValue(fact: Fact): Value<Any> {
+        return if (fact.attribute.type != AttributeType.SingleValue
             || fact.attribute == CoreAttribute.Type.spec
-            || fact.attribute == CoreAttribute.ParentId.spec)
+            || fact.attribute == CoreAttribute.ParentId.spec
+        )
             fact.value
         else
             emptyValue
@@ -212,20 +236,21 @@ abstract class AbstractEntityStore(
             } ?: emptyList()
         }
 
-        if(facts.isNotEmpty())
+        if (facts.isNotEmpty())
             persistTransaction(authorityId, facts)
     }
 
     override fun addSignedTransactions(signedTransactions: List<SignedTransaction>) {
         signedTransactions.forEach {
-            val transactionAuthorityId = it.transaction.authorityId
-            val publicKey =  publicKeyProvider.getPublicKey(transactionAuthorityId)
-                ?: throw IllegalArgumentException("No public key for: $transactionAuthorityId - cannot persist transaction ${it.transaction.id}")
+            val transaction = it.transaction
+            val transactionAuthorityId = transaction.authorityId
+            val publicKey = publicKeyProvider.getPublicKey(transactionAuthorityId)
+                ?: throw IllegalArgumentException("No public key for: $transactionAuthorityId - cannot persist transaction ${transaction.id}")
 
             if (!it.isValidTransaction(publicKey))
-                throw IllegalArgumentException("Transaction ${it.transaction.id} failed to validate from $transactionAuthorityId")
+                throw IllegalArgumentException("Transaction ${transaction.id} failed to validate from $transactionAuthorityId")
 
-            logger.info { "Adding transaction ${it.transaction.id} from $transactionAuthorityId" }
+            logger.info { "Adding transaction ${transaction.id} from $transactionAuthorityId" }
             persistTransaction(it)
             // TODO: Once switched over to all protobuf, just use SignedTransaction.encode
             eventBus?.sendMessage(Events.NewTransaction.toString(), SignedTransaction.toProto(it).toByteArray())

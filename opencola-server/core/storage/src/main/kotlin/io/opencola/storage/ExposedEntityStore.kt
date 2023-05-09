@@ -4,6 +4,7 @@ import io.opencola.event.EventBus
 import io.opencola.model.*
 import io.opencola.security.PublicKeyProvider
 import io.opencola.security.Signator
+import io.opencola.serialization.EncodingFormat
 import io.opencola.storage.EntityStore.TransactionOrder
 import io.opencola.storage.EntityStore.TransactionOrder.*
 import org.jetbrains.exposed.dao.id.LongIdTable
@@ -23,7 +24,7 @@ class ExposedEntityStore(
     signator: Signator,
     publicKeyProvider: PublicKeyProvider<Id>,
     eventBus: EventBus? = null,
-) : AbstractEntityStore(signator, publicKeyProvider, eventBus) {
+) : AbstractEntityStore(signator, publicKeyProvider, eventBus, EncodingFormat.OC) {
     // NOTE: Some databases may truncate the table name. This is an issue to the degree that it increases the
     // chances of collisions. Given the number of ids stored in a single DB, the chances of issue are exceedingly low.
     // This would likely be an issue only when storing data for large sets of users (millions to billions?)
