@@ -1,20 +1,46 @@
 package io.opencola.storage.addressbook
 
-import io.opencola.model.Authority
-import io.opencola.model.CoreAttribute
-import io.opencola.model.Id
-import io.opencola.model.Operation
+import io.opencola.model.*
 import io.opencola.model.value.StringValue
 import io.opencola.security.KeyStore
 import io.opencola.security.Signator
-import io.opencola.storage.entitystore.ExposedEntityStore
-import io.opencola.storage.entitystore.SQLiteDB
+import io.opencola.storage.entitystore.*
 import io.opencola.util.blankToNull
 import io.opencola.util.trim
 import java.nio.file.Path
 
-class EntityStoreAddressBook(private val storagePath: Path, private val keyStore: KeyStore) : AbstractAddressBook() {
-    private val entityStore = ExposedEntityStore(SQLiteDB(storagePath.resolve("address-book.db")).db, Signator(keyStore), KeyStorePublicKeyProvider(keyStore))
+class EntityStoreAddressBook(
+    val version: Version,
+    val config: AddressBookConfig,
+    private val storagePath: Path,
+    private val keyStore: KeyStore,
+) : AbstractAddressBook() {
+    enum class Version {
+        V1,
+        V2
+    }
+
+    private val entityStore =
+        when (version) {
+            Version.V1 -> ExposedEntityStore(
+                "address-book",
+                storagePath,
+                ::getSQLiteDB,
+                Signator(keyStore),
+                KeyStorePublicKeyProvider(keyStore)
+            )
+
+            Version.V2 -> ExposedEntityStoreV2(
+                "address-book",
+                EntityStoreConfig(config.transactionStorageUri),
+                storagePath,
+                ::getSQLiteDB,
+                Attributes.get(),
+                Signator(keyStore),
+                KeyStorePublicKeyProvider(keyStore)
+            )
+        }
+
 
     init {
         // Prior to personas, the default for the root authority was not activated by default, and an active check was
@@ -51,7 +77,7 @@ class EntityStoreAddressBook(private val storagePath: Path, private val keyStore
     }
 
     override fun toString(): String {
-        return "EntityStoreAddressBook(storagePath=$storagePath)"
+        return "EntityStoreAddressBook(version=$version storagePath=$storagePath, config=$config)"
     }
 
     private fun authorityToEntry(authority: Authority): AddressBookEntry {

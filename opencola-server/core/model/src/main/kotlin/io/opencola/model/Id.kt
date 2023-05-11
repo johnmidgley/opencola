@@ -14,13 +14,10 @@ import java.net.URI
 import java.security.PublicKey
 import java.util.*
 
-// TODO: This is really just a typed value with specialized constructors. Why can't they share serialization code when they have the same properties and one derives from the other?
-private val idLengthInBytes = sha256("").size
-
 @Serializable
 data class Id(private val bytes: ByteArray) : Comparable<Id> {
     init{
-        assert(bytes.size == idLengthInBytes) { "Invalid id - size = ${bytes.size} but should be $idLengthInBytes" }
+        assert(bytes.size == lengthInBytes) { "Invalid id - size = ${bytes.size} but should be $lengthInBytes" }
     }
 
     fun encode(): String {
@@ -56,6 +53,8 @@ data class Id(private val bytes: ByteArray) : Comparable<Id> {
     }
 
     companion object Factory : ByteArrayCodec<Id>, StreamSerializer<Id>, ProtoSerializable<Id, ProtoModel.Id> {
+        val lengthInBytes = sha256("").size
+
         // TODO: Should return Id? - empty string is not valid.
         fun decode(value: String): Id {
             return decode(
@@ -97,7 +96,7 @@ data class Id(private val bytes: ByteArray) : Comparable<Id> {
         }
 
         override fun decode(stream: InputStream): Id {
-            return Id(stream.readNBytes(idLengthInBytes))
+            return Id(stream.readNBytes(lengthInBytes))
         }
 
         override fun toProto(value: Id): ProtoModel.Id {

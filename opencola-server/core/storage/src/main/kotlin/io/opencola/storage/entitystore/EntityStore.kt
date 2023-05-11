@@ -19,9 +19,10 @@ interface EntityStore {
     // TODO: Separate fact store from entity store?
     fun getFacts(authorityIds: Iterable<Id>, entityIds: Iterable<Id>) : List<Fact>
 
+    fun updateEntities(vararg entities: Entity) : SignedTransaction?
     fun getEntities(authorityIds: Set<Id>, entityIds: Set<Id>) : List<Entity>
     fun deleteEntities(authorityId: Id, vararg entityIds: Id)
-    fun updateEntities(vararg entities: Entity) : SignedTransaction?
+
     // TODO: Should this be 'put' instead of 'add'?
     fun addSignedTransactions(signedTransactions: List<SignedTransaction>)
     fun getSignedTransactions(authorityIds: Iterable<Id>, startTransactionId: Id?, order: TransactionOrder, limit: Int) : Iterable<SignedTransaction>

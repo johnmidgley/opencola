@@ -2,43 +2,50 @@ package io.opencola.storage.entitystore
 
 import io.opencola.event.EventBus
 import io.opencola.model.*
+import io.opencola.model.Attributes as ModelAttributes
 import io.opencola.security.PublicKeyProvider
 import io.opencola.security.Signator
 import io.opencola.serialization.EncodingFormat
 import io.opencola.storage.entitystore.EntityStore.TransactionOrder
 import io.opencola.storage.entitystore.EntityStore.TransactionOrder.*
+import io.opencola.storage.filestore.IdBasedFileStore
+import io.opencola.storage.filestore.LocalIdBasedFileStore
 import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.greaterEq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.lessEq
 import org.jetbrains.exposed.sql.statements.api.ExposedBlob
-import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.io.ByteArrayInputStream
+import java.net.URI
 import java.nio.file.Path
+import kotlin.io.path.toPath
 
-// TODO: Think about using SQLite - super simple and maybe better fit for local use.
-
-class ExposedEntityStore(
+class ExposedEntityStoreV2(
     name: String,
+    config: EntityStoreConfig,
     storagePath: Path,
     getDB: (Path) -> Database,
+    modelAttributes: Iterable<Attribute>,
     signator: Signator,
     publicKeyProvider: PublicKeyProvider<Id>,
     eventBus: EventBus? = null,
-) : AbstractEntityStore(EntityStoreConfig(), signator, publicKeyProvider, eventBus, EncodingFormat.OC) {
+) : AbstractEntityStore(config, signator, publicKeyProvider, eventBus, EncodingFormat.OC) {
     private val database: Database
+    private val transactionStoragePath: Path
+    private val transactionFileStore: IdBasedFileStore
 
-    // NOTE: Some databases may truncate the table name. This is an issue to the degree that it increases the
-    // chances of collisions. Given the number of ids stored in a single DB, the chances of issue are exceedingly low.
-    // This would likely be an issue only when storing data for large sets of users (millions to billions?)
-    // TODO: Magic numbers (32, 128) should come from config
     // TODO: Normalize attribute
     // TODO: Break out attribute into separate table
+    private class Attributes(name: String = "Attributes") : LongIdTable(name) {
+        val name = text("name")
+        val type = enumeration("type", AttributeType::class)
+        val uri = text("uri").uniqueIndex()
+    }
+
     private class Facts(name: String = "Facts") : LongIdTable(name) {
-        val authorityId = binary("authorityId", 32).index()
-        val entityId = binary("entityId", 32).index()
+        val authorityId = binary("authorityId", Id.lengthInBytes).index()
+        val entityId = binary("entityId", Id.lengthInBytes).index()
         val attribute = text("attribute")
         val value = blob("value")
         val operation = enumeration("operation", Operation::class)
@@ -51,39 +58,70 @@ class ExposedEntityStore(
         val transactionId = binary("transactionId", 32).uniqueIndex()
         val authorityId = binary("authorityId", 32)
         val epochSecond = long("epochSecond").index()
-        val encoded = blob("encoded")
+        // val encoded = blob("encoded")
     }
 
+    private val attributeUriToDbIdMap: Map<URI, Long>
+    private val attributes: Attributes
     private val facts: Facts
     private val transactions: Transactions
 
-
     init {
-        require(config.transactionStorageUri == null) { "ExposedEntityStore does not support specifying transactionStorageUri config" }
-        database =  getDB(storagePath.resolve("$name.db"))
-        logger.info { "Initializing ExposedEntityStore {${database.url}}" }
+        require(config.transactionStorageUri == null || config.transactionStorageUri.scheme == "file") { "Unsupported scheme: ${config.transactionStorageUri?.scheme}" }
 
-        // Prior to personas, the table names included the authority id. This is no longer makes sense, but we for
-        // backwards compatibility, we support the old table names.
-        // TODO: Legacy Support
-        val tableNames = transaction(database) {
-            val allTableNames = TransactionManager.current().db.dialect.allTablesNames()
-            object {
-                val facts = allTableNames.firstOrNull { it.startsWith("fct-") } ?: "Facts"
-                val transactions = allTableNames.firstOrNull { it.startsWith("txs-") } ?: "Transactions"
-            }
-        }
+        val rootStoragePath = storagePath.resolve("entity-store").also { it.toFile().mkdirs() }
+        database = getDB(rootStoragePath.resolve("${name}V2.db"))
+        transactionStoragePath = config.transactionStorageUri?.toPath()
+            ?: rootStoragePath.resolve("transactions").also { it.toFile().mkdirs() }
+        transactionFileStore = LocalIdBasedFileStore(transactionStoragePath)
 
-        facts = Facts(tableNames.facts)
-        transactions = Transactions(tableNames.transactions)
+        logger.info { "Initializing ExposedEntityStoreV2 {${database.url}}" }
 
+        this.attributes = Attributes()
+        this.facts = Facts()
+        this.transactions = Transactions()
+
+        initTables()
+        attributeUriToDbIdMap = initDbAttributes(modelAttributes)
+    }
+
+    private fun initTables() {
         transaction(database) {
+            SchemaUtils.create(attributes)
             SchemaUtils.create(facts)
             SchemaUtils.create(transactions)
         }
     }
 
-    // TODO: Ids are not the same as time - switch to time ordering?
+    private fun addMissingAttributes(modelAttributes: Iterable<Attribute>) {
+        val dbAttributeUris = transaction(database) {
+            attributes.selectAll().map { it[attributes.uri] }
+        }
+
+        val missingAttributes = modelAttributes.filter { !dbAttributeUris.contains(it.uri.toString()) }
+        if (missingAttributes.isNotEmpty()) {
+            transaction(database) {
+                attributes.batchInsert(missingAttributes) {
+                    this[attributes.name] = it.name
+                    this[attributes.type] = it.type
+                    this[attributes.uri] = it.uri.toString()
+                }
+            }
+        }
+    }
+
+    private fun getAttributeUriToDbIdMap(): Map<URI, Long> {
+        return transaction(database) {
+            attributes.selectAll().associate { URI(it[attributes.uri]) to it[attributes.id].value }
+        }
+    }
+
+    private fun initDbAttributes(modelAttributes: Iterable<Attribute>): Map<URI, Long> {
+        addMissingAttributes(modelAttributes)
+        return getAttributeUriToDbIdMap()
+    }
+
+
     private fun Op<Boolean>.withLongColumnOrdering(
         column: Column<*>,
         value: Long?,
@@ -109,8 +147,38 @@ class ExposedEntityStore(
 
     }
 
+    override fun persistTransaction(signedTransaction: SignedTransaction): Long {
+        transactionFileStore.write(signedTransaction.transaction.id, signedTransaction.toBytes())
+
+        return transaction(database) {
+            val transaction = signedTransaction.transaction
+            val ordinal = transactions.insert {
+                it[transactionId] = Id.encode(transaction.id)
+                it[authorityId] = Id.encode(transaction.authorityId)
+                it[epochSecond] = transaction.epochSecond
+                // it[encoded] = ExposedBlob(signedTransaction.toBytes())
+            } get transactions.id
+
+            val transactionFacts = transaction.getFacts(ordinal.value)
+            transactionFacts
+                .forEach { fact ->
+                    facts.insert {
+                        it[authorityId] = Id.encode(fact.authorityId)
+                        it[entityId] = Id.encode(fact.entityId)
+                        it[attribute] = fact.attribute.uri.toString()
+                        it[value] = ExposedBlob(fact.attribute.valueWrapper.encodeProto(fact.value))
+                        it[operation] = fact.operation
+                        it[epochSecond] = transaction.epochSecond
+                        it[transactionOrdinal] = ordinal.value
+                    }
+                }
+
+            ordinal.value
+        }
+    }
+
     private fun getOrderColumn(order: TransactionOrder): Column<*> {
-        return when(order){
+        return when (order) {
             IdAscending -> transactions.id
             IdDescending -> transactions.id
             TimeAscending -> transactions.epochSecond
@@ -119,7 +187,7 @@ class ExposedEntityStore(
     }
 
     private fun isAscending(order: TransactionOrder): Boolean {
-        return when (order){
+        return when (order) {
             IdAscending -> true
             IdDescending -> false
             TimeAscending -> true
@@ -137,7 +205,6 @@ class ExposedEntityStore(
                     .withLongColumnOrdering(orderColumn, id, isAscending)
                     .withIdConstraint(transactions.authorityId, authorityIds)
             }
-            // TODO: order by transactions.id or transactions.epochSecond??
             .orderBy(orderColumn to if (isAscending) SortOrder.ASC else SortOrder.DESC)
     }
 
@@ -153,13 +220,14 @@ class ExposedEntityStore(
     }
 
     private fun getStartValue(order: TransactionOrder, row: ResultRow): Long {
-        return when(order){
+        return when (order) {
             IdAscending -> row[transactions.id].value
             IdDescending -> row[transactions.id].value
             TimeAscending -> row[transactions.epochSecond]
             TimeDescending -> row[transactions.epochSecond]
         }
     }
+
     private fun getTransactionRows(
         authorityIds: Iterable<Id>,
         startTransactionId: Id?,
@@ -168,18 +236,13 @@ class ExposedEntityStore(
     ): List<ResultRow> {
         return transaction(database) {
             val authorityIdList = authorityIds.toList()
-            // TODO: There's likely a seam problem lurking here when ordering by time,
-            //  since time isn't unique. Solve!
-            val startRow = startRowQuery(authorityIdList, startTransactionId, order).firstOrNull()
+            val startRow = startRowQuery(authorityIds.toList(), startTransactionId, order).firstOrNull()
 
-            if (startRow == null)
-                emptyList()
-            else {
+            startRow?.let {
                 transactionsByAuthoritiesQuery(authorityIdList, getStartValue(order, startRow), order)
                     .limit(limit)
                     .toList()
-            }
-
+            } ?: emptyList()
         }
     }
 
@@ -190,52 +253,25 @@ class ExposedEntityStore(
         limit: Int
     ): Iterable<SignedTransaction> {
         return getTransactionRows(authorityIds, startTransactionId, order, limit).map { row ->
-            ByteArrayInputStream(row[transactions.encoded].bytes).use {
-                SignedTransaction.decode(it)
-            }
+            // SignedTransaction.fromBytes(row[transactions.encoded].bytes)
+            transactionFileStore.read(Id.decode(row[transactions.transactionId]))?.let {
+                SignedTransaction.fromBytes(it)
+            } ?: error("Transaction not found")
         }
     }
 
     private fun factFromResultRow(resultRow: ResultRow): Fact {
-        val attribute = Attributes.getAttributeByUriString(resultRow[facts.attribute])!!
+        val attribute = ModelAttributes.getAttributeByUriString(resultRow[facts.attribute])!!
 
         return Fact(
             Id.decode(resultRow[facts.authorityId]),
             Id.decode(resultRow[facts.entityId]),
             attribute,
-            attribute.valueWrapper.decodeAny(resultRow[facts.value].bytes),
+            attribute.valueWrapper.decodeProto(resultRow[facts.value].bytes),
             resultRow[facts.operation],
             resultRow[facts.epochSecond],
             resultRow[facts.transactionOrdinal]
         )
-    }
-
-    override fun persistTransaction(signedTransaction: SignedTransaction): Long {
-        return transaction(database) {
-            val transaction = signedTransaction.transaction
-            val ordinal = transactions.insert {
-                it[transactionId] = Id.encode(transaction.id)
-                it[authorityId] = Id.encode(transaction.authorityId)
-                it[epochSecond] = transaction.epochSecond
-                it[encoded] = ExposedBlob(SignedTransaction.encode(signedTransaction))
-            } get transactions.id
-
-            val transactionFacts = transaction.getFacts(ordinal.value)
-            transactionFacts
-                .forEach { fact ->
-                facts.insert {
-                    it[authorityId] = Id.encode(fact.authorityId)
-                    it[entityId] = Id.encode(fact.entityId)
-                    it[attribute] = fact.attribute.uri.toString()
-                    it[value] = ExposedBlob(fact.attribute.valueWrapper.encodeAny(fact.value))
-                    it[operation] = fact.operation
-                    it[epochSecond] = transaction.epochSecond
-                    it[transactionOrdinal] = ordinal.value
-                }
-            }
-
-            ordinal.value
-        }
     }
 
     override fun getFacts(authorityIds: Iterable<Id>, entityIds: Iterable<Id>): List<Fact> {

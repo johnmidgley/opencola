@@ -9,7 +9,7 @@ import io.opencola.security.generateKeyPair
 import io.opencola.storage.*
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
-import io.opencola.storage.filestore.LocalFileStore
+import io.opencola.storage.filestore.LocalContentBasedFileStore
 import org.junit.Test
 import java.util.UUID
 import kotlin.test.*
@@ -130,7 +130,7 @@ class NetworkNodeTest {
 
     @Test
     fun testGetData() {
-        val fileStore = LocalFileStore(TestApplication.getTmpDirectory("-filestore"))
+        val fileStore = LocalContentBasedFileStore(TestApplication.getTmpDirectory("-filestore"))
         val context = NetworkNodeContext(routes = listOf(getDataRoute(fileStore)))
 
         // Create persona and peer

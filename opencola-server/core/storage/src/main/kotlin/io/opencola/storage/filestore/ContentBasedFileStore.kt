@@ -4,7 +4,8 @@ import io.opencola.model.Id
 import java.io.InputStream
 
 
-interface FileStore {
+// TODO: Only need stream based implementations - ByteArray ones can be defined in terms of those. See IdBasedFileStore
+interface ContentBasedFileStore {
     fun exists(dataId: Id) : Boolean
 
     fun read(dataId: Id) : ByteArray?

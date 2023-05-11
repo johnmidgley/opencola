@@ -11,7 +11,7 @@ import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import io.opencola.storage.entitystore.EntityStore
 import io.opencola.storage.entitystore.ExposedEntityStore
-import io.opencola.storage.entitystore.SQLiteDB
+import io.opencola.storage.entitystore.getSQLiteDB
 import org.kodein.di.instance
 import java.net.URI
 import java.time.Instant
@@ -24,10 +24,10 @@ class EntityStoreTest {
     private val addressBook by app.injector.instance<AddressBook>()
     private val persona = addressBook.getEntries().filterIsInstance<PersonaAddressBookEntry>().single()
     private val sqLiteEntityStorePath = app.storagePath.resolve("${TestApplication.testRunName}.db")
-    private val getSQLiteEntityStore = { ExposedEntityStore(SQLiteDB(sqLiteEntityStorePath).db, signator, addressBook, eventBus)  }
+    private val getSQLiteEntityStore = { ExposedEntityStore("entity-store", sqLiteEntityStorePath, ::getSQLiteDB, signator, addressBook, eventBus)  }
 
     private fun getFreshExposeEntityStore(): ExposedEntityStore {
-        return ExposedEntityStore(SQLiteDB(TestApplication.getTmpFilePath(".db")).db, signator, addressBook, eventBus)
+        return ExposedEntityStore("entity-store", TestApplication.getTmpDirectory("entity-store"), ::getSQLiteDB, signator, addressBook, eventBus)
     }
 
     @Test

@@ -48,6 +48,10 @@ data class SignedTransaction(
         }
     }
 
+    fun toBytes(): ByteArray {
+        return toBytes(this)
+    }
+
     companion object :
         StreamSerializer<SignedTransaction>,
         ProtoSerializable<SignedTransaction, ProtoModel.SignedTransaction> {

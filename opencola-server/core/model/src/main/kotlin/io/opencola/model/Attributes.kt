@@ -29,4 +29,6 @@ object Attributes {
     fun getAttributeOrdinal(attribute: Attribute): Int? {
         return attributeToOrdinal[attribute]
     }
+
+    fun get() = CoreAttribute.values().map { it.spec }
 }

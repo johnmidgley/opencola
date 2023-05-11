@@ -8,7 +8,7 @@ import io.opencola.model.DataEntity
 import io.opencola.model.Id
 import io.opencola.model.ResourceEntity
 import io.opencola.storage.entitystore.EntityStore
-import io.opencola.storage.filestore.FileStore
+import io.opencola.storage.filestore.ContentBasedFileStore
 import java.io.ByteArrayInputStream
 import java.nio.file.Path
 import kotlin.io.path.createDirectory
@@ -16,7 +16,7 @@ import kotlin.io.path.exists
 import kotlin.io.path.outputStream
 import kotlin.io.path.readBytes
 
-class MhtCache(private val cachePath: Path, private val entityStore: EntityStore, private val fileStore: FileStore) {
+class MhtCache(private val cachePath: Path, private val entityStore: EntityStore, private val fileStore: ContentBasedFileStore) {
     private val logger = KotlinLogging.logger("MhtCache")
 
     init{

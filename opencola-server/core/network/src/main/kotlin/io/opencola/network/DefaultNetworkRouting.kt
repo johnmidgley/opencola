@@ -12,7 +12,7 @@ import io.opencola.serialization.writeByteArray
 import io.opencola.serialization.writeInt
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.entitystore.EntityStore
-import io.opencola.storage.filestore.FileStore
+import io.opencola.storage.filestore.ContentBasedFileStore
 import mu.KotlinLogging
 import java.io.ByteArrayOutputStream
 
@@ -93,7 +93,7 @@ fun handleGetTransactions(
     return TransactionsResponse(transactionId, currentTransactionId, transactions.toList())
 }
 
-fun handleGetData(fileStore: FileStore, dataId: Id): ByteArray? {
+fun handleGetData(fileStore: ContentBasedFileStore, dataId: Id): ByteArray? {
     return fileStore.read(dataId)
 }
 
@@ -154,7 +154,7 @@ fun putTransactionsRoute(entityStore: EntityStore, addressBook: AddressBook): Ro
     }
 }
 
-fun getDataRoute(fileStore: FileStore): Route {
+fun getDataRoute(fileStore: ContentBasedFileStore): Route {
     return Route(
         "getData"
     ) { _, _, message ->
@@ -162,7 +162,7 @@ fun getDataRoute(fileStore: FileStore): Route {
     }
 }
 
-fun putDataRoute(fileStore: FileStore): Route {
+fun putDataRoute(fileStore: ContentBasedFileStore): Route {
     return Route(
         "putData"
     ) { _, _, message ->
@@ -174,7 +174,7 @@ fun getDefaultRoutes(
     eventBus: EventBus,
     entityStore: EntityStore,
     addressBook: AddressBook,
-    fileStore: FileStore,
+    fileStore: ContentBasedFileStore,
 ): List<Route> {
 
     return listOf(

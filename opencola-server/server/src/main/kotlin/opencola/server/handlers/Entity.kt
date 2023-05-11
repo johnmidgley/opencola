@@ -13,7 +13,7 @@ import io.opencola.util.blankToNull
 import io.opencola.util.nullOrElse
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.entitystore.EntityStore
-import io.opencola.storage.filestore.FileStore
+import io.opencola.storage.filestore.ContentBasedFileStore
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import java.net.URI
 
@@ -254,7 +254,7 @@ fun newPost(
 
 suspend fun addAttachment(
     entityStore: EntityStore,
-    fileStore: FileStore,
+    fileStore: ContentBasedFileStore,
     addressBook: AddressBook,
     context: Context,
     personaId: Id,

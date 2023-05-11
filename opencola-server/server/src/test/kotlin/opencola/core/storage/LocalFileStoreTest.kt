@@ -1,7 +1,7 @@
 package opencola.core.storage
 
 import io.opencola.model.Id
-import io.opencola.storage.filestore.LocalFileStore
+import io.opencola.storage.filestore.LocalContentBasedFileStore
 import kotlin.io.path.createTempDirectory
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -11,7 +11,7 @@ import kotlin.test.assertTrue
 
 class LocalFileStoreTest{
     private val tempDirectory = createTempDirectory("local-file-store")
-    private val localFileStore = LocalFileStore(tempDirectory)
+    private val localFileStore = LocalContentBasedFileStore(tempDirectory)
 
     @Test
     fun testExists(){

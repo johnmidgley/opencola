@@ -13,7 +13,7 @@ import io.opencola.content.*
 import io.opencola.util.nullOrElse
 import io.opencola.model.*
 import io.opencola.storage.entitystore.EntityStore
-import io.opencola.storage.filestore.FileStore
+import io.opencola.storage.filestore.ContentBasedFileStore
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import java.net.URI
@@ -40,6 +40,7 @@ fun getHttpData(uri: URI): ByteArray? {
             requestTimeout = 30000
         }
     }
+
     return runBlocking {
         try {
             logger.info { "Getting data for: $uri" }
@@ -123,7 +124,7 @@ fun updateMultipartResource(resourceEntity: ResourceEntity, mhtmlPage: MhtmlPage
     return emptyList()
 }
 
-fun getDataEntity(authorityId: Id, entityStore: EntityStore, fileStore: FileStore, content: Content): DataEntity {
+fun getDataEntity(authorityId: Id, entityStore: EntityStore, fileStore: ContentBasedFileStore, content: Content): DataEntity {
     val dataId = fileStore.write(content.data)
     return (entityStore.getEntity(authorityId, dataId) ?: DataEntity(
         authorityId,
@@ -141,7 +142,7 @@ fun updateActions(entity: Entity, actions: Actions) {
 fun updateResource(
     authorityId: Id,
     entityStore: EntityStore,
-    fileStore: FileStore,
+    fileStore: ContentBasedFileStore,
     mhtmlPage: MhtmlPage,
     actions: Actions
 ): ResourceEntity {
@@ -167,7 +168,7 @@ fun updateResource(
 fun handleAction(
     authorityId: Id,
     entityStore: EntityStore,
-    fileStore: FileStore,
+    fileStore: ContentBasedFileStore,
     action: String,
     value: String?,
     mhtml: ByteArray
@@ -188,7 +189,7 @@ suspend fun handlePostActionCall(
     call: ApplicationCall,
     authorityId: Id,
     entityStore: EntityStore,
-    fileStore: FileStore,
+    fileStore: ContentBasedFileStore,
 ) {
     val multipart = call.receiveMultipart()
     var action: String? = null

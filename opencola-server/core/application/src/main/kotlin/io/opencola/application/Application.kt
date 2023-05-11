@@ -19,11 +19,13 @@ import io.opencola.security.Encryptor
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.addressbook.EntityStoreAddressBook
+import io.opencola.storage.addressbook.EntityStoreAddressBook.Version
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import io.opencola.storage.cache.MhtCache
-import io.opencola.storage.entitystore.ExposedEntityStore
+import io.opencola.storage.entitystore.ExposedEntityStoreV2
 import io.opencola.storage.entitystore.SQLiteDB
-import io.opencola.storage.filestore.LocalFileStore
+import io.opencola.storage.entitystore.getSQLiteDB
+import io.opencola.storage.filestore.LocalContentBasedFileStore
 import org.jetbrains.exposed.sql.Database
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
@@ -112,8 +114,7 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) :
             }
 
             val keyStore = JavaKeyStore(storagePath.resolve("keystore.pks"), password)
-            val fileStore = LocalFileStore(storagePath.resolve("filestore"))
-            val entityStoreDB = getEntityStoreDB(storagePath)
+            val fileStore = LocalContentBasedFileStore(storagePath.resolve("filestore"))
 
             val injector = DI {
                 bindSingleton { keyStore }
@@ -121,13 +122,13 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) :
                 bindSingleton { TextExtractor() }
                 bindSingleton { Signator(instance()) }
                 bindSingleton { Encryptor(instance()) }
-                bindSingleton { EntityStoreAddressBook(storagePath, instance()) }
+                bindSingleton { EntityStoreAddressBook(Version.V1, config.addressBook, storagePath, instance()) }
                 bindSingleton { RequestRouter(instance(), getDefaultRoutes(instance(), instance(), instance(), instance())) }
                 bindSingleton { HttpNetworkProvider(instance(), instance(), instance(), config.network) }
                 bindSingleton { OCRelayNetworkProvider(instance(), instance(), instance(), config.network) }
                 bindSingleton { NetworkNode(config.network, instance(),instance(), instance(), instance()) }
                 bindSingleton { LuceneSearchIndex(storagePath.resolve("lucene")) }
-                bindSingleton { ExposedEntityStore(entityStoreDB, instance(), instance(), instance()) }
+                bindSingleton { ExposedEntityStoreV2("entity-store", config.entityStore, storagePath, ::getSQLiteDB, instance(), instance(), instance()) }
                 // TODO: Add unit tests for MhtCache
                 // TODO: Get cache name from config
                 bindSingleton { MhtCache(storagePath.resolve("mht-cache"), instance(), instance()) }

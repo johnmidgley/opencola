@@ -13,3 +13,7 @@ class SQLiteDB(private val dbPath: Path) {
         db
     }
 }
+
+fun getSQLiteDB(path: Path): Database {
+    return SQLiteDB(path).db
+}

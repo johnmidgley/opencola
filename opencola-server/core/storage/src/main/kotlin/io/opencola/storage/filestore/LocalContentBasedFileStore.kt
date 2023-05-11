@@ -6,7 +6,7 @@ import java.nio.file.Path
 import kotlin.io.path.*
 
 
-class LocalFileStore(private val root: Path) : FileStore {
+class LocalContentBasedFileStore(private val root: Path) : ContentBasedFileStore {
     private val directoryPrefixLength = 2
 
     init {
