@@ -169,7 +169,7 @@ abstract class AbstractEntityStore(
     private fun encodeTransaction(encodingFormat: EncodingFormat, transaction: Transaction): ByteArray {
         return when(encodingFormat) {
             EncodingFormat.OC -> Transaction.encode(transaction)
-            EncodingFormat.PROTOBUF -> Transaction.toByteArray(transaction)
+            EncodingFormat.PROTOBUF -> Transaction.encodeProto(transaction)
             else -> throw IllegalArgumentException("Unsupported encoding format: $transactionEncodingFormat")
         }
     }

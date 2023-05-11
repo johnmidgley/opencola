@@ -5,6 +5,7 @@ import io.opencola.content.TextExtractor
 import io.opencola.event.EventBus
 import io.opencola.event.ExposedEventBus
 import io.opencola.event.Reactor
+import io.opencola.model.Attributes
 import io.opencola.model.Authority
 import io.opencola.model.Id
 import io.opencola.network.NetworkConfig
@@ -23,10 +24,8 @@ import io.opencola.storage.addressbook.EntityStoreAddressBook.Version
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import io.opencola.storage.cache.MhtCache
 import io.opencola.storage.entitystore.ExposedEntityStoreV2
-import io.opencola.storage.entitystore.SQLiteDB
 import io.opencola.storage.entitystore.getSQLiteDB
 import io.opencola.storage.filestore.LocalContentBasedFileStore
-import org.jetbrains.exposed.sql.Database
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
 import org.kodein.di.instance
@@ -39,7 +38,7 @@ import kotlin.io.path.*
 class Application(val storagePath: Path, val config: Config, val injector: DI) : Closeable {
     val logger = KotlinLogging.logger("opencola.${config.name}")
 
-    inline fun <reified T : Any> inject() : T {
+    inline fun <reified T : Any> inject(): T {
         val instance by injector.instance<T>()
         return instance
     }
@@ -56,21 +55,17 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) :
         fun getOrCreateRootKeyPair(storagePath: Path, password: String): List<KeyPair> {
             val keyStore = JavaKeyStore(storagePath.resolve("keystore.pks"), password)
 
-            if(keyStore.getAliases().isEmpty()) {
+            if (keyStore.getAliases().isEmpty()) {
                 generateKeyPair().also { keyStore.addKeyPair(Id.ofPublicKey(it.public).toString(), it) }
             }
 
             val keyPairs = keyStore.getAliases().mapNotNull { keyStore.getKeyPair(it) }
 
-            if(keyPairs.isEmpty()) {
+            if (keyPairs.isEmpty()) {
                 throw IllegalStateException("No key pairs found in {${keyStore.path}}")
             }
 
             return keyPairs
-        }
-
-        fun getEntityStoreDB(storagePath: Path): Database {
-            return SQLiteDB(storagePath.resolve("entity-store.db")).db
         }
 
         private fun initEventBus(injector: DI) {
@@ -88,7 +83,7 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) :
                 PersonaAddressBookEntry(authority, it)
             }
 
-            personas.forEach{
+            personas.forEach {
                 val addressBookPersona = addressBook.getEntry(it.personaId, it.entityId) ?: addressBook.updateEntry(it)
 
                 if (addressBookPersona.address.toString().isBlank()) {
@@ -109,7 +104,7 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) :
 
         // TODO: Should probably pass in keyStore vs. personaKeyPairs. The keyStore should be able to get the personaKeyPairs
         fun instance(storagePath: Path, config: Config, personaKeyPairs: List<KeyPair>, password: String): Application {
-            if(!storagePath.exists()) {
+            if (!storagePath.exists()) {
                 File(storagePath.toString()).mkdirs()
             }
 
@@ -123,12 +118,28 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) :
                 bindSingleton { Signator(instance()) }
                 bindSingleton { Encryptor(instance()) }
                 bindSingleton { EntityStoreAddressBook(Version.V1, config.addressBook, storagePath, instance()) }
-                bindSingleton { RequestRouter(instance(), getDefaultRoutes(instance(), instance(), instance(), instance())) }
+                bindSingleton {
+                    RequestRouter(
+                        instance(),
+                        getDefaultRoutes(instance(), instance(), instance(), instance())
+                    )
+                }
                 bindSingleton { HttpNetworkProvider(instance(), instance(), instance(), config.network) }
                 bindSingleton { OCRelayNetworkProvider(instance(), instance(), instance(), config.network) }
-                bindSingleton { NetworkNode(config.network, instance(),instance(), instance(), instance()) }
+                bindSingleton { NetworkNode(config.network, instance(), instance(), instance(), instance()) }
                 bindSingleton { LuceneSearchIndex(storagePath.resolve("lucene")) }
-                bindSingleton { ExposedEntityStoreV2("entity-store", config.entityStore, storagePath, ::getSQLiteDB, instance(), instance(), instance()) }
+                bindSingleton {
+                    ExposedEntityStoreV2(
+                        "entity-store",
+                        config.entityStore,
+                        storagePath,
+                        ::getSQLiteDB,
+                        Attributes.get(),
+                        instance(),
+                        instance(),
+                        instance()
+                    )
+                }
                 // TODO: Add unit tests for MhtCache
                 // TODO: Get cache name from config
                 bindSingleton { MhtCache(storagePath.resolve("mht-cache"), instance(), instance()) }
@@ -147,7 +158,7 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) :
             }
         }
 
-        fun instance(storagePath: Path, password: String, config: Config? = null) : Application {
+        fun instance(storagePath: Path, password: String, config: Config? = null): Application {
             val appConfig = config ?: loadConfig(storagePath.resolve("opencola-server.yaml"))
             val personaKeyPairs = getOrCreateRootKeyPair(storagePath, password)
             return instance(storagePath, appConfig, personaKeyPairs, password)

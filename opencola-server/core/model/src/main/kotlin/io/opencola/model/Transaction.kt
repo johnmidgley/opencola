@@ -32,6 +32,10 @@ data class Transaction(val id: Id,
         return toProto(this)
     }
 
+    fun encodeProto(): ByteArray {
+        return encodeProto(this)
+    }
+
     companion object : StreamSerializer<Transaction>, ProtoSerializable<Transaction, ProtoModel.Transaction> {
         fun fromFacts(id: Id, facts: List<Fact>, epochSecond: Long = Instant.now().epochSecond) : Transaction {
             val (authorityId, transactionEntities) = toTransactionEntities(facts)
@@ -86,12 +90,8 @@ data class Transaction(val id: Id,
             )
         }
 
-        fun toByteArray(value: Transaction): ByteArray {
+        fun encodeProto(value: Transaction): ByteArray {
             return toProto(value).toByteArray()
-        }
-
-        fun fromByteArray(value: ByteArray): Transaction {
-            return fromProto(ProtoModel.Transaction.parseFrom(value))
         }
     }
 }

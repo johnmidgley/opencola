@@ -148,7 +148,7 @@ class ExposedEntityStoreV2(
     }
 
     override fun persistTransaction(signedTransaction: SignedTransaction): Long {
-        transactionFileStore.write(signedTransaction.transaction.id, signedTransaction.toBytes())
+        transactionFileStore.write(signedTransaction.transaction.id, signedTransaction.encodeProto())
 
         return transaction(database) {
             val transaction = signedTransaction.transaction
@@ -255,7 +255,7 @@ class ExposedEntityStoreV2(
         return getTransactionRows(authorityIds, startTransactionId, order, limit).map { row ->
             // SignedTransaction.fromBytes(row[transactions.encoded].bytes)
             transactionFileStore.read(Id.decode(row[transactions.transactionId]))?.let {
-                SignedTransaction.fromBytes(it)
+                SignedTransaction.decodeProto(it)
             } ?: error("Transaction not found")
         }
     }

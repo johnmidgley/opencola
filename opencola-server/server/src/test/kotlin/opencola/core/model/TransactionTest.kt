@@ -24,18 +24,13 @@ class TransactionTest {
 
     @Test
     fun testTransactionStructure() {
-        val stableStructureHash = "3960f25b533fedf4cda71a701553a4bf7fef02689a0b5bb7a335de3bd6c6efbd"
+        val stableStructureHash = "8b21ed55d75bb01036e19d361f14666399ae5159e4ff6f94297edfc7e812624f"
         val id = Id.ofData("".toByteArray())
         val fact = Fact(id, id, CoreAttribute.Type.spec, StringValue("").asAnyValue(), Operation.Add)
-        val encodedTransaction = Transaction.fromFacts(id, listOf(fact), 0).encode()
-
+        val encodedTransaction = Transaction.fromFacts(id, listOf(fact), 0).encodeProto()
         val signedTransaction =
-            SignedTransaction(EncodingFormat.OC, encodedTransaction, Signature(SIGNATURE_ALGO, "".toByteArray()))
-
-        val hash = ByteArrayOutputStream().use {
-            SignedTransaction.encode(it, signedTransaction)
-            sha256(it.toByteArray()).toHexString()
-        }
+            SignedTransaction(EncodingFormat.PROTOBUF, encodedTransaction, Signature(SIGNATURE_ALGO, "".toByteArray()))
+        val hash = sha256(signedTransaction.encodeProto()).toHexString()
 
         assertEquals(stableStructureHash, hash, "Serialization change in Transaction - likely a breaking change")
     }

@@ -31,6 +31,6 @@ class PutTransactionsMessage(private val signedTransactions: Iterable<ByteArray>
     }
 
     fun getSignedTransactions(): List<SignedTransaction> {
-        return signedTransactions.map { SignedTransaction.fromBytes(it) }
+        return signedTransactions.map { SignedTransaction.decodeProto(it) }
     }
 }

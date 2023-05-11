@@ -48,8 +48,8 @@ data class SignedTransaction(
         }
     }
 
-    fun toBytes(): ByteArray {
-        return toBytes(this)
+    fun encodeProto(): ByteArray {
+        return encodeProto(this)
     }
 
     companion object :
@@ -91,11 +91,11 @@ data class SignedTransaction(
         }
 
         // TODO: toBytes can easily be moved to ProtobufSerializable. Not sure if fromBytes can be moved due to type erasure
-        fun toBytes(value: SignedTransaction): ByteArray {
+        fun encodeProto(value: SignedTransaction): ByteArray {
             return toProto(value).toByteArray()
         }
 
-        fun fromBytes(bytes: ByteArray): SignedTransaction {
+        fun decodeProto(bytes: ByteArray): SignedTransaction {
             return fromProto(ProtoModel.SignedTransaction.parseFrom(bytes))
         }
     }
