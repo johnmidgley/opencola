@@ -4,6 +4,10 @@ import io.opencola.application.Application
 import io.opencola.security.JavaKeyStore
 import io.opencola.security.KeyStore
 import io.opencola.security.Signator
+import io.opencola.storage.addressbook.AddressBook
+import io.opencola.storage.addressbook.EntityStoreAddressBook
+import io.opencola.storage.entitystore.EntityStore
+import io.opencola.storage.entitystore.ExposedEntityStore
 import java.nio.file.Path
 
 class ExposedEntityStoreContext(

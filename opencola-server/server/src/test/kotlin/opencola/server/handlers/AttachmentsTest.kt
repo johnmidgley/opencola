@@ -7,8 +7,8 @@ import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.opencola.model.Id
 import io.opencola.model.ResourceEntity
-import io.opencola.storage.EntityStore
-import io.opencola.storage.FileStore
+import io.opencola.storage.entitystore.EntityStore
+import io.opencola.storage.filestore.FileStore
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import opencola.server.ApplicationTestBase

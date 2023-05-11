@@ -5,10 +5,10 @@ import kotlinx.serialization.Serializable
 import io.opencola.util.nullOrElse
 import io.opencola.model.CoreAttribute.*
 import io.opencola.search.SearchIndex
-import io.opencola.storage.AddressBook
-import io.opencola.storage.AddressBookEntry
-import io.opencola.storage.EntityStore
-import io.opencola.storage.PersonaAddressBookEntry
+import io.opencola.storage.addressbook.AddressBook
+import io.opencola.storage.addressbook.AddressBookEntry
+import io.opencola.storage.entitystore.EntityStore
+import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import io.opencola.util.Base58
 import opencola.server.handlers.EntityResult.*
 
@@ -174,7 +174,7 @@ fun getAddressBookMap(addressBook: AddressBook): Map<Id, AddressBookEntry> {
     }.associateBy { it.entityId }
 }
 
-fun getPersonaId(addressBook: AddressBook,  activities: List<Activity>) : Id {
+fun getPersonaId(addressBook: AddressBook, activities: List<Activity>) : Id {
     val authorities = addressBook.getEntries()
     return activities.maxByOrNull { it.epochSecond }?.let { activity ->
         authorities.firstOrNull { it.entityId.toString() == activity.authorityId }?.personaId

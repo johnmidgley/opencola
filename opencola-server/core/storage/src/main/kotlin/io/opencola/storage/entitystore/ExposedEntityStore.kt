@@ -1,12 +1,12 @@
-package io.opencola.storage
+package io.opencola.storage.entitystore
 
 import io.opencola.event.EventBus
 import io.opencola.model.*
 import io.opencola.security.PublicKeyProvider
 import io.opencola.security.Signator
 import io.opencola.serialization.EncodingFormat
-import io.opencola.storage.EntityStore.TransactionOrder
-import io.opencola.storage.EntityStore.TransactionOrder.*
+import io.opencola.storage.entitystore.EntityStore.TransactionOrder
+import io.opencola.storage.entitystore.EntityStore.TransactionOrder.*
 import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq

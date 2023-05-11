@@ -6,7 +6,7 @@ import io.opencola.network.providers.MockNetworkProvider
 import io.opencola.security.KeyStore
 import io.opencola.security.MockKeyStore
 import io.opencola.security.Signator
-import io.opencola.storage.AddressBook
+import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.MockAddressBook
 import io.opencola.storage.addPersona
 

@@ -15,8 +15,15 @@ import io.opencola.network.providers.http.HttpNetworkProvider
 import io.opencola.network.providers.relay.OCRelayNetworkProvider
 import io.opencola.search.LuceneSearchIndex
 import io.opencola.security.*
-import io.opencola.storage.*
 import io.opencola.security.Encryptor
+import io.opencola.storage.addressbook.AddressBook
+import io.opencola.storage.addressbook.AddressBookEntry
+import io.opencola.storage.addressbook.EntityStoreAddressBook
+import io.opencola.storage.addressbook.PersonaAddressBookEntry
+import io.opencola.storage.cache.MhtCache
+import io.opencola.storage.entitystore.ExposedEntityStore
+import io.opencola.storage.entitystore.SQLiteDB
+import io.opencola.storage.filestore.LocalFileStore
 import org.jetbrains.exposed.sql.Database
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton

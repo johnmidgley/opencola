@@ -3,8 +3,8 @@ package opencola.server.viewmodel
 import io.opencola.model.Id
 import io.opencola.security.decodePublicKey
 import io.opencola.security.encode
-import io.opencola.storage.AddressBookEntry
-import io.opencola.storage.PersonaAddressBookEntry
+import io.opencola.storage.addressbook.AddressBookEntry
+import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import kotlinx.serialization.Serializable
 import java.net.URI
 

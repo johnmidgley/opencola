@@ -4,7 +4,7 @@ import io.opencola.model.Id
 import kotlinx.serialization.Serializable
 import io.opencola.model.ResourceEntity
 import io.opencola.search.SearchIndex
-import io.opencola.storage.EntityStore
+import io.opencola.storage.entitystore.EntityStore
 
 @Serializable
 data class SearchResult(val id: String, val name: String?, val uri: String, val description: String?)

@@ -8,8 +8,8 @@ import io.opencola.network.message.SignedMessage
 import io.opencola.network.providers.http.HttpNetworkProvider
 import io.opencola.security.Signature
 import io.opencola.security.generateKeyPair
-import io.opencola.storage.AddressBookEntry
-import io.opencola.storage.PersonaAddressBookEntry
+import io.opencola.storage.addressbook.AddressBookEntry
+import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout

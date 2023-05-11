@@ -10,9 +10,9 @@ import io.opencola.serialization.readByteArray
 import io.opencola.serialization.readInt
 import io.opencola.serialization.writeByteArray
 import io.opencola.serialization.writeInt
-import io.opencola.storage.AddressBook
-import io.opencola.storage.EntityStore
-import io.opencola.storage.FileStore
+import io.opencola.storage.addressbook.AddressBook
+import io.opencola.storage.entitystore.EntityStore
+import io.opencola.storage.filestore.FileStore
 import mu.KotlinLogging
 import java.io.ByteArrayOutputStream
 

@@ -7,12 +7,12 @@ import io.opencola.network.emptyByteArray
 import io.opencola.network.message.UnsignedMessage
 import io.opencola.network.message.PingMessage
 import io.opencola.network.providers.relay.OCRelayNetworkProvider
-import io.opencola.storage.AddressBook
+import io.opencola.storage.addressbook.AddressBook
 import io.opencola.relay.client.WebSocketClient
 import io.opencola.relay.client.defaultOCRPort
 import io.opencola.relay.server.startWebServer
-import io.opencola.storage.AddressBookEntry
-import io.opencola.storage.PersonaAddressBookEntry
+import io.opencola.storage.addressbook.AddressBookEntry
+import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import opencola.server.PeerNetworkTest

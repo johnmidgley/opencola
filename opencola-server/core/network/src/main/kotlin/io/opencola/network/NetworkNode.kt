@@ -6,9 +6,9 @@ import io.opencola.model.Id
 import io.opencola.network.message.Message
 import io.opencola.network.message.SignedMessage
 import io.opencola.security.Signator
-import io.opencola.storage.AddressBook
-import io.opencola.storage.AddressBookEntry
-import io.opencola.storage.PersonaAddressBookEntry
+import io.opencola.storage.addressbook.AddressBook
+import io.opencola.storage.addressbook.AddressBookEntry
+import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import mu.KotlinLogging
 import java.net.URI
 import java.util.concurrent.ConcurrentHashMap

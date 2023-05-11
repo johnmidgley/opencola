@@ -2,8 +2,8 @@ package opencola.server.handlers
 
 import io.opencola.model.Id
 import io.opencola.security.generateKeyPair
-import io.opencola.storage.AddressBook
-import io.opencola.storage.PersonaAddressBookEntry
+import io.opencola.storage.addressbook.AddressBook
+import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import kotlinx.serialization.Serializable
 import opencola.server.viewmodel.Persona
 import java.net.URI

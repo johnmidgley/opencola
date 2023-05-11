@@ -3,7 +3,7 @@ package io.opencola.cli
 import io.opencola.application.Application
 import io.opencola.model.Id
 import io.opencola.model.SignedTransaction
-import io.opencola.storage.EntityStore
+import io.opencola.storage.entitystore.EntityStore
 import org.kodein.di.instance
 import java.nio.file.Path
 import kotlin.io.path.Path

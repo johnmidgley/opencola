@@ -5,7 +5,7 @@ import io.opencola.security.PublicKeyByteArrayCodec
 import io.opencola.security.Signator
 import io.opencola.security.isValidSignature
 import io.opencola.serialization.*
-import io.opencola.storage.AddressBookEntry
+import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.util.Base58
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream

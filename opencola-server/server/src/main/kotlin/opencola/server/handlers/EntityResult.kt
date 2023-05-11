@@ -2,7 +2,7 @@ package opencola.server.handlers
 
 import io.opencola.util.nullOrElse
 import io.opencola.model.Id
-import io.opencola.storage.AddressBookEntry
+import io.opencola.storage.addressbook.AddressBookEntry
 import kotlinx.serialization.Serializable
 
 @Serializable

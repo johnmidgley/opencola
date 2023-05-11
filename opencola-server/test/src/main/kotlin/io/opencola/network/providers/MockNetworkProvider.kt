@@ -5,9 +5,9 @@ import io.opencola.network.message.SignedMessage
 import io.opencola.security.Encryptor
 import io.opencola.security.KeyStore
 import io.opencola.security.Signator
-import io.opencola.storage.AddressBook
-import io.opencola.storage.AddressBookEntry
-import io.opencola.storage.PersonaAddressBookEntry
+import io.opencola.storage.addressbook.AddressBook
+import io.opencola.storage.addressbook.AddressBookEntry
+import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import java.net.URI
 
 class MockNetworkProvider(addressBook: AddressBook,

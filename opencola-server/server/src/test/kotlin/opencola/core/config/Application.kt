@@ -1,10 +1,10 @@
 package opencola.core.config
 
 import io.opencola.application.*
-import io.opencola.storage.AddressBook
+import io.opencola.storage.addressbook.AddressBook
 import io.opencola.model.Id
-import io.opencola.storage.AddressBookEntry
-import io.opencola.storage.PersonaAddressBookEntry
+import io.opencola.storage.addressbook.AddressBookEntry
+import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.createDirectory

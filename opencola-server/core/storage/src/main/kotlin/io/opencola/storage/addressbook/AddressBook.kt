@@ -1,4 +1,4 @@
-package io.opencola.storage
+package io.opencola.storage.addressbook
 
 import io.opencola.model.Id
 import io.opencola.security.PublicKeyProvider

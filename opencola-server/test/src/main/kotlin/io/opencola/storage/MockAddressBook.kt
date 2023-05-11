@@ -3,6 +3,9 @@ package io.opencola.storage
 import io.opencola.model.Id
 import io.opencola.security.KeyStore
 import io.opencola.security.MockKeyStore
+import io.opencola.storage.addressbook.AddressBook
+import io.opencola.storage.addressbook.AddressBookEntry
+import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import java.security.PublicKey
 
 class MockAddressBook(val keyStore: KeyStore = MockKeyStore()) : AddressBook {

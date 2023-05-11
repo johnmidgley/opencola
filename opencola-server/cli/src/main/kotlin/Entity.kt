@@ -2,7 +2,7 @@ package io.opencola.cli
 
 import io.opencola.model.Id
 import io.opencola.security.MockKeyStore
-import io.opencola.storage.EntityStore
+import io.opencola.storage.entitystore.EntityStore
 import io.opencola.storage.ExposedEntityStoreContext
 import java.nio.file.Path
 import kotlin.io.path.createDirectory

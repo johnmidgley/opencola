@@ -2,9 +2,9 @@ package opencola.server.handlers
 
 import io.opencola.model.*
 import io.opencola.application.TestApplication
-import io.opencola.storage.AddressBook
-import io.opencola.storage.AddressBookEntry
-import io.opencola.storage.EntityStore
+import io.opencola.storage.addressbook.AddressBook
+import io.opencola.storage.addressbook.AddressBookEntry
+import io.opencola.storage.entitystore.EntityStore
 import org.junit.Test
 import org.kodein.di.instance
 import java.net.URI

@@ -2,8 +2,8 @@ package opencola.server.handlers
 
 import io.opencola.application.TestApplication
 import io.opencola.model.ResourceEntity
-import io.opencola.storage.AddressBook
-import io.opencola.storage.EntityStore
+import io.opencola.storage.addressbook.AddressBook
+import io.opencola.storage.entitystore.EntityStore
 import io.opencola.storage.addPersona
 import org.junit.Test
 import java.net.URI

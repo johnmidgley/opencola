@@ -1,4 +1,4 @@
-package io.opencola.storage
+package io.opencola.storage.addressbook
 
 import io.opencola.model.Id
 import io.opencola.security.KeyStore
@@ -38,8 +38,8 @@ abstract class AbstractAddressBook : AddressBook {
     }
 
     protected fun callUpdateHandlers(previousEntry: AddressBookEntry?,
-                                   currentEntry: AddressBookEntry?,
-                                   suppressUpdateHandler: ((AddressBookEntry?, AddressBookEntry?) -> Unit)? = null) {
+                                     currentEntry: AddressBookEntry?,
+                                     suppressUpdateHandler: ((AddressBookEntry?, AddressBookEntry?) -> Unit)? = null) {
         logger.info { "Address book update: $previousEntry -> $currentEntry" }
         updateHandlers.forEach {
             try {

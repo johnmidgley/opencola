@@ -7,8 +7,8 @@ import io.opencola.network.message.SignedMessage
 import io.opencola.security.Encryptor
 import io.opencola.security.Signator
 import io.opencola.security.isValidSignature
-import io.opencola.storage.AddressBook
-import io.opencola.storage.PersonaAddressBookEntry
+import io.opencola.storage.addressbook.AddressBook
+import io.opencola.storage.addressbook.PersonaAddressBookEntry
 
 // TODO: just pass in keystore instead of signator and encryptor? Or maybe even just role into AddressBook?
 abstract class AbstractNetworkProvider(

@@ -2,6 +2,7 @@ package io.opencola.storage
 
 import io.opencola.application.TestApplication
 import io.opencola.security.MockKeyStore
+import io.opencola.storage.addressbook.EntityStoreAddressBook
 import org.junit.Test
 import java.net.URI
 

@@ -1,4 +1,4 @@
-package io.opencola.storage
+package io.opencola.storage.entitystore
 
 import mu.KotlinLogging
 import io.opencola.event.EventBus
@@ -11,7 +11,7 @@ import io.opencola.util.ifNotNullOrElse
 import io.opencola.util.nullOrElse
 import io.opencola.security.Signator
 import io.opencola.serialization.EncodingFormat
-import io.opencola.storage.EntityStore.TransactionOrder
+import io.opencola.storage.entitystore.EntityStore.TransactionOrder
 
 // TODO: Should support multiple authorities
 abstract class AbstractEntityStore(

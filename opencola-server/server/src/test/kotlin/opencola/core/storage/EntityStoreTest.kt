@@ -6,8 +6,12 @@ import io.opencola.event.EventBus
 import io.opencola.model.*
 import opencola.core.getAuthorityEntity
 import io.opencola.security.Signator
-import io.opencola.storage.*
-import io.opencola.storage.EntityStore.TransactionOrder
+import io.opencola.storage.entitystore.EntityStore.TransactionOrder
+import io.opencola.storage.addressbook.AddressBook
+import io.opencola.storage.addressbook.PersonaAddressBookEntry
+import io.opencola.storage.entitystore.EntityStore
+import io.opencola.storage.entitystore.ExposedEntityStore
+import io.opencola.storage.entitystore.SQLiteDB
 import org.kodein.di.instance
 import java.net.URI
 import java.time.Instant

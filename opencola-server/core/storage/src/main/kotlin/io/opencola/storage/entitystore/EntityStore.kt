@@ -1,4 +1,4 @@
-package io.opencola.storage
+package io.opencola.storage.entitystore
 
 import io.opencola.model.Entity
 import io.opencola.model.Fact

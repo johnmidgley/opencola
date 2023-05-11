@@ -2,8 +2,8 @@ package io.opencola.network
 
 import io.opencola.model.Id
 import io.opencola.network.message.SignedMessage
-import io.opencola.storage.AddressBookEntry
-import io.opencola.storage.PersonaAddressBookEntry
+import io.opencola.storage.addressbook.AddressBookEntry
+import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import java.net.URI
 
 interface NetworkProvider {

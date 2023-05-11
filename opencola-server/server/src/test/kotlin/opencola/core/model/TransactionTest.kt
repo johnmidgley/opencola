@@ -9,8 +9,8 @@ import io.opencola.security.Signator
 import io.opencola.security.Signature
 import io.opencola.security.sha256
 import io.opencola.serialization.EncodingFormat
-import io.opencola.storage.AddressBook
-import io.opencola.storage.PersonaAddressBookEntry
+import io.opencola.storage.addressbook.AddressBook
+import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import org.junit.Test
 import org.kodein.di.instance
 import java.io.ByteArrayInputStream

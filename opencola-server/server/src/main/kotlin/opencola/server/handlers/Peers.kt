@@ -14,9 +14,9 @@ import io.opencola.network.PeerEvent
 import io.opencola.security.Signator
 import io.opencola.security.decodePublicKey
 import io.opencola.security.encode
-import io.opencola.storage.AddressBook
-import io.opencola.storage.AddressBookEntry
-import io.opencola.storage.PersonaAddressBookEntry
+import io.opencola.storage.addressbook.AddressBook
+import io.opencola.storage.addressbook.AddressBookEntry
+import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import io.opencola.util.blankToNull
 import java.net.URI
 import java.security.PublicKey

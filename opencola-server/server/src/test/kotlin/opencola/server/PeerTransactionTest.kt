@@ -1,7 +1,7 @@
 package opencola.server
 
 import io.opencola.model.ResourceEntity
-import io.opencola.storage.EntityStore
+import io.opencola.storage.entitystore.EntityStore
 import opencola.server.handlers.handleSearch
 import org.junit.Test
 import org.kodein.di.instance

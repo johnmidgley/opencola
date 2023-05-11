@@ -1,4 +1,4 @@
-package io.opencola.storage
+package io.opencola.storage.cache
 
 import mu.KotlinLogging
 import io.opencola.content.parseMime
@@ -7,6 +7,8 @@ import io.opencola.util.nullOrElse
 import io.opencola.model.DataEntity
 import io.opencola.model.Id
 import io.opencola.model.ResourceEntity
+import io.opencola.storage.entitystore.EntityStore
+import io.opencola.storage.filestore.FileStore
 import java.io.ByteArrayInputStream
 import java.nio.file.Path
 import kotlin.io.path.createDirectory

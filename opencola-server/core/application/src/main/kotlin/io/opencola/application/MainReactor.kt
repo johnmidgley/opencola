@@ -13,10 +13,10 @@ import io.opencola.network.PeerEvent
 import io.opencola.network.message.GetTransactionsMessage
 import io.opencola.network.message.PutTransactionsMessage
 import io.opencola.search.SearchIndex
-import io.opencola.storage.AddressBook
-import io.opencola.storage.AddressBookEntry
-import io.opencola.storage.EntityStore
-import io.opencola.storage.PersonaAddressBookEntry
+import io.opencola.storage.addressbook.AddressBook
+import io.opencola.storage.addressbook.AddressBookEntry
+import io.opencola.storage.entitystore.EntityStore
+import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging

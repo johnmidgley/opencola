@@ -4,9 +4,9 @@ import io.opencola.application.TestApplication
 import io.opencola.content.MhtmlPage
 import io.opencola.content.parseMime
 import io.opencola.model.Actions
-import io.opencola.storage.EntityStore
-import io.opencola.storage.FileStore
-import io.opencola.storage.MhtCache
+import io.opencola.storage.entitystore.EntityStore
+import io.opencola.storage.filestore.FileStore
+import io.opencola.storage.cache.MhtCache
 import opencola.server.handlers.updateResource
 import org.junit.Test
 import org.kodein.di.instance

@@ -13,8 +13,8 @@ import io.opencola.network.NetworkNode
 import io.opencola.security.EncryptionParams
 import io.opencola.security.encode
 import io.opencola.security.initProvider
-import io.opencola.storage.AddressBook
-import io.opencola.storage.PersonaAddressBookEntry
+import io.opencola.storage.addressbook.AddressBook
+import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import io.opencola.system.detectResume
 import io.opencola.system.openUri
 import io.opencola.system.runningInDocker

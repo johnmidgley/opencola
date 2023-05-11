@@ -18,8 +18,8 @@ import io.opencola.model.Id
 import io.opencola.network.handleGetTransactions
 import io.opencola.network.providers.http.HttpNetworkProvider
 import io.opencola.security.EncryptionParams
-import io.opencola.storage.AddressBook
-import io.opencola.storage.PersonaAddressBookEntry
+import io.opencola.storage.addressbook.AddressBook
+import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import io.opencola.system.*
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay

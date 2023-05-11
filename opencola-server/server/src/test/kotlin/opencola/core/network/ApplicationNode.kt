@@ -4,8 +4,8 @@ import io.ktor.server.netty.*
 import io.opencola.application.*
 import io.opencola.application.TestApplication
 import io.opencola.network.NetworkConfig
-import io.opencola.storage.AddressBook
-import io.opencola.storage.PersonaAddressBookEntry
+import io.opencola.storage.addressbook.AddressBook
+import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import opencola.server.AuthToken
 import opencola.server.getServer
 import opencola.server.handlers.*

@@ -2,8 +2,8 @@ package io.opencola.network
 
 import io.opencola.model.Id
 import io.opencola.network.message.SignedMessage
-import io.opencola.storage.AddressBook
-import io.opencola.storage.PersonaAddressBookEntry
+import io.opencola.storage.addressbook.AddressBook
+import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import mu.KotlinLogging
 
 class Route(val messageType: String, val handler: (Id, Id, SignedMessage) -> Unit)

@@ -1,4 +1,4 @@
-package io.opencola.storage
+package io.opencola.storage.filestore
 
 import io.opencola.model.Id
 import java.io.InputStream

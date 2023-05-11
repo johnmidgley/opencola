@@ -10,12 +10,11 @@ import io.opencola.io.HttpClient
 import io.opencola.io.urlRegex
 import io.opencola.model.*
 import io.opencola.util.blankToNull
-import io.opencola.util.ifNullOrElse
 import io.opencola.util.nullOrElse
-import io.opencola.storage.AddressBook
-import io.opencola.storage.EntityStore
-import io.opencola.storage.FileStore
-import io.opencola.storage.PersonaAddressBookEntry
+import io.opencola.storage.addressbook.AddressBook
+import io.opencola.storage.entitystore.EntityStore
+import io.opencola.storage.filestore.FileStore
+import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import java.net.URI
 
 private val logger = KotlinLogging.logger("EntityHandler")

@@ -5,7 +5,8 @@ import io.opencola.model.Entity
 import io.opencola.model.Id
 import io.opencola.search.LuceneSearchIndex
 import io.opencola.search.SearchIndex
-import io.opencola.storage.*
+import io.opencola.storage.addressbook.AddressBookEntry
+import io.opencola.storage.entitystore.EntityStore
 import kotlinx.cli.ExperimentalCli
 import java.nio.file.Path
 import kotlin.io.path.createDirectory

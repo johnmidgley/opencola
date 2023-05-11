@@ -1,4 +1,4 @@
-package io.opencola.storage
+package io.opencola.storage.addressbook
 
 import io.opencola.model.Authority
 import io.opencola.model.CoreAttribute
@@ -7,6 +7,8 @@ import io.opencola.model.Operation
 import io.opencola.model.value.StringValue
 import io.opencola.security.KeyStore
 import io.opencola.security.Signator
+import io.opencola.storage.entitystore.ExposedEntityStore
+import io.opencola.storage.entitystore.SQLiteDB
 import io.opencola.util.blankToNull
 import io.opencola.util.trim
 import java.nio.file.Path

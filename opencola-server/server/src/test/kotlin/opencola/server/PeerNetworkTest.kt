@@ -7,7 +7,7 @@ import io.opencola.application.TestApplication
 import io.opencola.application.Application
 import io.opencola.io.StdoutMonitor
 import io.opencola.model.ResourceEntity
-import io.opencola.storage.EntityStore
+import io.opencola.storage.entitystore.EntityStore
 import io.opencola.storage.waitForAddressBookAdd
 import opencola.core.network.ApplicationNode
 import opencola.server.handlers.inviteTokenToPeer

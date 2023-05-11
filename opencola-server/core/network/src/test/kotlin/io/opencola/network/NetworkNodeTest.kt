@@ -7,6 +7,9 @@ import io.opencola.network.message.PingMessage
 import io.opencola.network.message.SignedMessage
 import io.opencola.security.generateKeyPair
 import io.opencola.storage.*
+import io.opencola.storage.addressbook.AddressBookEntry
+import io.opencola.storage.addressbook.PersonaAddressBookEntry
+import io.opencola.storage.filestore.LocalFileStore
 import org.junit.Test
 import java.util.UUID
 import kotlin.test.*

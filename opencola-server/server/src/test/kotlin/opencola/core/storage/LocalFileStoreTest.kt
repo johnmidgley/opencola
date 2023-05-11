@@ -1,7 +1,7 @@
 package opencola.core.storage
 
 import io.opencola.model.Id
-import io.opencola.storage.LocalFileStore
+import io.opencola.storage.filestore.LocalFileStore
 import kotlin.io.path.createTempDirectory
 import kotlin.test.Test
 import kotlin.test.assertEquals

@@ -3,8 +3,8 @@ package opencola.server.handlers
 import io.ktor.http.content.*
 import io.opencola.model.DataEntity
 import io.opencola.model.Id
-import io.opencola.storage.EntityStore
-import io.opencola.storage.FileStore
+import io.opencola.storage.entitystore.EntityStore
+import io.opencola.storage.filestore.FileStore
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 

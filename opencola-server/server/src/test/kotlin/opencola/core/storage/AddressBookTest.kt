@@ -5,10 +5,10 @@ import io.opencola.model.Id
 import io.opencola.security.JavaKeyStore
 import io.opencola.security.KeyStore
 import io.opencola.security.generateKeyPair
-import io.opencola.storage.AddressBook
-import io.opencola.storage.AddressBookEntry
-import io.opencola.storage.EntityStoreAddressBook
-import io.opencola.storage.PersonaAddressBookEntry
+import io.opencola.storage.addressbook.AddressBook
+import io.opencola.storage.addressbook.AddressBookEntry
+import io.opencola.storage.addressbook.EntityStoreAddressBook
+import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import opencola.core.storage.AddressBookTest.Action.*
 import java.net.URI
 import kotlin.test.*
