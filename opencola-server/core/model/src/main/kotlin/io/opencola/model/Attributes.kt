@@ -3,6 +3,7 @@ package io.opencola.model
 import java.net.URI
 
 // TODO: Allow this to be extended with custom attributes
+// TODO: Turn into AttributeRegistry
 object Attributes {
     private val attributesByName = CoreAttribute.values().associateBy { it.spec.name }
 
