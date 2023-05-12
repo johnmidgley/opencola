@@ -154,6 +154,12 @@ abstract class AbstractEntityStore(
             }
         }
 
+        facts.forEach{
+            if(it.value == emptyValue && it.operation == Operation.Add) {
+                throw IllegalArgumentException("Facts should not have empty values on add operation")
+            }
+        }
+
         return facts
     }
 

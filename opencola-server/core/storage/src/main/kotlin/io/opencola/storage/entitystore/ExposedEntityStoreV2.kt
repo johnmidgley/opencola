@@ -69,10 +69,10 @@ class ExposedEntityStoreV2(
     init {
         require(config.transactionStorageUri == null || config.transactionStorageUri.scheme == "file") { "Unsupported scheme: ${config.transactionStorageUri?.scheme}" }
 
-        val rootStoragePath = storagePath.resolve("entity-store").also { it.toFile().mkdirs() }
-        database = getDB(rootStoragePath.resolve("${name}V2.db"))
+        storagePath.toFile().mkdirs()
+        database = getDB(storagePath.resolve("${name}V2.db"))
         transactionStoragePath = config.transactionStorageUri?.toPath()
-            ?: rootStoragePath.resolve("transactions").also { it.toFile().mkdirs() }
+            ?: storagePath.resolve("transactions").also { it.toFile().mkdirs() }
         transactionFileStore = LocalIdBasedFileStore(transactionStoragePath)
 
         logger.info { "Initializing ExposedEntityStoreV2 {${database.url}}" }

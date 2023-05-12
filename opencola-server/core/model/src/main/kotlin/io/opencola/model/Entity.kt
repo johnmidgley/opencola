@@ -157,11 +157,19 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         }
 
         val fact = facts
-            .lastOrNull { it.attribute == attribute
-                    && (key == null || (it.value as MultiValueListItem<Any>).key == key)
-                    && (attribute.type != MultiValueSet || value == null || it.value == value)
+            .lastOrNull {
+                it.attribute == attribute
+                        && (key == null || (it.value as MultiValueListItem<Any>).key == key)
+                        && (attribute.type != MultiValueSet || value == null || it.value == value)
             }
-            ?.let { if(it.operation == Operation.Add) it else null }
+            ?.let { if (it.operation == Operation.Add) it else null }
+            ?.let {
+                if (it.value == emptyValue) {
+                    // EmptyValue is only meant to be used for deleted facts
+                    logger.error { "getFact found and empty value for $propertyName" }
+                    null
+                } else it
+            }
 
         return Pair(attribute, fact)
     }

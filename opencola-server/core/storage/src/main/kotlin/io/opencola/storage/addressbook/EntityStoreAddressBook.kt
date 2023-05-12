@@ -15,6 +15,7 @@ class EntityStoreAddressBook(
     private val storagePath: Path,
     private val keyStore: KeyStore,
 ) : AbstractAddressBook() {
+    private val name = "address-book"
     enum class Version {
         V1,
         V2
@@ -23,7 +24,7 @@ class EntityStoreAddressBook(
     private val entityStore =
         when (version) {
             Version.V1 -> ExposedEntityStore(
-                "address-book",
+                name,
                 storagePath,
                 ::getSQLiteDB,
                 Signator(keyStore),
@@ -31,7 +32,7 @@ class EntityStoreAddressBook(
             )
 
             Version.V2 -> ExposedEntityStoreV2(
-                "address-book",
+                name,
                 EntityStoreConfig(config.transactionStorageUri),
                 storagePath,
                 ::getSQLiteDB,

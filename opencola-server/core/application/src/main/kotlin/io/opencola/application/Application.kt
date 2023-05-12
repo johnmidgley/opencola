@@ -117,7 +117,7 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) :
                 bindSingleton { TextExtractor() }
                 bindSingleton { Signator(instance()) }
                 bindSingleton { Encryptor(instance()) }
-                bindSingleton { EntityStoreAddressBook(Version.V1, config.addressBook, storagePath, instance()) }
+                bindSingleton { EntityStoreAddressBook(Version.V2, config.addressBook, storagePath.resolve("address-book"), instance()) }
                 bindSingleton {
                     RequestRouter(
                         instance(),
@@ -132,7 +132,7 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) :
                     ExposedEntityStoreV2(
                         "entity-store",
                         config.entityStore,
-                        storagePath,
+                        storagePath.resolve("entity-store"),
                         ::getSQLiteDB,
                         Attributes.get(),
                         instance(),
