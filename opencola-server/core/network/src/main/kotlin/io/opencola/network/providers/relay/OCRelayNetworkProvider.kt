@@ -171,11 +171,9 @@ class OCRelayNetworkProvider(addressBook: AddressBook,
 
         runBlocking {
             try {
-                TODO("Fix this")
-//                val messageBytes = Json.encodeToString(signedMessage).toByteArray()
-//                val envelopeBytes = getEncodedEnvelope(from.entityId, to.entityId, messageBytes, false)
-//                val client = connections[connectionParams]!!.client
-//                client.sendMessage(peerPublicKey, envelopeBytes)
+                val envelopeBytes = getEncodedEnvelope(from.entityId, to.entityId, signedMessage, false)
+                val client = connections[connectionParams]!!.client
+                client.sendMessage(peerPublicKey, envelopeBytes)
             } catch (e: Exception) {
                 logger.error { "sendRequest: $e" }
             }

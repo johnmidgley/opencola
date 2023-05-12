@@ -15,7 +15,6 @@ import java.net.URI
 import java.security.KeyPair
 import java.security.PublicKey
 import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 
 const val defaultOCRPort = 2652
 
@@ -23,7 +22,7 @@ abstract class AbstractClient(
     protected val uri: URI,
     private val keyPair: KeyPair,
     final override val name: String? = null,
-    private val requestTimeoutMilliseconds: Long = 20000,
+    private val requestTimeoutMilliseconds: Long = 60000, // TODO: Make configurable
     private val retryPolicy: (Int) -> Long = retryExponentialBackoff(),
 ) : RelayClient {
     protected val logger = KotlinLogging.logger("Client${if(name != null) " ($name)" else ""}")
@@ -159,12 +158,10 @@ abstract class AbstractClient(
     override suspend fun sendMessage(to: PublicKey, body: ByteArray) {
         val message = Message(keyPair, UUID.randomUUID(), body)
         val envelope = MessageEnvelope(to, message)
-        val deferredResult = CompletableDeferred<ByteArray?>()
-
-        logger.info { "Sending message: ${message.header}" }
 
         try {
             // TODO: Should there be a limit on the size of messages?
+            logger.info { "Sending message: ${message.header}" }
             withTimeout(requestTimeoutMilliseconds) {
                 getConnection().writeSizedByteArray(MessageEnvelope.encode(envelope))
             }
@@ -177,9 +174,6 @@ abstract class AbstractClient(
         } catch (e: Exception) {
             logger.error { "Unexpected exception when sending message $e" }
         }
-
-        TODO("Should there be a timeout above? Probably should be really high, depending on size of message")
-
     }
 
     override suspend fun respondToMessage(messageHeader: Header, body: ByteArray) {

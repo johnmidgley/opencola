@@ -1,6 +1,7 @@
 package opencola.core.network.providers.relay
 
 import io.opencola.application.Application
+import io.opencola.io.StdoutMonitor
 import io.opencola.model.Id
 import io.opencola.network.NetworkNode
 import io.opencola.network.emptyByteArray
@@ -19,7 +20,6 @@ import opencola.server.PeerNetworkTest
 import org.junit.Test
 import java.net.URI
 import kotlin.test.assertFails
-import kotlin.test.assertNull
 
 class OCRelayNetworkProviderTest : PeerNetworkTest() {
     private val ocRelayUri = URI("ocr://0.0.0.0")
@@ -169,8 +169,10 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
                         false
                     )
 
-                    val result = relayClient.sendMessage(app1.getPersonas().single().publicKey, envelope)
-                    assertNull(result)
+                    val stdoutMonitor = StdoutMonitor()
+                    relayClient.sendMessage(app1.getPersonas().single().publicKey, envelope)
+                    // Check that receiver gets the message and ignores it
+                    stdoutMonitor.waitUntil("No handler specified for bad message")
                 }
             } finally {
                 app0.close()
