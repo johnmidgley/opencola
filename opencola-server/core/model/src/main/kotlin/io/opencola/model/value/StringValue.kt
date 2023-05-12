@@ -1,6 +1,5 @@
 package io.opencola.model.value
 
-import io.opencola.model.value.ValueType.STRING
 import io.opencola.serialization.codecs.StringByteArrayCodec
 import io.opencola.serialization.protobuf.Model as ProtoModel
 
@@ -16,13 +15,13 @@ class StringValue(value: String) : Value<String>(value) {
 
         override fun toProto(value: String): ProtoModel.Value {
             return ProtoModel.Value.newBuilder()
-                .setOcType(STRING.ordinal)
+                .setOcType(ProtoModel.OCType.STRING)
                 .setString(value)
                 .build()
         }
 
         override fun fromProto(value: ProtoModel.Value): String {
-            require(value.ocType == STRING.ordinal)
+            require(value.ocType == ProtoModel.OCType.STRING)
             return value.string
         }
 

@@ -16,13 +16,13 @@ class UriValue(value: URI) : Value<URI>(value) {
 
         override fun toProto(value: URI): ProtoModel.Value {
             return ProtoModel.Value.newBuilder()
-                .setOcType(ValueType.URI.ordinal)
+                .setOcType(ProtoModel.OCType.URI)
                 .setString(value.toString())
                 .build()
         }
 
         override fun fromProto(value: ProtoModel.Value): URI {
-            require(value.ocType == ValueType.URI.ordinal)
+            require(value.ocType == ProtoModel.OCType.URI)
             return URI.create(value.string)
         }
 

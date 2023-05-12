@@ -11,8 +11,24 @@ message Attribute {
   }
 }
 
+enum OCType {
+    EMPTY = 0;
+    BOOLEAN = 1;
+    INT = 2;
+    LONG = 3;
+    FLOAT = 4;
+    DOUBLE = 5;
+    STRING = 6;
+    BYTES = 7;
+    DATETIME = 8;
+    URI = 9;
+    UUID = 10;
+    ID = 11;
+    PUBLIC_KEY = 12;
+}
+
 message Value {
-  int32 ocType = 1;
+  OCType ocType = 1;
   oneof value {
     double double = 3;
     float float = 4;

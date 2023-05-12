@@ -163,11 +163,19 @@ abstract class AbstractEntityStore(
     private fun getNextTransactionId(authorityId: Id): Id {
         return getSignedTransactions(listOf(authorityId), null, TransactionOrder.IdDescending, 1)
             .firstOrNull()
-            .ifNotNullOrElse({ Id.ofData(SignedTransaction.encode(it)) }, { getFirstTransactionId(authorityId) })
+            ?.let {
+                val encodedSignedTransaction =
+                    when (transactionEncodingFormat) {
+                        EncodingFormat.OC -> it.encode()
+                        EncodingFormat.PROTOBUF -> it.encodeProto()
+                        else -> throw IllegalArgumentException("Unsupported encoding format: $transactionEncodingFormat")
+                    }
+                Id.ofData(encodedSignedTransaction)
+            } ?: getFirstTransactionId(authorityId)
     }
 
     private fun encodeTransaction(encodingFormat: EncodingFormat, transaction: Transaction): ByteArray {
-        return when(encodingFormat) {
+        return when (encodingFormat) {
             EncodingFormat.OC -> Transaction.encode(transaction)
             EncodingFormat.PROTOBUF -> Transaction.encodeProto(transaction)
             else -> throw IllegalArgumentException("Unsupported encoding format: $transactionEncodingFormat")

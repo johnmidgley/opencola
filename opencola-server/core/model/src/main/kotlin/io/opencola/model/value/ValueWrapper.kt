@@ -31,11 +31,19 @@ interface ValueWrapper<T> : ByteArrayCodec<T>, ProtoSerializable<T, Model.Value>
     }
 
     fun encodeProto(value: Value<Any>) : ByteArray {
-        return toProto(value.get() as T).toByteArray()
+        return if (value is EmptyValue)
+            emptyValueProtoEncoded
+        else
+            toProto(value.get() as T).toByteArray()
     }
 
     fun decodeProto(value: ByteArray) : Value<Any> {
-        return wrap(fromProto(Model.Value.parseFrom(value))) as Value<Any>
+        Model.Value.parseFrom(value).let {
+            return if(it.ocType == Model.OCType.EMPTY)
+                emptyValue
+            else
+                wrap(fromProto(it)) as Value<Any>
+        }
     }
 
     // Encode a value compatible with legacy encoding

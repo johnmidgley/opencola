@@ -48,6 +48,10 @@ data class SignedTransaction(
         }
     }
 
+    fun encode(): ByteArray {
+        return encode(this)
+    }
+
     fun encodeProto(): ByteArray {
         return encodeProto(this)
     }

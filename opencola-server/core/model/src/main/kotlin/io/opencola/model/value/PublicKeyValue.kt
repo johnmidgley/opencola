@@ -1,10 +1,9 @@
 package io.opencola.model.value
 
 import com.google.protobuf.ByteString
-import io.opencola.model.value.ValueType.PUBLIC_KEY
-import io.opencola.serialization.protobuf.Model
 import io.opencola.security.PublicKeyByteArrayCodec
 import java.security.PublicKey
+import io.opencola.serialization.protobuf.Model as ProtoModel
 
 class PublicKeyValue(value: PublicKey) : Value<PublicKey>(value) {
     companion object : ValueWrapper<PublicKey> {
@@ -16,15 +15,15 @@ class PublicKeyValue(value: PublicKey) : Value<PublicKey>(value) {
             return PublicKeyByteArrayCodec.decode(value)
         }
 
-        override fun toProto(value: PublicKey): Model.Value {
-            return Model.Value.newBuilder()
-                .setOcType(PUBLIC_KEY.ordinal)
+        override fun toProto(value: PublicKey): ProtoModel.Value {
+            return ProtoModel.Value.newBuilder()
+                .setOcType(ProtoModel.OCType.PUBLIC_KEY)
                 .setBytes(ByteString.copyFrom(encode(value)))
                 .build()
         }
 
-        override fun fromProto(value: Model.Value): PublicKey {
-            require(value.ocType == PUBLIC_KEY.ordinal)
+        override fun fromProto(value: ProtoModel.Value): PublicKey {
+            require(value.ocType == ProtoModel.OCType.PUBLIC_KEY)
             return decode(value.bytes.toByteArray())
         }
 

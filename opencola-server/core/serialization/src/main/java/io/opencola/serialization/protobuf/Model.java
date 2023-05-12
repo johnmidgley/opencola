@@ -15,6 +15,213 @@ public final class Model {
         (com.google.protobuf.ExtensionRegistryLite) registry);
   }
   /**
+   * Protobuf enum {@code io.opencola.serialization.protobuf.OCType}
+   */
+  public enum OCType
+      implements com.google.protobuf.ProtocolMessageEnum {
+    /**
+     * <code>EMPTY = 0;</code>
+     */
+    EMPTY(0),
+    /**
+     * <code>BOOLEAN = 1;</code>
+     */
+    BOOLEAN(1),
+    /**
+     * <code>INT = 2;</code>
+     */
+    INT(2),
+    /**
+     * <code>LONG = 3;</code>
+     */
+    LONG(3),
+    /**
+     * <code>FLOAT = 4;</code>
+     */
+    FLOAT(4),
+    /**
+     * <code>DOUBLE = 5;</code>
+     */
+    DOUBLE(5),
+    /**
+     * <code>STRING = 6;</code>
+     */
+    STRING(6),
+    /**
+     * <code>BYTES = 7;</code>
+     */
+    BYTES(7),
+    /**
+     * <code>DATETIME = 8;</code>
+     */
+    DATETIME(8),
+    /**
+     * <code>URI = 9;</code>
+     */
+    URI(9),
+    /**
+     * <code>UUID = 10;</code>
+     */
+    UUID(10),
+    /**
+     * <code>ID = 11;</code>
+     */
+    ID(11),
+    /**
+     * <code>PUBLIC_KEY = 12;</code>
+     */
+    PUBLIC_KEY(12),
+    UNRECOGNIZED(-1),
+    ;
+
+    /**
+     * <code>EMPTY = 0;</code>
+     */
+    public static final int EMPTY_VALUE = 0;
+    /**
+     * <code>BOOLEAN = 1;</code>
+     */
+    public static final int BOOLEAN_VALUE = 1;
+    /**
+     * <code>INT = 2;</code>
+     */
+    public static final int INT_VALUE = 2;
+    /**
+     * <code>LONG = 3;</code>
+     */
+    public static final int LONG_VALUE = 3;
+    /**
+     * <code>FLOAT = 4;</code>
+     */
+    public static final int FLOAT_VALUE = 4;
+    /**
+     * <code>DOUBLE = 5;</code>
+     */
+    public static final int DOUBLE_VALUE = 5;
+    /**
+     * <code>STRING = 6;</code>
+     */
+    public static final int STRING_VALUE = 6;
+    /**
+     * <code>BYTES = 7;</code>
+     */
+    public static final int BYTES_VALUE = 7;
+    /**
+     * <code>DATETIME = 8;</code>
+     */
+    public static final int DATETIME_VALUE = 8;
+    /**
+     * <code>URI = 9;</code>
+     */
+    public static final int URI_VALUE = 9;
+    /**
+     * <code>UUID = 10;</code>
+     */
+    public static final int UUID_VALUE = 10;
+    /**
+     * <code>ID = 11;</code>
+     */
+    public static final int ID_VALUE = 11;
+    /**
+     * <code>PUBLIC_KEY = 12;</code>
+     */
+    public static final int PUBLIC_KEY_VALUE = 12;
+
+
+    public final int getNumber() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalArgumentException(
+            "Can't get the number of an unknown enum value.");
+      }
+      return value;
+    }
+
+    /**
+     * @param value The numeric wire value of the corresponding enum entry.
+     * @return The enum associated with the given numeric wire value.
+     * @deprecated Use {@link #forNumber(int)} instead.
+     */
+    @java.lang.Deprecated
+    public static OCType valueOf(int value) {
+      return forNumber(value);
+    }
+
+    /**
+     * @param value The numeric wire value of the corresponding enum entry.
+     * @return The enum associated with the given numeric wire value.
+     */
+    public static OCType forNumber(int value) {
+      switch (value) {
+        case 0: return EMPTY;
+        case 1: return BOOLEAN;
+        case 2: return INT;
+        case 3: return LONG;
+        case 4: return FLOAT;
+        case 5: return DOUBLE;
+        case 6: return STRING;
+        case 7: return BYTES;
+        case 8: return DATETIME;
+        case 9: return URI;
+        case 10: return UUID;
+        case 11: return ID;
+        case 12: return PUBLIC_KEY;
+        default: return null;
+      }
+    }
+
+    public static com.google.protobuf.Internal.EnumLiteMap<OCType>
+        internalGetValueMap() {
+      return internalValueMap;
+    }
+    private static final com.google.protobuf.Internal.EnumLiteMap<
+        OCType> internalValueMap =
+          new com.google.protobuf.Internal.EnumLiteMap<OCType>() {
+            public OCType findValueByNumber(int number) {
+              return OCType.forNumber(number);
+            }
+          };
+
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor
+        getValueDescriptor() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalStateException(
+            "Can't get the descriptor of an unrecognized enum value.");
+      }
+      return getDescriptor().getValues().get(ordinal());
+    }
+    public final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptorForType() {
+      return getDescriptor();
+    }
+    public static final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptor() {
+      return io.opencola.serialization.protobuf.Model.getDescriptor().getEnumTypes().get(0);
+    }
+
+    private static final OCType[] VALUES = values();
+
+    public static OCType valueOf(
+        com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+      if (desc.getType() != getDescriptor()) {
+        throw new java.lang.IllegalArgumentException(
+          "EnumValueDescriptor is not for this type.");
+      }
+      if (desc.getIndex() == -1) {
+        return UNRECOGNIZED;
+      }
+      return VALUES[desc.getIndex()];
+    }
+
+    private final int value;
+
+    private OCType(int value) {
+      this.value = value;
+    }
+
+    // @@protoc_insertion_point(enum_scope:io.opencola.serialization.protobuf.OCType)
+  }
+
+  /**
    * Protobuf enum {@code io.opencola.serialization.protobuf.Operation}
    */
   public enum Operation
@@ -96,7 +303,7 @@ public final class Model {
     }
     public static final com.google.protobuf.Descriptors.EnumDescriptor
         getDescriptor() {
-      return io.opencola.serialization.protobuf.Model.getDescriptor().getEnumTypes().get(0);
+      return io.opencola.serialization.protobuf.Model.getDescriptor().getEnumTypes().get(1);
     }
 
     private static final Operation[] VALUES = values();
@@ -917,10 +1124,15 @@ public final class Model {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>int32 ocType = 1;</code>
+     * <code>.io.opencola.serialization.protobuf.OCType ocType = 1;</code>
+     * @return The enum numeric value on the wire for ocType.
+     */
+    int getOcTypeValue();
+    /**
+     * <code>.io.opencola.serialization.protobuf.OCType ocType = 1;</code>
      * @return The ocType.
      */
-    int getOcType();
+    io.opencola.serialization.protobuf.Model.OCType getOcType();
 
     /**
      * <code>double double = 3;</code>
@@ -1108,6 +1320,7 @@ public final class Model {
       super(builder);
     }
     private Value() {
+      ocType_ = 0;
     }
 
     @java.lang.Override
@@ -1141,8 +1354,9 @@ public final class Model {
               done = true;
               break;
             case 8: {
+              int rawValue = input.readEnum();
 
-              ocType_ = input.readInt32();
+              ocType_ = rawValue;
               break;
             }
             case 25: {
@@ -1323,12 +1537,20 @@ public final class Model {
     public static final int OCTYPE_FIELD_NUMBER = 1;
     private int ocType_;
     /**
-     * <code>int32 ocType = 1;</code>
+     * <code>.io.opencola.serialization.protobuf.OCType ocType = 1;</code>
+     * @return The enum numeric value on the wire for ocType.
+     */
+    @java.lang.Override public int getOcTypeValue() {
+      return ocType_;
+    }
+    /**
+     * <code>.io.opencola.serialization.protobuf.OCType ocType = 1;</code>
      * @return The ocType.
      */
-    @java.lang.Override
-    public int getOcType() {
-      return ocType_;
+    @java.lang.Override public io.opencola.serialization.protobuf.Model.OCType getOcType() {
+      @SuppressWarnings("deprecation")
+      io.opencola.serialization.protobuf.Model.OCType result = io.opencola.serialization.protobuf.Model.OCType.valueOf(ocType_);
+      return result == null ? io.opencola.serialization.protobuf.Model.OCType.UNRECOGNIZED : result;
     }
 
     public static final int DOUBLE_FIELD_NUMBER = 3;
@@ -1691,8 +1913,8 @@ public final class Model {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (ocType_ != 0) {
-        output.writeInt32(1, ocType_);
+      if (ocType_ != io.opencola.serialization.protobuf.Model.OCType.EMPTY.getNumber()) {
+        output.writeEnum(1, ocType_);
       }
       if (valueCase_ == 3) {
         output.writeDouble(
@@ -1762,9 +1984,9 @@ public final class Model {
       if (size != -1) return size;
 
       size = 0;
-      if (ocType_ != 0) {
+      if (ocType_ != io.opencola.serialization.protobuf.Model.OCType.EMPTY.getNumber()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(1, ocType_);
+          .computeEnumSize(1, ocType_);
       }
       if (valueCase_ == 3) {
         size += com.google.protobuf.CodedOutputStream
@@ -1854,8 +2076,7 @@ public final class Model {
       }
       io.opencola.serialization.protobuf.Model.Value other = (io.opencola.serialization.protobuf.Model.Value) obj;
 
-      if (getOcType()
-          != other.getOcType()) return false;
+      if (ocType_ != other.ocType_) return false;
       if (!getValueCase().equals(other.getValueCase())) return false;
       switch (valueCase_) {
         case 3:
@@ -1935,7 +2156,7 @@ public final class Model {
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + OCTYPE_FIELD_NUMBER;
-      hash = (53 * hash) + getOcType();
+      hash = (53 * hash) + ocType_;
       switch (valueCase_) {
         case 3:
           hash = (37 * hash) + DOUBLE_FIELD_NUMBER;
@@ -2266,8 +2487,8 @@ public final class Model {
 
       public Builder mergeFrom(io.opencola.serialization.protobuf.Model.Value other) {
         if (other == io.opencola.serialization.protobuf.Model.Value.getDefaultInstance()) return this;
-        if (other.getOcType() != 0) {
-          setOcType(other.getOcType());
+        if (other.ocType_ != 0) {
+          setOcTypeValue(other.getOcTypeValue());
         }
         switch (other.getValueCase()) {
           case DOUBLE: {
@@ -2380,28 +2601,51 @@ public final class Model {
       }
 
 
-      private int ocType_ ;
+      private int ocType_ = 0;
       /**
-       * <code>int32 ocType = 1;</code>
-       * @return The ocType.
+       * <code>.io.opencola.serialization.protobuf.OCType ocType = 1;</code>
+       * @return The enum numeric value on the wire for ocType.
        */
-      @java.lang.Override
-      public int getOcType() {
+      @java.lang.Override public int getOcTypeValue() {
         return ocType_;
       }
       /**
-       * <code>int32 ocType = 1;</code>
-       * @param value The ocType to set.
+       * <code>.io.opencola.serialization.protobuf.OCType ocType = 1;</code>
+       * @param value The enum numeric value on the wire for ocType to set.
        * @return This builder for chaining.
        */
-      public Builder setOcType(int value) {
+      public Builder setOcTypeValue(int value) {
         
         ocType_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>int32 ocType = 1;</code>
+       * <code>.io.opencola.serialization.protobuf.OCType ocType = 1;</code>
+       * @return The ocType.
+       */
+      @java.lang.Override
+      public io.opencola.serialization.protobuf.Model.OCType getOcType() {
+        @SuppressWarnings("deprecation")
+        io.opencola.serialization.protobuf.Model.OCType result = io.opencola.serialization.protobuf.Model.OCType.valueOf(ocType_);
+        return result == null ? io.opencola.serialization.protobuf.Model.OCType.UNRECOGNIZED : result;
+      }
+      /**
+       * <code>.io.opencola.serialization.protobuf.OCType ocType = 1;</code>
+       * @param value The ocType to set.
+       * @return This builder for chaining.
+       */
+      public Builder setOcType(io.opencola.serialization.protobuf.Model.OCType value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        
+        ocType_ = value.getNumber();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.io.opencola.serialization.protobuf.OCType ocType = 1;</code>
        * @return This builder for chaining.
        */
       public Builder clearOcType() {
@@ -7608,33 +7852,38 @@ public final class Model {
       "\n\013model.proto\022\"io.opencola.serialization" +
       ".protobuf\032\016security.proto\"6\n\tAttribute\022\021" +
       "\n\007ordinal\030\001 \001(\rH\000\022\r\n\003uri\030\002 \001(\tH\000B\007\n\005valu" +
-      "e\"\256\002\n\005Value\022\016\n\006ocType\030\001 \001(\005\022\020\n\006double\030\003 " +
-      "\001(\001H\000\022\017\n\005float\030\004 \001(\002H\000\022\017\n\005int32\030\005 \001(\005H\000\022" +
-      "\017\n\005int64\030\006 \001(\003H\000\022\020\n\006uint32\030\007 \001(\rH\000\022\020\n\006ui" +
-      "nt64\030\010 \001(\004H\000\022\020\n\006sint32\030\t \001(\021H\000\022\020\n\006sint64" +
-      "\030\n \001(\022H\000\022\021\n\007fixed32\030\013 \001(\007H\000\022\021\n\007fixed64\030\014" +
-      " \001(\006H\000\022\022\n\010sfixed32\030\r \001(\017H\000\022\022\n\010sfixed64\030\016" +
-      " \001(\020H\000\022\016\n\004bool\030\017 \001(\010H\000\022\020\n\006string\030\020 \001(\tH\000" +
-      "\022\017\n\005bytes\030\021 \001(\014H\000B\007\n\005value\"\317\001\n\017Transacti" +
-      "onFact\022@\n\tattribute\030\001 \001(\0132-.io.opencola." +
-      "serialization.protobuf.Attribute\0228\n\005valu" +
-      "e\030\002 \001(\0132).io.opencola.serialization.prot" +
-      "obuf.Value\022@\n\toperation\030\003 \001(\0162-.io.openc" +
-      "ola.serialization.protobuf.Operation\"\023\n\002" +
-      "Id\022\r\n\005bytes\030\001 \001(\014\"\221\001\n\021TransactionEntity\022" +
-      "8\n\010entityId\030\001 \001(\0132&.io.opencola.serializ" +
-      "ation.protobuf.Id\022B\n\005facts\030\002 \003(\01323.io.op" +
-      "encola.serialization.protobuf.Transactio" +
-      "nFact\"\347\001\n\013Transaction\0222\n\002id\030\001 \001(\0132&.io.o" +
-      "pencola.serialization.protobuf.Id\022;\n\013aut" +
-      "horityId\030\002 \001(\0132&.io.opencola.serializati" +
-      "on.protobuf.Id\022R\n\023transactionEntities\030\003 " +
-      "\003(\01325.io.opencola.serialization.protobuf" +
-      ".TransactionEntity\022\023\n\013epochSecond\030\004 \001(\004\"" +
-      "j\n\021SignedTransaction\022\023\n\013transaction\030\001 \001(" +
-      "\014\022@\n\tsignature\030\002 \001(\0132-.io.opencola.seria" +
-      "lization.protobuf.Signature*!\n\tOperation" +
-      "\022\013\n\007RETRACT\020\000\022\007\n\003ADD\020\001b\006proto3"
+      "e\"\332\002\n\005Value\022:\n\006ocType\030\001 \001(\0162*.io.opencol" +
+      "a.serialization.protobuf.OCType\022\020\n\006doubl" +
+      "e\030\003 \001(\001H\000\022\017\n\005float\030\004 \001(\002H\000\022\017\n\005int32\030\005 \001(" +
+      "\005H\000\022\017\n\005int64\030\006 \001(\003H\000\022\020\n\006uint32\030\007 \001(\rH\000\022\020" +
+      "\n\006uint64\030\010 \001(\004H\000\022\020\n\006sint32\030\t \001(\021H\000\022\020\n\006si" +
+      "nt64\030\n \001(\022H\000\022\021\n\007fixed32\030\013 \001(\007H\000\022\021\n\007fixed" +
+      "64\030\014 \001(\006H\000\022\022\n\010sfixed32\030\r \001(\017H\000\022\022\n\010sfixed" +
+      "64\030\016 \001(\020H\000\022\016\n\004bool\030\017 \001(\010H\000\022\020\n\006string\030\020 \001" +
+      "(\tH\000\022\017\n\005bytes\030\021 \001(\014H\000B\007\n\005value\"\317\001\n\017Trans" +
+      "actionFact\022@\n\tattribute\030\001 \001(\0132-.io.openc" +
+      "ola.serialization.protobuf.Attribute\0228\n\005" +
+      "value\030\002 \001(\0132).io.opencola.serialization." +
+      "protobuf.Value\022@\n\toperation\030\003 \001(\0162-.io.o" +
+      "pencola.serialization.protobuf.Operation" +
+      "\"\023\n\002Id\022\r\n\005bytes\030\001 \001(\014\"\221\001\n\021TransactionEnt" +
+      "ity\0228\n\010entityId\030\001 \001(\0132&.io.opencola.seri" +
+      "alization.protobuf.Id\022B\n\005facts\030\002 \003(\01323.i" +
+      "o.opencola.serialization.protobuf.Transa" +
+      "ctionFact\"\347\001\n\013Transaction\0222\n\002id\030\001 \001(\0132&." +
+      "io.opencola.serialization.protobuf.Id\022;\n" +
+      "\013authorityId\030\002 \001(\0132&.io.opencola.seriali" +
+      "zation.protobuf.Id\022R\n\023transactionEntitie" +
+      "s\030\003 \003(\01325.io.opencola.serialization.prot" +
+      "obuf.TransactionEntity\022\023\n\013epochSecond\030\004 " +
+      "\001(\004\"j\n\021SignedTransaction\022\023\n\013transaction\030" +
+      "\001 \001(\014\022@\n\tsignature\030\002 \001(\0132-.io.opencola.s" +
+      "erialization.protobuf.Signature*\232\001\n\006OCTy" +
+      "pe\022\t\n\005EMPTY\020\000\022\013\n\007BOOLEAN\020\001\022\007\n\003INT\020\002\022\010\n\004L" +
+      "ONG\020\003\022\t\n\005FLOAT\020\004\022\n\n\006DOUBLE\020\005\022\n\n\006STRING\020\006" +
+      "\022\t\n\005BYTES\020\007\022\014\n\010DATETIME\020\010\022\007\n\003URI\020\t\022\010\n\004UU" +
+      "ID\020\n\022\006\n\002ID\020\013\022\016\n\nPUBLIC_KEY\020\014*!\n\tOperatio" +
+      "n\022\013\n\007RETRACT\020\000\022\007\n\003ADD\020\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

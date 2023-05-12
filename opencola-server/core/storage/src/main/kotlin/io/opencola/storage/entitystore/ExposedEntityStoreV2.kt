@@ -30,7 +30,7 @@ class ExposedEntityStoreV2(
     signator: Signator,
     publicKeyProvider: PublicKeyProvider<Id>,
     eventBus: EventBus? = null,
-) : AbstractEntityStore(config, signator, publicKeyProvider, eventBus, EncodingFormat.OC) {
+) : AbstractEntityStore(config, signator, publicKeyProvider, eventBus, EncodingFormat.PROTOBUF) {
     private val database: Database
     private val transactionStoragePath: Path
     private val transactionFileStore: IdBasedFileStore
