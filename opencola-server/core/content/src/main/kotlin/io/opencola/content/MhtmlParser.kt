@@ -1,7 +1,6 @@
 package io.opencola.content
 
 import io.opencola.util.nullOrElse
-// import io.opencola.model.Id
 import org.apache.james.mime4j.codec.DecoderUtil
 import org.apache.james.mime4j.dom.*
 import org.apache.james.mime4j.message.*
@@ -39,7 +38,7 @@ class MhtmlPage {
             ?: throw RuntimeException("No URI specified in MHTML message")
         htmlText = parseHtmlText()
 
-        val htmlParser = htmlText.nullOrElse { HtmlParser(it) }
+        val htmlParser = htmlText.nullOrElse { JsoupHtmlParser(it) }
         title = htmlParser?.parseTitle() ?: DecoderUtil.decodeEncodedWords(message.header.getField("Subject")?.body, Charset.defaultCharset())
         description = htmlParser.nullOrElse { it.parseDescription() }
         imageUri = htmlParser.nullOrElse { it.parseImageUri() } ?: getImageUri(message)

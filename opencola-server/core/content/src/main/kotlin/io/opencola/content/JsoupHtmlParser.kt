@@ -6,7 +6,8 @@ import java.net.URI
 
 // Likely will want to use JSoup to do some HTML parsing
 // https://www.baeldung.com/java-with-jsoup
-class HtmlParser(html: String) {
+// TODO: Make interface
+class JsoupHtmlParser(html: String) {
     private val doc = Jsoup.parse(html)
 
     private fun selectMetaContent(selectors: List<String>): List<String> {
@@ -68,5 +69,9 @@ class HtmlParser(html: String) {
         }
 
         return null
+    }
+
+    fun parseText(): String? {
+        return doc.body().text()
     }
 }

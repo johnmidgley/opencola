@@ -8,6 +8,7 @@ import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.net.URI
 
+// TODO: Make interface
 fun parseMime(inputStream: InputStream): Message? {
     // TODO: Think about a .thread extension that allows for a chain of operations on an original value
     val defaultMessageBuilder = DefaultMessageBuilder()

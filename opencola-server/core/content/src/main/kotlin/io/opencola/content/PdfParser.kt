@@ -5,7 +5,31 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
 import org.apache.pdfbox.rendering.PDFRenderer
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
+import java.net.URI
 import javax.imageio.ImageIO
+
+class OcPdfContentParser(textExtractor: TextExtractor, pdfBytes: ByteArray, uri: URI?) : PdfContentParser(pdfBytes, uri) {
+    private val maxDescriptionLength = 300
+    val text: String by lazy { textExtractor.getBody(pdfBytes) }
+
+    override fun parseTitle(): String? {
+        return uri?.toString()
+    }
+
+    override fun parseDescription(): String? {
+        if (text.isBlank()) return null
+
+        return text.substring(0,maxDescriptionLength).let {
+            if (it.length < text.length) "$it..." else it
+        }
+    }
+
+    // TODO: Image extraction
+
+    override fun parseText(): String? {
+        return text.let { if (it.isBlank()) null else it }
+    }
+}
 
 fun getImages(document: PDDocument): Sequence<BufferedImage> {
     return document.pages

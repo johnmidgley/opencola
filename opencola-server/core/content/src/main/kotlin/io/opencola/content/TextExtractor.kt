@@ -1,6 +1,5 @@
 package io.opencola.content
 
-import org.apache.tika.Tika
 import org.apache.tika.metadata.Metadata
 import org.apache.tika.parser.AutoDetectParser
 import org.apache.tika.parser.ParseContext
@@ -13,17 +12,8 @@ import java.io.InputStream
 // https://cwiki.apache.org/confluence/display/TIKA/TikaServer#TikaServer-Buildingfromsource
 // Think about using solr to do Tika analysis / parsing as it should be able to do this
 
+// TODO: Make interface and TikaContentExtractor implementation
 class TextExtractor {
-    private val tika = Tika()
-
-    fun getType(inStream: InputStream): String {
-        return tika.detect(inStream) ?: "application/octet-stream"
-    }
-
-    fun getType(bytes: ByteArray) : String {
-        ByteArrayInputStream(bytes).use { return getType(it)}
-    }
-
     private fun getBody(stream: InputStream) : String {
         val handler = BodyContentHandler(-1) // -1 removes default text limit
         val metadata = Metadata()

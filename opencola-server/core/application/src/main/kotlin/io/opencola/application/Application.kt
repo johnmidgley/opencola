@@ -2,6 +2,7 @@ package io.opencola.application
 
 import mu.KotlinLogging
 import io.opencola.content.TextExtractor
+import io.opencola.content.TikaContentTypeDetector
 import io.opencola.event.EventBus
 import io.opencola.event.ExposedEventBus
 import io.opencola.event.Reactor
@@ -115,6 +116,7 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) :
                 bindSingleton { keyStore }
                 bindSingleton { fileStore }
                 bindSingleton { TextExtractor() }
+                bindSingleton { TikaContentTypeDetector() }
                 bindSingleton { Signator(instance()) }
                 bindSingleton { Encryptor(instance()) }
                 bindSingleton { EntityStoreAddressBook(Version.V2, config.addressBook, storagePath.resolve("address-book"), instance()) }

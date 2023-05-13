@@ -12,10 +12,16 @@ class HttpClient() {
     private val httpClient = HttpClient(CIO)
 
     // TODO: This assumes html
-    fun get(url: String): String {
+    fun getBodyAsText(url: String): String {
         return runBlocking {
-            httpClient.get(url).bodyAsText()
+            val response = httpClient.get(url)
+            response.bodyAsText()
+        }
+    }
 
+    fun getContent(url: String): ByteArray {
+        return runBlocking {
+            httpClient.get(url).readBytes()
         }
     }
 }

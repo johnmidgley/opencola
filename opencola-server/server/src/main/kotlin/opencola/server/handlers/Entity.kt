@@ -3,9 +3,9 @@ package opencola.server.handlers
 import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
+import io.opencola.content.*
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
-import io.opencola.content.HtmlParser
 import io.opencola.io.HttpClient
 import io.opencola.io.urlRegex
 import io.opencola.model.*
@@ -207,23 +207,51 @@ fun saveEntity(
     return getEntityResult(entityStore, addressBook, context, persona.entityId, entityId)
 }
 
-fun newResourceFromUrl(
+fun updateEntityFromHtmlContent(resource: Entity, uri: URI, content: ByteArray): Entity {
+    val parser = HtmlContentParser(content, uri)
+    resource.name = parser.parseTitle()
+    resource.description = parser.parseDescription()
+    resource.imageUri = parser.parseImageUri()
+    resource.text = parser.parseText()
+    return resource
+}
+
+fun updateEntityFromPdfContent(resource: Entity, uri: URI, content: ByteArray): Entity {
+    val parser = OcPdfContentParser(TextExtractor(), content, uri)
+    resource.name = parser.parseTitle()
+    resource.description = parser.parseDescription()
+    resource.imageUri = parser.parseImageUri()
+    resource.text = parser.parseText()
+    return resource
+}
+
+fun newResourceFromUri(
     persona: PersonaAddressBookEntry,
     entityStore: EntityStore,
     addressBook: AddressBook,
-    url: String
+    contentTypeDetector: ContentTypeDetector,
+    uri: URI
 ): EntityResult? {
     try {
-        val resource = entityStore.getEntity(persona.personaId, Id.ofUri(URI(url)))
-            ?: ResourceEntity(persona.personaId, URI(url))
+        val resource = entityStore.getEntity(persona.personaId, Id.ofUri(uri))
+            ?: ResourceEntity(persona.personaId, uri)
+        val content = httpClient.getContent(uri.toString())
+        val contentType = contentTypeDetector.getType(content)
 
-        // TODO: What if URL isn't html?
         // TODO: If parsing fails, could call getOrCopyEntity(persona.personaId, entityStore, Id.ofUri(URI(url)))
-        val parser = HtmlParser(httpClient.get(url))
+        //  (i.e. copy from any existing resource, from any persona/peer
+        // TODO: Just grab appropriate parser from contentParserRegistry based on content type
+        when(contentType) {
+            "text/html" -> updateEntityFromHtmlContent(resource, uri, content)
+            "application/pdf" -> updateEntityFromPdfContent(resource, uri, content)
+            else -> {
+                throw IllegalArgumentException("Unable to parse resource from url: $uri: Content type: $contentType")
+            }
+        }
 
-        resource.name = parser.parseTitle()
-        resource.description = parser.parseDescription()
-        resource.imageUri = parser.parseImageUri()
+        if(resource.name == null && resource.description == null && resource.imageUri == null)
+            throw IllegalArgumentException("Unable to parse resource from url: $uri: No title, description or image found")
+
         entityStore.updateEntities(resource)
 
         return getEntityResult(entityStore, addressBook, Context(""), persona.personaId, resource.entityId)
@@ -237,6 +265,7 @@ fun newResourceFromUrl(
 fun newPost(
     entityStore: EntityStore,
     addressBook: AddressBook,
+    contentTypeDetector: ContentTypeDetector,
     context: Context,
     persona: PersonaAddressBookEntry,
     entityPayload: EntityPayload
@@ -244,7 +273,7 @@ fun newPost(
     val url = entityPayload.description?.trim()
 
     if (url != null && urlRegex.matchEntire(url) != null) {
-        val result = newResourceFromUrl(persona, entityStore, addressBook, url)
+        val result = newResourceFromUri(persona, entityStore, addressBook, contentTypeDetector, URI(url))
         if (result != null)
             return result
     }
