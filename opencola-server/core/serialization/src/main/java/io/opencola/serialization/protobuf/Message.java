@@ -19,19 +19,19 @@ public final class Message {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>.io.opencola.serialization.protobuf.Id mostRecentTransactionId = 1;</code>
-     * @return Whether the mostRecentTransactionId field is set.
+     * <code>.io.opencola.serialization.protobuf.Id currentTransactionId = 1;</code>
+     * @return Whether the currentTransactionId field is set.
      */
-    boolean hasMostRecentTransactionId();
+    boolean hasCurrentTransactionId();
     /**
-     * <code>.io.opencola.serialization.protobuf.Id mostRecentTransactionId = 1;</code>
-     * @return The mostRecentTransactionId.
+     * <code>.io.opencola.serialization.protobuf.Id currentTransactionId = 1;</code>
+     * @return The currentTransactionId.
      */
-    io.opencola.serialization.protobuf.Model.Id getMostRecentTransactionId();
+    io.opencola.serialization.protobuf.Model.Id getCurrentTransactionId();
     /**
-     * <code>.io.opencola.serialization.protobuf.Id mostRecentTransactionId = 1;</code>
+     * <code>.io.opencola.serialization.protobuf.Id currentTransactionId = 1;</code>
      */
-    io.opencola.serialization.protobuf.Model.IdOrBuilder getMostRecentTransactionIdOrBuilder();
+    io.opencola.serialization.protobuf.Model.IdOrBuilder getCurrentTransactionIdOrBuilder();
   }
   /**
    * Protobuf type {@code io.opencola.serialization.protobuf.MessageHeader}
@@ -80,13 +80,13 @@ public final class Message {
               break;
             case 10: {
               io.opencola.serialization.protobuf.Model.Id.Builder subBuilder = null;
-              if (mostRecentTransactionId_ != null) {
-                subBuilder = mostRecentTransactionId_.toBuilder();
+              if (currentTransactionId_ != null) {
+                subBuilder = currentTransactionId_.toBuilder();
               }
-              mostRecentTransactionId_ = input.readMessage(io.opencola.serialization.protobuf.Model.Id.parser(), extensionRegistry);
+              currentTransactionId_ = input.readMessage(io.opencola.serialization.protobuf.Model.Id.parser(), extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(mostRecentTransactionId_);
-                mostRecentTransactionId_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(currentTransactionId_);
+                currentTransactionId_ = subBuilder.buildPartial();
               }
 
               break;
@@ -123,30 +123,30 @@ public final class Message {
               io.opencola.serialization.protobuf.Message.MessageHeader.class, io.opencola.serialization.protobuf.Message.MessageHeader.Builder.class);
     }
 
-    public static final int MOSTRECENTTRANSACTIONID_FIELD_NUMBER = 1;
-    private io.opencola.serialization.protobuf.Model.Id mostRecentTransactionId_;
+    public static final int CURRENTTRANSACTIONID_FIELD_NUMBER = 1;
+    private io.opencola.serialization.protobuf.Model.Id currentTransactionId_;
     /**
-     * <code>.io.opencola.serialization.protobuf.Id mostRecentTransactionId = 1;</code>
-     * @return Whether the mostRecentTransactionId field is set.
+     * <code>.io.opencola.serialization.protobuf.Id currentTransactionId = 1;</code>
+     * @return Whether the currentTransactionId field is set.
      */
     @java.lang.Override
-    public boolean hasMostRecentTransactionId() {
-      return mostRecentTransactionId_ != null;
+    public boolean hasCurrentTransactionId() {
+      return currentTransactionId_ != null;
     }
     /**
-     * <code>.io.opencola.serialization.protobuf.Id mostRecentTransactionId = 1;</code>
-     * @return The mostRecentTransactionId.
+     * <code>.io.opencola.serialization.protobuf.Id currentTransactionId = 1;</code>
+     * @return The currentTransactionId.
      */
     @java.lang.Override
-    public io.opencola.serialization.protobuf.Model.Id getMostRecentTransactionId() {
-      return mostRecentTransactionId_ == null ? io.opencola.serialization.protobuf.Model.Id.getDefaultInstance() : mostRecentTransactionId_;
+    public io.opencola.serialization.protobuf.Model.Id getCurrentTransactionId() {
+      return currentTransactionId_ == null ? io.opencola.serialization.protobuf.Model.Id.getDefaultInstance() : currentTransactionId_;
     }
     /**
-     * <code>.io.opencola.serialization.protobuf.Id mostRecentTransactionId = 1;</code>
+     * <code>.io.opencola.serialization.protobuf.Id currentTransactionId = 1;</code>
      */
     @java.lang.Override
-    public io.opencola.serialization.protobuf.Model.IdOrBuilder getMostRecentTransactionIdOrBuilder() {
-      return getMostRecentTransactionId();
+    public io.opencola.serialization.protobuf.Model.IdOrBuilder getCurrentTransactionIdOrBuilder() {
+      return getCurrentTransactionId();
     }
 
     private byte memoizedIsInitialized = -1;
@@ -163,8 +163,8 @@ public final class Message {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (mostRecentTransactionId_ != null) {
-        output.writeMessage(1, getMostRecentTransactionId());
+      if (currentTransactionId_ != null) {
+        output.writeMessage(1, getCurrentTransactionId());
       }
       unknownFields.writeTo(output);
     }
@@ -175,9 +175,9 @@ public final class Message {
       if (size != -1) return size;
 
       size = 0;
-      if (mostRecentTransactionId_ != null) {
+      if (currentTransactionId_ != null) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, getMostRecentTransactionId());
+          .computeMessageSize(1, getCurrentTransactionId());
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -194,10 +194,10 @@ public final class Message {
       }
       io.opencola.serialization.protobuf.Message.MessageHeader other = (io.opencola.serialization.protobuf.Message.MessageHeader) obj;
 
-      if (hasMostRecentTransactionId() != other.hasMostRecentTransactionId()) return false;
-      if (hasMostRecentTransactionId()) {
-        if (!getMostRecentTransactionId()
-            .equals(other.getMostRecentTransactionId())) return false;
+      if (hasCurrentTransactionId() != other.hasCurrentTransactionId()) return false;
+      if (hasCurrentTransactionId()) {
+        if (!getCurrentTransactionId()
+            .equals(other.getCurrentTransactionId())) return false;
       }
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
@@ -210,9 +210,9 @@ public final class Message {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      if (hasMostRecentTransactionId()) {
-        hash = (37 * hash) + MOSTRECENTTRANSACTIONID_FIELD_NUMBER;
-        hash = (53 * hash) + getMostRecentTransactionId().hashCode();
+      if (hasCurrentTransactionId()) {
+        hash = (37 * hash) + CURRENTTRANSACTIONID_FIELD_NUMBER;
+        hash = (53 * hash) + getCurrentTransactionId().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -347,11 +347,11 @@ public final class Message {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        if (mostRecentTransactionIdBuilder_ == null) {
-          mostRecentTransactionId_ = null;
+        if (currentTransactionIdBuilder_ == null) {
+          currentTransactionId_ = null;
         } else {
-          mostRecentTransactionId_ = null;
-          mostRecentTransactionIdBuilder_ = null;
+          currentTransactionId_ = null;
+          currentTransactionIdBuilder_ = null;
         }
         return this;
       }
@@ -379,10 +379,10 @@ public final class Message {
       @java.lang.Override
       public io.opencola.serialization.protobuf.Message.MessageHeader buildPartial() {
         io.opencola.serialization.protobuf.Message.MessageHeader result = new io.opencola.serialization.protobuf.Message.MessageHeader(this);
-        if (mostRecentTransactionIdBuilder_ == null) {
-          result.mostRecentTransactionId_ = mostRecentTransactionId_;
+        if (currentTransactionIdBuilder_ == null) {
+          result.currentTransactionId_ = currentTransactionId_;
         } else {
-          result.mostRecentTransactionId_ = mostRecentTransactionIdBuilder_.build();
+          result.currentTransactionId_ = currentTransactionIdBuilder_.build();
         }
         onBuilt();
         return result;
@@ -432,8 +432,8 @@ public final class Message {
 
       public Builder mergeFrom(io.opencola.serialization.protobuf.Message.MessageHeader other) {
         if (other == io.opencola.serialization.protobuf.Message.MessageHeader.getDefaultInstance()) return this;
-        if (other.hasMostRecentTransactionId()) {
-          mergeMostRecentTransactionId(other.getMostRecentTransactionId());
+        if (other.hasCurrentTransactionId()) {
+          mergeCurrentTransactionId(other.getCurrentTransactionId());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -464,123 +464,123 @@ public final class Message {
         return this;
       }
 
-      private io.opencola.serialization.protobuf.Model.Id mostRecentTransactionId_;
+      private io.opencola.serialization.protobuf.Model.Id currentTransactionId_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          io.opencola.serialization.protobuf.Model.Id, io.opencola.serialization.protobuf.Model.Id.Builder, io.opencola.serialization.protobuf.Model.IdOrBuilder> mostRecentTransactionIdBuilder_;
+          io.opencola.serialization.protobuf.Model.Id, io.opencola.serialization.protobuf.Model.Id.Builder, io.opencola.serialization.protobuf.Model.IdOrBuilder> currentTransactionIdBuilder_;
       /**
-       * <code>.io.opencola.serialization.protobuf.Id mostRecentTransactionId = 1;</code>
-       * @return Whether the mostRecentTransactionId field is set.
+       * <code>.io.opencola.serialization.protobuf.Id currentTransactionId = 1;</code>
+       * @return Whether the currentTransactionId field is set.
        */
-      public boolean hasMostRecentTransactionId() {
-        return mostRecentTransactionIdBuilder_ != null || mostRecentTransactionId_ != null;
+      public boolean hasCurrentTransactionId() {
+        return currentTransactionIdBuilder_ != null || currentTransactionId_ != null;
       }
       /**
-       * <code>.io.opencola.serialization.protobuf.Id mostRecentTransactionId = 1;</code>
-       * @return The mostRecentTransactionId.
+       * <code>.io.opencola.serialization.protobuf.Id currentTransactionId = 1;</code>
+       * @return The currentTransactionId.
        */
-      public io.opencola.serialization.protobuf.Model.Id getMostRecentTransactionId() {
-        if (mostRecentTransactionIdBuilder_ == null) {
-          return mostRecentTransactionId_ == null ? io.opencola.serialization.protobuf.Model.Id.getDefaultInstance() : mostRecentTransactionId_;
+      public io.opencola.serialization.protobuf.Model.Id getCurrentTransactionId() {
+        if (currentTransactionIdBuilder_ == null) {
+          return currentTransactionId_ == null ? io.opencola.serialization.protobuf.Model.Id.getDefaultInstance() : currentTransactionId_;
         } else {
-          return mostRecentTransactionIdBuilder_.getMessage();
+          return currentTransactionIdBuilder_.getMessage();
         }
       }
       /**
-       * <code>.io.opencola.serialization.protobuf.Id mostRecentTransactionId = 1;</code>
+       * <code>.io.opencola.serialization.protobuf.Id currentTransactionId = 1;</code>
        */
-      public Builder setMostRecentTransactionId(io.opencola.serialization.protobuf.Model.Id value) {
-        if (mostRecentTransactionIdBuilder_ == null) {
+      public Builder setCurrentTransactionId(io.opencola.serialization.protobuf.Model.Id value) {
+        if (currentTransactionIdBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          mostRecentTransactionId_ = value;
+          currentTransactionId_ = value;
           onChanged();
         } else {
-          mostRecentTransactionIdBuilder_.setMessage(value);
+          currentTransactionIdBuilder_.setMessage(value);
         }
 
         return this;
       }
       /**
-       * <code>.io.opencola.serialization.protobuf.Id mostRecentTransactionId = 1;</code>
+       * <code>.io.opencola.serialization.protobuf.Id currentTransactionId = 1;</code>
        */
-      public Builder setMostRecentTransactionId(
+      public Builder setCurrentTransactionId(
           io.opencola.serialization.protobuf.Model.Id.Builder builderForValue) {
-        if (mostRecentTransactionIdBuilder_ == null) {
-          mostRecentTransactionId_ = builderForValue.build();
+        if (currentTransactionIdBuilder_ == null) {
+          currentTransactionId_ = builderForValue.build();
           onChanged();
         } else {
-          mostRecentTransactionIdBuilder_.setMessage(builderForValue.build());
+          currentTransactionIdBuilder_.setMessage(builderForValue.build());
         }
 
         return this;
       }
       /**
-       * <code>.io.opencola.serialization.protobuf.Id mostRecentTransactionId = 1;</code>
+       * <code>.io.opencola.serialization.protobuf.Id currentTransactionId = 1;</code>
        */
-      public Builder mergeMostRecentTransactionId(io.opencola.serialization.protobuf.Model.Id value) {
-        if (mostRecentTransactionIdBuilder_ == null) {
-          if (mostRecentTransactionId_ != null) {
-            mostRecentTransactionId_ =
-              io.opencola.serialization.protobuf.Model.Id.newBuilder(mostRecentTransactionId_).mergeFrom(value).buildPartial();
+      public Builder mergeCurrentTransactionId(io.opencola.serialization.protobuf.Model.Id value) {
+        if (currentTransactionIdBuilder_ == null) {
+          if (currentTransactionId_ != null) {
+            currentTransactionId_ =
+              io.opencola.serialization.protobuf.Model.Id.newBuilder(currentTransactionId_).mergeFrom(value).buildPartial();
           } else {
-            mostRecentTransactionId_ = value;
+            currentTransactionId_ = value;
           }
           onChanged();
         } else {
-          mostRecentTransactionIdBuilder_.mergeFrom(value);
+          currentTransactionIdBuilder_.mergeFrom(value);
         }
 
         return this;
       }
       /**
-       * <code>.io.opencola.serialization.protobuf.Id mostRecentTransactionId = 1;</code>
+       * <code>.io.opencola.serialization.protobuf.Id currentTransactionId = 1;</code>
        */
-      public Builder clearMostRecentTransactionId() {
-        if (mostRecentTransactionIdBuilder_ == null) {
-          mostRecentTransactionId_ = null;
+      public Builder clearCurrentTransactionId() {
+        if (currentTransactionIdBuilder_ == null) {
+          currentTransactionId_ = null;
           onChanged();
         } else {
-          mostRecentTransactionId_ = null;
-          mostRecentTransactionIdBuilder_ = null;
+          currentTransactionId_ = null;
+          currentTransactionIdBuilder_ = null;
         }
 
         return this;
       }
       /**
-       * <code>.io.opencola.serialization.protobuf.Id mostRecentTransactionId = 1;</code>
+       * <code>.io.opencola.serialization.protobuf.Id currentTransactionId = 1;</code>
        */
-      public io.opencola.serialization.protobuf.Model.Id.Builder getMostRecentTransactionIdBuilder() {
+      public io.opencola.serialization.protobuf.Model.Id.Builder getCurrentTransactionIdBuilder() {
         
         onChanged();
-        return getMostRecentTransactionIdFieldBuilder().getBuilder();
+        return getCurrentTransactionIdFieldBuilder().getBuilder();
       }
       /**
-       * <code>.io.opencola.serialization.protobuf.Id mostRecentTransactionId = 1;</code>
+       * <code>.io.opencola.serialization.protobuf.Id currentTransactionId = 1;</code>
        */
-      public io.opencola.serialization.protobuf.Model.IdOrBuilder getMostRecentTransactionIdOrBuilder() {
-        if (mostRecentTransactionIdBuilder_ != null) {
-          return mostRecentTransactionIdBuilder_.getMessageOrBuilder();
+      public io.opencola.serialization.protobuf.Model.IdOrBuilder getCurrentTransactionIdOrBuilder() {
+        if (currentTransactionIdBuilder_ != null) {
+          return currentTransactionIdBuilder_.getMessageOrBuilder();
         } else {
-          return mostRecentTransactionId_ == null ?
-              io.opencola.serialization.protobuf.Model.Id.getDefaultInstance() : mostRecentTransactionId_;
+          return currentTransactionId_ == null ?
+              io.opencola.serialization.protobuf.Model.Id.getDefaultInstance() : currentTransactionId_;
         }
       }
       /**
-       * <code>.io.opencola.serialization.protobuf.Id mostRecentTransactionId = 1;</code>
+       * <code>.io.opencola.serialization.protobuf.Id currentTransactionId = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
           io.opencola.serialization.protobuf.Model.Id, io.opencola.serialization.protobuf.Model.Id.Builder, io.opencola.serialization.protobuf.Model.IdOrBuilder> 
-          getMostRecentTransactionIdFieldBuilder() {
-        if (mostRecentTransactionIdBuilder_ == null) {
-          mostRecentTransactionIdBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+          getCurrentTransactionIdFieldBuilder() {
+        if (currentTransactionIdBuilder_ == null) {
+          currentTransactionIdBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               io.opencola.serialization.protobuf.Model.Id, io.opencola.serialization.protobuf.Model.Id.Builder, io.opencola.serialization.protobuf.Model.IdOrBuilder>(
-                  getMostRecentTransactionId(),
+                  getCurrentTransactionId(),
                   getParentForChildren(),
                   isClean());
-          mostRecentTransactionId_ = null;
+          currentTransactionId_ = null;
         }
-        return mostRecentTransactionIdBuilder_;
+        return currentTransactionIdBuilder_;
       }
       @java.lang.Override
       public final Builder setUnknownFields(
@@ -3923,7 +3923,7 @@ public final class Message {
      * Transactions are sent as bytes to preserve signatures
      * </pre>
      *
-     * <code>repeated bytes signedTransactions = 1;</code>
+     * <code>repeated bytes signedTransactions = 2;</code>
      * @return A list containing the signedTransactions.
      */
     java.util.List<com.google.protobuf.ByteString> getSignedTransactionsList();
@@ -3932,7 +3932,7 @@ public final class Message {
      * Transactions are sent as bytes to preserve signatures
      * </pre>
      *
-     * <code>repeated bytes signedTransactions = 1;</code>
+     * <code>repeated bytes signedTransactions = 2;</code>
      * @return The count of signedTransactions.
      */
     int getSignedTransactionsCount();
@@ -3941,7 +3941,7 @@ public final class Message {
      * Transactions are sent as bytes to preserve signatures
      * </pre>
      *
-     * <code>repeated bytes signedTransactions = 1;</code>
+     * <code>repeated bytes signedTransactions = 2;</code>
      * @param index The index of the element to return.
      * @return The signedTransactions at the given index.
      */
@@ -3994,7 +3994,7 @@ public final class Message {
             case 0:
               done = true;
               break;
-            case 10: {
+            case 18: {
               if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 signedTransactions_ = new java.util.ArrayList<com.google.protobuf.ByteString>();
                 mutable_bitField0_ |= 0x00000001;
@@ -4037,14 +4037,14 @@ public final class Message {
               io.opencola.serialization.protobuf.Message.PutTransactionsMessage.class, io.opencola.serialization.protobuf.Message.PutTransactionsMessage.Builder.class);
     }
 
-    public static final int SIGNEDTRANSACTIONS_FIELD_NUMBER = 1;
+    public static final int SIGNEDTRANSACTIONS_FIELD_NUMBER = 2;
     private java.util.List<com.google.protobuf.ByteString> signedTransactions_;
     /**
      * <pre>
      * Transactions are sent as bytes to preserve signatures
      * </pre>
      *
-     * <code>repeated bytes signedTransactions = 1;</code>
+     * <code>repeated bytes signedTransactions = 2;</code>
      * @return A list containing the signedTransactions.
      */
     @java.lang.Override
@@ -4057,7 +4057,7 @@ public final class Message {
      * Transactions are sent as bytes to preserve signatures
      * </pre>
      *
-     * <code>repeated bytes signedTransactions = 1;</code>
+     * <code>repeated bytes signedTransactions = 2;</code>
      * @return The count of signedTransactions.
      */
     public int getSignedTransactionsCount() {
@@ -4068,7 +4068,7 @@ public final class Message {
      * Transactions are sent as bytes to preserve signatures
      * </pre>
      *
-     * <code>repeated bytes signedTransactions = 1;</code>
+     * <code>repeated bytes signedTransactions = 2;</code>
      * @param index The index of the element to return.
      * @return The signedTransactions at the given index.
      */
@@ -4091,7 +4091,7 @@ public final class Message {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       for (int i = 0; i < signedTransactions_.size(); i++) {
-        output.writeBytes(1, signedTransactions_.get(i));
+        output.writeBytes(2, signedTransactions_.get(i));
       }
       unknownFields.writeTo(output);
     }
@@ -4410,7 +4410,7 @@ public final class Message {
        * Transactions are sent as bytes to preserve signatures
        * </pre>
        *
-       * <code>repeated bytes signedTransactions = 1;</code>
+       * <code>repeated bytes signedTransactions = 2;</code>
        * @return A list containing the signedTransactions.
        */
       public java.util.List<com.google.protobuf.ByteString>
@@ -4423,7 +4423,7 @@ public final class Message {
        * Transactions are sent as bytes to preserve signatures
        * </pre>
        *
-       * <code>repeated bytes signedTransactions = 1;</code>
+       * <code>repeated bytes signedTransactions = 2;</code>
        * @return The count of signedTransactions.
        */
       public int getSignedTransactionsCount() {
@@ -4434,7 +4434,7 @@ public final class Message {
        * Transactions are sent as bytes to preserve signatures
        * </pre>
        *
-       * <code>repeated bytes signedTransactions = 1;</code>
+       * <code>repeated bytes signedTransactions = 2;</code>
        * @param index The index of the element to return.
        * @return The signedTransactions at the given index.
        */
@@ -4446,7 +4446,7 @@ public final class Message {
        * Transactions are sent as bytes to preserve signatures
        * </pre>
        *
-       * <code>repeated bytes signedTransactions = 1;</code>
+       * <code>repeated bytes signedTransactions = 2;</code>
        * @param index The index to set the value at.
        * @param value The signedTransactions to set.
        * @return This builder for chaining.
@@ -4466,7 +4466,7 @@ public final class Message {
        * Transactions are sent as bytes to preserve signatures
        * </pre>
        *
-       * <code>repeated bytes signedTransactions = 1;</code>
+       * <code>repeated bytes signedTransactions = 2;</code>
        * @param value The signedTransactions to add.
        * @return This builder for chaining.
        */
@@ -4484,7 +4484,7 @@ public final class Message {
        * Transactions are sent as bytes to preserve signatures
        * </pre>
        *
-       * <code>repeated bytes signedTransactions = 1;</code>
+       * <code>repeated bytes signedTransactions = 2;</code>
        * @param values The signedTransactions to add.
        * @return This builder for chaining.
        */
@@ -4501,7 +4501,7 @@ public final class Message {
        * Transactions are sent as bytes to preserve signatures
        * </pre>
        *
-       * <code>repeated bytes signedTransactions = 1;</code>
+       * <code>repeated bytes signedTransactions = 2;</code>
        * @return This builder for chaining.
        */
       public Builder clearSignedTransactions() {
@@ -5402,25 +5402,25 @@ public final class Message {
     java.lang.String[] descriptorData = {
       "\n\rmessage.proto\022\"io.opencola.serializati" +
       "on.protobuf\032\016security.proto\032\013model.proto" +
-      "\"X\n\rMessageHeader\022G\n\027mostRecentTransacti" +
-      "onId\030\001 \001(\0132&.io.opencola.serialization.p" +
-      "rotobuf.Id\"s\n\017UnsignedMessage\022A\n\006header\030" +
-      "\001 \001(\01321.io.opencola.serialization.protob" +
-      "uf.MessageHeader\022\014\n\004type\030\002 \001(\t\022\017\n\007payloa" +
-      "d\030\003 \001(\014\"\230\001\n\rSignedMessage\0224\n\004from\030\001 \001(\0132" +
-      "&.io.opencola.serialization.protobuf.Id\022" +
-      "\017\n\007message\030\002 \001(\014\022@\n\tsignature\030\003 \001(\0132-.io" +
-      ".opencola.serialization.protobuf.Signatu" +
-      "re\"x\n\017MessageEnvelope\0222\n\002id\030\001 \001(\0132&.io.o" +
-      "pencola.serialization.protobuf.Id\022 \n\030enc" +
-      "ryptionTransformation\030\002 \001(\t\022\017\n\007message\030\003" +
-      " \001(\014\"z\n\026GetTransactionsMessage\022G\n\027mostRe" +
-      "centTransactionId\030\001 \001(\0132&.io.opencola.se" +
-      "rialization.protobuf.Id\022\027\n\017maxTransactio" +
-      "ns\030\002 \001(\005\"4\n\026PutTransactionsMessage\022\032\n\022si" +
-      "gnedTransactions\030\001 \003(\014\"E\n\016GetDataMessage" +
-      "\0223\n\003ids\030\001 \003(\0132&.io.opencola.serializatio" +
-      "n.protobuf.Idb\006proto3"
+      "\"U\n\rMessageHeader\022D\n\024currentTransactionI" +
+      "d\030\001 \001(\0132&.io.opencola.serialization.prot" +
+      "obuf.Id\"s\n\017UnsignedMessage\022A\n\006header\030\001 \001" +
+      "(\01321.io.opencola.serialization.protobuf." +
+      "MessageHeader\022\014\n\004type\030\002 \001(\t\022\017\n\007payload\030\003" +
+      " \001(\014\"\230\001\n\rSignedMessage\0224\n\004from\030\001 \001(\0132&.i" +
+      "o.opencola.serialization.protobuf.Id\022\017\n\007" +
+      "message\030\002 \001(\014\022@\n\tsignature\030\003 \001(\0132-.io.op" +
+      "encola.serialization.protobuf.Signature\"" +
+      "x\n\017MessageEnvelope\0222\n\002id\030\001 \001(\0132&.io.open" +
+      "cola.serialization.protobuf.Id\022 \n\030encryp" +
+      "tionTransformation\030\002 \001(\t\022\017\n\007message\030\003 \001(" +
+      "\014\"z\n\026GetTransactionsMessage\022G\n\027mostRecen" +
+      "tTransactionId\030\001 \001(\0132&.io.opencola.seria" +
+      "lization.protobuf.Id\022\027\n\017maxTransactions\030" +
+      "\002 \001(\005\"4\n\026PutTransactionsMessage\022\032\n\022signe" +
+      "dTransactions\030\002 \003(\014\"E\n\016GetDataMessage\0223\n" +
+      "\003ids\030\001 \003(\0132&.io.opencola.serialization.p" +
+      "rotobuf.Idb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -5433,7 +5433,7 @@ public final class Message {
     internal_static_io_opencola_serialization_protobuf_MessageHeader_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_serialization_protobuf_MessageHeader_descriptor,
-        new java.lang.String[] { "MostRecentTransactionId", });
+        new java.lang.String[] { "CurrentTransactionId", });
     internal_static_io_opencola_serialization_protobuf_UnsignedMessage_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_io_opencola_serialization_protobuf_UnsignedMessage_fieldAccessorTable = new

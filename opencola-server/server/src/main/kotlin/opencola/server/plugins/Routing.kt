@@ -13,9 +13,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import io.opencola.application.ServerConfig
 import io.opencola.application.getResourceFilePath
-import io.opencola.util.nullOrElse
 import io.opencola.model.Id
-import io.opencola.network.handleGetTransactions
 import io.opencola.network.providers.http.HttpNetworkProvider
 import io.opencola.security.EncryptionParams
 import io.opencola.storage.addressbook.AddressBook
@@ -352,34 +350,6 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             delete("/comment/{commentId}") {
                 // TODO: Remove call and parse comment id out here, so handlers don't need to know anything about ktor
                 deleteComment(call, expectPersona(call), app.inject())
-            }
-
-            // TODO: Think about checking for no extra parameters
-            suspend fun getTransactions(call: ApplicationCall) {
-                val authorityId =
-                    Id.decode(call.parameters["authorityId"] ?: throw IllegalArgumentException("No authorityId set"))
-                val peerId = Id.decode(call.parameters["peerId"] ?: throw IllegalArgumentException("No peerId set"))
-                val transactionId = call.parameters["mostRecentTransactionId"].nullOrElse { Id.decode(it) }
-                val numTransactions = call.parameters["numTransactions"].nullOrElse { it.toInt() }
-
-                call.respond(
-                    handleGetTransactions(
-                        app.inject(),
-                        app.inject(),
-                        authorityId,
-                        peerId,
-                        transactionId,
-                        numTransactions
-                    )
-                )
-            }
-
-            get("/transactions/{authorityId}") {
-                getTransactions(call)
-            }
-
-            get("/transactions/{authorityId}/{mostRecentTransactionId}") {
-                getTransactions(call)
             }
 
             get("/data/{id}") {

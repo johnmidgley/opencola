@@ -77,7 +77,7 @@ class OCRelayNetworkProvider(
                         try {
                             handleMessage(request, false)
                         } catch (e: Throwable) {
-                            logger.error(e) { "Error handling message: $e" }
+                            logger.error { "Error handling message: $e" }
                         }
                     }
                 }

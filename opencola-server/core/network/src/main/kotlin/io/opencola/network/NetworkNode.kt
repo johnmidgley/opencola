@@ -121,8 +121,7 @@ class NetworkNode(
 //                updatePeerStatus(from) { it.setWaitingForTransactions(false) }
 
         } catch (e: Exception) {
-            logger.error { "Error handling message: $e" }
-            throw e
+            logger.error { "Error handling ${signedMessage.body.type}: $e" }
         }
     }
 

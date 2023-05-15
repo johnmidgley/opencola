@@ -148,6 +148,11 @@ class ExposedEntityStoreV2(
     }
 
     override fun persistTransaction(signedTransaction: SignedTransaction): Long {
+        if(transactionFileStore.exists(signedTransaction.transaction.id)) {
+            logger.warn("Attempt to persist existing transaction: ${signedTransaction.transaction.id}")
+            return -1
+        }
+
         transactionFileStore.write(signedTransaction.transaction.id, signedTransaction.encodeProto())
 
         return transaction(database) {

@@ -6,7 +6,7 @@ import "security.proto";
 import "model.proto";
 
 message MessageHeader {
-  Id mostRecentTransactionId = 1;
+  Id currentTransactionId = 1;
 }
 
 message UnsignedMessage {
@@ -34,7 +34,7 @@ message GetTransactionsMessage {
 
 message PutTransactionsMessage {
   // Transactions are sent as bytes to preserve signatures
-  repeated bytes signedTransactions = 1;
+  repeated bytes signedTransactions = 2;
 }
 
 message GetDataMessage {

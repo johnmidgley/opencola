@@ -63,39 +63,6 @@ data class TransactionsResponse(
     }
 }
 
-//TODO: This should return transactions until the root transaction, not all transactions for the authority in the
-// store, as the user a peer may have deleted their store, which creates a new HEAD. Only the transaction for the
-// current chain should be propagated to other peers
-fun handleGetTransactions(
-    entityStore: EntityStore,
-    addressBook: AddressBook,
-    authorityId: Id, // Id of user transactions are being requested for
-    peerId: Id, // Id of user making request
-    transactionId: Id?,
-    numTransactions: Int?,
-): TransactionsResponse {
-    logger.info { "handleGetTransactionsCall authorityId: $authorityId, peerId: $peerId, transactionId: $transactionId" }
-
-    if (addressBook.getEntry(authorityId, peerId) == null) {
-        throw RuntimeException("Unknown peer attempted to request transactions: $peerId")
-    }
-
-    // TODO: Check if peer is marked as active?
-
-    val extra = (if (transactionId == null) 0 else 1)
-    val totalNumTransactions = (numTransactions ?: 5) + extra
-    val currentTransactionId = entityStore.getLastTransactionId(authorityId)
-    val transactions = entityStore.getSignedTransactions(
-        authorityId,
-        transactionId,
-        EntityStore.TransactionOrder.IdAscending,
-        totalNumTransactions
-    ).drop(extra)
-
-    logger.info { "Returning ${transactions.count()} transactions" }
-    return TransactionsResponse(transactionId, currentTransactionId, transactions.toList())
-}
-
 fun handleGetData(fileStore: ContentBasedFileStore, dataId: Id): ByteArray? {
     return fileStore.read(dataId)
 }
@@ -118,21 +85,20 @@ fun putNotificationsRoute(eventBus: EventBus, addressBook: AddressBook): Route {
 fun getTransactionsRoute(entityStore: EntityStore, addressBook: AddressBook): Route {
     return Route(
         GetTransactionsMessage.messageType
-    ) { from, to, message ->
+    ) { _, to, message ->
         val getTransactionsMessage = GetTransactionsMessage.decodeProto(message.body.payload)
 
-        // TODO: Remove this intermediate step?
-        val transactionResponse = handleGetTransactions(
-            entityStore,
-            addressBook,
+        val extra = (if (getTransactionsMessage.mostRecentTransactionId == null) 0 else 1)
+        // TODO: Add local limit on max transactions
+        val totalNumTransactions = (getTransactionsMessage.maxTransactions) + extra
+        val signedTransactions = entityStore.getSignedTransactions(
             to,
-            from,
             getTransactionsMessage.mostRecentTransactionId,
-            getTransactionsMessage.maxTransactions
-        )
+            EntityStore.TransactionOrder.IdAscending,
+            totalNumTransactions
+        ).drop(extra)
 
-        PutTransactionsMessage(transactionResponse.transactions.map { it.transaction.encodeProto() })
-        // null
+        PutTransactionsMessage(signedTransactions.map { it.encodeProto() })
     }
 }
 
@@ -140,7 +106,8 @@ fun putTransactionsRoute(entityStore: EntityStore, addressBook: AddressBook): Ro
     return Route(
         PutTransactionsMessage.messageType
     ) { from, _, message ->
-        val signedTransactions = PutTransactionsMessage(message.body.payload).getSignedTransactions()
+        val putTransactionsMessage = PutTransactionsMessage.decodeProto(message.body.payload)
+        val signedTransactions = putTransactionsMessage.getSignedTransactions()
         logger.info { "Received ${signedTransactions.size} transactions from $from" }
         entityStore.addSignedTransactions(signedTransactions)
         null
