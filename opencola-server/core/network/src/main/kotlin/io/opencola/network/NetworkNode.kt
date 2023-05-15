@@ -110,7 +110,7 @@ class NetworkNode(
 
         try {
             val handler = routes.firstOrNull { it.messageType == signedMessage.body.type }?.handler
-                ?: throw IllegalArgumentException("No handler for ${signedMessage.body.type}")
+                ?: throw IllegalArgumentException("No handler for \"${signedMessage.body.type}\"")
 
             handler(from, to, signedMessage)?.let { response ->
                 // Handler provided a response, so send it back

@@ -169,10 +169,10 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
                         false
                     )
 
-                    val stdoutMonitor = StdoutMonitor()
+                    val stdoutMonitor = StdoutMonitor(readTimeoutMilliseconds = 3000)
                     relayClient.sendMessage(app1.getPersonas().single().publicKey, envelope)
                     // Check that receiver gets the message and ignores it
-                    stdoutMonitor.waitUntil("No handler specified for bad message")
+                    stdoutMonitor.waitUntil("No handler for \"bad message\"")
                 }
             } finally {
                 app0.close()
