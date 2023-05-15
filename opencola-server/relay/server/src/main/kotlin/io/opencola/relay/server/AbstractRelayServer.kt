@@ -10,6 +10,7 @@ import io.opencola.relay.common.MessageEnvelope
 import io.opencola.relay.common.SocketSession
 import io.opencola.relay.common.State.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import mu.KotlinLogging
@@ -37,25 +38,33 @@ abstract class AbstractRelayServer(
 
     private suspend fun authenticate(socketSession: SocketSession): PublicKey? {
         try {
+            logger.debug { "Authenticating" }
             val encodedPublicKey = socketSession.readSizedByteArray()
             val publicKey = publicKeyFromBytes(encodedPublicKey)
 
+            logger.debug {"Received public key: ${Id.ofPublicKey(publicKey)}"}
+
             // Send challenge
+            logger.debug { "Sending challenge" }
             val challenge = ByteArray(numChallengeBytes).also { random.nextBytes(it) }
             socketSession.writeSizedByteArray(challenge)
 
             // Read signed challenge
             val challengeSignature = socketSession.readSizedByteArray()
+            logger.debug { "Received challenge signature" }
 
             val status = if (isValidSignature(publicKey, challenge, challengeSignature)) 0 else -1
             socketSession.writeSizedByteArray(IntByteArrayCodec.encode(status))
             if (status != 0)
                 throw RuntimeException("Challenge signature is not valid")
 
+            logger.debug { "Client authenticated" }
             return publicKey
         } catch (e: CancellationException) {
             // Let job cancellation fall through
-        } catch (e: Exception) {
+        } catch (e: ClosedReceiveChannelException) {
+            // Don't bother logging on closed connections
+        }  catch (e: Exception) {
             logger.warn { "Client failed to authenticate: $e" }
             socketSession.close()
         }

@@ -79,8 +79,9 @@ open class PeerNetworkTest {
             waitUntil("LuceneSearchIndex: Indexing")
 
             println("Verifying replication")
-            assertEquals(entityStore0.getEntity(resource1.authorityId, resource1.entityId)?.name, resource1.name)
-            assertEquals(entityStore1.getEntity(resource0.authorityId, resource0.entityId)?.name, resource0.name)
+            assertEquals(resource1.name, entityStore0.getEntity(resource1.authorityId, resource1.entityId)?.name)
+            assertEquals(resource0.name, entityStore1.getEntity(resource0.authorityId, resource0.entityId)?.name)
+            println("Done")
         } finally {
             println("Closing resources")
             stdoutMonitor.close()

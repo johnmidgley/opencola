@@ -19,11 +19,13 @@ import kotlin.collections.set
 
 class NetworkNode(
     private val config: NetworkConfig,
-    private val router: RequestRouter,
+    private val routes: List<Route>,
     private val addressBook: AddressBook,
     private val eventBus: EventBus,
     private val signator: Signator,
 ) {
+    class Route(val messageType: String, val handler: (Id, Id, SignedMessage) -> Message?)
+
     private val logger = KotlinLogging.logger("NetworkNode")
     private val peerStatuses = ConcurrentHashMap<Id, PeerStatus>()
 
@@ -42,11 +44,11 @@ class NetworkNode(
     }
 
     fun validatePeerAddress(address: URI) {
-        if(address.toString().isBlank()) throw IllegalArgumentException("Address cannot be empty")
+        if (address.toString().isBlank()) throw IllegalArgumentException("Address cannot be empty")
         val scheme = address.scheme ?: throw IllegalArgumentException("Address must contain a scheme")
         val provider = providers[scheme] ?: throw IllegalArgumentException("No provider for: ${address.scheme}")
 
-        if(!config.offlineMode)
+        if (!config.offlineMode)
             provider.validateAddress(address)
     }
 
@@ -59,7 +61,7 @@ class NetworkNode(
         val peer = addressBook.getEntries().firstOrNull { it.entityId == peerId }
 
         // TODO: Is this check needed?
-        if(peer == null) {
+        if (peer == null) {
             logger.warn("Attempt to update status for unknown peer: $peerId")
             return null
         }
@@ -67,7 +69,7 @@ class NetworkNode(
         peerStatuses.getOrDefault(peerId, PeerStatus.default).let { previousStatus ->
             val newStatus = update(previousStatus)
 
-            if(newStatus != previousStatus) {
+            if (newStatus != previousStatus) {
                 logger.info { "Updating peer ${peer.name} to $newStatus" }
                 peerStatuses[peerId] = newStatus
 
@@ -90,31 +92,57 @@ class NetworkNode(
 
     private val providers = ConcurrentHashMap<String, NetworkProvider>()
 
-    private val requestHandler: (Id, Id, SignedMessage) -> Unit = { from, to, signedMessage ->
-        if(addressBook.getEntry(to, from) !is PersonaAddressBookEntry)
+    private val messageHandler: (Id, Id, SignedMessage) -> Unit = { from, to, signedMessage ->
+        if (addressBook.getEntry(to, from) !is PersonaAddressBookEntry)
             touchLastSeen(from)
 
-        // to / from are validated in handleRequest
-        router.handleRequest(from, to, signedMessage)
+        val peer = addressBook.getEntry(to, from)
+            ?: throw IllegalArgumentException("Received request from unknown peer (from: $from to $to)")
+
+        if (!peer.isActive)
+            throw IllegalArgumentException("Received request from inactive peer (from: $from to: $to)")
+
+        val persona = addressBook.getEntry(to, to) as? PersonaAddressBookEntry
+            ?: throw IllegalArgumentException("Received request to invalid persona (from: $from to: $to)")
+
+        if (!persona.isActive)
+            throw IllegalArgumentException("Received request to inactive persona (from: $from to: $to)")
+
+        try {
+            val handler = routes.firstOrNull { it.messageType == signedMessage.body.type }?.handler
+                ?: throw IllegalArgumentException("No handler for ${signedMessage.body.type}")
+
+            handler(from, to, signedMessage)?.let { response ->
+                // Handler provided a response, so send it back
+                sendMessage(to, from, response)
+            }
+
+//            if (signedMessage.body.type == PutTransactionsMessage.messageType)
+//                updatePeerStatus(from) { it.setWaitingForTransactions(false) }
+
+        } catch (e: Exception) {
+            logger.error { "Error handling message: $e" }
+            throw e
+        }
     }
 
     fun addProvider(provider: NetworkProvider) {
         val scheme = provider.getScheme()
-        if(providers.contains(scheme)) {
+        if (providers.contains(scheme)) {
             throw IllegalArgumentException("Provider already registered: $scheme")
         }
 
         // TODO: Check not already started?
 
-        provider.setRequestHandler(requestHandler)
+        provider.setRequestHandler(messageHandler)
         providers[scheme] = provider
 
-        if(!config.offlineMode)
+        if (!config.offlineMode)
             provider.start()
     }
 
     fun broadcastMessage(from: PersonaAddressBookEntry, message: Message) {
-        if(config.offlineMode) return
+        if (config.offlineMode) return
 
         val peers = addressBook.getEntries()
             .filter { it.personaId == from.personaId && it !is PersonaAddressBookEntry && it.isActive }
@@ -132,10 +160,10 @@ class NetworkNode(
         }
     }
 
-    private fun getProvider(peer: AddressBookEntry) : NetworkProvider? {
+    private fun getProvider(peer: AddressBookEntry): NetworkProvider? {
         val provider = providers[peer.address.scheme]
 
-        if(provider == null)
+        if (provider == null)
             logger.warn { "No provider for ${peer.address}" }
 
         return provider
@@ -151,24 +179,25 @@ class NetworkNode(
             ?: logger.error { "No provider for ${peer.address}" }
     }
 
-    private val peerUpdateHandler: (AddressBookEntry?, AddressBookEntry?) -> Unit = { previousAddressBookEntry, currentAddressBookEntry ->
-        if(previousAddressBookEntry is PersonaAddressBookEntry || currentAddressBookEntry is PersonaAddressBookEntry) {
-            // Do nothing - Since personas are local, so they don't affect peer connections
-        } else if (previousAddressBookEntry != null && currentAddressBookEntry != null
-            && previousAddressBookEntry.isActive != currentAddressBookEntry.isActive
-        ) {
-            if (previousAddressBookEntry.isActive)
-                removePeer(previousAddressBookEntry)
-            else
-                addPeer(currentAddressBookEntry)
-        } else if (previousAddressBookEntry?.address != currentAddressBookEntry?.address) {
-            previousAddressBookEntry?.let { if(it.isActive) removePeer(it) }
-            currentAddressBookEntry?.let { if(it.isActive) addPeer(it) }
+    private val peerUpdateHandler: (AddressBookEntry?, AddressBookEntry?) -> Unit =
+        { previousAddressBookEntry, currentAddressBookEntry ->
+            if (previousAddressBookEntry is PersonaAddressBookEntry || currentAddressBookEntry is PersonaAddressBookEntry) {
+                // Do nothing - Since personas are local, so they don't affect peer connections
+            } else if (previousAddressBookEntry != null && currentAddressBookEntry != null
+                && previousAddressBookEntry.isActive != currentAddressBookEntry.isActive
+            ) {
+                if (previousAddressBookEntry.isActive)
+                    removePeer(previousAddressBookEntry)
+                else
+                    addPeer(currentAddressBookEntry)
+            } else if (previousAddressBookEntry?.address != currentAddressBookEntry?.address) {
+                previousAddressBookEntry?.let { if (it.isActive) removePeer(it) }
+                currentAddressBookEntry?.let { if (it.isActive) addPeer(it) }
+            }
         }
-    }
 
     fun start(waitUntilReady: Boolean = false) {
-        if(config.offlineMode) {
+        if (config.offlineMode) {
             logger.warn { "Offline mode enabled, not starting network node" }
             return
         }
@@ -180,11 +209,11 @@ class NetworkNode(
     }
 
     fun stop() {
-        if(config.offlineMode) return
+        if (config.offlineMode) return
 
         logger.info { "Stopping..." }
         addressBook.removeUpdateHandler(peerUpdateHandler)
-        providers.values.forEach{ it.stop() }
+        providers.values.forEach { it.stop() }
         logger.info { "Stopped" }
     }
 
@@ -197,19 +226,31 @@ class NetworkNode(
         )
     }
 
+    @Synchronized
     private fun sendMessage(from: PersonaAddressBookEntry, to: AddressBookEntry, message: Message) {
         require(to !is PersonaAddressBookEntry)
-        if(config.offlineMode) return
+        if (config.offlineMode) return
 
         val provider = to.address.scheme.let { scheme ->
             providers[scheme] ?: throw IllegalStateException("No provider found for scheme: $scheme")
         }
 
+//        if (message is GetTransactionsMessage) {
+//            val peerStatus = peerStatuses[to.entityId]
+//
+//            if (peerStatus?.waitingForTransactions == true) {
+//                logger.info { "Already waiting for transactions from $to - skipping message send" }
+//                return
+//            } else {
+//                updatePeerStatus(to.entityId) { it.setWaitingForTransactions(true) }
+//            }
+//        }
+
         provider.sendMessage(from, to, signMessage(from, message))
     }
 
     fun sendMessage(fromId: Id, toId: Id, message: Message) {
-        if(config.offlineMode) return
+        if (config.offlineMode) return
 
         val persona = addressBook.getEntry(fromId, fromId) as? PersonaAddressBookEntry
             ?: throw IllegalArgumentException("Attempt to send from message from non Persona: $fromId")
@@ -217,10 +258,10 @@ class NetworkNode(
         val peer = addressBook.getEntry(fromId, toId)
             ?: throw IllegalArgumentException("Attempt to send request to unknown peer: $toId")
 
-        if(peer is PersonaAddressBookEntry)
+        if (peer is PersonaAddressBookEntry)
             throw IllegalArgumentException("Attempt to send request to local persona: $peer")
 
-        if(!(persona.isActive && peer.isActive))
+        if (!(persona.isActive && peer.isActive))
             return
 
         sendMessage(persona, peer, message)

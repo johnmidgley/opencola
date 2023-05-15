@@ -11,7 +11,6 @@ import io.opencola.model.Authority
 import io.opencola.model.Id
 import io.opencola.network.NetworkConfig
 import io.opencola.network.NetworkNode
-import io.opencola.network.RequestRouter
 import io.opencola.network.getDefaultRoutes
 import io.opencola.network.providers.http.HttpNetworkProvider
 import io.opencola.network.providers.relay.OCRelayNetworkProvider
@@ -119,13 +118,15 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) :
                 bindSingleton { TikaContentTypeDetector() }
                 bindSingleton { Signator(instance()) }
                 bindSingleton { Encryptor(instance()) }
-                bindSingleton { EntityStoreAddressBook(Version.V2, config.addressBook, storagePath.resolve("address-book"), instance()) }
                 bindSingleton {
-                    RequestRouter(
-                        instance(),
-                        getDefaultRoutes(instance(), instance(), instance(), instance())
+                    EntityStoreAddressBook(
+                        Version.V2,
+                        config.addressBook,
+                        storagePath.resolve("address-book"),
+                        instance()
                     )
                 }
+                bindSingleton { getDefaultRoutes(this) }
                 bindSingleton { HttpNetworkProvider(instance(), instance(), instance(), config.network) }
                 bindSingleton { OCRelayNetworkProvider(instance(), instance(), instance(), config.network) }
                 bindSingleton { NetworkNode(config.network, instance(), instance(), instance(), instance()) }

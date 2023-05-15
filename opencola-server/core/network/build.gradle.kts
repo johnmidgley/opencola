@@ -3,6 +3,7 @@ val ktorVersion: String by project
 val kotlinLoggingVersion:String by project
 val kotlinxSerializationVersion: String by project
 val protobufVersion: String by project
+val kodeinVersion: String by project
 
 plugins {
     kotlin("jvm") version "1.7.20"
@@ -27,6 +28,7 @@ dependencies {
     implementation("io.ktor:ktor-client-okhttp-jvm:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
     implementation("com.google.protobuf:protobuf-java:$protobufVersion")
+    implementation("org.kodein.di:kodein-di:$kodeinVersion")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
     testImplementation(project(":test"))

@@ -20,15 +20,16 @@ class GetTransactionsMessage(val mostRecentTransactionId: Id?, val maxTransactio
         }
 
         override fun fromProto(value: ProtoMessage.GetTransactionsMessage): GetTransactionsMessage {
-            return GetTransactionsMessage(Id.fromProto(value.mostRecentTransactionId), value.maxTransactions)
+            val id = if(value.hasMostRecentTransactionId()) Id.fromProto(value.mostRecentTransactionId) else null
+            return GetTransactionsMessage(id, value.maxTransactions)
         }
 
         // TODO: Can these be part of ProtoSerializable or an abstract ProtoSerializable?
-        fun fromPayload(payload: ByteArray): GetTransactionsMessage {
+        fun decodeProto(payload: ByteArray): GetTransactionsMessage {
             return fromProto(ProtoMessage.GetTransactionsMessage.parseFrom(payload))
         }
 
-        fun toPayload(value: GetTransactionsMessage): ByteArray {
+        fun encodeProto(value: GetTransactionsMessage): ByteArray {
             return toProto(value).toByteArray()
         }
     }

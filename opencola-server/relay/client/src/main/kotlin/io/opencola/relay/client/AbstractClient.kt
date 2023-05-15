@@ -25,7 +25,7 @@ abstract class AbstractClient(
     private val requestTimeoutMilliseconds: Long = 60000, // TODO: Make configurable
     private val retryPolicy: (Int) -> Long = retryExponentialBackoff(),
 ) : RelayClient {
-    protected val logger = KotlinLogging.logger("Client${if(name != null) " ($name)" else ""}")
+    protected val logger = KotlinLogging.logger("RelayClient${if(name != null) " ($name)" else ""}")
     protected val hostname: String = uri.host
     protected val port = if(uri.port > 0) uri.port else defaultOCRPort
 
@@ -56,18 +56,23 @@ abstract class AbstractClient(
     // Should only be called once, right after connection to server
     private suspend fun authenticate(socketSession: SocketSession) {
         // Send public key
+        logger.debug { "Sending public key" }
         socketSession.writeSizedByteArray(keyPair.public.encoded)
 
         // Read challenge
+        logger.debug { "Reading challenge" }
         val challengeBytes = socketSession.readSizedByteArray()
 
         // Sign challenge and send back
+        logger.debug { "Signing challenge" }
         socketSession.writeSizedByteArray(sign(keyPair.private, challengeBytes).bytes)
 
         val authenticationResponse = IntByteArrayCodec.decode(socketSession.readSizedByteArray())
         if (authenticationResponse != 0) {
             throw RuntimeException("Unable to authenticate connection: $authenticationResponse")
         }
+
+        logger.debug { "Authenticated" }
     }
 
     abstract suspend fun getSocketSession(): SocketSession

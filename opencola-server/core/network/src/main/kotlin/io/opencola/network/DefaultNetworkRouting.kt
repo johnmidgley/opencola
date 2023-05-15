@@ -4,6 +4,7 @@ import io.opencola.event.EventBus
 import io.opencola.event.Events
 import io.opencola.model.Id
 import io.opencola.model.SignedTransaction
+import io.opencola.network.NetworkNode.*
 import io.opencola.network.message.GetTransactionsMessage
 import io.opencola.network.message.PutTransactionsMessage
 import io.opencola.serialization.readByteArray
@@ -14,6 +15,8 @@ import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.entitystore.EntityStore
 import io.opencola.storage.filestore.ContentBasedFileStore
 import mu.KotlinLogging
+import org.kodein.di.DirectDI
+import org.kodein.di.instance
 import java.io.ByteArrayOutputStream
 
 private val logger = KotlinLogging.logger("RequestRouting")
@@ -116,9 +119,10 @@ fun getTransactionsRoute(entityStore: EntityStore, addressBook: AddressBook): Ro
     return Route(
         GetTransactionsMessage.messageType
     ) { from, to, message ->
-        val getTransactionsMessage = GetTransactionsMessage.fromPayload(message.body.payload)
+        val getTransactionsMessage = GetTransactionsMessage.decodeProto(message.body.payload)
 
-        val transactionResponse =  handleGetTransactions(
+        // TODO: Remove this intermediate step?
+        val transactionResponse = handleGetTransactions(
             entityStore,
             addressBook,
             to,
@@ -127,20 +131,8 @@ fun getTransactionsRoute(entityStore: EntityStore, addressBook: AddressBook): Ro
             getTransactionsMessage.maxTransactions
         )
 
-        TODO("handle getTransactions")
-//        val authorityId =
-//            Id.decode(request.parameters["authorityId"] ?: throw IllegalArgumentException("No authorityId set"))
-//        val transactionId = request.parameters["mostRecentTransactionId"].nullOrElse { Id.decode(it) }
-//        val numTransactions = request.parameters["numTransactions"].nullOrElse { it.toInt() }
-//        val transactionResponse =
-//            handleGetTransactions(
-//                entityStore,
-//                addressBook,
-//                authorityId,
-//                from,
-//                transactionId,
-//                numTransactions
-//            )
+        PutTransactionsMessage(transactionResponse.transactions.map { it.transaction.encodeProto() })
+        // null
     }
 }
 
@@ -151,6 +143,7 @@ fun putTransactionsRoute(entityStore: EntityStore, addressBook: AddressBook): Ro
         val signedTransactions = PutTransactionsMessage(message.body.payload).getSignedTransactions()
         logger.info { "Received ${signedTransactions.size} transactions from $from" }
         entityStore.addSignedTransactions(signedTransactions)
+        null
     }
 }
 
@@ -171,19 +164,15 @@ fun putDataRoute(fileStore: ContentBasedFileStore): Route {
 }
 
 fun getDefaultRoutes(
-    eventBus: EventBus,
-    entityStore: EntityStore,
-    addressBook: AddressBook,
-    fileStore: ContentBasedFileStore,
+    di: DirectDI,
 ): List<Route> {
-
     return listOf(
         pingRoute(),
         pongRoute(),
-        putNotificationsRoute(eventBus, addressBook),
-        getTransactionsRoute(entityStore, addressBook),
-        putTransactionsRoute(entityStore, addressBook),
-        getDataRoute(fileStore),
-        putDataRoute(fileStore),
+        putNotificationsRoute(di.instance(), di.instance()),
+        getTransactionsRoute(di.instance(), di.instance()),
+        putTransactionsRoute(di.instance(), di.instance()),
+        getDataRoute(di.instance()),
+        putDataRoute(di.instance()),
     )
 }
