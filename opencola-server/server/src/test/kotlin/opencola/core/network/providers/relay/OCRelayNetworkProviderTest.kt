@@ -7,6 +7,8 @@ import io.opencola.network.NetworkNode
 import io.opencola.network.emptyByteArray
 import io.opencola.network.message.UnsignedMessage
 import io.opencola.network.message.PingMessage
+import io.opencola.network.message.PongMessage
+import io.opencola.network.pongRoute
 import io.opencola.network.providers.relay.OCRelayNetworkProvider
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.relay.client.WebSocketClient
@@ -14,8 +16,10 @@ import io.opencola.relay.client.defaultOCRPort
 import io.opencola.relay.server.startWebServer
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import opencola.server.PeerNetworkTest
 import org.junit.Test
 import java.net.URI
@@ -26,10 +30,11 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
     private val pingMessage = PingMessage()
 
 
-    private fun setPeerAddressToRelay(addressBook: AddressBook, peerId: Id) : AddressBookEntry {
-        val peer = addressBook.getEntries().firstOrNull { it.entityId == peerId } ?:
-            throw IllegalStateException("Authority not found")
-        val updatedEntry = AddressBookEntry(peer.personaId, peer.entityId, peer.name, peer.publicKey, ocRelayUri, null, peer.isActive)
+    private fun setPeerAddressToRelay(addressBook: AddressBook, peerId: Id): AddressBookEntry {
+        val peer = addressBook.getEntries().firstOrNull { it.entityId == peerId }
+            ?: throw IllegalStateException("Authority not found")
+        val updatedEntry =
+            AddressBookEntry(peer.personaId, peer.entityId, peer.name, peer.publicKey, ocRelayUri, null, peer.isActive)
         return addressBook.updateEntry(updatedEntry)
     }
 
@@ -47,7 +52,6 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
         println("app1Persona=$app1Persona")
 
         println("Setting Relay Addresses")
-
         setPeerAddressToRelay(app0.inject(), app1Persona.entityId)
         setPeerAddressToRelay(app1.inject(), app0Persona.entityId)
 
@@ -61,44 +65,33 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
         println("Starting network node1")
         app1.inject<NetworkNode>().also { it.start(true) }
 
-        TODO("Fix response checks")
-
         try {
-            println("Testing ping: from=${app0Persona.entityId} to=${app1Persona.entityId}")
-            run {
-                val response =
+            runBlocking {
+                // Trap pong messages so that we can tell when the ping was successful
+                val results = Channel<Unit>()
+                networkNode0.routes = networkNode0.routes.map {
+                    if (it.messageType == PongMessage.messageType)
+                        pongRoute { _, _, _ -> launch { results.send(Unit) }; null }
+                    else
+                        it
+                }
+
+                withTimeout(3000) {
+                    println("Testing ping: from=${app0Persona.entityId} to=${app1Persona.entityId}")
                     networkNode0.sendMessage(app0Persona.entityId, app1Persona.entityId, pingMessage)
-
-            }
-
-            println("Testing bad 'from' id")
-            run {
-                assertFails {
-                    networkNode0.sendMessage(Id.new(), app1Persona.entityId, pingMessage)
+                    results.receive()
                 }
+
+                println("Testing bad 'from' id")
+                assertFails { networkNode0.sendMessage(Id.new(), app1Persona.entityId, pingMessage) }
+
+                println("Testing bad 'to' id")
+                assertFails { networkNode0.sendMessage(app0Persona.entityId, Id.new(), pingMessage) }
+
+                // TODO: Test wrong public key on recipient side
+                // TODO: Test bad signature
+                // TODO: Configure request timeout so that tests can run more quickly
             }
-
-            println("Testing bad 'to' id")
-            run {
-                assertFails {
-                    networkNode0.sendMessage(app0Persona.entityId, Id.new(), pingMessage)
-                }
-            }
-
-//  TODO: Not allowed right now.
-//            println("Testing wrong public key on recipient side")
-//            run {
-//                val addressBook1 = app1.inject<AddressBook>()
-//                val peer = addressBook1.getEntry(app1Persona.entityId, app0Persona.entityId)!!
-//                val updatedPeer = AddressBookEntry(peer.personaId, peer.entityId, peer.name, generateKeyPair().public, peer.address, null, peer.isActive)
-//                addressBook1.updateEntry(updatedPeer)
-//                val response =
-//                    networkNode0.sendRequest(app0Persona.entityId, app1Persona.entityId, Request(Request.Method.GET, "/ping"))
-//                assertNull(response)
-//            }
-
-            // TODO: Test bad signature
-            // TODO: Configure request timeout so that tests can run more quickly
         } finally {
             println("Stopping app0")
             app0.close()
@@ -126,10 +119,9 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
         } finally {
             application0.stop()
             application1.stop()
-            relayServer.stop(200,200)
+            relayServer.stop(200, 200)
         }
     }
-
 
 
     @Test
@@ -169,10 +161,11 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
                         false
                     )
 
-                    val stdoutMonitor = StdoutMonitor(readTimeoutMilliseconds = 3000)
-                    relayClient.sendMessage(app1.getPersonas().single().publicKey, envelope)
-                    // Check that receiver gets the message and ignores it
-                    stdoutMonitor.waitUntil("No handler for \"bad message\"")
+                    StdoutMonitor(readTimeoutMilliseconds = 3000).use {
+                        relayClient.sendMessage(app1.getPersonas().single().publicKey, envelope)
+                        // Check that receiver gets the message and ignores it
+                        it.waitUntil("No handler for \"bad message\"")
+                    }
                 }
             } finally {
                 app0.close()

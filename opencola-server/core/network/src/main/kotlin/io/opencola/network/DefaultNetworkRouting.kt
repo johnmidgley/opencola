@@ -6,6 +6,7 @@ import io.opencola.model.Id
 import io.opencola.model.SignedTransaction
 import io.opencola.network.NetworkNode.*
 import io.opencola.network.message.GetTransactionsMessage
+import io.opencola.network.message.PongMessage
 import io.opencola.network.message.PutTransactionsMessage
 import io.opencola.serialization.readByteArray
 import io.opencola.serialization.readInt
@@ -68,11 +69,11 @@ fun handleGetData(fileStore: ContentBasedFileStore, dataId: Id): ByteArray? {
 }
 
 fun pingRoute(): Route {
-    return Route("ping") { _, _, _ -> TODO("Handle ping") }
+    return Route("PingMessage") { _, _, _ -> PongMessage() }
 }
 
-fun pongRoute(): Route {
-    return Route("pong") { _, _, _ -> TODO("Handle pong") }
+fun pongRoute(handler: messageHandler =  { _, _, _ -> null }): Route {
+    return Route("PongMessage", handler)
 }
 
 fun putNotificationsRoute(eventBus: EventBus, addressBook: AddressBook): Route {

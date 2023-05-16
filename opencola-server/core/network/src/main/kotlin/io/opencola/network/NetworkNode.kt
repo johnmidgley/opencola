@@ -14,17 +14,19 @@ import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.set
 
+typealias messageHandler = (from: Id, to: Id, signedMessage: SignedMessage) -> Message?
+
 // TODO: If another node suspends and (which looks offline) and then wakes up, other nodes will not be aware that it's
 //  back online. Ping when coming out of suspend, or ping / request transactions periodically?
 
 class NetworkNode(
     private val config: NetworkConfig,
-    private val routes: List<Route>,
+    var routes: List<Route>,
     private val addressBook: AddressBook,
     private val eventBus: EventBus,
     private val signator: Signator,
 ) {
-    class Route(val messageType: String, val handler: (Id, Id, SignedMessage) -> Message?)
+    class Route(val messageType: String, val handler: messageHandler)
 
     private val logger = KotlinLogging.logger("NetworkNode")
     private val peerStatuses = ConcurrentHashMap<Id, PeerStatus>()
@@ -92,7 +94,7 @@ class NetworkNode(
 
     private val providers = ConcurrentHashMap<String, NetworkProvider>()
 
-    private val messageHandler: (Id, Id, SignedMessage) -> Unit = { from, to, signedMessage ->
+    private val messageHandler: (from: Id, to: Id, signedMessage: SignedMessage) -> Unit = { from, to, signedMessage ->
         if (addressBook.getEntry(to, from) !is PersonaAddressBookEntry)
             touchLastSeen(from)
 
