@@ -225,7 +225,7 @@ class NetworkNode(
         )
     }
 
-    @Synchronized
+    // @Synchronized
     private fun sendMessage(from: PersonaAddressBookEntry, to: AddressBookEntry, message: Message) {
         require(to !is PersonaAddressBookEntry)
         if (config.offlineMode) return

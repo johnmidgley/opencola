@@ -52,7 +52,6 @@ open class PeerNetworkTest {
 
     fun testConnectAndReplicate(application0: ApplicationNode, application1: ApplicationNode) {
         val stdoutMonitor = StdoutMonitor(readTimeoutMilliseconds = 5000)
-        val waitUntil = { text: String -> stdoutMonitor.waitUntil(text) }
 
         try {
             println("Adding entity to application0")
@@ -75,8 +74,8 @@ open class PeerNetworkTest {
 
             // Connection should trigger two index operations from transaction sharing
             println("Waiting for index operations to complete")
-            waitUntil ("LuceneSearchIndex: Indexing")
-            waitUntil("LuceneSearchIndex: Indexing")
+            stdoutMonitor.waitUntil("LuceneSearchIndex: Indexing")
+            stdoutMonitor.waitUntil("LuceneSearchIndex: Indexing")
 
             println("Verifying replication")
             assertEquals(resource1.name, entityStore0.getEntity(resource1.authorityId, resource1.entityId)?.name)
