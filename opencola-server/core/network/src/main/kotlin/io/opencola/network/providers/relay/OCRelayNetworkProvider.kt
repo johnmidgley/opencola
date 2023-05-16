@@ -210,7 +210,7 @@ class OCRelayNetworkProvider(
                 val client = connections[connectionParams]!!.client
                 client.sendMessage(peerPublicKey, envelopeBytes)
             } catch (e: Exception) {
-                logger.error { "sendRequest: $e" }
+                logger.error { "sendMessage: $e" }
             }
         }
     }

@@ -51,6 +51,7 @@ dependencies {
     implementation("io.ktor:ktor-client-websockets-jvm:$ktorVersion")
 
     testImplementation(project(":core:util"))
+    testImplementation(project(":core:io"))
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVersion")
 }

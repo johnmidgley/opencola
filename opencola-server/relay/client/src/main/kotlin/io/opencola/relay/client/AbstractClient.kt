@@ -25,9 +25,9 @@ abstract class AbstractClient(
     private val requestTimeoutMilliseconds: Long = 60000, // TODO: Make configurable
     private val retryPolicy: (Int) -> Long = retryExponentialBackoff(),
 ) : RelayClient {
-    protected val logger = KotlinLogging.logger("RelayClient${if(name != null) " ($name)" else ""}")
+    protected val logger = KotlinLogging.logger("RelayClient${if (name != null) " ($name)" else ""}")
     protected val hostname: String = uri.host
-    protected val port = if(uri.port > 0) uri.port else defaultOCRPort
+    protected val port = if (uri.port > 0) uri.port else defaultOCRPort
 
     // Not to be touched directly. Access by calling getConnections, which will ensure it's opened and ready
     private var _connection: Connection? = null
@@ -39,18 +39,18 @@ abstract class AbstractClient(
     private var listenJob: Job? = null
 
     init {
-        if(uri.scheme != "ocr")
+        if (uri.scheme != "ocr")
             throw IllegalArgumentException("Scheme must be 'ocr' for relay URI: $uri")
     }
 
-    override val publicKey : PublicKey
+    override val publicKey: PublicKey
         get() = keyPair.public
 
-    override val state : State
+    override val state: State
         get() = _state
 
     override suspend fun waitUntilOpen() {
-        openMutex.withLock {  }
+        openMutex.withLock { }
     }
 
     // Should only be called once, right after connection to server
@@ -77,11 +77,11 @@ abstract class AbstractClient(
 
     abstract suspend fun getSocketSession(): SocketSession
 
-    private suspend fun getConnection(waitForOpen: Boolean = true) : Connection {
-        if(_state == Closed)
+    private suspend fun getConnection(waitForOpen: Boolean = true): Connection {
+        if (_state == Closed)
             throw IllegalStateException("Can't get connection on a Client that has been closed")
 
-        if(waitForOpen) {
+        if (waitForOpen) {
             // Block other callers while connection is being opened so that retries are properly spaced.
             // open() manages this lock
             openMutex.withLock { }
@@ -90,9 +90,9 @@ abstract class AbstractClient(
         return connectionMutex.withLock {
             if (_state != Closed && _connection == null || !_connection!!.isReady()) {
 
-                if(connectionFailures > 0) {
+                if (connectionFailures > 0) {
                     val delayInMilliseconds = retryPolicy(connectionFailures)
-                    logger.warn{ "Waiting $delayInMilliseconds ms to connect" }
+                    logger.warn { "Connection failure: Waiting $delayInMilliseconds ms to connect" }
                     delay(delayInMilliseconds)
                 }
 
@@ -113,17 +113,20 @@ abstract class AbstractClient(
         }
     }
 
-    private suspend fun handleMessage(payload: ByteArray, handler: suspend (PublicKey, ByteArray) -> Unit) {
+    private suspend fun handleMessage(
+        payload: ByteArray,
+        handler: suspend (from: PublicKey, message: ByteArray) -> Unit
+    ) {
         try {
             logger.info { "Handling message" }
             val message = Message.decode(decrypt(keyPair.private, payload)).validate()
             handler(message.header.from, message.body)
-        } catch(e: Exception){
+        } catch (e: Exception) {
             logger.error { "Exception in handleMessage: $e" }
         }
     }
 
-    override suspend fun open(messageHandler: suspend (PublicKey, ByteArray) -> Unit) = coroutineScope {
+    override suspend fun open(messageHandler: suspend (from: PublicKey, message: ByteArray) -> Unit) = coroutineScope {
         if (_state != Initialized) {
             throw IllegalStateException("Client has already been opened")
         }
@@ -136,15 +139,19 @@ abstract class AbstractClient(
                         openMutex.lock()
 
                     getConnection(false).also {
-                        if(_state == Opening) _state = Open
+                        if (_state == Opening) _state = Open
                         openMutex.unlock()
                         it.listen { payload -> handleMessage(payload, messageHandler) }
                     }
                 } catch (e: CancellationException) {
                     break
-                } catch(e: InterruptedException) {
+                } catch (e: InterruptedException) {
                     break
-                } catch (e: Exception) {
+                } catch (e: ConnectException) {
+                    // This can happen when partitioned from the server
+                    continue
+                }
+                catch (e: Exception) {
                     logger.error { "Exception during listen: $e" }
                 }
             }
@@ -171,7 +178,8 @@ abstract class AbstractClient(
                 getConnection().writeSizedByteArray(MessageEnvelope.encode(envelope))
             }
         } catch (e: ConnectException) {
-            logger.error { "Failed connect when sending message" }
+            // Pass exception through so caller knows message wasn't sent
+            throw e
         } catch (e: TimeoutCancellationException) {
             logger.warn { "Timeout sending message to: ${Id.ofPublicKey(to)}" }
         } catch (e: CancellationException) {
@@ -181,27 +189,8 @@ abstract class AbstractClient(
         }
     }
 
-    override suspend fun respondToMessage(messageHeader: Header, body: ByteArray) {
-        val responseMessage = Message(keyPair, messageHeader.sessionId, body)
-        val envelope = MessageEnvelope(messageHeader.from, responseMessage)
-
-        try {
-            withTimeout(requestTimeoutMilliseconds) {
-                getConnection().writeSizedByteArray(MessageEnvelope.encode(envelope))
-            }
-        } catch (e: ConnectException) {
-            logger.error { "Failed connect when sending response" }
-        } catch (e: TimeoutCancellationException) {
-            logger.error { "Timeout sending response" }
-        } catch (e: CancellationException) {
-            // Let exception flow through
-        } catch (e: Exception) {
-            logger.error { "Unexpected exception when sending response $e" }
-        }
-    }
-
     companion object {
-        init{
+        init {
             initProvider()
         }
     }
