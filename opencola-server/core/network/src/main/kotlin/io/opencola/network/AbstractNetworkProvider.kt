@@ -16,10 +16,10 @@ abstract class AbstractNetworkProvider(
     val signator: Signator,
     val encryptor: Encryptor,
 ) : NetworkProvider {
-    private var handler: ((Id, Id, SignedMessage) -> Unit)? = null
+    private var handler: ((from: Id, to: Id, signedMessage: SignedMessage) -> Unit)? = null
     var started = false
 
-    override fun setRequestHandler(handler: (Id, Id, SignedMessage) -> Unit) {
+    override fun setMessageHandler(handler: (Id, Id, SignedMessage) -> Unit) {
         this.handler = handler
     }
 

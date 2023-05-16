@@ -18,5 +18,5 @@ interface NetworkProvider {
     fun removePeer(peer: AddressBookEntry)
 
     fun sendMessage(from: PersonaAddressBookEntry, to: AddressBookEntry, signedMessage: SignedMessage)
-    fun setRequestHandler(handler: (Id, Id, SignedMessage) -> Unit)
+    fun setMessageHandler(handler: (Id, Id, SignedMessage) -> Unit)
 }

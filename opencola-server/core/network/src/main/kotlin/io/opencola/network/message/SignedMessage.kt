@@ -18,7 +18,7 @@ class SignedMessage(val from: Id, val body: UnsignedMessage, val signature: Sign
     )
 
     fun encode(): ByteArray {
-        return toProto(this).toByteArray()
+        return encodeProto(this)
     }
 
     companion object Factory : ProtoSerializable<SignedMessage, ProtoMessage.SignedMessage> {
@@ -36,6 +36,14 @@ class SignedMessage(val from: Id, val body: UnsignedMessage, val signature: Sign
                 UnsignedMessage.fromProto(Message.UnsignedMessage.parseFrom(value.message)),
                 Signature.fromProto(value.signature)
             )
+        }
+
+        fun encodeProto(value: SignedMessage): ByteArray {
+            return toProto(value).toByteArray()
+        }
+
+        fun decodeProto(value: ByteArray): SignedMessage {
+            return fromProto(Message.SignedMessage.parseFrom(value))
         }
     }
 }

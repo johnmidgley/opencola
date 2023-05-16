@@ -31,7 +31,7 @@ class HttpNetworkProviderTest : PeerNetworkTest() {
         try {
             runBlocking {
                 val deferredResult = CompletableDeferred<String>()
-                networkProvider.setRequestHandler { fromId, toId, signedMessage ->
+                networkProvider.setMessageHandler { fromId, toId, signedMessage ->
                     val message = signedMessage.body
                     when (message.type) {
                         PingMessage.messageType -> {
@@ -85,7 +85,7 @@ class HttpNetworkProviderTest : PeerNetworkTest() {
             }
         } finally {
             applicationNode.stop()
-            networkProvider.setRequestHandler(originalRequestHandler)
+            networkProvider.setMessageHandler(originalRequestHandler)
         }
     }
 

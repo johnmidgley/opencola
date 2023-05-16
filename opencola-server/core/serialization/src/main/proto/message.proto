@@ -38,5 +38,11 @@ message PutTransactionsMessage {
 }
 
 message GetDataMessage {
-  repeated Id ids = 1;
+   Id id = 1;
 }
+
+message PutDataMessage {
+  Id id = 1;
+  bytes data = 2;
+}
+

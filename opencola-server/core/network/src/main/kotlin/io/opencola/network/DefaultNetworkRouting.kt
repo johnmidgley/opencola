@@ -5,9 +5,7 @@ import io.opencola.event.Events
 import io.opencola.model.Id
 import io.opencola.model.SignedTransaction
 import io.opencola.network.NetworkNode.*
-import io.opencola.network.message.GetTransactionsMessage
-import io.opencola.network.message.PongMessage
-import io.opencola.network.message.PutTransactionsMessage
+import io.opencola.network.message.*
 import io.opencola.serialization.readByteArray
 import io.opencola.serialization.readInt
 import io.opencola.serialization.writeByteArray
@@ -117,17 +115,22 @@ fun putTransactionsRoute(entityStore: EntityStore, addressBook: AddressBook): Ro
 
 fun getDataRoute(fileStore: ContentBasedFileStore): Route {
     return Route(
-        "getData"
+        "GetDataMessage"
     ) { _, _, message ->
-        TODO("handle getData")
+        val getDataMessage = GetDataMessage.decodeProto(message.body.payload)
+        val dataId = getDataMessage.id
+        handleGetData(fileStore, dataId)?.let { PutDataMessage(dataId, it) }
     }
 }
 
 fun putDataRoute(fileStore: ContentBasedFileStore): Route {
     return Route(
-        "putData"
+        "PutDataMessage"
     ) { _, _, message ->
-        TODO("handle putData")
+        val putDataMessage = PutDataMessage.decodeProto(message.body.payload)
+        val id =  fileStore.write(putDataMessage.data)
+        require(id == putDataMessage.id)
+        null
     }
 }
 

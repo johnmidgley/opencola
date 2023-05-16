@@ -21,7 +21,7 @@ typealias messageHandler = (from: Id, to: Id, signedMessage: SignedMessage) -> M
 
 class NetworkNode(
     private val config: NetworkConfig,
-    var routes: List<Route>,
+    var routes: List<Route>, // TODO: Make map
     private val addressBook: AddressBook,
     private val eventBus: EventBus,
     private val signator: Signator,
@@ -122,7 +122,7 @@ class NetworkNode(
 //            if (signedMessage.body.type == PutTransactionsMessage.messageType)
 //                updatePeerStatus(from) { it.setWaitingForTransactions(false) }
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             logger.error { "Error handling ${signedMessage.body.type}: $e" }
         }
     }
@@ -135,7 +135,7 @@ class NetworkNode(
 
         // TODO: Check not already started?
 
-        provider.setRequestHandler(messageHandler)
+        provider.setMessageHandler(messageHandler)
         providers[scheme] = provider
 
         if (!config.offlineMode)
@@ -256,14 +256,17 @@ class NetworkNode(
         val persona = addressBook.getEntry(fromId, fromId) as? PersonaAddressBookEntry
             ?: throw IllegalArgumentException("Attempt to send from message from non Persona: $fromId")
 
+        if (!persona.isActive)
+            throw IllegalArgumentException("Attempt to send from inactive persona: $persona")
+
         val peer = addressBook.getEntry(fromId, toId)
             ?: throw IllegalArgumentException("Attempt to send request to unknown peer: $toId")
 
         if (peer is PersonaAddressBookEntry)
             throw IllegalArgumentException("Attempt to send request to local persona: $peer")
 
-        if (!(persona.isActive && peer.isActive))
-            return
+        if (!peer.isActive)
+            throw IllegalArgumentException("Attempt to send request to inactive peer: $peer")
 
         sendMessage(persona, peer, message)
     }
