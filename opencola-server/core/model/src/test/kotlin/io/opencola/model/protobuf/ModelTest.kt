@@ -3,6 +3,7 @@ package io.opencola.model.protobuf
 import io.opencola.application.TestApplication
 import io.opencola.model.ResourceEntity
 import io.opencola.model.SignedTransaction
+import io.opencola.serialization.EncodingFormat
 import io.opencola.storage.ExposedEntityStoreContext
 import io.opencola.storage.addPersona
 import io.opencola.util.compress
@@ -24,10 +25,15 @@ class ModelTest {
         val encoded = SignedTransaction.encode(signedTransaction)
         val compressedEncoded = compress(encoded)
 
-        val protoPacked = SignedTransaction.encodeProto(signedTransaction)
+        val transaction = signedTransaction.transaction
+        val protoEncoded = signedTransaction.transaction.encodeProto()
+        val signature = context.signator.signBytes(transaction.authorityId.toString(), protoEncoded)
+        val protoSignedTransaction = SignedTransaction(EncodingFormat.PROTOBUF, protoEncoded, signature)
+
+        val protoPacked = SignedTransaction.encodeProto(protoSignedTransaction)
         val protoCompressed = compress(protoPacked)
         val protoUnpacked = SignedTransaction.decodeProto(protoPacked)
-        assertEquals(signedTransaction, protoUnpacked)
+        assertEquals(protoSignedTransaction, protoUnpacked)
 
         println("encoded: ${encoded.size} bytes")
         println("compressedEncoded: ${compressedEncoded.size} bytes")
