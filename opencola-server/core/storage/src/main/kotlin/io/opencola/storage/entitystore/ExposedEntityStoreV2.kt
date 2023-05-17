@@ -2,7 +2,6 @@ package io.opencola.storage.entitystore
 
 import io.opencola.event.EventBus
 import io.opencola.model.*
-import io.opencola.model.Attributes as ModelAttributes
 import io.opencola.security.PublicKeyProvider
 import io.opencola.security.Signator
 import io.opencola.serialization.EncodingFormat
@@ -37,16 +36,16 @@ class ExposedEntityStoreV2(
 
     // TODO: Normalize attribute
     // TODO: Break out attribute into separate table
-    private class Attributes(name: String = "Attributes") : LongIdTable(name) {
+    private object Attributes : LongIdTable("Attributes") {
         val name = text("name")
         val type = enumeration("type", AttributeType::class)
         val uri = text("uri").uniqueIndex()
     }
 
-    private class Facts(name: String = "Facts") : LongIdTable(name) {
+    private object Facts : LongIdTable("Facts") {
         val authorityId = binary("authorityId", Id.lengthInBytes).index()
         val entityId = binary("entityId", Id.lengthInBytes).index()
-        val attribute = text("attribute")
+        val attribute = long("attribute").references(Attributes.id)
         val value = blob("value")
         val operation = enumeration("operation", Operation::class)
         val epochSecond = long("epochSecond")
@@ -54,7 +53,7 @@ class ExposedEntityStoreV2(
     }
 
     // LongIdTable has implicit, autoincrement long id field
-    private class Transactions(name: String = "Transactions") : LongIdTable(name) {
+    private object Transactions : LongIdTable("Transactions") {
         val transactionId = binary("transactionId", 32).uniqueIndex()
         val authorityId = binary("authorityId", 32)
         val epochSecond = long("epochSecond").index()
@@ -62,49 +61,44 @@ class ExposedEntityStoreV2(
     }
 
     private val attributeUriToDbIdMap: Map<URI, Long>
-    private val attributes: Attributes
-    private val facts: Facts
-    private val transactions: Transactions
+    private val attributeDbIdToModelAttributeMap: Map<Long, Attribute>
 
     init {
         require(config.transactionStorageUri == null || config.transactionStorageUri.scheme == "file") { "Unsupported scheme: ${config.transactionStorageUri?.scheme}" }
 
         storagePath.toFile().mkdirs()
         database = getDB(storagePath.resolve("${name}V2.db"))
+        logger.info { "Initializing ExposedEntityStoreV2 {${database.url}}" }
         transactionStoragePath = config.transactionStorageUri?.toPath()
             ?: storagePath.resolve("transactions").also { it.toFile().mkdirs() }
         transactionFileStore = LocalIdBasedFileStore(transactionStoragePath)
-
-        logger.info { "Initializing ExposedEntityStoreV2 {${database.url}}" }
-
-        this.attributes = Attributes()
-        this.facts = Facts()
-        this.transactions = Transactions()
-
         initTables()
         attributeUriToDbIdMap = initDbAttributes(modelAttributes)
+        val uriToAttributeMap = modelAttributes.associateBy { it.uri }
+        attributeDbIdToModelAttributeMap = attributeUriToDbIdMap.entries.associate { it.value to uriToAttributeMap[it.key]!! }
+
     }
 
     private fun initTables() {
         transaction(database) {
-            SchemaUtils.create(attributes)
-            SchemaUtils.create(facts)
-            SchemaUtils.create(transactions)
+            SchemaUtils.create(Attributes)
+            SchemaUtils.create(Facts)
+            SchemaUtils.create(Transactions)
         }
     }
 
     private fun addMissingAttributes(modelAttributes: Iterable<Attribute>) {
         val dbAttributeUris = transaction(database) {
-            attributes.selectAll().map { it[attributes.uri] }
+            Attributes.selectAll().map { it[Attributes.uri] }
         }
 
         val missingAttributes = modelAttributes.filter { !dbAttributeUris.contains(it.uri.toString()) }
         if (missingAttributes.isNotEmpty()) {
             transaction(database) {
-                attributes.batchInsert(missingAttributes) {
-                    this[attributes.name] = it.name
-                    this[attributes.type] = it.type
-                    this[attributes.uri] = it.uri.toString()
+                Attributes.batchInsert(missingAttributes) {
+                    this[Attributes.name] = it.name
+                    this[Attributes.type] = it.type
+                    this[Attributes.uri] = it.uri.toString()
                 }
             }
         }
@@ -112,7 +106,7 @@ class ExposedEntityStoreV2(
 
     private fun getAttributeUriToDbIdMap(): Map<URI, Long> {
         return transaction(database) {
-            attributes.selectAll().associate { URI(it[attributes.uri]) to it[attributes.id].value }
+            Attributes.selectAll().associate { URI(it[Attributes.uri]) to it[Attributes.id].value }
         }
     }
 
@@ -157,20 +151,20 @@ class ExposedEntityStoreV2(
 
         return transaction(database) {
             val transaction = signedTransaction.transaction
-            val ordinal = transactions.insert {
+            val ordinal = Transactions.insert {
                 it[transactionId] = Id.encode(transaction.id)
                 it[authorityId] = Id.encode(transaction.authorityId)
                 it[epochSecond] = transaction.epochSecond
                 // it[encoded] = ExposedBlob(signedTransaction.toBytes())
-            } get transactions.id
+            } get Transactions.id
 
             val transactionFacts = transaction.getFacts(ordinal.value)
             transactionFacts
                 .forEach { fact ->
-                    facts.insert {
+                    Facts.insert {
                         it[authorityId] = Id.encode(fact.authorityId)
                         it[entityId] = Id.encode(fact.entityId)
-                        it[attribute] = fact.attribute.uri.toString()
+                        it[attribute] = attributeUriToDbIdMap[fact.attribute.uri]!!
                         it[value] = ExposedBlob(fact.attribute.valueWrapper.encodeProto(fact.value))
                         it[operation] = fact.operation
                         it[epochSecond] = transaction.epochSecond
@@ -184,10 +178,10 @@ class ExposedEntityStoreV2(
 
     private fun getOrderColumn(order: TransactionOrder): Column<*> {
         return when (order) {
-            IdAscending -> transactions.id
-            IdDescending -> transactions.id
-            TimeAscending -> transactions.epochSecond
-            TimeDescending -> transactions.epochSecond
+            IdAscending -> Transactions.id
+            IdDescending -> Transactions.id
+            TimeAscending -> Transactions.epochSecond
+            TimeDescending -> Transactions.epochSecond
         }
     }
 
@@ -204,11 +198,11 @@ class ExposedEntityStoreV2(
         val orderColumn = getOrderColumn(order)
         val isAscending = isAscending(order)
 
-        return transactions
+        return Transactions
             .select {
                 (orderColumn greaterEq 0) // Not elegant, but avoids separate selectAll clause when no constraints provided
                     .withLongColumnOrdering(orderColumn, id, isAscending)
-                    .withIdConstraint(transactions.authorityId, authorityIds)
+                    .withIdConstraint(Transactions.authorityId, authorityIds)
             }
             .orderBy(orderColumn to if (isAscending) SortOrder.ASC else SortOrder.DESC)
     }
@@ -221,15 +215,15 @@ class ExposedEntityStoreV2(
         return if (startTransactionId == null)
             transactionsByAuthoritiesQuery(authorityIds, null, order).limit(1)
         else
-            transactions.select { transactions.transactionId eq Id.encode(startTransactionId) }
+            Transactions.select { Transactions.transactionId eq Id.encode(startTransactionId) }
     }
 
     private fun getStartValue(order: TransactionOrder, row: ResultRow): Long {
         return when (order) {
-            IdAscending -> row[transactions.id].value
-            IdDescending -> row[transactions.id].value
-            TimeAscending -> row[transactions.epochSecond]
-            TimeDescending -> row[transactions.epochSecond]
+            IdAscending -> row[Transactions.id].value
+            IdDescending -> row[Transactions.id].value
+            TimeAscending -> row[Transactions.epochSecond]
+            TimeDescending -> row[Transactions.epochSecond]
         }
     }
 
@@ -258,33 +252,33 @@ class ExposedEntityStoreV2(
         limit: Int
     ): Iterable<SignedTransaction> {
         return getTransactionRows(authorityIds, startTransactionId, order, limit).map { row ->
-            // SignedTransaction.fromBytes(row[transactions.encoded].bytes)
-            transactionFileStore.read(Id.decode(row[transactions.transactionId]))?.let {
+            // SignedTransaction.fromBytes(row[Transactions.encoded].bytes)
+            transactionFileStore.read(Id.decode(row[Transactions.transactionId]))?.let {
                 SignedTransaction.decodeProto(it)
             } ?: error("Transaction not found")
         }
     }
 
     private fun factFromResultRow(resultRow: ResultRow): Fact {
-        val attribute = ModelAttributes.getAttributeByUriString(resultRow[facts.attribute])!!
+        val attribute = attributeDbIdToModelAttributeMap[resultRow[Facts.attribute]]!!
 
         return Fact(
-            Id.decode(resultRow[facts.authorityId]),
-            Id.decode(resultRow[facts.entityId]),
+            Id.decode(resultRow[Facts.authorityId]),
+            Id.decode(resultRow[Facts.entityId]),
             attribute,
-            attribute.valueWrapper.decodeProto(resultRow[facts.value].bytes),
-            resultRow[facts.operation],
-            resultRow[facts.epochSecond],
-            resultRow[facts.transactionOrdinal]
+            attribute.valueWrapper.decodeProto(resultRow[Facts.value].bytes),
+            resultRow[Facts.operation],
+            resultRow[Facts.epochSecond],
+            resultRow[Facts.transactionOrdinal]
         )
     }
 
     override fun getFacts(authorityIds: Iterable<Id>, entityIds: Iterable<Id>): List<Fact> {
         return transaction(database) {
-            facts.select {
-                (facts.id greaterEq 0)
-                    .withIdConstraint(facts.authorityId, authorityIds.toList())
-                    .withIdConstraint(facts.entityId, entityIds.toList())
+            Facts.select {
+                (Facts.id greaterEq 0)
+                    .withIdConstraint(Facts.authorityId, authorityIds.toList())
+                    .withIdConstraint(Facts.entityId, entityIds.toList())
             }.map { factFromResultRow(it) }
         }
     }
