@@ -1,4 +1,4 @@
-package opencola.core.storage
+package io.opencola.storage
 
 import io.opencola.model.Id
 import io.opencola.storage.filestore.LocalContentBasedFileStore

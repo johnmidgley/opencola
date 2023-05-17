@@ -1,10 +1,9 @@
-package opencola.core.storage
+package io.opencola.storage
 
 import io.opencola.application.TestApplication
-import opencola.core.config.getApplications
+import io.opencola.application.getApplications
 import io.opencola.event.EventBus
 import io.opencola.model.*
-import opencola.core.getAuthorityEntity
 import io.opencola.security.Signator
 import io.opencola.storage.entitystore.EntityStore.TransactionOrder
 import io.opencola.storage.addressbook.AddressBook

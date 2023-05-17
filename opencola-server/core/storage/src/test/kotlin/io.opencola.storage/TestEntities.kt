@@ -1,4 +1,4 @@
-package opencola.core
+package io.opencola.storage
 
 import io.opencola.security.generateKeyPair
 import io.opencola.model.Id

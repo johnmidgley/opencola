@@ -1,6 +1,5 @@
-package opencola.core.config
+package io.opencola.application
 
-import io.opencola.application.*
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.model.Id
 import io.opencola.storage.addressbook.AddressBookEntry

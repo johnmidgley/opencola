@@ -21,7 +21,7 @@ open class PeerNetworkTest {
     private val basePortNumber: Int = 6001
 
     protected fun getApplications(nServers: Int): List<Application> {
-        return opencola.core.config.getApplications(
+        return io.opencola.application.getApplications(
             TestApplication.storagePath,
             TestApplication.config,
             basePortNumber,
