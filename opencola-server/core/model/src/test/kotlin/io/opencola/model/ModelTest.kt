@@ -25,7 +25,7 @@ class ModelTest {
 
     @Test
     fun testTransactionFactIdValue() {
-        val fact = TransactionFact(CoreAttribute.DataId.spec, IdValue(Id.ofData("data".toByteArray())).asAnyValue(), Operation.Add)
+        val fact = TransactionFact(CoreAttribute.DataIds.spec, IdValue(Id.ofData("data".toByteArray())).asAnyValue(), Operation.Add)
         val encoded = TransactionFact.encode(fact)
         val decoded = TransactionFact.decode(encoded)
         assertEquals(fact, decoded)

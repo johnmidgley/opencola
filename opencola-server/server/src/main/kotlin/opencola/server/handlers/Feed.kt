@@ -42,7 +42,7 @@ fun getSummary(entities: List<Entity>, idToAuthority: (Id) -> AddressBookEntry?)
 fun factToAction(comments: Map<Id, CommentEntity>, attachments: Map<Id, DataEntity>, fact: Fact): Action? {
     return when (fact.attribute) {
         Type.spec -> Action(ActionType.Save, null, null)
-        DataId.spec -> Action(ActionType.Save, fact.unwrapValue(), null)
+        DataIds.spec -> Action(ActionType.Save, fact.unwrapValue(), null)
         Trust.spec -> Action(ActionType.Trust, null, fact.unwrapValue())
         Like.spec -> Action(ActionType.Like, null, fact.unwrapValue())
         Rating.spec -> Action(ActionType.Rate, null, fact.unwrapValue())
@@ -61,7 +61,7 @@ fun factToAction(comments: Map<Id, CommentEntity>, attachments: Map<Id, DataEnti
 
 fun factsToActions(comments: Map<Id, CommentEntity>, attachments: Map<Id, DataEntity>, facts: List<Fact>): List<Action> {
     val factsByAttribute = facts.groupBy { it.attribute }
-    val dataIdPresent = factsByAttribute[DataId.spec] != null
+    val dataIdPresent = factsByAttribute[DataIds.spec] != null
 
     return factsByAttribute.flatMap { (attribute, facts) ->
         if (dataIdPresent && attribute == Type.spec) {

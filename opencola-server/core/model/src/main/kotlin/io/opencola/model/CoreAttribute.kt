@@ -10,7 +10,7 @@ import java.net.URI
 enum class CoreAttribute(val spec: Attribute) {
     Type(
         Attribute(
-            URI("opencola://attributes/type"),
+            URI("oc://attributes/type"),
             AttributeType.SingleValue,
             StringValue as ValueWrapper<Any>,
             isIndexable = false
@@ -18,7 +18,7 @@ enum class CoreAttribute(val spec: Attribute) {
     ),
     MimeType(
         Attribute(
-            URI("opencola://attributes/mimeType"),
+            URI("oc://attributes/mimeType"),
             AttributeType.SingleValue,
             StringValue as ValueWrapper<Any>,
             isIndexable = false
@@ -26,23 +26,25 @@ enum class CoreAttribute(val spec: Attribute) {
     ),
     Uri(
         Attribute(
-            URI("opencola://attributes/uri"),
+            URI("oc://attributes/uri"),
             AttributeType.SingleValue,
             UriValue as ValueWrapper<Any>,
             isIndexable = false
         )
     ),
-    DataId(
+    DataIds(
         Attribute(
-            URI("opencola://attributes/dataId"),
+            "dataIds",
+            URI("oc://attributes/dataId"),
             AttributeType.MultiValueSet,
             IdValue as ValueWrapper<Any>,
-            isIndexable = false
+            isIndexable = false,
+            null
         )
     ),
     PublicKey(
         Attribute(
-            URI("opencola://attributes/publicKey"),
+            URI("oc://attributes/publicKey"),
             AttributeType.SingleValue,
             PublicKeyValue as ValueWrapper<Any>,
             isIndexable = false
@@ -50,7 +52,7 @@ enum class CoreAttribute(val spec: Attribute) {
     ),
     Name(
         Attribute(
-            URI("opencola://attributes/name"),
+            URI("oc://attributes/name"),
             AttributeType.SingleValue,
             StringValue as ValueWrapper<Any>,
             isIndexable = true
@@ -58,7 +60,7 @@ enum class CoreAttribute(val spec: Attribute) {
     ),
     Description(
         Attribute(
-            URI("opencola://attributes/description"),
+            URI("oc://attributes/description"),
             AttributeType.SingleValue,
             StringValue as ValueWrapper<Any>,
             isIndexable = true
@@ -68,7 +70,7 @@ enum class CoreAttribute(val spec: Attribute) {
     // TODO: Should text be here, or just retrievable / parseable from the datastore?
     Text(
         Attribute(
-            URI("opencola://attributes/text"),
+            URI("oc://attributes/text"),
             AttributeType.SingleValue,
             StringValue as ValueWrapper<Any>,
             isIndexable = true
@@ -76,7 +78,7 @@ enum class CoreAttribute(val spec: Attribute) {
     ),
     ImageUri(
         Attribute(
-            URI("opencola://attributes/imageUri"),
+            URI("oc://attributes/imageUri"),
             AttributeType.SingleValue,
             UriValue as ValueWrapper<Any>,
             isIndexable = false
@@ -84,15 +86,16 @@ enum class CoreAttribute(val spec: Attribute) {
     ),
     Tags(
         Attribute(
-            URI("opencola://attributes/tags"),
+            "tags",
+            URI("oc://attributes/tag"),
             AttributeType.MultiValueSet,
             StringValue as ValueWrapper<Any>,
-            isIndexable = true
-        )
+            isIndexable = true,
+            null)
     ),
     Trust(
         Attribute(
-            URI("opencola://attributes/trust"),
+            URI("oc://attributes/trust"),
             AttributeType.SingleValue,
             FloatValue as ValueWrapper<Any>,
             isIndexable = true
@@ -100,7 +103,7 @@ enum class CoreAttribute(val spec: Attribute) {
     ),
     Like(
         Attribute(
-            URI("opencola://attributes/like"),
+            URI("oc://attributes/like"),
             AttributeType.SingleValue,
             BooleanValue as ValueWrapper<Any>,
             isIndexable = true
@@ -108,7 +111,7 @@ enum class CoreAttribute(val spec: Attribute) {
     ),
     Rating(
         Attribute(
-            URI("opencola://attributes/rating"),
+            URI("oc://attributes/rating"),
             AttributeType.SingleValue,
             FloatValue as ValueWrapper<Any>,
             isIndexable = true
@@ -116,7 +119,7 @@ enum class CoreAttribute(val spec: Attribute) {
     ),
     ParentId(
       Attribute(
-          URI("opencola://attributes/parentId"),
+          URI("oc://attributes/parentId"),
           AttributeType.SingleValue,
           IdValue as ValueWrapper<Any>,
           isIndexable = false,
@@ -125,7 +128,7 @@ enum class CoreAttribute(val spec: Attribute) {
     CommentIds(
         Attribute(
             "commentIds",
-            URI("opencola://attributes/commentId"),
+            URI("oc://attributes/commentId"),
             AttributeType.MultiValueSet,
             IdValue as ValueWrapper<Any>,
             isIndexable = false,
@@ -134,7 +137,7 @@ enum class CoreAttribute(val spec: Attribute) {
     ),
     NetworkToken(
         Attribute(
-            URI("opencola://attributes/networkToken"),
+            URI("oc://attributes/networkToken"),
             AttributeType.SingleValue,
             ByteArrayValue as ValueWrapper<Any>,
             isIndexable = false,
@@ -143,7 +146,7 @@ enum class CoreAttribute(val spec: Attribute) {
     AttachmentIds(
         Attribute(
             "attachmentIds",
-            URI("opencola://attributes/attachmentId"),
+            URI("oc://attributes/attachmentId"),
             AttributeType.MultiValueSet,
             IdValue as ValueWrapper<Any>,
             isIndexable = false,

@@ -162,7 +162,7 @@ class ApplicationTest : ApplicationTestBase() {
 
         val uri = URI("https://opencola.org/${Id.new()}")
         val entity = ResourceEntity(persona.personaId, uri)
-        entity.dataId = entity.dataId.plus(Id.new())
+        entity.dataIds = entity.dataIds.plus(Id.new())
         entityStore.updateEntities(entity)
 
         entity.trust = 1.0F
@@ -188,7 +188,7 @@ class ApplicationTest : ApplicationTestBase() {
         assertEquals(5, feedResult.results[0].activities.count())
         assertEquals(uri.toString(), feedResult.results[0].summary.uri)
         feedResult.results[0].activities.single { it.actions[0].type == "comment" }.actions[0].value
-        assertEquals(entity.dataId.first().toString(), getSingleActivity(feedResult, "save").actions[0].id)
+        assertEquals(entity.dataIds.first().toString(), getSingleActivity(feedResult, "save").actions[0].id)
         assertEquals(entity.trust.toString(), getSingleActivityActionValue(feedResult, "trust"))
         assertEquals(entity.like.toString(), getSingleActivityActionValue(feedResult, "like"))
         assertEquals(entity.rating.toString(), getSingleActivityActionValue(feedResult, "rate"))

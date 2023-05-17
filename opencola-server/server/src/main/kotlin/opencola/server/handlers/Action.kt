@@ -153,7 +153,7 @@ fun updateResource(
         ?: ResourceEntity(authorityId, mhtmlPage.uri)) as ResourceEntity
 
     updateActions(entity, actions)
-    entity.dataId = entity.dataId.plus(dataEntity.entityId)
+    entity.dataIds = entity.dataIds.plus(dataEntity.entityId)
 
     val extraEntities = when (content.mimeType) {
         "multipart/related" -> updateMultipartResource(entity, mhtmlPage)

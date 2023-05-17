@@ -31,7 +31,7 @@ class MhtCache(private val cachePath: Path, private val entityStore: EntityStore
 
         return when (entity) {
             // TODO: This grabs an arbitrary dataId. Probably should grab most recent
-            is ResourceEntity -> entity.dataId.nullOrElse { entityStore.getEntity(authorityId!!, it.first()) }
+            is ResourceEntity -> entity.dataIds.nullOrElse { entityStore.getEntity(authorityId!!, it.first()) }
             is DataEntity -> entity
             else -> null
         } as DataEntity?
