@@ -39,7 +39,8 @@ abstract class AbstractEntityStore(
 
     // TODO - make entity method?
     private fun validateEntity(entity: Entity): Entity {
-        val authorityIds = entity.getAllFacts().map { it.authorityId }.distinct()
+        val allFacts = entity.getAllFacts()
+        val authorityIds = allFacts.map { it.authorityId }.distinct()
 
         if (authorityIds.size != 1) {
             logAndThrow(RuntimeException("Entity{${entity.entityId}} contains facts from multiple authorities $authorityIds }"))
@@ -50,13 +51,17 @@ abstract class AbstractEntityStore(
             logAndThrow(RuntimeException("Entity{${entity.entityId}} with authority ${entity.authorityId} contains facts from wrong authority $authorityId }"))
         }
 
-        val invalidEntityIds = entity.getAllFacts().filter { it.entityId != entity.entityId }.map { it.entityId }
+        val invalidEntityIds = allFacts.filter { it.entityId != entity.entityId }.map { it.entityId }
         if (invalidEntityIds.isNotEmpty()) {
             logAndThrow(RuntimeException("Entity Id:{${entity.entityId}} contains facts not matching its id: $invalidEntityIds"))
         }
 
-        if (entity.getAllFacts().distinct().size < entity.getAllFacts().size) {
+        if (allFacts.distinct().size < allFacts.size) {
             logAndThrow(RuntimeException("Entity Id:{${entity.entityId}} contains non-distinct facts"))
+        }
+
+        if(allFacts.any { it.operation == Operation.Add && it.value == emptyValue }) {
+            logAndThrow(RuntimeException("Entity Id:{${entity.entityId}} contains Add operation with empty value"))
         }
 
         // TODO: Check that all transaction ids exist (0 to current) and don't surpass the current transaction id
@@ -138,6 +143,7 @@ abstract class AbstractEntityStore(
         }
     }
 
+    // TODO: Merge with validateEntity
     private fun validateFacts(authorityId: Id, facts: List<Fact>): List<Fact> {
         // TODO: Since there are already "bad" facts out there, this will likely create an issue of blowing
         //  up anybody that gets bad facts. Figure out how to fix. Likely need to rebuild transaction chain then

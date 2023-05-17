@@ -4,6 +4,7 @@ import io.opencola.application.TestApplication
 import io.opencola.application.getApplications
 import io.opencola.event.EventBus
 import io.opencola.model.*
+import io.opencola.model.value.emptyValue
 import io.opencola.security.Signator
 import io.opencola.storage.entitystore.EntityStore.TransactionOrder
 import io.opencola.storage.addressbook.AddressBook
@@ -369,5 +370,15 @@ class EntityStoreTest {
         entityStore.updateEntities(resource7)
         resource8.like = null
         assertFails { entityStore.updateEntities(resource8) }
+    }
+
+    @Test
+    fun testRejectEmptyValue() {
+        val uri = URI("https://opencola")
+        val resource0 = ResourceEntity(persona.personaId, uri)
+        val factWithEmptyValue = Fact(resource0.authorityId, resource0.entityId, CoreAttribute.Name.spec, emptyValue, Operation.Add, 0, 0)
+        val facts = resource0.commitFacts(0, 0).plus(factWithEmptyValue)
+        val resource1 = Entity.fromFacts(facts)!!
+        assertFails { getFreshExposeEntityStore().updateEntities(resource1) }
     }
 }
