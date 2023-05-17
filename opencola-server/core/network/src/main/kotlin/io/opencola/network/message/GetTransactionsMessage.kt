@@ -8,7 +8,7 @@ import io.opencola.serialization.protobuf.Message as ProtoMessage
 class GetTransactionsMessage(val mostRecentTransactionId: Id?, val maxTransactions: Int = 10) : Message(messageType) {
     // TODO: Companion objects should be moved to top of class
     companion object : ProtoSerializable<GetTransactionsMessage, ProtoMessage.GetTransactionsMessage> {
-        val messageType = "GetTransactionsMessage"
+        val messageType = "GetTxns"
         override fun toProto(value: GetTransactionsMessage): ProtoMessage.GetTransactionsMessage {
             return ProtoMessage.GetTransactionsMessage.newBuilder()
                 .also {

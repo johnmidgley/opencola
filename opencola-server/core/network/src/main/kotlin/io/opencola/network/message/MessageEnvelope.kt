@@ -42,8 +42,7 @@ class MessageEnvelope(val to: Id, val signedMessage: SignedMessage) {
                 }
             } ?: messageBytes
 
-            return MessageEnvelope(to, SignedMessage.fromProto(ProtoMessage.SignedMessage.parseFrom(signedMessageBytes))
-            )
+            return MessageEnvelope(to, SignedMessage.fromProto(ProtoMessage.SignedMessage.parseFrom(signedMessageBytes)))
         }
     }
 }

@@ -26,7 +26,7 @@ open class UnsignedMessage(type: String, val payload: ByteArray) : Message(type)
     }
 
     override fun toProto(): GeneratedMessageV3 {
-        return Companion.toProto(this)
+        return toProto(this)
     }
 
     override fun equals(other: Any?): Boolean {

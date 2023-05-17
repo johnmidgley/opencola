@@ -1,7 +1,6 @@
 package io.opencola.network.message
 
 import com.google.protobuf.ByteString
-import io.opencola.model.Id
 import io.opencola.model.SignedTransaction
 import io.opencola.serialization.protobuf.ProtoSerializable
 import io.opencola.serialization.protobuf.Message as ProtoMessage
@@ -12,7 +11,7 @@ class PutTransactionsMessage(private val signedTransactions: Iterable<ByteArray>
     Message(messageType) {
 
     companion object : ProtoSerializable<PutTransactionsMessage, ProtoMessage.PutTransactionsMessage> {
-        const val messageType = "PutTransactionsMessage"
+        const val messageType = "PutTxns"
 
         override fun toProto(value: PutTransactionsMessage): ProtoMessage.PutTransactionsMessage {
             return ProtoMessage.PutTransactionsMessage.newBuilder()

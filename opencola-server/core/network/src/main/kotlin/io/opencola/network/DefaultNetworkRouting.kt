@@ -67,11 +67,11 @@ fun handleGetData(fileStore: ContentBasedFileStore, dataId: Id): ByteArray? {
 }
 
 fun pingRoute(): Route {
-    return Route("PingMessage") { _, _, _ -> PongMessage() }
+    return Route(PingMessage.messageType) { _, _, _ -> PongMessage() }
 }
 
 fun pongRoute(handler: messageHandler =  { _, _, _ -> null }): Route {
-    return Route("PongMessage", handler)
+    return Route(PongMessage.messageType, handler)
 }
 
 fun putNotificationsRoute(eventBus: EventBus, addressBook: AddressBook): Route {
@@ -115,7 +115,7 @@ fun putTransactionsRoute(entityStore: EntityStore, addressBook: AddressBook): Ro
 
 fun getDataRoute(fileStore: ContentBasedFileStore): Route {
     return Route(
-        "GetDataMessage"
+        GetDataMessage.messageType
     ) { _, _, message ->
         val getDataMessage = GetDataMessage.decodeProto(message.body.payload)
         val dataId = getDataMessage.id
@@ -125,7 +125,7 @@ fun getDataRoute(fileStore: ContentBasedFileStore): Route {
 
 fun putDataRoute(fileStore: ContentBasedFileStore): Route {
     return Route(
-        "PutDataMessage"
+        PutDataMessage.messageType
     ) { _, _, message ->
         val putDataMessage = PutDataMessage.decodeProto(message.body.payload)
         val id =  fileStore.write(putDataMessage.data)

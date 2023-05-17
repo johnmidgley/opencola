@@ -1,31 +1,22 @@
 package io.opencola.network.message
 
-import com.google.protobuf.ByteString
 import io.opencola.model.Id
 import io.opencola.serialization.protobuf.Message as ProtoMessage
 import io.opencola.serialization.protobuf.ProtoSerializable
 
 class GetDataMessage(val id: Id) : Message(messageType) {
-    companion object : ProtoSerializable<GetDataMessage, ProtoMessage.UnsignedMessage>  {
-        const val messageType = "GetDataMessage"
+    companion object : ProtoSerializable<GetDataMessage, ProtoMessage.GetDataMessage>  {
+        const val messageType = "GetData"
 
-        override fun toProto(value: GetDataMessage): ProtoMessage.UnsignedMessage {
-            val bytes = ProtoMessage.GetDataMessage
+        override fun toProto(value: GetDataMessage): ProtoMessage.GetDataMessage {
+            return ProtoMessage.GetDataMessage
                 .newBuilder()
                 .setId(value.id.toProto())
                 .build()
-                .toByteArray()
-
-            return ProtoMessage.UnsignedMessage.newBuilder()
-                .setType("GetDataMessage")
-                .setPayload(ByteString.copyFrom(bytes))
-                .build()
         }
 
-        override fun fromProto(value: ProtoMessage.UnsignedMessage): GetDataMessage {
-            require(value.type == "GetDataMessage")
-            val proto = ProtoMessage.GetDataMessage.parseFrom(value.payload)
-            return GetDataMessage(Id.fromProto(proto.id))
+        override fun fromProto(value: ProtoMessage.GetDataMessage): GetDataMessage {
+            return GetDataMessage(Id.fromProto(value.id))
         }
 
         fun encodeProto(value: GetDataMessage): ByteArray {
@@ -33,11 +24,11 @@ class GetDataMessage(val id: Id) : Message(messageType) {
         }
 
         fun decodeProto(value: ByteArray): GetDataMessage {
-            return fromProto(ProtoMessage.UnsignedMessage.parseFrom(value))
+            return fromProto(ProtoMessage.GetDataMessage.parseFrom(value))
         }
     }
 
-    override fun toProto(): ProtoMessage.UnsignedMessage {
+    override fun toProto(): ProtoMessage.GetDataMessage {
         return toProto(this)
     }
 }
