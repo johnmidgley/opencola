@@ -142,12 +142,10 @@ class ExposedEntityStoreV2(
     }
 
     override fun persistTransaction(signedTransaction: SignedTransaction): Long {
-        if(transactionFileStore.exists(signedTransaction.transaction.id)) {
-            logger.warn("Attempt to persist existing transaction: ${signedTransaction.transaction.id}")
-            return -1
+        if(!transactionFileStore.exists(signedTransaction.transaction.id)) {
+            // Local transactions get added to the filestore here. Foreign transactions are added in addSignedTransactions
+            transactionFileStore.write(signedTransaction.transaction.id, signedTransaction.encodeProto())
         }
-
-        transactionFileStore.write(signedTransaction.transaction.id, signedTransaction.encodeProto())
 
         return transaction(database) {
             val transaction = signedTransaction.transaction
@@ -281,5 +279,19 @@ class ExposedEntityStoreV2(
                     .withIdConstraint(Facts.entityId, entityIds.toList())
             }.map { factFromResultRow(it) }
         }
+    }
+
+    override fun addSignedTransactions(signedTransactions: List<SignedTransaction>) {
+        // We process transactions here, before calling super.addSignedTransactions, so that we can store out
+        // of order transactions for future use, so they don't need to be requested again.
+        signedTransactions.forEach {
+            if (publicKeyProvider.getPublicKey(it.transaction.authorityId) != null && !transactionFileStore.exists(it.transaction.id)) {
+                // This is a legitimate transaction from a known authority, so store it, even if it's out of order,
+                // so we can use it later
+                transactionFileStore.write(it.transaction.id, it.encodeProto())
+            }
+        }
+
+        super.addSignedTransactions(signedTransactions)
     }
 }

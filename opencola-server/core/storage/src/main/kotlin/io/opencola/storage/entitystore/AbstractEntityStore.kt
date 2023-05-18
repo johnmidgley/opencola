@@ -60,7 +60,7 @@ abstract class AbstractEntityStore(
             logAndThrow(RuntimeException("Entity Id:{${entity.entityId}} contains non-distinct facts"))
         }
 
-        if(allFacts.any { it.operation == Operation.Add && it.value == emptyValue }) {
+        if (allFacts.any { it.operation == Operation.Add && it.value == emptyValue }) {
             logAndThrow(RuntimeException("Entity Id:{${entity.entityId}} contains Add operation with empty value"))
         }
 
@@ -160,8 +160,8 @@ abstract class AbstractEntityStore(
             }
         }
 
-        facts.forEach{
-            if(it.value == emptyValue && it.operation == Operation.Add) {
+        facts.forEach {
+            if (it.value == emptyValue && it.operation == Operation.Add) {
                 throw IllegalArgumentException("Facts should not have empty values on add operation")
             }
         }
@@ -262,6 +262,7 @@ abstract class AbstractEntityStore(
             persistTransaction(authorityId, facts)
     }
 
+    @Synchronized
     override fun addSignedTransactions(signedTransactions: List<SignedTransaction>) {
         signedTransactions.forEach {
             val transaction = it.transaction
@@ -271,6 +272,9 @@ abstract class AbstractEntityStore(
 
             if (!it.isValidTransaction(publicKey))
                 throw IllegalArgumentException("Transaction ${transaction.id} failed to validate from $transactionAuthorityId")
+
+            if (transaction.id != getNextTransactionId(transactionAuthorityId))
+                throw IllegalArgumentException("Transaction ${transaction.id} is out of order from $transactionAuthorityId")
 
             logger.info { "Adding transaction ${transaction.id} from $transactionAuthorityId" }
             persistTransaction(it)

@@ -2,7 +2,6 @@ package opencola.server
 
 import io.ktor.server.application.*
 import io.ktor.server.netty.*
-import mu.KotlinLogging
 import io.opencola.application.TestApplication
 import io.opencola.application.Application
 import io.opencola.io.StdoutMonitor
@@ -17,7 +16,6 @@ import kotlin.test.assertEquals
 private var nextServerNum = 0
 
 open class PeerNetworkTest {
-    protected val logger = KotlinLogging.logger("PeerTransactionTest")
     private val basePortNumber: Int = 6001
 
     protected fun getApplications(nServers: Int): List<Application> {

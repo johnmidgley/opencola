@@ -18,11 +18,11 @@ class StdoutMonitor(private val echo: Boolean = true, private val readTimeoutMil
         printStream.println(output)
     }
 
-    fun waitUntil(timeoutMilliseconds: Long? = null, until: (String) -> Boolean) {
+    fun waitUntil(timeoutMilliseconds: Long? = null, prefix: String = "!", until: (String) -> Boolean) {
         while (true) {
             val line = linePartitionedOutputStream.waitForLine(timeoutMilliseconds ?: readTimeoutMilliseconds)
             if(echo)
-                stdout.println(line)
+                stdout.println("$prefix$line")
             if(until(line))
                 break
         }
@@ -45,5 +45,12 @@ class StdoutMonitor(private val echo: Boolean = true, private val readTimeoutMil
         linePartitionedOutputStream.close()
         printStream.close()
         System.setOut(stdout)
+    }
+}
+
+fun waitForStdout(until: String, timeoutMilliseconds: Long? = 5000, block: (() -> Unit)? = null) {
+    StdoutMonitor().use {
+        block?.invoke()
+        it.waitUntil(until, timeoutMilliseconds)
     }
 }

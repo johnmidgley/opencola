@@ -18,7 +18,7 @@ class PeerCommentTest : PeerNetworkTest() {
 
         try {
             // Start the first server and add a document
-            logger.info { "Starting ${application0.config.name}" }
+            println("Starting ${application0.config.name}")
             startServer(server0)
             val persona0 = application0.getPersonas().first()
             val resource0 = ResourceEntity(
@@ -30,12 +30,12 @@ class PeerCommentTest : PeerNetworkTest() {
                 URI("https://opencola.io/image.png")
             )
             val entityStore0 by application0.injector.instance<EntityStore>()
-            logger.info { "Adding entity" }
+            println("Adding entity")
             entityStore0.updateEntities(resource0)
             Thread.sleep(1000)
 
             // Start the 2nd server and comment on the doc from the first server
-            logger.info { "Starting ${application1.config.name}" }
+            println("Starting ${application1.config.name}")
             val persona1 = application1.getPersonas().first()
             val entityStore1 by application1.injector.instance<EntityStore>()
             startServer(server1)

@@ -48,6 +48,8 @@ fun indexTransaction(
                 searchIndex.addEntities(entity)
             }
         }
+
+    logger.info { "Indexed transaction: ${signedTransaction.transaction.id}" }
 }
 
 // TODO: Invert this by having the reactor subscribe to events vs. being plugged in to the event bus
