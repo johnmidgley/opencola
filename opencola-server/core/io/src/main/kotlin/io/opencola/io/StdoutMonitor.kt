@@ -12,16 +12,11 @@ class StdoutMonitor(private val echo: Boolean = true, private val readTimeoutMil
         System.setOut(printStream)
     }
 
-    @Synchronized
-    fun printlnAndFlush(message: Any?) {
-        val output = message.toString()
-        printStream.println(output)
-    }
-
     fun waitUntil(timeoutMilliseconds: Long? = null, prefix: String = "!", until: (String) -> Boolean) {
         while (true) {
             val line = linePartitionedOutputStream.waitForLine(timeoutMilliseconds ?: readTimeoutMilliseconds)
             if(echo)
+                // The prefix is used to make it easy to tell what the monitor is processing
                 stdout.println("$prefix$line")
             if(until(line))
                 break
