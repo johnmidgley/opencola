@@ -172,7 +172,7 @@ abstract class AbstractEntityStore(
     // TODO: !!! Clean up validation !!!
 
     // DO NOT use this outside of persistTransaction
-    private fun getNextTransactionId(authorityId: Id): Id {
+    protected fun getNextTransactionId(authorityId: Id): Id {
         return getSignedTransactions(listOf(authorityId), null, TransactionOrder.IdDescending, 1)
             .firstOrNull()
             ?.let {

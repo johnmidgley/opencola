@@ -60,7 +60,7 @@ class ExposedEntityStore(
 
     init {
         require(config.transactionStorageUri == null) { "ExposedEntityStore does not support specifying transactionStorageUri config" }
-        database =  getDB(storagePath.resolve("$name.db"))
+        database = getDB(storagePath.resolve("$name.db"))
         logger.info { "Initializing ExposedEntityStore {${database.url}}" }
 
         // Prior to personas, the table names included the authority id. This is no longer makes sense, but we for
@@ -110,7 +110,7 @@ class ExposedEntityStore(
     }
 
     private fun getOrderColumn(order: TransactionOrder): Column<*> {
-        return when(order){
+        return when (order) {
             IdAscending -> transactions.id
             IdDescending -> transactions.id
             TimeAscending -> transactions.epochSecond
@@ -119,7 +119,7 @@ class ExposedEntityStore(
     }
 
     private fun isAscending(order: TransactionOrder): Boolean {
-        return when (order){
+        return when (order) {
             IdAscending -> true
             IdDescending -> false
             TimeAscending -> true
@@ -153,13 +153,14 @@ class ExposedEntityStore(
     }
 
     private fun getStartValue(order: TransactionOrder, row: ResultRow): Long {
-        return when(order){
+        return when (order) {
             IdAscending -> row[transactions.id].value
             IdDescending -> row[transactions.id].value
             TimeAscending -> row[transactions.epochSecond]
             TimeDescending -> row[transactions.epochSecond]
         }
     }
+
     private fun getTransactionRows(
         authorityIds: Iterable<Id>,
         startTransactionId: Id?,
@@ -196,8 +197,13 @@ class ExposedEntityStore(
         }
     }
 
-    private fun factFromResultRow(resultRow: ResultRow): Fact {
-        val attribute = Attributes.getAttributeByUriString(resultRow[facts.attribute])!!
+    private fun factFromResultRow(resultRow: ResultRow): Fact? {
+        val attribute = Attributes.getAttributeByUriString(resultRow[facts.attribute])
+
+        if (attribute == null) {
+            logger.warn { "Unknown attribute ${resultRow[facts.attribute]} - ignoring fact" }
+            return null
+        }
 
         return Fact(
             Id.decode(resultRow[facts.authorityId]),
@@ -223,16 +229,16 @@ class ExposedEntityStore(
             val transactionFacts = transaction.getFacts(ordinal.value)
             transactionFacts
                 .forEach { fact ->
-                facts.insert {
-                    it[authorityId] = Id.encode(fact.authorityId)
-                    it[entityId] = Id.encode(fact.entityId)
-                    it[attribute] = fact.attribute.uri.toString()
-                    it[value] = ExposedBlob(fact.attribute.valueWrapper.encodeAny(fact.value))
-                    it[operation] = fact.operation
-                    it[epochSecond] = transaction.epochSecond
-                    it[transactionOrdinal] = ordinal.value
+                    facts.insert {
+                        it[authorityId] = Id.encode(fact.authorityId)
+                        it[entityId] = Id.encode(fact.entityId)
+                        it[attribute] = fact.attribute.uri.toString()
+                        it[value] = ExposedBlob(fact.attribute.valueWrapper.encodeAny(fact.value))
+                        it[operation] = fact.operation
+                        it[epochSecond] = transaction.epochSecond
+                        it[transactionOrdinal] = ordinal.value
+                    }
                 }
-            }
 
             ordinal.value
         }
@@ -244,7 +250,7 @@ class ExposedEntityStore(
                 (facts.id greaterEq 0)
                     .withIdConstraint(facts.authorityId, authorityIds.toList())
                     .withIdConstraint(facts.entityId, entityIds.toList())
-            }.map { factFromResultRow(it) }
+            }.mapNotNull { factFromResultRow(it) }
         }
     }
 }

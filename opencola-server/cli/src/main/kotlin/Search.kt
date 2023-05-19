@@ -45,7 +45,7 @@ fun rebuildSearchIndex(sourcePath: Path, destPath: Path) {
     println("Rebuilding index from ${sourceContext.storagePath} in $destPath")
 
     LuceneSearchIndex(destPath.resolve("lucene")).use { destSearchIndex ->
-        sourceContext.entityStore.getAllTransactions().forEach { transaction ->
+        sourceContext.entityStore.getAllSignedTransactions().forEach { transaction ->
             println("+ ${transaction.transaction.id}")
             indexTransaction(sourceContext.entityStore, destSearchIndex, transaction)
         }

@@ -43,7 +43,7 @@ data class SignedTransaction(
     private fun decodeTransaction(): Transaction {
         return when(encodingFormat) {
             EncodingFormat.OC -> Transaction.decode(encodedTransaction)
-            EncodingFormat.PROTOBUF -> Transaction.fromProto(ProtoModel.Transaction.parseFrom(encodedTransaction))
+            EncodingFormat.PROTOBUF -> Transaction.decodeProto(encodedTransaction)
             else -> throw IllegalArgumentException("Unknown encoding format: $encodingFormat")
         }
     }
@@ -61,7 +61,8 @@ data class SignedTransaction(
         ProtoSerializable<SignedTransaction, ProtoModel.SignedTransaction> {
         override fun encode(stream: OutputStream, value: SignedTransaction) {
             require(value.encodingFormat == EncodingFormat.OC)
-            stream.writeByteArray(value.encodedTransaction)
+            val transaction = Transaction.decode(value.encodedTransaction)
+            Transaction.encode(stream, transaction)
             value.signature.let {
                 stream.writeByteArray(it.algorithm.toByteArray())
                 stream.writeByteArray(it.bytes)
@@ -69,7 +70,7 @@ data class SignedTransaction(
         }
 
         override fun decode(stream: InputStream): SignedTransaction {
-            val transactionBytes = stream.readByteArray()
+            val transactionBytes = Transaction.encode(Transaction.decode(stream))
             val signature = Signature(
                 String(stream.readByteArray()),
                 stream.readByteArray()

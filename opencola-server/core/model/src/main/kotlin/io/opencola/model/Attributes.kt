@@ -19,9 +19,17 @@ object Attributes {
 
     private val attributesByUriString = CoreAttribute.values().associateBy { it.spec.uri.toString() }
 
+    // Can be removed after db migration to v2
+    fun convertLegacyUriString(uriString: String): String {
+        if (uriString == "opencola://attributes/tags")
+            return "oc://attributes/tag"
+
+        return if (uriString.startsWith("opencola:")) uriString.replace("opencola:", "oc:") else uriString
+    }
+
     // Useful in tight loops where there is no URI representation (e.g. a DB)
     fun getAttributeByUriString(uriString: String): Attribute? {
-        return attributesByUriString[uriString]?.spec
+        return attributesByUriString[convertLegacyUriString(uriString)]?.spec
     }
 
     private val attributeToOrdinal =

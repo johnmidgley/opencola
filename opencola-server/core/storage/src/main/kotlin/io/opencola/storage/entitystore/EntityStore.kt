@@ -45,7 +45,7 @@ interface EntityStore {
         return getSignedTransactions(listOf(authorityId), startTransactionId, order, limit)
     }
 
-    fun getAllTransactions(authorityIds: Iterable<Id> = emptyList(), batchSize: Int = 100): Sequence<SignedTransaction> {
+    fun getAllSignedTransactions(authorityIds: Iterable<Id> = emptyList(), batchSize: Int = 100): Sequence<SignedTransaction> {
         return sequence {
             var transactions =
                 getSignedTransactions(authorityIds, null, TransactionOrder.IdAscending, batchSize)
@@ -56,7 +56,7 @@ interface EntityStore {
                     break
                 }
                 transactions = getSignedTransactions(
-                    emptyList(),
+                    authorityIds,
                     transactions.last().transaction.id,
                     TransactionOrder.IdAscending,
                     batchSize + 1

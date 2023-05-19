@@ -93,6 +93,10 @@ data class Transaction(val id: Id,
         fun encodeProto(value: Transaction): ByteArray {
             return toProto(value).toByteArray()
         }
+
+        fun decodeProto(bytes: ByteArray): Transaction {
+            return fromProto(ProtoModel.Transaction.parseFrom(bytes))
+        }
     }
 }
 

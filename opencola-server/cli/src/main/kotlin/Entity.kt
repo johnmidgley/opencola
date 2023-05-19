@@ -27,7 +27,7 @@ fun rebuildEntityStore(sourcePath: Path, password: String, destPath: Path) {
     )
 
     println("Rebuilding entities from ${sourceContext.storagePath} in ${destContext.storagePath}")
-    sourceContext.entityStore.getAllTransactions().forEach { transaction ->
+    sourceContext.entityStore.getAllSignedTransactions().forEach { transaction ->
         println("+ ${transaction.transaction.id}")
         destContext.entityStore.addSignedTransactions(listOf(transaction))
     }

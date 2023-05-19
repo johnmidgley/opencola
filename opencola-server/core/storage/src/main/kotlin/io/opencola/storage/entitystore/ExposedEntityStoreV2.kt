@@ -257,8 +257,13 @@ class ExposedEntityStoreV2(
         }
     }
 
-    private fun factFromResultRow(resultRow: ResultRow): Fact {
-        val attribute = attributeDbIdToModelAttributeMap[resultRow[Facts.attribute]]!!
+    private fun factFromResultRow(resultRow: ResultRow): Fact? {
+        val attribute = attributeDbIdToModelAttributeMap[resultRow[Facts.attribute]]
+
+        if (attribute == null) {
+            logger.warn { "Unknown attribute ${resultRow[Facts.attribute]} - ignoring fact" }
+            return null
+        }
 
         return Fact(
             Id.decode(resultRow[Facts.authorityId]),
@@ -277,7 +282,7 @@ class ExposedEntityStoreV2(
                 (Facts.id greaterEq 0)
                     .withIdConstraint(Facts.authorityId, authorityIds.toList())
                     .withIdConstraint(Facts.entityId, entityIds.toList())
-            }.map { factFromResultRow(it) }
+            }.mapNotNull { factFromResultRow(it) }
         }
     }
 
@@ -293,5 +298,9 @@ class ExposedEntityStoreV2(
         }
 
         super.addSignedTransactions(signedTransactions)
+    }
+
+    fun getNextTransactionIdForV2MigrationOnly(authorityId: Id) : Id {
+        return super.getNextTransactionId(authorityId)
     }
 }
