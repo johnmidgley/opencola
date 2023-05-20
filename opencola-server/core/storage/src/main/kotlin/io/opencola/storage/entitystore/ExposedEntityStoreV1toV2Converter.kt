@@ -1,8 +1,7 @@
 package io.opencola.storage.entitystore
 
-import io.opencola.model.Attributes
-import io.opencola.model.SignedTransaction
-import io.opencola.model.Transaction
+import io.opencola.model.*
+import io.opencola.model.value.emptyValue
 import io.opencola.security.Signator
 import io.opencola.security.isValidSignature
 import io.opencola.serialization.EncodingFormat
@@ -14,10 +13,19 @@ import kotlin.io.path.exists
 
 private val logger = KotlinLogging.logger("EntityStoreConverter")
 
-fun updateTransactionId(entityStoreV2: ExposedEntityStoreV2, transaction: Transaction) : Transaction {
+fun cleanFact(fact: TransactionFact) : TransactionFact? {
+    return if(fact.operation == Operation.Add && fact.value == emptyValue) null else fact
+}
+
+fun migrateTransaction(entityStoreV2: ExposedEntityStoreV2, transaction: Transaction) : Transaction {
     val authorityId = transaction.authorityId
     val nextTransactionId = entityStoreV2.getNextTransactionIdForV2MigrationOnly(authorityId)
-    return Transaction(nextTransactionId, authorityId, transaction.transactionEntities, transaction.epochSecond)
+    val cleanedEntities = transaction.transactionEntities.map { transactionEntity ->
+        val cleanedFacts = transactionEntity.facts.mapNotNull { cleanFact(it) }
+        TransactionEntity(transactionEntity.entityId, cleanedFacts)
+    }
+
+    return Transaction(nextTransactionId, authorityId, cleanedEntities, transaction.epochSecond)
 }
 
 fun convertExposedEntityStoreV1ToV2(
@@ -30,6 +38,8 @@ fun convertExposedEntityStoreV1ToV2(
 ) {
     require(v1Path.exists())
     require(!v2Path.exists())
+
+    logger.info { "Converting $name from V1 to V2" }
 
     val entityStoreV1 = ExposedEntityStore(name, v1Path, ::getSQLiteDB, signator, addressBook)
     val entityStoreV2 = ExposedEntityStoreV2(name, v2config, v2Path, ::getSQLiteDB, Attributes.get(), signator, addressBook)
@@ -48,8 +58,8 @@ fun convertExposedEntityStoreV1ToV2(
                     logger.info { "Converting transaction $idx: id=${signedTransaction.transaction.id}" }
                     require(signedTransaction.transaction.authorityId == persona.entityId)
                     require(signedTransaction.encodingFormat == EncodingFormat.OC)
-                    val updatedTransaction = updateTransactionId(entityStoreV2, signedTransaction.transaction)
-                    val v2TransactionBytes = updatedTransaction.encodeProto()
+                    val migratedTransaction = migrateTransaction(entityStoreV2, signedTransaction.transaction)
+                    val v2TransactionBytes = migratedTransaction.encodeProto()
                     val v2TransactionSignature = signator.signBytes(personaAlias, v2TransactionBytes)
                     val publicKey = addressBook.getPublicKey(persona.entityId)!!
                     require(isValidSignature(publicKey, v2TransactionBytes, v2TransactionSignature))

@@ -17,13 +17,11 @@ import io.opencola.network.providers.relay.OCRelayNetworkProvider
 import io.opencola.search.LuceneSearchIndex
 import io.opencola.security.*
 import io.opencola.security.Encryptor
-import io.opencola.storage.addressbook.AddressBook
-import io.opencola.storage.addressbook.AddressBookEntry
-import io.opencola.storage.addressbook.EntityStoreAddressBook
+import io.opencola.storage.addressbook.*
 import io.opencola.storage.addressbook.EntityStoreAddressBook.Version
-import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import io.opencola.storage.cache.MhtCache
 import io.opencola.storage.entitystore.ExposedEntityStoreV2
+import io.opencola.storage.entitystore.convertExposedEntityStoreV1ToV2
 import io.opencola.storage.entitystore.getSQLiteDB
 import io.opencola.storage.filestore.LocalContentBasedFileStore
 import org.kodein.di.DI
@@ -50,6 +48,12 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) :
     companion object Global {
         // TODO: Remove - create loggers by component / namespace
         val logger = KotlinLogging.logger("opencola.init")
+        private const val addressBookName = "address-book"
+        private const val entityStoreName = "entity-store"
+        private val migrationMessage = """
+Your data has been migrated from v1 storage to v2 storage. When you are confident that everything is
+working properly, you can delete entity-store.db and address-book.db.
+""".trimIndent()
 
         // TODO: Rename - not single keypair anymore. Maybe getOrCreateRootKeyPairs, but doesn't seem right.
         fun getOrCreateRootKeyPair(storagePath: Path, password: String): List<KeyPair> {
@@ -102,6 +106,31 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) :
             }
         }
 
+        private fun migrateEntityStoreV1ToV2(storagePath: Path, keyStore: KeyStore) {
+            if (!storagePath.resolve("$addressBookName.db").exists())
+                return
+
+            val addressBook = EntityStoreAddressBook(Version.V1, AddressBookConfig(), storagePath, keyStore)
+            val signator = Signator(keyStore)
+            var migrationOccurred = false
+
+            listOf(addressBookName, entityStoreName).forEach { name ->
+                if (!storagePath.resolve(name).isDirectory()) {
+                    convertExposedEntityStoreV1ToV2(
+                        addressBook,
+                        signator,
+                        name,
+                        storagePath,
+                        storagePath.resolve(name),
+                    )
+                    migrationOccurred = true
+                }
+            }
+
+            if(migrationOccurred)
+                storagePath.resolve("migration-README.txt").writeText(migrationMessage)
+        }
+
         // TODO: Should probably pass in keyStore vs. personaKeyPairs. The keyStore should be able to get the personaKeyPairs
         fun instance(storagePath: Path, config: Config, personaKeyPairs: List<KeyPair>, password: String): Application {
             if (!storagePath.exists()) {
@@ -110,6 +139,8 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) :
 
             val keyStore = JavaKeyStore(storagePath.resolve("keystore.pks"), password)
             val fileStore = LocalContentBasedFileStore(storagePath.resolve("filestore"))
+
+            migrateEntityStoreV1ToV2(storagePath, keyStore)
 
             val injector = DI {
                 bindSingleton { keyStore }
@@ -122,7 +153,7 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) :
                     EntityStoreAddressBook(
                         Version.V2,
                         config.addressBook,
-                        storagePath.resolve("address-book"),
+                        storagePath.resolve(addressBookName),
                         instance()
                     )
                 }
@@ -133,9 +164,9 @@ class Application(val storagePath: Path, val config: Config, val injector: DI) :
                 bindSingleton { LuceneSearchIndex(storagePath.resolve("lucene")) }
                 bindSingleton {
                     ExposedEntityStoreV2(
-                        "entity-store",
+                        entityStoreName,
                         config.entityStore,
-                        storagePath.resolve("entity-store"),
+                        storagePath.resolve(entityStoreName),
                         ::getSQLiteDB,
                         Attributes.get(),
                         instance(),

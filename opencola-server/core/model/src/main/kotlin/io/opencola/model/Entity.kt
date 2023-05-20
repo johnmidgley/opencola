@@ -166,7 +166,6 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
             ?.let {
                 if (it.value == emptyValue) {
                     // EmptyValue is only meant to be used for deleted facts
-                    logger.error { "getFact found and empty value for $propertyName" }
                     null
                 } else it
             }

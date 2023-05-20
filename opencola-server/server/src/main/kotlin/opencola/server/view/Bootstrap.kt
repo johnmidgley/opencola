@@ -162,7 +162,7 @@ suspend fun changePasswordForm(call: ApplicationCall, message: String? = null) {
     }
 }
 
-suspend fun startingPage(call: ApplicationCall, authToken: String) {
+suspend fun startingPage(call: ApplicationCall, authToken: String, migratingData: Boolean) {
     call.sessions.set(UserSession(authToken))
     call.respondHtml {
         head {
@@ -173,6 +173,11 @@ suspend fun startingPage(call: ApplicationCall, authToken: String) {
         }
         body {
             +"OpenCola is carbonating..."
+            if (migratingData)
+                p {
+                    style = "color: red; font-weight: bold;"
+                    text("Your data is being migrated to a new storage format. This may take a few minutes...")
+                }
             script {
                 unsafe {
                     raw(

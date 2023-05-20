@@ -67,7 +67,7 @@ class ExposedEntityStoreV2(
         require(config.transactionStorageUri == null || config.transactionStorageUri.scheme == "file") { "Unsupported scheme: ${config.transactionStorageUri?.scheme}" }
 
         storagePath.toFile().mkdirs()
-        database = getDB(storagePath.resolve("${name}V2.db"))
+        database = getDB(storagePath.resolve("${name}.v2.db"))
         logger.info { "Initializing ExposedEntityStoreV2 {${database.url}}" }
         transactionStoragePath = config.transactionStorageUri?.toPath()
             ?: storagePath.resolve("transactions").also { it.toFile().mkdirs() }
@@ -159,6 +159,10 @@ class ExposedEntityStoreV2(
             val transactionFacts = transaction.getFacts(ordinal.value)
             transactionFacts
                 .forEach { fact ->
+                    if(fact.operation == Operation.Add && fact.value == io.opencola.model.value.emptyValue) {
+                        throw IllegalArgumentException("Attempt to add empty value for attribute ${fact.attribute}")
+                    }
+
                     Facts.insert {
                         it[authorityId] = Id.encode(fact.authorityId)
                         it[entityId] = Id.encode(fact.entityId)

@@ -20,7 +20,7 @@ object Attributes {
     private val attributesByUriString = CoreAttribute.values().associateBy { it.spec.uri.toString() }
 
     // Can be removed after db migration to v2
-    fun convertLegacyUriString(uriString: String): String {
+    private fun convertLegacyUriString(uriString: String): String {
         if (uriString == "opencola://attributes/tags")
             return "oc://attributes/tag"
 

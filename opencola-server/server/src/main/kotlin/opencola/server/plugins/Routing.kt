@@ -28,6 +28,8 @@ import opencola.server.handlers.*
 import opencola.server.view.*
 import opencola.server.viewmodel.Persona
 import java.nio.file.Path
+import kotlin.io.path.exists
+import kotlin.io.path.isDirectory
 import kotlin.io.path.readBytes
 import io.opencola.application.Application as app
 
@@ -44,6 +46,7 @@ fun Application.configureBootstrapRouting(
     authEncryptionParams: EncryptionParams,
     loginCredentials: CompletableDeferred<LoginCredentials>,
 ) {
+    val migratingData = storagePath.resolve("address-book.db").exists() && !storagePath.resolve("address-book").isDirectory()
 
     routing {
         get("/") {
@@ -69,10 +72,10 @@ fun Application.configureBootstrapRouting(
             val password = formParameters["password"]
 
             if (password.isNullOrBlank()) {
-                startupForm(call,  "Please enter a password")
+                startupForm(call, "Please enter a password")
             } else {
                 if (validateAuthorityKeyStorePassword(storagePath, password)) {
-                    startingPage(call, AuthToken(username).encode(authEncryptionParams))
+                    startingPage(call, AuthToken(username).encode(authEncryptionParams), migratingData)
                     loginCredentials.complete(LoginCredentials(username, password.toString()))
                 } else
                     startupForm(call, "Bad password")
@@ -120,7 +123,7 @@ fun Application.configureBootstrapRouting(
                 if (autoStart) {
                     autoStart()
                 }
-                startingPage(call, AuthToken(username).encode(authEncryptionParams))
+                startingPage(call, AuthToken(username).encode(authEncryptionParams), migratingData)
                 delay(1000)
                 loginCredentials.complete(LoginCredentials(username, password.toString()))
             }
@@ -205,7 +208,7 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             return app.inject<AddressBook>().getEntry(personaId, personaId) as? PersonaAddressBookEntry
         }
 
-        fun getContext(call: ApplicationCall) : Context {
+        fun getContext(call: ApplicationCall): Context {
             return Context(call.parameters["context"])
         }
 
@@ -276,7 +279,8 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             }
 
             post("/entity/{entityId}") {
-                val entityId = Id.decode(call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified"))
+                val entityId =
+                    Id.decode(call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified"))
                 saveEntity(app.inject(), app.inject(), getContext(call), expectPersona(call), entityId)?.let {
                     call.respond(it)
                 } ?: call.respond(HttpStatusCode.Unauthorized)
@@ -299,10 +303,18 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             }
 
             post("/entity/{entityId}/comment") {
-                val entityId = Id.decode(call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified"))
+                val entityId =
+                    Id.decode(call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified"))
                 val comment = call.receive<PostCommentPayload>()
 
-                updateComment(app.inject(), app.inject(), getContext(call), expectPersona(call), entityId, comment)?.let {
+                updateComment(
+                    app.inject(),
+                    app.inject(),
+                    getContext(call),
+                    expectPersona(call),
+                    entityId,
+                    comment
+                )?.let {
                     call.respond(it)
                 }
             }
@@ -327,7 +339,9 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
                 val entityId =
                     Id.decode(call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified"))
                 val attachmentId =
-                    Id.decode(call.parameters["attachmentId"] ?: throw IllegalArgumentException("No attachmentId specified"))
+                    Id.decode(
+                        call.parameters["attachmentId"] ?: throw IllegalArgumentException("No attachmentId specified")
+                    )
 
                 deleteAttachment(
                     app.inject(),
@@ -342,7 +356,14 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             }
 
             post("/post") {
-                newPost(app.inject(), app.inject(), app.inject(), getContext(call), expectPersona(call), call.receive())?.also {
+                newPost(
+                    app.inject(),
+                    app.inject(),
+                    app.inject(),
+                    getContext(call),
+                    expectPersona(call),
+                    call.receive()
+                )?.also {
                     call.respond(it)
                 }
             }
@@ -432,13 +453,15 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
                 call.respond(getPersonas(app.inject()))
             }
 
-            post("/upload"){
+            post("/upload") {
                 call.respond(
                     handleUpload(
                         app.inject(),
                         app.inject(),
                         expectPersona(call).personaId,
-                        call.receiveMultipart()))
+                        call.receiveMultipart()
+                    )
+                )
             }
 
             static {
