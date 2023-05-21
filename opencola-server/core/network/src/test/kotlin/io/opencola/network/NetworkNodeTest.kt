@@ -67,7 +67,7 @@ class NetworkNodeTest {
 
         runBlocking {
             val result = CompletableDeferred<Unit>()
-            context.setRoute(Route(PingMessage.messageType) { _, _, _ -> result.complete(Unit); null })
+            context.setRoute(Route(PingMessage.messageType) { _, _, _ -> result.complete(Unit); emptyList() })
             context.provider.handleMessage(envelopeBytes, false)
             withTimeout(3000) { result.await() }
         }

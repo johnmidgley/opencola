@@ -33,55 +33,26 @@ fun handleNotification(addressBook: AddressBook, eventBus: EventBus, fromId: Id,
     eventBus.sendMessage(Events.PeerNotification.toString(), notification.encode())
 }
 
-data class TransactionsResponse(
-    val startTransactionId: Id?,
-    val currentTransactionId: Id?,
-    val transactions: List<SignedTransaction>,
-) {
-    companion object {
-        fun encode(value: TransactionsResponse): ByteArray {
-            return ByteArrayOutputStream().use { outputStream ->
-                outputStream.writeByteArray(value.startTransactionId?.let { Id.encode(it) } ?: ByteArray(0))
-                outputStream.writeByteArray(value.currentTransactionId?.let { Id.encode(it) } ?: ByteArray(0))
-                outputStream.writeInt(value.transactions.size)
-                value.transactions.forEach { it ->
-                    outputStream.write(SignedTransaction.encode(it))
-                }
-                outputStream.toByteArray()
-            }
-        }
-
-        fun decode(bytes: ByteArray): TransactionsResponse {
-            val inputStream = bytes.inputStream()
-            val startTransactionId = inputStream.readByteArray().let { if (it.isEmpty()) null else Id.decode(it) }
-            val currentTransactionId = inputStream.readByteArray().let { if (it.isEmpty()) null else Id.decode(it) }
-            val numTransactions = inputStream.readInt()
-            val transactions = (0 until numTransactions).map { SignedTransaction.decode(inputStream) }
-            return TransactionsResponse(startTransactionId, currentTransactionId, transactions)
-        }
-    }
-}
-
 fun handleGetData(fileStore: ContentBasedFileStore, dataId: Id): ByteArray? {
     return fileStore.read(dataId)
 }
 
 fun pingRoute(): Route {
-    return Route(PingMessage.messageType) { _, _, _ -> PongMessage() }
+    return Route(PingMessage.messageType) { _, _, _ -> listOf(PongMessage()) }
 }
 
-fun pongRoute(handler: messageHandler =  { _, _, _ -> null }): Route {
+fun pongRoute(handler: messageHandler = { _, _, _ -> emptyList() }): Route {
     return Route(PongMessage.messageType, handler)
 }
 
-fun putNotificationsRoute(eventBus: EventBus, addressBook: AddressBook): Route {
-    return Route("notifications") { from, to, message ->
+fun putNotificationsRoute(): Route {
+    return Route("notifications") { _, _, _ ->
         TODO("handle notifications")
 //        handleNotification(addressBook, eventBus, from, to, notification)
     }
 }
 
-fun getTransactionsRoute(entityStore: EntityStore, addressBook: AddressBook): Route {
+fun getTransactionsRoute(entityStore: EntityStore): Route {
     return Route(
         GetTransactionsMessage.messageType
     ) { _, to, message ->
@@ -97,19 +68,38 @@ fun getTransactionsRoute(entityStore: EntityStore, addressBook: AddressBook): Ro
             totalNumTransactions
         ).drop(extra)
 
-        PutTransactionsMessage(signedTransactions.map { it.encodeProto() })
+        val lastTransactionId = entityStore.getLastTransactionId(to)
+        var pendingTransactions = signedTransactions.size
+
+        // Generate sequence of PutTransactionMessage messages as response
+        signedTransactions.map {
+            --pendingTransactions
+            PutTransactionMessage(
+                it.encodeProto(),
+                if (pendingTransactions == 0 && it.transaction.id != lastTransactionId) lastTransactionId else null
+            )
+        }
     }
 }
 
-fun putTransactionsRoute(entityStore: EntityStore, addressBook: AddressBook): Route {
+fun putTransactionsRoute(entityStore: EntityStore): Route {
     return Route(
-        PutTransactionsMessage.messageType
+        PutTransactionMessage.messageType
     ) { from, _, message ->
-        val putTransactionsMessage = PutTransactionsMessage.decodeProto(message.body.payload)
-        val signedTransactions = putTransactionsMessage.getSignedTransactions()
-        logger.info { "Received ${signedTransactions.size} transactions from $from" }
-        entityStore.addSignedTransactions(signedTransactions)
-        null
+        val putTransactionsMessage = PutTransactionMessage.decodeProto(message.body.payload)
+        val signedTransaction = putTransactionsMessage.getSignedTransaction()
+        logger.info { "Received transaction ${signedTransaction.transaction.id} from $from" }
+        entityStore.addSignedTransaction(signedTransaction)
+
+        if (putTransactionsMessage.lastTransactionId != null) {
+            // Peer has indicated that it is appropriate to request more transactions (i.e. this is the last
+            // transaction in response to a getTransactions request), so check if we need to request more transactions.
+            val peerMostRecentTransactionId = entityStore.getLastTransactionId(from)
+            if (putTransactionsMessage.lastTransactionId != peerMostRecentTransactionId)
+                return@Route listOf(GetTransactionsMessage(peerMostRecentTransactionId))
+        }
+
+        emptyList()
     }
 }
 
@@ -119,7 +109,7 @@ fun getDataRoute(fileStore: ContentBasedFileStore): Route {
     ) { _, _, message ->
         val getDataMessage = GetDataMessage.decodeProto(message.body.payload)
         val dataId = getDataMessage.id
-        handleGetData(fileStore, dataId)?.let { PutDataMessage(dataId, it) }
+        handleGetData(fileStore, dataId)?.let { PutDataMessage(dataId, it) }?.let { listOf(it) } ?: emptyList()
     }
 }
 
@@ -128,9 +118,9 @@ fun putDataRoute(fileStore: ContentBasedFileStore): Route {
         PutDataMessage.messageType
     ) { _, _, message ->
         val putDataMessage = PutDataMessage.decodeProto(message.body.payload)
-        val id =  fileStore.write(putDataMessage.data)
+        val id = fileStore.write(putDataMessage.data)
         require(id == putDataMessage.id)
-        null
+        emptyList()
     }
 }
 
@@ -140,9 +130,9 @@ fun getDefaultRoutes(
     return listOf(
         pingRoute(),
         pongRoute(),
-        putNotificationsRoute(di.instance(), di.instance()),
-        getTransactionsRoute(di.instance(), di.instance()),
-        putTransactionsRoute(di.instance(), di.instance()),
+        putNotificationsRoute(),
+        getTransactionsRoute(di.instance()),
+        putTransactionsRoute(di.instance()),
         getDataRoute(di.instance()),
         putDataRoute(di.instance()),
     )

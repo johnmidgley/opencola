@@ -11,7 +11,7 @@ import io.opencola.network.NetworkNode
 import io.opencola.network.Notification
 import io.opencola.network.PeerEvent
 import io.opencola.network.message.GetTransactionsMessage
-import io.opencola.network.message.PutTransactionsMessage
+import io.opencola.network.message.PutTransactionMessage
 import io.opencola.search.SearchIndex
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.AddressBookEntry
@@ -95,34 +95,6 @@ class MainReactor(
         val mostRecentTransactionId = entityStore.getLastTransactionId(peer.entityId)
         networkNode.sendMessage(peer.personaId, peer.entityId, GetTransactionsMessage(mostRecentTransactionId))
 
-//        // TODO - Config max batches
-//        // TODO: Set reasonable max batches and batch sizes
-//        for (batch in 1..10000) {
-//            logger.info { "Requesting transactions from ${peer.name} - Batch $batch" }
-//            val baseParams = mapOf("authorityId" to peer.entityId.toString())
-//            val params = if (mostRecentTransactionId == null)
-//                baseParams
-//            else
-//                baseParams.plus(Pair("mostRecentTransactionId", mostRecentTransactionId.toString()))
-//
-//            val request = Request(Request.Method.GET, "/transactions", null, params)
-//            val transactionsResponse = networkNode.sendMessage(peer.personaId, peer.entityId, request)?.body?.let {
-//             TransactionsResponse.decode(it)
-//            }
-//
-//            if (transactionsResponse == null || transactionsResponse.transactions.isEmpty()) {
-//                logger.info { "No transactions received from ${peer.name}" }
-//                break
-//            }
-//
-//            logger.info { "Adding ${transactionsResponse.transactions.count()} transactions from ${peer.name}" }
-//            entityStore.addSignedTransactions(transactionsResponse.transactions)
-//            mostRecentTransactionId = transactionsResponse.transactions.last().transaction.id
-//
-//            if (mostRecentTransactionId == transactionsResponse.currentTransactionId)
-//                break
-//        }
-
         logger.info { "Completed requesting transactions from: ${peer.name}" }
     }
 
@@ -152,7 +124,7 @@ class MainReactor(
 
         if (persona != null) {
             // Transaction originated locally, so inform peers
-            networkNode.broadcastMessage(persona, PutTransactionsMessage(listOf(event.data)))
+            networkNode.broadcastMessage(persona, PutTransactionMessage(event.data))
         }
     }
 

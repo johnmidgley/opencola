@@ -71,7 +71,7 @@ class OCRelayNetworkProviderTest : PeerNetworkTest() {
                 val results = Channel<Unit>()
                 networkNode0.routes = networkNode0.routes.map {
                     if (it.messageType == PongMessage.messageType)
-                        pongRoute { _, _, _ -> launch { results.send(Unit) }; null }
+                        pongRoute { _, _, _ -> launch { results.send(Unit) }; emptyList() }
                     else
                         it
                 }

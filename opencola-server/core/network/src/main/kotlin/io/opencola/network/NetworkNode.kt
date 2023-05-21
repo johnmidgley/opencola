@@ -14,7 +14,7 @@ import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.set
 
-typealias messageHandler = (from: Id, to: Id, signedMessage: SignedMessage) -> Message?
+typealias messageHandler = (from: Id, to: Id, signedMessage: SignedMessage) -> List<Message>
 
 // TODO: If another node suspends and (which looks offline) and then wakes up, other nodes will not be aware that it's
 //  back online. Ping when coming out of suspend, or ping / request transactions periodically?
@@ -114,7 +114,7 @@ class NetworkNode(
             val handler = routes.firstOrNull { it.messageType == signedMessage.body.type }?.handler
                 ?: throw IllegalArgumentException("No handler for \"${signedMessage.body.type}\"")
 
-            handler(from, to, signedMessage)?.let { response ->
+            handler(from, to, signedMessage).forEach { response ->
                 // Handler provided a response, so send it back
                 sendMessage(to, from, response)
             }

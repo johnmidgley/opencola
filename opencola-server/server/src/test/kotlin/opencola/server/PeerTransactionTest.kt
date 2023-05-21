@@ -27,7 +27,7 @@ class PeerTransactionTest : PeerNetworkTest() {
             val entityStore0 by application0.injector.instance<EntityStore>()
 
             println("Updating resource0")
-            // TODO: Could make set of functions: waitForBroadcase, waitForIndexing, etc.
+            // TODO: Could make set of functions: waitForBroadcast, waitForIndexing, etc.
             waitForStdout("Broadcasting request: PutTxns") { entityStore0.updateEntities(resource0) }
 
             println("Starting server1")
@@ -133,12 +133,17 @@ class PeerTransactionTest : PeerNetworkTest() {
 
             // Add item to server0
             val authorityId0 = app0.getPersonas().single().entityId
-            val resourceEntity0 =
-                ResourceEntity(authorityId0, URI("https://opencola.io"), "OpenCola From Server 0", "OpenCola Website 0")
+            val app0Resource0 =
+                ResourceEntity(authorityId0, URI("https://opencola.io/resource0"), "app0resource0")
             val entityStore0 = app0.inject<EntityStore>()
 
-            println("Adding resourceEntity0")
-            waitForStdout("Indexed transaction:") { entityStore0.updateEntities(resourceEntity0) }
+            println("Adding app0Resource0")
+            waitForStdout("Indexed transaction:") { entityStore0.updateEntities(app0Resource0) }
+
+            val app0Resource1 =
+                ResourceEntity(authorityId0, URI("https://opencola.io/resource1"), "app0resource1")
+            println("Adding app0Resource1")
+            waitForStdout("Indexed transaction:") { entityStore0.updateEntities(app0Resource1) }
 
             println("Add server1 as peer to server0 when server 1 is offline")
             waitForStdout("Completed requesting transactions") {
@@ -150,37 +155,44 @@ class PeerTransactionTest : PeerNetworkTest() {
 
             println("Add server0 as peer to server1")
             // Add server0 as peer to server1
-            waitForStdout("Indexed transaction") {
+            StdoutMonitor(readTimeoutMilliseconds = 3000).use {
                 server1.updatePeer(server1.postInviteToken(server0.getInviteToken()))
+                // Wait for 2 transactions to be indexed
+                it.waitUntil("Indexed transaction")
+                it.waitUntil("Indexed transaction")
             }
 
-            println("Adding resource to server1")
+            println("Adding app1Resource1 to server1")
             val authorityId1 = app1.getPersonas().single().entityId
-            val resourceEntity1 = ResourceEntity(
+            val app1Resource1 = ResourceEntity(
                 authorityId1,
                 URI("https://opencola.io/"),
-                "OpenCola From Server 1",
-                "OpenCola Website 1"
+                "app1Resource1",
             )
             val entityStore1 = app1.inject<EntityStore>()
 
             StdoutMonitor(readTimeoutMilliseconds = 3000).use {
-                entityStore1.updateEntities(resourceEntity1)
+                entityStore1.updateEntities(app1Resource1)
                 // Wait for local and remote indexing
                 it.waitUntil("Indexed transaction")
                 it.waitUntil("Indexed transaction")
             }
 
             println("Getting entity from server0")
-            val resource1FromServer0 =
-                entityStore0.getEntity(resourceEntity1.authorityId, resourceEntity1.entityId) as? ResourceEntity
-            assertNotNull(resource1FromServer0)
-            assertEquals(resourceEntity1.name, resource1FromServer0.name)
+            val app1Resource1FromServer0 =
+                entityStore0.getEntity(app1Resource1.authorityId, app1Resource1.entityId) as? ResourceEntity
+            assertNotNull(app1Resource1FromServer0)
+            assertEquals(app1Resource1.name, app1Resource1FromServer0.name)
 
-            val resource0FromServer1 =
-                entityStore1.getEntity(resourceEntity0.authorityId, resourceEntity0.entityId) as? ResourceEntity
-            assertNotNull(resource0FromServer1)
-            assertEquals(resourceEntity0.name, resource0FromServer1.name)
+            val app0Resource0FromServer1 =
+                entityStore1.getEntity(app0Resource0.authorityId, app0Resource0.entityId) as? ResourceEntity
+            assertNotNull(app0Resource0FromServer1)
+            assertEquals(app0Resource0.name, app0Resource0FromServer1.name)
+
+            val app0Resource1FromServer1 =
+                entityStore1.getEntity(app0Resource1.authorityId, app0Resource1.entityId) as? ResourceEntity
+            assertNotNull(app0Resource1FromServer1)
+            assertEquals(app0Resource1.name, app0Resource1FromServer1.name)
         } finally {
             server0.application.close()
             server1.application.close()

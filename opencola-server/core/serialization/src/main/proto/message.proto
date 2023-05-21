@@ -32,9 +32,12 @@ message GetTransactionsMessage {
   int32 maxTransactions = 2;
 }
 
-message PutTransactionsMessage {
+message PutTransactionMessage {
   // Transactions are sent as bytes to preserve signatures
-  repeated bytes signedTransactions = 2;
+  bytes signedTransaction = 1;
+
+  // Indicator of the persona's current transaction id, so peer knows whether to request more transactions
+  Id lastTransactionId = 2;
 }
 
 message GetDataMessage {

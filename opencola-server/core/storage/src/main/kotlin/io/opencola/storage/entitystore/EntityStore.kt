@@ -27,6 +27,10 @@ interface EntityStore {
     fun addSignedTransactions(signedTransactions: List<SignedTransaction>)
     fun getSignedTransactions(authorityIds: Iterable<Id>, startTransactionId: Id?, order: TransactionOrder, limit: Int) : Iterable<SignedTransaction>
 
+    fun addSignedTransaction(signedTransaction: SignedTransaction) {
+        addSignedTransactions(listOf(signedTransaction))
+    }
+
     fun getEntity(authorityId: Id, entityId: Id): Entity? {
         return getEntities(setOf(authorityId), setOf(entityId)).firstOrNull()
     }
