@@ -75,7 +75,8 @@ class ExposedEntityStoreV2(
         initTables()
         attributeUriToDbIdMap = initDbAttributes(modelAttributes)
         val uriToAttributeMap = modelAttributes.associateBy { it.uri }
-        attributeDbIdToModelAttributeMap = attributeUriToDbIdMap.entries.associate { it.value to uriToAttributeMap[it.key]!! }
+        attributeDbIdToModelAttributeMap =
+            attributeUriToDbIdMap.entries.associate { it.value to uriToAttributeMap[it.key]!! }
 
     }
 
@@ -141,12 +142,7 @@ class ExposedEntityStoreV2(
 
     }
 
-    override fun persistTransaction(signedTransaction: SignedTransaction): Long {
-        if(!transactionFileStore.exists(signedTransaction.transaction.id)) {
-            // Local transactions get added to the filestore here. Foreign transactions are added in addSignedTransactions
-            transactionFileStore.write(signedTransaction.transaction.id, signedTransaction.encodeProto())
-        }
-
+    private fun addTransactionToDB(signedTransaction: SignedTransaction): Long {
         return transaction(database) {
             val transaction = signedTransaction.transaction
             val ordinal = Transactions.insert {
@@ -159,7 +155,7 @@ class ExposedEntityStoreV2(
             val transactionFacts = transaction.getFacts(ordinal.value)
             transactionFacts
                 .forEach { fact ->
-                    if(fact.operation == Operation.Add && fact.value == io.opencola.model.value.emptyValue) {
+                    if (fact.operation == Operation.Add && fact.value == io.opencola.model.value.emptyValue) {
                         throw IllegalArgumentException("Attempt to add empty value for attribute ${fact.attribute}")
                     }
 
@@ -176,6 +172,32 @@ class ExposedEntityStoreV2(
 
             ordinal.value
         }
+    }
+
+
+    override fun persistTransaction(signedTransaction: SignedTransaction): Long {
+        if (!transactionFileStore.exists(signedTransaction.transaction.id)) {
+            // Local transactions get added to the filestore here. Foreign transactions are added in addSignedTransactions
+            transactionFileStore.write(signedTransaction.transaction.id, signedTransaction.encodeProto())
+        }
+
+        val ordinal = addTransactionToDB(signedTransaction)
+
+        try {
+           // Added any cached transactions (those received out of order) that were waiting for this transaction
+            while (true) {
+                val nextTransactionId = getNextTransactionId(signedTransaction.transaction.authorityId)
+
+                transactionFileStore.read(nextTransactionId)?.let {
+                    logger.info { "Adding cached transaction: $nextTransactionId" }
+                    addTransactionToDB(SignedTransaction.decodeProto(it))
+                } ?: break
+            }
+        } catch (e: Exception) {
+            logger.error(e) { "Error adding cached transaction to DB: $e" }
+        }
+
+        return ordinal
     }
 
     private fun getOrderColumn(order: TransactionOrder): Column<*> {
@@ -304,7 +326,7 @@ class ExposedEntityStoreV2(
         super.addSignedTransactions(signedTransactions)
     }
 
-    fun getNextTransactionIdForV2MigrationOnly(authorityId: Id) : Id {
+    fun getNextTransactionIdForV2MigrationOnly(authorityId: Id): Id {
         return super.getNextTransactionId(authorityId)
     }
 }
