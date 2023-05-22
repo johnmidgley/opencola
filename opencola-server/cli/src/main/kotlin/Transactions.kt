@@ -11,7 +11,7 @@ import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 
 // TODO: Use EntityStore.getAllTransactions() instead of this (pull this logic inside)
-fun transactionsFromEntityStore(entityStore: EntityStore, authorityIds: Iterable<Id> = emptyList()) : Sequence<SignedTransaction> {
+fun transactionsFromEntityStore(entityStore: EntityStore, authorityIds: Set<Id> = emptySet()) : Sequence<SignedTransaction> {
     val batchSize = 50
 
     return sequence {
@@ -27,12 +27,12 @@ fun transactionsFromEntityStore(entityStore: EntityStore, authorityIds: Iterable
                 break
             }
 
-            transactions = entityStore.getSignedTransactions(emptyList(), transactions.last().transaction.id, EntityStore.TransactionOrder.IdAscending, batchSize + 1).drop(1)
+            transactions = entityStore.getSignedTransactions(emptySet(), transactions.last().transaction.id, EntityStore.TransactionOrder.IdAscending, batchSize + 1).drop(1)
         }
     }
 }
 
-fun exportTransactions(entityStore: EntityStore, path: Path, authorityIds: Iterable<Id> = emptyList()) {
+fun exportTransactions(entityStore: EntityStore, path: Path, authorityIds: Set<Id> = emptySet()) {
     path.outputStream().use { stream ->
         transactionsFromEntityStore(entityStore, authorityIds).forEach {
             println("Writing ${it.transaction.id}")

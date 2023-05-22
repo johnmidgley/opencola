@@ -116,7 +116,7 @@ class EntityStoreTest {
         assertNotNull(transaction)
 
         val transactionsFromNull =
-            entityStore.getSignedTransactions(listOf(persona.personaId), null, TransactionOrder.IdAscending, 100)
+            entityStore.getSignedTransactions(setOf(persona.personaId), null, TransactionOrder.IdAscending, 100)
         assertNotNull(transactionsFromNull.firstOrNull { it.transaction.id == transaction.transaction.id })
     }
 
@@ -131,29 +131,29 @@ class EntityStoreTest {
         val transactionIds = transactions.map { it.transaction.id }
 
         val firstTransaction =
-            entityStore.getSignedTransactions(listOf(persona.personaId), null, TransactionOrder.IdAscending, 1)
+            entityStore.getSignedTransactions(setOf(persona.personaId), null, TransactionOrder.IdAscending, 1)
                 .firstOrNull()
         assertNotNull(firstTransaction)
         assertEquals(transactions.first(), firstTransaction)
 
         val firstTransactionAll =
-            entityStore.getSignedTransactions(emptyList(), null, TransactionOrder.IdAscending, 1).firstOrNull()
+            entityStore.getSignedTransactions(emptySet(), null, TransactionOrder.IdAscending, 1).firstOrNull()
         assertNotNull(firstTransactionAll)
         assertEquals(transactions.first(), firstTransaction)
 
         val lastTransaction =
-            entityStore.getSignedTransactions(listOf(persona.personaId), null, TransactionOrder.IdDescending, 1)
+            entityStore.getSignedTransactions(setOf(persona.personaId), null, TransactionOrder.IdDescending, 1)
                 .firstOrNull()
         assertNotNull(lastTransaction)
         assertEquals(entities.last().entityId, lastTransaction.transaction.transactionEntities.first().entityId)
 
         val lastTransactionAll =
-            entityStore.getSignedTransactions(emptyList(), null, TransactionOrder.IdDescending, 1).firstOrNull()
+            entityStore.getSignedTransactions(emptySet(), null, TransactionOrder.IdDescending, 1).firstOrNull()
         assertNotNull(lastTransactionAll)
         assertEquals(transactions.last(), lastTransactionAll)
 
         val middleTransactionsForward = entityStore.getSignedTransactions(
-            listOf(persona.personaId),
+            setOf(persona.personaId),
             transactionIds[1],
             TransactionOrder.IdAscending,
             10
@@ -161,7 +161,7 @@ class EntityStoreTest {
         assertEquals(transactions.drop(1), middleTransactionsForward)
 
         val middleTransactionsBackward = entityStore.getSignedTransactions(
-            listOf(persona.personaId),
+            setOf(persona.personaId),
             transactionIds[1],
             TransactionOrder.IdDescending,
             10
@@ -169,11 +169,11 @@ class EntityStoreTest {
         assertEquals(transactions.reversed().drop(1), middleTransactionsBackward)
 
         val allTransactionsForward =
-            entityStore.getSignedTransactions(emptyList(), null, TransactionOrder.IdAscending, 10)
+            entityStore.getSignedTransactions(emptySet(), null, TransactionOrder.IdAscending, 10)
         assertEquals(transactions, allTransactionsForward)
 
         val allTransactionsBackward =
-            entityStore.getSignedTransactions(emptyList(), null, TransactionOrder.IdDescending, 10)
+            entityStore.getSignedTransactions(emptySet(), null, TransactionOrder.IdDescending, 10)
         assertEquals(transactions.reversed(), allTransactionsBackward)
 
         // TODO - Add tests across AuthorityIds
@@ -199,25 +199,25 @@ class EntityStoreTest {
                 ?: throw RuntimeException("Unable to update entities")
             entityStore0.addSignedTransactions(listOf(transaction))
 
-            val authority0Facts = entityStore0.getFacts(listOf(authority0.personaId), emptyList())
+            val authority0Facts = entityStore0.getFacts(setOf(authority0.personaId), emptySet())
             assert(authority0Facts.isNotEmpty())
             assert(authority0Facts.all { it.authorityId == authority0.personaId })
             assertNotNull(authority0Facts.firstOrNull { it.entityId == entities0[0].entityId })
             assertNotNull(authority0Facts.firstOrNull { it.entityId == entities0[1].entityId })
 
-            val authority1Facts = entityStore0.getFacts(listOf(authority1.personaId), emptyList())
+            val authority1Facts = entityStore0.getFacts(setOf(authority1.personaId), emptySet())
             assert(authority1Facts.isNotEmpty())
             assert(authority1Facts.all { it.authorityId == authority1.personaId })
             assertNotNull(authority1Facts.firstOrNull { it.entityId == entities1[0].entityId })
             assertNotNull(authority1Facts.firstOrNull { it.entityId == entities1[1].entityId })
 
-            val entity0Facts = entityStore0.getFacts(emptyList(), listOf(entities0[0].entityId))
+            val entity0Facts = entityStore0.getFacts(emptySet(), setOf(entities0[0].entityId))
             assert(entity0Facts.isNotEmpty())
             assertTrue { entity0Facts.all { it.entityId == entities0[0].entityId } }
             assertTrue(entity0Facts.any { it.authorityId == authority0.personaId })
             assertTrue(entity0Facts.any { it.authorityId == authority1.personaId })
 
-            val entity1Facts = entityStore0.getFacts(emptyList(), listOf(entities0[1].entityId))
+            val entity1Facts = entityStore0.getFacts(emptySet(), setOf(entities0[1].entityId))
             assert(entity1Facts.isNotEmpty())
             assertTrue { entity1Facts.all { it.entityId == entities0[1].entityId } }
             assertTrue(entity1Facts.any { it.authorityId == authority0.personaId })

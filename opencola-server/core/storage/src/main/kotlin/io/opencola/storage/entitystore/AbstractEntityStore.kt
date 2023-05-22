@@ -173,7 +173,7 @@ abstract class AbstractEntityStore(
 
     // DO NOT use this outside of persistTransaction
     protected fun getNextTransactionId(authorityId: Id): Id {
-        return getSignedTransactions(listOf(authorityId), null, TransactionOrder.IdDescending, 1)
+        return getSignedTransactions(setOf(authorityId), null, TransactionOrder.IdDescending, 1)
             .firstOrNull()
             ?.let {
                 val encodedSignedTransaction =

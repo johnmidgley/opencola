@@ -53,7 +53,7 @@ fun convertExposedEntityStoreV1ToV2(
             val personaAlias = persona.entityId.toString()
             logger.info { "Converting transactions for name:${persona.name} id:${persona.entityId}" }
 
-            entityStoreV1.getAllSignedTransactions(listOf(persona.entityId))
+            entityStoreV1.getAllSignedTransactions(setOf(persona.entityId))
                 .forEachIndexed { idx, signedTransaction ->
                     logger.info { "Converting transaction $idx: id=${signedTransaction.transaction.id}" }
                     require(signedTransaction.transaction.authorityId == persona.entityId)

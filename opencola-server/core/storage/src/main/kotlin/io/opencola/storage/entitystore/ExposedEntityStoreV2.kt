@@ -270,7 +270,7 @@ class ExposedEntityStoreV2(
     }
 
     override fun getSignedTransactions(
-        authorityIds: Iterable<Id>,
+        authorityIds: Set<Id>,
         startTransactionId: Id?,
         order: TransactionOrder,
         limit: Int
@@ -302,7 +302,7 @@ class ExposedEntityStoreV2(
         )
     }
 
-    override fun getFacts(authorityIds: Iterable<Id>, entityIds: Iterable<Id>): List<Fact> {
+    override fun getFacts(authorityIds: Set<Id>, entityIds: Set<Id>): List<Fact> {
         return transaction(database) {
             Facts.select {
                 (Facts.id greaterEq 0)

@@ -17,7 +17,7 @@ interface EntityStore {
     // TODO: Return Sequences instead of a Lists
 
     // TODO: Separate fact store from entity store?
-    fun getFacts(authorityIds: Iterable<Id>, entityIds: Iterable<Id>) : List<Fact>
+    fun getFacts(authorityIds: Set<Id>, entityIds: Set<Id>) : List<Fact>
 
     fun updateEntities(vararg entities: Entity) : SignedTransaction?
     fun getEntities(authorityIds: Set<Id>, entityIds: Set<Id>) : List<Entity>
@@ -25,7 +25,7 @@ interface EntityStore {
 
     // TODO: Should this be 'put' instead of 'add'?
     fun addSignedTransactions(signedTransactions: List<SignedTransaction>)
-    fun getSignedTransactions(authorityIds: Iterable<Id>, startTransactionId: Id?, order: TransactionOrder, limit: Int) : Iterable<SignedTransaction>
+    fun getSignedTransactions(authorityIds: Set<Id>, startTransactionId: Id?, order: TransactionOrder, limit: Int) : Iterable<SignedTransaction>
 
     fun addSignedTransaction(signedTransaction: SignedTransaction) {
         addSignedTransactions(listOf(signedTransaction))
@@ -36,20 +36,20 @@ interface EntityStore {
     }
 
     fun getLastTransactionId(authorityId: Id): Id? {
-        return getSignedTransactions(listOf(authorityId), null, TransactionOrder.IdDescending, 1)
+        return getSignedTransactions(setOf(authorityId), null, TransactionOrder.IdDescending, 1)
             .firstOrNull()
             .ifNotNullOrElse( { it.transaction.id }, { null } )
     }
 
     fun getTransaction(transactionId: Id): SignedTransaction? {
-        return getSignedTransactions(listOf(), transactionId, TransactionOrder.IdAscending, 1).firstOrNull()
+        return getSignedTransactions(setOf(), transactionId, TransactionOrder.IdAscending, 1).firstOrNull()
     }
 
     fun getSignedTransactions(authorityId: Id, startTransactionId: Id?, order: TransactionOrder, limit: Int) : Iterable<SignedTransaction> {
-        return getSignedTransactions(listOf(authorityId), startTransactionId, order, limit)
+        return getSignedTransactions(setOf(authorityId), startTransactionId, order, limit)
     }
 
-    fun getAllSignedTransactions(authorityIds: Iterable<Id> = emptyList(), batchSize: Int = 100): Sequence<SignedTransaction> {
+    fun getAllSignedTransactions(authorityIds: Set<Id> = emptySet(), batchSize: Int = 100): Sequence<SignedTransaction> {
         return sequence {
             var transactions =
                 getSignedTransactions(authorityIds, null, TransactionOrder.IdAscending, batchSize)

@@ -99,7 +99,7 @@ class ExposedEntityStore(
         }
     }
 
-    private fun Op<Boolean>.withIdConstraint(column: Column<ByteArray>, ids: List<Id>): Op<Boolean> {
+    private fun Op<Boolean>.withIdConstraint(column: Column<ByteArray>, ids: Set<Id>): Op<Boolean> {
         return if (ids.isEmpty())
             this
         else
@@ -127,7 +127,7 @@ class ExposedEntityStore(
         }
     }
 
-    private fun transactionsByAuthoritiesQuery(authorityIds: List<Id>, id: Long?, order: TransactionOrder): Query {
+    private fun transactionsByAuthoritiesQuery(authorityIds: Set<Id>, id: Long?, order: TransactionOrder): Query {
         val orderColumn = getOrderColumn(order)
         val isAscending = isAscending(order)
 
@@ -142,7 +142,7 @@ class ExposedEntityStore(
     }
 
     private fun startRowQuery(
-        authorityIds: List<Id>,
+        authorityIds: Set<Id>,
         startTransactionId: Id?,
         order: TransactionOrder
     ): Query {
@@ -162,21 +162,20 @@ class ExposedEntityStore(
     }
 
     private fun getTransactionRows(
-        authorityIds: Iterable<Id>,
+        authorityIds: Set<Id>,
         startTransactionId: Id?,
         order: TransactionOrder,
         limit: Int
     ): List<ResultRow> {
         return transaction(database) {
-            val authorityIdList = authorityIds.toList()
             // TODO: There's likely a seam problem lurking here when ordering by time,
             //  since time isn't unique. Solve!
-            val startRow = startRowQuery(authorityIdList, startTransactionId, order).firstOrNull()
+            val startRow = startRowQuery(authorityIds, startTransactionId, order).firstOrNull()
 
             if (startRow == null)
                 emptyList()
             else {
-                transactionsByAuthoritiesQuery(authorityIdList, getStartValue(order, startRow), order)
+                transactionsByAuthoritiesQuery(authorityIds, getStartValue(order, startRow), order)
                     .limit(limit)
                     .toList()
             }
@@ -185,7 +184,7 @@ class ExposedEntityStore(
     }
 
     override fun getSignedTransactions(
-        authorityIds: Iterable<Id>,
+        authorityIds: Set<Id>,
         startTransactionId: Id?,
         order: TransactionOrder,
         limit: Int
@@ -244,12 +243,12 @@ class ExposedEntityStore(
         }
     }
 
-    override fun getFacts(authorityIds: Iterable<Id>, entityIds: Iterable<Id>): List<Fact> {
+    override fun getFacts(authorityIds: Set<Id>, entityIds: Set<Id>): List<Fact> {
         return transaction(database) {
             facts.select {
                 (facts.id greaterEq 0)
-                    .withIdConstraint(facts.authorityId, authorityIds.toList())
-                    .withIdConstraint(facts.entityId, entityIds.toList())
+                    .withIdConstraint(facts.authorityId, authorityIds)
+                    .withIdConstraint(facts.entityId, entityIds)
             }.mapNotNull { factFromResultRow(it) }
         }
     }
