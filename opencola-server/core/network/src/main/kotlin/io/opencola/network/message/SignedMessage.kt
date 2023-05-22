@@ -5,6 +5,7 @@ import io.opencola.security.Signator
 import io.opencola.security.Signature
 import io.opencola.serialization.protobuf.Message
 import io.opencola.serialization.protobuf.ProtoSerializable
+import java.security.PublicKey
 import io.opencola.serialization.protobuf.Message as ProtoMessage
 
 class SignedMessage(val from: Id, val body: UnsignedMessage, val signature: Signature) {
@@ -19,6 +20,10 @@ class SignedMessage(val from: Id, val body: UnsignedMessage, val signature: Sign
 
     fun encode(): ByteArray {
         return encodeProto(this)
+    }
+
+    fun hasValidSignature(publicKey: PublicKey): Boolean {
+        return signature.isValidSignature(publicKey, body.payload)
     }
 
     companion object Factory : ProtoSerializable<SignedMessage, ProtoMessage.SignedMessage> {

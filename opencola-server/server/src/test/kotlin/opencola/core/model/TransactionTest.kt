@@ -54,7 +54,7 @@ class TransactionTest {
             SignedTransaction.decode(it)
         }
 
-        decodedTransaction.isValidTransaction(persona.publicKey)
+        decodedTransaction.hasValidSignature(persona.publicKey)
         assertEquals(signedTransaction, decodedTransaction)
     }
 }

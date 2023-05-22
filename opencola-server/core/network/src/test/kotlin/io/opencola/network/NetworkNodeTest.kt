@@ -12,7 +12,10 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.junit.Test
+import java.security.PublicKey
 import java.util.UUID
+import java.util.concurrent.LinkedBlockingDeque
+import java.util.concurrent.TimeUnit
 import kotlin.test.*
 
 
@@ -62,8 +65,8 @@ class NetworkNodeTest {
     @Test
     fun testSendValidMessage() {
         val context = NetworkNodeContext()
-        val peerKeyPair = context.addPeer("Peer0")
-        val envelopeBytes = context.getEncodedEnvelope(peerKeyPair, context.persona.personaId, pingMessage)
+        val peer0 = context.addPeer("Peer0")
+        val envelopeBytes = context.getEncodedEnvelope(peer0.keyPair, context.persona.personaId, pingMessage)
 
         runBlocking {
             val result = CompletableDeferred<Unit>()
@@ -77,25 +80,25 @@ class NetworkNodeTest {
     fun testReceiveMessageToInactivePersona() {
         val context = NetworkNodeContext()
         val persona = context.addressBook.addPersona("Persona0", false)
-        val peerKeyPair = context.addPeer("Peer0")
-        val envelopeBytes = context.getEncodedEnvelope(peerKeyPair, persona.personaId, pingMessage)
+        val peer0 = context.addPeer("Peer0")
+        val envelopeBytes = context.getEncodedEnvelope(peer0.keyPair, persona.personaId, pingMessage)
         assertFails { context.provider.handleMessage(envelopeBytes, false) }
     }
 
     @Test
     fun testReceiveMessageFromInactivePeer() {
         val context = NetworkNodeContext()
-        val peerKeyPair = context.addPeer("Peer0", false)
-        val envelopeBytes = context.getEncodedEnvelope(peerKeyPair, context.persona.personaId, pingMessage)
+        val peer0 = context.addPeer("Peer0", false)
+        val envelopeBytes = context.getEncodedEnvelope(peer0.keyPair, context.persona.personaId, pingMessage)
         assertFails { context.provider.handleMessage(envelopeBytes, false) }
     }
 
     @Test
     fun testReceiveMessageFromValidPeerToWrongPersona() {
         val context = NetworkNodeContext()
-        val peerKeyPair = context.addPeer("Peer0")
+        val peer0 = context.addPeer("Peer0")
         val persona1 = context.addressBook.addPersona("Persona1")
-        val envelopeBytes = context.getEncodedEnvelope(peerKeyPair, persona1.personaId, pingMessage)
+        val envelopeBytes = context.getEncodedEnvelope(peer0.keyPair, persona1.personaId, pingMessage)
         assertFails { context.provider.handleMessage(envelopeBytes, false) }
     }
 
@@ -134,7 +137,7 @@ class NetworkNodeTest {
             context.provider.onSendMessage = { _, _, message -> result.complete(message) }
 
             // Create persona and peer
-            val peerKeyPair = context.addPeer("Peer0")
+            val peer0 = context.addPeer("Peer0")
 
             // Add data to file store
             val data = "Hello World ${UUID.randomUUID()}".toByteArray()
@@ -142,7 +145,7 @@ class NetworkNodeTest {
 
             // Request data as peer
             val message = GetDataMessage(id).toUnsignedMessage()
-            val envelopeBytes = context.getEncodedEnvelope(peerKeyPair, context.persona.personaId, message)
+            val envelopeBytes = context.getEncodedEnvelope(peer0.keyPair, context.persona.personaId, message)
             context.provider.handleMessage(envelopeBytes, false)
 
             val signedMessage = withTimeout(3000) { result.await() }
@@ -151,5 +154,65 @@ class NetworkNodeTest {
             assertEquals(id, putDataMessage.id)
             assertContentEquals(data, fileStore.read(id))
         }
+    }
+
+    fun decodePutTransactionsMessage(publicKey: PublicKey, signedMessage: SignedMessage?): PutTransactionMessage {
+        assertNotNull(signedMessage)
+        assertEquals(PutTransactionMessage.messageType, signedMessage.body.type)
+        assert(signedMessage.hasValidSignature(publicKey))
+        return PutTransactionMessage.decodeProto(signedMessage.body.payload).also {
+            assert(it.getSignedTransaction().hasValidSignature(publicKey))
+        }
+    }
+
+    fun <T> poll(q: LinkedBlockingDeque<T>) : T? {
+        return q.poll(1000, TimeUnit.MILLISECONDS)
+    }
+
+    @Test
+    fun testGetTransactionBatching() {
+        val context = NetworkNodeContext()
+        val persona = context.persona
+        val peer0 = context.addPeer("Peer0")
+        val results = LinkedBlockingDeque<SignedMessage>()
+        context.provider.onSendMessage = { _, _, message -> results.add(message) }
+
+        val transactionIds = (0 until 10)
+            .map { getTestEntity(context.persona, it) }
+            .mapNotNull { context.entityStore.updateEntities(it)?.transaction?.id }
+
+        assert(transactionIds.count() == 10)
+        var transactionNum = 0
+
+        val message0 = GetTransactionsMessage(null, 4)
+        context.handleMessage(peer0, context.persona.entityId, message0.toUnsignedMessage())
+
+        repeat(3) {
+            decodePutTransactionsMessage(persona.publicKey, poll(results)).let {
+                assertEquals(transactionIds[transactionNum++], it.getSignedTransaction().transaction.id)
+                assertNull(it.lastTransactionId)
+            }
+        }
+
+        val putTransactionMessage = decodePutTransactionsMessage(persona.publicKey, poll(results))
+        val signedTransaction = putTransactionMessage.getSignedTransaction()
+        assertEquals(transactionIds[transactionNum++], signedTransaction.transaction.id)
+        assertNotNull(putTransactionMessage.lastTransactionId)
+
+        // Make sure no pending messages
+        assertNull(results.poll(500, TimeUnit.MILLISECONDS))
+
+        val message1 = GetTransactionsMessage(signedTransaction.transaction.id, 10)
+        context.handleMessage(peer0, context.persona.entityId, message1.toUnsignedMessage())
+
+        repeat(6) {
+            decodePutTransactionsMessage(persona.publicKey, poll(results)).let {
+                assertEquals(transactionIds[transactionNum++], it.getSignedTransaction().transaction.id)
+                assertNull(it.lastTransactionId)
+            }
+        }
+
+        // Make sure no pending messages
+        assertNull(results.poll(500, TimeUnit.MILLISECONDS))
     }
 }

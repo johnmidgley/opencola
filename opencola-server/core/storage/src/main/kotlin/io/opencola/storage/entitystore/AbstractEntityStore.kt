@@ -270,8 +270,8 @@ abstract class AbstractEntityStore(
             val publicKey = publicKeyProvider.getPublicKey(transactionAuthorityId)
                 ?: throw IllegalArgumentException("No public key for: $transactionAuthorityId - cannot persist transaction ${transaction.id}")
 
-            if (!it.isValidTransaction(publicKey))
-                throw IllegalArgumentException("Transaction ${transaction.id} failed to validate from $transactionAuthorityId")
+            if (!it.hasValidSignature(publicKey))
+                throw IllegalArgumentException("Transaction ${transaction.id} from $transactionAuthorityId has invalid signature")
 
             if (transaction.id != getNextTransactionId(transactionAuthorityId))
                 throw IllegalArgumentException("Transaction ${transaction.id} is out of order from $transactionAuthorityId")

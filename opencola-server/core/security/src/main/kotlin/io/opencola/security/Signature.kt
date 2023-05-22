@@ -5,6 +5,7 @@ import io.opencola.serialization.protobuf.ProtoSerializable
 import io.opencola.serialization.protobuf.Security as ProtoSecurity
 import io.opencola.util.Base58
 import java.security.PrivateKey
+import java.security.PublicKey
 
 class Signature(val algorithm: String, val bytes: ByteArray) {
     companion object : ProtoSerializable<Signature, ProtoSecurity.Signature> {
@@ -22,6 +23,10 @@ class Signature(val algorithm: String, val bytes: ByteArray) {
         override fun fromProto(value: ProtoSecurity.Signature): Signature {
             return Signature(value.algorithm, value.bytes.toByteArray())
         }
+    }
+
+    fun isValidSignature(publicKey: PublicKey, bytes: ByteArray): Boolean {
+        return isValidSignature(publicKey, bytes, this)
     }
 
     fun toProto(): ProtoSecurity.Signature {

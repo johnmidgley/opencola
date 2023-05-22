@@ -36,7 +36,7 @@ data class SignedTransaction(
         return result
     }
 
-    fun isValidTransaction(publicKey: PublicKey): Boolean {
+    fun hasValidSignature(publicKey: PublicKey): Boolean {
         return isValidSignature(publicKey, encodedTransaction, signature)
     }
 

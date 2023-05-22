@@ -12,11 +12,10 @@ import io.opencola.storage.entitystore.EntityStore.TransactionOrder
 import io.opencola.storage.entitystore.EntityStoreConfig
 
 class MockEntityStore(
-    entityStoreConfig: EntityStoreConfig = EntityStoreConfig(),
     signator: Signator,
     publicKeyProvider: PublicKeyProvider<Id>,
-    eventBus: EventBus? = null
-) : AbstractEntityStore(entityStoreConfig, signator, publicKeyProvider, eventBus, EncodingFormat.PROTOBUF) {
+    eventBus: EventBus? = null,
+) : AbstractEntityStore(EntityStoreConfig(), signator, publicKeyProvider, eventBus, EncodingFormat.PROTOBUF) {
     private val facts = mutableListOf<Fact>()
     private var transactionOrdinal = 0L
     data class TransactionInfo(val ordinal: Long, val signedTransaction: SignedTransaction)
@@ -82,5 +81,6 @@ class MockEntityStore(
                 }
             }
             .map { it.signedTransaction }
+            .take(limit)
     }
 }

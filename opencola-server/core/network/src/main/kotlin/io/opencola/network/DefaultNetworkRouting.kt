@@ -3,20 +3,14 @@ package io.opencola.network
 import io.opencola.event.EventBus
 import io.opencola.event.Events
 import io.opencola.model.Id
-import io.opencola.model.SignedTransaction
 import io.opencola.network.NetworkNode.*
 import io.opencola.network.message.*
-import io.opencola.serialization.readByteArray
-import io.opencola.serialization.readInt
-import io.opencola.serialization.writeByteArray
-import io.opencola.serialization.writeInt
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.entitystore.EntityStore
 import io.opencola.storage.filestore.ContentBasedFileStore
 import mu.KotlinLogging
 import org.kodein.di.DirectDI
 import org.kodein.di.instance
-import java.io.ByteArrayOutputStream
 
 private val logger = KotlinLogging.logger("RequestRouting")
 
@@ -125,15 +119,25 @@ fun putDataRoute(fileStore: ContentBasedFileStore): Route {
 }
 
 fun getDefaultRoutes(
-    di: DirectDI,
+    entityStore: EntityStore,
+    contentBasedFileStore: ContentBasedFileStore
 ): List<Route> {
     return listOf(
         pingRoute(),
         pongRoute(),
         putNotificationsRoute(),
-        getTransactionsRoute(di.instance()),
-        putTransactionsRoute(di.instance()),
-        getDataRoute(di.instance()),
-        putDataRoute(di.instance()),
+        getTransactionsRoute(entityStore),
+        putTransactionsRoute(entityStore),
+        getDataRoute(contentBasedFileStore),
+        putDataRoute(contentBasedFileStore),
+    )
+}
+
+fun getDefaultRoutes(
+    di: DirectDI,
+): List<Route> {
+    return getDefaultRoutes(
+        di.instance(),
+        di.instance()
     )
 }
