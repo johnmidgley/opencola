@@ -34,7 +34,8 @@ dependencies {
     implementation("com.google.protobuf:protobuf-java:$protobufVersion")
     implementation("org.kodein.di:kodein-di:$kodeinVersion")
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
     testImplementation(project(":test"))
+    testImplementation(project(":core:io"))
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
     testImplementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
 }

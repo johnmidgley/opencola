@@ -2,6 +2,7 @@ package io.opencola.network
 
 import io.opencola.event.EventBus
 import io.opencola.event.Events
+import io.opencola.model.DataEntity
 import io.opencola.model.Id
 import io.opencola.network.NetworkNode.*
 import io.opencola.network.message.*
@@ -97,21 +98,31 @@ fun putTransactionsRoute(entityStore: EntityStore): Route {
     }
 }
 
-fun getDataRoute(fileStore: ContentBasedFileStore): Route {
+fun getDataRoute(entityStore: EntityStore, fileStore: ContentBasedFileStore): Route {
     return Route(
         GetDataMessage.messageType
-    ) { _, _, message ->
+    ) { from, to, message ->
         val getDataMessage = GetDataMessage.decodeProto(message.body.payload)
         val dataId = getDataMessage.id
+        logger.info { "getData: from=$from, to=$to, dataId=$dataId" }
+
+        entityStore.getEntity(to, dataId) as? DataEntity
+            ?: throw IllegalArgumentException("GetData request from $from to $to for unknown data id: $dataId")
+
         handleGetData(fileStore, dataId)?.let { PutDataMessage(dataId, it) }?.let { listOf(it) } ?: emptyList()
     }
 }
 
-fun putDataRoute(fileStore: ContentBasedFileStore): Route {
+fun putDataRoute(entityStore: EntityStore, fileStore: ContentBasedFileStore): Route {
     return Route(
         PutDataMessage.messageType
-    ) { _, _, message ->
+    ) { from, to, message ->
         val putDataMessage = PutDataMessage.decodeProto(message.body.payload)
+        val dataId = putDataMessage.id
+        logger.info { "putData: from=$from, to=$to, dataId=$dataId" }
+
+        entityStore.getEntity(from, dataId) as? DataEntity
+            ?: throw IllegalArgumentException("PutData request from $from to $to for unknown data id: $dataId")
         val id = fileStore.write(putDataMessage.data)
         require(id == putDataMessage.id)
         emptyList()
@@ -128,8 +139,8 @@ fun getDefaultRoutes(
         putNotificationsRoute(),
         getTransactionsRoute(entityStore),
         putTransactionsRoute(entityStore),
-        getDataRoute(contentBasedFileStore),
-        putDataRoute(contentBasedFileStore),
+        getDataRoute(entityStore, contentBasedFileStore),
+        putDataRoute(entityStore, contentBasedFileStore),
     )
 }
 

@@ -11,7 +11,7 @@ import java.net.URI
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-class PeerTransactionTest : PeerNetworkTest() {
+class PeerTransactionTest {
     @Test
     fun testTransactionReplication() {
         val applications = getApplications(2)

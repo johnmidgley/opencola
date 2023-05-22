@@ -9,7 +9,7 @@ import java.net.URI
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-class PeerCommentTest : PeerNetworkTest() {
+class PeerCommentTest {
     @Test
     fun testCommentOnPeerPost(){
         val applications = getApplications(2)

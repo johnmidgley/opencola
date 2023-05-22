@@ -20,12 +20,14 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
-import opencola.server.PeerNetworkTest
+import opencola.server.getApplicationNode
+import opencola.server.getApplications
+import opencola.server.testConnectAndReplicate
 import org.junit.Test
 import java.net.URI
 import kotlin.test.assertFails
 
-class OCRelayNetworkProviderTest : PeerNetworkTest() {
+class OCRelayNetworkProviderTest {
     private val ocRelayUri = URI("ocr://0.0.0.0")
     private val pingMessage = PingMessage()
 

@@ -13,11 +13,12 @@ import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
-import opencola.server.PeerNetworkTest
+import opencola.server.getApplicationNode
+import opencola.server.testConnectAndReplicate
 import org.junit.Test
 import kotlin.test.assertFails
 
-class HttpNetworkProviderTest : PeerNetworkTest() {
+class HttpNetworkProviderTest {
     @Test
     fun testHttpNetworkProvider() {
         val applicationNode =

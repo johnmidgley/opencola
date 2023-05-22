@@ -143,9 +143,7 @@ class ExposedEntityStoreV2(
     }
 
     private fun addTransactionToFileStore(signedTransaction: SignedTransaction) {
-        if(transactionFileStore.exists(signedTransaction.transaction.id)) {
-            logger.warn { "Transaction: ${signedTransaction.transaction.id} already exists in filestore" }
-        } else {
+        if(!transactionFileStore.exists(signedTransaction.transaction.id)) {
             logger.info { "Storing transaction: ${signedTransaction.transaction.id} in filestore" }
             transactionFileStore.write(signedTransaction.transaction.id, signedTransaction.encodeProto())
         }

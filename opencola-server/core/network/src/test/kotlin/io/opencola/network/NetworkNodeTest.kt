@@ -1,7 +1,9 @@
 package io.opencola.network
 
 import io.opencola.application.TestApplication
+import io.opencola.io.waitForStdout
 import io.opencola.model.Attributes
+import io.opencola.model.DataEntity
 import io.opencola.model.Id
 import io.opencola.network.NetworkNode.Route
 import io.opencola.network.message.*
@@ -13,7 +15,6 @@ import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import io.opencola.storage.entitystore.EntityStoreConfig
 import io.opencola.storage.entitystore.ExposedEntityStoreV2
 import io.opencola.storage.entitystore.getSQLiteDB
-import io.opencola.storage.filestore.LocalContentBasedFileStore
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -137,8 +138,7 @@ class NetworkNodeTest {
     @Test
     fun testGetData() {
         runBlocking {
-            val fileStore = LocalContentBasedFileStore(TestApplication.getTmpDirectory("-filestore"))
-            val context = NetworkNodeContext(routes = listOf(getDataRoute(fileStore)))
+            val context = NetworkNodeContext()
             val result = CompletableDeferred<SignedMessage>()
             context.provider.onSendMessage = { _, _, message -> result.complete(message) }
 
@@ -147,18 +147,28 @@ class NetworkNodeTest {
 
             // Add data to file store
             val data = "Hello World ${UUID.randomUUID()}".toByteArray()
-            val id = fileStore.write(data)
+            val dataId = context.contentBasedFileStore.write(data)
 
-            // Request data as peer
-            val message = GetDataMessage(id).toUnsignedMessage()
+            // Request data without data entity - should fail
+            waitForStdout("for unknown data id") {
+                val message = GetDataMessage(dataId).toUnsignedMessage()
+                val envelopeBytes = context.getEncodedEnvelope(peer0.keyPair, context.persona.personaId, message)
+                context.provider.handleMessage(envelopeBytes, false)
+            }
+
+            // Add data reference to entity store
+            context.entityStore.updateEntities(DataEntity(context.persona.personaId, dataId, ""))
+
+            // Try to get data - should succeed now
+            val message = GetDataMessage(dataId).toUnsignedMessage()
             val envelopeBytes = context.getEncodedEnvelope(peer0.keyPair, context.persona.personaId, message)
             context.provider.handleMessage(envelopeBytes, false)
 
             val signedMessage = withTimeout(3000) { result.await() }
             assertEquals(PutDataMessage.messageType, signedMessage.body.type)
             val putDataMessage = PutDataMessage.decodeProto(signedMessage.body.payload)
-            assertEquals(id, putDataMessage.id)
-            assertContentEquals(data, fileStore.read(id))
+            assertEquals(dataId, putDataMessage.id)
+            assertContentEquals(data, context.contentBasedFileStore.read(dataId))
         }
     }
 

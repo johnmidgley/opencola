@@ -142,7 +142,8 @@ class MainReactor(
         when (notification.event) {
             PeerEvent.Added -> requestTransactions(notification.peerId)
             PeerEvent.Online -> requestTransactions(notification.peerId)
-            PeerEvent.NewTransaction -> requestTransactions(notification.peerId)
+            // PeerEvent.NewTransaction -> requestTransactions(notification.peerId)
+            else -> logger.warn { "Ignoring notification for peer ${notification.peerId} event: ${notification.event}" }
         }
     }
 
