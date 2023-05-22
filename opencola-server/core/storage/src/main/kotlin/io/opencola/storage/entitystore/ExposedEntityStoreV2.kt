@@ -142,6 +142,15 @@ class ExposedEntityStoreV2(
 
     }
 
+    private fun addTransactionToFileStore(signedTransaction: SignedTransaction) {
+        if(transactionFileStore.exists(signedTransaction.transaction.id)) {
+            logger.warn { "Transaction: ${signedTransaction.transaction.id} already exists in filestore" }
+        } else {
+            logger.info { "Storing transaction: ${signedTransaction.transaction.id} in filestore" }
+            transactionFileStore.write(signedTransaction.transaction.id, signedTransaction.encodeProto())
+        }
+    }
+
     private fun addTransactionToDB(signedTransaction: SignedTransaction): Long {
         return transaction(database) {
             val transaction = signedTransaction.transaction
@@ -174,13 +183,8 @@ class ExposedEntityStoreV2(
         }
     }
 
-
     override fun persistTransaction(signedTransaction: SignedTransaction): Long {
-        if (!transactionFileStore.exists(signedTransaction.transaction.id)) {
-            // Local transactions get added to the filestore here. Foreign transactions are added in addSignedTransactions
-            transactionFileStore.write(signedTransaction.transaction.id, signedTransaction.encodeProto())
-        }
-
+        addTransactionToFileStore(signedTransaction)
         val ordinal = addTransactionToDB(signedTransaction)
 
         try {
@@ -316,10 +320,11 @@ class ExposedEntityStoreV2(
         // We process transactions here, before calling super.addSignedTransactions, so that we can store out
         // of order transactions for future use, so they don't need to be requested again.
         signedTransactions.forEach {
-            if (publicKeyProvider.getPublicKey(it.transaction.authorityId) != null && !transactionFileStore.exists(it.transaction.id)) {
+            val publicKey = publicKeyProvider.getPublicKey(it.transaction.authorityId)
+            if (publicKey != null && it.hasValidSignature(publicKey)) {
                 // This is a legitimate transaction from a known authority, so store it, even if it's out of order,
                 // so we can use it later
-                transactionFileStore.write(it.transaction.id, it.encodeProto())
+                addTransactionToFileStore(it)
             }
         }
 

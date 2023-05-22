@@ -274,12 +274,13 @@ abstract class AbstractEntityStore(
                 throw IllegalArgumentException("Transaction ${transaction.id} from $transactionAuthorityId has invalid signature")
 
             if (transaction.id != getNextTransactionId(transactionAuthorityId))
-                throw IllegalArgumentException("Transaction ${transaction.id} is out of order from $transactionAuthorityId")
-
-            logger.info { "Adding transaction ${transaction.id} from $transactionAuthorityId" }
-            persistTransaction(it)
-            // TODO: Once switched over to all protobuf, just use SignedTransaction.encode
-            eventBus?.sendMessage(Events.NewTransaction.toString(), SignedTransaction.toProto(it).toByteArray())
+                logger.warn("Transaction ${transaction.id} is out of order from $transactionAuthorityId - skipping add")
+            else {
+                logger.info { "Adding transaction ${transaction.id} from $transactionAuthorityId" }
+                persistTransaction(it)
+                // TODO: Once switched over to all protobuf, just use SignedTransaction.encode
+                eventBus?.sendMessage(Events.NewTransaction.toString(), SignedTransaction.toProto(it).toByteArray())
+            }
         }
     }
 }

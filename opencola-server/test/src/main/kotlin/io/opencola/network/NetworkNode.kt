@@ -33,8 +33,8 @@ class NetworkNodeContext(
     data class Peer(val keyPair: KeyPair, val addressBookEntry: AddressBookEntry)
     val persona = addressBook.addPersona("Persona0")
 
-    fun addPeer(name: String, isActive: Boolean = true): Peer {
-        return generateKeyPair().let { Peer(it, addressBook.addPeer(persona.personaId, name, isActive, it.public)) }
+    fun addPeer(name: String, isActive: Boolean = true, keyPair: KeyPair = generateKeyPair()): Peer {
+        return Peer(keyPair, addressBook.addPeer(persona.personaId, name, isActive, keyPair.public))
     }
 
     fun getEncodedEnvelope(from: KeyPair, to: Id, unsignedMessage: UnsignedMessage): ByteArray {

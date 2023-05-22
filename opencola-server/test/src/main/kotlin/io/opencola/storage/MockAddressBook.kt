@@ -3,26 +3,12 @@ package io.opencola.storage
 import io.opencola.model.Id
 import io.opencola.security.KeyStore
 import io.opencola.security.MockKeyStore
-import io.opencola.storage.addressbook.AddressBook
+import io.opencola.storage.addressbook.AbstractAddressBook
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
-import java.security.PublicKey
 
-class MockAddressBook(val keyStore: KeyStore = MockKeyStore()) : AddressBook {
+class MockAddressBook(private val keyStore: KeyStore = MockKeyStore()) : AbstractAddressBook() {
     private var _entries = List<AddressBookEntry>(0) { throw Exception("Not implemented") }
-
-    override fun toString(): String {
-        return _entries.map { it.toString() }.joinToString("\n")
-    }
-
-    override fun addUpdateHandler(handler: (AddressBookEntry?, AddressBookEntry?) -> Unit) {
-        TODO("Not yet implemented")
-    }
-
-    override fun removeUpdateHandler(handler: (AddressBookEntry?, AddressBookEntry?) -> Unit) {
-        TODO("Not yet implemented")
-    }
-
     override fun updateEntry(
         entry: AddressBookEntry,
         suppressUpdateHandler: ((AddressBookEntry?, AddressBookEntry?) -> Unit)?
@@ -55,9 +41,5 @@ class MockAddressBook(val keyStore: KeyStore = MockKeyStore()) : AddressBook {
 
         _entries = _entries
             .filter {  it.personaId == personaId && it.entityId != entityId }
-    }
-
-    override fun getPublicKey(alias: Id): PublicKey? {
-        return getEntry(alias, alias)?.publicKey
     }
 }

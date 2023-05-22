@@ -1,12 +1,18 @@
 package io.opencola.network
 
 import io.opencola.application.TestApplication
+import io.opencola.model.Attributes
 import io.opencola.model.Id
 import io.opencola.network.NetworkNode.Route
 import io.opencola.network.message.*
+import io.opencola.security.MockKeyStore
+import io.opencola.security.Signator
 import io.opencola.storage.*
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
+import io.opencola.storage.entitystore.EntityStoreConfig
+import io.opencola.storage.entitystore.ExposedEntityStoreV2
+import io.opencola.storage.entitystore.getSQLiteDB
 import io.opencola.storage.filestore.LocalContentBasedFileStore
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
@@ -165,7 +171,7 @@ class NetworkNodeTest {
         }
     }
 
-    fun <T> poll(q: LinkedBlockingDeque<T>) : T? {
+    fun <T> poll(q: LinkedBlockingDeque<T>): T? {
         return q.poll(1000, TimeUnit.MILLISECONDS)
     }
 
@@ -214,5 +220,53 @@ class NetworkNodeTest {
 
         // Make sure no pending messages
         assertNull(results.poll(500, TimeUnit.MILLISECONDS))
+    }
+
+    private fun getExposedEntityStoreV2NetworkNodeContext(): NetworkNodeContext {
+        val keyStore = MockKeyStore()
+        val signator = Signator(keyStore)
+        val addressBook = MockAddressBook()
+        val entityStore = ExposedEntityStoreV2(
+            "entity-store",
+            EntityStoreConfig(),
+            TestApplication.getTmpDirectory("entity-store"),
+            ::getSQLiteDB,
+            Attributes.get(),
+            signator,
+            addressBook
+        )
+
+        return NetworkNodeContext(
+            keyStore = keyStore,
+            signator = signator,
+            addressBook = addressBook,
+            entityStore = entityStore
+        )
+    }
+
+    @Test
+    fun testForwardTransactionCaching() {
+        val peerEntityStoreContext = EntityStoreContext()
+        val peerPersona = peerEntityStoreContext.addressBook.addPersona("PeerPersona")
+
+        val signedTransactions = (0 until 10)
+            .map { getTestEntity(peerPersona, it) }
+            .mapNotNull { peerEntityStoreContext.entityStore.updateEntities(it) }
+
+        val networkNodeContext = getExposedEntityStoreV2NetworkNodeContext()
+        val peer = networkNodeContext.addPeer("Peer0", true, peerPersona.keyPair)
+
+        (9 downTo 1)
+            .forEach {
+                val message = PutTransactionMessage(signedTransactions[it].encodeProto()).toUnsignedMessage()
+                networkNodeContext.handleMessage(peer, networkNodeContext.persona.entityId, message)
+                assertEquals(0, networkNodeContext.entityStore.getAllSignedTransactions().count())
+            }
+
+        val message = PutTransactionMessage(signedTransactions[0].encodeProto()).toUnsignedMessage()
+        networkNodeContext.handleMessage(peer, networkNodeContext.persona.entityId, message)
+        val allSignedTransactions = networkNodeContext.entityStore.getAllSignedTransactions().toList()
+        assertEquals(10, allSignedTransactions.count())
+        assertEquals(signedTransactions.map { it.transaction.id }, allSignedTransactions.map { it.transaction.id })
     }
 }
