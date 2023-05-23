@@ -5,7 +5,7 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.websocket.*
 // TODO: Remove dependency on client - move value to common
-import io.opencola.relay.client.defaultOCRPort
+import io.opencola.relay.client.v1.defaultOCRPort
 import io.opencola.relay.server.plugins.configureRouting
 import java.util.concurrent.Semaphore
 

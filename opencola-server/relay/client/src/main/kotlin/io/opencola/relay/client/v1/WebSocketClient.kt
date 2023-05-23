@@ -1,4 +1,4 @@
-package io.opencola.relay.client
+package io.opencola.relay.client.v1
 
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*

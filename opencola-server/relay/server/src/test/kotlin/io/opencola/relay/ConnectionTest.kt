@@ -3,9 +3,9 @@ package io.opencola.relay
 import io.ktor.server.netty.*
 import io.opencola.io.StdoutMonitor
 import io.opencola.security.generateKeyPair
-import io.opencola.relay.client.RelayClient
-import io.opencola.relay.client.WebSocketClient
-import io.opencola.relay.client.defaultOCRPort
+import io.opencola.relay.client.v1.RelayClient
+import io.opencola.relay.client.v1.WebSocketClient
+import io.opencola.relay.client.v1.defaultOCRPort
 import io.opencola.relay.common.State
 import io.opencola.relay.server.startWebServer
 import io.opencola.util.append

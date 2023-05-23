@@ -7,8 +7,8 @@ import io.opencola.network.message.SignedMessage
 import io.opencola.security.Encryptor
 import io.opencola.security.Signator
 import io.opencola.storage.addressbook.AddressBook
-import io.opencola.relay.client.RelayClient
-import io.opencola.relay.client.WebSocketClient
+import io.opencola.relay.client.v1.RelayClient
+import io.opencola.relay.client.v1.WebSocketClient
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import kotlinx.coroutines.runBlocking

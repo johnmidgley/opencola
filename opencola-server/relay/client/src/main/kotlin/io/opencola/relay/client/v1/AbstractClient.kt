@@ -1,4 +1,4 @@
-package io.opencola.relay.client
+package io.opencola.relay.client.v1
 
 import io.opencola.model.Id
 import io.opencola.security.*
@@ -150,8 +150,7 @@ abstract class AbstractClient(
                 } catch (e: ConnectException) {
                     // This can happen when partitioned from the server
                     continue
-                }
-                catch (e: Exception) {
+                } catch (e: Exception) {
                     logger.error { "Exception during listen: $e" }
                 }
             }
@@ -169,7 +168,7 @@ abstract class AbstractClient(
 
     override suspend fun sendMessage(to: PublicKey, body: ByteArray) {
         val message = Message(keyPair, UUID.randomUUID(), body)
-        val envelope = Envelope(to,  null, message)
+        val envelope = Envelope(to, null, message)
 
         try {
             // TODO: Should there be a limit on the size of messages?
