@@ -5,7 +5,7 @@ import io.opencola.model.value.Value
 import io.opencola.model.value.emptyValue
 import io.opencola.model.value.emptyValueProto
 import io.opencola.serialization.protobuf.ProtoSerializable
-import io.opencola.serialization.protobuf.Model as ProtoModel
+import io.opencola.serialization.protobuf.Model as Proto
 import io.opencola.serialization.StreamSerializer
 import java.io.InputStream
 import java.io.OutputStream
@@ -14,7 +14,7 @@ import java.io.OutputStream
 data class TransactionFact(val attribute: Attribute, val value: Value<Any>, val operation: Operation) {
     companion object Factory :
         StreamSerializer<TransactionFact>,
-        ProtoSerializable<TransactionFact, ProtoModel.TransactionFact> {
+        ProtoSerializable<TransactionFact, Proto.TransactionFact> {
         fun fromFact(fact: Fact): TransactionFact {
             return TransactionFact(fact.attribute, fact.value, fact.operation)
         }
@@ -35,8 +35,8 @@ data class TransactionFact(val attribute: Attribute, val value: Value<Any>, val 
         }
 
 
-        override fun toProto(value: TransactionFact): ProtoModel.TransactionFact {
-            return ProtoModel.TransactionFact.newBuilder()
+        override fun toProto(value: TransactionFact): Proto.TransactionFact {
+            return Proto.TransactionFact.newBuilder()
                 .setAttribute(Attribute.toProto(value.attribute))
                 .setValue(
                     if (value.value is EmptyValue)
@@ -48,17 +48,21 @@ data class TransactionFact(val attribute: Attribute, val value: Value<Any>, val 
                 .build()
         }
 
-        override fun fromProto(value: ProtoModel.TransactionFact): TransactionFact {
+        override fun fromProto(value: Proto.TransactionFact): TransactionFact {
             val attribute = Attribute.fromProto(value.attribute)
             val valueWrapper = attribute.valueWrapper
             val wrappedValue =
-                if (value.value.ocType == ProtoModel.OCType.EMPTY)
+                if (value.value.ocType == Proto.OCType.EMPTY)
                     emptyValue
                 else
                     valueWrapper.wrap(valueWrapper.fromProto(value.value))
             val operation = Operation.fromProto(value.operation)
 
             return TransactionFact(attribute, wrappedValue, operation)
+        }
+
+        override fun parseProto(bytes: ByteArray): Proto.TransactionFact {
+            return Proto.TransactionFact.parseFrom(bytes)
         }
     }
 }

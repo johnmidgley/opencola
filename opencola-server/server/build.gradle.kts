@@ -88,6 +88,7 @@ dependencies {
     testImplementation(project(":test"))
     testImplementation(project(":core:io"))
     testImplementation(project(":relay"))
+    testImplementation(project(":relay:common"))
     testImplementation(project(":relay:client"))
     testImplementation(project(":relay:server"))
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")

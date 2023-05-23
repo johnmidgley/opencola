@@ -4,18 +4,27 @@ package io.opencola.relay.common.protobuf;
 
 import "security.proto";
 
-message Connect {
+message ConnectMessage {
   bytes publicKey = 1;
 }
 
-message Challenge {
+message ChallengeMessage {
   string algorithm = 1;
-  bytes data = 2;
+  bytes challenge = 2;
+}
+
+enum AuthenticationStatus {
+  AUTHENTICATED = 0;
+  FAILED_CHALLENGE = 1;
+}
+
+message AuthenticationResult {
+  AuthenticationStatus status = 1;
 }
 
 message Header {
   bytes messageId = 1;
-  bytes from = 2;
+  bytes from = 2; // Public key of the sender
   io.opencola.serialization.protobuf.Signature signature = 3;
 }
 

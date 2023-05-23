@@ -1,6 +1,7 @@
 package io.opencola.relay.common
 
 import com.google.protobuf.ByteString
+import io.opencola.relay.common.protobuf.Relay
 import io.opencola.relay.common.protobuf.Relay as Proto
 import io.opencola.security.encrypt
 import io.opencola.security.publicKeyFromBytes
@@ -51,6 +52,10 @@ class Envelope(val to: PublicKey, val key: ByteArray?, val message: ByteArray) {
                 if (value.key.isEmpty) null else value.key.toByteArray(),
                 value.message.toByteArray()
             )
+        }
+
+        override fun parseProto(bytes: ByteArray): Relay.Envelope {
+            return Proto.Envelope.parseFrom(bytes)
         }
     }
 }

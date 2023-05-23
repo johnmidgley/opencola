@@ -3,10 +3,9 @@ package io.opencola.network.message
 import io.opencola.model.Id
 import io.opencola.security.Signator
 import io.opencola.security.Signature
-import io.opencola.serialization.protobuf.Message
 import io.opencola.serialization.protobuf.ProtoSerializable
 import java.security.PublicKey
-import io.opencola.serialization.protobuf.Message as ProtoMessage
+import io.opencola.serialization.protobuf.Message as Proto
 
 class SignedMessage(val from: Id, val body: UnsignedMessage, val signature: Signature) {
     override fun toString(): String {
@@ -26,29 +25,25 @@ class SignedMessage(val from: Id, val body: UnsignedMessage, val signature: Sign
         return signature.isValidSignature(publicKey, body.payload)
     }
 
-    companion object Factory : ProtoSerializable<SignedMessage, ProtoMessage.SignedMessage> {
-        override fun toProto(value: SignedMessage): Message.SignedMessage {
-            return Message.SignedMessage.newBuilder()
+    companion object Factory : ProtoSerializable<SignedMessage, Proto.SignedMessage> {
+        override fun toProto(value: SignedMessage): Proto.SignedMessage {
+            return Proto.SignedMessage.newBuilder()
                 .setFrom(Id.toProto(value.from))
                 .setMessage(UnsignedMessage.toProto(value.body).toByteString())
                 .setSignature(Signature.toProto(value.signature))
                 .build()
         }
 
-        override fun fromProto(value: Message.SignedMessage): SignedMessage {
+        override fun fromProto(value: Proto.SignedMessage): SignedMessage {
             return SignedMessage(
                 Id.fromProto(value.from),
-                UnsignedMessage.fromProto(Message.UnsignedMessage.parseFrom(value.message)),
+                UnsignedMessage.fromProto(Proto.UnsignedMessage.parseFrom(value.message)),
                 Signature.fromProto(value.signature)
             )
         }
 
-        fun encodeProto(value: SignedMessage): ByteArray {
-            return toProto(value).toByteArray()
-        }
-
-        fun decodeProto(value: ByteArray): SignedMessage {
-            return fromProto(Message.SignedMessage.parseFrom(value))
+        override fun parseProto(bytes: ByteArray): Proto.SignedMessage {
+            return Proto.SignedMessage.parseFrom(bytes)
         }
     }
 }

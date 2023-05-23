@@ -1,7 +1,7 @@
 package io.opencola.model.value
 
 import io.opencola.serialization.codecs.BooleanByteArrayCodec
-import io.opencola.serialization.protobuf.Model as ProtoModel
+import io.opencola.serialization.protobuf.Model as Proto
 
 // TODO: Is it possible to templatize these Value classes?
 class BooleanValue(value: Boolean) : Value<Boolean>(value) {
@@ -14,16 +14,20 @@ class BooleanValue(value: Boolean) : Value<Boolean>(value) {
             return BooleanByteArrayCodec.decode(value)
         }
 
-        override fun toProto(value: Boolean): ProtoModel.Value {
-            return ProtoModel.Value.newBuilder()
-                .setOcType(ProtoModel.OCType.BOOLEAN)
+        override fun toProto(value: Boolean): Proto.Value {
+            return Proto.Value.newBuilder()
+                .setOcType(Proto.OCType.BOOLEAN)
                 .setBool(value)
                 .build()
         }
 
-        override fun fromProto(value: ProtoModel.Value): Boolean {
-            require(value.ocType == ProtoModel.OCType.BOOLEAN)
+        override fun fromProto(value: Proto.Value): Boolean {
+            require(value.ocType == Proto.OCType.BOOLEAN)
             return value.bool
+        }
+
+        override fun parseProto(bytes: ByteArray): Proto.Value {
+            return Proto.Value.parseFrom(bytes)
         }
 
         override fun wrap(value: Boolean): Value<Boolean> {

@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 import io.opencola.security.sha256
 import io.opencola.serialization.ByteArrayCodec
 import io.opencola.serialization.StreamSerializer
+import io.opencola.serialization.protobuf.Model
 import io.opencola.serialization.protobuf.ProtoSerializable
 import io.opencola.util.*
 import java.io.InputStream
@@ -107,6 +108,10 @@ data class Id(private val bytes: ByteArray) : Comparable<Id> {
 
         override fun fromProto(value: ProtoModel.Id): Id {
             return Id(value.bytes.toByteArray())
+        }
+
+        override fun parseProto(bytes: ByteArray): Model.Id {
+            return Model.Id.parseFrom(bytes)
         }
     }
 }

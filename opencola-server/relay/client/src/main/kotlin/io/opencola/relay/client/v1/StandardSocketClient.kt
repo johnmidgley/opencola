@@ -15,7 +15,7 @@ class StandardSocketClient(
     name: String? = null,
     requestTimeoutMilliseconds: Long = 10000,
     retryPolicy: (Int) -> Long = retryExponentialBackoff(),
-) : AbstractClient(uri, keyPair, name, requestTimeoutMilliseconds, retryPolicy) {
+) : Client(uri, keyPair, name, requestTimeoutMilliseconds, retryPolicy) {
     override suspend fun getSocketSession(): SocketSession {
         return StandardSocketSession(aSocket(selectorManager).tcp().connect(hostname, port = port))
     }

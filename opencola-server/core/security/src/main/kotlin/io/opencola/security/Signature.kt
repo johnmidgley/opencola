@@ -2,26 +2,34 @@ package io.opencola.security
 
 import com.google.protobuf.ByteString
 import io.opencola.serialization.protobuf.ProtoSerializable
-import io.opencola.serialization.protobuf.Security as ProtoSecurity
+import io.opencola.serialization.protobuf.Security as Proto
 import io.opencola.util.Base58
 import java.security.PrivateKey
 import java.security.PublicKey
 
 class Signature(val algorithm: String, val bytes: ByteArray) {
-    companion object : ProtoSerializable<Signature, ProtoSecurity.Signature> {
+    fun encodeProto(): ByteArray {
+        return encodeProto(this)
+    }
+
+    companion object : ProtoSerializable<Signature, Proto.Signature> {
         fun of(privateKey: PrivateKey, bytes: ByteArray): Signature {
             return sign(privateKey, bytes)
         }
 
-        override fun toProto(value: Signature): ProtoSecurity.Signature {
-            return ProtoSecurity.Signature.newBuilder()
+        override fun toProto(value: Signature): Proto.Signature {
+            return Proto.Signature.newBuilder()
                 .setAlgorithm(value.algorithm)
                 .setBytes(ByteString.copyFrom(value.bytes))
                 .build()
         }
 
-        override fun fromProto(value: ProtoSecurity.Signature): Signature {
+        override fun fromProto(value: Proto.Signature): Signature {
             return Signature(value.algorithm, value.bytes.toByteArray())
+        }
+
+        override fun parseProto(bytes: ByteArray): Proto.Signature {
+            return Proto.Signature.parseFrom(bytes)
         }
     }
 
@@ -29,7 +37,7 @@ class Signature(val algorithm: String, val bytes: ByteArray) {
         return isValidSignature(publicKey, bytes, this)
     }
 
-    fun toProto(): ProtoSecurity.Signature {
+    fun toProto(): Proto.Signature {
         return toProto(this)
     }
 

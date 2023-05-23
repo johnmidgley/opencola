@@ -54,5 +54,9 @@ class Message(val header: Header, val body: ByteArray) {
                 value.body.toByteArray()
             )
         }
+
+        override fun parseProto(bytes: ByteArray): Proto.RelayMessage {
+            return Proto.RelayMessage.parseFrom(bytes)
+        }
     }
 }

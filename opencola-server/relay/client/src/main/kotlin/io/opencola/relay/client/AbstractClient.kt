@@ -1,8 +1,7 @@
-package io.opencola.relay.client.v1
+package io.opencola.relay.client
 
 import io.opencola.model.Id
 import io.opencola.security.*
-import io.opencola.serialization.codecs.IntByteArrayCodec
 import io.opencola.relay.common.*
 import io.opencola.relay.common.Connection
 import io.opencola.relay.common.State.*
@@ -15,11 +14,9 @@ import java.net.URI
 import java.security.KeyPair
 import java.security.PublicKey
 
-const val defaultOCRPort = 2652
-
 abstract class AbstractClient(
     protected val uri: URI,
-    private val keyPair: KeyPair,
+    protected val keyPair: KeyPair,
     final override val name: String? = null,
     private val requestTimeoutMilliseconds: Long = 60000, // TODO: Make configurable
     private val retryPolicy: (Int) -> Long = retryExponentialBackoff(),
@@ -42,6 +39,10 @@ abstract class AbstractClient(
             throw IllegalArgumentException("Scheme must be 'ocr' for relay URI: $uri")
     }
 
+    abstract suspend fun getSocketSession(): SocketSession
+    protected abstract suspend fun authenticate(socketSession: SocketSession)
+    protected abstract suspend fun handleMessage(payload: ByteArray, messageHandler: MessageHandler)
+
     override val publicKey: PublicKey
         get() = keyPair.public
 
@@ -51,30 +52,6 @@ abstract class AbstractClient(
     override suspend fun waitUntilOpen() {
         openMutex.withLock { }
     }
-
-    // Should only be called once, right after connection to server
-    private suspend fun authenticate(socketSession: SocketSession) {
-        // Send public key
-        logger.debug { "Sending public key" }
-        socketSession.writeSizedByteArray(keyPair.public.encoded)
-
-        // Read challenge
-        logger.debug { "Reading challenge" }
-        val challengeBytes = socketSession.readSizedByteArray()
-
-        // Sign challenge and send back
-        logger.debug { "Signing challenge" }
-        socketSession.writeSizedByteArray(sign(keyPair.private, challengeBytes).bytes)
-
-        val authenticationResponse = IntByteArrayCodec.decode(socketSession.readSizedByteArray())
-        if (authenticationResponse != 0) {
-            throw RuntimeException("Unable to authenticate connection: $authenticationResponse")
-        }
-
-        logger.debug { "Authenticated" }
-    }
-
-    abstract suspend fun getSocketSession(): SocketSession
 
     private suspend fun getConnection(waitForOpen: Boolean = true): Connection {
         if (_state == Closed)
@@ -112,20 +89,7 @@ abstract class AbstractClient(
         }
     }
 
-    private suspend fun handleMessage(
-        payload: ByteArray,
-        handler: suspend (from: PublicKey, message: ByteArray) -> Unit
-    ) {
-        try {
-            val message = Message.decode(decrypt(keyPair.private, payload)).validate()
-            logger.info { "Handling message: ${message.header}" }
-            handler(message.header.from, message.body)
-        } catch (e: Exception) {
-            logger.error { "Exception in handleMessage: $e" }
-        }
-    }
-
-    override suspend fun open(messageHandler: suspend (from: PublicKey, message: ByteArray) -> Unit) = coroutineScope {
+    override suspend fun open(messageHandler: MessageHandler) = coroutineScope {
         if (_state != Initialized) {
             throw IllegalStateException("Client has already been opened")
         }

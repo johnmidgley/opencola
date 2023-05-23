@@ -1,8 +1,9 @@
 package io.opencola.model
 
 import io.opencola.serialization.protobuf.ProtoSerializable
-import io.opencola.serialization.protobuf.Model as ProtoModel
+import io.opencola.serialization.protobuf.Model as Proto
 import io.opencola.serialization.StreamSerializer
+import io.opencola.serialization.protobuf.Model
 import io.opencola.serialization.readInt
 import io.opencola.serialization.writeInt
 import java.io.InputStream
@@ -12,7 +13,7 @@ import java.io.OutputStream
 data class TransactionEntity(val entityId: Id, val facts: List<TransactionFact>) {
     companion object Factory :
         StreamSerializer<TransactionEntity>,
-        ProtoSerializable<TransactionEntity, ProtoModel.TransactionEntity> {
+        ProtoSerializable<TransactionEntity, Proto.TransactionEntity> {
         override fun encode(stream: OutputStream, value: TransactionEntity) {
             Id.encode(stream, value.entityId)
             stream.writeInt(value.facts.size)
@@ -25,18 +26,22 @@ data class TransactionEntity(val entityId: Id, val facts: List<TransactionFact>)
             return TransactionEntity(Id.decode(stream), stream.readInt().downTo(1).map { TransactionFact.decode(stream) } )
         }
 
-        override fun toProto(value: TransactionEntity): ProtoModel.TransactionEntity {
-            return ProtoModel.TransactionEntity.newBuilder()
+        override fun toProto(value: TransactionEntity): Proto.TransactionEntity {
+            return Proto.TransactionEntity.newBuilder()
                 .setEntityId(Id.toProto(value.entityId))
                 .addAllFacts(value.facts.map { TransactionFact.toProto(it) })
                 .build()
         }
 
-        override fun fromProto(value: ProtoModel.TransactionEntity): TransactionEntity {
+        override fun fromProto(value: Proto.TransactionEntity): TransactionEntity {
             return TransactionEntity(
                 Id.fromProto(value.entityId),
                 value.factsList.map { TransactionFact.fromProto(it) }
             )
+        }
+
+        override fun parseProto(bytes: ByteArray): Model.TransactionEntity {
+            return Model.TransactionEntity.parseFrom(bytes)
         }
     }
 }

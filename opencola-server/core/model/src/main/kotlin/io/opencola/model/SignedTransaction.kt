@@ -7,6 +7,7 @@ import io.opencola.security.isValidSignature
 import io.opencola.serialization.EncodingFormat
 import io.opencola.serialization.protobuf.ProtoSerializable
 import io.opencola.serialization.StreamSerializer
+import io.opencola.serialization.protobuf.Model
 import io.opencola.serialization.readByteArray
 import io.opencola.serialization.writeByteArray
 import java.io.InputStream
@@ -95,13 +96,8 @@ data class SignedTransaction(
             )
         }
 
-        // TODO: toBytes can easily be moved to ProtobufSerializable. Not sure if fromBytes can be moved due to type erasure
-        fun encodeProto(value: SignedTransaction): ByteArray {
-            return toProto(value).toByteArray()
-        }
-
-        fun decodeProto(bytes: ByteArray): SignedTransaction {
-            return fromProto(ProtoModel.SignedTransaction.parseFrom(bytes))
+        override fun parseProto(bytes: ByteArray): Model.SignedTransaction {
+            return Model.SignedTransaction.parseFrom(bytes)
         }
     }
 }

@@ -2,7 +2,6 @@ package io.opencola.relay.common
 
 import com.google.protobuf.ByteString
 import io.opencola.model.Id
-import io.opencola.relay.common.protobuf.Relay
 import io.opencola.relay.common.protobuf.Relay as Proto
 import io.opencola.security.SIGNATURE_ALGO
 import io.opencola.security.Signature
@@ -40,20 +39,24 @@ class Header(val messageId: UUID, val from: PublicKey, val signature: Signature)
             return Header(messageId, from, signature)
         }
 
-        override fun toProto(value: Header): Relay.Header {
-            return Relay.Header.newBuilder()
+        override fun toProto(value: Header): Proto.Header {
+            return Proto.Header.newBuilder()
                 .setFrom(ByteString.copyFrom(value.from.encoded))
                 .setMessageId(ByteString.copyFrom(value.messageId.toByteArray()))
                 .setSignature(value.signature.toProto())
                 .build()
         }
 
-        override fun fromProto(value: Relay.Header): Header {
+        override fun fromProto(value: Proto.Header): Header {
             return Header(
                 UUIDByteArrayCodecCodec.decode(value.messageId.toByteArray()),
                 publicKeyFromBytes(value.from.toByteArray()),
                 Signature.fromProto(value.signature)
             )
+        }
+
+        override fun parseProto(bytes: ByteArray): Proto.Header {
+            return Proto.Header.parseFrom(bytes)
         }
     }
 }

@@ -2,6 +2,7 @@ package io.opencola.model
 
 import io.opencola.serialization.protobuf.Model as ProtoModel
 import io.opencola.serialization.*
+import io.opencola.serialization.protobuf.Model
 import io.opencola.serialization.protobuf.ProtoSerializable
 import java.io.InputStream
 import java.io.OutputStream
@@ -90,12 +91,8 @@ data class Transaction(val id: Id,
             )
         }
 
-        fun encodeProto(value: Transaction): ByteArray {
-            return toProto(value).toByteArray()
-        }
-
-        fun decodeProto(bytes: ByteArray): Transaction {
-            return fromProto(ProtoModel.Transaction.parseFrom(bytes))
+        override fun parseProto(bytes: ByteArray): Model.Transaction {
+            return Model.Transaction.parseFrom(bytes)
         }
     }
 }

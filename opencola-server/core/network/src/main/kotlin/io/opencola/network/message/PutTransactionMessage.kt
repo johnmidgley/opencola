@@ -4,7 +4,7 @@ import com.google.protobuf.ByteString
 import io.opencola.model.Id
 import io.opencola.model.SignedTransaction
 import io.opencola.serialization.protobuf.ProtoSerializable
-import io.opencola.serialization.protobuf.Message as ProtoMessage
+import io.opencola.serialization.protobuf.Message as Proto
 
 // Since transactions are dependent on a stable signature, and hence serialization, we don't re-serialize here, we just
 // use the bytes computed when the transaction was persisted.
@@ -14,11 +14,11 @@ class PutTransactionMessage(
 ) :
     Message(messageType) {
 
-    companion object : ProtoSerializable<PutTransactionMessage, ProtoMessage.PutTransactionMessage> {
+    companion object : ProtoSerializable<PutTransactionMessage, Proto.PutTransactionMessage> {
         const val messageType = "PutTxns"
 
-        override fun toProto(value: PutTransactionMessage): ProtoMessage.PutTransactionMessage {
-            return ProtoMessage.PutTransactionMessage.newBuilder()
+        override fun toProto(value: PutTransactionMessage): Proto.PutTransactionMessage {
+            return Proto.PutTransactionMessage.newBuilder()
                 .setSignedTransaction(ByteString.copyFrom(value.encodedSignedTransaction))
                 .also { builder ->
                     value.lastTransactionId?.let { builder.setLastTransactionId(it.toProto()) }
@@ -26,19 +26,19 @@ class PutTransactionMessage(
                 .build()
         }
 
-        override fun fromProto(value: ProtoMessage.PutTransactionMessage): PutTransactionMessage {
+        override fun fromProto(value: Proto.PutTransactionMessage): PutTransactionMessage {
             return PutTransactionMessage(
                 value.signedTransaction.toByteArray(),
                 if (value.hasLastTransactionId()) Id.fromProto(value.lastTransactionId) else null
             )
         }
 
-        fun decodeProto(value: ByteArray) : PutTransactionMessage {
-            return fromProto(ProtoMessage.PutTransactionMessage.parseFrom(value))
+        override fun parseProto(bytes: ByteArray): Proto.PutTransactionMessage {
+            return Proto.PutTransactionMessage.parseFrom(bytes)
         }
     }
 
-    override fun toProto(): ProtoMessage.PutTransactionMessage {
+    override fun toProto(): Proto.PutTransactionMessage {
         return toProto(this)
     }
 

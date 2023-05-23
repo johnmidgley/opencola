@@ -170,7 +170,7 @@ class ExposedEntityStoreV2(
                         it[authorityId] = Id.encode(fact.authorityId)
                         it[entityId] = Id.encode(fact.entityId)
                         it[attribute] = attributeUriToDbIdMap[fact.attribute.uri]!!
-                        it[value] = ExposedBlob(fact.attribute.valueWrapper.encodeProto(fact.value))
+                        it[value] = ExposedBlob(fact.attribute.valueWrapper.encodeProtoAny(fact.value))
                         it[operation] = fact.operation
                         it[epochSecond] = transaction.epochSecond
                         it[transactionOrdinal] = ordinal.value
@@ -297,7 +297,7 @@ class ExposedEntityStoreV2(
             Id.decode(resultRow[Facts.authorityId]),
             Id.decode(resultRow[Facts.entityId]),
             attribute,
-            attribute.valueWrapper.decodeProto(resultRow[Facts.value].bytes),
+            attribute.valueWrapper.decodeProtoAny(resultRow[Facts.value].bytes),
             resultRow[Facts.operation],
             resultRow[Facts.epochSecond],
             resultRow[Facts.transactionOrdinal]

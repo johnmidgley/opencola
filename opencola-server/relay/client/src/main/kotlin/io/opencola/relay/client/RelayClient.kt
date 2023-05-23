@@ -1,4 +1,4 @@
-package io.opencola.relay.client.v1
+package io.opencola.relay.client
 
 import io.opencola.relay.common.State
 import java.security.PublicKey

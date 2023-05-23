@@ -1,34 +1,30 @@
 package io.opencola.network.message
 
 import io.opencola.model.Id
-import io.opencola.serialization.protobuf.Message as ProtoMessage
+import io.opencola.serialization.protobuf.Message as Proto
 import io.opencola.serialization.protobuf.ProtoSerializable
 
 class GetDataMessage(val id: Id) : Message(messageType) {
-    companion object : ProtoSerializable<GetDataMessage, ProtoMessage.GetDataMessage>  {
+    companion object : ProtoSerializable<GetDataMessage, Proto.GetDataMessage>  {
         const val messageType = "GetData"
 
-        override fun toProto(value: GetDataMessage): ProtoMessage.GetDataMessage {
-            return ProtoMessage.GetDataMessage
+        override fun toProto(value: GetDataMessage): Proto.GetDataMessage {
+            return Proto.GetDataMessage
                 .newBuilder()
                 .setId(value.id.toProto())
                 .build()
         }
 
-        override fun fromProto(value: ProtoMessage.GetDataMessage): GetDataMessage {
+        override fun fromProto(value: Proto.GetDataMessage): GetDataMessage {
             return GetDataMessage(Id.fromProto(value.id))
         }
 
-        fun encodeProto(value: GetDataMessage): ByteArray {
-            return toProto(value).toByteArray()
-        }
-
-        fun decodeProto(value: ByteArray): GetDataMessage {
-            return fromProto(ProtoMessage.GetDataMessage.parseFrom(value))
+        override fun parseProto(bytes: ByteArray): Proto.GetDataMessage {
+            return Proto.GetDataMessage.parseFrom(bytes)
         }
     }
 
-    override fun toProto(): ProtoMessage.GetDataMessage {
+    override fun toProto(): Proto.GetDataMessage {
         return toProto(this)
     }
 }
