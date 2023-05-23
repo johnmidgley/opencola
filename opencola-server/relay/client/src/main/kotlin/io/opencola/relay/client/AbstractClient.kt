@@ -101,7 +101,7 @@ abstract class AbstractClient(
                     authenticate(socketSession)
                     _connection = Connection(socketSession, name)
                     connectionFailures = 0
-                    logger.info { "Connection created for ${Id.ofPublicKey(keyPair.public)}" }
+                    logger.info { "Connection created to $uri for ${Id.ofPublicKey(keyPair.public)}" }
                 } catch (e: Exception) {
                     // TODO: Max connectFailures?
                     connectionFailures++

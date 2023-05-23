@@ -6,6 +6,8 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import mu.KotlinLogging
 
+typealias MessageHandler = suspend (ByteArray) -> Unit
+
 class Connection(private val socketSession: SocketSession, val name: String? = null) {
     private val logger = KotlinLogging.logger("Connection${if(name != null) " ($name)" else ""}")
     private var state = Initialized
@@ -39,7 +41,7 @@ class Connection(private val socketSession: SocketSession, val name: String? = n
         logger.debug { "Closed" }
     }
 
-    suspend fun listen(handleMessage: suspend (ByteArray) -> Unit) = coroutineScope {
+    suspend fun listen(messageHandler: MessageHandler) = coroutineScope {
         if(state != Initialized)
             throw IllegalStateException("Connection is already listening")
 
@@ -50,7 +52,7 @@ class Connection(private val socketSession: SocketSession, val name: String? = n
 
             while (isReady()) {
                 try {
-                    handleMessage(readSizedByteArray())
+                    messageHandler(readSizedByteArray())
                 } catch (e: CancellationException) {
                     logger.debug { "Cancelled" }
                     close()

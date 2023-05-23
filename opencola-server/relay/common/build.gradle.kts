@@ -2,6 +2,7 @@ val kotlinVersion: String by project
 val kotlinxCoroutinesVersion: String by project
 val ktorVersion: String by project
 val kotlinLoggingVersion:String by project
+val protobufVersion: String by project
 
 plugins {
     kotlin("jvm") version "1.7.20"
@@ -21,6 +22,7 @@ dependencies {
     implementation(project(":core:serialization"))
     implementation(project(":core:security"))
     implementation(project(":core:model"))
+    implementation("com.google.protobuf:protobuf-java:$protobufVersion")
 
     implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion")
