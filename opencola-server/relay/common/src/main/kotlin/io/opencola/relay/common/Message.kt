@@ -14,8 +14,8 @@ import java.security.KeyPair
 import java.util.*
 
 class Message(val header: Header, val body: ByteArray) {
-    constructor(senderKeyPair: KeyPair, sessionId: UUID, body: ByteArray)
-            : this (Header(senderKeyPair.public, sessionId, Signature.of(senderKeyPair.private, body)), body)
+    constructor(senderKeyPair: KeyPair, body: ByteArray)
+            : this (Header(UUID.randomUUID(), senderKeyPair.public, Signature.of(senderKeyPair.private, body)), body)
 
     override fun toString(): String {
         return "Message(header=$header, body=${body.size} bytes)"

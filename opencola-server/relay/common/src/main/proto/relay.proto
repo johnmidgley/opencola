@@ -14,8 +14,8 @@ message Challenge {
 }
 
 message Header {
-  bytes from = 1;
-  bytes sessionId = 2;
+  bytes messageId = 1;
+  bytes from = 2;
   io.opencola.serialization.protobuf.Signature signature = 3;
 }
 

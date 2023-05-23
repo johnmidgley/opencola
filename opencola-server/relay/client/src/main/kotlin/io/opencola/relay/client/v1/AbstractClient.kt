@@ -14,7 +14,6 @@ import java.net.ConnectException
 import java.net.URI
 import java.security.KeyPair
 import java.security.PublicKey
-import java.util.*
 
 const val defaultOCRPort = 2652
 
@@ -118,8 +117,8 @@ abstract class AbstractClient(
         handler: suspend (from: PublicKey, message: ByteArray) -> Unit
     ) {
         try {
-            logger.info { "Handling message" }
             val message = Message.decode(decrypt(keyPair.private, payload)).validate()
+            logger.info { "Handling message: ${message.header}" }
             handler(message.header.from, message.body)
         } catch (e: Exception) {
             logger.error { "Exception in handleMessage: $e" }
@@ -167,7 +166,7 @@ abstract class AbstractClient(
     }
 
     override suspend fun sendMessage(to: PublicKey, body: ByteArray) {
-        val message = Message(keyPair, UUID.randomUUID(), body)
+        val message = Message(keyPair, body)
         val envelope = Envelope(to, null, message)
 
         try {

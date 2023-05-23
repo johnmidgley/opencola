@@ -1153,16 +1153,16 @@ public final class Relay {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>bytes from = 1;</code>
+     * <code>bytes messageId = 1;</code>
+     * @return The messageId.
+     */
+    com.google.protobuf.ByteString getMessageId();
+
+    /**
+     * <code>bytes from = 2;</code>
      * @return The from.
      */
     com.google.protobuf.ByteString getFrom();
-
-    /**
-     * <code>bytes sessionId = 2;</code>
-     * @return The sessionId.
-     */
-    com.google.protobuf.ByteString getSessionId();
 
     /**
      * <code>.io.opencola.serialization.protobuf.Signature signature = 3;</code>
@@ -1192,8 +1192,8 @@ public final class Relay {
       super(builder);
     }
     private Header() {
+      messageId_ = com.google.protobuf.ByteString.EMPTY;
       from_ = com.google.protobuf.ByteString.EMPTY;
-      sessionId_ = com.google.protobuf.ByteString.EMPTY;
     }
 
     @java.lang.Override
@@ -1228,12 +1228,12 @@ public final class Relay {
               break;
             case 10: {
 
-              from_ = input.readBytes();
+              messageId_ = input.readBytes();
               break;
             }
             case 18: {
 
-              sessionId_ = input.readBytes();
+              from_ = input.readBytes();
               break;
             }
             case 26: {
@@ -1281,26 +1281,26 @@ public final class Relay {
               io.opencola.relay.common.protobuf.Relay.Header.class, io.opencola.relay.common.protobuf.Relay.Header.Builder.class);
     }
 
-    public static final int FROM_FIELD_NUMBER = 1;
+    public static final int MESSAGEID_FIELD_NUMBER = 1;
+    private com.google.protobuf.ByteString messageId_;
+    /**
+     * <code>bytes messageId = 1;</code>
+     * @return The messageId.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString getMessageId() {
+      return messageId_;
+    }
+
+    public static final int FROM_FIELD_NUMBER = 2;
     private com.google.protobuf.ByteString from_;
     /**
-     * <code>bytes from = 1;</code>
+     * <code>bytes from = 2;</code>
      * @return The from.
      */
     @java.lang.Override
     public com.google.protobuf.ByteString getFrom() {
       return from_;
-    }
-
-    public static final int SESSIONID_FIELD_NUMBER = 2;
-    private com.google.protobuf.ByteString sessionId_;
-    /**
-     * <code>bytes sessionId = 2;</code>
-     * @return The sessionId.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString getSessionId() {
-      return sessionId_;
     }
 
     public static final int SIGNATURE_FIELD_NUMBER = 3;
@@ -1343,11 +1343,11 @@ public final class Relay {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!from_.isEmpty()) {
-        output.writeBytes(1, from_);
+      if (!messageId_.isEmpty()) {
+        output.writeBytes(1, messageId_);
       }
-      if (!sessionId_.isEmpty()) {
-        output.writeBytes(2, sessionId_);
+      if (!from_.isEmpty()) {
+        output.writeBytes(2, from_);
       }
       if (signature_ != null) {
         output.writeMessage(3, getSignature());
@@ -1361,13 +1361,13 @@ public final class Relay {
       if (size != -1) return size;
 
       size = 0;
+      if (!messageId_.isEmpty()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, messageId_);
+      }
       if (!from_.isEmpty()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(1, from_);
-      }
-      if (!sessionId_.isEmpty()) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(2, sessionId_);
+          .computeBytesSize(2, from_);
       }
       if (signature_ != null) {
         size += com.google.protobuf.CodedOutputStream
@@ -1388,10 +1388,10 @@ public final class Relay {
       }
       io.opencola.relay.common.protobuf.Relay.Header other = (io.opencola.relay.common.protobuf.Relay.Header) obj;
 
+      if (!getMessageId()
+          .equals(other.getMessageId())) return false;
       if (!getFrom()
           .equals(other.getFrom())) return false;
-      if (!getSessionId()
-          .equals(other.getSessionId())) return false;
       if (hasSignature() != other.hasSignature()) return false;
       if (hasSignature()) {
         if (!getSignature()
@@ -1408,10 +1408,10 @@ public final class Relay {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + MESSAGEID_FIELD_NUMBER;
+      hash = (53 * hash) + getMessageId().hashCode();
       hash = (37 * hash) + FROM_FIELD_NUMBER;
       hash = (53 * hash) + getFrom().hashCode();
-      hash = (37 * hash) + SESSIONID_FIELD_NUMBER;
-      hash = (53 * hash) + getSessionId().hashCode();
       if (hasSignature()) {
         hash = (37 * hash) + SIGNATURE_FIELD_NUMBER;
         hash = (53 * hash) + getSignature().hashCode();
@@ -1549,9 +1549,9 @@ public final class Relay {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        from_ = com.google.protobuf.ByteString.EMPTY;
+        messageId_ = com.google.protobuf.ByteString.EMPTY;
 
-        sessionId_ = com.google.protobuf.ByteString.EMPTY;
+        from_ = com.google.protobuf.ByteString.EMPTY;
 
         if (signatureBuilder_ == null) {
           signature_ = null;
@@ -1585,8 +1585,8 @@ public final class Relay {
       @java.lang.Override
       public io.opencola.relay.common.protobuf.Relay.Header buildPartial() {
         io.opencola.relay.common.protobuf.Relay.Header result = new io.opencola.relay.common.protobuf.Relay.Header(this);
+        result.messageId_ = messageId_;
         result.from_ = from_;
-        result.sessionId_ = sessionId_;
         if (signatureBuilder_ == null) {
           result.signature_ = signature_;
         } else {
@@ -1640,11 +1640,11 @@ public final class Relay {
 
       public Builder mergeFrom(io.opencola.relay.common.protobuf.Relay.Header other) {
         if (other == io.opencola.relay.common.protobuf.Relay.Header.getDefaultInstance()) return this;
+        if (other.getMessageId() != com.google.protobuf.ByteString.EMPTY) {
+          setMessageId(other.getMessageId());
+        }
         if (other.getFrom() != com.google.protobuf.ByteString.EMPTY) {
           setFrom(other.getFrom());
-        }
-        if (other.getSessionId() != com.google.protobuf.ByteString.EMPTY) {
-          setSessionId(other.getSessionId());
         }
         if (other.hasSignature()) {
           mergeSignature(other.getSignature());
@@ -1678,9 +1678,43 @@ public final class Relay {
         return this;
       }
 
+      private com.google.protobuf.ByteString messageId_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>bytes messageId = 1;</code>
+       * @return The messageId.
+       */
+      @java.lang.Override
+      public com.google.protobuf.ByteString getMessageId() {
+        return messageId_;
+      }
+      /**
+       * <code>bytes messageId = 1;</code>
+       * @param value The messageId to set.
+       * @return This builder for chaining.
+       */
+      public Builder setMessageId(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        messageId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>bytes messageId = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearMessageId() {
+        
+        messageId_ = getDefaultInstance().getMessageId();
+        onChanged();
+        return this;
+      }
+
       private com.google.protobuf.ByteString from_ = com.google.protobuf.ByteString.EMPTY;
       /**
-       * <code>bytes from = 1;</code>
+       * <code>bytes from = 2;</code>
        * @return The from.
        */
       @java.lang.Override
@@ -1688,7 +1722,7 @@ public final class Relay {
         return from_;
       }
       /**
-       * <code>bytes from = 1;</code>
+       * <code>bytes from = 2;</code>
        * @param value The from to set.
        * @return This builder for chaining.
        */
@@ -1702,46 +1736,12 @@ public final class Relay {
         return this;
       }
       /**
-       * <code>bytes from = 1;</code>
+       * <code>bytes from = 2;</code>
        * @return This builder for chaining.
        */
       public Builder clearFrom() {
         
         from_ = getDefaultInstance().getFrom();
-        onChanged();
-        return this;
-      }
-
-      private com.google.protobuf.ByteString sessionId_ = com.google.protobuf.ByteString.EMPTY;
-      /**
-       * <code>bytes sessionId = 2;</code>
-       * @return The sessionId.
-       */
-      @java.lang.Override
-      public com.google.protobuf.ByteString getSessionId() {
-        return sessionId_;
-      }
-      /**
-       * <code>bytes sessionId = 2;</code>
-       * @param value The sessionId to set.
-       * @return This builder for chaining.
-       */
-      public Builder setSessionId(com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
-        sessionId_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>bytes sessionId = 2;</code>
-       * @return This builder for chaining.
-       */
-      public Builder clearSessionId() {
-        
-        sessionId_ = getDefaultInstance().getSessionId();
         onChanged();
         return this;
       }
@@ -3334,8 +3334,8 @@ public final class Relay {
       "\n\013relay.proto\022!io.opencola.relay.common." +
       "protobuf\032\016security.proto\"\034\n\007Connect\022\021\n\tp" +
       "ublicKey\030\001 \001(\014\",\n\tChallenge\022\021\n\talgorithm" +
-      "\030\001 \001(\t\022\014\n\004data\030\002 \001(\014\"k\n\006Header\022\014\n\004from\030\001" +
-      " \001(\014\022\021\n\tsessionId\030\002 \001(\014\022@\n\tsignature\030\003 \001" +
+      "\030\001 \001(\t\022\014\n\004data\030\002 \001(\014\"k\n\006Header\022\021\n\tmessag" +
+      "eId\030\001 \001(\014\022\014\n\004from\030\002 \001(\014\022@\n\tsignature\030\003 \001" +
       "(\0132-.io.opencola.serialization.protobuf." +
       "Signature\"W\n\014RelayMessage\0229\n\006header\030\001 \001(" +
       "\0132).io.opencola.relay.common.protobuf.He" +
@@ -3364,7 +3364,7 @@ public final class Relay {
     internal_static_io_opencola_relay_common_protobuf_Header_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_relay_common_protobuf_Header_descriptor,
-        new java.lang.String[] { "From", "SessionId", "Signature", });
+        new java.lang.String[] { "MessageId", "From", "Signature", });
     internal_static_io_opencola_relay_common_protobuf_RelayMessage_descriptor =
       getDescriptor().getMessageTypes().get(3);
     internal_static_io_opencola_relay_common_protobuf_RelayMessage_fieldAccessorTable = new

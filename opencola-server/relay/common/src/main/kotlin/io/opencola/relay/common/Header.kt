@@ -18,38 +18,40 @@ import java.io.OutputStream
 import java.security.PublicKey
 import java.util.*
 
-class Header(val from: PublicKey, val sessionId: UUID, val signature: Signature) {
+class Header(val messageId: UUID, val from: PublicKey, val signature: Signature) {
     override fun toString(): String {
-        return "Header(from=${Id.ofPublicKey(from)}, sessionId=$sessionId)"
+        return "Header(messageId=$messageId, from=${Id.ofPublicKey(from)})"
     }
 
     companion object : StreamSerializer<Header>, ProtoSerializable<Header, Proto.Header> {
         override fun encode(stream: OutputStream, value: Header) {
+            // This was the original order of parameters, so need to keep it this way for backwards compatibility
             stream.writeByteArray(value.from.encoded)
-            stream.writeByteArray(value.sessionId.toByteArray())
+            stream.writeByteArray(value.messageId.toByteArray())
             stream.writeByteArray(value.signature.bytes)
         }
 
         override fun decode(stream: InputStream): Header {
-            return Header(
-                publicKeyFromBytes(stream.readByteArray()),
-                UUIDByteArrayCodecCodec.decode(stream.readByteArray()),
-                Signature(SIGNATURE_ALGO, stream.readByteArray())
-            )
+            // This was the original order of parameters, so need to keep it this way for backwards compatibility
+            val from = publicKeyFromBytes(stream.readByteArray())
+            val messageId = UUIDByteArrayCodecCodec.decode(stream.readByteArray())
+            val signature = Signature(SIGNATURE_ALGO, stream.readByteArray())
+
+            return Header(messageId, from, signature)
         }
 
         override fun toProto(value: Header): Relay.Header {
             return Relay.Header.newBuilder()
                 .setFrom(ByteString.copyFrom(value.from.encoded))
-                .setSessionId(ByteString.copyFrom(value.sessionId.toByteArray()))
+                .setMessageId(ByteString.copyFrom(value.messageId.toByteArray()))
                 .setSignature(value.signature.toProto())
                 .build()
         }
 
         override fun fromProto(value: Relay.Header): Header {
             return Header(
+                UUIDByteArrayCodecCodec.decode(value.messageId.toByteArray()),
                 publicKeyFromBytes(value.from.toByteArray()),
-                UUIDByteArrayCodecCodec.decode(value.sessionId.toByteArray()),
                 Signature.fromProto(value.signature)
             )
         }
