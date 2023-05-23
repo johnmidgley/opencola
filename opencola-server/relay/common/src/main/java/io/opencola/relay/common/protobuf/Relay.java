@@ -1148,648 +1148,6 @@ public final class Relay {
 
   }
 
-  public interface SignatureOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:io.opencola.relay.common.protobuf.Signature)
-      com.google.protobuf.MessageOrBuilder {
-
-    /**
-     * <code>string algorithm = 1;</code>
-     * @return The algorithm.
-     */
-    java.lang.String getAlgorithm();
-    /**
-     * <code>string algorithm = 1;</code>
-     * @return The bytes for algorithm.
-     */
-    com.google.protobuf.ByteString
-        getAlgorithmBytes();
-
-    /**
-     * <code>bytes signature = 2;</code>
-     * @return The signature.
-     */
-    com.google.protobuf.ByteString getSignature();
-  }
-  /**
-   * Protobuf type {@code io.opencola.relay.common.protobuf.Signature}
-   */
-  public static final class Signature extends
-      com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:io.opencola.relay.common.protobuf.Signature)
-      SignatureOrBuilder {
-  private static final long serialVersionUID = 0L;
-    // Use Signature.newBuilder() to construct.
-    private Signature(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
-      super(builder);
-    }
-    private Signature() {
-      algorithm_ = "";
-      signature_ = com.google.protobuf.ByteString.EMPTY;
-    }
-
-    @java.lang.Override
-    @SuppressWarnings({"unused"})
-    protected java.lang.Object newInstance(
-        UnusedPrivateParameter unused) {
-      return new Signature();
-    }
-
-    @java.lang.Override
-    public final com.google.protobuf.UnknownFieldSet
-    getUnknownFields() {
-      return this.unknownFields;
-    }
-    private Signature(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              algorithm_ = s;
-              break;
-            }
-            case 18: {
-
-              signature_ = input.readBytes();
-              break;
-            }
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
-    public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
-      return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_Signature_descriptor;
-    }
-
-    @java.lang.Override
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-        internalGetFieldAccessorTable() {
-      return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_Signature_fieldAccessorTable
-          .ensureFieldAccessorsInitialized(
-              io.opencola.relay.common.protobuf.Relay.Signature.class, io.opencola.relay.common.protobuf.Relay.Signature.Builder.class);
-    }
-
-    public static final int ALGORITHM_FIELD_NUMBER = 1;
-    private volatile java.lang.Object algorithm_;
-    /**
-     * <code>string algorithm = 1;</code>
-     * @return The algorithm.
-     */
-    @java.lang.Override
-    public java.lang.String getAlgorithm() {
-      java.lang.Object ref = algorithm_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        algorithm_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string algorithm = 1;</code>
-     * @return The bytes for algorithm.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getAlgorithmBytes() {
-      java.lang.Object ref = algorithm_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        algorithm_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-
-    public static final int SIGNATURE_FIELD_NUMBER = 2;
-    private com.google.protobuf.ByteString signature_;
-    /**
-     * <code>bytes signature = 2;</code>
-     * @return The signature.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString getSignature() {
-      return signature_;
-    }
-
-    private byte memoizedIsInitialized = -1;
-    @java.lang.Override
-    public final boolean isInitialized() {
-      byte isInitialized = memoizedIsInitialized;
-      if (isInitialized == 1) return true;
-      if (isInitialized == 0) return false;
-
-      memoizedIsInitialized = 1;
-      return true;
-    }
-
-    @java.lang.Override
-    public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
-      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(algorithm_)) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, algorithm_);
-      }
-      if (!signature_.isEmpty()) {
-        output.writeBytes(2, signature_);
-      }
-      unknownFields.writeTo(output);
-    }
-
-    @java.lang.Override
-    public int getSerializedSize() {
-      int size = memoizedSize;
-      if (size != -1) return size;
-
-      size = 0;
-      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(algorithm_)) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, algorithm_);
-      }
-      if (!signature_.isEmpty()) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(2, signature_);
-      }
-      size += unknownFields.getSerializedSize();
-      memoizedSize = size;
-      return size;
-    }
-
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
-      if (obj == this) {
-       return true;
-      }
-      if (!(obj instanceof io.opencola.relay.common.protobuf.Relay.Signature)) {
-        return super.equals(obj);
-      }
-      io.opencola.relay.common.protobuf.Relay.Signature other = (io.opencola.relay.common.protobuf.Relay.Signature) obj;
-
-      if (!getAlgorithm()
-          .equals(other.getAlgorithm())) return false;
-      if (!getSignature()
-          .equals(other.getSignature())) return false;
-      if (!unknownFields.equals(other.unknownFields)) return false;
-      return true;
-    }
-
-    @java.lang.Override
-    public int hashCode() {
-      if (memoizedHashCode != 0) {
-        return memoizedHashCode;
-      }
-      int hash = 41;
-      hash = (19 * hash) + getDescriptor().hashCode();
-      hash = (37 * hash) + ALGORITHM_FIELD_NUMBER;
-      hash = (53 * hash) + getAlgorithm().hashCode();
-      hash = (37 * hash) + SIGNATURE_FIELD_NUMBER;
-      hash = (53 * hash) + getSignature().hashCode();
-      hash = (29 * hash) + unknownFields.hashCode();
-      memoizedHashCode = hash;
-      return hash;
-    }
-
-    public static io.opencola.relay.common.protobuf.Relay.Signature parseFrom(
-        java.nio.ByteBuffer data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static io.opencola.relay.common.protobuf.Relay.Signature parseFrom(
-        java.nio.ByteBuffer data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static io.opencola.relay.common.protobuf.Relay.Signature parseFrom(
-        com.google.protobuf.ByteString data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static io.opencola.relay.common.protobuf.Relay.Signature parseFrom(
-        com.google.protobuf.ByteString data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static io.opencola.relay.common.protobuf.Relay.Signature parseFrom(byte[] data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static io.opencola.relay.common.protobuf.Relay.Signature parseFrom(
-        byte[] data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static io.opencola.relay.common.protobuf.Relay.Signature parseFrom(java.io.InputStream input)
-        throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseWithIOException(PARSER, input);
-    }
-    public static io.opencola.relay.common.protobuf.Relay.Signature parseFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseWithIOException(PARSER, input, extensionRegistry);
-    }
-    public static io.opencola.relay.common.protobuf.Relay.Signature parseDelimitedFrom(java.io.InputStream input)
-        throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseDelimitedWithIOException(PARSER, input);
-    }
-    public static io.opencola.relay.common.protobuf.Relay.Signature parseDelimitedFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
-    }
-    public static io.opencola.relay.common.protobuf.Relay.Signature parseFrom(
-        com.google.protobuf.CodedInputStream input)
-        throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseWithIOException(PARSER, input);
-    }
-    public static io.opencola.relay.common.protobuf.Relay.Signature parseFrom(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseWithIOException(PARSER, input, extensionRegistry);
-    }
-
-    @java.lang.Override
-    public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder() {
-      return DEFAULT_INSTANCE.toBuilder();
-    }
-    public static Builder newBuilder(io.opencola.relay.common.protobuf.Relay.Signature prototype) {
-      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
-    }
-    @java.lang.Override
-    public Builder toBuilder() {
-      return this == DEFAULT_INSTANCE
-          ? new Builder() : new Builder().mergeFrom(this);
-    }
-
-    @java.lang.Override
-    protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
-      Builder builder = new Builder(parent);
-      return builder;
-    }
-    /**
-     * Protobuf type {@code io.opencola.relay.common.protobuf.Signature}
-     */
-    public static final class Builder extends
-        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:io.opencola.relay.common.protobuf.Signature)
-        io.opencola.relay.common.protobuf.Relay.SignatureOrBuilder {
-      public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
-        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_Signature_descriptor;
-      }
-
-      @java.lang.Override
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-          internalGetFieldAccessorTable() {
-        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_Signature_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(
-                io.opencola.relay.common.protobuf.Relay.Signature.class, io.opencola.relay.common.protobuf.Relay.Signature.Builder.class);
-      }
-
-      // Construct using io.opencola.relay.common.protobuf.Relay.Signature.newBuilder()
-      private Builder() {
-        maybeForceBuilderInitialization();
-      }
-
-      private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
-        super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
-        }
-      }
-      @java.lang.Override
-      public Builder clear() {
-        super.clear();
-        algorithm_ = "";
-
-        signature_ = com.google.protobuf.ByteString.EMPTY;
-
-        return this;
-      }
-
-      @java.lang.Override
-      public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
-        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_Signature_descriptor;
-      }
-
-      @java.lang.Override
-      public io.opencola.relay.common.protobuf.Relay.Signature getDefaultInstanceForType() {
-        return io.opencola.relay.common.protobuf.Relay.Signature.getDefaultInstance();
-      }
-
-      @java.lang.Override
-      public io.opencola.relay.common.protobuf.Relay.Signature build() {
-        io.opencola.relay.common.protobuf.Relay.Signature result = buildPartial();
-        if (!result.isInitialized()) {
-          throw newUninitializedMessageException(result);
-        }
-        return result;
-      }
-
-      @java.lang.Override
-      public io.opencola.relay.common.protobuf.Relay.Signature buildPartial() {
-        io.opencola.relay.common.protobuf.Relay.Signature result = new io.opencola.relay.common.protobuf.Relay.Signature(this);
-        result.algorithm_ = algorithm_;
-        result.signature_ = signature_;
-        onBuilt();
-        return result;
-      }
-
-      @java.lang.Override
-      public Builder clone() {
-        return super.clone();
-      }
-      @java.lang.Override
-      public Builder setField(
-          com.google.protobuf.Descriptors.FieldDescriptor field,
-          java.lang.Object value) {
-        return super.setField(field, value);
-      }
-      @java.lang.Override
-      public Builder clearField(
-          com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return super.clearField(field);
-      }
-      @java.lang.Override
-      public Builder clearOneof(
-          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return super.clearOneof(oneof);
-      }
-      @java.lang.Override
-      public Builder setRepeatedField(
-          com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, java.lang.Object value) {
-        return super.setRepeatedField(field, index, value);
-      }
-      @java.lang.Override
-      public Builder addRepeatedField(
-          com.google.protobuf.Descriptors.FieldDescriptor field,
-          java.lang.Object value) {
-        return super.addRepeatedField(field, value);
-      }
-      @java.lang.Override
-      public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof io.opencola.relay.common.protobuf.Relay.Signature) {
-          return mergeFrom((io.opencola.relay.common.protobuf.Relay.Signature)other);
-        } else {
-          super.mergeFrom(other);
-          return this;
-        }
-      }
-
-      public Builder mergeFrom(io.opencola.relay.common.protobuf.Relay.Signature other) {
-        if (other == io.opencola.relay.common.protobuf.Relay.Signature.getDefaultInstance()) return this;
-        if (!other.getAlgorithm().isEmpty()) {
-          algorithm_ = other.algorithm_;
-          onChanged();
-        }
-        if (other.getSignature() != com.google.protobuf.ByteString.EMPTY) {
-          setSignature(other.getSignature());
-        }
-        this.mergeUnknownFields(other.unknownFields);
-        onChanged();
-        return this;
-      }
-
-      @java.lang.Override
-      public final boolean isInitialized() {
-        return true;
-      }
-
-      @java.lang.Override
-      public Builder mergeFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        io.opencola.relay.common.protobuf.Relay.Signature parsedMessage = null;
-        try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (io.opencola.relay.common.protobuf.Relay.Signature) e.getUnfinishedMessage();
-          throw e.unwrapIOException();
-        } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
-        return this;
-      }
-
-      private java.lang.Object algorithm_ = "";
-      /**
-       * <code>string algorithm = 1;</code>
-       * @return The algorithm.
-       */
-      public java.lang.String getAlgorithm() {
-        java.lang.Object ref = algorithm_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          algorithm_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
-      }
-      /**
-       * <code>string algorithm = 1;</code>
-       * @return The bytes for algorithm.
-       */
-      public com.google.protobuf.ByteString
-          getAlgorithmBytes() {
-        java.lang.Object ref = algorithm_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          algorithm_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string algorithm = 1;</code>
-       * @param value The algorithm to set.
-       * @return This builder for chaining.
-       */
-      public Builder setAlgorithm(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
-        algorithm_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string algorithm = 1;</code>
-       * @return This builder for chaining.
-       */
-      public Builder clearAlgorithm() {
-        
-        algorithm_ = getDefaultInstance().getAlgorithm();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string algorithm = 1;</code>
-       * @param value The bytes for algorithm to set.
-       * @return This builder for chaining.
-       */
-      public Builder setAlgorithmBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        algorithm_ = value;
-        onChanged();
-        return this;
-      }
-
-      private com.google.protobuf.ByteString signature_ = com.google.protobuf.ByteString.EMPTY;
-      /**
-       * <code>bytes signature = 2;</code>
-       * @return The signature.
-       */
-      @java.lang.Override
-      public com.google.protobuf.ByteString getSignature() {
-        return signature_;
-      }
-      /**
-       * <code>bytes signature = 2;</code>
-       * @param value The signature to set.
-       * @return This builder for chaining.
-       */
-      public Builder setSignature(com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
-        signature_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>bytes signature = 2;</code>
-       * @return This builder for chaining.
-       */
-      public Builder clearSignature() {
-        
-        signature_ = getDefaultInstance().getSignature();
-        onChanged();
-        return this;
-      }
-      @java.lang.Override
-      public final Builder setUnknownFields(
-          final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return super.setUnknownFields(unknownFields);
-      }
-
-      @java.lang.Override
-      public final Builder mergeUnknownFields(
-          final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return super.mergeUnknownFields(unknownFields);
-      }
-
-
-      // @@protoc_insertion_point(builder_scope:io.opencola.relay.common.protobuf.Signature)
-    }
-
-    // @@protoc_insertion_point(class_scope:io.opencola.relay.common.protobuf.Signature)
-    private static final io.opencola.relay.common.protobuf.Relay.Signature DEFAULT_INSTANCE;
-    static {
-      DEFAULT_INSTANCE = new io.opencola.relay.common.protobuf.Relay.Signature();
-    }
-
-    public static io.opencola.relay.common.protobuf.Relay.Signature getDefaultInstance() {
-      return DEFAULT_INSTANCE;
-    }
-
-    private static final com.google.protobuf.Parser<Signature>
-        PARSER = new com.google.protobuf.AbstractParser<Signature>() {
-      @java.lang.Override
-      public Signature parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new Signature(input, extensionRegistry);
-      }
-    };
-
-    public static com.google.protobuf.Parser<Signature> parser() {
-      return PARSER;
-    }
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<Signature> getParserForType() {
-      return PARSER;
-    }
-
-    @java.lang.Override
-    public io.opencola.relay.common.protobuf.Relay.Signature getDefaultInstanceForType() {
-      return DEFAULT_INSTANCE;
-    }
-
-  }
-
   public interface HeaderOrBuilder extends
       // @@protoc_insertion_point(interface_extends:io.opencola.relay.common.protobuf.Header)
       com.google.protobuf.MessageOrBuilder {
@@ -1807,19 +1165,19 @@ public final class Relay {
     com.google.protobuf.ByteString getSessionId();
 
     /**
-     * <code>.io.opencola.relay.common.protobuf.Signature signature = 3;</code>
+     * <code>.io.opencola.serialization.protobuf.Signature signature = 3;</code>
      * @return Whether the signature field is set.
      */
     boolean hasSignature();
     /**
-     * <code>.io.opencola.relay.common.protobuf.Signature signature = 3;</code>
+     * <code>.io.opencola.serialization.protobuf.Signature signature = 3;</code>
      * @return The signature.
      */
-    io.opencola.relay.common.protobuf.Relay.Signature getSignature();
+    io.opencola.serialization.protobuf.Security.Signature getSignature();
     /**
-     * <code>.io.opencola.relay.common.protobuf.Signature signature = 3;</code>
+     * <code>.io.opencola.serialization.protobuf.Signature signature = 3;</code>
      */
-    io.opencola.relay.common.protobuf.Relay.SignatureOrBuilder getSignatureOrBuilder();
+    io.opencola.serialization.protobuf.Security.SignatureOrBuilder getSignatureOrBuilder();
   }
   /**
    * Protobuf type {@code io.opencola.relay.common.protobuf.Header}
@@ -1879,11 +1237,11 @@ public final class Relay {
               break;
             }
             case 26: {
-              io.opencola.relay.common.protobuf.Relay.Signature.Builder subBuilder = null;
+              io.opencola.serialization.protobuf.Security.Signature.Builder subBuilder = null;
               if (signature_ != null) {
                 subBuilder = signature_.toBuilder();
               }
-              signature_ = input.readMessage(io.opencola.relay.common.protobuf.Relay.Signature.parser(), extensionRegistry);
+              signature_ = input.readMessage(io.opencola.serialization.protobuf.Security.Signature.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(signature_);
                 signature_ = subBuilder.buildPartial();
@@ -1946,9 +1304,9 @@ public final class Relay {
     }
 
     public static final int SIGNATURE_FIELD_NUMBER = 3;
-    private io.opencola.relay.common.protobuf.Relay.Signature signature_;
+    private io.opencola.serialization.protobuf.Security.Signature signature_;
     /**
-     * <code>.io.opencola.relay.common.protobuf.Signature signature = 3;</code>
+     * <code>.io.opencola.serialization.protobuf.Signature signature = 3;</code>
      * @return Whether the signature field is set.
      */
     @java.lang.Override
@@ -1956,18 +1314,18 @@ public final class Relay {
       return signature_ != null;
     }
     /**
-     * <code>.io.opencola.relay.common.protobuf.Signature signature = 3;</code>
+     * <code>.io.opencola.serialization.protobuf.Signature signature = 3;</code>
      * @return The signature.
      */
     @java.lang.Override
-    public io.opencola.relay.common.protobuf.Relay.Signature getSignature() {
-      return signature_ == null ? io.opencola.relay.common.protobuf.Relay.Signature.getDefaultInstance() : signature_;
+    public io.opencola.serialization.protobuf.Security.Signature getSignature() {
+      return signature_ == null ? io.opencola.serialization.protobuf.Security.Signature.getDefaultInstance() : signature_;
     }
     /**
-     * <code>.io.opencola.relay.common.protobuf.Signature signature = 3;</code>
+     * <code>.io.opencola.serialization.protobuf.Signature signature = 3;</code>
      */
     @java.lang.Override
-    public io.opencola.relay.common.protobuf.Relay.SignatureOrBuilder getSignatureOrBuilder() {
+    public io.opencola.serialization.protobuf.Security.SignatureOrBuilder getSignatureOrBuilder() {
       return getSignature();
     }
 
@@ -2388,31 +1746,31 @@ public final class Relay {
         return this;
       }
 
-      private io.opencola.relay.common.protobuf.Relay.Signature signature_;
+      private io.opencola.serialization.protobuf.Security.Signature signature_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          io.opencola.relay.common.protobuf.Relay.Signature, io.opencola.relay.common.protobuf.Relay.Signature.Builder, io.opencola.relay.common.protobuf.Relay.SignatureOrBuilder> signatureBuilder_;
+          io.opencola.serialization.protobuf.Security.Signature, io.opencola.serialization.protobuf.Security.Signature.Builder, io.opencola.serialization.protobuf.Security.SignatureOrBuilder> signatureBuilder_;
       /**
-       * <code>.io.opencola.relay.common.protobuf.Signature signature = 3;</code>
+       * <code>.io.opencola.serialization.protobuf.Signature signature = 3;</code>
        * @return Whether the signature field is set.
        */
       public boolean hasSignature() {
         return signatureBuilder_ != null || signature_ != null;
       }
       /**
-       * <code>.io.opencola.relay.common.protobuf.Signature signature = 3;</code>
+       * <code>.io.opencola.serialization.protobuf.Signature signature = 3;</code>
        * @return The signature.
        */
-      public io.opencola.relay.common.protobuf.Relay.Signature getSignature() {
+      public io.opencola.serialization.protobuf.Security.Signature getSignature() {
         if (signatureBuilder_ == null) {
-          return signature_ == null ? io.opencola.relay.common.protobuf.Relay.Signature.getDefaultInstance() : signature_;
+          return signature_ == null ? io.opencola.serialization.protobuf.Security.Signature.getDefaultInstance() : signature_;
         } else {
           return signatureBuilder_.getMessage();
         }
       }
       /**
-       * <code>.io.opencola.relay.common.protobuf.Signature signature = 3;</code>
+       * <code>.io.opencola.serialization.protobuf.Signature signature = 3;</code>
        */
-      public Builder setSignature(io.opencola.relay.common.protobuf.Relay.Signature value) {
+      public Builder setSignature(io.opencola.serialization.protobuf.Security.Signature value) {
         if (signatureBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2426,10 +1784,10 @@ public final class Relay {
         return this;
       }
       /**
-       * <code>.io.opencola.relay.common.protobuf.Signature signature = 3;</code>
+       * <code>.io.opencola.serialization.protobuf.Signature signature = 3;</code>
        */
       public Builder setSignature(
-          io.opencola.relay.common.protobuf.Relay.Signature.Builder builderForValue) {
+          io.opencola.serialization.protobuf.Security.Signature.Builder builderForValue) {
         if (signatureBuilder_ == null) {
           signature_ = builderForValue.build();
           onChanged();
@@ -2440,13 +1798,13 @@ public final class Relay {
         return this;
       }
       /**
-       * <code>.io.opencola.relay.common.protobuf.Signature signature = 3;</code>
+       * <code>.io.opencola.serialization.protobuf.Signature signature = 3;</code>
        */
-      public Builder mergeSignature(io.opencola.relay.common.protobuf.Relay.Signature value) {
+      public Builder mergeSignature(io.opencola.serialization.protobuf.Security.Signature value) {
         if (signatureBuilder_ == null) {
           if (signature_ != null) {
             signature_ =
-              io.opencola.relay.common.protobuf.Relay.Signature.newBuilder(signature_).mergeFrom(value).buildPartial();
+              io.opencola.serialization.protobuf.Security.Signature.newBuilder(signature_).mergeFrom(value).buildPartial();
           } else {
             signature_ = value;
           }
@@ -2458,7 +1816,7 @@ public final class Relay {
         return this;
       }
       /**
-       * <code>.io.opencola.relay.common.protobuf.Signature signature = 3;</code>
+       * <code>.io.opencola.serialization.protobuf.Signature signature = 3;</code>
        */
       public Builder clearSignature() {
         if (signatureBuilder_ == null) {
@@ -2472,33 +1830,33 @@ public final class Relay {
         return this;
       }
       /**
-       * <code>.io.opencola.relay.common.protobuf.Signature signature = 3;</code>
+       * <code>.io.opencola.serialization.protobuf.Signature signature = 3;</code>
        */
-      public io.opencola.relay.common.protobuf.Relay.Signature.Builder getSignatureBuilder() {
+      public io.opencola.serialization.protobuf.Security.Signature.Builder getSignatureBuilder() {
         
         onChanged();
         return getSignatureFieldBuilder().getBuilder();
       }
       /**
-       * <code>.io.opencola.relay.common.protobuf.Signature signature = 3;</code>
+       * <code>.io.opencola.serialization.protobuf.Signature signature = 3;</code>
        */
-      public io.opencola.relay.common.protobuf.Relay.SignatureOrBuilder getSignatureOrBuilder() {
+      public io.opencola.serialization.protobuf.Security.SignatureOrBuilder getSignatureOrBuilder() {
         if (signatureBuilder_ != null) {
           return signatureBuilder_.getMessageOrBuilder();
         } else {
           return signature_ == null ?
-              io.opencola.relay.common.protobuf.Relay.Signature.getDefaultInstance() : signature_;
+              io.opencola.serialization.protobuf.Security.Signature.getDefaultInstance() : signature_;
         }
       }
       /**
-       * <code>.io.opencola.relay.common.protobuf.Signature signature = 3;</code>
+       * <code>.io.opencola.serialization.protobuf.Signature signature = 3;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          io.opencola.relay.common.protobuf.Relay.Signature, io.opencola.relay.common.protobuf.Relay.Signature.Builder, io.opencola.relay.common.protobuf.Relay.SignatureOrBuilder> 
+          io.opencola.serialization.protobuf.Security.Signature, io.opencola.serialization.protobuf.Security.Signature.Builder, io.opencola.serialization.protobuf.Security.SignatureOrBuilder> 
           getSignatureFieldBuilder() {
         if (signatureBuilder_ == null) {
           signatureBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              io.opencola.relay.common.protobuf.Relay.Signature, io.opencola.relay.common.protobuf.Relay.Signature.Builder, io.opencola.relay.common.protobuf.Relay.SignatureOrBuilder>(
+              io.opencola.serialization.protobuf.Security.Signature, io.opencola.serialization.protobuf.Security.Signature.Builder, io.opencola.serialization.protobuf.Security.SignatureOrBuilder>(
                   getSignature(),
                   getParentForChildren(),
                   isClean());
@@ -3259,10 +2617,14 @@ public final class Relay {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>bytes toPublicKey = 1;</code>
-     * @return The toPublicKey.
+     * <pre>
+     * Public key of the recipient
+     * </pre>
+     *
+     * <code>bytes to = 1;</code>
+     * @return The to.
      */
-    com.google.protobuf.ByteString getToPublicKey();
+    com.google.protobuf.ByteString getTo();
 
     /**
      * <pre>
@@ -3270,27 +2632,16 @@ public final class Relay {
      * key will be stored. If not present, the message is considered transient and will not be stored.
      * </pre>
      *
-     * <code>string key = 2;</code>
+     * <code>bytes key = 2;</code>
      * @return The key.
      */
-    java.lang.String getKey();
-    /**
-     * <pre>
-     * Message key used for deduplication. When present, if the relay has to store the message, only one with the same
-     * key will be stored. If not present, the message is considered transient and will not be stored.
-     * </pre>
-     *
-     * <code>string key = 2;</code>
-     * @return The bytes for key.
-     */
-    com.google.protobuf.ByteString
-        getKeyBytes();
+    com.google.protobuf.ByteString getKey();
 
     /**
-     * <code>bytes body = 3;</code>
-     * @return The body.
+     * <code>bytes message = 3;</code>
+     * @return The message.
      */
-    com.google.protobuf.ByteString getBody();
+    com.google.protobuf.ByteString getMessage();
   }
   /**
    * Protobuf type {@code io.opencola.relay.common.protobuf.Envelope}
@@ -3305,9 +2656,9 @@ public final class Relay {
       super(builder);
     }
     private Envelope() {
-      toPublicKey_ = com.google.protobuf.ByteString.EMPTY;
-      key_ = "";
-      body_ = com.google.protobuf.ByteString.EMPTY;
+      to_ = com.google.protobuf.ByteString.EMPTY;
+      key_ = com.google.protobuf.ByteString.EMPTY;
+      message_ = com.google.protobuf.ByteString.EMPTY;
     }
 
     @java.lang.Override
@@ -3342,18 +2693,17 @@ public final class Relay {
               break;
             case 10: {
 
-              toPublicKey_ = input.readBytes();
+              to_ = input.readBytes();
               break;
             }
             case 18: {
-              java.lang.String s = input.readStringRequireUtf8();
 
-              key_ = s;
+              key_ = input.readBytes();
               break;
             }
             case 26: {
 
-              body_ = input.readBytes();
+              message_ = input.readBytes();
               break;
             }
             default: {
@@ -3388,74 +2738,46 @@ public final class Relay {
               io.opencola.relay.common.protobuf.Relay.Envelope.class, io.opencola.relay.common.protobuf.Relay.Envelope.Builder.class);
     }
 
-    public static final int TOPUBLICKEY_FIELD_NUMBER = 1;
-    private com.google.protobuf.ByteString toPublicKey_;
+    public static final int TO_FIELD_NUMBER = 1;
+    private com.google.protobuf.ByteString to_;
     /**
-     * <code>bytes toPublicKey = 1;</code>
-     * @return The toPublicKey.
+     * <pre>
+     * Public key of the recipient
+     * </pre>
+     *
+     * <code>bytes to = 1;</code>
+     * @return The to.
      */
     @java.lang.Override
-    public com.google.protobuf.ByteString getToPublicKey() {
-      return toPublicKey_;
+    public com.google.protobuf.ByteString getTo() {
+      return to_;
     }
 
     public static final int KEY_FIELD_NUMBER = 2;
-    private volatile java.lang.Object key_;
+    private com.google.protobuf.ByteString key_;
     /**
      * <pre>
      * Message key used for deduplication. When present, if the relay has to store the message, only one with the same
      * key will be stored. If not present, the message is considered transient and will not be stored.
      * </pre>
      *
-     * <code>string key = 2;</code>
+     * <code>bytes key = 2;</code>
      * @return The key.
      */
     @java.lang.Override
-    public java.lang.String getKey() {
-      java.lang.Object ref = key_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        key_ = s;
-        return s;
-      }
-    }
-    /**
-     * <pre>
-     * Message key used for deduplication. When present, if the relay has to store the message, only one with the same
-     * key will be stored. If not present, the message is considered transient and will not be stored.
-     * </pre>
-     *
-     * <code>string key = 2;</code>
-     * @return The bytes for key.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getKeyBytes() {
-      java.lang.Object ref = key_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        key_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public com.google.protobuf.ByteString getKey() {
+      return key_;
     }
 
-    public static final int BODY_FIELD_NUMBER = 3;
-    private com.google.protobuf.ByteString body_;
+    public static final int MESSAGE_FIELD_NUMBER = 3;
+    private com.google.protobuf.ByteString message_;
     /**
-     * <code>bytes body = 3;</code>
-     * @return The body.
+     * <code>bytes message = 3;</code>
+     * @return The message.
      */
     @java.lang.Override
-    public com.google.protobuf.ByteString getBody() {
-      return body_;
+    public com.google.protobuf.ByteString getMessage() {
+      return message_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -3472,14 +2794,14 @@ public final class Relay {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!toPublicKey_.isEmpty()) {
-        output.writeBytes(1, toPublicKey_);
+      if (!to_.isEmpty()) {
+        output.writeBytes(1, to_);
       }
-      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(key_)) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, key_);
+      if (!key_.isEmpty()) {
+        output.writeBytes(2, key_);
       }
-      if (!body_.isEmpty()) {
-        output.writeBytes(3, body_);
+      if (!message_.isEmpty()) {
+        output.writeBytes(3, message_);
       }
       unknownFields.writeTo(output);
     }
@@ -3490,16 +2812,17 @@ public final class Relay {
       if (size != -1) return size;
 
       size = 0;
-      if (!toPublicKey_.isEmpty()) {
+      if (!to_.isEmpty()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(1, toPublicKey_);
+          .computeBytesSize(1, to_);
       }
-      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(key_)) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, key_);
-      }
-      if (!body_.isEmpty()) {
+      if (!key_.isEmpty()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(3, body_);
+          .computeBytesSize(2, key_);
+      }
+      if (!message_.isEmpty()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(3, message_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -3516,12 +2839,12 @@ public final class Relay {
       }
       io.opencola.relay.common.protobuf.Relay.Envelope other = (io.opencola.relay.common.protobuf.Relay.Envelope) obj;
 
-      if (!getToPublicKey()
-          .equals(other.getToPublicKey())) return false;
+      if (!getTo()
+          .equals(other.getTo())) return false;
       if (!getKey()
           .equals(other.getKey())) return false;
-      if (!getBody()
-          .equals(other.getBody())) return false;
+      if (!getMessage()
+          .equals(other.getMessage())) return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -3533,12 +2856,12 @@ public final class Relay {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      hash = (37 * hash) + TOPUBLICKEY_FIELD_NUMBER;
-      hash = (53 * hash) + getToPublicKey().hashCode();
+      hash = (37 * hash) + TO_FIELD_NUMBER;
+      hash = (53 * hash) + getTo().hashCode();
       hash = (37 * hash) + KEY_FIELD_NUMBER;
       hash = (53 * hash) + getKey().hashCode();
-      hash = (37 * hash) + BODY_FIELD_NUMBER;
-      hash = (53 * hash) + getBody().hashCode();
+      hash = (37 * hash) + MESSAGE_FIELD_NUMBER;
+      hash = (53 * hash) + getMessage().hashCode();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -3672,11 +2995,11 @@ public final class Relay {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        toPublicKey_ = com.google.protobuf.ByteString.EMPTY;
+        to_ = com.google.protobuf.ByteString.EMPTY;
 
-        key_ = "";
+        key_ = com.google.protobuf.ByteString.EMPTY;
 
-        body_ = com.google.protobuf.ByteString.EMPTY;
+        message_ = com.google.protobuf.ByteString.EMPTY;
 
         return this;
       }
@@ -3704,9 +3027,9 @@ public final class Relay {
       @java.lang.Override
       public io.opencola.relay.common.protobuf.Relay.Envelope buildPartial() {
         io.opencola.relay.common.protobuf.Relay.Envelope result = new io.opencola.relay.common.protobuf.Relay.Envelope(this);
-        result.toPublicKey_ = toPublicKey_;
+        result.to_ = to_;
         result.key_ = key_;
-        result.body_ = body_;
+        result.message_ = message_;
         onBuilt();
         return result;
       }
@@ -3755,15 +3078,14 @@ public final class Relay {
 
       public Builder mergeFrom(io.opencola.relay.common.protobuf.Relay.Envelope other) {
         if (other == io.opencola.relay.common.protobuf.Relay.Envelope.getDefaultInstance()) return this;
-        if (other.getToPublicKey() != com.google.protobuf.ByteString.EMPTY) {
-          setToPublicKey(other.getToPublicKey());
+        if (other.getTo() != com.google.protobuf.ByteString.EMPTY) {
+          setTo(other.getTo());
         }
-        if (!other.getKey().isEmpty()) {
-          key_ = other.key_;
-          onChanged();
+        if (other.getKey() != com.google.protobuf.ByteString.EMPTY) {
+          setKey(other.getKey());
         }
-        if (other.getBody() != com.google.protobuf.ByteString.EMPTY) {
-          setBody(other.getBody());
+        if (other.getMessage() != com.google.protobuf.ByteString.EMPTY) {
+          setMessage(other.getMessage());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -3794,61 +3116,65 @@ public final class Relay {
         return this;
       }
 
-      private com.google.protobuf.ByteString toPublicKey_ = com.google.protobuf.ByteString.EMPTY;
+      private com.google.protobuf.ByteString to_ = com.google.protobuf.ByteString.EMPTY;
       /**
-       * <code>bytes toPublicKey = 1;</code>
-       * @return The toPublicKey.
+       * <pre>
+       * Public key of the recipient
+       * </pre>
+       *
+       * <code>bytes to = 1;</code>
+       * @return The to.
        */
       @java.lang.Override
-      public com.google.protobuf.ByteString getToPublicKey() {
-        return toPublicKey_;
+      public com.google.protobuf.ByteString getTo() {
+        return to_;
       }
       /**
-       * <code>bytes toPublicKey = 1;</code>
-       * @param value The toPublicKey to set.
+       * <pre>
+       * Public key of the recipient
+       * </pre>
+       *
+       * <code>bytes to = 1;</code>
+       * @param value The to to set.
        * @return This builder for chaining.
        */
-      public Builder setToPublicKey(com.google.protobuf.ByteString value) {
+      public Builder setTo(com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
   
-        toPublicKey_ = value;
+        to_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>bytes toPublicKey = 1;</code>
+       * <pre>
+       * Public key of the recipient
+       * </pre>
+       *
+       * <code>bytes to = 1;</code>
        * @return This builder for chaining.
        */
-      public Builder clearToPublicKey() {
+      public Builder clearTo() {
         
-        toPublicKey_ = getDefaultInstance().getToPublicKey();
+        to_ = getDefaultInstance().getTo();
         onChanged();
         return this;
       }
 
-      private java.lang.Object key_ = "";
+      private com.google.protobuf.ByteString key_ = com.google.protobuf.ByteString.EMPTY;
       /**
        * <pre>
        * Message key used for deduplication. When present, if the relay has to store the message, only one with the same
        * key will be stored. If not present, the message is considered transient and will not be stored.
        * </pre>
        *
-       * <code>string key = 2;</code>
+       * <code>bytes key = 2;</code>
        * @return The key.
        */
-      public java.lang.String getKey() {
-        java.lang.Object ref = key_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          key_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
+      @java.lang.Override
+      public com.google.protobuf.ByteString getKey() {
+        return key_;
       }
       /**
        * <pre>
@@ -3856,34 +3182,11 @@ public final class Relay {
        * key will be stored. If not present, the message is considered transient and will not be stored.
        * </pre>
        *
-       * <code>string key = 2;</code>
-       * @return The bytes for key.
-       */
-      public com.google.protobuf.ByteString
-          getKeyBytes() {
-        java.lang.Object ref = key_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          key_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <pre>
-       * Message key used for deduplication. When present, if the relay has to store the message, only one with the same
-       * key will be stored. If not present, the message is considered transient and will not be stored.
-       * </pre>
-       *
-       * <code>string key = 2;</code>
+       * <code>bytes key = 2;</code>
        * @param value The key to set.
        * @return This builder for chaining.
        */
-      public Builder setKey(
-          java.lang.String value) {
+      public Builder setKey(com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -3898,7 +3201,7 @@ public final class Relay {
        * key will be stored. If not present, the message is considered transient and will not be stored.
        * </pre>
        *
-       * <code>string key = 2;</code>
+       * <code>bytes key = 2;</code>
        * @return This builder for chaining.
        */
       public Builder clearKey() {
@@ -3907,58 +3210,37 @@ public final class Relay {
         onChanged();
         return this;
       }
-      /**
-       * <pre>
-       * Message key used for deduplication. When present, if the relay has to store the message, only one with the same
-       * key will be stored. If not present, the message is considered transient and will not be stored.
-       * </pre>
-       *
-       * <code>string key = 2;</code>
-       * @param value The bytes for key to set.
-       * @return This builder for chaining.
-       */
-      public Builder setKeyBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        key_ = value;
-        onChanged();
-        return this;
-      }
 
-      private com.google.protobuf.ByteString body_ = com.google.protobuf.ByteString.EMPTY;
+      private com.google.protobuf.ByteString message_ = com.google.protobuf.ByteString.EMPTY;
       /**
-       * <code>bytes body = 3;</code>
-       * @return The body.
+       * <code>bytes message = 3;</code>
+       * @return The message.
        */
       @java.lang.Override
-      public com.google.protobuf.ByteString getBody() {
-        return body_;
+      public com.google.protobuf.ByteString getMessage() {
+        return message_;
       }
       /**
-       * <code>bytes body = 3;</code>
-       * @param value The body to set.
+       * <code>bytes message = 3;</code>
+       * @param value The message to set.
        * @return This builder for chaining.
        */
-      public Builder setBody(com.google.protobuf.ByteString value) {
+      public Builder setMessage(com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
   
-        body_ = value;
+        message_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>bytes body = 3;</code>
+       * <code>bytes message = 3;</code>
        * @return This builder for chaining.
        */
-      public Builder clearBody() {
+      public Builder clearMessage() {
         
-        body_ = getDefaultInstance().getBody();
+        message_ = getDefaultInstance().getMessage();
         onChanged();
         return this;
       }
@@ -4026,11 +3308,6 @@ public final class Relay {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_io_opencola_relay_common_protobuf_Challenge_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_io_opencola_relay_common_protobuf_Signature_descriptor;
-  private static final 
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_io_opencola_relay_common_protobuf_Signature_fieldAccessorTable;
-  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_io_opencola_relay_common_protobuf_Header_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -4055,20 +3332,20 @@ public final class Relay {
   static {
     java.lang.String[] descriptorData = {
       "\n\013relay.proto\022!io.opencola.relay.common." +
-      "protobuf\"\034\n\007Connect\022\021\n\tpublicKey\030\001 \001(\014\"," +
-      "\n\tChallenge\022\021\n\talgorithm\030\001 \001(\t\022\014\n\004data\030\002" +
-      " \001(\014\"1\n\tSignature\022\021\n\talgorithm\030\001 \001(\t\022\021\n\t" +
-      "signature\030\002 \001(\014\"j\n\006Header\022\014\n\004from\030\001 \001(\014\022" +
-      "\021\n\tsessionId\030\002 \001(\014\022?\n\tsignature\030\003 \001(\0132,." +
-      "io.opencola.relay.common.protobuf.Signat" +
-      "ure\"W\n\014RelayMessage\0229\n\006header\030\001 \001(\0132).io" +
-      ".opencola.relay.common.protobuf.Header\022\014" +
-      "\n\004body\030\002 \001(\014\":\n\010Envelope\022\023\n\013toPublicKey\030" +
-      "\001 \001(\014\022\013\n\003key\030\002 \001(\t\022\014\n\004body\030\003 \001(\014b\006proto3"
+      "protobuf\032\016security.proto\"\034\n\007Connect\022\021\n\tp" +
+      "ublicKey\030\001 \001(\014\",\n\tChallenge\022\021\n\talgorithm" +
+      "\030\001 \001(\t\022\014\n\004data\030\002 \001(\014\"k\n\006Header\022\014\n\004from\030\001" +
+      " \001(\014\022\021\n\tsessionId\030\002 \001(\014\022@\n\tsignature\030\003 \001" +
+      "(\0132-.io.opencola.serialization.protobuf." +
+      "Signature\"W\n\014RelayMessage\0229\n\006header\030\001 \001(" +
+      "\0132).io.opencola.relay.common.protobuf.He" +
+      "ader\022\014\n\004body\030\002 \001(\014\"4\n\010Envelope\022\n\n\002to\030\001 \001" +
+      "(\014\022\013\n\003key\030\002 \001(\014\022\017\n\007message\030\003 \001(\014b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
+          io.opencola.serialization.protobuf.Security.getDescriptor(),
         });
     internal_static_io_opencola_relay_common_protobuf_Connect_descriptor =
       getDescriptor().getMessageTypes().get(0);
@@ -4082,30 +3359,25 @@ public final class Relay {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_relay_common_protobuf_Challenge_descriptor,
         new java.lang.String[] { "Algorithm", "Data", });
-    internal_static_io_opencola_relay_common_protobuf_Signature_descriptor =
-      getDescriptor().getMessageTypes().get(2);
-    internal_static_io_opencola_relay_common_protobuf_Signature_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_io_opencola_relay_common_protobuf_Signature_descriptor,
-        new java.lang.String[] { "Algorithm", "Signature", });
     internal_static_io_opencola_relay_common_protobuf_Header_descriptor =
-      getDescriptor().getMessageTypes().get(3);
+      getDescriptor().getMessageTypes().get(2);
     internal_static_io_opencola_relay_common_protobuf_Header_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_relay_common_protobuf_Header_descriptor,
         new java.lang.String[] { "From", "SessionId", "Signature", });
     internal_static_io_opencola_relay_common_protobuf_RelayMessage_descriptor =
-      getDescriptor().getMessageTypes().get(4);
+      getDescriptor().getMessageTypes().get(3);
     internal_static_io_opencola_relay_common_protobuf_RelayMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_relay_common_protobuf_RelayMessage_descriptor,
         new java.lang.String[] { "Header", "Body", });
     internal_static_io_opencola_relay_common_protobuf_Envelope_descriptor =
-      getDescriptor().getMessageTypes().get(5);
+      getDescriptor().getMessageTypes().get(4);
     internal_static_io_opencola_relay_common_protobuf_Envelope_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_relay_common_protobuf_Envelope_descriptor,
-        new java.lang.String[] { "ToPublicKey", "Key", "Body", });
+        new java.lang.String[] { "To", "Key", "Message", });
+    io.opencola.serialization.protobuf.Security.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

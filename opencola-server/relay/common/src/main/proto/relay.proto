@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package io.opencola.relay.common.protobuf;
 
+import "security.proto";
+
 message Connect {
   bytes publicKey = 1;
 }
@@ -11,15 +13,10 @@ message Challenge {
   bytes data = 2;
 }
 
-message Signature {
-  string algorithm = 1;
-  bytes signature = 2;
-}
-
 message Header {
   bytes from = 1;
   bytes sessionId = 2;
-  Signature signature = 3;
+  io.opencola.serialization.protobuf.Signature signature = 3;
 }
 
 message RelayMessage {
@@ -28,13 +25,14 @@ message RelayMessage {
 }
 
 message Envelope {
-  bytes toPublicKey = 1;
+  // Public key of the recipient
+  bytes to = 1;
 
   // Message key used for deduplication. When present, if the relay has to store the message, only one with the same
   // key will be stored. If not present, the message is considered transient and will not be stored.
   bytes key = 2;
 
-  bytes body = 3;
+  bytes message = 3;
 }
 
 

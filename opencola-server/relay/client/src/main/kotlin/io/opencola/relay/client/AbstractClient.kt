@@ -169,13 +169,13 @@ abstract class AbstractClient(
 
     override suspend fun sendMessage(to: PublicKey, body: ByteArray) {
         val message = Message(keyPair, UUID.randomUUID(), body)
-        val envelope = MessageEnvelope(to, message)
+        val envelope = Envelope(to,  null, message)
 
         try {
             // TODO: Should there be a limit on the size of messages?
             logger.info { "Sending message: ${message.header}" }
             withTimeout(requestTimeoutMilliseconds) {
-                getConnection().writeSizedByteArray(MessageEnvelope.encode(envelope))
+                getConnection().writeSizedByteArray(Envelope.encode(envelope))
             }
         } catch (e: ConnectException) {
             // Pass exception through so caller knows message wasn't sent

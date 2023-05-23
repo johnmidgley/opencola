@@ -6,7 +6,7 @@ import io.opencola.security.isValidSignature
 import io.opencola.security.publicKeyFromBytes
 import io.opencola.serialization.codecs.IntByteArrayCodec
 import io.opencola.relay.common.Connection
-import io.opencola.relay.common.MessageEnvelope
+import io.opencola.relay.common.Envelope
 import io.opencola.relay.common.SocketSession
 import io.opencola.relay.common.State.*
 import kotlinx.coroutines.*
@@ -76,7 +76,7 @@ abstract class AbstractRelayServer(
         val fromId = Id.ofPublicKey(from)
 
         try {
-            val envelope = MessageEnvelope.decode(payload)
+            val envelope = Envelope.decode(payload)
             val toId = Id.ofPublicKey(envelope.to)
             val prefix = "from=$fromId, to=$toId:"
 

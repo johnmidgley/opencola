@@ -8,7 +8,7 @@ fi
 
 # function to generate proto
 function generate_proto() {
-    protoc --java_out=../java $1
+    protoc -I. -I ../../../../../core/serialization/src/main/proto/ --java_out=../java $1
 
     # Check error code
     if [ $? -ne 0 ]; then

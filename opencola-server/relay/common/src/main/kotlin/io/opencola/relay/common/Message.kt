@@ -1,8 +1,11 @@
 package io.opencola.relay.common
 
+import com.google.protobuf.ByteString
+import io.opencola.relay.common.protobuf.Relay as Proto
 import io.opencola.security.Signature
 import io.opencola.security.isValidSignature
 import io.opencola.serialization.StreamSerializer
+import io.opencola.serialization.protobuf.ProtoSerializable
 import io.opencola.serialization.readByteArray
 import io.opencola.serialization.writeByteArray
 import java.io.InputStream
@@ -26,7 +29,7 @@ class Message(val header: Header, val body: ByteArray) {
         return this
     }
 
-    companion object : StreamSerializer<Message> {
+    companion object : StreamSerializer<Message>, ProtoSerializable<Message, Proto.RelayMessage> {
         override fun encode(stream: OutputStream, value: Message) {
             Header.encode(stream, value.header)
             stream.writeByteArray(value.body)
@@ -36,6 +39,20 @@ class Message(val header: Header, val body: ByteArray) {
             return Message(
                 Header.decode(stream),
                 stream.readByteArray())
+        }
+
+        override fun toProto(value: Message): Proto.RelayMessage {
+            return Proto.RelayMessage.newBuilder()
+                .setHeader(Header.toProto(value.header))
+                .setBody(ByteString.copyFrom(value.body))
+                .build()
+        }
+
+        override fun fromProto(value: Proto.RelayMessage): Message {
+            return Message(
+                Header.fromProto(value.header),
+                value.body.toByteArray()
+            )
         }
     }
 }
