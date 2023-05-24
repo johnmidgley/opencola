@@ -25,7 +25,7 @@ fun getApplications(
                 val config =
                     baseAppConfig
                         .setName(name)
-                        .setServer(ServerConfig(baseAppConfig.server.host, basePortNumber + i, null))
+                        .setServer(ServerConfig(baseAppConfig.server.host, basePortNumber + serverNum, null))
                 val keyPairs = Application.getOrCreateRootKeyPair(storagePath, "password")
                 val address = URI("http://${config.server.host}:${config.server.port}")
             }

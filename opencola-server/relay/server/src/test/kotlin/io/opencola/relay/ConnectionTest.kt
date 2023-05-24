@@ -2,6 +2,7 @@ package io.opencola.relay
 
 import io.ktor.server.netty.*
 import io.opencola.io.StdoutMonitor
+import io.opencola.relay.client.AbstractClient
 import io.opencola.security.generateKeyPair
 import io.opencola.relay.client.RelayClient
 import io.opencola.relay.client.v1.WebSocketClient
@@ -43,7 +44,7 @@ class ConnectionTest {
         name: String,
         keyPair: KeyPair = generateKeyPair(),
         requestTimeoutInMilliseconds: Long = 5000,
-    ): RelayClient {
+    ): AbstractClient {
         return WebSocketClient(relayServerUri, keyPair, name, requestTimeoutInMilliseconds)
     }
 
@@ -152,12 +153,24 @@ class ConnectionTest {
                 assertFailsWith<ConnectException> { client0.sendMessage(client1.publicKey, "hello".toByteArray()) }
 
                 println("Starting relay server again")
-                relayServer1 = startServer()
+                StdoutMonitor(readTimeoutMilliseconds = 3000).use {
+                    relayServer1 = startServer()
+                    // The waitUntil method does not yield to co-routines, so we need to explicitly delay
+                    // to let the server start and the clients reconnect. The proper solution would be to
+                    // implement a delayUntil method on StdoutMonitor that works properly with coroutines.
+                    delay(2000)
+                    // Wait until both clients have connected again
+                    it.waitUntil("Connection created")
+                    it.waitUntil("Connection created")
+                }
 
                 println("Sending message to client1")
                 client0.sendMessage(client1.publicKey, "hello2".toByteArray())
-                assertEquals("hello2 client1", String(results.receive()))
+                withTimeout(3000) {
+                    assertEquals("hello2 client1", String(results.receive()))
+                }
             } finally {
+                println("Closing resources")
                 client0?.close()
                 client1?.close()
                 relayServer1?.stop()

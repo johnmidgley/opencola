@@ -1,4 +1,4 @@
-package io.opencola.relay.client.v1
+package io.opencola.relay.client.v2
 
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
@@ -28,7 +28,7 @@ class WebSocketClient(
                 method = HttpMethod.Get,
                 host = hostname,
                 port = port,
-                path = "/relay"
+                path = "/v2/relay"
             )
         )
     }

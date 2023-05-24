@@ -17,7 +17,7 @@ import java.security.PublicKey
 abstract class AbstractClient(
     protected val uri: URI,
     protected val keyPair: KeyPair,
-    final override val name: String? = null,
+    protected val name: String? = null,
     private val requestTimeoutMilliseconds: Long = 60000, // TODO: Make configurable
     private val retryPolicy: (Int) -> Long = retryExponentialBackoff(),
 ) : RelayClient {
@@ -43,10 +43,10 @@ abstract class AbstractClient(
     protected abstract suspend fun authenticate(socketSession: SocketSession)
     protected abstract fun decodeMessage(bytes: ByteArray): Message
 
-    override val publicKey: PublicKey
+    val publicKey: PublicKey
         get() = keyPair.public
 
-    override val state: State
+    val state: State
         get() = _state
 
     override suspend fun waitUntilOpen() {
