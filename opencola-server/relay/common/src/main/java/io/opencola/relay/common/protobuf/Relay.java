@@ -160,6 +160,48 @@ public final class Relay {
     getUnknownFields() {
       return this.unknownFields;
     }
+    private ConnectMessage(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+
+              publicKey_ = input.readBytes();
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_ConnectMessage_descriptor;
@@ -174,7 +216,7 @@ public final class Relay {
     }
 
     public static final int PUBLICKEY_FIELD_NUMBER = 1;
-    private com.google.protobuf.ByteString publicKey_ = com.google.protobuf.ByteString.EMPTY;
+    private com.google.protobuf.ByteString publicKey_;
     /**
      * <code>bytes publicKey = 1;</code>
      * @return The publicKey.
@@ -201,7 +243,7 @@ public final class Relay {
       if (!publicKey_.isEmpty()) {
         output.writeBytes(1, publicKey_);
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
     @java.lang.Override
@@ -214,7 +256,7 @@ public final class Relay {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(1, publicKey_);
       }
-      size += getUnknownFields().getSerializedSize();
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -231,7 +273,7 @@ public final class Relay {
 
       if (!getPublicKey()
           .equals(other.getPublicKey())) return false;
-      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
 
@@ -244,7 +286,7 @@ public final class Relay {
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + PUBLICKEY_FIELD_NUMBER;
       hash = (53 * hash) + getPublicKey().hashCode();
-      hash = (29 * hash) + getUnknownFields().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -361,19 +403,24 @@ public final class Relay {
 
       // Construct using io.opencola.relay.common.protobuf.Relay.ConnectMessage.newBuilder()
       private Builder() {
-
+        maybeForceBuilderInitialization();
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        bitField0_ = 0;
         publicKey_ = com.google.protobuf.ByteString.EMPTY;
+
         return this;
       }
 
@@ -400,16 +447,9 @@ public final class Relay {
       @java.lang.Override
       public io.opencola.relay.common.protobuf.Relay.ConnectMessage buildPartial() {
         io.opencola.relay.common.protobuf.Relay.ConnectMessage result = new io.opencola.relay.common.protobuf.Relay.ConnectMessage(this);
-        if (bitField0_ != 0) { buildPartial0(result); }
+        result.publicKey_ = publicKey_;
         onBuilt();
         return result;
-      }
-
-      private void buildPartial0(io.opencola.relay.common.protobuf.Relay.ConnectMessage result) {
-        int from_bitField0_ = bitField0_;
-        if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.publicKey_ = publicKey_;
-        }
       }
 
       @java.lang.Override
@@ -459,7 +499,7 @@ public final class Relay {
         if (other.getPublicKey() != com.google.protobuf.ByteString.EMPTY) {
           setPublicKey(other.getPublicKey());
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
@@ -474,38 +514,19 @@ public final class Relay {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
+        io.opencola.relay.common.protobuf.Relay.ConnectMessage parsedMessage = null;
         try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 10: {
-                publicKey_ = input.readBytes();
-                bitField0_ |= 0x00000001;
-                break;
-              } // case 10
-              default: {
-                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
-                  done = true; // was an endgroup tag
-                }
-                break;
-              } // default:
-            } // switch (tag)
-          } // while (!done)
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (io.opencola.relay.common.protobuf.Relay.ConnectMessage) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          onChanged();
-        } // finally
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
         return this;
       }
-      private int bitField0_;
 
       private com.google.protobuf.ByteString publicKey_ = com.google.protobuf.ByteString.EMPTY;
       /**
@@ -522,9 +543,11 @@ public final class Relay {
        * @return This builder for chaining.
        */
       public Builder setPublicKey(com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
         publicKey_ = value;
-        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -533,7 +556,7 @@ public final class Relay {
        * @return This builder for chaining.
        */
       public Builder clearPublicKey() {
-        bitField0_ = (bitField0_ & ~0x00000001);
+        
         publicKey_ = getDefaultInstance().getPublicKey();
         onChanged();
         return this;
@@ -571,18 +594,7 @@ public final class Relay {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        Builder builder = newBuilder();
-        try {
-          builder.mergeFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(builder.buildPartial());
-        } catch (com.google.protobuf.UninitializedMessageException e) {
-          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(e)
-              .setUnfinishedMessage(builder.buildPartial());
-        }
-        return builder.buildPartial();
+        return new ConnectMessage(input, extensionRegistry);
       }
     };
 
@@ -653,6 +665,54 @@ public final class Relay {
     getUnknownFields() {
       return this.unknownFields;
     }
+    private ChallengeMessage(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              algorithm_ = s;
+              break;
+            }
+            case 18: {
+
+              challenge_ = input.readBytes();
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_ChallengeMessage_descriptor;
@@ -667,8 +727,7 @@ public final class Relay {
     }
 
     public static final int ALGORITHM_FIELD_NUMBER = 1;
-    @SuppressWarnings("serial")
-    private volatile java.lang.Object algorithm_ = "";
+    private volatile java.lang.Object algorithm_;
     /**
      * <code>string algorithm = 1;</code>
      * @return The algorithm.
@@ -706,7 +765,7 @@ public final class Relay {
     }
 
     public static final int CHALLENGE_FIELD_NUMBER = 2;
-    private com.google.protobuf.ByteString challenge_ = com.google.protobuf.ByteString.EMPTY;
+    private com.google.protobuf.ByteString challenge_;
     /**
      * <code>bytes challenge = 2;</code>
      * @return The challenge.
@@ -736,7 +795,7 @@ public final class Relay {
       if (!challenge_.isEmpty()) {
         output.writeBytes(2, challenge_);
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
     @java.lang.Override
@@ -752,7 +811,7 @@ public final class Relay {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(2, challenge_);
       }
-      size += getUnknownFields().getSerializedSize();
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -771,7 +830,7 @@ public final class Relay {
           .equals(other.getAlgorithm())) return false;
       if (!getChallenge()
           .equals(other.getChallenge())) return false;
-      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
 
@@ -786,7 +845,7 @@ public final class Relay {
       hash = (53 * hash) + getAlgorithm().hashCode();
       hash = (37 * hash) + CHALLENGE_FIELD_NUMBER;
       hash = (53 * hash) + getChallenge().hashCode();
-      hash = (29 * hash) + getUnknownFields().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -903,20 +962,26 @@ public final class Relay {
 
       // Construct using io.opencola.relay.common.protobuf.Relay.ChallengeMessage.newBuilder()
       private Builder() {
-
+        maybeForceBuilderInitialization();
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        bitField0_ = 0;
         algorithm_ = "";
+
         challenge_ = com.google.protobuf.ByteString.EMPTY;
+
         return this;
       }
 
@@ -943,19 +1008,10 @@ public final class Relay {
       @java.lang.Override
       public io.opencola.relay.common.protobuf.Relay.ChallengeMessage buildPartial() {
         io.opencola.relay.common.protobuf.Relay.ChallengeMessage result = new io.opencola.relay.common.protobuf.Relay.ChallengeMessage(this);
-        if (bitField0_ != 0) { buildPartial0(result); }
+        result.algorithm_ = algorithm_;
+        result.challenge_ = challenge_;
         onBuilt();
         return result;
-      }
-
-      private void buildPartial0(io.opencola.relay.common.protobuf.Relay.ChallengeMessage result) {
-        int from_bitField0_ = bitField0_;
-        if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.algorithm_ = algorithm_;
-        }
-        if (((from_bitField0_ & 0x00000002) != 0)) {
-          result.challenge_ = challenge_;
-        }
       }
 
       @java.lang.Override
@@ -1004,13 +1060,12 @@ public final class Relay {
         if (other == io.opencola.relay.common.protobuf.Relay.ChallengeMessage.getDefaultInstance()) return this;
         if (!other.getAlgorithm().isEmpty()) {
           algorithm_ = other.algorithm_;
-          bitField0_ |= 0x00000001;
           onChanged();
         }
         if (other.getChallenge() != com.google.protobuf.ByteString.EMPTY) {
           setChallenge(other.getChallenge());
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
@@ -1025,43 +1080,19 @@ public final class Relay {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
+        io.opencola.relay.common.protobuf.Relay.ChallengeMessage parsedMessage = null;
         try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 10: {
-                algorithm_ = input.readStringRequireUtf8();
-                bitField0_ |= 0x00000001;
-                break;
-              } // case 10
-              case 18: {
-                challenge_ = input.readBytes();
-                bitField0_ |= 0x00000002;
-                break;
-              } // case 18
-              default: {
-                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
-                  done = true; // was an endgroup tag
-                }
-                break;
-              } // default:
-            } // switch (tag)
-          } // while (!done)
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (io.opencola.relay.common.protobuf.Relay.ChallengeMessage) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          onChanged();
-        } // finally
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
         return this;
       }
-      private int bitField0_;
 
       private java.lang.Object algorithm_ = "";
       /**
@@ -1104,9 +1135,11 @@ public final class Relay {
        */
       public Builder setAlgorithm(
           java.lang.String value) {
-        if (value == null) { throw new NullPointerException(); }
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
         algorithm_ = value;
-        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -1115,8 +1148,8 @@ public final class Relay {
        * @return This builder for chaining.
        */
       public Builder clearAlgorithm() {
+        
         algorithm_ = getDefaultInstance().getAlgorithm();
-        bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
@@ -1127,10 +1160,12 @@ public final class Relay {
        */
       public Builder setAlgorithmBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
-        checkByteStringIsUtf8(value);
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
         algorithm_ = value;
-        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -1150,9 +1185,11 @@ public final class Relay {
        * @return This builder for chaining.
        */
       public Builder setChallenge(com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
         challenge_ = value;
-        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -1161,7 +1198,7 @@ public final class Relay {
        * @return This builder for chaining.
        */
       public Builder clearChallenge() {
-        bitField0_ = (bitField0_ & ~0x00000002);
+        
         challenge_ = getDefaultInstance().getChallenge();
         onChanged();
         return this;
@@ -1199,18 +1236,7 @@ public final class Relay {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        Builder builder = newBuilder();
-        try {
-          builder.mergeFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(builder.buildPartial());
-        } catch (com.google.protobuf.UninitializedMessageException e) {
-          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(e)
-              .setUnfinishedMessage(builder.buildPartial());
-        }
-        return builder.buildPartial();
+        return new ChallengeMessage(input, extensionRegistry);
       }
     };
 
@@ -1225,6 +1251,627 @@ public final class Relay {
 
     @java.lang.Override
     public io.opencola.relay.common.protobuf.Relay.ChallengeMessage getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface ChallengeResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:io.opencola.relay.common.protobuf.ChallengeResponse)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>.io.opencola.serialization.protobuf.Signature signature = 1;</code>
+     * @return Whether the signature field is set.
+     */
+    boolean hasSignature();
+    /**
+     * <code>.io.opencola.serialization.protobuf.Signature signature = 1;</code>
+     * @return The signature.
+     */
+    io.opencola.serialization.protobuf.Security.Signature getSignature();
+    /**
+     * <code>.io.opencola.serialization.protobuf.Signature signature = 1;</code>
+     */
+    io.opencola.serialization.protobuf.Security.SignatureOrBuilder getSignatureOrBuilder();
+  }
+  /**
+   * Protobuf type {@code io.opencola.relay.common.protobuf.ChallengeResponse}
+   */
+  public static final class ChallengeResponse extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:io.opencola.relay.common.protobuf.ChallengeResponse)
+      ChallengeResponseOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use ChallengeResponse.newBuilder() to construct.
+    private ChallengeResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private ChallengeResponse() {
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new ChallengeResponse();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ChallengeResponse(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+              io.opencola.serialization.protobuf.Security.Signature.Builder subBuilder = null;
+              if (signature_ != null) {
+                subBuilder = signature_.toBuilder();
+              }
+              signature_ = input.readMessage(io.opencola.serialization.protobuf.Security.Signature.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(signature_);
+                signature_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_ChallengeResponse_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_ChallengeResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              io.opencola.relay.common.protobuf.Relay.ChallengeResponse.class, io.opencola.relay.common.protobuf.Relay.ChallengeResponse.Builder.class);
+    }
+
+    public static final int SIGNATURE_FIELD_NUMBER = 1;
+    private io.opencola.serialization.protobuf.Security.Signature signature_;
+    /**
+     * <code>.io.opencola.serialization.protobuf.Signature signature = 1;</code>
+     * @return Whether the signature field is set.
+     */
+    @java.lang.Override
+    public boolean hasSignature() {
+      return signature_ != null;
+    }
+    /**
+     * <code>.io.opencola.serialization.protobuf.Signature signature = 1;</code>
+     * @return The signature.
+     */
+    @java.lang.Override
+    public io.opencola.serialization.protobuf.Security.Signature getSignature() {
+      return signature_ == null ? io.opencola.serialization.protobuf.Security.Signature.getDefaultInstance() : signature_;
+    }
+    /**
+     * <code>.io.opencola.serialization.protobuf.Signature signature = 1;</code>
+     */
+    @java.lang.Override
+    public io.opencola.serialization.protobuf.Security.SignatureOrBuilder getSignatureOrBuilder() {
+      return getSignature();
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (signature_ != null) {
+        output.writeMessage(1, getSignature());
+      }
+      unknownFields.writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (signature_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, getSignature());
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof io.opencola.relay.common.protobuf.Relay.ChallengeResponse)) {
+        return super.equals(obj);
+      }
+      io.opencola.relay.common.protobuf.Relay.ChallengeResponse other = (io.opencola.relay.common.protobuf.Relay.ChallengeResponse) obj;
+
+      if (hasSignature() != other.hasSignature()) return false;
+      if (hasSignature()) {
+        if (!getSignature()
+            .equals(other.getSignature())) return false;
+      }
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasSignature()) {
+        hash = (37 * hash) + SIGNATURE_FIELD_NUMBER;
+        hash = (53 * hash) + getSignature().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static io.opencola.relay.common.protobuf.Relay.ChallengeResponse parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.opencola.relay.common.protobuf.Relay.ChallengeResponse parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.opencola.relay.common.protobuf.Relay.ChallengeResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.opencola.relay.common.protobuf.Relay.ChallengeResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.opencola.relay.common.protobuf.Relay.ChallengeResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.opencola.relay.common.protobuf.Relay.ChallengeResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.opencola.relay.common.protobuf.Relay.ChallengeResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static io.opencola.relay.common.protobuf.Relay.ChallengeResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static io.opencola.relay.common.protobuf.Relay.ChallengeResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static io.opencola.relay.common.protobuf.Relay.ChallengeResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static io.opencola.relay.common.protobuf.Relay.ChallengeResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static io.opencola.relay.common.protobuf.Relay.ChallengeResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(io.opencola.relay.common.protobuf.Relay.ChallengeResponse prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code io.opencola.relay.common.protobuf.ChallengeResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:io.opencola.relay.common.protobuf.ChallengeResponse)
+        io.opencola.relay.common.protobuf.Relay.ChallengeResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_ChallengeResponse_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_ChallengeResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                io.opencola.relay.common.protobuf.Relay.ChallengeResponse.class, io.opencola.relay.common.protobuf.Relay.ChallengeResponse.Builder.class);
+      }
+
+      // Construct using io.opencola.relay.common.protobuf.Relay.ChallengeResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        if (signatureBuilder_ == null) {
+          signature_ = null;
+        } else {
+          signature_ = null;
+          signatureBuilder_ = null;
+        }
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_ChallengeResponse_descriptor;
+      }
+
+      @java.lang.Override
+      public io.opencola.relay.common.protobuf.Relay.ChallengeResponse getDefaultInstanceForType() {
+        return io.opencola.relay.common.protobuf.Relay.ChallengeResponse.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public io.opencola.relay.common.protobuf.Relay.ChallengeResponse build() {
+        io.opencola.relay.common.protobuf.Relay.ChallengeResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public io.opencola.relay.common.protobuf.Relay.ChallengeResponse buildPartial() {
+        io.opencola.relay.common.protobuf.Relay.ChallengeResponse result = new io.opencola.relay.common.protobuf.Relay.ChallengeResponse(this);
+        if (signatureBuilder_ == null) {
+          result.signature_ = signature_;
+        } else {
+          result.signature_ = signatureBuilder_.build();
+        }
+        onBuilt();
+        return result;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof io.opencola.relay.common.protobuf.Relay.ChallengeResponse) {
+          return mergeFrom((io.opencola.relay.common.protobuf.Relay.ChallengeResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(io.opencola.relay.common.protobuf.Relay.ChallengeResponse other) {
+        if (other == io.opencola.relay.common.protobuf.Relay.ChallengeResponse.getDefaultInstance()) return this;
+        if (other.hasSignature()) {
+          mergeSignature(other.getSignature());
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        io.opencola.relay.common.protobuf.Relay.ChallengeResponse parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (io.opencola.relay.common.protobuf.Relay.ChallengeResponse) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private io.opencola.serialization.protobuf.Security.Signature signature_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          io.opencola.serialization.protobuf.Security.Signature, io.opencola.serialization.protobuf.Security.Signature.Builder, io.opencola.serialization.protobuf.Security.SignatureOrBuilder> signatureBuilder_;
+      /**
+       * <code>.io.opencola.serialization.protobuf.Signature signature = 1;</code>
+       * @return Whether the signature field is set.
+       */
+      public boolean hasSignature() {
+        return signatureBuilder_ != null || signature_ != null;
+      }
+      /**
+       * <code>.io.opencola.serialization.protobuf.Signature signature = 1;</code>
+       * @return The signature.
+       */
+      public io.opencola.serialization.protobuf.Security.Signature getSignature() {
+        if (signatureBuilder_ == null) {
+          return signature_ == null ? io.opencola.serialization.protobuf.Security.Signature.getDefaultInstance() : signature_;
+        } else {
+          return signatureBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>.io.opencola.serialization.protobuf.Signature signature = 1;</code>
+       */
+      public Builder setSignature(io.opencola.serialization.protobuf.Security.Signature value) {
+        if (signatureBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          signature_ = value;
+          onChanged();
+        } else {
+          signatureBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.io.opencola.serialization.protobuf.Signature signature = 1;</code>
+       */
+      public Builder setSignature(
+          io.opencola.serialization.protobuf.Security.Signature.Builder builderForValue) {
+        if (signatureBuilder_ == null) {
+          signature_ = builderForValue.build();
+          onChanged();
+        } else {
+          signatureBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <code>.io.opencola.serialization.protobuf.Signature signature = 1;</code>
+       */
+      public Builder mergeSignature(io.opencola.serialization.protobuf.Security.Signature value) {
+        if (signatureBuilder_ == null) {
+          if (signature_ != null) {
+            signature_ =
+              io.opencola.serialization.protobuf.Security.Signature.newBuilder(signature_).mergeFrom(value).buildPartial();
+          } else {
+            signature_ = value;
+          }
+          onChanged();
+        } else {
+          signatureBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.io.opencola.serialization.protobuf.Signature signature = 1;</code>
+       */
+      public Builder clearSignature() {
+        if (signatureBuilder_ == null) {
+          signature_ = null;
+          onChanged();
+        } else {
+          signature_ = null;
+          signatureBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <code>.io.opencola.serialization.protobuf.Signature signature = 1;</code>
+       */
+      public io.opencola.serialization.protobuf.Security.Signature.Builder getSignatureBuilder() {
+        
+        onChanged();
+        return getSignatureFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>.io.opencola.serialization.protobuf.Signature signature = 1;</code>
+       */
+      public io.opencola.serialization.protobuf.Security.SignatureOrBuilder getSignatureOrBuilder() {
+        if (signatureBuilder_ != null) {
+          return signatureBuilder_.getMessageOrBuilder();
+        } else {
+          return signature_ == null ?
+              io.opencola.serialization.protobuf.Security.Signature.getDefaultInstance() : signature_;
+        }
+      }
+      /**
+       * <code>.io.opencola.serialization.protobuf.Signature signature = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          io.opencola.serialization.protobuf.Security.Signature, io.opencola.serialization.protobuf.Security.Signature.Builder, io.opencola.serialization.protobuf.Security.SignatureOrBuilder> 
+          getSignatureFieldBuilder() {
+        if (signatureBuilder_ == null) {
+          signatureBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              io.opencola.serialization.protobuf.Security.Signature, io.opencola.serialization.protobuf.Security.Signature.Builder, io.opencola.serialization.protobuf.Security.SignatureOrBuilder>(
+                  getSignature(),
+                  getParentForChildren(),
+                  isClean());
+          signature_ = null;
+        }
+        return signatureBuilder_;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:io.opencola.relay.common.protobuf.ChallengeResponse)
+    }
+
+    // @@protoc_insertion_point(class_scope:io.opencola.relay.common.protobuf.ChallengeResponse)
+    private static final io.opencola.relay.common.protobuf.Relay.ChallengeResponse DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new io.opencola.relay.common.protobuf.Relay.ChallengeResponse();
+    }
+
+    public static io.opencola.relay.common.protobuf.Relay.ChallengeResponse getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<ChallengeResponse>
+        PARSER = new com.google.protobuf.AbstractParser<ChallengeResponse>() {
+      @java.lang.Override
+      public ChallengeResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new ChallengeResponse(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ChallengeResponse> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ChallengeResponse> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public io.opencola.relay.common.protobuf.Relay.ChallengeResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1273,6 +1920,49 @@ public final class Relay {
     getUnknownFields() {
       return this.unknownFields;
     }
+    private AuthenticationResult(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 8: {
+              int rawValue = input.readEnum();
+
+              status_ = rawValue;
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_AuthenticationResult_descriptor;
@@ -1287,7 +1977,7 @@ public final class Relay {
     }
 
     public static final int STATUS_FIELD_NUMBER = 1;
-    private int status_ = 0;
+    private int status_;
     /**
      * <code>.io.opencola.relay.common.protobuf.AuthenticationStatus status = 1;</code>
      * @return The enum numeric value on the wire for status.
@@ -1300,7 +1990,8 @@ public final class Relay {
      * @return The status.
      */
     @java.lang.Override public io.opencola.relay.common.protobuf.Relay.AuthenticationStatus getStatus() {
-      io.opencola.relay.common.protobuf.Relay.AuthenticationStatus result = io.opencola.relay.common.protobuf.Relay.AuthenticationStatus.forNumber(status_);
+      @SuppressWarnings("deprecation")
+      io.opencola.relay.common.protobuf.Relay.AuthenticationStatus result = io.opencola.relay.common.protobuf.Relay.AuthenticationStatus.valueOf(status_);
       return result == null ? io.opencola.relay.common.protobuf.Relay.AuthenticationStatus.UNRECOGNIZED : result;
     }
 
@@ -1321,7 +2012,7 @@ public final class Relay {
       if (status_ != io.opencola.relay.common.protobuf.Relay.AuthenticationStatus.AUTHENTICATED.getNumber()) {
         output.writeEnum(1, status_);
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
     @java.lang.Override
@@ -1334,7 +2025,7 @@ public final class Relay {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(1, status_);
       }
-      size += getUnknownFields().getSerializedSize();
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -1350,7 +2041,7 @@ public final class Relay {
       io.opencola.relay.common.protobuf.Relay.AuthenticationResult other = (io.opencola.relay.common.protobuf.Relay.AuthenticationResult) obj;
 
       if (status_ != other.status_) return false;
-      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
 
@@ -1363,7 +2054,7 @@ public final class Relay {
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + STATUS_FIELD_NUMBER;
       hash = (53 * hash) + status_;
-      hash = (29 * hash) + getUnknownFields().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -1480,19 +2171,24 @@ public final class Relay {
 
       // Construct using io.opencola.relay.common.protobuf.Relay.AuthenticationResult.newBuilder()
       private Builder() {
-
+        maybeForceBuilderInitialization();
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        bitField0_ = 0;
         status_ = 0;
+
         return this;
       }
 
@@ -1519,16 +2215,9 @@ public final class Relay {
       @java.lang.Override
       public io.opencola.relay.common.protobuf.Relay.AuthenticationResult buildPartial() {
         io.opencola.relay.common.protobuf.Relay.AuthenticationResult result = new io.opencola.relay.common.protobuf.Relay.AuthenticationResult(this);
-        if (bitField0_ != 0) { buildPartial0(result); }
+        result.status_ = status_;
         onBuilt();
         return result;
-      }
-
-      private void buildPartial0(io.opencola.relay.common.protobuf.Relay.AuthenticationResult result) {
-        int from_bitField0_ = bitField0_;
-        if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.status_ = status_;
-        }
       }
 
       @java.lang.Override
@@ -1578,7 +2267,7 @@ public final class Relay {
         if (other.status_ != 0) {
           setStatusValue(other.getStatusValue());
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
@@ -1593,38 +2282,19 @@ public final class Relay {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
+        io.opencola.relay.common.protobuf.Relay.AuthenticationResult parsedMessage = null;
         try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 8: {
-                status_ = input.readEnum();
-                bitField0_ |= 0x00000001;
-                break;
-              } // case 8
-              default: {
-                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
-                  done = true; // was an endgroup tag
-                }
-                break;
-              } // default:
-            } // switch (tag)
-          } // while (!done)
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (io.opencola.relay.common.protobuf.Relay.AuthenticationResult) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          onChanged();
-        } // finally
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
         return this;
       }
-      private int bitField0_;
 
       private int status_ = 0;
       /**
@@ -1640,8 +2310,8 @@ public final class Relay {
        * @return This builder for chaining.
        */
       public Builder setStatusValue(int value) {
+        
         status_ = value;
-        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -1651,7 +2321,8 @@ public final class Relay {
        */
       @java.lang.Override
       public io.opencola.relay.common.protobuf.Relay.AuthenticationStatus getStatus() {
-        io.opencola.relay.common.protobuf.Relay.AuthenticationStatus result = io.opencola.relay.common.protobuf.Relay.AuthenticationStatus.forNumber(status_);
+        @SuppressWarnings("deprecation")
+        io.opencola.relay.common.protobuf.Relay.AuthenticationStatus result = io.opencola.relay.common.protobuf.Relay.AuthenticationStatus.valueOf(status_);
         return result == null ? io.opencola.relay.common.protobuf.Relay.AuthenticationStatus.UNRECOGNIZED : result;
       }
       /**
@@ -1663,7 +2334,7 @@ public final class Relay {
         if (value == null) {
           throw new NullPointerException();
         }
-        bitField0_ |= 0x00000001;
+        
         status_ = value.getNumber();
         onChanged();
         return this;
@@ -1673,7 +2344,7 @@ public final class Relay {
        * @return This builder for chaining.
        */
       public Builder clearStatus() {
-        bitField0_ = (bitField0_ & ~0x00000001);
+        
         status_ = 0;
         onChanged();
         return this;
@@ -1711,18 +2382,7 @@ public final class Relay {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        Builder builder = newBuilder();
-        try {
-          builder.mergeFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(builder.buildPartial());
-        } catch (com.google.protobuf.UninitializedMessageException e) {
-          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(e)
-              .setUnfinishedMessage(builder.buildPartial());
-        }
-        return builder.buildPartial();
+        return new AuthenticationResult(input, extensionRegistry);
       }
     };
 
@@ -1806,6 +2466,66 @@ public final class Relay {
     getUnknownFields() {
       return this.unknownFields;
     }
+    private Header(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+
+              messageId_ = input.readBytes();
+              break;
+            }
+            case 18: {
+
+              from_ = input.readBytes();
+              break;
+            }
+            case 26: {
+              io.opencola.serialization.protobuf.Security.Signature.Builder subBuilder = null;
+              if (signature_ != null) {
+                subBuilder = signature_.toBuilder();
+              }
+              signature_ = input.readMessage(io.opencola.serialization.protobuf.Security.Signature.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(signature_);
+                signature_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_Header_descriptor;
@@ -1820,7 +2540,7 @@ public final class Relay {
     }
 
     public static final int MESSAGEID_FIELD_NUMBER = 1;
-    private com.google.protobuf.ByteString messageId_ = com.google.protobuf.ByteString.EMPTY;
+    private com.google.protobuf.ByteString messageId_;
     /**
      * <code>bytes messageId = 1;</code>
      * @return The messageId.
@@ -1831,7 +2551,7 @@ public final class Relay {
     }
 
     public static final int FROM_FIELD_NUMBER = 2;
-    private com.google.protobuf.ByteString from_ = com.google.protobuf.ByteString.EMPTY;
+    private com.google.protobuf.ByteString from_;
     /**
      * <pre>
      * Public key of the sender
@@ -1868,7 +2588,7 @@ public final class Relay {
      */
     @java.lang.Override
     public io.opencola.serialization.protobuf.Security.SignatureOrBuilder getSignatureOrBuilder() {
-      return signature_ == null ? io.opencola.serialization.protobuf.Security.Signature.getDefaultInstance() : signature_;
+      return getSignature();
     }
 
     private byte memoizedIsInitialized = -1;
@@ -1894,7 +2614,7 @@ public final class Relay {
       if (signature_ != null) {
         output.writeMessage(3, getSignature());
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
     @java.lang.Override
@@ -1915,7 +2635,7 @@ public final class Relay {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(3, getSignature());
       }
-      size += getUnknownFields().getSerializedSize();
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -1939,7 +2659,7 @@ public final class Relay {
         if (!getSignature()
             .equals(other.getSignature())) return false;
       }
-      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
 
@@ -1958,7 +2678,7 @@ public final class Relay {
         hash = (37 * hash) + SIGNATURE_FIELD_NUMBER;
         hash = (53 * hash) + getSignature().hashCode();
       }
-      hash = (29 * hash) + getUnknownFields().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -2075,23 +2795,30 @@ public final class Relay {
 
       // Construct using io.opencola.relay.common.protobuf.Relay.Header.newBuilder()
       private Builder() {
-
+        maybeForceBuilderInitialization();
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        bitField0_ = 0;
         messageId_ = com.google.protobuf.ByteString.EMPTY;
+
         from_ = com.google.protobuf.ByteString.EMPTY;
-        signature_ = null;
-        if (signatureBuilder_ != null) {
-          signatureBuilder_.dispose();
+
+        if (signatureBuilder_ == null) {
+          signature_ = null;
+        } else {
+          signature_ = null;
           signatureBuilder_ = null;
         }
         return this;
@@ -2120,24 +2847,15 @@ public final class Relay {
       @java.lang.Override
       public io.opencola.relay.common.protobuf.Relay.Header buildPartial() {
         io.opencola.relay.common.protobuf.Relay.Header result = new io.opencola.relay.common.protobuf.Relay.Header(this);
-        if (bitField0_ != 0) { buildPartial0(result); }
+        result.messageId_ = messageId_;
+        result.from_ = from_;
+        if (signatureBuilder_ == null) {
+          result.signature_ = signature_;
+        } else {
+          result.signature_ = signatureBuilder_.build();
+        }
         onBuilt();
         return result;
-      }
-
-      private void buildPartial0(io.opencola.relay.common.protobuf.Relay.Header result) {
-        int from_bitField0_ = bitField0_;
-        if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.messageId_ = messageId_;
-        }
-        if (((from_bitField0_ & 0x00000002) != 0)) {
-          result.from_ = from_;
-        }
-        if (((from_bitField0_ & 0x00000004) != 0)) {
-          result.signature_ = signatureBuilder_ == null
-              ? signature_
-              : signatureBuilder_.build();
-        }
       }
 
       @java.lang.Override
@@ -2193,7 +2911,7 @@ public final class Relay {
         if (other.hasSignature()) {
           mergeSignature(other.getSignature());
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
@@ -2208,50 +2926,19 @@ public final class Relay {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
+        io.opencola.relay.common.protobuf.Relay.Header parsedMessage = null;
         try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 10: {
-                messageId_ = input.readBytes();
-                bitField0_ |= 0x00000001;
-                break;
-              } // case 10
-              case 18: {
-                from_ = input.readBytes();
-                bitField0_ |= 0x00000002;
-                break;
-              } // case 18
-              case 26: {
-                input.readMessage(
-                    getSignatureFieldBuilder().getBuilder(),
-                    extensionRegistry);
-                bitField0_ |= 0x00000004;
-                break;
-              } // case 26
-              default: {
-                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
-                  done = true; // was an endgroup tag
-                }
-                break;
-              } // default:
-            } // switch (tag)
-          } // while (!done)
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (io.opencola.relay.common.protobuf.Relay.Header) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          onChanged();
-        } // finally
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
         return this;
       }
-      private int bitField0_;
 
       private com.google.protobuf.ByteString messageId_ = com.google.protobuf.ByteString.EMPTY;
       /**
@@ -2268,9 +2955,11 @@ public final class Relay {
        * @return This builder for chaining.
        */
       public Builder setMessageId(com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
         messageId_ = value;
-        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -2279,7 +2968,7 @@ public final class Relay {
        * @return This builder for chaining.
        */
       public Builder clearMessageId() {
-        bitField0_ = (bitField0_ & ~0x00000001);
+        
         messageId_ = getDefaultInstance().getMessageId();
         onChanged();
         return this;
@@ -2308,9 +2997,11 @@ public final class Relay {
        * @return This builder for chaining.
        */
       public Builder setFrom(com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
         from_ = value;
-        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -2323,7 +3014,7 @@ public final class Relay {
        * @return This builder for chaining.
        */
       public Builder clearFrom() {
-        bitField0_ = (bitField0_ & ~0x00000002);
+        
         from_ = getDefaultInstance().getFrom();
         onChanged();
         return this;
@@ -2337,7 +3028,7 @@ public final class Relay {
        * @return Whether the signature field is set.
        */
       public boolean hasSignature() {
-        return ((bitField0_ & 0x00000004) != 0);
+        return signatureBuilder_ != null || signature_ != null;
       }
       /**
        * <code>.io.opencola.serialization.protobuf.Signature signature = 3;</code>
@@ -2359,11 +3050,11 @@ public final class Relay {
             throw new NullPointerException();
           }
           signature_ = value;
+          onChanged();
         } else {
           signatureBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000004;
-        onChanged();
+
         return this;
       }
       /**
@@ -2373,11 +3064,11 @@ public final class Relay {
           io.opencola.serialization.protobuf.Security.Signature.Builder builderForValue) {
         if (signatureBuilder_ == null) {
           signature_ = builderForValue.build();
+          onChanged();
         } else {
           signatureBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000004;
-        onChanged();
+
         return this;
       }
       /**
@@ -2385,38 +3076,38 @@ public final class Relay {
        */
       public Builder mergeSignature(io.opencola.serialization.protobuf.Security.Signature value) {
         if (signatureBuilder_ == null) {
-          if (((bitField0_ & 0x00000004) != 0) &&
-            signature_ != null &&
-            signature_ != io.opencola.serialization.protobuf.Security.Signature.getDefaultInstance()) {
-            getSignatureBuilder().mergeFrom(value);
+          if (signature_ != null) {
+            signature_ =
+              io.opencola.serialization.protobuf.Security.Signature.newBuilder(signature_).mergeFrom(value).buildPartial();
           } else {
             signature_ = value;
           }
+          onChanged();
         } else {
           signatureBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000004;
-        onChanged();
+
         return this;
       }
       /**
        * <code>.io.opencola.serialization.protobuf.Signature signature = 3;</code>
        */
       public Builder clearSignature() {
-        bitField0_ = (bitField0_ & ~0x00000004);
-        signature_ = null;
-        if (signatureBuilder_ != null) {
-          signatureBuilder_.dispose();
+        if (signatureBuilder_ == null) {
+          signature_ = null;
+          onChanged();
+        } else {
+          signature_ = null;
           signatureBuilder_ = null;
         }
-        onChanged();
+
         return this;
       }
       /**
        * <code>.io.opencola.serialization.protobuf.Signature signature = 3;</code>
        */
       public io.opencola.serialization.protobuf.Security.Signature.Builder getSignatureBuilder() {
-        bitField0_ |= 0x00000004;
+        
         onChanged();
         return getSignatureFieldBuilder().getBuilder();
       }
@@ -2480,18 +3171,7 @@ public final class Relay {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        Builder builder = newBuilder();
-        try {
-          builder.mergeFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(builder.buildPartial());
-        } catch (com.google.protobuf.UninitializedMessageException e) {
-          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(e)
-              .setUnfinishedMessage(builder.buildPartial());
-        }
-        return builder.buildPartial();
+        return new Header(input, extensionRegistry);
       }
     };
 
@@ -2564,6 +3244,61 @@ public final class Relay {
     getUnknownFields() {
       return this.unknownFields;
     }
+    private RelayMessage(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+              io.opencola.relay.common.protobuf.Relay.Header.Builder subBuilder = null;
+              if (header_ != null) {
+                subBuilder = header_.toBuilder();
+              }
+              header_ = input.readMessage(io.opencola.relay.common.protobuf.Relay.Header.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(header_);
+                header_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 18: {
+
+              body_ = input.readBytes();
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_RelayMessage_descriptor;
@@ -2600,11 +3335,11 @@ public final class Relay {
      */
     @java.lang.Override
     public io.opencola.relay.common.protobuf.Relay.HeaderOrBuilder getHeaderOrBuilder() {
-      return header_ == null ? io.opencola.relay.common.protobuf.Relay.Header.getDefaultInstance() : header_;
+      return getHeader();
     }
 
     public static final int BODY_FIELD_NUMBER = 2;
-    private com.google.protobuf.ByteString body_ = com.google.protobuf.ByteString.EMPTY;
+    private com.google.protobuf.ByteString body_;
     /**
      * <code>bytes body = 2;</code>
      * @return The body.
@@ -2634,7 +3369,7 @@ public final class Relay {
       if (!body_.isEmpty()) {
         output.writeBytes(2, body_);
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
     @java.lang.Override
@@ -2651,7 +3386,7 @@ public final class Relay {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(2, body_);
       }
-      size += getUnknownFields().getSerializedSize();
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -2673,7 +3408,7 @@ public final class Relay {
       }
       if (!getBody()
           .equals(other.getBody())) return false;
-      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
 
@@ -2690,7 +3425,7 @@ public final class Relay {
       }
       hash = (37 * hash) + BODY_FIELD_NUMBER;
       hash = (53 * hash) + getBody().hashCode();
-      hash = (29 * hash) + getUnknownFields().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -2807,24 +3542,30 @@ public final class Relay {
 
       // Construct using io.opencola.relay.common.protobuf.Relay.RelayMessage.newBuilder()
       private Builder() {
-
+        maybeForceBuilderInitialization();
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        bitField0_ = 0;
-        header_ = null;
-        if (headerBuilder_ != null) {
-          headerBuilder_.dispose();
+        if (headerBuilder_ == null) {
+          header_ = null;
+        } else {
+          header_ = null;
           headerBuilder_ = null;
         }
         body_ = com.google.protobuf.ByteString.EMPTY;
+
         return this;
       }
 
@@ -2851,21 +3592,14 @@ public final class Relay {
       @java.lang.Override
       public io.opencola.relay.common.protobuf.Relay.RelayMessage buildPartial() {
         io.opencola.relay.common.protobuf.Relay.RelayMessage result = new io.opencola.relay.common.protobuf.Relay.RelayMessage(this);
-        if (bitField0_ != 0) { buildPartial0(result); }
+        if (headerBuilder_ == null) {
+          result.header_ = header_;
+        } else {
+          result.header_ = headerBuilder_.build();
+        }
+        result.body_ = body_;
         onBuilt();
         return result;
-      }
-
-      private void buildPartial0(io.opencola.relay.common.protobuf.Relay.RelayMessage result) {
-        int from_bitField0_ = bitField0_;
-        if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.header_ = headerBuilder_ == null
-              ? header_
-              : headerBuilder_.build();
-        }
-        if (((from_bitField0_ & 0x00000002) != 0)) {
-          result.body_ = body_;
-        }
       }
 
       @java.lang.Override
@@ -2918,7 +3652,7 @@ public final class Relay {
         if (other.getBody() != com.google.protobuf.ByteString.EMPTY) {
           setBody(other.getBody());
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
@@ -2933,45 +3667,19 @@ public final class Relay {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
+        io.opencola.relay.common.protobuf.Relay.RelayMessage parsedMessage = null;
         try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 10: {
-                input.readMessage(
-                    getHeaderFieldBuilder().getBuilder(),
-                    extensionRegistry);
-                bitField0_ |= 0x00000001;
-                break;
-              } // case 10
-              case 18: {
-                body_ = input.readBytes();
-                bitField0_ |= 0x00000002;
-                break;
-              } // case 18
-              default: {
-                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
-                  done = true; // was an endgroup tag
-                }
-                break;
-              } // default:
-            } // switch (tag)
-          } // while (!done)
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (io.opencola.relay.common.protobuf.Relay.RelayMessage) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          onChanged();
-        } // finally
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
         return this;
       }
-      private int bitField0_;
 
       private io.opencola.relay.common.protobuf.Relay.Header header_;
       private com.google.protobuf.SingleFieldBuilderV3<
@@ -2981,7 +3689,7 @@ public final class Relay {
        * @return Whether the header field is set.
        */
       public boolean hasHeader() {
-        return ((bitField0_ & 0x00000001) != 0);
+        return headerBuilder_ != null || header_ != null;
       }
       /**
        * <code>.io.opencola.relay.common.protobuf.Header header = 1;</code>
@@ -3003,11 +3711,11 @@ public final class Relay {
             throw new NullPointerException();
           }
           header_ = value;
+          onChanged();
         } else {
           headerBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000001;
-        onChanged();
+
         return this;
       }
       /**
@@ -3017,11 +3725,11 @@ public final class Relay {
           io.opencola.relay.common.protobuf.Relay.Header.Builder builderForValue) {
         if (headerBuilder_ == null) {
           header_ = builderForValue.build();
+          onChanged();
         } else {
           headerBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000001;
-        onChanged();
+
         return this;
       }
       /**
@@ -3029,38 +3737,38 @@ public final class Relay {
        */
       public Builder mergeHeader(io.opencola.relay.common.protobuf.Relay.Header value) {
         if (headerBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) != 0) &&
-            header_ != null &&
-            header_ != io.opencola.relay.common.protobuf.Relay.Header.getDefaultInstance()) {
-            getHeaderBuilder().mergeFrom(value);
+          if (header_ != null) {
+            header_ =
+              io.opencola.relay.common.protobuf.Relay.Header.newBuilder(header_).mergeFrom(value).buildPartial();
           } else {
             header_ = value;
           }
+          onChanged();
         } else {
           headerBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000001;
-        onChanged();
+
         return this;
       }
       /**
        * <code>.io.opencola.relay.common.protobuf.Header header = 1;</code>
        */
       public Builder clearHeader() {
-        bitField0_ = (bitField0_ & ~0x00000001);
-        header_ = null;
-        if (headerBuilder_ != null) {
-          headerBuilder_.dispose();
+        if (headerBuilder_ == null) {
+          header_ = null;
+          onChanged();
+        } else {
+          header_ = null;
           headerBuilder_ = null;
         }
-        onChanged();
+
         return this;
       }
       /**
        * <code>.io.opencola.relay.common.protobuf.Header header = 1;</code>
        */
       public io.opencola.relay.common.protobuf.Relay.Header.Builder getHeaderBuilder() {
-        bitField0_ |= 0x00000001;
+        
         onChanged();
         return getHeaderFieldBuilder().getBuilder();
       }
@@ -3107,9 +3815,11 @@ public final class Relay {
        * @return This builder for chaining.
        */
       public Builder setBody(com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
         body_ = value;
-        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -3118,7 +3828,7 @@ public final class Relay {
        * @return This builder for chaining.
        */
       public Builder clearBody() {
-        bitField0_ = (bitField0_ & ~0x00000002);
+        
         body_ = getDefaultInstance().getBody();
         onChanged();
         return this;
@@ -3156,18 +3866,7 @@ public final class Relay {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        Builder builder = newBuilder();
-        try {
-          builder.mergeFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(builder.buildPartial());
-        } catch (com.google.protobuf.UninitializedMessageException e) {
-          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(e)
-              .setUnfinishedMessage(builder.buildPartial());
-        }
-        return builder.buildPartial();
+        return new RelayMessage(input, extensionRegistry);
       }
     };
 
@@ -3248,6 +3947,58 @@ public final class Relay {
     getUnknownFields() {
       return this.unknownFields;
     }
+    private Envelope(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+
+              to_ = input.readBytes();
+              break;
+            }
+            case 18: {
+
+              key_ = input.readBytes();
+              break;
+            }
+            case 26: {
+
+              message_ = input.readBytes();
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_Envelope_descriptor;
@@ -3262,7 +4013,7 @@ public final class Relay {
     }
 
     public static final int TO_FIELD_NUMBER = 1;
-    private com.google.protobuf.ByteString to_ = com.google.protobuf.ByteString.EMPTY;
+    private com.google.protobuf.ByteString to_;
     /**
      * <pre>
      * Public key of the recipient
@@ -3277,7 +4028,7 @@ public final class Relay {
     }
 
     public static final int KEY_FIELD_NUMBER = 2;
-    private com.google.protobuf.ByteString key_ = com.google.protobuf.ByteString.EMPTY;
+    private com.google.protobuf.ByteString key_;
     /**
      * <pre>
      * Message key used for deduplication. When present, if the relay has to store the message, only one with the same
@@ -3293,7 +4044,7 @@ public final class Relay {
     }
 
     public static final int MESSAGE_FIELD_NUMBER = 3;
-    private com.google.protobuf.ByteString message_ = com.google.protobuf.ByteString.EMPTY;
+    private com.google.protobuf.ByteString message_;
     /**
      * <code>bytes message = 3;</code>
      * @return The message.
@@ -3326,7 +4077,7 @@ public final class Relay {
       if (!message_.isEmpty()) {
         output.writeBytes(3, message_);
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
     @java.lang.Override
@@ -3347,7 +4098,7 @@ public final class Relay {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(3, message_);
       }
-      size += getUnknownFields().getSerializedSize();
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -3368,7 +4119,7 @@ public final class Relay {
           .equals(other.getKey())) return false;
       if (!getMessage()
           .equals(other.getMessage())) return false;
-      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
 
@@ -3385,7 +4136,7 @@ public final class Relay {
       hash = (53 * hash) + getKey().hashCode();
       hash = (37 * hash) + MESSAGE_FIELD_NUMBER;
       hash = (53 * hash) + getMessage().hashCode();
-      hash = (29 * hash) + getUnknownFields().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -3502,21 +4253,28 @@ public final class Relay {
 
       // Construct using io.opencola.relay.common.protobuf.Relay.Envelope.newBuilder()
       private Builder() {
-
+        maybeForceBuilderInitialization();
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        bitField0_ = 0;
         to_ = com.google.protobuf.ByteString.EMPTY;
+
         key_ = com.google.protobuf.ByteString.EMPTY;
+
         message_ = com.google.protobuf.ByteString.EMPTY;
+
         return this;
       }
 
@@ -3543,22 +4301,11 @@ public final class Relay {
       @java.lang.Override
       public io.opencola.relay.common.protobuf.Relay.Envelope buildPartial() {
         io.opencola.relay.common.protobuf.Relay.Envelope result = new io.opencola.relay.common.protobuf.Relay.Envelope(this);
-        if (bitField0_ != 0) { buildPartial0(result); }
+        result.to_ = to_;
+        result.key_ = key_;
+        result.message_ = message_;
         onBuilt();
         return result;
-      }
-
-      private void buildPartial0(io.opencola.relay.common.protobuf.Relay.Envelope result) {
-        int from_bitField0_ = bitField0_;
-        if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.to_ = to_;
-        }
-        if (((from_bitField0_ & 0x00000002) != 0)) {
-          result.key_ = key_;
-        }
-        if (((from_bitField0_ & 0x00000004) != 0)) {
-          result.message_ = message_;
-        }
       }
 
       @java.lang.Override
@@ -3614,7 +4361,7 @@ public final class Relay {
         if (other.getMessage() != com.google.protobuf.ByteString.EMPTY) {
           setMessage(other.getMessage());
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
@@ -3629,48 +4376,19 @@ public final class Relay {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
+        io.opencola.relay.common.protobuf.Relay.Envelope parsedMessage = null;
         try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 10: {
-                to_ = input.readBytes();
-                bitField0_ |= 0x00000001;
-                break;
-              } // case 10
-              case 18: {
-                key_ = input.readBytes();
-                bitField0_ |= 0x00000002;
-                break;
-              } // case 18
-              case 26: {
-                message_ = input.readBytes();
-                bitField0_ |= 0x00000004;
-                break;
-              } // case 26
-              default: {
-                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
-                  done = true; // was an endgroup tag
-                }
-                break;
-              } // default:
-            } // switch (tag)
-          } // while (!done)
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (io.opencola.relay.common.protobuf.Relay.Envelope) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          onChanged();
-        } // finally
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
         return this;
       }
-      private int bitField0_;
 
       private com.google.protobuf.ByteString to_ = com.google.protobuf.ByteString.EMPTY;
       /**
@@ -3695,9 +4413,11 @@ public final class Relay {
        * @return This builder for chaining.
        */
       public Builder setTo(com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
         to_ = value;
-        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -3710,7 +4430,7 @@ public final class Relay {
        * @return This builder for chaining.
        */
       public Builder clearTo() {
-        bitField0_ = (bitField0_ & ~0x00000001);
+        
         to_ = getDefaultInstance().getTo();
         onChanged();
         return this;
@@ -3741,9 +4461,11 @@ public final class Relay {
        * @return This builder for chaining.
        */
       public Builder setKey(com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
         key_ = value;
-        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -3757,7 +4479,7 @@ public final class Relay {
        * @return This builder for chaining.
        */
       public Builder clearKey() {
-        bitField0_ = (bitField0_ & ~0x00000002);
+        
         key_ = getDefaultInstance().getKey();
         onChanged();
         return this;
@@ -3778,9 +4500,11 @@ public final class Relay {
        * @return This builder for chaining.
        */
       public Builder setMessage(com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
         message_ = value;
-        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
@@ -3789,7 +4513,7 @@ public final class Relay {
        * @return This builder for chaining.
        */
       public Builder clearMessage() {
-        bitField0_ = (bitField0_ & ~0x00000004);
+        
         message_ = getDefaultInstance().getMessage();
         onChanged();
         return this;
@@ -3827,18 +4551,7 @@ public final class Relay {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        Builder builder = newBuilder();
-        try {
-          builder.mergeFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(builder.buildPartial());
-        } catch (com.google.protobuf.UninitializedMessageException e) {
-          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(e)
-              .setUnfinishedMessage(builder.buildPartial());
-        }
-        return builder.buildPartial();
+        return new Envelope(input, extensionRegistry);
       }
     };
 
@@ -3868,6 +4581,11 @@ public final class Relay {
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_io_opencola_relay_common_protobuf_ChallengeMessage_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_io_opencola_relay_common_protobuf_ChallengeResponse_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_io_opencola_relay_common_protobuf_ChallengeResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_io_opencola_relay_common_protobuf_AuthenticationResult_descriptor;
   private static final 
@@ -3901,17 +4619,19 @@ public final class Relay {
       "protobuf\032\016security.proto\"#\n\016ConnectMessa" +
       "ge\022\021\n\tpublicKey\030\001 \001(\014\"8\n\020ChallengeMessag" +
       "e\022\021\n\talgorithm\030\001 \001(\t\022\021\n\tchallenge\030\002 \001(\014\"" +
-      "_\n\024AuthenticationResult\022G\n\006status\030\001 \001(\0162" +
-      "7.io.opencola.relay.common.protobuf.Auth" +
-      "enticationStatus\"k\n\006Header\022\021\n\tmessageId\030" +
-      "\001 \001(\014\022\014\n\004from\030\002 \001(\014\022@\n\tsignature\030\003 \001(\0132-" +
-      ".io.opencola.serialization.protobuf.Sign" +
-      "ature\"W\n\014RelayMessage\0229\n\006header\030\001 \001(\0132)." +
-      "io.opencola.relay.common.protobuf.Header" +
-      "\022\014\n\004body\030\002 \001(\014\"4\n\010Envelope\022\n\n\002to\030\001 \001(\014\022\013" +
-      "\n\003key\030\002 \001(\014\022\017\n\007message\030\003 \001(\014*?\n\024Authenti" +
-      "cationStatus\022\021\n\rAUTHENTICATED\020\000\022\024\n\020FAILE" +
-      "D_CHALLENGE\020\001b\006proto3"
+      "U\n\021ChallengeResponse\022@\n\tsignature\030\001 \001(\0132" +
+      "-.io.opencola.serialization.protobuf.Sig" +
+      "nature\"_\n\024AuthenticationResult\022G\n\006status" +
+      "\030\001 \001(\01627.io.opencola.relay.common.protob" +
+      "uf.AuthenticationStatus\"k\n\006Header\022\021\n\tmes" +
+      "sageId\030\001 \001(\014\022\014\n\004from\030\002 \001(\014\022@\n\tsignature\030" +
+      "\003 \001(\0132-.io.opencola.serialization.protob" +
+      "uf.Signature\"W\n\014RelayMessage\0229\n\006header\030\001" +
+      " \001(\0132).io.opencola.relay.common.protobuf" +
+      ".Header\022\014\n\004body\030\002 \001(\014\"4\n\010Envelope\022\n\n\002to\030" +
+      "\001 \001(\014\022\013\n\003key\030\002 \001(\014\022\017\n\007message\030\003 \001(\014*?\n\024A" +
+      "uthenticationStatus\022\021\n\rAUTHENTICATED\020\000\022\024" +
+      "\n\020FAILED_CHALLENGE\020\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -3930,26 +4650,32 @@ public final class Relay {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_relay_common_protobuf_ChallengeMessage_descriptor,
         new java.lang.String[] { "Algorithm", "Challenge", });
-    internal_static_io_opencola_relay_common_protobuf_AuthenticationResult_descriptor =
+    internal_static_io_opencola_relay_common_protobuf_ChallengeResponse_descriptor =
       getDescriptor().getMessageTypes().get(2);
+    internal_static_io_opencola_relay_common_protobuf_ChallengeResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_io_opencola_relay_common_protobuf_ChallengeResponse_descriptor,
+        new java.lang.String[] { "Signature", });
+    internal_static_io_opencola_relay_common_protobuf_AuthenticationResult_descriptor =
+      getDescriptor().getMessageTypes().get(3);
     internal_static_io_opencola_relay_common_protobuf_AuthenticationResult_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_relay_common_protobuf_AuthenticationResult_descriptor,
         new java.lang.String[] { "Status", });
     internal_static_io_opencola_relay_common_protobuf_Header_descriptor =
-      getDescriptor().getMessageTypes().get(3);
+      getDescriptor().getMessageTypes().get(4);
     internal_static_io_opencola_relay_common_protobuf_Header_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_relay_common_protobuf_Header_descriptor,
         new java.lang.String[] { "MessageId", "From", "Signature", });
     internal_static_io_opencola_relay_common_protobuf_RelayMessage_descriptor =
-      getDescriptor().getMessageTypes().get(4);
+      getDescriptor().getMessageTypes().get(5);
     internal_static_io_opencola_relay_common_protobuf_RelayMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_relay_common_protobuf_RelayMessage_descriptor,
         new java.lang.String[] { "Header", "Body", });
     internal_static_io_opencola_relay_common_protobuf_Envelope_descriptor =
-      getDescriptor().getMessageTypes().get(5);
+      getDescriptor().getMessageTypes().get(6);
     internal_static_io_opencola_relay_common_protobuf_Envelope_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_relay_common_protobuf_Envelope_descriptor,

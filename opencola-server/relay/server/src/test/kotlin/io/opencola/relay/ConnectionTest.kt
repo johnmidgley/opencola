@@ -10,7 +10,7 @@ import io.opencola.relay.common.defaultOCRPort
 import io.opencola.relay.common.State
 import io.opencola.relay.server.startWebServer
 import io.opencola.util.append
-import io.opencola.relay.server.WebSocketRelayServer
+import io.opencola.relay.server.v1.WebSocketRelayServer
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import java.net.ConnectException

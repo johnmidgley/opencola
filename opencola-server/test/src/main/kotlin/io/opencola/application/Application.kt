@@ -17,8 +17,8 @@ fun getApplications(
     basePortNumber: Int,
     nServers: Int
 ): List<Application> {
-    val instanceConfigs =
-        (0 until nServers).map { i ->
+    @Suppress("HttpUrlsUsage") val instanceConfigs =
+        (0 until nServers).map {
             object {
                 val name = "Server-${serverNum++}"
                 val storagePath = rootStoragePath.resolve(name).createDirectory()

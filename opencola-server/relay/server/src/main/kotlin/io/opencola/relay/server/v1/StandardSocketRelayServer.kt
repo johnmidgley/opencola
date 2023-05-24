@@ -1,4 +1,4 @@
-package io.opencola.relay.server
+package io.opencola.relay.server.v1
 
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
@@ -13,11 +13,11 @@ class StandardSocketRelayServer(
     port: Int,
     numChallengeBytes: Int = 32
 
-) : AbstractRelayServer(numChallengeBytes) {
+) : Server(numChallengeBytes) {
     private val selectorManager = ActorSelectorManager(Dispatchers.IO)
     private val serverSocket = aSocket(selectorManager).tcp().bind(port = port)
 
-    override suspend fun open() = coroutineScope() {
+    override suspend fun open() = coroutineScope {
         if (state != Initialized) {
             throw IllegalStateException("Server has already been opened")
         }

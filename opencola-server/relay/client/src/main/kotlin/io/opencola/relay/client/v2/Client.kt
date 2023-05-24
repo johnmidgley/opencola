@@ -25,9 +25,8 @@ abstract class Client(
 
         // Sign challenge and send back
         logger.debug { "Signing challenge" }
-        socketSession.writeSizedByteArray(
-            sign(keyPair.private, challengeMessage.challenge, challengeMessage.algorithm).encodeProto()
-        )
+        val signature = sign(keyPair.private, challengeMessage.challenge, challengeMessage.algorithm)
+        socketSession.writeSizedByteArray( ChallengeResponse(signature).encodeProto())
 
         val authenticationResult = AuthenticationResult.decodeProto(socketSession.readSizedByteArray())
         if (authenticationResult.status != AuthenticationStatus.AUTHENTICATED) {

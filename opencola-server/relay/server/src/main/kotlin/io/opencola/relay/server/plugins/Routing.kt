@@ -6,7 +6,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import io.opencola.relay.common.WebSocketSessionWrapper
-import io.opencola.relay.server.WebSocketRelayServer
+import io.opencola.relay.server.v1.WebSocketRelayServer
 
 fun elapsedTime(startTime: Long): Long {
     return System.currentTimeMillis() - startTime

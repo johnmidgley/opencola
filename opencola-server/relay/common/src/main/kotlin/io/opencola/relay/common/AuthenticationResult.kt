@@ -4,6 +4,10 @@ import io.opencola.relay.common.protobuf.Relay as Proto
 import io.opencola.serialization.protobuf.ProtoSerializable
 
 class AuthenticationResult(val status: AuthenticationStatus) {
+    fun encodeProto() : ByteArray {
+        return encodeProto(this)
+    }
+
     companion object : ProtoSerializable<AuthenticationResult, Proto.AuthenticationResult> {
         override fun toProto(value: AuthenticationResult): Proto.AuthenticationResult {
             return Proto.AuthenticationResult.newBuilder()

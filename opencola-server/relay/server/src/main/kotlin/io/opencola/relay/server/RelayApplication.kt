@@ -4,9 +4,9 @@ import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.websocket.*
-// TODO: Remove dependency on client - move value to common
 import io.opencola.relay.common.defaultOCRPort
 import io.opencola.relay.server.plugins.configureRouting
+import io.opencola.relay.server.v1.WebSocketRelayServer
 import java.util.concurrent.Semaphore
 
 fun startWebServer(
@@ -16,7 +16,7 @@ fun startWebServer(
 ): NettyApplicationEngine {
     val startSemaphore = Semaphore(1).also { it.acquire() }
 
-    val server = embeddedServer(Netty, port = port, host = "0.0.0.0") {
+    val module: Application.() -> Unit = {
         install(WebSockets) {
             // TODO: Check these values
             // pingPeriod = null
@@ -27,7 +27,9 @@ fun startWebServer(
         }
         configureRouting(webSocketRelayServer)
         this.environment.monitor.subscribe(ApplicationStarted) { startSemaphore.release() }
-    }.start(wait)
+    }
+
+    val server = embeddedServer(Netty, port = port, host = "0.0.0.0", module = module).start(wait)
 
     startSemaphore.acquire()
     return server

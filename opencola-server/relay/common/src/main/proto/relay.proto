@@ -13,6 +13,10 @@ message ChallengeMessage {
   bytes challenge = 2;
 }
 
+message ChallengeResponse {
+  io.opencola.serialization.protobuf.Signature signature = 1;
+}
+
 enum AuthenticationStatus {
   AUTHENTICATED = 0;
   FAILED_CHALLENGE = 1;
