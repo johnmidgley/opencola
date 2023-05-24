@@ -41,7 +41,7 @@ abstract class AbstractClient(
 
     abstract suspend fun getSocketSession(): SocketSession
     protected abstract suspend fun authenticate(socketSession: SocketSession)
-    protected abstract fun unpackMessage(bytes: ByteArray): Message
+    protected abstract fun decodeMessage(bytes: ByteArray): Message
 
     override val publicKey: PublicKey
         get() = keyPair.public
@@ -122,7 +122,7 @@ abstract class AbstractClient(
 
     private suspend fun handleMessage(payload: ByteArray, messageHandler: MessageHandler) {
         try {
-            val message = unpackMessage(decrypt(keyPair.private, payload)).validate()
+            val message = decodeMessage(decrypt(keyPair.private, payload)).validate()
             logger.info { "Handling message: ${message.header}" }
             messageHandler(message.header.from, message.body)
         } catch (e: Exception) {

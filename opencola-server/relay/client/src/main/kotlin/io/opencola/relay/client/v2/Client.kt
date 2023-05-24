@@ -37,7 +37,7 @@ abstract class Client(
         logger.debug { "Authenticated" }
     }
 
-    override fun unpackMessage(bytes: ByteArray): Message {
+    override fun decodeMessage(bytes: ByteArray): Message {
         return Message.decodeProto(bytes)
     }
 }
