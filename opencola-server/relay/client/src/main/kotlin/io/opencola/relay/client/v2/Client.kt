@@ -1,7 +1,6 @@
 package io.opencola.relay.client.v2
 
 import io.opencola.relay.client.AbstractClient
-import io.opencola.relay.client.MessageHandler
 import io.opencola.security.*
 import io.opencola.relay.common.*
 import java.net.URI
@@ -38,13 +37,7 @@ abstract class Client(
         logger.debug { "Authenticated" }
     }
 
-    override suspend fun handleMessage(payload: ByteArray, messageHandler: MessageHandler) {
-        try {
-            val message = Message.decodeProto(decrypt(keyPair.private, payload)).validate()
-            logger.info { "Handling message: ${message.header}" }
-            messageHandler(message.header.from, message.body)
-        } catch (e: Exception) {
-            logger.error { "Exception in handleMessage: $e" }
-        }
+    override fun unpackMessage(bytes: ByteArray): Message {
+        return Message.decodeProto(bytes)
     }
 }

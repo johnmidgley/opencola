@@ -41,7 +41,7 @@ abstract class AbstractClient(
 
     abstract suspend fun getSocketSession(): SocketSession
     protected abstract suspend fun authenticate(socketSession: SocketSession)
-    protected abstract suspend fun handleMessage(payload: ByteArray, messageHandler: MessageHandler)
+    protected abstract fun unpackMessage(bytes: ByteArray): Message
 
     override val publicKey: PublicKey
         get() = keyPair.public
@@ -120,13 +120,14 @@ abstract class AbstractClient(
         }
     }
 
-    override suspend fun close() {
-        _state = Closed
-        listenJob?.cancel()
-        listenJob = null
-        _connection?.close()
-        _connection = null
-        logger.info { "Closed - $name" }
+    private suspend fun handleMessage(payload: ByteArray, messageHandler: MessageHandler) {
+        try {
+            val message = unpackMessage(decrypt(keyPair.private, payload)).validate()
+            logger.info { "Handling message: ${message.header}" }
+            messageHandler(message.header.from, message.body)
+        } catch (e: Exception) {
+            logger.error { "Exception in handleMessage: $e" }
+        }
     }
 
     override suspend fun sendMessage(to: PublicKey, body: ByteArray) {
@@ -149,6 +150,15 @@ abstract class AbstractClient(
         } catch (e: Exception) {
             logger.error { "Unexpected exception when sending message $e" }
         }
+    }
+
+    override suspend fun close() {
+        _state = Closed
+        listenJob?.cancel()
+        listenJob = null
+        _connection?.close()
+        _connection = null
+        logger.info { "Closed - $name" }
     }
 
     companion object {
