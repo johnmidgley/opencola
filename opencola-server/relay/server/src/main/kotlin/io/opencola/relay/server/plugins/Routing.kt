@@ -6,27 +6,38 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import io.opencola.relay.common.WebSocketSessionWrapper
-import io.opencola.relay.server.v1.WebSocketRelayServer
+import io.opencola.relay.server.v1.WebSocketRelayServer as WebSocketRelayServerV1
+import io.opencola.relay.server.v2.WebSocketRelayServer as WebSocketRelayServerV2
 
 fun elapsedTime(startTime: Long): Long {
     return System.currentTimeMillis() - startTime
 }
 
-fun Application.configureRouting(webSocketRelayServer: WebSocketRelayServer) {
+fun connectionsString(connectionStates: List<Pair<String, Boolean>>): String {
+    val states = connectionStates.joinToString("\n") { "${it.first} - ${if (it.second) "Ready" else "Not Ready"}" }
+    return "Connections (${connectionStates.count()})\n\n$states"
+}
+
+fun Application.configureRouting(webSocketRelayServerV1: WebSocketRelayServerV1, webSocketRelayServerV2: WebSocketRelayServerV2) {
     routing {
         get("/") {
-            call.respondText("OpenCola Relay Server")
+            call.respondText("OpenCola Relay Server (v1,v2)")
         }
 
         get("/connections") {
-            val connectionStates = webSocketRelayServer.connectionStates()
-            val states =
-                connectionStates.joinToString("\n") { "${it.first} - ${if (it.second) "Ready" else "Not Ready"}" }
-            call.respondText("OpenCola Relay Server\n\nConnections (${connectionStates.count()})\n\n$states")
+            call.respondText(connectionsString(webSocketRelayServerV1.connectionStates()))
+        }
+
+        get("/v2/connections") {
+            call.respondText(connectionsString(webSocketRelayServerV2.connectionStates()))
         }
 
         webSocket("/relay") {
-            webSocketRelayServer.handleSession(WebSocketSessionWrapper(this))
+            webSocketRelayServerV1.handleSession(WebSocketSessionWrapper(this))
+        }
+
+        webSocket("/v2/relay") {
+            webSocketRelayServerV2.handleSession(WebSocketSessionWrapper(this))
         }
 
         get("/send") {

@@ -1,6 +1,7 @@
 package io.opencola.relay.client.v1
 
 import io.opencola.relay.client.AbstractClient
+import io.opencola.relay.common.Envelope
 import io.opencola.relay.common.Message
 import io.opencola.relay.common.SocketSession
 import io.opencola.security.*
@@ -37,6 +38,10 @@ abstract class Client(
         }
 
         logger.debug { "Authenticated" }
+    }
+
+    override fun encodeEnvelope(envelope: Envelope): ByteArray {
+        return envelope.encode()
     }
 
     override fun decodeMessage(bytes: ByteArray): Message {

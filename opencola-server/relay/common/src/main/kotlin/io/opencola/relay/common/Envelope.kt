@@ -20,6 +20,14 @@ class Envelope(val to: PublicKey, val key: ByteArray?, val message: ByteArray) {
         encrypt(to, Message.encode(message)).bytes
     )
 
+    fun encode(): ByteArray {
+        return encode(this)
+    }
+
+    fun encodeProto(): ByteArray {
+        return encodeProto(this)
+    }
+
     companion object : StreamSerializer<Envelope>,
         ProtoSerializable<Envelope, Proto.Envelope> {
 

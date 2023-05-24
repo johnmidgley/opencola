@@ -10,7 +10,8 @@ import io.opencola.relay.common.defaultOCRPort
 import io.opencola.relay.common.State
 import io.opencola.relay.server.startWebServer
 import io.opencola.util.append
-import io.opencola.relay.server.v1.WebSocketRelayServer
+import io.opencola.relay.server.v1.WebSocketRelayServer as WebSocketRelayServerV1
+import io.opencola.relay.server.v2.WebSocketRelayServer as WebSocketRelayServerV2
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import java.net.ConnectException
@@ -26,18 +27,20 @@ import kotlin.test.*
 private val relayServerUri = URI("ocr://0.0.0.0")
 
 class ConnectionTest {
-    private class RelayServer(
-        val webSocketRelayServer: WebSocketRelayServer,
-        val nettyApplicationEngine: NettyApplicationEngine
-    ) {
-        suspend fun stop() {
-            webSocketRelayServer.close()
-            nettyApplicationEngine.stop(1000, 1000)
-        }
-    }
+    private class RelayServer {
+        val webSocketRelayServerV1 = WebSocketRelayServerV1()
+        val webSocketRelayServerV2 = WebSocketRelayServerV2()
+        var nettyApplicationEngine: NettyApplicationEngine? = null
 
-    private fun startServer(): RelayServer {
-        return WebSocketRelayServer().let { RelayServer(it, startWebServer(defaultOCRPort, it)) }
+        fun start() {
+            nettyApplicationEngine = startWebServer(defaultOCRPort, webSocketRelayServerV1, webSocketRelayServerV2)
+        }
+
+        suspend fun stop() {
+            webSocketRelayServerV1.close()
+            webSocketRelayServerV2.close()
+            nettyApplicationEngine?.stop(1000, 1000)
+        }
     }
 
     private fun getClient(
@@ -58,80 +61,96 @@ class ConnectionTest {
     @Test
     fun testSendResponse() {
         runBlocking {
-            val server = startServer()
-            val result = CompletableDeferred<ByteArray>()
-            val client0 = getClient(name = "client0").also {
-                launch {
-                    it.open { _, message ->
-                        result.complete(message)
-                        "".toByteArray()
-                    }
-                }
-                it.waitUntilOpen()
-            }
-            val client1 = getClient(name = "client1")
-                .also {
+            var server: RelayServer? = null
+            var client0: AbstractClient? = null
+            var client1: AbstractClient? = null
+
+            try {
+                server = RelayServer().also { it.start() }
+                val result = CompletableDeferred<ByteArray>()
+                client0 = getClient(name = "client0").also {
                     launch {
-                        it.open { from, message ->
-                            assertEquals(client0.publicKey, from)
-                            val response = message.append(" client1".toByteArray())
-                            it.sendMessage(from, response)
+                        it.open { _, message ->
+                            result.complete(message)
+                            "".toByteArray()
                         }
                     }
-
                     it.waitUntilOpen()
                 }
+                client1 = getClient(name = "client1")
+                    .also {
+                        launch {
+                            it.open { from, message ->
+                                assertEquals(client0.publicKey, from)
+                                val response = message.append(" client1".toByteArray())
+                                it.sendMessage(from, response)
+                            }
+                        }
 
-            client0.sendMessage(client1.publicKey, "hello".toByteArray())
-            assertEquals("hello client1", String(result.await()))
+                        it.waitUntilOpen()
+                    }
 
-            server.stop()
-            listOf(client0, client1).forEach { it.close() }
+                client0.sendMessage(client1.publicKey, "hello".toByteArray())
+                withTimeout(3000) { assertEquals("hello client1", String(result.await())) }
+            } finally {
+                println("Closing resources")
+                server?.stop()
+                listOf(client0, client1).forEach { it?.close() }
+            }
         }
     }
 
     @Test
     fun testClientConnectBeforeServer() {
         runBlocking {
-            val result = CompletableDeferred<ByteArray>()
-            val client0 = getClient("client0").also { launch { open(it) } }
+            var server: RelayServer? = null
+            var client0: AbstractClient? = null
+            var client1: AbstractClient? = null
 
-            // Give the client a chance to have a failed connection attempt
-            delay(100)
-            assert(client0.state == State.Opening)
+            try {
+                val result = CompletableDeferred<ByteArray>()
+                client0 = getClient("client0").also { launch { open(it) } }
 
-            val relayServer = startWebServer(defaultOCRPort)
+                // Give the client a chance to have a failed connection attempt
+                delay(100)
+                assert(client0.state == State.Opening)
 
-            val client1 = getClient("client1")
-                .also {
-                    launch {
-                        it.open { _, message ->
-                            result.complete(message.append(" client1".toByteArray()))
+                println("Starting relay server")
+                server = RelayServer().also { it.start() }
+
+                println("Waiting for client0 to open")
+                client1 = getClient("client1")
+                    .also {
+                        launch {
+                            it.open { _, message ->
+                                result.complete(message.append(" client1".toByteArray()))
+                            }
                         }
+                        it.waitUntilOpen()
                     }
-                    it.waitUntilOpen()
-                }
 
-            client0.sendMessage(client1.publicKey, "hello".toByteArray())
-            assertEquals("hello client1", String(result.await()))
-
-            client0.close()
-            client1.close()
-            relayServer.stop(200, 200)
+                println("Sending message")
+                client0.sendMessage(client1.publicKey, "hello".toByteArray())
+                assertEquals("hello client1", String(result.await()))
+            } finally {
+                client0?.close()
+                client1?.close()
+                server?.stop()
+            }
         }
     }
 
     @Test
     fun testServerPartition() {
         runBlocking {
-            val relayServer0: RelayServer
-            var relayServer1: RelayServer? = null
+            val server0: RelayServer
+            var server1: RelayServer? = null
             var client0: RelayClient? = null
             var client1: RelayClient? = null
             val results = Channel<ByteArray>()
 
             try {
-                relayServer0 = startServer()
+                server0 = RelayServer().also { it.start() }
                 client0 = getClient("client0").also { launch { open(it) }; it.waitUntilOpen() }
                 client1 = getClient("client1")
                     .also {
@@ -147,21 +166,21 @@ class ConnectionTest {
                 assertEquals("hello1 client1", String(results.receive()))
 
                 println("Stopping relay server")
-                relayServer0.stop()
+                server0.stop()
 
                 println("Sending message to client1")
                 assertFailsWith<ConnectException> { client0.sendMessage(client1.publicKey, "hello".toByteArray()) }
 
                 println("Starting relay server again")
-                StdoutMonitor(readTimeoutMilliseconds = 3000).use {
-                    relayServer1 = startServer()
+                StdoutMonitor(readTimeoutMilliseconds = 3000).use { stdoutMonitor ->
+                    server1 = RelayServer().also { it.start() }
                     // The waitUntil method does not yield to co-routines, so we need to explicitly delay
                     // to let the server start and the clients reconnect. The proper solution would be to
                     // implement a delayUntil method on StdoutMonitor that works properly with coroutines.
                     delay(2000)
                     // Wait until both clients have connected again
-                    it.waitUntil("Connection created")
-                    it.waitUntil("Connection created")
+                    stdoutMonitor.waitUntil("Connection created")
+                    stdoutMonitor.waitUntil("Connection created")
                 }
 
                 println("Sending message to client1")
@@ -173,7 +192,7 @@ class ConnectionTest {
                 println("Closing resources")
                 client0?.close()
                 client1?.close()
-                relayServer1?.stop()
+                server1?.stop()
             }
         }
     }
@@ -182,103 +201,118 @@ class ConnectionTest {
     @Test
     fun testClientPartition() {
         runBlocking {
-            println("Starting server and clients")
-            val relayServer0 = startWebServer(defaultOCRPort)
-            val results = Channel<ByteArray>()
-            val client0 = getClient(
-                "client0",
-                requestTimeoutInMilliseconds = 500
-            ).also { launch { open(it) }; it.waitUntilOpen() }
-            val client1KeyPair = generateKeyPair()
-            val client1 = getClient("client1", client1KeyPair)
-                .also {
-                    launch {
-                        it.open { _, message ->
-                            results.send(message.append(" client1".toByteArray()))
+            var server: RelayServer? = null
+            var client0: AbstractClient? = null
+            var client1: AbstractClient? = null
+            var client1Rejoin: AbstractClient? = null
+
+            try {
+                println("Starting server and clients")
+                server = RelayServer().also { it.start() }
+                val results = Channel<ByteArray>()
+                client0 = getClient(
+                    "client0",
+                    requestTimeoutInMilliseconds = 500
+                ).also { launch { open(it) }; it.waitUntilOpen() }
+                val client1KeyPair = generateKeyPair()
+                client1 = getClient("client1", client1KeyPair)
+                    .also {
+                        launch {
+                            it.open { _, message ->
+                                results.send(message.append(" client1".toByteArray()))
+                            }
                         }
+                        it.waitUntilOpen()
                     }
-                    it.waitUntilOpen()
+
+                println("Sending message")
+                client0.sendMessage(client1.publicKey, "hello1".toByteArray())
+                withTimeout(1000) { assertEquals("hello1 client1", String(results.receive())) }
+
+                println("Partitioning client")
+                client1.close()
+
+                println("Verifying partition")
+                StdoutMonitor(readTimeoutMilliseconds = 3000).use {
+                    client0.sendMessage(client1.publicKey, "hello".toByteArray())
+                    it.waitUntil("no connection to receiver")
                 }
 
-            println("Sending message")
-            client0.sendMessage(client1.publicKey, "hello1".toByteArray())
-            assertEquals("hello1 client1", String(results.receive()))
+                println("Rejoining client")
+                client1Rejoin = getClient("client1", client1KeyPair)
+                    .also {
+                        launch {
+                            it.open { _, message ->
+                                results.send(message.append(" client1".toByteArray()))
+                            }
+                        }
+                        it.waitUntilOpen()
+                    }
 
-            println("Partitioning client")
-            client1.close()
-
-            println("Verifying partition")
-            StdoutMonitor(readTimeoutMilliseconds = 3000).use {
-                client0.sendMessage(client1.publicKey, "hello".toByteArray())
-                it.waitUntil("no connection to receiver")
+                println("Verifying rejoin")
+                client0.sendMessage(client1.publicKey, "hello2".toByteArray())
+                assertEquals("hello2 client1", String(results.receive()))
+            } finally {
+                println("Closing resources")
+                client0?.close()
+                client1?.close()
+                client1Rejoin?.close()
+                server?.stop()
             }
-
-            println("Rejoining client")
-            val client1Rejoin = getClient("client1", client1KeyPair)
-                .also {
-                    launch {
-                        it.open { _, message ->
-                            results.send(message.append(" client1".toByteArray()))
-                        }
-                    }
-                    it.waitUntilOpen()
-                }
-
-            println("Verifying rejoin")
-            client0.sendMessage(client1.publicKey, "hello2".toByteArray())
-            assertEquals("hello2 client1", String(results.receive()))
-
-            client0.close()
-            client1.close()
-            client1Rejoin.close()
-            relayServer0.stop(200, 200)
         }
     }
 
     @Test
     fun testRandomClientsCalls() {
         runBlocking {
-            // NOTE: Will fail on timeouts with to many calls (> 5000). Need to refactor for concurrency for real
-            // load testing
-            val results = ConcurrentHashMap<UUID, CompletableDeferred<Unit>>()
-            val relayServer = startWebServer(defaultOCRPort)
-            val random = Random()
-            val numClients = 50
-            val clients = (0 until numClients)
-                .map { getClient(name = "client$it", requestTimeoutInMilliseconds = 10000) }
-                .onEach {
+            var server: RelayServer? = null
+            var clients: List<AbstractClient>? = null
+
+            try {
+                // NOTE: Will fail on timeouts with to many calls (> 5000). Need to refactor for concurrency for real
+                // load testing
+                val results = ConcurrentHashMap<UUID, CompletableDeferred<Unit>>()
+                server = RelayServer().also { it.start() }
+                val random = Random()
+                val numClients = 50
+                clients = (0 until numClients)
+                    .map { getClient(name = "client$it", requestTimeoutInMilliseconds = 10000) }
+                    .onEach {
+                        launch {
+                            it.open { _, message ->
+                                UUID.fromString(String(message)).let { uuid ->
+                                    results[uuid]?.complete(Unit)
+                                }
+                            }
+                        }
+                        it.waitUntilOpen()
+                    }
+
+                (0..1000).map {
+                    val sender = abs(random.nextInt()) % numClients
+                    val receiver = abs(random.nextInt()) % numClients
+
                     launch {
-                        it.open { _, message ->
-                            UUID.fromString(String(message)).let { uuid ->
-                                results[uuid]?.complete(Unit)
+                        if (sender != receiver) {
+                            val sendClient = clients[sender]
+                            val receiveClient = clients[receiver]
+
+                            UUID.randomUUID().let {
+                                results[it] = CompletableDeferred()
+                                sendClient.sendMessage(receiveClient.publicKey, it.toString().toByteArray())
                             }
                         }
                     }
-                    it.waitUntilOpen()
-                }
+                }.parallelStream()
+                    .collect(Collectors.toList())
+                    .forEach { it.join() }
 
-            (0..1000).map {
-                val sender = abs(random.nextInt()) % numClients
-                val receiver = abs(random.nextInt()) % numClients
-
-                launch {
-                    if (sender != receiver) {
-                        val sendClient = clients[sender]
-                        val receiveClient = clients[receiver]
-
-                        UUID.randomUUID().let {
-                            results[it] = CompletableDeferred()
-                            sendClient.sendMessage(receiveClient.publicKey, it.toString().toByteArray())
-                        }
-                    }
-                }
-            }.parallelStream()
-                .collect(Collectors.toList())
-                .forEach { it.join() }
-
-            withTimeout(10000) { results.forEach { (_, value) -> value.await() } }
-            clients.forEach { it.close() }
-            relayServer.stop(200, 200)
+                withTimeout(10000) { results.forEach { (_, value) -> value.await() } }
+            } finally {
+                println("Closing resources")
+                clients?.forEach { it.close() }
+                server?.stop()
+            }
         }
     }
 
@@ -287,21 +321,24 @@ class ConnectionTest {
         runBlocking {
             var client: RelayClient? = null
 
-            assertFails {
-                runBlocking {
-                    client = getClient("client0").also { launch { open(it) } }
-                    open(client!!)
+            try {
+                assertFails {
+                    runBlocking {
+                        client = getClient("client0").also { launch { open(it) } }
+                        open(client!!)
+                    }
                 }
+            } finally {
+                println("Closing resources")
+                client?.close()
             }
-
-            client?.close()
         }
     }
 
     // @Test
     fun testLatency() {
         runBlocking {
-            val relayServer = startWebServer(defaultOCRPort)
+            val server = startWebServer(defaultOCRPort)
             val client0 = getClient(
                 "client0",
                 requestTimeoutInMilliseconds = 30000
@@ -320,7 +357,7 @@ class ConnectionTest {
             } finally {
                 client0.close()
                 client1.close()
-                relayServer.stop()
+                server.stop()
             }
         }
     }

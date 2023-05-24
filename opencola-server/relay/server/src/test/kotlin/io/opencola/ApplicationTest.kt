@@ -7,7 +7,8 @@ import io.ktor.http.*
 import kotlin.test.*
 import io.ktor.server.testing.*
 import io.ktor.server.websocket.*
-import io.opencola.relay.server.v1.WebSocketRelayServer
+import io.opencola.relay.server.v1.WebSocketRelayServer as WebSocketRelayServerV1
+import io.opencola.relay.server.v2.WebSocketRelayServer as WebSocketRelayServerV2
 import io.opencola.relay.server.plugins.configureRouting
 
 class ApplicationTest {
@@ -15,7 +16,7 @@ class ApplicationTest {
     fun testRoot() = testApplication {
         application {
             install(WebSockets)
-            configureRouting(WebSocketRelayServer())
+            configureRouting(WebSocketRelayServerV1(), WebSocketRelayServerV2())
         }
 
         val response = client.get("/")

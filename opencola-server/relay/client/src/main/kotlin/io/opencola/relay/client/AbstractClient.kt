@@ -41,7 +41,11 @@ abstract class AbstractClient(
 
     abstract suspend fun getSocketSession(): SocketSession
     protected abstract suspend fun authenticate(socketSession: SocketSession)
+    // TODO: This looks wrong. Maybe envelope should be encoded in connection?
+    //  then client only needs to worry about encoding the message.
+    protected abstract fun encodeEnvelope(envelope: Envelope): ByteArray
     protected abstract fun decodeMessage(bytes: ByteArray): Message
+
 
     val publicKey: PublicKey
         get() = keyPair.public
@@ -138,7 +142,7 @@ abstract class AbstractClient(
             // TODO: Should there be a limit on the size of messages?
             logger.info { "Sending message: ${message.header}" }
             withTimeout(requestTimeoutMilliseconds) {
-                getConnection().writeSizedByteArray(Envelope.encode(envelope))
+                getConnection().writeSizedByteArray(encodeEnvelope(envelope))
             }
         } catch (e: ConnectException) {
             // Pass exception through so caller knows message wasn't sent
