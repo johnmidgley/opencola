@@ -56,30 +56,7 @@ abstract class Server(numChallengeBytes: Int = 32) : AbstractRelayServer(numChal
         return null
     }
 
-    override suspend fun handleMessage(from: PublicKey, payload: ByteArray) {
-        val fromId = Id.ofPublicKey(from)
-
-        try {
-            val envelope = Envelope.decode(payload)
-            val toId = Id.ofPublicKey(envelope.to)
-            val prefix = "from=$fromId, to=$toId:"
-
-            if (from != envelope.to) {
-                val connection = connections[envelope.to]
-
-                if (connection == null) {
-                    logger.info { "$prefix no connection to receiver" }
-                    return
-                } else if (!connection.isReady()) {
-                    logger.info { "$prefix Removing closed connection for receiver" }
-                    connections.remove(envelope.to)
-                } else {
-                    logger.info { "$prefix Delivering ${envelope.message.size} bytes" }
-                    connection.writeSizedByteArray(envelope.message)
-                }
-            }
-        } catch (e: Exception) {
-            logger.error { "Error while handling message from $fromId: $e" }
-        }
+    override fun decodePayload(payload: ByteArray): Envelope {
+        return Envelope.decodeProto(payload)
     }
 }

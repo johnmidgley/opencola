@@ -8,7 +8,7 @@ class Encryptor(private val keystore: KeyStore) {
             ?: throw RuntimeException("Unable to find public key for alias: $alias")
     }
 
-    fun encrypt(alias: String, bytes: ByteArray, transformation: String = ENCRYPTION_TRANSFORMATION) : Encryption {
+    fun encrypt(alias: String, bytes: ByteArray, transformation: String = ENCRYPTION_TRANSFORMATION) : EncryptedBytes {
         return encrypt(getPublicKey(alias), bytes, transformation)
     }
 

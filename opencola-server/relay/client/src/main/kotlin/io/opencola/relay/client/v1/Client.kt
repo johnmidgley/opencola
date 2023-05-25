@@ -9,6 +9,7 @@ import io.opencola.serialization.codecs.IntByteArrayCodec
 import io.opencola.relay.common.retryExponentialBackoff
 import java.net.URI
 import java.security.KeyPair
+import java.security.PublicKey
 
 abstract class Client(
     uri: URI,
@@ -40,12 +41,11 @@ abstract class Client(
         logger.debug { "Authenticated" }
     }
 
-    override fun encodeEnvelope(envelope: Envelope): ByteArray {
-        return envelope.encode()
+    override fun getEncodeEnvelope(to: PublicKey, message: Message): ByteArray {
+        return Envelope(to, null, encrypt(to, message.encode()).bytes).encode()
     }
 
-    override fun decodeMessage(bytes: ByteArray): Message {
-        return Message.decode(bytes)
-
+    override fun decodePayload(payload: ByteArray): Message {
+        return Message.decode(decrypt(keyPair.private, payload)).validate()
     }
 }

@@ -5,6 +5,7 @@ import io.opencola.security.*
 import io.opencola.relay.common.*
 import java.net.URI
 import java.security.KeyPair
+import java.security.PublicKey
 
 abstract class Client(
     uri: URI,
@@ -12,8 +13,7 @@ abstract class Client(
     name: String? = null,
     requestTimeoutMilliseconds: Long = 60000, // TODO: Make configurable
     retryPolicy: (Int) -> Long = retryExponentialBackoff(),
-) : AbstractClient(uri, keyPair, name, requestTimeoutMilliseconds, retryPolicy) {
-    // Should only be called once, right after connection to server
+) : AbstractClient(uri, keyPair, "$name", requestTimeoutMilliseconds, retryPolicy) {
     override suspend fun authenticate(socketSession: SocketSession) {
         // Send public key
         logger.debug { "Sending public key" }
@@ -26,7 +26,7 @@ abstract class Client(
         // Sign challenge and send back
         logger.debug { "Signing challenge" }
         val signature = sign(keyPair.private, challengeMessage.challenge, challengeMessage.algorithm)
-        socketSession.writeSizedByteArray( ChallengeResponse(signature).encodeProto())
+        socketSession.writeSizedByteArray(ChallengeResponse(signature).encodeProto())
 
         val authenticationResult = AuthenticationResult.decodeProto(socketSession.readSizedByteArray())
         if (authenticationResult.status != AuthenticationStatus.AUTHENTICATED) {
@@ -36,11 +36,11 @@ abstract class Client(
         logger.debug { "Authenticated" }
     }
 
-    override fun encodeEnvelope(envelope: Envelope): ByteArray {
-        return envelope.encodeProto()
+    override fun getEncodeEnvelope(to: PublicKey, message: Message): ByteArray {
+        return Envelope(to, null, encrypt(to, message.encodeProto()).encodeProto()).encodeProto()
     }
 
-    override fun decodeMessage(bytes: ByteArray): Message {
-        return Message.decodeProto(bytes)
+    override fun decodePayload(payload: ByteArray): Message {
+        return Message.decodeProto(decrypt(keyPair.private, EncryptedBytes.decodeProto(payload))).validate()
     }
 }

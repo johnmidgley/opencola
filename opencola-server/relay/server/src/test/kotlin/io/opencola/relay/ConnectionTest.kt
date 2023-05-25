@@ -5,7 +5,8 @@ import io.opencola.io.StdoutMonitor
 import io.opencola.relay.client.AbstractClient
 import io.opencola.security.generateKeyPair
 import io.opencola.relay.client.RelayClient
-import io.opencola.relay.client.v1.WebSocketClient
+import io.opencola.relay.client.v1.WebSocketClient as WebSocketClientV1
+import io.opencola.relay.client.v2.WebSocketClient as WebSocketClientV2
 import io.opencola.relay.common.defaultOCRPort
 import io.opencola.relay.common.State
 import io.opencola.relay.server.startWebServer
@@ -43,12 +44,21 @@ class ConnectionTest {
         }
     }
 
+    private enum class ClientType {
+        V1,
+        V2
+    }
+
     private fun getClient(
+        clientType: ClientType,
         name: String,
         keyPair: KeyPair = generateKeyPair(),
         requestTimeoutInMilliseconds: Long = 5000,
     ): AbstractClient {
-        return WebSocketClient(relayServerUri, keyPair, name, requestTimeoutInMilliseconds)
+        return when(clientType) {
+            ClientType.V1 -> WebSocketClientV1(relayServerUri, keyPair, name, requestTimeoutInMilliseconds)
+            ClientType.V2 -> WebSocketClientV2(relayServerUri, keyPair, name, requestTimeoutInMilliseconds)
+        }
     }
 
     private suspend fun open(
@@ -58,8 +68,7 @@ class ConnectionTest {
         launch { client.open(messageHandler) }
     }
 
-    @Test
-    fun testSendResponse() {
+    private fun testSendResponse(clientType: ClientType) {
         runBlocking {
             var server: RelayServer? = null
             var client0: AbstractClient? = null
@@ -68,7 +77,7 @@ class ConnectionTest {
             try {
                 server = RelayServer().also { it.start() }
                 val result = CompletableDeferred<ByteArray>()
-                client0 = getClient(name = "client0").also {
+                client0 = getClient(clientType,"client0").also {
                     launch {
                         it.open { _, message ->
                             result.complete(message)
@@ -77,7 +86,7 @@ class ConnectionTest {
                     }
                     it.waitUntilOpen()
                 }
-                client1 = getClient(name = "client1")
+                client1 = getClient(clientType, "client1")
                     .also {
                         launch {
                             it.open { from, message ->
@@ -101,7 +110,17 @@ class ConnectionTest {
     }
 
     @Test
-    fun testClientConnectBeforeServer() {
+    fun testSendResponseV1(){
+        testSendResponse(ClientType.V1)
+    }
+
+    @Test
+    fun testSendResponseV2(){
+        testSendResponse(ClientType.V2)
+    }
+
+
+    private fun testClientConnectBeforeServer(clientType: ClientType) {
         runBlocking {
             var server: RelayServer? = null
             var client0: AbstractClient? = null
@@ -109,7 +128,7 @@ class ConnectionTest {
 
             try {
                 val result = CompletableDeferred<ByteArray>()
-                client0 = getClient("client0").also { launch { open(it) } }
+                client0 = getClient(clientType,"client0").also { launch { open(it) } }
 
                 // Give the client a chance to have a failed connection attempt
                 delay(100)
@@ -119,7 +138,7 @@ class ConnectionTest {
                 server = RelayServer().also { it.start() }
 
                 println("Waiting for client0 to open")
-                client1 = getClient("client1")
+                client1 = getClient(clientType,"client1")
                     .also {
                         launch {
                             it.open { _, message ->
@@ -141,7 +160,16 @@ class ConnectionTest {
     }
 
     @Test
-    fun testServerPartition() {
+    fun testClientConnectBeforeServerV1() {
+        testClientConnectBeforeServer(ClientType.V1)
+    }
+
+    @Test
+    fun testClientConnectBeforeServerV2() {
+        testClientConnectBeforeServer(ClientType.V2)
+    }
+
+    private fun testServerPartition(clientType: ClientType) {
         runBlocking {
             val server0: RelayServer
             var server1: RelayServer? = null
@@ -151,8 +179,8 @@ class ConnectionTest {
 
             try {
                 server0 = RelayServer().also { it.start() }
-                client0 = getClient("client0").also { launch { open(it) }; it.waitUntilOpen() }
-                client1 = getClient("client1")
+                client0 = getClient(clientType,"client0").also { launch { open(it) }; it.waitUntilOpen() }
+                client1 = getClient(clientType,"client1")
                     .also {
                         launch {
                             it.open { _, message ->
@@ -197,9 +225,17 @@ class ConnectionTest {
         }
     }
 
+    @Test
+    fun testServerPartitionV1() {
+        testServerPartition(ClientType.V1)
+    }
 
     @Test
-    fun testClientPartition() {
+    fun testServerPartitionV2() {
+        testServerPartition(ClientType.V2)
+    }
+
+    private fun testClientPartition(clientType: ClientType) {
         runBlocking {
             var server: RelayServer? = null
             var client0: AbstractClient? = null
@@ -211,11 +247,12 @@ class ConnectionTest {
                 server = RelayServer().also { it.start() }
                 val results = Channel<ByteArray>()
                 client0 = getClient(
+                    clientType,
                     "client0",
                     requestTimeoutInMilliseconds = 500
                 ).also { launch { open(it) }; it.waitUntilOpen() }
                 val client1KeyPair = generateKeyPair()
-                client1 = getClient("client1", client1KeyPair)
+                client1 = getClient(clientType,"client1", client1KeyPair)
                     .also {
                         launch {
                             it.open { _, message ->
@@ -239,7 +276,7 @@ class ConnectionTest {
                 }
 
                 println("Rejoining client")
-                client1Rejoin = getClient("client1", client1KeyPair)
+                client1Rejoin = getClient(clientType,"client1", client1KeyPair)
                     .also {
                         launch {
                             it.open { _, message ->
@@ -263,7 +300,17 @@ class ConnectionTest {
     }
 
     @Test
-    fun testRandomClientsCalls() {
+    fun testClientPartitionV1() {
+        testClientPartition(ClientType.V1)
+    }
+
+    @Test
+    fun testClientPartitionV2() {
+        testClientPartition(ClientType.V2)
+    }
+
+
+    private fun testRandomClientsCalls(clientType: ClientType) {
         runBlocking {
             var server: RelayServer? = null
             var clients: List<AbstractClient>? = null
@@ -276,7 +323,7 @@ class ConnectionTest {
                 val random = Random()
                 val numClients = 50
                 clients = (0 until numClients)
-                    .map { getClient(name = "client$it", requestTimeoutInMilliseconds = 10000) }
+                    .map { getClient(clientType, name = "client$it", requestTimeoutInMilliseconds = 10000) }
                     .onEach {
                         launch {
                             it.open { _, message ->
@@ -317,14 +364,24 @@ class ConnectionTest {
     }
 
     @Test
-    fun testMultipleClientListen() {
+    fun testRandomClientsCallsV1() {
+        testRandomClientsCalls(ClientType.V1)
+    }
+
+    @Test
+    fun testRandomClientsCallsV2() {
+        testRandomClientsCalls(ClientType.V2)
+    }
+
+
+    private fun testMultipleClientListen(clientType: ClientType) {
         runBlocking {
             var client: RelayClient? = null
 
             try {
                 assertFails {
                     runBlocking {
-                        client = getClient("client0").also { launch { open(it) } }
+                        client = getClient(clientType,"client0").also { launch { open(it) } }
                         open(client!!)
                     }
                 }
@@ -335,15 +392,26 @@ class ConnectionTest {
         }
     }
 
+    @Test
+    fun testMultipleClientListenV1() {
+        testMultipleClientListen(ClientType.V1)
+    }
+
+    @Test
+    fun testMultipleClientListenV2() {
+        testMultipleClientListen(ClientType.V2)
+    }
+
     // @Test
-    fun testLatency() {
+    private fun testLatency(clientType: ClientType) {
         runBlocking {
             val server = startWebServer(defaultOCRPort)
             val client0 = getClient(
+                clientType,
                 "client0",
                 requestTimeoutInMilliseconds = 30000
             ).also { launch { open(it) }; it.waitUntilOpen() }
-            val client1 = getClient("client1").also { launch { open(it) }; it.waitUntilOpen() }
+            val client1 = getClient(clientType,"client1").also { launch { open(it) }; it.waitUntilOpen() }
             val data = ByteArray(1024 * 1024)
 
             try {

@@ -18,7 +18,7 @@ abstract class AbstractClient(
     protected val uri: URI,
     protected val keyPair: KeyPair,
     protected val name: String? = null,
-    private val requestTimeoutMilliseconds: Long = 60000, // TODO: Make configurable
+    protected val requestTimeoutMilliseconds: Long = 60000, // TODO: Make configurable
     private val retryPolicy: (Int) -> Long = retryExponentialBackoff(),
 ) : RelayClient {
     protected val logger = KotlinLogging.logger("RelayClient${if (name != null) " ($name)" else ""}")
@@ -40,12 +40,9 @@ abstract class AbstractClient(
     }
 
     abstract suspend fun getSocketSession(): SocketSession
+    protected abstract fun getEncodeEnvelope(to: PublicKey, message: Message): ByteArray
+    protected abstract fun decodePayload(payload: ByteArray): Message
     protected abstract suspend fun authenticate(socketSession: SocketSession)
-    // TODO: This looks wrong. Maybe envelope should be encoded in connection?
-    //  then client only needs to worry about encoding the message.
-    protected abstract fun encodeEnvelope(envelope: Envelope): ByteArray
-    protected abstract fun decodeMessage(bytes: ByteArray): Message
-
 
     val publicKey: PublicKey
         get() = keyPair.public
@@ -57,7 +54,7 @@ abstract class AbstractClient(
         openMutex.withLock { }
     }
 
-    private suspend fun getConnection(waitForOpen: Boolean = true): Connection {
+    protected suspend fun getConnection(waitForOpen: Boolean = true): Connection {
         if (_state == Closed)
             throw IllegalStateException("Can't get connection on a Client that has been closed")
 
@@ -124,25 +121,13 @@ abstract class AbstractClient(
         }
     }
 
-    private suspend fun handleMessage(payload: ByteArray, messageHandler: MessageHandler) {
-        try {
-            val message = decodeMessage(decrypt(keyPair.private, payload)).validate()
-            logger.info { "Handling message: ${message.header}" }
-            messageHandler(message.header.from, message.body)
-        } catch (e: Exception) {
-            logger.error { "Exception in handleMessage: $e" }
-        }
-    }
-
     override suspend fun sendMessage(to: PublicKey, body: ByteArray) {
         val message = Message(keyPair, body)
-        val envelope = Envelope(to, null, message)
-
         try {
             // TODO: Should there be a limit on the size of messages?
             logger.info { "Sending message: ${message.header}" }
             withTimeout(requestTimeoutMilliseconds) {
-                getConnection().writeSizedByteArray(encodeEnvelope(envelope))
+                getConnection().writeSizedByteArray(getEncodeEnvelope(to, Message(keyPair, body)))
             }
         } catch (e: ConnectException) {
             // Pass exception through so caller knows message wasn't sent
@@ -155,6 +140,18 @@ abstract class AbstractClient(
             logger.error { "Unexpected exception when sending message $e" }
         }
     }
+
+    private suspend fun handleMessage(payload: ByteArray, messageHandler: MessageHandler) {
+        try {
+            val message = decodePayload(payload)
+            logger.info { "Handling message: ${message.header}" }
+
+            messageHandler(message.header.from, message.body)
+        } catch (e: Exception) {
+            logger.error { "Exception in handleMessage: $e" }
+        }
+    }
+
 
     override suspend fun close() {
         _state = Closed

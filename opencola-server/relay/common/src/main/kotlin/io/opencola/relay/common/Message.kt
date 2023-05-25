@@ -21,6 +21,14 @@ class Message(val header: Header, val body: ByteArray) {
         return "Message(header=$header, body=${body.size} bytes)"
     }
 
+    fun encode(): ByteArray {
+        return encode(this)
+    }
+
+    fun encodeProto(): ByteArray {
+        return encodeProto(this)
+    }
+
     fun validate(): Message {
         if(!isValidSignature(header.from, body, header.signature.bytes)){
             throw RuntimeException("Invalid Signature")

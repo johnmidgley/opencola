@@ -35,7 +35,7 @@ fun sign(privateKey: PrivateKey, data: ByteArray, algorithm: String = SIGNATURE_
     return Signature(algorithm, ecdsaSign.sign())
 }
 
-fun encrypt(publicKey: PublicKey, bytes: ByteArray, transformation: String = ENCRYPTION_TRANSFORMATION) : Encryption {
+fun encrypt(publicKey: PublicKey, bytes: ByteArray, transformation: String = ENCRYPTION_TRANSFORMATION) : EncryptedBytes {
     val encryptedBytes =  ByteArrayOutputStream().use{
         val cipher = Cipher.getInstance(transformation).also { it.init(Cipher.ENCRYPT_MODE, publicKey) }
         it.writeByteArray(cipher.parameters.encoded)
@@ -43,7 +43,7 @@ fun encrypt(publicKey: PublicKey, bytes: ByteArray, transformation: String = ENC
         it.toByteArray()
     }
 
-    return Encryption(transformation, encryptedBytes)
+    return EncryptedBytes(transformation, encryptedBytes)
 }
 
 fun decrypt(privateKey: PrivateKey, bytes: ByteArray, transformation: String = ENCRYPTION_TRANSFORMATION) : ByteArray {
@@ -58,7 +58,7 @@ fun decrypt(privateKey: PrivateKey, bytes: ByteArray, transformation: String = E
     }
 }
 
-fun decrypt(privateKey: PrivateKey, encryption: Encryption) : ByteArray {
+fun decrypt(privateKey: PrivateKey, encryption: EncryptedBytes) : ByteArray {
     return decrypt(privateKey, encryption.bytes, encryption.transformation)
 }
 

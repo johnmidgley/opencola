@@ -3,6 +3,7 @@ package io.opencola.relay.server
 import io.opencola.model.Id
 import io.opencola.security.initProvider
 import io.opencola.relay.common.Connection
+import io.opencola.relay.common.Envelope
 import io.opencola.relay.common.SocketSession
 import io.opencola.relay.common.State.*
 import kotlinx.coroutines.*
@@ -32,7 +33,7 @@ abstract class AbstractRelayServer(
     }
 
     protected abstract suspend fun authenticate(socketSession: SocketSession): PublicKey?
-    protected abstract suspend fun handleMessage(from: PublicKey, payload: ByteArray)
+    protected abstract fun decodePayload(payload: ByteArray): Envelope
 
     suspend fun handleSession(socketSession: SocketSession) {
         authenticate(socketSession)?.let { publicKey ->
@@ -52,6 +53,33 @@ abstract class AbstractRelayServer(
     }
 
     abstract suspend fun open()
+
+    private suspend fun handleMessage(from: PublicKey, payload: ByteArray) {
+        val fromId = Id.ofPublicKey(from)
+
+        try {
+            val envelope = decodePayload(payload)
+            val toId = Id.ofPublicKey(envelope.to)
+            val prefix = "from=$fromId, to=$toId:"
+
+            if (from != envelope.to) {
+                val connection = connections[envelope.to]
+
+                if (connection == null) {
+                    logger.info { "$prefix no connection to receiver" }
+                    return
+                } else if (!connection.isReady()) {
+                    logger.info { "$prefix Removing closed connection for receiver" }
+                    connections.remove(envelope.to)
+                } else {
+                    logger.info { "$prefix Delivering ${envelope.message.size} bytes" }
+                    connection.writeSizedByteArray(envelope.message)
+                }
+            }
+        } catch (e: Exception) {
+            logger.error { "Error while handling message from $fromId: $e" }
+        }
+    }
 
     open suspend fun close() {
         state = Closed

@@ -3,7 +3,6 @@ package io.opencola.relay.common
 import com.google.protobuf.ByteString
 import io.opencola.relay.common.protobuf.Relay
 import io.opencola.relay.common.protobuf.Relay as Proto
-import io.opencola.security.encrypt
 import io.opencola.security.publicKeyFromBytes
 import io.opencola.serialization.StreamSerializer
 import io.opencola.serialization.protobuf.ProtoSerializable
@@ -14,12 +13,6 @@ import java.io.OutputStream
 import java.security.PublicKey
 
 class Envelope(val to: PublicKey, val key: ByteArray?, val message: ByteArray) {
-    constructor(to: PublicKey, key: ByteArray?, message: Message) : this(
-        to,
-        key,
-        encrypt(to, Message.encode(message)).bytes
-    )
-
     fun encode(): ByteArray {
         return encode(this)
     }

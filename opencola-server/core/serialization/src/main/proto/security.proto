@@ -6,3 +6,8 @@ message Signature {
   string algorithm = 1;
   bytes bytes = 2;
 }
+
+message EncryptedMessage {
+  string transformation = 1;
+  bytes bytes = 2;
+}
