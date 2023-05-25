@@ -1,9 +1,9 @@
 package io.opencola.relay.client.v1
 
 import io.opencola.relay.client.AbstractClient
-import io.opencola.relay.common.Envelope
-import io.opencola.relay.common.Message
-import io.opencola.relay.common.SocketSession
+import io.opencola.relay.common.message.Envelope
+import io.opencola.relay.common.message.Message
+import io.opencola.relay.common.connection.SocketSession
 import io.opencola.security.*
 import io.opencola.serialization.codecs.IntByteArrayCodec
 import io.opencola.relay.common.retryExponentialBackoff

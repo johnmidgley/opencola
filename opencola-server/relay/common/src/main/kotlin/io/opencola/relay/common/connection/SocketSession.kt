@@ -1,4 +1,4 @@
-package io.opencola.relay.common
+package io.opencola.relay.common.connection
 
 interface SocketSession {
     suspend fun isReady() : Boolean

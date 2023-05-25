@@ -1,4 +1,4 @@
-package io.opencola.relay.common
+package io.opencola.relay.common.message
 
 import com.google.protobuf.ByteString
 import io.opencola.model.Id

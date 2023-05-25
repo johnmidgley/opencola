@@ -2,9 +2,9 @@ package io.opencola.relay.server
 
 import io.opencola.model.Id
 import io.opencola.security.initProvider
-import io.opencola.relay.common.Connection
-import io.opencola.relay.common.Envelope
-import io.opencola.relay.common.SocketSession
+import io.opencola.relay.common.connection.Connection
+import io.opencola.relay.common.message.Envelope
+import io.opencola.relay.common.connection.SocketSession
 import io.opencola.relay.common.State.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex

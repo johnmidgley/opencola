@@ -5,6 +5,8 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.websocket.*
 import io.ktor.http.*
 import io.opencola.relay.common.*
+import io.opencola.relay.common.connection.SocketSession
+import io.opencola.relay.common.connection.WebSocketSessionWrapper
 import java.net.URI
 import java.security.KeyPair
 

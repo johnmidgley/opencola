@@ -2,8 +2,8 @@ package io.opencola.relay.client.v1
 
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
-import io.opencola.relay.common.SocketSession
-import io.opencola.relay.common.StandardSocketSession
+import io.opencola.relay.common.connection.SocketSession
+import io.opencola.relay.common.connection.StandardSocketSession
 import io.opencola.relay.common.retryExponentialBackoff
 import kotlinx.coroutines.Dispatchers
 import java.net.URI

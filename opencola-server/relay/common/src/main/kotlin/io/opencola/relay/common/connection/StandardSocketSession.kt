@@ -1,4 +1,4 @@
-package io.opencola.relay.common
+package io.opencola.relay.common.connection
 
 import io.ktor.network.sockets.*
 import io.ktor.network.sockets.Socket

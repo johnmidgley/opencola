@@ -1,7 +1,8 @@
 package io.opencola.relay.server.v2
 
 import io.opencola.model.Id
-import io.opencola.relay.common.*
+import io.opencola.relay.common.connection.SocketSession
+import io.opencola.relay.common.message.*
 import io.opencola.security.isValidSignature
 import io.opencola.relay.server.AbstractRelayServer
 import io.opencola.security.SIGNATURE_ALGO

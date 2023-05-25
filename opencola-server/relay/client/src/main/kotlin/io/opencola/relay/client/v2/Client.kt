@@ -3,6 +3,9 @@ package io.opencola.relay.client.v2
 import io.opencola.relay.client.AbstractClient
 import io.opencola.security.*
 import io.opencola.relay.common.*
+import io.opencola.relay.common.connection.SocketSession
+import io.opencola.relay.common.message.*
+import io.opencola.relay.common.message.Message
 import java.net.URI
 import java.security.KeyPair
 import java.security.PublicKey

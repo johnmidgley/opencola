@@ -3,8 +3,10 @@ package io.opencola.relay.client
 import io.opencola.model.Id
 import io.opencola.security.*
 import io.opencola.relay.common.*
-import io.opencola.relay.common.Connection
+import io.opencola.relay.common.connection.Connection
 import io.opencola.relay.common.State.*
+import io.opencola.relay.common.connection.SocketSession
+import io.opencola.relay.common.message.Message
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock

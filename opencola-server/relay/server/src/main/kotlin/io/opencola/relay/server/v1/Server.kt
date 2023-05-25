@@ -4,8 +4,8 @@ import io.opencola.model.Id
 import io.opencola.security.isValidSignature
 import io.opencola.security.publicKeyFromBytes
 import io.opencola.serialization.codecs.IntByteArrayCodec
-import io.opencola.relay.common.Envelope
-import io.opencola.relay.common.SocketSession
+import io.opencola.relay.common.message.Envelope
+import io.opencola.relay.common.connection.SocketSession
 import io.opencola.relay.server.AbstractRelayServer
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException

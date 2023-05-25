@@ -1,6 +1,5 @@
-package io.opencola.relay.common
+package io.opencola.relay.common.connection
 
-import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.isActive

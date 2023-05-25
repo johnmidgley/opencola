@@ -1,7 +1,7 @@
-package io.opencola.relay.server.v2
+package io.opencola.relay.common.message.store
 
 import io.opencola.model.Id
-import io.opencola.relay.common.Envelope
+import io.opencola.relay.common.message.Envelope
 import mu.KotlinLogging
 import java.security.PublicKey
 import java.util.concurrent.ConcurrentHashMap

@@ -2,7 +2,7 @@ package io.opencola.relay.server.v1
 
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
-import io.opencola.relay.common.StandardSocketSession
+import io.opencola.relay.common.connection.StandardSocketSession
 import io.opencola.relay.common.State.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers

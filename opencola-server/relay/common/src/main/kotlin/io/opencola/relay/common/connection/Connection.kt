@@ -1,4 +1,4 @@
-package io.opencola.relay.common
+package io.opencola.relay.common.connection
 
 import io.opencola.relay.common.State.*
 import kotlinx.coroutines.*

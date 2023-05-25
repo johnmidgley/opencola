@@ -1,4 +1,4 @@
-package io.opencola.relay.common
+package io.opencola.relay.common.message
 
 import io.opencola.relay.common.protobuf.Relay
 import io.opencola.relay.common.protobuf.Relay as Proto

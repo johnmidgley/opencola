@@ -5,7 +5,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
-import io.opencola.relay.common.WebSocketSessionWrapper
+import io.opencola.relay.common.connection.WebSocketSessionWrapper
 import io.opencola.relay.server.v1.WebSocketRelayServer as WebSocketRelayServerV1
 import io.opencola.relay.server.v2.WebSocketRelayServer as WebSocketRelayServerV2
 
