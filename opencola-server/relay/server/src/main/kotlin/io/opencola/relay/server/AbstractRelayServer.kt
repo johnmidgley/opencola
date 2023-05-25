@@ -6,6 +6,7 @@ import io.opencola.relay.common.connection.Connection
 import io.opencola.relay.common.message.Envelope
 import io.opencola.relay.common.connection.SocketSession
 import io.opencola.relay.common.State.*
+import io.opencola.relay.common.message.store.MessageStore
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -15,7 +16,8 @@ import java.security.SecureRandom
 import java.util.concurrent.ConcurrentHashMap
 
 abstract class AbstractRelayServer(
-    protected val numChallengeBytes: Int = 32
+    protected val numChallengeBytes: Int = 32,
+    protected val messageStore: MessageStore? = null
 ) {
     protected val logger = KotlinLogging.logger("RelayServer")
     protected val connections = ConcurrentHashMap<PublicKey, Connection>()
@@ -42,6 +44,12 @@ abstract class AbstractRelayServer(
             connections[publicKey] = connection
 
             try {
+                // Send any stored messages
+                messageStore?.getMessages(publicKey)?.forEach {
+                    connection.writeSizedByteArray(it.message)
+                    messageStore.removeMessage(it)
+                }
+
                 // TODO: Add garbage collection on inactive connections?
                 connection.listen { payload -> handleMessage(publicKey, payload) }
             } finally {
@@ -56,9 +64,11 @@ abstract class AbstractRelayServer(
 
     private suspend fun handleMessage(from: PublicKey, payload: ByteArray) {
         val fromId = Id.ofPublicKey(from)
+        var messageDelivered = false
+        var envelope: Envelope? = null
 
         try {
-            val envelope = decodePayload(payload)
+            envelope = decodePayload(payload)
             val toId = Id.ofPublicKey(envelope.to)
             val prefix = "from=$fromId, to=$toId:"
 
@@ -67,17 +77,23 @@ abstract class AbstractRelayServer(
 
                 if (connection == null) {
                     logger.info { "$prefix no connection to receiver" }
-                    return
                 } else if (!connection.isReady()) {
                     logger.info { "$prefix Removing closed connection for receiver" }
-                    connections.remove(envelope.to)
                 } else {
                     logger.info { "$prefix Delivering ${envelope.message.size} bytes" }
                     connection.writeSizedByteArray(envelope.message)
+                    messageDelivered = true
                 }
             }
         } catch (e: Exception) {
             logger.error { "Error while handling message from $fromId: $e" }
+        } finally {
+            try {
+                if (!messageDelivered && envelope != null)
+                    messageStore?.addMessage(envelope)
+            } catch (e: Exception) {
+                logger.error { "Error while storing message $envelope: $e" }
+            }
         }
     }
 

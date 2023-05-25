@@ -5,6 +5,6 @@ import java.security.PublicKey
 
 interface MessageStore {
     fun addMessage(envelope: Envelope)
-    fun getMessages(to: PublicKey): Sequence<ByteArray>
+    fun getMessages(to: PublicKey): Sequence<Envelope>
     fun removeMessage(envelope: Envelope)
 }

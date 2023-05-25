@@ -235,7 +235,8 @@ class ConnectionTest {
         testServerPartition(ClientType.V2)
     }
 
-    private fun testClientPartition(clientType: ClientType) {
+    @Test
+    fun testClientPartitionV1() {
         runBlocking {
             var server: RelayServer? = null
             var client0: AbstractClient? = null
@@ -247,12 +248,12 @@ class ConnectionTest {
                 server = RelayServer().also { it.start() }
                 val results = Channel<ByteArray>()
                 client0 = getClient(
-                    clientType,
+                    ClientType.V1,
                     "client0",
                     requestTimeoutInMilliseconds = 500
                 ).also { launch { open(it) }; it.waitUntilOpen() }
                 val client1KeyPair = generateKeyPair()
-                client1 = getClient(clientType,"client1", client1KeyPair)
+                client1 = getClient(ClientType.V1,"client1", client1KeyPair)
                     .also {
                         launch {
                             it.open { _, message ->
@@ -276,7 +277,7 @@ class ConnectionTest {
                 }
 
                 println("Rejoining client")
-                client1Rejoin = getClient(clientType,"client1", client1KeyPair)
+                client1Rejoin = getClient(ClientType.V1,"client1", client1KeyPair)
                     .also {
                         launch {
                             it.open { _, message ->
@@ -300,13 +301,69 @@ class ConnectionTest {
     }
 
     @Test
-    fun testClientPartitionV1() {
-        testClientPartition(ClientType.V1)
-    }
-
-    @Test
     fun testClientPartitionV2() {
-        testClientPartition(ClientType.V2)
+        runBlocking {
+            var server: RelayServer? = null
+            var client0: AbstractClient? = null
+            var client1: AbstractClient? = null
+            var client1Rejoin: AbstractClient? = null
+
+            try {
+                println("Starting server and clients")
+                server = RelayServer().also { it.start() }
+                val results = Channel<ByteArray>()
+                client0 = getClient(
+                    ClientType.V2,
+                    "client0",
+                    requestTimeoutInMilliseconds = 500
+                ).also { launch { open(it) }; it.waitUntilOpen() }
+                val client1KeyPair = generateKeyPair()
+                client1 = getClient(ClientType.V2,"client1", client1KeyPair)
+                    .also {
+                        launch {
+                            it.open { _, message ->
+                                results.send(message.append(" client1".toByteArray()))
+                            }
+                        }
+                        it.waitUntilOpen()
+                    }
+
+                println("Sending message")
+                client0.sendMessage(client1.publicKey, "hello1".toByteArray())
+                withTimeout(1000) { assertEquals("hello1 client1", String(results.receive())) }
+
+                println("Partitioning client")
+                client1.close()
+
+                println("Verifying partition")
+                StdoutMonitor(readTimeoutMilliseconds = 3000).use {
+                    client0.sendMessage(client1.publicKey, "hello".toByteArray())
+                    it.waitUntil("no connection to receiver")
+                }
+
+                println("Rejoining client")
+                client1Rejoin = getClient(ClientType.V2,"client1", client1KeyPair)
+                    .also {
+                        launch {
+                            it.open { _, message ->
+                                results.send(message.append(" client1".toByteArray()))
+                            }
+                        }
+                        it.waitUntilOpen()
+                    }
+
+                println("Verifying rejoin (stored message + new one)")
+                client0.sendMessage(client1.publicKey, "hello2".toByteArray())
+                assertEquals("hello client1", String(results.receive()))
+                assertEquals("hello2 client1", String(results.receive()))
+            } finally {
+                println("Closing resources")
+                client0?.close()
+                client1?.close()
+                client1Rejoin?.close()
+                server?.stop()
+            }
+        }
     }
 
 

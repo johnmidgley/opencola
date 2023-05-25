@@ -3,6 +3,8 @@ package io.opencola.relay.server.v2
 import io.opencola.model.Id
 import io.opencola.relay.common.connection.SocketSession
 import io.opencola.relay.common.message.*
+import io.opencola.relay.common.message.store.MemoryMessageStore
+import io.opencola.relay.common.message.store.MessageStore
 import io.opencola.security.isValidSignature
 import io.opencola.relay.server.AbstractRelayServer
 import io.opencola.security.SIGNATURE_ALGO
@@ -10,7 +12,8 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import java.security.PublicKey
 
-abstract class Server(numChallengeBytes: Int = 32) : AbstractRelayServer(numChallengeBytes) {
+abstract class Server(numChallengeBytes: Int = 32, messageStore: MessageStore = MemoryMessageStore()) :
+    AbstractRelayServer(numChallengeBytes, messageStore) {
     override suspend fun authenticate(socketSession: SocketSession): PublicKey? {
         try {
             logger.debug { "Authenticating" }
