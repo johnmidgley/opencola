@@ -7,6 +7,7 @@ import io.opencola.relay.common.message.Envelope
 import io.opencola.relay.common.connection.SocketSession
 import io.opencola.relay.common.State.*
 import io.opencola.relay.common.message.store.MessageStore
+import io.opencola.security.generateKeyPair
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -17,10 +18,11 @@ import java.util.concurrent.ConcurrentHashMap
 
 abstract class AbstractRelayServer(
     protected val numChallengeBytes: Int = 32,
-    protected val messageStore: MessageStore? = null
+    private val messageStore: MessageStore? = null
 ) {
+    private val connections = ConcurrentHashMap<PublicKey, Connection>()
+    protected val keyPair = generateKeyPair()
     protected val logger = KotlinLogging.logger("RelayServer")
-    protected val connections = ConcurrentHashMap<PublicKey, Connection>()
     protected val openMutex = Mutex(true)
     protected val random = SecureRandom()
     protected var state = Initialized

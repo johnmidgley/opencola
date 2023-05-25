@@ -24,6 +24,7 @@ enum AuthenticationStatus {
 
 message AuthenticationResult {
   AuthenticationStatus status = 1;
+  bytes publicKey = 2;
 }
 
 message Header {

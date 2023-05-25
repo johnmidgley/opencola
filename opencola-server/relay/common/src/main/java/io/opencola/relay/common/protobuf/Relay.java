@@ -1891,6 +1891,12 @@ public final class Relay {
      * @return The status.
      */
     io.opencola.relay.common.protobuf.Relay.AuthenticationStatus getStatus();
+
+    /**
+     * <code>bytes publicKey = 2;</code>
+     * @return The publicKey.
+     */
+    com.google.protobuf.ByteString getPublicKey();
   }
   /**
    * Protobuf type {@code io.opencola.relay.common.protobuf.AuthenticationResult}
@@ -1906,6 +1912,7 @@ public final class Relay {
     }
     private AuthenticationResult() {
       status_ = 0;
+      publicKey_ = com.google.protobuf.ByteString.EMPTY;
     }
 
     @java.lang.Override
@@ -1942,6 +1949,11 @@ public final class Relay {
               int rawValue = input.readEnum();
 
               status_ = rawValue;
+              break;
+            }
+            case 18: {
+
+              publicKey_ = input.readBytes();
               break;
             }
             default: {
@@ -1995,6 +2007,17 @@ public final class Relay {
       return result == null ? io.opencola.relay.common.protobuf.Relay.AuthenticationStatus.UNRECOGNIZED : result;
     }
 
+    public static final int PUBLICKEY_FIELD_NUMBER = 2;
+    private com.google.protobuf.ByteString publicKey_;
+    /**
+     * <code>bytes publicKey = 2;</code>
+     * @return The publicKey.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString getPublicKey() {
+      return publicKey_;
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -2012,6 +2035,9 @@ public final class Relay {
       if (status_ != io.opencola.relay.common.protobuf.Relay.AuthenticationStatus.AUTHENTICATED.getNumber()) {
         output.writeEnum(1, status_);
       }
+      if (!publicKey_.isEmpty()) {
+        output.writeBytes(2, publicKey_);
+      }
       unknownFields.writeTo(output);
     }
 
@@ -2024,6 +2050,10 @@ public final class Relay {
       if (status_ != io.opencola.relay.common.protobuf.Relay.AuthenticationStatus.AUTHENTICATED.getNumber()) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(1, status_);
+      }
+      if (!publicKey_.isEmpty()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, publicKey_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -2041,6 +2071,8 @@ public final class Relay {
       io.opencola.relay.common.protobuf.Relay.AuthenticationResult other = (io.opencola.relay.common.protobuf.Relay.AuthenticationResult) obj;
 
       if (status_ != other.status_) return false;
+      if (!getPublicKey()
+          .equals(other.getPublicKey())) return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -2054,6 +2086,8 @@ public final class Relay {
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + STATUS_FIELD_NUMBER;
       hash = (53 * hash) + status_;
+      hash = (37 * hash) + PUBLICKEY_FIELD_NUMBER;
+      hash = (53 * hash) + getPublicKey().hashCode();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -2189,6 +2223,8 @@ public final class Relay {
         super.clear();
         status_ = 0;
 
+        publicKey_ = com.google.protobuf.ByteString.EMPTY;
+
         return this;
       }
 
@@ -2216,6 +2252,7 @@ public final class Relay {
       public io.opencola.relay.common.protobuf.Relay.AuthenticationResult buildPartial() {
         io.opencola.relay.common.protobuf.Relay.AuthenticationResult result = new io.opencola.relay.common.protobuf.Relay.AuthenticationResult(this);
         result.status_ = status_;
+        result.publicKey_ = publicKey_;
         onBuilt();
         return result;
       }
@@ -2266,6 +2303,9 @@ public final class Relay {
         if (other == io.opencola.relay.common.protobuf.Relay.AuthenticationResult.getDefaultInstance()) return this;
         if (other.status_ != 0) {
           setStatusValue(other.getStatusValue());
+        }
+        if (other.getPublicKey() != com.google.protobuf.ByteString.EMPTY) {
+          setPublicKey(other.getPublicKey());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -2346,6 +2386,40 @@ public final class Relay {
       public Builder clearStatus() {
         
         status_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.ByteString publicKey_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>bytes publicKey = 2;</code>
+       * @return The publicKey.
+       */
+      @java.lang.Override
+      public com.google.protobuf.ByteString getPublicKey() {
+        return publicKey_;
+      }
+      /**
+       * <code>bytes publicKey = 2;</code>
+       * @param value The publicKey to set.
+       * @return This builder for chaining.
+       */
+      public Builder setPublicKey(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        publicKey_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>bytes publicKey = 2;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearPublicKey() {
+        
+        publicKey_ = getDefaultInstance().getPublicKey();
         onChanged();
         return this;
       }
@@ -4621,17 +4695,18 @@ public final class Relay {
       "e\022\021\n\talgorithm\030\001 \001(\t\022\021\n\tchallenge\030\002 \001(\014\"" +
       "U\n\021ChallengeResponse\022@\n\tsignature\030\001 \001(\0132" +
       "-.io.opencola.serialization.protobuf.Sig" +
-      "nature\"_\n\024AuthenticationResult\022G\n\006status" +
+      "nature\"r\n\024AuthenticationResult\022G\n\006status" +
       "\030\001 \001(\01627.io.opencola.relay.common.protob" +
-      "uf.AuthenticationStatus\"k\n\006Header\022\021\n\tmes" +
-      "sageId\030\001 \001(\014\022\014\n\004from\030\002 \001(\014\022@\n\tsignature\030" +
-      "\003 \001(\0132-.io.opencola.serialization.protob" +
-      "uf.Signature\"W\n\014RelayMessage\0229\n\006header\030\001" +
-      " \001(\0132).io.opencola.relay.common.protobuf" +
-      ".Header\022\014\n\004body\030\002 \001(\014\"4\n\010Envelope\022\n\n\002to\030" +
-      "\001 \001(\014\022\013\n\003key\030\002 \001(\014\022\017\n\007message\030\003 \001(\014*?\n\024A" +
-      "uthenticationStatus\022\021\n\rAUTHENTICATED\020\000\022\024" +
-      "\n\020FAILED_CHALLENGE\020\001b\006proto3"
+      "uf.AuthenticationStatus\022\021\n\tpublicKey\030\002 \001" +
+      "(\014\"k\n\006Header\022\021\n\tmessageId\030\001 \001(\014\022\014\n\004from\030" +
+      "\002 \001(\014\022@\n\tsignature\030\003 \001(\0132-.io.opencola.s" +
+      "erialization.protobuf.Signature\"W\n\014Relay" +
+      "Message\0229\n\006header\030\001 \001(\0132).io.opencola.re" +
+      "lay.common.protobuf.Header\022\014\n\004body\030\002 \001(\014" +
+      "\"4\n\010Envelope\022\n\n\002to\030\001 \001(\014\022\013\n\003key\030\002 \001(\014\022\017\n" +
+      "\007message\030\003 \001(\014*?\n\024AuthenticationStatus\022\021" +
+      "\n\rAUTHENTICATED\020\000\022\024\n\020FAILED_CHALLENGE\020\001b" +
+      "\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -4661,7 +4736,7 @@ public final class Relay {
     internal_static_io_opencola_relay_common_protobuf_AuthenticationResult_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_relay_common_protobuf_AuthenticationResult_descriptor,
-        new java.lang.String[] { "Status", });
+        new java.lang.String[] { "Status", "PublicKey", });
     internal_static_io_opencola_relay_common_protobuf_Header_descriptor =
       getDescriptor().getMessageTypes().get(4);
     internal_static_io_opencola_relay_common_protobuf_Header_fieldAccessorTable = new

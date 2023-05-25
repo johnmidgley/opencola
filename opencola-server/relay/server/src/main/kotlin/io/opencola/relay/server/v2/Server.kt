@@ -41,7 +41,7 @@ abstract class Server(numChallengeBytes: Int = 32, messageStore: MessageStore = 
             else
                 AuthenticationStatus.FAILED_CHALLENGE
 
-            socketSession.writeSizedByteArray(AuthenticationResult(status).encodeProto())
+            socketSession.writeSizedByteArray(AuthenticationResult(status, keyPair.public).encodeProto())
 
             if (status != AuthenticationStatus.AUTHENTICATED)
                 throw RuntimeException("$id failed to authenticate: $status")

@@ -14,7 +14,7 @@ class MemoryMessageStore(private val maxStoredBytesPerConnection: Long = 1024 * 
         return messages.sumOf { it.message.size.toLong() }
     }
 
-    // TODO: Shouldn't store messages without key. Message bytes will change if we re-encrypt, so not stable for
+    // TODO: Shouldn't store messages that don't have key. Message bytes will change if we re-encrypt, so not stable for
     //  duplicate detection.
     override fun addMessage(envelope: Envelope) {
         logger.info { "Adding message to store: $envelope" }
