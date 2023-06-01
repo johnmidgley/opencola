@@ -11,7 +11,6 @@ import java.io.OutputStream
 enum class PeerEvent {
     Added,
     Online,
-    NewTransaction
 }
 
 @Serializable
