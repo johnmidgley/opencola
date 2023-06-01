@@ -124,7 +124,7 @@ class MainReactor(
 
         if (persona != null) {
             // Transaction originated locally, so inform peers
-            networkNode.broadcastMessage(persona, PutTransactionMessage(event.data))
+            networkNode.broadcastMessage(persona, PutTransactionMessage(signedTransaction))
         }
     }
 

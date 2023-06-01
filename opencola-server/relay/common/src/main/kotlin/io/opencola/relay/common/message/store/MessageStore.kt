@@ -4,7 +4,7 @@ import io.opencola.relay.common.message.Envelope
 import java.security.PublicKey
 
 interface MessageStore {
-    fun addMessage(envelope: Envelope)
-    fun getMessages(to: PublicKey): Sequence<Envelope>
-    fun removeMessage(envelope: Envelope)
+    fun addMessage(from: PublicKey, envelope: Envelope)
+    fun getMessages(to: PublicKey): Sequence<StoredMessage>
+    fun removeMessage(storedMessage: StoredMessage)
 }

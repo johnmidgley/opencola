@@ -70,7 +70,7 @@ fun getTransactionsRoute(entityStore: EntityStore): Route {
         signedTransactions.map {
             --pendingTransactions
             PutTransactionMessage(
-                it.encodeProto(),
+                it,
                 if (pendingTransactions == 0 && it.transaction.id != lastTransactionId) lastTransactionId else null
             )
         }

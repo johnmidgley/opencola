@@ -9,6 +9,7 @@ import io.opencola.relay.client.v1.WebSocketClient as WebSocketClientV1
 import io.opencola.relay.client.v2.WebSocketClient as WebSocketClientV2
 import io.opencola.relay.common.defaultOCRPort
 import io.opencola.relay.common.State
+import io.opencola.relay.common.message.MessageKey
 import io.opencola.relay.server.startWebServer
 import io.opencola.util.append
 import io.opencola.relay.server.v1.WebSocketRelayServer as WebSocketRelayServerV1
@@ -55,7 +56,7 @@ class ConnectionTest {
         keyPair: KeyPair = generateKeyPair(),
         requestTimeoutInMilliseconds: Long = 5000,
     ): AbstractClient {
-        return when(clientType) {
+        return when (clientType) {
             ClientType.V1 -> WebSocketClientV1(relayServerUri, keyPair, name, requestTimeoutInMilliseconds)
             ClientType.V2 -> WebSocketClientV2(relayServerUri, keyPair, name, requestTimeoutInMilliseconds)
         }
@@ -77,7 +78,7 @@ class ConnectionTest {
             try {
                 server = RelayServer().also { it.start() }
                 val result = CompletableDeferred<ByteArray>()
-                client0 = getClient(clientType,"client0").also {
+                client0 = getClient(clientType, "client0").also {
                     launch {
                         it.open { _, message ->
                             result.complete(message)
@@ -92,14 +93,14 @@ class ConnectionTest {
                             it.open { from, message ->
                                 assertEquals(client0.publicKey, from)
                                 val response = message.append(" client1".toByteArray())
-                                it.sendMessage(from, response)
+                                it.sendMessage(from, MessageKey.unique(), response)
                             }
                         }
 
                         it.waitUntilOpen()
                     }
 
-                client0.sendMessage(client1.publicKey, "hello".toByteArray())
+                client0.sendMessage(client1.publicKey, MessageKey.unique(), "hello".toByteArray())
                 withTimeout(3000) { assertEquals("hello client1", String(result.await())) }
             } finally {
                 println("Closing resources")
@@ -110,12 +111,12 @@ class ConnectionTest {
     }
 
     @Test
-    fun testSendResponseV1(){
+    fun testSendResponseV1() {
         testSendResponse(ClientType.V1)
     }
 
     @Test
-    fun testSendResponseV2(){
+    fun testSendResponseV2() {
         testSendResponse(ClientType.V2)
     }
 
@@ -128,7 +129,7 @@ class ConnectionTest {
 
             try {
                 val result = CompletableDeferred<ByteArray>()
-                client0 = getClient(clientType,"client0").also { launch { open(it) } }
+                client0 = getClient(clientType, "client0").also { launch { open(it) } }
 
                 // Give the client a chance to have a failed connection attempt
                 delay(100)
@@ -138,7 +139,7 @@ class ConnectionTest {
                 server = RelayServer().also { it.start() }
 
                 println("Waiting for client0 to open")
-                client1 = getClient(clientType,"client1")
+                client1 = getClient(clientType, "client1")
                     .also {
                         launch {
                             it.open { _, message ->
@@ -149,7 +150,7 @@ class ConnectionTest {
                     }
 
                 println("Sending message")
-                client0.sendMessage(client1.publicKey, "hello".toByteArray())
+                client0.sendMessage(client1.publicKey, MessageKey.unique(), "hello".toByteArray())
                 assertEquals("hello client1", String(result.await()))
             } finally {
                 client0?.close()
@@ -179,8 +180,8 @@ class ConnectionTest {
 
             try {
                 server0 = RelayServer().also { it.start() }
-                client0 = getClient(clientType,"client0").also { launch { open(it) }; it.waitUntilOpen() }
-                client1 = getClient(clientType,"client1")
+                client0 = getClient(clientType, "client0").also { launch { open(it) }; it.waitUntilOpen() }
+                client1 = getClient(clientType, "client1")
                     .also {
                         launch {
                             it.open { _, message ->
@@ -190,14 +191,20 @@ class ConnectionTest {
                         it.waitUntilOpen()
                     }
 
-                client0.sendMessage(client1.publicKey, "hello1".toByteArray())
+                client0.sendMessage(client1.publicKey, MessageKey.unique(), "hello1".toByteArray())
                 assertEquals("hello1 client1", String(results.receive()))
 
                 println("Stopping relay server")
                 server0.stop()
 
                 println("Sending message to client1")
-                assertFailsWith<ConnectException> { client0.sendMessage(client1.publicKey, "hello".toByteArray()) }
+                assertFailsWith<ConnectException> {
+                    client0.sendMessage(
+                        client1.publicKey,
+                        MessageKey.unique(),
+                        "hello".toByteArray()
+                    )
+                }
 
                 println("Starting relay server again")
                 StdoutMonitor(readTimeoutMilliseconds = 3000).use { stdoutMonitor ->
@@ -212,7 +219,7 @@ class ConnectionTest {
                 }
 
                 println("Sending message to client1")
-                client0.sendMessage(client1.publicKey, "hello2".toByteArray())
+                client0.sendMessage(client1.publicKey, MessageKey.unique(), "hello2".toByteArray())
                 withTimeout(3000) {
                     assertEquals("hello2 client1", String(results.receive()))
                 }
@@ -253,7 +260,7 @@ class ConnectionTest {
                     requestTimeoutInMilliseconds = 500
                 ).also { launch { open(it) }; it.waitUntilOpen() }
                 val client1KeyPair = generateKeyPair()
-                client1 = getClient(ClientType.V1,"client1", client1KeyPair)
+                client1 = getClient(ClientType.V1, "client1", client1KeyPair)
                     .also {
                         launch {
                             it.open { _, message ->
@@ -264,7 +271,7 @@ class ConnectionTest {
                     }
 
                 println("Sending message")
-                client0.sendMessage(client1.publicKey, "hello1".toByteArray())
+                client0.sendMessage(client1.publicKey, MessageKey.unique(), "hello1".toByteArray())
                 withTimeout(1000) { assertEquals("hello1 client1", String(results.receive())) }
 
                 println("Partitioning client")
@@ -272,12 +279,12 @@ class ConnectionTest {
 
                 println("Verifying partition")
                 StdoutMonitor(readTimeoutMilliseconds = 3000).use {
-                    client0.sendMessage(client1.publicKey, "hello".toByteArray())
+                    client0.sendMessage(client1.publicKey, MessageKey.unique(), "hello".toByteArray())
                     it.waitUntil("no connection to receiver")
                 }
 
                 println("Rejoining client")
-                client1Rejoin = getClient(ClientType.V1,"client1", client1KeyPair)
+                client1Rejoin = getClient(ClientType.V1, "client1", client1KeyPair)
                     .also {
                         launch {
                             it.open { _, message ->
@@ -288,7 +295,7 @@ class ConnectionTest {
                     }
 
                 println("Verifying rejoin")
-                client0.sendMessage(client1.publicKey, "hello2".toByteArray())
+                client0.sendMessage(client1.publicKey, MessageKey.unique(), "hello2".toByteArray())
                 assertEquals("hello2 client1", String(results.receive()))
             } finally {
                 println("Closing resources")
@@ -318,7 +325,7 @@ class ConnectionTest {
                     requestTimeoutInMilliseconds = 500
                 ).also { launch { open(it) }; it.waitUntilOpen() }
                 val client1KeyPair = generateKeyPair()
-                client1 = getClient(ClientType.V2,"client1", client1KeyPair)
+                client1 = getClient(ClientType.V2, "client1", client1KeyPair)
                     .also {
                         launch {
                             it.open { _, message ->
@@ -329,7 +336,7 @@ class ConnectionTest {
                     }
 
                 println("Sending message")
-                client0.sendMessage(client1.publicKey, "hello1".toByteArray())
+                client0.sendMessage(client1.publicKey, MessageKey.unique(), "hello1".toByteArray())
                 withTimeout(1000) { assertEquals("hello1 client1", String(results.receive())) }
 
                 println("Partitioning client")
@@ -337,12 +344,12 @@ class ConnectionTest {
 
                 println("Verifying partition")
                 StdoutMonitor(readTimeoutMilliseconds = 3000).use {
-                    client0.sendMessage(client1.publicKey, "hello".toByteArray())
+                    client0.sendMessage(client1.publicKey, MessageKey.unique(), "hello".toByteArray())
                     it.waitUntil("no connection to receiver")
                 }
 
                 println("Rejoining client")
-                client1Rejoin = getClient(ClientType.V2,"client1", client1KeyPair)
+                client1Rejoin = getClient(ClientType.V2, "client1", client1KeyPair)
                     .also {
                         launch {
                             it.open { _, message ->
@@ -353,7 +360,7 @@ class ConnectionTest {
                     }
 
                 println("Verifying rejoin (stored message + new one)")
-                client0.sendMessage(client1.publicKey, "hello2".toByteArray())
+                client0.sendMessage(client1.publicKey, MessageKey.unique(), "hello2".toByteArray())
                 assertEquals("hello client1", String(results.receive()))
                 assertEquals("hello2 client1", String(results.receive()))
             } finally {
@@ -403,7 +410,11 @@ class ConnectionTest {
 
                             UUID.randomUUID().let {
                                 results[it] = CompletableDeferred()
-                                sendClient.sendMessage(receiveClient.publicKey, it.toString().toByteArray())
+                                sendClient.sendMessage(
+                                    receiveClient.publicKey,
+                                    MessageKey.unique(),
+                                    it.toString().toByteArray()
+                                )
                             }
                         }
                     }
@@ -438,7 +449,7 @@ class ConnectionTest {
             try {
                 assertFails {
                     runBlocking {
-                        client = getClient(clientType,"client0").also { launch { open(it) } }
+                        client = getClient(clientType, "client0").also { launch { open(it) } }
                         open(client!!)
                     }
                 }
@@ -468,13 +479,13 @@ class ConnectionTest {
                 "client0",
                 requestTimeoutInMilliseconds = 30000
             ).also { launch { open(it) }; it.waitUntilOpen() }
-            val client1 = getClient(clientType,"client1").also { launch { open(it) }; it.waitUntilOpen() }
+            val client1 = getClient(clientType, "client1").also { launch { open(it) }; it.waitUntilOpen() }
             val data = ByteArray(1024 * 1024)
 
             try {
                 (0..1).forEach { _ ->
                     val startTime = System.currentTimeMillis()
-                    val response = client0.sendMessage(client1.publicKey, data)
+                    val response = client0.sendMessage(client1.publicKey, MessageKey.unique(), data)
                     val elapsedTime = System.currentTimeMillis() - startTime
                     println("Elapsed time: ${elapsedTime / 1000}")
                     assertNotNull(response)

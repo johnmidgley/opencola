@@ -32,7 +32,7 @@ class HttpNetworkProviderTest {
         try {
             runBlocking {
                 val deferredResult = CompletableDeferred<String>()
-                networkProvider.setMessageHandler { fromId, toId, signedMessage ->
+                networkProvider.setMessageHandler { _, _, signedMessage ->
                     val message = signedMessage.body
                     when (message.type) {
                         PingMessage.messageType -> {

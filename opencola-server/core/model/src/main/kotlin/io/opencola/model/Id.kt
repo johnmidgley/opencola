@@ -21,16 +21,16 @@ data class Id(private val bytes: ByteArray) : Comparable<Id> {
         assert(bytes.size == lengthInBytes) { "Invalid id - size = ${bytes.size} but should be $lengthInBytes" }
     }
 
-    fun encode(): String {
-        return Base58.encode(bytes)
+    fun encoded(): ByteArray {
+        return bytes
     }
 
-    fun legacyEncode() : String {
+    fun legacyEncodeToString() : String {
         return bytes.toHexString()
     }
 
     override fun toString(): String {
-        return encode()
+        return Base58.encode(bytes)
     }
 
     // Add tests for hashcode and equals for all domain objects

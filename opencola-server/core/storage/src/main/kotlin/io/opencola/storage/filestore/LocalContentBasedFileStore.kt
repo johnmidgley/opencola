@@ -32,7 +32,7 @@ class LocalContentBasedFileStore(private val root: Path) : ContentBasedFileStore
 
         if(!createDirectory && !path.exists()){
             // This is a read, so check by legacy hex id, and move if exists
-            val legacyPath = getPath(dataId.legacyEncode())
+            val legacyPath = getPath(dataId.legacyEncodeToString())
             if(legacyPath.exists())
                 legacyPath.moveTo(getPath(dataIdString, true))
         }

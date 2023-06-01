@@ -2,11 +2,13 @@ package io.opencola.network.message
 
 import com.google.protobuf.GeneratedMessageV3
 import io.opencola.model.Id
+import io.opencola.relay.common.message.MessageKey
 import io.opencola.serialization.protobuf.ProtoSerializable
 import io.opencola.serialization.protobuf.Message as Proto
 
-class GetTransactionsMessage(val mostRecentTransactionId: Id?, val maxTransactions: Int = 10) : Message(messageType) {
-    // TODO: Companion objects should be moved to top of class
+class GetTransactionsMessage(val mostRecentTransactionId: Id?, val maxTransactions: Int = 10) :
+    Message(messageType, MessageKey.of("GetTxns")) {
+
     companion object : ProtoSerializable<GetTransactionsMessage, Proto.GetTransactionsMessage> {
         val messageType = "GetTxns"
         override fun toProto(value: GetTransactionsMessage): Proto.GetTransactionsMessage {
@@ -20,7 +22,7 @@ class GetTransactionsMessage(val mostRecentTransactionId: Id?, val maxTransactio
         }
 
         override fun fromProto(value: Proto.GetTransactionsMessage): GetTransactionsMessage {
-            val id = if(value.hasMostRecentTransactionId()) Id.fromProto(value.mostRecentTransactionId) else null
+            val id = if (value.hasMostRecentTransactionId()) Id.fromProto(value.mostRecentTransactionId) else null
             return GetTransactionsMessage(id, value.maxTransactions)
         }
 

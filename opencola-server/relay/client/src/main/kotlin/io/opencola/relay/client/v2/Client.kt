@@ -39,8 +39,8 @@ abstract class Client(
         logger.debug { "Authenticated" }
     }
 
-    override fun getEncodeEnvelope(to: PublicKey, message: Message): ByteArray {
-        return Envelope(to, null, encrypt(to, message.encodeProto()).encodeProto()).encodeProto()
+    override fun getEncodeEnvelope(to: PublicKey, key: MessageKey, message: Message): ByteArray {
+        return Envelope(to, key, encrypt(to, message.encodeProto()).encodeProto()).encodeProto()
     }
 
     override fun decodePayload(payload: ByteArray): Message {

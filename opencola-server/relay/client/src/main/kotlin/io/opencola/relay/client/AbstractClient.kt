@@ -7,6 +7,7 @@ import io.opencola.relay.common.connection.Connection
 import io.opencola.relay.common.State.*
 import io.opencola.relay.common.connection.SocketSession
 import io.opencola.relay.common.message.Message
+import io.opencola.relay.common.message.MessageKey
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -42,7 +43,7 @@ abstract class AbstractClient(
     }
 
     abstract suspend fun getSocketSession(): SocketSession
-    protected abstract fun getEncodeEnvelope(to: PublicKey, message: Message): ByteArray
+    protected abstract fun getEncodeEnvelope(to: PublicKey, key: MessageKey, message: Message): ByteArray
     protected abstract fun decodePayload(payload: ByteArray): Message
     protected abstract suspend fun authenticate(socketSession: SocketSession)
 
@@ -123,13 +124,13 @@ abstract class AbstractClient(
         }
     }
 
-    override suspend fun sendMessage(to: PublicKey, body: ByteArray) {
+    override suspend fun sendMessage(to: PublicKey, key: MessageKey, body: ByteArray) {
         val message = Message(keyPair, body)
         try {
             // TODO: Should there be a limit on the size of messages?
             logger.info { "Sending message: ${message.header}" }
             withTimeout(requestTimeoutMilliseconds) {
-                getConnection().writeSizedByteArray(getEncodeEnvelope(to, Message(keyPair, body)))
+                getConnection().writeSizedByteArray(getEncodeEnvelope(to, key, Message(keyPair, body)))
             }
         } catch (e: ConnectException) {
             // Pass exception through so caller knows message wasn't sent

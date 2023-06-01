@@ -269,13 +269,15 @@ class NetworkNodeTest {
         // Check that add all but last transaction in reverse order doesn't add any transactions to DB
         (9 downTo 1)
             .forEach {
-                val message = PutTransactionMessage(signedTransactions[it].encodeProto()).toUnsignedMessage()
+                val tx = signedTransactions[it]
+                val message = PutTransactionMessage(tx).toUnsignedMessage()
                 networkNodeContext.handleMessage(peer, networkNodeContext.persona.entityId, message)
                 assertEquals(0, networkNodeContext.entityStore.getAllSignedTransactions().count())
             }
 
         // Add last transaction (first in id order) and check that all other transactions are added
-        val message = PutTransactionMessage(signedTransactions[0].encodeProto()).toUnsignedMessage()
+        val tx0 = signedTransactions[0]
+        val message = PutTransactionMessage(tx0).toUnsignedMessage()
         networkNodeContext.handleMessage(peer, networkNodeContext.persona.entityId, message)
         val allSignedTransactions = networkNodeContext.entityStore.getAllSignedTransactions().toList()
         assertEquals(10, allSignedTransactions.count())

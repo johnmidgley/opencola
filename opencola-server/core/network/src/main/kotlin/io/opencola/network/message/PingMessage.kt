@@ -1,6 +1,8 @@
 package io.opencola.network.message
 
-class PingMessage : UnsignedMessage(messageType, ByteArray(0)) {
+import io.opencola.relay.common.message.MessageKey
+
+class PingMessage : UnsignedMessage(messageType, MessageKey.none, ByteArray(0)) {
     companion object {
         const val messageType = "Ping"
     }

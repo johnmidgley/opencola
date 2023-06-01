@@ -2,10 +2,11 @@ package io.opencola.network.message
 
 import com.google.protobuf.ByteString
 import io.opencola.model.Id
+import io.opencola.relay.common.message.MessageKey
 import io.opencola.serialization.protobuf.Message as Proto
 import io.opencola.serialization.protobuf.ProtoSerializable
 
-class PutDataMessage(val id: Id, val data: ByteArray) : Message(messageType) {
+class PutDataMessage(val id: Id, val data: ByteArray) : Message(messageType, MessageKey.of(id)) {
     companion object : ProtoSerializable<PutDataMessage, Proto.PutDataMessage>  {
         const val messageType = "PutData"
 

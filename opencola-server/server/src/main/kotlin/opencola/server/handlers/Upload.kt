@@ -48,5 +48,5 @@ suspend fun handleUpload(
 ): UploadItems {
     val dataEntities = getDataEntities(entityStore, fileStore, personaId, multipart)
     entityStore.updateEntities(*dataEntities.toTypedArray())
-    return UploadItems(dataEntities.map { UploadItem(it.entityId.encode(), it.name, it.mimeType) })
+    return UploadItems(dataEntities.map { UploadItem(it.entityId.toString(), it.name, it.mimeType) })
 }

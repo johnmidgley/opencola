@@ -9,28 +9,27 @@ import io.opencola.serialization.StreamSerializer
 import io.opencola.serialization.protobuf.ProtoSerializable
 import io.opencola.serialization.readByteArray
 import io.opencola.serialization.writeByteArray
-import io.opencola.util.Base58
 import java.io.InputStream
 import java.io.OutputStream
 import java.security.PublicKey
 
-class Envelope(val to: PublicKey, val key: ByteArray?, val message: ByteArray) {
+class Envelope(val to: PublicKey, val key: MessageKey, val message: ByteArray) {
     override fun toString(): String {
-        return "Envelope(to=${Id.ofPublicKey(to)}, key=${key?.let { Base58.encode(key) } ?: "null"}, message=${message.size} bytes)"
+        return "Envelope(to=${Id.ofPublicKey(to)}, key=$key, message=${message.size} bytes)"
     }
 
     override fun equals(other: Any?): Boolean {
         if (other !is Envelope) return false
         if (to != other.to) return false
-        if (key == null && other.key != null) return false
-        if (key != null && other.key == null) return false
-        if (key != null && !key.contentEquals(other.key)) return false
+        if (key == MessageKey.none && other.key != MessageKey.none) return false
+        if (key != MessageKey.none && other.key == MessageKey.none) return false
+        if (key != MessageKey.none && key != other.key) return false
         return message.contentEquals(other.message)
     }
 
     override fun hashCode(): Int {
         var result = to.hashCode()
-        result = 31 * result + (key?.contentHashCode() ?: 0)
+        result = 31 * result + (key.hashCode())
         result = 31 * result + message.contentHashCode()
         return result
     }
@@ -56,7 +55,7 @@ class Envelope(val to: PublicKey, val key: ByteArray?, val message: ByteArray) {
         override fun decode(stream: InputStream): Envelope {
             return Envelope(
                 publicKeyFromBytes(stream.readByteArray()),
-                null,
+                MessageKey.none,
                 stream.readByteArray()
             )
         }
@@ -64,7 +63,7 @@ class Envelope(val to: PublicKey, val key: ByteArray?, val message: ByteArray) {
         override fun toProto(value: Envelope): Proto.Envelope {
             return Proto.Envelope.newBuilder()
                 .setTo(ByteString.copyFrom(value.to.encoded))
-                .also {if (value.key != null) it.setKey(ByteString.copyFrom(value.key)) }
+                .also {if (value.key.value != null) it.setKey(ByteString.copyFrom(value.key.value)) }
                 .setMessage(ByteString.copyFrom(value.message))
                 .build()
         }
@@ -72,7 +71,7 @@ class Envelope(val to: PublicKey, val key: ByteArray?, val message: ByteArray) {
         override fun fromProto(value: Proto.Envelope): Envelope {
             return Envelope(
                 publicKeyFromBytes(value.to.toByteArray()),
-                if (value.key.isEmpty) null else value.key.toByteArray(),
+                if (value.key.isEmpty) MessageKey.none else MessageKey.ofEncoded(value.key.toByteArray()),
                 value.message.toByteArray()
             )
         }

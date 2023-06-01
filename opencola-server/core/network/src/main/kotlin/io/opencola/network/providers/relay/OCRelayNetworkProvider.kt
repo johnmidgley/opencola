@@ -208,7 +208,7 @@ class OCRelayNetworkProvider(
             try {
                 val envelopeBytes = getEncodedEnvelope(from.entityId, to.entityId, signedMessage, false)
                 val client = connections[connectionParams]!!.client
-                client.sendMessage(peerPublicKey, envelopeBytes)
+                client.sendMessage(peerPublicKey, signedMessage.body.key, envelopeBytes)
             } catch (e: Exception) {
                 logger.error { "sendMessage: $e" }
             }

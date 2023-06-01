@@ -48,7 +48,7 @@ abstract class AbstractRelayServer(
             try {
                 // Send any stored messages
                 messageStore?.getMessages(publicKey)?.forEach {
-                    connection.writeSizedByteArray(it.message)
+                    connection.writeSizedByteArray(it.envelope.message)
                     messageStore.removeMessage(it)
                 }
 
@@ -91,8 +91,8 @@ abstract class AbstractRelayServer(
             logger.error { "Error while handling message from $fromId: $e" }
         } finally {
             try {
-                if (!messageDelivered && envelope != null)
-                    messageStore?.addMessage(envelope)
+                if (!messageDelivered && envelope?.key != null)
+                    messageStore?.addMessage(from, envelope)
             } catch (e: Exception) {
                 logger.error { "Error while storing message $envelope: $e" }
             }

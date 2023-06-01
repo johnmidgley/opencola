@@ -3,6 +3,7 @@ val kotlinxCoroutinesVersion: String by project
 val ktorVersion: String by project
 val kotlinLoggingVersion:String by project
 val protobufVersion: String by project
+val logbackVersion: String by project
 
 plugins {
     kotlin("jvm") version "1.7.20"
@@ -30,4 +31,5 @@ dependencies {
     implementation("io.ktor:ktor-server-websockets-jvm:$ktorVersion")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
+    testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
 }
