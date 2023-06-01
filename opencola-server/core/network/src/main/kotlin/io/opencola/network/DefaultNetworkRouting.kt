@@ -1,12 +1,9 @@
 package io.opencola.network
 
-import io.opencola.event.EventBus
-import io.opencola.event.Events
 import io.opencola.model.DataEntity
 import io.opencola.model.Id
 import io.opencola.network.NetworkNode.*
 import io.opencola.network.message.*
-import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.entitystore.EntityStore
 import io.opencola.storage.filestore.ContentBasedFileStore
 import mu.KotlinLogging
@@ -14,19 +11,6 @@ import org.kodein.di.DirectDI
 import org.kodein.di.instance
 
 private val logger = KotlinLogging.logger("RequestRouting")
-
-// TODO - This should change to handlePeerEvent
-fun handleNotification(addressBook: AddressBook, eventBus: EventBus, fromId: Id, toId: Id, notification: Notification) {
-    logger.info { "Received notification: $notification" }
-
-    if (notification.peerId != fromId)
-        throw IllegalArgumentException("Notification peerId does not match fromId: ${notification.peerId} != $fromId")
-
-    addressBook.getEntry(toId, fromId)
-        ?: throw IllegalArgumentException("Received notification from unknown peer: ${notification.peerId} for $toId")
-
-    eventBus.sendMessage(Events.PeerNotification.toString(), notification.encode())
-}
 
 fun handleGetData(fileStore: ContentBasedFileStore, dataId: Id): ByteArray? {
     return fileStore.read(dataId)
@@ -38,13 +22,6 @@ fun pingRoute(): Route {
 
 fun pongRoute(handler: messageHandler = { _, _, _ -> emptyList() }): Route {
     return Route(PongMessage.messageType, handler)
-}
-
-fun putNotificationsRoute(): Route {
-    return Route("notifications") { _, _, _ ->
-        TODO("handle notifications")
-//        handleNotification(addressBook, eventBus, from, to, notification)
-    }
 }
 
 fun getTransactionsRoute(entityStore: EntityStore): Route {
@@ -136,7 +113,6 @@ fun getDefaultRoutes(
     return listOf(
         pingRoute(),
         pongRoute(),
-        putNotificationsRoute(),
         getTransactionsRoute(entityStore),
         putTransactionsRoute(entityStore),
         getDataRoute(entityStore, contentBasedFileStore),
