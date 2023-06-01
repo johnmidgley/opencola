@@ -6,7 +6,9 @@ import io.opencola.relay.common.connection.Connection
 import io.opencola.relay.common.message.Envelope
 import io.opencola.relay.common.connection.SocketSession
 import io.opencola.relay.common.State.*
+import io.opencola.relay.common.message.store.MemoryMessageStore
 import io.opencola.relay.common.message.store.MessageStore
+import io.opencola.relay.common.message.store.Usage
 import io.opencola.security.generateKeyPair
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
@@ -34,6 +36,10 @@ abstract class AbstractRelayServer(
 
     suspend fun connectionStates() : List<Pair<String, Boolean>> {
         return connections.map { Pair(Id.ofPublicKey(it.key).toString(), it.value.isReady()) }
+    }
+
+    fun getUsage() : Sequence<Usage> {
+       return (messageStore as? MemoryMessageStore)?.getUsage() ?: emptySequence()
     }
 
     protected abstract suspend fun authenticate(socketSession: SocketSession): PublicKey?

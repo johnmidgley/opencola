@@ -8,7 +8,9 @@ import java.security.PublicKey
 
 class MessageQueue(private val maxStoredBytes: Int) {
     private val logger = KotlinLogging.logger("MessageQueue")
-    private var bytesStored = 0
+    var bytesStored: Int = 0
+        private set
+
     private val storedMessages = mutableListOf<StoredMessage>()
 
     fun addMessage(from: PublicKey, envelope: Envelope) {

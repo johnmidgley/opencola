@@ -5,7 +5,9 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
+import io.opencola.model.Id
 import io.opencola.relay.common.connection.WebSocketSessionWrapper
+import io.opencola.relay.common.message.store.Usage
 import io.opencola.relay.server.v1.WebSocketRelayServer as WebSocketRelayServerV1
 import io.opencola.relay.server.v2.WebSocketRelayServer as WebSocketRelayServerV2
 
@@ -16,6 +18,11 @@ fun elapsedTime(startTime: Long): Long {
 fun connectionsString(connectionStates: List<Pair<String, Boolean>>): String {
     val states = connectionStates.joinToString("\n") { "${it.first} - ${if (it.second) "Ready" else "Not Ready"}" }
     return "Connections (${connectionStates.count()})\n\n$states"
+}
+
+fun usageString(usages: Sequence<Usage>): String {
+    val usage = usages.joinToString("\n") { "${Id.ofPublicKey(it.receiver)} - ${it.bytesStored}" }
+    return "Usage (${usages.count()})\n\n$usage"
 }
 
 fun Application.configureRouting(webSocketRelayServerV1: WebSocketRelayServerV1, webSocketRelayServerV2: WebSocketRelayServerV2) {
@@ -30,6 +37,10 @@ fun Application.configureRouting(webSocketRelayServerV1: WebSocketRelayServerV1,
 
         get("/v2/connections") {
             call.respondText(connectionsString(webSocketRelayServerV2.connectionStates()))
+        }
+
+        get("/v2/usage") {
+            call.respondText(usageString(webSocketRelayServerV2.getUsage()))
         }
 
         webSocket("/relay") {
