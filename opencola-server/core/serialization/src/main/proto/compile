@@ -8,7 +8,8 @@ fi
 
 # function to generate proto
 function generate_proto() {
-    protoc --java_out=../java $1
+  echo "Generating $1"
+    protoc --java_out=../java "$@"
 
     # Check error code
     if [ $? -ne 0 ]; then
@@ -22,7 +23,8 @@ function generate_proto() {
 # Get *.proto files
 proto_files=$(find . -name "*.proto")
 
+
 # Generate proto files
 for file in $proto_files; do
-    generate_proto $file
+    generate_proto $file "$@"
 done

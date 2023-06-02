@@ -21,7 +21,12 @@ sudo ldconfig # refresh shared library cache
 ```
 
 # Compile the Schema
+
 > NOTE: The kotlin DSL doesn't seem to work out of the box. Looks like it's an old issue that should have been closed.
+
+You should copy the compile file and compile from the directory containing the proto files, 
+which should be in ```src/main/proto```. The output directory is relative to the proto file location.
+
 ```
 protoc  --java_out=../../../../  model.proto
 ```
