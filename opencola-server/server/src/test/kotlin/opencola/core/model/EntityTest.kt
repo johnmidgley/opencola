@@ -8,7 +8,7 @@ import kotlin.test.*
 
 class EntityTest {
     @Test
-    fun testAuthorityEntity(){
+    fun testAuthorityEntity() {
         val uri = URI("opencola://12345")
         val imageUri = URI("http://images/123456")
         val name = "name"
@@ -20,7 +20,7 @@ class EntityTest {
         val rating = .37F
         val networkToken = "networkToken".toByteArray()
 
-        val entity = Authority(publicKey, URI("https://authority"), "Name" )
+        val entity = Authority(publicKey, URI("https://authority"), "Name")
         entity.uri = uri
         assertEquals(uri, entity.uri)
 
@@ -56,13 +56,13 @@ class EntityTest {
     }
 
     @Test
-    fun testComments(){
+    fun testComments() {
         val authorityId = Id.ofData("".toByteArray())
         val entity = ResourceEntity(authorityId, URI("https://test.com"))
         val comment1 = CommentEntity(authorityId, entity.entityId, "comment1")
 
-        entity.commitFacts(0,0)
-        val comment1Facts = comment1.commitFacts(1,1)
+        entity.commitFacts(0, 0)
+        val comment1Facts = comment1.commitFacts(1, 1)
         assertEquals(comment1.authorityId, authorityId)
         assertEquals(comment1.text, "comment1")
 
@@ -75,7 +75,7 @@ class EntityTest {
     }
 
     @Test
-    fun testAttachments(){
+    fun testAttachments() {
         val authorityId = Id.ofData("".toByteArray())
         val entity = ResourceEntity(authorityId, URI("https://test.com"))
 
@@ -90,11 +90,11 @@ class EntityTest {
     }
 
     @Test
-    fun testSettingSameValue(){
+    fun testSettingSameValue() {
         val uri = URI("opencola://test-resource")
         val entity = ResourceEntity(Id.ofUri(uri), uri)
 
-        assertEquals(1, entity.getAllFacts().filter{ it.attribute == CoreAttribute.Uri.spec}.size)
+        assertEquals(1, entity.getAllFacts().filter { it.attribute == CoreAttribute.Uri.spec }.size)
         assertFails { entity.uri = URI("opencola://different-uri") }
 
         // val authority = TestApplication.instance.getPersonas().first()

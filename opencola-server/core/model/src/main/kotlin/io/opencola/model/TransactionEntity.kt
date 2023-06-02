@@ -36,7 +36,7 @@ data class TransactionEntity(val entityId: Id, val facts: List<TransactionFact>)
         override fun fromProto(value: Proto.TransactionEntity): TransactionEntity {
             return TransactionEntity(
                 Id.fromProto(value.entityId),
-                value.factsList.map { TransactionFact.fromProto(it) }
+                value.factsList.mapNotNull { TransactionFact.fromProto(it) }
             )
         }
 

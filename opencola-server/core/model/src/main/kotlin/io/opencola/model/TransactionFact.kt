@@ -12,9 +12,11 @@ import java.io.OutputStream
 
 // @Serializable
 data class TransactionFact(val attribute: Attribute, val value: Value<Any>, val operation: Operation) {
+    fun toProto() = Factory.toProto(this)
+
     companion object Factory :
         StreamSerializer<TransactionFact>,
-        ProtoSerializable<TransactionFact, Proto.TransactionFact> {
+        ProtoSerializable<TransactionFact?, Proto.TransactionFact> {
         fun fromFact(fact: Fact): TransactionFact {
             return TransactionFact(fact.attribute, fact.value, fact.operation)
         }
@@ -35,7 +37,8 @@ data class TransactionFact(val attribute: Attribute, val value: Value<Any>, val 
         }
 
 
-        override fun toProto(value: TransactionFact): Proto.TransactionFact {
+        override fun toProto(value: TransactionFact?): Proto.TransactionFact {
+            require(value != null)
             return Proto.TransactionFact.newBuilder()
                 .setAttribute(Attribute.toProto(value.attribute))
                 .setValue(
@@ -48,8 +51,9 @@ data class TransactionFact(val attribute: Attribute, val value: Value<Any>, val 
                 .build()
         }
 
-        override fun fromProto(value: Proto.TransactionFact): TransactionFact {
-            val attribute = Attribute.fromProto(value.attribute)
+        override fun fromProto(value: Proto.TransactionFact): TransactionFact? {
+            val attribute = Attribute.fromProto(value.attribute) ?: return null
+
             val valueWrapper = attribute.valueWrapper
             val wrappedValue =
                 if (value.value.ocType == Proto.OCType.EMPTY)

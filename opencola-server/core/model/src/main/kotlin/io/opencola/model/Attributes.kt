@@ -7,6 +7,10 @@ import java.net.URI
 object Attributes {
     private val attributesByName = CoreAttribute.values().associateBy { it.spec.name }
 
+    fun getAttributeByOrdinal(ordinal: Int): Attribute? {
+        return CoreAttribute.values().getOrNull(ordinal)?.spec
+    }
+
     fun getAttributeByName(name: String): Attribute? {
         return attributesByName[name]?.spec
     }

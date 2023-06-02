@@ -10,6 +10,9 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import io.opencola.serialization.StreamSerializer
+import io.opencola.serialization.protobuf.Model
+import io.opencola.serialization.protobuf.ProtoSerializable
+import mu.KotlinLogging
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI
@@ -33,7 +36,9 @@ data class Attribute(
     constructor(uri: URI, type: AttributeType, valueWrapper: ValueWrapper<Any>, isIndexable: Boolean, computeFacts: ((Iterable<Fact>) -> Iterable<Fact>)? = null) :
             this(uri.path.split("/").last(), uri, type, valueWrapper, isIndexable, computeFacts)
 
-    companion object Factory : StreamSerializer<Attribute> {
+    companion object : StreamSerializer<Attribute>, ProtoSerializable<Attribute?, ProtoModel.Attribute> {
+        private val logger = KotlinLogging.logger("Attribute")
+
         override fun encode(stream: OutputStream, value: Attribute) {
             val ordinal = Attributes.getAttributeOrdinal(value)
                 ?: throw NotImplementedError("Attempt to encode Attribute not in Attributes enum: ${value.uri}")
@@ -45,26 +50,37 @@ data class Attribute(
             return CoreAttribute.values()[ordinal].spec
         }
 
-        fun toProto(attribute: Attribute): ProtoModel.Attribute {
+        override fun toProto(value: Attribute?): ProtoModel.Attribute {
+            require(value != null)
             return ProtoModel.Attribute.newBuilder().also {
-                val ordinal = Attributes.getAttributeOrdinal(attribute)
+                val ordinal = Attributes.getAttributeOrdinal(value)
                 if(ordinal != null) {
                     it.setOrdinal(ordinal)
                 } else {
-                    it.setUri(attribute.uri.toString())
+                    it.setUri(value.uri.toString())
                 }
             }.build()
         }
 
-        fun fromProto(attribute: ProtoModel.Attribute): Attribute {
-            return if(attribute.hasOrdinal()) {
-                CoreAttribute.values()[attribute.ordinal].spec
-            } else if(attribute.hasUri()) {
-                Attributes.getAttributeByUri(URI(attribute.uri))
-                    ?: throw RuntimeException("Attempt to decode unknown attribute: ${attribute.uri}")
+        override fun fromProto(value: ProtoModel.Attribute): Attribute? {
+            return if(value.hasOrdinal()) {
+                Attributes.getAttributeByOrdinal(value.ordinal).also {
+                    if(it == null)
+                        logger.error("Attempt to decode unknown attribute with ordinal: ${value.ordinal}")
+                }
+            } else if(value.hasUri()) {
+                Attributes.getAttributeByUri(URI(value.uri)).also {
+                    if(it == null)
+                        logger.error("Attempt to decode unknown attribute with uri: ${value.uri}")
+                }
             } else {
-                throw RuntimeException("Attempt to decode attribute with no uri or ordinal")
+                logger.error("Attempt to decode attribute with no uri or ordinal")
+                null
             }
+        }
+
+        override fun parseProto(bytes: ByteArray): Model.Attribute {
+            return Model.Attribute.parseFrom(bytes)
         }
     }
 
