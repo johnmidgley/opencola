@@ -34,16 +34,26 @@ abstract class AbstractRelayServer(
         openMutex.withLock { }
     }
 
-    suspend fun connectionStates() : List<Pair<String, Boolean>> {
+    suspend fun connectionStates(): List<Pair<String, Boolean>> {
         return connections.map { Pair(Id.ofPublicKey(it.key).toString(), it.value.isReady()) }
     }
 
-    fun getUsage() : Sequence<Usage> {
-       return (messageStore as? MemoryMessageStore)?.getUsage() ?: emptySequence()
+    fun getUsage(): Sequence<Usage> {
+        return (messageStore as? MemoryMessageStore)?.getUsage() ?: emptySequence()
     }
 
     protected abstract suspend fun authenticate(socketSession: SocketSession): PublicKey?
     protected abstract fun decodePayload(payload: ByteArray): Envelope
+
+    private suspend fun sendStoredMessages(publicKey: PublicKey) {
+        val connection = connections[publicKey] ?: return
+
+        while (messageStore != null) {
+            val message = messageStore.getMessages(publicKey).firstOrNull() ?: break
+            connection.writeSizedByteArray(message.envelope.message)
+            messageStore.removeMessage(message)
+        }
+    }
 
     suspend fun handleSession(socketSession: SocketSession) {
         authenticate(socketSession)?.let { publicKey ->
@@ -52,11 +62,8 @@ abstract class AbstractRelayServer(
             connections[publicKey] = connection
 
             try {
-                // Send any stored messages
-                messageStore?.getMessages(publicKey)?.forEach {
-                    connection.writeSizedByteArray(it.envelope.message)
-                    messageStore.removeMessage(it)
-                }
+                // TODO: Send a "QueueEmpty" message to client
+                sendStoredMessages(publicKey)
 
                 // TODO: Add garbage collection on inactive connections?
                 connection.listen { payload -> handleMessage(publicKey, payload) }
