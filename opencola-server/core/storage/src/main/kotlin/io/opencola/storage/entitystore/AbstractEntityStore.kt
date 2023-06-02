@@ -16,7 +16,6 @@ import io.opencola.storage.entitystore.EntityStore.TransactionOrder
 // TODO: Should support multiple authorities
 // TODO: Organize methods by CRUD
 abstract class AbstractEntityStore(
-    val config: EntityStoreConfig,
     val signator: Signator,
     val publicKeyProvider: PublicKeyProvider<Id>,
     val eventBus: EventBus?,

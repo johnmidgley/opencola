@@ -27,7 +27,7 @@ class ExposedEntityStore(
     signator: Signator,
     publicKeyProvider: PublicKeyProvider<Id>,
     eventBus: EventBus? = null,
-) : AbstractEntityStore(EntityStoreConfig(), signator, publicKeyProvider, eventBus, EncodingFormat.OC) {
+) : AbstractEntityStore(signator, publicKeyProvider, eventBus, EncodingFormat.OC) {
     private val database: Database
 
     // NOTE: Some databases may truncate the table name. This is an issue to the degree that it increases the
@@ -59,7 +59,6 @@ class ExposedEntityStore(
 
 
     init {
-        require(config.transactionStorageUri == null) { "ExposedEntityStore does not support specifying transactionStorageUri config" }
         database = getDB(storagePath.resolve("$name.db"))
         logger.info { "Initializing ExposedEntityStore {${database.url}}" }
 

@@ -9,13 +9,12 @@ import io.opencola.security.Signator
 import io.opencola.serialization.EncodingFormat
 import io.opencola.storage.entitystore.AbstractEntityStore
 import io.opencola.storage.entitystore.EntityStore.TransactionOrder
-import io.opencola.storage.entitystore.EntityStoreConfig
 
 class MockEntityStore(
     signator: Signator,
     publicKeyProvider: PublicKeyProvider<Id>,
     eventBus: EventBus? = null,
-) : AbstractEntityStore(EntityStoreConfig(), signator, publicKeyProvider, eventBus, EncodingFormat.PROTOBUF) {
+) : AbstractEntityStore(signator, publicKeyProvider, eventBus, EncodingFormat.PROTOBUF) {
     private val facts = mutableListOf<Fact>()
     private var transactionOrdinal = 0L
     data class TransactionInfo(val ordinal: Long, val signedTransaction: SignedTransaction)

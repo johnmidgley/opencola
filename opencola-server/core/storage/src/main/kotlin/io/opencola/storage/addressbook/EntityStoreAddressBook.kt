@@ -33,7 +33,6 @@ class EntityStoreAddressBook(
 
             Version.V2 -> ExposedEntityStoreV2(
                 name,
-                EntityStoreConfig(config.transactionStorageUri),
                 storagePath,
                 ::getSQLiteDB,
                 Attributes.get(),

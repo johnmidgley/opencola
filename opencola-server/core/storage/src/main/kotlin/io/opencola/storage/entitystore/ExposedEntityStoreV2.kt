@@ -18,18 +18,16 @@ import org.jetbrains.exposed.sql.statements.api.ExposedBlob
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.net.URI
 import java.nio.file.Path
-import kotlin.io.path.toPath
 
 class ExposedEntityStoreV2(
     name: String,
-    config: EntityStoreConfig,
     storagePath: Path,
     getDB: (Path) -> Database,
     modelAttributes: Iterable<Attribute>,
     signator: Signator,
     publicKeyProvider: PublicKeyProvider<Id>,
     eventBus: EventBus? = null,
-) : AbstractEntityStore(config, signator, publicKeyProvider, eventBus, EncodingFormat.PROTOBUF) {
+) : AbstractEntityStore(signator, publicKeyProvider, eventBus, EncodingFormat.PROTOBUF) {
     private val database: Database
     private val transactionStoragePath: Path
     private val transactionFileStore: IdBasedFileStore
@@ -64,13 +62,11 @@ class ExposedEntityStoreV2(
     private val attributeDbIdToModelAttributeMap: Map<Long, Attribute>
 
     init {
-        require(config.transactionStorageUri == null || config.transactionStorageUri.scheme == "file") { "Unsupported scheme: ${config.transactionStorageUri?.scheme}" }
 
         storagePath.toFile().mkdirs()
         database = getDB(storagePath.resolve("${name}.v2.db"))
         logger.info { "Initializing ExposedEntityStoreV2 {${database.url}}" }
-        transactionStoragePath = config.transactionStorageUri?.toPath()
-            ?: storagePath.resolve("transactions").also { it.toFile().mkdirs() }
+        transactionStoragePath = storagePath.resolve("transactions").also { it.toFile().mkdirs() }
         transactionFileStore = LocalIdBasedFileStore(transactionStoragePath)
         initTables()
         attributeUriToDbIdMap = initDbAttributes(modelAttributes)

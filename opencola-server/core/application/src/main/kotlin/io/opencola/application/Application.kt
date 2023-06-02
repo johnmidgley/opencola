@@ -165,7 +165,6 @@ working properly, you can delete entity-store.db and address-book.db.
                 bindSingleton {
                     ExposedEntityStoreV2(
                         entityStoreName,
-                        config.entityStore,
                         storagePath.resolve(entityStoreName),
                         ::getSQLiteDB,
                         Attributes.get(),

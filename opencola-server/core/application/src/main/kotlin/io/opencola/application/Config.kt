@@ -6,7 +6,6 @@ import com.sksamuel.hoplite.addFileSource
 import io.opencola.event.EventBusConfig
 import io.opencola.network.NetworkConfig
 import io.opencola.storage.addressbook.AddressBookConfig
-import io.opencola.storage.entitystore.EntityStoreConfig
 import java.nio.file.Path
 
 data class ResumeConfig(val enabled: Boolean = true, val desiredDelayMillis: Long = 10000, val maxDelayMillis: Long =30000)
@@ -23,7 +22,6 @@ data class Config(
     val name: String,
     val system: SystemConfig = SystemConfig(),
     val addressBook: AddressBookConfig = AddressBookConfig(),
-    val entityStore: EntityStoreConfig = EntityStoreConfig(),
     val eventBus: EventBusConfig = EventBusConfig(),
     val server: ServerConfig,
     val security: SecurityConfig,
@@ -35,15 +33,15 @@ data class Config(
 // TODO: Use config layers instead of having to copy parts of config tree
 // Use set() pattern (see AddressBookEntry) instead of creating these specific functions
 fun Config.setName(name: String): Config {
-    return Config(name, system, addressBook, entityStore, eventBus, server, security, search, network)
+    return Config(name, system, addressBook, eventBus, server, security, search, network)
 }
 
 fun Config.setServer(server: ServerConfig): Config {
-    return Config(name, system, addressBook, entityStore, eventBus, server, security, search, network)
+    return Config(name, system, addressBook, eventBus, server, security, search, network)
 }
 
 fun Config.setNetwork(network: NetworkConfig): Config {
-    return Config(name, system, addressBook, entityStore, eventBus, server, security, search, network)
+    return Config(name, system, addressBook, eventBus, server, security, search, network)
 }
 
 fun loadConfig(configPath: Path): Config {

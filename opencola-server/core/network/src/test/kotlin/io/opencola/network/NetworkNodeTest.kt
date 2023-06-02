@@ -12,7 +12,6 @@ import io.opencola.security.Signator
 import io.opencola.storage.*
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
-import io.opencola.storage.entitystore.EntityStoreConfig
 import io.opencola.storage.entitystore.ExposedEntityStoreV2
 import io.opencola.storage.entitystore.getSQLiteDB
 import kotlinx.coroutines.CompletableDeferred
@@ -238,7 +237,6 @@ class NetworkNodeTest {
         val addressBook = MockAddressBook()
         val entityStore = ExposedEntityStoreV2(
             "entity-store",
-            EntityStoreConfig(),
             TestApplication.getTmpDirectory("entity-store"),
             ::getSQLiteDB,
             Attributes.get(),

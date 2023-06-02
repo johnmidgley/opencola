@@ -28,7 +28,6 @@ class EntityStoreTest {
         {
             ExposedEntityStoreV2(
                 "entity-store",
-                EntityStoreConfig(),
                 sqLiteEntityStorePath,
                 ::getSQLiteDB,
                 Attributes.get(),
@@ -41,7 +40,6 @@ class EntityStoreTest {
     private fun getFreshExposeEntityStore(): ExposedEntityStoreV2 {
         return ExposedEntityStoreV2(
             "entity-store",
-            EntityStoreConfig(),
             TestApplication.getTmpDirectory("entity-store"),
             ::getSQLiteDB,
             Attributes.get(),

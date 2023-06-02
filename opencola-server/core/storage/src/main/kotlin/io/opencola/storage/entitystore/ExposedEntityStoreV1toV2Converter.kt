@@ -34,7 +34,6 @@ fun convertExposedEntityStoreV1ToV2(
     name: String,
     v1Path: Path,
     v2Path: Path,
-    v2config: EntityStoreConfig = EntityStoreConfig()
 ) {
     require(v1Path.exists())
     require(!v2Path.exists())
@@ -42,7 +41,7 @@ fun convertExposedEntityStoreV1ToV2(
     logger.info { "Converting $name from V1 to V2" }
 
     val entityStoreV1 = ExposedEntityStore(name, v1Path, ::getSQLiteDB, signator, addressBook)
-    val entityStoreV2 = ExposedEntityStoreV2(name, v2config, v2Path, ::getSQLiteDB, Attributes.get(), signator, addressBook)
+    val entityStoreV2 = ExposedEntityStoreV2(name, v2Path, ::getSQLiteDB, Attributes.get(), signator, addressBook)
     val personas = addressBook.getEntries().filterIsInstance<PersonaAddressBookEntry>()
     val personaIds = personas.map { it.entityId }.toSet()
     val numTransactionsV1 = entityStoreV1.getAllSignedTransactions().filter{ it.transaction.authorityId in personaIds }.count()
