@@ -1,9 +1,9 @@
 package io.opencola.model
 
+import io.opencola.model.value.EmptyValue
 import io.opencola.model.value.IdValue
 import io.opencola.model.value.StringValue
 import io.opencola.model.value.Value
-import io.opencola.model.value.emptyValue
 import org.junit.Test
 import java.net.URI
 import kotlin.test.assertEquals
@@ -11,7 +11,7 @@ import kotlin.test.assertEquals
 class ModelTest {
     @Test
     fun testTransactionFactEmptyValue() {
-        val fact = TransactionFact(CoreAttribute.Type.spec, emptyValue, Operation.Add)
+        val fact = TransactionFact(CoreAttribute.Type.spec, EmptyValue, Operation.Add)
         val encoded = TransactionFact.encode(fact)
         val decoded = TransactionFact.decode(encoded)
         assertEquals(fact, decoded)
@@ -39,6 +39,7 @@ class ModelTest {
         val unknownAttribute = Attribute(
             URI("opencola://attribute/unknown"),
             AttributeType.SingleValue,
+            null,
             CoreAttribute.Name.spec.valueWrapper,
             false,
             null

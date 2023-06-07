@@ -2,9 +2,13 @@ package io.opencola.security
 
 import com.google.protobuf.ByteString
 import io.opencola.serialization.protobuf.ProtoSerializable
-import io.opencola.serialization.protobuf.Security as Proto
+import io.opencola.security.protobuf.Security as Proto
 
 class EncryptedBytes(val transformation: String, val bytes: ByteArray) {
+    fun toProto(): Proto.EncryptedMessage {
+        return toProto(this)
+    }
+
     fun encodeProto(): ByteArray {
         return encodeProto(this)
     }

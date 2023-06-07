@@ -2,6 +2,7 @@ package io.opencola.storage.entitystore
 
 import io.opencola.event.EventBus
 import io.opencola.model.*
+import io.opencola.model.value.EmptyValue
 import io.opencola.security.PublicKeyProvider
 import io.opencola.security.Signator
 import io.opencola.serialization.EncodingFormat
@@ -46,7 +47,7 @@ class ExposedEntityStoreV2(
         val attribute = long("attribute").references(Attributes.id)
         val value = blob("value")
         val operation = enumeration("operation", Operation::class)
-        val epochSecond = long("epochSecond")
+        val epochSecond = long("epochSecond") // EpochSecond to avoid DB dialect issues with timestamps
         // This ordinal is used to order transactions from an authority. While it does refer to the id of
         // a transaction in the transactions table at the source authority, it cannot be used as a
         // foreign key because the id may not be unique across peers / authorities locally.
@@ -57,8 +58,7 @@ class ExposedEntityStoreV2(
     private object Transactions : LongIdTable("Transactions") {
         val transactionId = binary("transactionId", 32).uniqueIndex()
         val authorityId = binary("authorityId", 32)
-        val epochSecond = long("epochSecond").index()
-        // val encoded = blob("encoded")
+        val epochSecond = long("epochSecond").index() // EpochSecond to avoid DB dialect issues with timestamps
     }
 
     private val attributeUriToDbIdMap: Map<URI, Long>
@@ -76,7 +76,6 @@ class ExposedEntityStoreV2(
         val uriToAttributeMap = modelAttributes.associateBy { it.uri }
         attributeDbIdToModelAttributeMap =
             attributeUriToDbIdMap.entries.associate { it.value to uriToAttributeMap[it.key]!! }
-
     }
 
     private fun initTables() {
@@ -161,7 +160,7 @@ class ExposedEntityStoreV2(
             val transactionFacts = transaction.getFacts(ordinal.value)
             transactionFacts
                 .forEach { fact ->
-                    if (fact.operation == Operation.Add && fact.value == io.opencola.model.value.emptyValue) {
+                    if (fact.operation == Operation.Add && fact.value == EmptyValue) {
                         throw IllegalArgumentException("Attempt to add empty value for attribute ${fact.attribute}")
                     }
 

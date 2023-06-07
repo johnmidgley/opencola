@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import java.io.ByteArrayInputStream
-import io.opencola.serialization.protobuf.Model as ProtoModel
+import io.opencola.model.protobuf.Model as ProtoModel
 
 private val logger = KotlinLogging.logger("MainReactor")
 

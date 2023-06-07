@@ -28,7 +28,7 @@ class PeerTransactionTest {
 
             println("Updating resource0")
             // TODO: Could make set of functions: waitForBroadcast, waitForIndexing, etc.
-            waitForStdout("Broadcasting request: PutTxns") { entityStore0.updateEntities(resource0) }
+            waitForStdout("Broadcasting request: PUT_TRANSACTION") { entityStore0.updateEntities(resource0) }
 
             println("Starting server1")
             waitForStdout("Indexed authorityId:") { startServer(server1) }

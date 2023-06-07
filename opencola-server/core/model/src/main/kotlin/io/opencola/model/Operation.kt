@@ -1,6 +1,6 @@
 package io.opencola.model
 
-import io.opencola.serialization.protobuf.Model as ProtoModel
+import io.opencola.model.protobuf.Model as Proto
 import io.opencola.serialization.StreamSerializer
 import io.opencola.serialization.codecs.IntByteArrayCodec
 import java.io.InputStream
@@ -25,17 +25,17 @@ enum class Operation {
             return values()[ordinal]
         }
 
-        fun toProto(operation: Operation) : ProtoModel.Operation {
+        fun toProto(operation: Operation) : Proto.Operation {
             return when (operation) {
-                Add -> ProtoModel.Operation.ADD
-                Retract -> ProtoModel.Operation.RETRACT
+                Add -> Proto.Operation.ADD
+                Retract -> Proto.Operation.RETRACT
             }
         }
 
-        fun fromProto(operation: ProtoModel.Operation) : Operation {
+        fun fromProto(operation: Proto.Operation) : Operation {
             return when (operation) {
-                ProtoModel.Operation.ADD -> Add
-                ProtoModel.Operation.RETRACT -> Retract
+                Proto.Operation.ADD -> Add
+                Proto.Operation.RETRACT -> Retract
                 else -> throw IllegalArgumentException("Unknown operation: $operation")
             }
         }

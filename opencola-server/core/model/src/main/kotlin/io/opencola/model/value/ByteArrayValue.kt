@@ -2,7 +2,7 @@ package io.opencola.model.value
 
 import com.google.protobuf.ByteString
 import io.opencola.serialization.codecs.BytesByteArrayCodec
-import io.opencola.serialization.protobuf.Model as Proto
+import io.opencola.model.protobuf.Model as Proto
 
 class ByteArrayValue(value: ByteArray) : Value<ByteArray>(value) {
     companion object : ValueWrapper<ByteArray> {
@@ -16,13 +16,13 @@ class ByteArrayValue(value: ByteArray) : Value<ByteArray>(value) {
 
         override fun toProto(value: ByteArray): Proto.Value {
             return Proto.Value.newBuilder()
-                .setOcType(Proto.OCType.BYTES)
+                .setOcType(Proto.Value.OCType.BYTES)
                 .setBytes(ByteString.copyFrom(value))
                 .build()
         }
 
         override fun fromProto(value: Proto.Value): ByteArray {
-            require(value.ocType == Proto.OCType.BYTES)
+            require(value.ocType == Proto.Value.OCType.BYTES)
             return value.bytes.toByteArray()
         }
 

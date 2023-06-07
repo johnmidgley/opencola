@@ -2,9 +2,9 @@ package io.opencola.model
 
 import mu.KotlinLogging
 import io.opencola.model.AttributeType.*
+import io.opencola.model.value.EmptyValue
 import io.opencola.model.value.MultiValueListItem
 import io.opencola.model.value.Value
-import io.opencola.model.value.emptyValue
 import java.net.URI
 import java.util.*
 
@@ -164,7 +164,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
             }
             ?.let { if (it.operation == Operation.Add) it else null }
             ?.let {
-                if (it.value == emptyValue) {
+                if (it.value == EmptyValue) {
                     // EmptyValue is only meant to be used for deleted facts
                     null
                 } else it
@@ -225,7 +225,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
 
     private fun valueToStore(key: UUID?, value: Value<Any>?): Value<Any> {
         // TODO: Is empty value needed?
-        val storableValue = value ?: emptyValue
+        val storableValue = value ?: EmptyValue
 
         return if (key == null)
             storableValue

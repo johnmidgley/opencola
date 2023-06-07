@@ -2,14 +2,12 @@ package io.opencola.model
 
 import java.net.URI
 
+import io.opencola.model.protobuf.Model as Proto
+
 // TODO: Allow this to be extended with custom attributes
 // TODO: Turn into AttributeRegistry
 object Attributes {
     private val attributesByName = CoreAttribute.values().associateBy { it.spec.name }
-
-    fun getAttributeByOrdinal(ordinal: Int): Attribute? {
-        return CoreAttribute.values().getOrNull(ordinal)?.spec
-    }
 
     fun getAttributeByName(name: String): Attribute? {
         return attributesByName[name]?.spec
@@ -41,6 +39,18 @@ object Attributes {
 
     fun getAttributeOrdinal(attribute: Attribute): Int? {
         return attributeToOrdinal[attribute]
+    }
+
+    private val attributeToProtoCoreAttribute = CoreAttribute.values().map { it.spec to it.spec.protoAttribute }.toMap()
+
+    fun getProtoCoreAttribute(attribute: Attribute): Proto.Attribute.CoreAttribute? {
+        return attributeToProtoCoreAttribute[attribute]
+    }
+
+    private val attributesByProtoCoreAttribute = CoreAttribute.values().map { it.spec.protoAttribute to it }.toMap()
+
+    fun getAttributeByProtoCoreAttribute(protoCoreAttribute: Proto.Attribute.CoreAttribute): Attribute? {
+        return attributesByProtoCoreAttribute[protoCoreAttribute]?.spec
     }
 
     fun get() = CoreAttribute.values().map { it.spec }

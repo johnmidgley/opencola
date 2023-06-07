@@ -2,6 +2,7 @@ package opencola.core.network.providers.http
 
 import io.opencola.model.Authority
 import io.opencola.network.NetworkNode
+import io.opencola.network.message.MessageType
 import io.opencola.network.message.PingMessage
 import io.opencola.network.message.PongMessage
 import io.opencola.network.message.SignedMessage
@@ -35,7 +36,7 @@ class HttpNetworkProviderTest {
                 networkProvider.setMessageHandler { _, _, signedMessage ->
                     val message = signedMessage.body
                     when (message.type) {
-                        PingMessage.messageType -> {
+                        MessageType.PING -> {
                             networkNode.signMessage(persona, PongMessage())
                             networkProvider.sendMessage(
                                 persona,
@@ -44,7 +45,7 @@ class HttpNetworkProviderTest {
                             )
                         }
 
-                        PongMessage.messageType -> {
+                        MessageType.PONG -> {
                             deferredResult.complete("Pong")
                         }
 

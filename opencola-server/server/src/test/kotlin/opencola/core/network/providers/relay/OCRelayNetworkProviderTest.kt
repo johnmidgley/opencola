@@ -5,9 +5,9 @@ import io.opencola.io.StdoutMonitor
 import io.opencola.model.Id
 import io.opencola.network.NetworkNode
 import io.opencola.network.emptyByteArray
+import io.opencola.network.message.MessageType
 import io.opencola.network.message.UnsignedMessage
 import io.opencola.network.message.PingMessage
-import io.opencola.network.message.PongMessage
 import io.opencola.network.pongRoute
 import io.opencola.network.providers.relay.OCRelayNetworkProvider
 import io.opencola.storage.addressbook.AddressBook
@@ -73,7 +73,7 @@ class OCRelayNetworkProviderTest {
                 // Trap pong messages so that we can tell when the ping was successful
                 val results = Channel<Unit>()
                 networkNode0.routes = networkNode0.routes.map {
-                    if (it.messageType == PongMessage.messageType)
+                    if (it.messageType == MessageType.PONG)
                         pongRoute { _, _, _ -> launch { results.send(Unit) }; emptyList() }
                     else
                         it
@@ -160,14 +160,14 @@ class OCRelayNetworkProviderTest {
                     val envelope = relayProvider.getEncodedEnvelope(
                         app0.getPersonas().single().entityId,
                         app1.getPersonas().single().entityId,
-                        UnsignedMessage("bad message", MessageKey.none, emptyByteArray),
+                        UnsignedMessage(MessageType.PUT_DATA, MessageKey.none, emptyByteArray),
                         false
                     )
 
                     StdoutMonitor(readTimeoutMilliseconds = 3000).use {
                         relayClient.sendMessage(app1.getPersonas().single().publicKey, MessageKey.none, envelope)
                         // Check that receiver gets the message and ignores it
-                        it.waitUntil("No handler for \"bad message\"")
+                        it.waitUntil("Error handling PUT_DATA: java.lang.AssertionError: Invalid id")
                     }
                 }
             } finally {

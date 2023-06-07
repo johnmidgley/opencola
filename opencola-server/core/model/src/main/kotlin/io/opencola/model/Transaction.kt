@@ -1,8 +1,8 @@
 package io.opencola.model
 
-import io.opencola.serialization.protobuf.Model as ProtoModel
+import com.google.protobuf.Timestamp
+import io.opencola.model.protobuf.Model as Proto
 import io.opencola.serialization.*
-import io.opencola.serialization.protobuf.Model
 import io.opencola.serialization.protobuf.ProtoSerializable
 import java.io.InputStream
 import java.io.OutputStream
@@ -29,7 +29,7 @@ data class Transaction(val id: Id,
         return encode(this)
     }
 
-    fun toProto() : ProtoModel.Transaction {
+    fun toProto() : Proto.Transaction {
         return toProto(this)
     }
 
@@ -37,7 +37,7 @@ data class Transaction(val id: Id,
         return encodeProto(this)
     }
 
-    companion object : StreamSerializer<Transaction>, ProtoSerializable<Transaction, ProtoModel.Transaction> {
+    companion object : StreamSerializer<Transaction>, ProtoSerializable<Transaction, Proto.Transaction> {
         fun fromFacts(id: Id, facts: List<Fact>, epochSecond: Long = Instant.now().epochSecond) : Transaction {
             val (authorityId, transactionEntities) = toTransactionEntities(facts)
             return Transaction(id, authorityId, transactionEntities, epochSecond)
@@ -72,27 +72,27 @@ data class Transaction(val id: Id,
             return Transaction(Id.decode(stream), Id.decode(stream), stream.readInt().downTo(1).map { TransactionEntity.decode(stream) }, stream.readLong())
         }
 
-        override fun toProto(value: Transaction): ProtoModel.Transaction {
-            return ProtoModel.Transaction.newBuilder()
+        override fun toProto(value: Transaction): Proto.Transaction {
+            return Proto.Transaction.newBuilder()
                 .setId(Id.toProto(value.id))
                 .setAuthorityId(Id.toProto(value.authorityId))
                 .addAllTransactionEntities(value.transactionEntities.map { TransactionEntity.toProto(it) })
-                .setEpochSecond(value.epochSecond)
+                .setTimestamp(Timestamp.newBuilder().setSeconds(value.epochSecond))
                 .build()
 
         }
 
-        override fun fromProto(value: ProtoModel.Transaction): Transaction {
+        override fun fromProto(value: Proto.Transaction): Transaction {
             return Transaction(
                 Id.fromProto(value.id),
                 Id.fromProto(value.authorityId),
                 value.transactionEntitiesList.map { TransactionEntity.fromProto(it) },
-                value.epochSecond
+                value.timestamp.seconds
             )
         }
 
-        override fun parseProto(bytes: ByteArray): Model.Transaction {
-            return Model.Transaction.parseFrom(bytes)
+        override fun parseProto(bytes: ByteArray): Proto.Transaction {
+            return Proto.Transaction.parseFrom(bytes)
         }
     }
 }

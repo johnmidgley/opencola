@@ -17,17 +17,15 @@ fun handleGetData(fileStore: ContentBasedFileStore, dataId: Id): ByteArray? {
 }
 
 fun pingRoute(): Route {
-    return Route(PingMessage.messageType) { _, _, _ -> listOf(PongMessage()) }
+    return Route(MessageType.PING) { _, _, _ -> listOf(PongMessage()) }
 }
 
 fun pongRoute(handler: messageHandler = { _, _, _ -> emptyList() }): Route {
-    return Route(PongMessage.messageType, handler)
+    return Route(MessageType.PONG, handler)
 }
 
 fun getTransactionsRoute(entityStore: EntityStore): Route {
-    return Route(
-        GetTransactionsMessage.messageType
-    ) { _, to, message ->
+    return Route(MessageType.GET_TRANSACTIONS) { _, to, message ->
         val getTransactionsMessage = GetTransactionsMessage.decodeProto(message.body.payload)
 
         val extra = (if (getTransactionsMessage.mostRecentTransactionId == null) 0 else 1)
@@ -54,10 +52,8 @@ fun getTransactionsRoute(entityStore: EntityStore): Route {
     }
 }
 
-fun putTransactionsRoute(entityStore: EntityStore): Route {
-    return Route(
-        PutTransactionMessage.messageType
-    ) { from, _, message ->
+fun putTransactionRoute(entityStore: EntityStore): Route {
+    return Route(MessageType.PUT_TRANSACTION) { from, _, message ->
         val putTransactionsMessage = PutTransactionMessage.decodeProto(message.body.payload)
         val signedTransaction = putTransactionsMessage.getSignedTransaction()
         logger.info { "Received transaction ${signedTransaction.transaction.id} from $from" }
@@ -76,9 +72,7 @@ fun putTransactionsRoute(entityStore: EntityStore): Route {
 }
 
 fun getDataRoute(entityStore: EntityStore, fileStore: ContentBasedFileStore): Route {
-    return Route(
-        GetDataMessage.messageType
-    ) { from, to, message ->
+    return Route(MessageType.GET_DATA) { from, to, message ->
         val getDataMessage = GetDataMessage.decodeProto(message.body.payload)
         val dataId = getDataMessage.id
         logger.info { "getData: from=$from, to=$to, dataId=$dataId" }
@@ -91,9 +85,7 @@ fun getDataRoute(entityStore: EntityStore, fileStore: ContentBasedFileStore): Ro
 }
 
 fun putDataRoute(entityStore: EntityStore, fileStore: ContentBasedFileStore): Route {
-    return Route(
-        PutDataMessage.messageType
-    ) { from, to, message ->
+    return Route(MessageType.PUT_DATA) { from, to, message ->
         val putDataMessage = PutDataMessage.decodeProto(message.body.payload)
         val dataId = putDataMessage.id
         logger.info { "putData: from=$from, to=$to, dataId=$dataId" }
@@ -114,7 +106,7 @@ fun getDefaultRoutes(
         pingRoute(),
         pongRoute(),
         getTransactionsRoute(entityStore),
-        putTransactionsRoute(entityStore),
+        putTransactionRoute(entityStore),
         getDataRoute(entityStore, contentBasedFileStore),
         putDataRoute(entityStore, contentBasedFileStore),
     )

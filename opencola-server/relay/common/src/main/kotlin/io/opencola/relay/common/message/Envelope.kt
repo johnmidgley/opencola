@@ -3,6 +3,7 @@ package io.opencola.relay.common.message
 import com.google.protobuf.ByteString
 import io.opencola.model.Id
 import io.opencola.relay.common.protobuf.Relay
+import io.opencola.security.PublicKeyProtoCodec
 import io.opencola.relay.common.protobuf.Relay as Proto
 import io.opencola.security.publicKeyFromBytes
 import io.opencola.serialization.StreamSerializer
@@ -62,7 +63,7 @@ class Envelope(val to: PublicKey, val key: MessageKey, val message: ByteArray) {
 
         override fun toProto(value: Envelope): Proto.Envelope {
             return Proto.Envelope.newBuilder()
-                .setTo(ByteString.copyFrom(value.to.encoded))
+                .setTo(PublicKeyProtoCodec.toProto(value.to))
                 .also {if (value.key.value != null) it.setKey(ByteString.copyFrom(value.key.value)) }
                 .setMessage(ByteString.copyFrom(value.message))
                 .build()
@@ -70,7 +71,7 @@ class Envelope(val to: PublicKey, val key: MessageKey, val message: ByteArray) {
 
         override fun fromProto(value: Proto.Envelope): Envelope {
             return Envelope(
-                publicKeyFromBytes(value.to.toByteArray()),
+                PublicKeyProtoCodec.fromProto(value.to),
                 if (value.key.isEmpty) MessageKey.none else MessageKey.ofEncoded(value.key.toByteArray()),
                 value.message.toByteArray()
             )

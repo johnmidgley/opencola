@@ -1,8 +1,12 @@
 package io.opencola.model.value
 
-import io.opencola.serialization.protobuf.Model
+import io.opencola.model.protobuf.Model
 
-class EmptyValue : Value<Any>(ByteArray(0)) {
+private val emptyBytes = ByteArray(0)
+
+object EmptyValue : Value<Any>(emptyBytes) {
+    val bytes = emptyBytes
+
     override fun equals(other: Any?): Boolean {
         return other is EmptyValue
     }
@@ -13,11 +17,7 @@ class EmptyValue : Value<Any>(ByteArray(0)) {
 
     fun toProto(): Model.Value {
         return Model.Value.newBuilder()
-            .setOcType(Model.OCType.EMPTY)
+            .setOcType(Model.Value.OCType.EMPTY)
             .build()
     }
 }
-
-val emptyValue = EmptyValue()
-val emptyValueProto = emptyValue.toProto()
-val emptyValueProtoEncoded: ByteArray = emptyValueProto.toByteArray()

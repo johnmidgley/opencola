@@ -1,13 +1,12 @@
 package io.opencola.model
 
 import com.google.protobuf.ByteString
-import io.opencola.serialization.protobuf.Model as ProtoModel
+import io.opencola.model.protobuf.Model as Proto
 import io.opencola.security.Signature
 import io.opencola.security.isValidSignature
 import io.opencola.serialization.EncodingFormat
 import io.opencola.serialization.protobuf.ProtoSerializable
 import io.opencola.serialization.StreamSerializer
-import io.opencola.serialization.protobuf.Model
 import io.opencola.serialization.readByteArray
 import io.opencola.serialization.writeByteArray
 import java.io.InputStream
@@ -59,7 +58,7 @@ data class SignedTransaction(
 
     companion object :
         StreamSerializer<SignedTransaction>,
-        ProtoSerializable<SignedTransaction, ProtoModel.SignedTransaction> {
+        ProtoSerializable<SignedTransaction, Proto.SignedTransaction> {
         override fun encode(stream: OutputStream, value: SignedTransaction) {
             require(value.encodingFormat == EncodingFormat.OC)
             val transaction = Transaction.decode(value.encodedTransaction)
@@ -80,15 +79,15 @@ data class SignedTransaction(
             return SignedTransaction(EncodingFormat.OC, transactionBytes, signature)
         }
 
-        override fun toProto(value: SignedTransaction): ProtoModel.SignedTransaction {
+        override fun toProto(value: SignedTransaction): Proto.SignedTransaction {
             require(value.encodingFormat == EncodingFormat.PROTOBUF)
-            val builder = ProtoModel.SignedTransaction.newBuilder()
+            val builder = Proto.SignedTransaction.newBuilder()
             builder.transaction = ByteString.copyFrom(value.encodedTransaction)
             builder.signature = value.signature.toProto()
             return builder.build()
         }
 
-        override fun fromProto(value: ProtoModel.SignedTransaction): SignedTransaction {
+        override fun fromProto(value: Proto.SignedTransaction): SignedTransaction {
             return SignedTransaction(
                 EncodingFormat.PROTOBUF,
                 value.transaction.toByteArray(),
@@ -96,8 +95,8 @@ data class SignedTransaction(
             )
         }
 
-        override fun parseProto(bytes: ByteArray): Model.SignedTransaction {
-            return Model.SignedTransaction.parseFrom(bytes)
+        override fun parseProto(bytes: ByteArray): Proto.SignedTransaction {
+            return Proto.SignedTransaction.parseFrom(bytes)
         }
     }
 }

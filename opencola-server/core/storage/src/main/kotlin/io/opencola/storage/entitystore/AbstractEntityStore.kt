@@ -4,8 +4,8 @@ import mu.KotlinLogging
 import io.opencola.event.EventBus
 import io.opencola.event.Events
 import io.opencola.model.*
+import io.opencola.model.value.EmptyValue
 import io.opencola.model.value.Value
-import io.opencola.model.value.emptyValue
 import io.opencola.security.PublicKeyProvider
 import io.opencola.util.ifNotNullOrElse
 import io.opencola.util.nullOrElse
@@ -59,7 +59,7 @@ abstract class AbstractEntityStore(
             logAndThrow(RuntimeException("Entity Id:{${entity.entityId}} contains non-distinct facts"))
         }
 
-        if (allFacts.any { it.operation == Operation.Add && it.value == emptyValue }) {
+        if (allFacts.any { it.operation == Operation.Add && it.value == EmptyValue }) {
             logAndThrow(RuntimeException("Entity Id:{${entity.entityId}} contains Add operation with empty value"))
         }
 
@@ -160,7 +160,7 @@ abstract class AbstractEntityStore(
         }
 
         facts.forEach {
-            if (it.value == emptyValue && it.operation == Operation.Add) {
+            if (it.value == EmptyValue && it.operation == Operation.Add) {
                 throw IllegalArgumentException("Facts should not have empty values on add operation")
             }
         }
@@ -234,7 +234,7 @@ abstract class AbstractEntityStore(
         )
             fact.value
         else
-            emptyValue
+            EmptyValue
     }
 
     private fun getDependentEntityIds(personaId: Id, entityId: Id): Set<Id> {

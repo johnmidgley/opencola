@@ -2,13 +2,11 @@ package io.opencola.network.message
 
 import io.opencola.model.Id
 import io.opencola.relay.common.message.MessageKey
-import io.opencola.serialization.protobuf.Message as Proto
+import io.opencola.network.protobuf.Message as Proto
 import io.opencola.serialization.protobuf.ProtoSerializable
 
-class GetDataMessage(val id: Id) : Message(messageType, MessageKey.of(id)) {
+class GetDataMessage(val id: Id) : Message(MessageType.GET_DATA, MessageKey.of(id)) {
     companion object : ProtoSerializable<GetDataMessage, Proto.GetDataMessage>  {
-        const val messageType = "GetData"
-
         override fun toProto(value: GetDataMessage): Proto.GetDataMessage {
             return Proto.GetDataMessage
                 .newBuilder()

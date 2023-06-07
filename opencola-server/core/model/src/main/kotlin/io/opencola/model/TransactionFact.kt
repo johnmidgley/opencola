@@ -2,10 +2,8 @@ package io.opencola.model
 
 import io.opencola.model.value.EmptyValue
 import io.opencola.model.value.Value
-import io.opencola.model.value.emptyValue
-import io.opencola.model.value.emptyValueProto
 import io.opencola.serialization.protobuf.ProtoSerializable
-import io.opencola.serialization.protobuf.Model as Proto
+import io.opencola.model.protobuf.Model as Proto
 import io.opencola.serialization.StreamSerializer
 import java.io.InputStream
 import java.io.OutputStream
@@ -36,17 +34,14 @@ data class TransactionFact(val attribute: Attribute, val value: Value<Any>, val 
             return TransactionFact(attribute, value, operation)
         }
 
-
         override fun toProto(value: TransactionFact?): Proto.TransactionFact {
             require(value != null)
             return Proto.TransactionFact.newBuilder()
                 .setAttribute(Attribute.toProto(value.attribute))
-                .setValue(
-                    if (value.value is EmptyValue)
-                        emptyValueProto
-                    else
-                        value.attribute.valueWrapper.toProto(value.value.get())
-                )
+                .also {
+                    if (value.value !is EmptyValue)
+                        it.setValue(value.attribute.valueWrapper.toProto(value.value.get()))
+                }
                 .setOperation(Operation.toProto(value.operation))
                 .build()
         }
@@ -56,8 +51,8 @@ data class TransactionFact(val attribute: Attribute, val value: Value<Any>, val 
 
             val valueWrapper = attribute.valueWrapper
             val wrappedValue =
-                if (value.value.ocType == Proto.OCType.EMPTY)
-                    emptyValue
+                if (value.value.ocType == Proto.Value.OCType.EMPTY)
+                    EmptyValue
                 else
                     valueWrapper.wrap(valueWrapper.fromProto(value.value))
             val operation = Operation.fromProto(value.operation)

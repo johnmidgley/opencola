@@ -1,7 +1,7 @@
 package io.opencola.model
 
 import io.opencola.model.value.ValueWrapper
-import io.opencola.serialization.protobuf.Model as ProtoModel
+import io.opencola.model.protobuf.Model as Proto
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -10,7 +10,6 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import io.opencola.serialization.StreamSerializer
-import io.opencola.serialization.protobuf.Model
 import io.opencola.serialization.protobuf.ProtoSerializable
 import mu.KotlinLogging
 import java.io.InputStream
@@ -29,14 +28,22 @@ data class Attribute(
     val name: String,
     val uri: URI,
     val type: AttributeType,
+    val protoAttribute: Proto.Attribute.CoreAttribute?,
     val valueWrapper: ValueWrapper<Any>,
     val isIndexable: Boolean,
     val computeFacts: ((Iterable<Fact>) -> Iterable<Fact>)?
 ) {
-    constructor(uri: URI, type: AttributeType, valueWrapper: ValueWrapper<Any>, isIndexable: Boolean, computeFacts: ((Iterable<Fact>) -> Iterable<Fact>)? = null) :
-            this(uri.path.split("/").last(), uri, type, valueWrapper, isIndexable, computeFacts)
+    constructor(
+        uri: URI,
+        type: AttributeType,
+        protoAttribute: Proto.Attribute.CoreAttribute?,
+        valueWrapper: ValueWrapper<Any>,
+        isIndexable: Boolean,
+        computeFacts: ((Iterable<Fact>) -> Iterable<Fact>)? = null
+    ) :
+            this(uri.path.split("/").last(), uri, type, protoAttribute, valueWrapper, isIndexable, computeFacts)
 
-    companion object : StreamSerializer<Attribute>, ProtoSerializable<Attribute?, ProtoModel.Attribute> {
+    companion object : StreamSerializer<Attribute>, ProtoSerializable<Attribute?, Proto.Attribute> {
         private val logger = KotlinLogging.logger("Attribute")
 
         override fun encode(stream: OutputStream, value: Attribute) {
@@ -50,27 +57,27 @@ data class Attribute(
             return CoreAttribute.values()[ordinal].spec
         }
 
-        override fun toProto(value: Attribute?): ProtoModel.Attribute {
+        override fun toProto(value: Attribute?): Proto.Attribute {
             require(value != null)
-            return ProtoModel.Attribute.newBuilder().also {
-                val ordinal = Attributes.getAttributeOrdinal(value)
-                if(ordinal != null) {
-                    it.setOrdinal(ordinal)
+            return Proto.Attribute.newBuilder().also {
+                val protoAttribute = Attributes.getProtoCoreAttribute(value)
+                if (protoAttribute != null) {
+                    it.setCoreAttribute(protoAttribute)
                 } else {
                     it.setUri(value.uri.toString())
                 }
             }.build()
         }
 
-        override fun fromProto(value: ProtoModel.Attribute): Attribute? {
-            return if(value.hasOrdinal()) {
-                Attributes.getAttributeByOrdinal(value.ordinal).also {
-                    if(it == null)
-                        logger.error("Attempt to decode unknown attribute with ordinal: ${value.ordinal}")
+        override fun fromProto(value: Proto.Attribute): Attribute? {
+            return if (value.hasCoreAttribute()) {
+                Attributes.getAttributeByProtoCoreAttribute(value.coreAttribute).also {
+                    if (it == null)
+                        logger.error("Attempt to decode unknown attribute with proto coreAttribute: ${value.coreAttribute}")
                 }
-            } else if(value.hasUri()) {
+            } else if (value.hasUri()) {
                 Attributes.getAttributeByUri(URI(value.uri)).also {
-                    if(it == null)
+                    if (it == null)
                         logger.error("Attempt to decode unknown attribute with uri: ${value.uri}")
                 }
             } else {
@@ -79,8 +86,8 @@ data class Attribute(
             }
         }
 
-        override fun parseProto(bytes: ByteArray): Model.Attribute {
-            return Model.Attribute.parseFrom(bytes)
+        override fun parseProto(bytes: ByteArray): Proto.Attribute {
+            return Proto.Attribute.parseFrom(bytes)
         }
     }
 

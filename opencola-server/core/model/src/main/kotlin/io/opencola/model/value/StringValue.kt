@@ -2,7 +2,7 @@ package io.opencola.model.value
 
 import io.opencola.serialization.codecs.StringByteArrayCodec
 import mu.KotlinLogging
-import io.opencola.serialization.protobuf.Model as Proto
+import io.opencola.model.protobuf.Model as Proto
 
 class StringValue(value: String) : Value<String>(value) {
     init {
@@ -25,13 +25,13 @@ class StringValue(value: String) : Value<String>(value) {
 
         override fun toProto(value: String): Proto.Value {
             return Proto.Value.newBuilder()
-                .setOcType(Proto.OCType.STRING)
+                .setOcType(Proto.Value.OCType.STRING)
                 .setString(value)
                 .build()
         }
 
         override fun fromProto(value: Proto.Value): String {
-            require(value.ocType == Proto.OCType.STRING)
+            require(value.ocType == Proto.Value.OCType.STRING)
             return value.string
         }
 

@@ -1,6 +1,10 @@
 syntax = "proto3";
 
-package io.opencola.serialization.protobuf;
+package io.opencola.security.protobuf;
+
+message PublicKey {
+  bytes encoded = 1;
+}
 
 message Signature {
   string algorithm = 1;

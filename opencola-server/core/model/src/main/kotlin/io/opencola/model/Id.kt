@@ -1,12 +1,11 @@
 package io.opencola.model
 
 import com.google.protobuf.ByteString
-import io.opencola.serialization.protobuf.Model as ProtoModel
+import io.opencola.model.protobuf.Model as Proto
 import kotlinx.serialization.Serializable
 import io.opencola.security.sha256
 import io.opencola.serialization.ByteArrayCodec
 import io.opencola.serialization.StreamSerializer
-import io.opencola.serialization.protobuf.Model
 import io.opencola.serialization.protobuf.ProtoSerializable
 import io.opencola.util.*
 import java.io.InputStream
@@ -49,11 +48,11 @@ data class Id(private val bytes: ByteArray) : Comparable<Id> {
             false
     }
 
-    fun toProto() : ProtoModel.Id {
+    fun toProto() : Proto.Id {
         return Factory.toProto(this)
     }
 
-    companion object Factory : ByteArrayCodec<Id>, StreamSerializer<Id>, ProtoSerializable<Id, ProtoModel.Id> {
+    companion object Factory : ByteArrayCodec<Id>, StreamSerializer<Id>, ProtoSerializable<Id, Proto.Id> {
         val lengthInBytes = sha256("").size
 
         // TODO: Should return Id? - empty string is not valid.
@@ -100,18 +99,18 @@ data class Id(private val bytes: ByteArray) : Comparable<Id> {
             return Id(stream.readNBytes(lengthInBytes))
         }
 
-        override fun toProto(value: Id): ProtoModel.Id {
-            return ProtoModel.Id.newBuilder()
+        override fun toProto(value: Id): Proto.Id {
+            return Proto.Id.newBuilder()
                 .setBytes(ByteString.copyFrom(value.bytes))
                 .build()
         }
 
-        override fun fromProto(value: ProtoModel.Id): Id {
+        override fun fromProto(value: Proto.Id): Id {
             return Id(value.bytes.toByteArray())
         }
 
-        override fun parseProto(bytes: ByteArray): Model.Id {
-            return Model.Id.parseFrom(bytes)
+        override fun parseProto(bytes: ByteArray): Proto.Id {
+            return Proto.Id.parseFrom(bytes)
         }
     }
 }

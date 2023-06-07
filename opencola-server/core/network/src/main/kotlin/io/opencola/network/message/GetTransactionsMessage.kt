@@ -4,25 +4,24 @@ import com.google.protobuf.GeneratedMessageV3
 import io.opencola.model.Id
 import io.opencola.relay.common.message.MessageKey
 import io.opencola.serialization.protobuf.ProtoSerializable
-import io.opencola.serialization.protobuf.Message as Proto
+import io.opencola.network.protobuf.Message as Proto
 
 class GetTransactionsMessage(val mostRecentTransactionId: Id?, val maxTransactions: Int = 10) :
-    Message(messageType, MessageKey.of("GetTxns")) {
+    Message(MessageType.GET_TRANSACTIONS, MessageKey.of("GET_TRANSACTIONS")) {
 
     companion object : ProtoSerializable<GetTransactionsMessage, Proto.GetTransactionsMessage> {
-        val messageType = "GetTxns"
         override fun toProto(value: GetTransactionsMessage): Proto.GetTransactionsMessage {
             return Proto.GetTransactionsMessage.newBuilder()
                 .also {
                     if (value.mostRecentTransactionId != null)
-                        it.setMostRecentTransactionId(value.mostRecentTransactionId.toProto())
+                        it.setCurrentTransactionId(value.mostRecentTransactionId.toProto())
                     it.maxTransactions = value.maxTransactions
                 }
                 .build()
         }
 
         override fun fromProto(value: Proto.GetTransactionsMessage): GetTransactionsMessage {
-            val id = if (value.hasMostRecentTransactionId()) Id.fromProto(value.mostRecentTransactionId) else null
+            val id = if (value.hasCurrentTransactionId()) Id.fromProto(value.currentTransactionId) else null
             return GetTransactionsMessage(id, value.maxTransactions)
         }
 

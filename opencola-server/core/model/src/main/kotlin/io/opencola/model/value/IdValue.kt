@@ -2,7 +2,7 @@ package io.opencola.model.value
 
 import com.google.protobuf.ByteString
 import io.opencola.model.Id
-import io.opencola.serialization.protobuf.Model as Proto
+import io.opencola.model.protobuf.Model as Proto
 
 class IdValue(value: Id) : Value<Id>(value) {
     companion object Factory : ValueWrapper<Id> {
@@ -16,13 +16,13 @@ class IdValue(value: Id) : Value<Id>(value) {
 
         override fun toProto(value: Id): Proto.Value {
             return Proto.Value.newBuilder()
-                .setOcType(Proto.OCType.ID)
+                .setOcType(Proto.Value.OCType.ID)
                 .setBytes(ByteString.copyFrom(Id.encode(value)))
                 .build()
         }
 
         override fun fromProto(value: Proto.Value): Id {
-            require(value.ocType == Proto.OCType.ID)
+            require(value.ocType == Proto.Value.OCType.ID)
             return Id.decode(value.bytes.toByteArray())
         }
 

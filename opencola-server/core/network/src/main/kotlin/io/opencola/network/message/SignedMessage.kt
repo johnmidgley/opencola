@@ -5,7 +5,7 @@ import io.opencola.security.Signator
 import io.opencola.security.Signature
 import io.opencola.serialization.protobuf.ProtoSerializable
 import java.security.PublicKey
-import io.opencola.serialization.protobuf.Message as Proto
+import io.opencola.network.protobuf.Message as Proto
 
 class SignedMessage(val from: Id, val body: UnsignedMessage, val signature: Signature) {
     override fun toString(): String {
@@ -21,6 +21,10 @@ class SignedMessage(val from: Id, val body: UnsignedMessage, val signature: Sign
         return encodeProto(this)
     }
 
+    fun toProto(): Proto.SignedMessage {
+        return toProto(this)
+    }
+
     fun hasValidSignature(publicKey: PublicKey): Boolean {
         return signature.isValidSignature(publicKey, body.payload)
     }
@@ -29,7 +33,7 @@ class SignedMessage(val from: Id, val body: UnsignedMessage, val signature: Sign
         override fun toProto(value: SignedMessage): Proto.SignedMessage {
             return Proto.SignedMessage.newBuilder()
                 .setFrom(Id.toProto(value.from))
-                .setMessage(UnsignedMessage.toProto(value.body).toByteString())
+                .setUnsignedMessageBytes(UnsignedMessage.toProto(value.body).toByteString())
                 .setSignature(Signature.toProto(value.signature))
                 .build()
         }
@@ -37,7 +41,7 @@ class SignedMessage(val from: Id, val body: UnsignedMessage, val signature: Sign
         override fun fromProto(value: Proto.SignedMessage): SignedMessage {
             return SignedMessage(
                 Id.fromProto(value.from),
-                UnsignedMessage.fromProto(Proto.UnsignedMessage.parseFrom(value.message)),
+                UnsignedMessage.fromProto(Proto.UnsignedMessage.parseFrom(value.unsignedMessageBytes)),
                 Signature.fromProto(value.signature)
             )
         }

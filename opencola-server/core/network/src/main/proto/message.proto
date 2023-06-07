@@ -1,34 +1,51 @@
 syntax = "proto3";
 
-package io.opencola.serialization.protobuf;
+package io.opencola.network.protobuf;
 
 import "security.proto";
 import "model.proto";
 
 message MessageHeader {
-  Id currentTransactionId = 1;
+  // Placeholder for future use
+}
+
+enum MessageType {
+  EMPTY = 0;
+  PING = 1;
+  PONG = 2;
+  GET_TRANSACTIONS = 3;
+  PUT_TRANSACTION = 4;
+  GET_DATA = 5;
+  PUT_DATA = 6;
 }
 
 message UnsignedMessage {
   MessageHeader header = 1;
-  string type = 2;
+  MessageType type = 2;
   bytes payload = 3;
 }
 
 message SignedMessage {
-  Id from = 1;
-  bytes message = 2;
-  Signature signature = 3;
+  io.opencola.model.protobuf.Id from = 1;
+  // The message needs to have a stable set of bytes to sign, so we use the serialized bytes here
+  // instead of a typed UnsignedMessage
+  bytes unsignedMessageBytes = 2;
+  io.opencola.security.protobuf.Signature signature = 3;
 }
 
 message MessageEnvelope {
-  Id id = 1;
-  string encryptionTransformation = 2;
-  bytes message = 3;
+  io.opencola.model.protobuf.Id to = 1;
+  // Network providers may implement their own end to end encryption (e.g. OCRelayNetworkProvider), in which case,
+  // passing signed messages is safe. If not (e.g. HttpNetworkProvider), the message should be encrypted.
+  oneof message {
+    SignedMessage signedMessage = 2;
+    io.opencola.security.protobuf.EncryptedMessage encryptedSignedMessage = 3;
+  }
 }
 
 message GetTransactionsMessage {
-  Id mostRecentTransactionId = 1;
+  // Current transaction id from the peer requesting transactions
+  io.opencola.model.protobuf.Id currentTransactionId = 1;
   int32 maxTransactions = 2;
 }
 
@@ -36,16 +53,17 @@ message PutTransactionMessage {
   // Transactions are sent as bytes to preserve signatures
   bytes signedTransaction = 1;
 
-  // Indicator of the persona's current transaction id, so peer knows whether to request more transactions
-  Id lastTransactionId = 2;
+  // The persona's current transaction id, used to determine whether more transactions should be
+  // requested from the peer receiving the transaction
+  io.opencola.model.protobuf.Id currentTransactionId = 2;
 }
 
 message GetDataMessage {
-   Id id = 1;
+  io.opencola.model.protobuf.Id id = 1;
 }
 
 message PutDataMessage {
-  Id id = 1;
+  io.opencola.model.protobuf.Id id = 1;
   bytes data = 2;
 }
 

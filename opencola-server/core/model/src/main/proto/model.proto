@@ -1,17 +1,38 @@
 syntax = "proto3";
 
-package io.opencola.serialization.protobuf;
+package io.opencola.model.protobuf;
 
+import "google/protobuf/timestamp.proto";
 import "security.proto";
 
 message Attribute {
+  enum CoreAttribute {
+    TYPE = 0;
+    MIME_TYPE = 1;
+    URI = 2;
+    DATA_ID = 3;
+    PUBLIC_KEY = 4;
+    NAME = 5;
+    DESCRIPTION = 6;
+    TEXT = 7;
+    IMAGE_URI = 8;
+    TAG = 9;
+    TRUST = 10;
+    LIKE = 11;
+    RATING = 12;
+    PARENT_ID = 13;
+    COMMENT_ID = 14;
+    NETWORK_TOKEN = 15;
+    ATTACHMENT_ID = 16;
+  }
   oneof value {
-    uint32 ordinal = 1;
+    CoreAttribute coreAttribute = 1;
     string uri = 2;
   }
 }
 
-enum OCType {
+message Value {
+  enum OCType {
     EMPTY = 0;
     BOOLEAN = 1;
     INT = 2;
@@ -20,31 +41,23 @@ enum OCType {
     DOUBLE = 5;
     STRING = 6;
     BYTES = 7;
-    DATETIME = 8;
-    URI = 9;
-    UUID = 10;
-    ID = 11;
-    PUBLIC_KEY = 12;
-}
-
-message Value {
+    URI = 8;
+    ID = 9;
+    PUBLIC_KEY = 10;
+  }
   OCType ocType = 1;
   oneof value {
-    double double = 3;
-    float float = 4;
-    int32 int32 = 5;
-    int64 int64 = 6;
-    uint32 uint32 = 7;
-    uint64 uint64 = 8;
-    sint32 sint32 = 9;
-    sint64 sint64 = 10;
-    fixed32 fixed32 = 11;
-    fixed64 fixed64 = 12;
-    sfixed32 sfixed32 = 13;
-    sfixed64 sfixed64 = 14;
-    bool bool = 15;
-    string string = 16;
-    bytes bytes = 17;
+    bytes empty = 2;
+    bool boolean = 3;
+    int32 int = 4;
+    int64 long = 5;
+    float float = 6;
+    double double = 7;
+    string string = 8;
+    bytes bytes = 9;
+    string uri = 10;
+    Id id = 11;
+    io.opencola.security.protobuf.PublicKey publicKey = 12;
   }
 }
 
@@ -72,7 +85,7 @@ message Transaction {
   Id id = 1;
   Id authorityId = 2;
   repeated TransactionEntity transactionEntities = 3;
-  uint64 epochSecond = 4;
+  google.protobuf.Timestamp timestamp = 4;
 }
 
 message SignedTransaction {
@@ -86,5 +99,5 @@ message SignedTransaction {
   is why we use a bytes type here, rather than a Transaction message.
    */
   bytes transaction = 1;
-  Signature signature = 2;
+  io.opencola.security.protobuf.Signature signature = 2;
 }

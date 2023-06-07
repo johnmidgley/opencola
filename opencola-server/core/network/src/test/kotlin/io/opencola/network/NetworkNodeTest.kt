@@ -76,7 +76,7 @@ class NetworkNodeTest {
 
         runBlocking {
             val result = CompletableDeferred<Unit>()
-            context.setRoute(Route(PingMessage.messageType) { _, _, _ -> result.complete(Unit); emptyList() })
+            context.setRoute(Route(MessageType.PING) { _, _, _ -> result.complete(Unit); emptyList() })
             context.provider.handleMessage(envelopeBytes, false)
             withTimeout(3000) { result.await() }
         }
@@ -164,7 +164,7 @@ class NetworkNodeTest {
             context.provider.handleMessage(envelopeBytes, false)
 
             val signedMessage = withTimeout(3000) { result.await() }
-            assertEquals(PutDataMessage.messageType, signedMessage.body.type)
+            assertEquals(MessageType.PUT_DATA, signedMessage.body.type)
             val putDataMessage = PutDataMessage.decodeProto(signedMessage.body.payload)
             assertEquals(dataId, putDataMessage.id)
             assertContentEquals(data, context.contentBasedFileStore.read(dataId))
@@ -173,7 +173,7 @@ class NetworkNodeTest {
 
     fun decodePutTransactionsMessage(publicKey: PublicKey, signedMessage: SignedMessage?): PutTransactionMessage {
         assertNotNull(signedMessage)
-        assertEquals(PutTransactionMessage.messageType, signedMessage.body.type)
+        assertEquals(MessageType.PUT_TRANSACTION, signedMessage.body.type)
         assert(signedMessage.hasValidSignature(publicKey))
         return PutTransactionMessage.decodeProto(signedMessage.body.payload).also {
             assert(it.getSignedTransaction().hasValidSignature(publicKey))

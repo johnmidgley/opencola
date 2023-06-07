@@ -2,6 +2,7 @@ package io.opencola.relay.common.message
 
 import com.google.protobuf.ByteString
 import io.opencola.model.Id
+import io.opencola.security.PublicKeyProtoCodec
 import io.opencola.relay.common.protobuf.Relay as Proto
 import io.opencola.security.SIGNATURE_ALGO
 import io.opencola.security.Signature
@@ -41,7 +42,7 @@ class Header(val messageId: UUID, val from: PublicKey, val signature: Signature)
 
         override fun toProto(value: Header): Proto.Header {
             return Proto.Header.newBuilder()
-                .setFrom(ByteString.copyFrom(value.from.encoded))
+                .setFrom(PublicKeyProtoCodec.toProto(value.from))
                 .setMessageId(ByteString.copyFrom(value.messageId.toByteArray()))
                 .setSignature(value.signature.toProto())
                 .build()
@@ -50,7 +51,7 @@ class Header(val messageId: UUID, val from: PublicKey, val signature: Signature)
         override fun fromProto(value: Proto.Header): Header {
             return Header(
                 UUIDByteArrayCodecCodec.decode(value.messageId.toByteArray()),
-                publicKeyFromBytes(value.from.toByteArray()),
+                PublicKeyProtoCodec.fromProto(value.from),
                 Signature.fromProto(value.signature)
             )
         }

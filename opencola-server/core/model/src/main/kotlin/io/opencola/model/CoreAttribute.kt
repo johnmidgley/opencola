@@ -1,6 +1,7 @@
 package io.opencola.model
 
 import io.opencola.model.value.*
+import io.opencola.model.protobuf.Model.Attribute.CoreAttribute as ProtoAttribute
 import java.net.URI
 
 // NOTE: In order to be properly searchable, attributes should be added to the search schema.
@@ -12,6 +13,7 @@ enum class CoreAttribute(val spec: Attribute) {
         Attribute(
             URI("oc://attributes/type"),
             AttributeType.SingleValue,
+            ProtoAttribute.TYPE,
             StringValue as ValueWrapper<Any>,
             isIndexable = false
         )
@@ -20,6 +22,7 @@ enum class CoreAttribute(val spec: Attribute) {
         Attribute(
             URI("oc://attributes/mimeType"),
             AttributeType.SingleValue,
+            ProtoAttribute.MIME_TYPE,
             StringValue as ValueWrapper<Any>,
             isIndexable = false
         )
@@ -28,6 +31,7 @@ enum class CoreAttribute(val spec: Attribute) {
         Attribute(
             URI("oc://attributes/uri"),
             AttributeType.SingleValue,
+            ProtoAttribute.URI,
             UriValue as ValueWrapper<Any>,
             isIndexable = false
         )
@@ -37,6 +41,7 @@ enum class CoreAttribute(val spec: Attribute) {
             "dataIds",
             URI("oc://attributes/dataId"),
             AttributeType.MultiValueSet,
+            ProtoAttribute.DATA_ID,
             IdValue as ValueWrapper<Any>,
             isIndexable = false,
             null
@@ -46,6 +51,7 @@ enum class CoreAttribute(val spec: Attribute) {
         Attribute(
             URI("oc://attributes/publicKey"),
             AttributeType.SingleValue,
+            ProtoAttribute.PUBLIC_KEY,
             PublicKeyValue as ValueWrapper<Any>,
             isIndexable = false
         )
@@ -54,6 +60,7 @@ enum class CoreAttribute(val spec: Attribute) {
         Attribute(
             URI("oc://attributes/name"),
             AttributeType.SingleValue,
+            ProtoAttribute.NAME,
             StringValue as ValueWrapper<Any>,
             isIndexable = true
         )
@@ -62,6 +69,7 @@ enum class CoreAttribute(val spec: Attribute) {
         Attribute(
             URI("oc://attributes/description"),
             AttributeType.SingleValue,
+            ProtoAttribute.DESCRIPTION,
             StringValue as ValueWrapper<Any>,
             isIndexable = true
         )
@@ -72,6 +80,7 @@ enum class CoreAttribute(val spec: Attribute) {
         Attribute(
             URI("oc://attributes/text"),
             AttributeType.SingleValue,
+            ProtoAttribute.TEXT,
             StringValue as ValueWrapper<Any>,
             isIndexable = true
         )
@@ -80,6 +89,7 @@ enum class CoreAttribute(val spec: Attribute) {
         Attribute(
             URI("oc://attributes/imageUri"),
             AttributeType.SingleValue,
+            ProtoAttribute.IMAGE_URI,
             UriValue as ValueWrapper<Any>,
             isIndexable = false
         )
@@ -89,14 +99,17 @@ enum class CoreAttribute(val spec: Attribute) {
             "tags",
             URI("oc://attributes/tag"),
             AttributeType.MultiValueSet,
+            ProtoAttribute.TAG,
             StringValue as ValueWrapper<Any>,
             isIndexable = true,
-            null)
+            null
+        )
     ),
     Trust(
         Attribute(
             URI("oc://attributes/trust"),
             AttributeType.SingleValue,
+            ProtoAttribute.TRUST,
             FloatValue as ValueWrapper<Any>,
             isIndexable = true
         )
@@ -105,6 +118,7 @@ enum class CoreAttribute(val spec: Attribute) {
         Attribute(
             URI("oc://attributes/like"),
             AttributeType.SingleValue,
+            ProtoAttribute.LIKE,
             BooleanValue as ValueWrapper<Any>,
             isIndexable = true
         )
@@ -113,23 +127,26 @@ enum class CoreAttribute(val spec: Attribute) {
         Attribute(
             URI("oc://attributes/rating"),
             AttributeType.SingleValue,
+            ProtoAttribute.RATING,
             FloatValue as ValueWrapper<Any>,
             isIndexable = true
         )
     ),
     ParentId(
-      Attribute(
-          URI("oc://attributes/parentId"),
-          AttributeType.SingleValue,
-          IdValue as ValueWrapper<Any>,
-          isIndexable = false,
-      )
+        Attribute(
+            URI("oc://attributes/parentId"),
+            AttributeType.SingleValue,
+            ProtoAttribute.PARENT_ID,
+            IdValue as ValueWrapper<Any>,
+            isIndexable = false,
+        )
     ),
     CommentIds(
         Attribute(
             "commentIds",
             URI("oc://attributes/commentId"),
             AttributeType.MultiValueSet,
+            ProtoAttribute.COMMENT_ID,
             IdValue as ValueWrapper<Any>,
             isIndexable = false,
             computeEntityCommentIds
@@ -139,6 +156,7 @@ enum class CoreAttribute(val spec: Attribute) {
         Attribute(
             URI("oc://attributes/networkToken"),
             AttributeType.SingleValue,
+            ProtoAttribute.NETWORK_TOKEN,
             ByteArrayValue as ValueWrapper<Any>,
             isIndexable = false,
         )
@@ -148,9 +166,11 @@ enum class CoreAttribute(val spec: Attribute) {
             "attachmentIds",
             URI("oc://attributes/attachmentId"),
             AttributeType.MultiValueSet,
+            ProtoAttribute.ATTACHMENT_ID,
             IdValue as ValueWrapper<Any>,
             isIndexable = false,
-            null)
+            null
+        )
     ),
 }
 

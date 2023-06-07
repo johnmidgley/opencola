@@ -4,6 +4,7 @@ import io.opencola.event.EventBus
 import io.opencola.event.Events
 import io.opencola.model.Id
 import io.opencola.network.message.Message
+import io.opencola.network.message.MessageType
 import io.opencola.network.message.SignedMessage
 import io.opencola.security.Signator
 import io.opencola.storage.addressbook.AddressBook
@@ -26,7 +27,7 @@ class NetworkNode(
     private val eventBus: EventBus,
     private val signator: Signator,
 ) {
-    class Route(val messageType: String, val handler: messageHandler)
+    class Route(val messageType: MessageType, val handler: messageHandler)
 
     private val logger = KotlinLogging.logger("NetworkNode")
     private val peerStatuses = ConcurrentHashMap<Id, PeerStatus>()

@@ -1,7 +1,6 @@
 package io.opencola.relay.common.message
 
-import com.google.protobuf.ByteString
-import io.opencola.security.publicKeyFromBytes
+import io.opencola.security.PublicKeyProtoCodec
 import io.opencola.relay.common.protobuf.Relay as Proto
 import io.opencola.serialization.protobuf.ProtoSerializable
 import java.security.PublicKey
@@ -15,15 +14,14 @@ class AuthenticationResult(val status: AuthenticationStatus, val publicKey: Publ
         override fun toProto(value: AuthenticationResult): Proto.AuthenticationResult {
             return Proto.AuthenticationResult.newBuilder()
                 .setStatus(value.status.toProto())
-                .setPublicKey(ByteString.copyFrom(value.publicKey.encoded))
+                .setPublicKey(PublicKeyProtoCodec.toProto(value.publicKey))
                 .build()
         }
 
         override fun fromProto(value: Proto.AuthenticationResult): AuthenticationResult {
             return AuthenticationResult(
                 AuthenticationStatus.fromProto(value.status),
-                publicKeyFromBytes(value.publicKey.toByteArray())
-
+                PublicKeyProtoCodec.fromProto(value.publicKey)
             )
         }
 

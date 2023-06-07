@@ -1,9 +1,8 @@
 package io.opencola.model
 
 import io.opencola.serialization.protobuf.ProtoSerializable
-import io.opencola.serialization.protobuf.Model as Proto
+import io.opencola.model.protobuf.Model as Proto
 import io.opencola.serialization.StreamSerializer
-import io.opencola.serialization.protobuf.Model
 import io.opencola.serialization.readInt
 import io.opencola.serialization.writeInt
 import java.io.InputStream
@@ -40,8 +39,8 @@ data class TransactionEntity(val entityId: Id, val facts: List<TransactionFact>)
             )
         }
 
-        override fun parseProto(bytes: ByteArray): Model.TransactionEntity {
-            return Model.TransactionEntity.parseFrom(bytes)
+        override fun parseProto(bytes: ByteArray): Proto.TransactionEntity {
+            return Proto.TransactionEntity.parseFrom(bytes)
         }
     }
 }

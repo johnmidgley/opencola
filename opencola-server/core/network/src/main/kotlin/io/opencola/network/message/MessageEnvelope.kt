@@ -2,8 +2,8 @@ package io.opencola.network.message
 
 import io.opencola.model.Id
 import io.opencola.security.Encryptor
-import io.opencola.serialization.protobuf.Message as ProtoMessage
-import com.google.protobuf.ByteString
+import io.opencola.network.protobuf.Message as ProtoMessage
+import io.opencola.security.EncryptedBytes
 import io.opencola.security.PublicKeyProvider
 import io.opencola.security.encrypt
 
@@ -11,16 +11,19 @@ class MessageEnvelope(val to: Id, val signedMessage: SignedMessage) {
     fun encode(publicKeyProvider: PublicKeyProvider<Id>?): ByteArray {
         val toAlias = to.toString()
         val encodedSignedBytes = signedMessage.encode()
-        val encryption = publicKeyProvider?.let {
+        val encryptedBytes = publicKeyProvider?.let {
             publicKeyProvider.getPublicKey(to)?.let { encrypt(it, encodedSignedBytes) }
                 ?: throw RuntimeException("Unable to find public key for alias: $toAlias")
         }
-        val messageBytes = encryption?.bytes ?: encodedSignedBytes
 
         return ProtoMessage.MessageEnvelope.newBuilder()
-            .setId(Id.toProto(to))
-            .also { builder -> encryption?.let { builder.setEncryptionTransformation(it.transformation) } }
-            .setMessage(ByteString.copyFrom(messageBytes))
+            .setTo(Id.toProto(to))
+            .also {
+                if (encryptedBytes == null)
+                    it.setSignedMessage(signedMessage.toProto())
+                else
+                    it.setEncryptedSignedMessage(encryptedBytes.toProto())
+            }
             .build()
             .toByteArray()
     }
@@ -28,21 +31,23 @@ class MessageEnvelope(val to: Id, val signedMessage: SignedMessage) {
     companion object {
         fun decode(envelopeBytes: ByteArray, encryptor: Encryptor? = null): MessageEnvelope {
             val envelope = ProtoMessage.MessageEnvelope.parseFrom(envelopeBytes)
-            require(envelope.encryptionTransformation.isBlank() || encryptor != null)
-            val to = Id.fromProto(envelope.id)
-            val messageBytes = envelope.message.toByteArray()
-            val signedMessageBytes = encryptor?.let {
-                val transformation = envelope.encryptionTransformation
-                if (transformation != null) {
-                    encryptor.decrypt(to.toString(), messageBytes, transformation)
+            require(!(envelope.hasEncryptedSignedMessage() && encryptor == null))
+            val to = Id.fromProto(envelope.to)
+            val signedMessage =
+                if (envelope.hasEncryptedSignedMessage()) {
+                    SignedMessage.fromProto(
+                        ProtoMessage.SignedMessage.parseFrom(
+                            encryptor!!.decrypt(
+                                to.toString(),
+                                EncryptedBytes.fromProto(envelope.encryptedSignedMessage)
+                            )
+                        )
+                    )
                 } else {
-                    // If an encryptor is provided, require a transformation for safety (i.e. to prevent accidentally
-                    // sending unencrypted messages)
-                    throw RuntimeException("Missing encryption transformation")
+                    SignedMessage.fromProto(envelope.signedMessage)
                 }
-            } ?: messageBytes
 
-            return MessageEnvelope(to, SignedMessage.fromProto(ProtoMessage.SignedMessage.parseFrom(signedMessageBytes)))
+            return MessageEnvelope(to, signedMessage)
         }
     }
 }

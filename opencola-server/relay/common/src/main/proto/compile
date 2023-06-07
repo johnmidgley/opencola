@@ -1,28 +1,3 @@
 #!/bin/bash
-
-# Check that protoc is installed
-if ! [ -x "$(command -v protoc)" ]; then
-    echo "protoc is not installed"
-    exit 1
-fi
-
-# function to generate proto
-function generate_proto() {
-    protoc -I. -I ../../../../../core/serialization/src/main/proto/ --java_out=../java $1
-
-    # Check error code
-    if [ $? -ne 0 ]; then
-        echo "Failed to compile $1"
-        exit 1
-    fi
-
-    echo "Successfully compiled $1 to Java"
-}
-
-# Get *.proto files
-proto_files=$(find . -name "*.proto")
-
-# Generate proto files
-for file in $proto_files; do
-    generate_proto $file
-done
+CORE_PATH=../../../../../core
+$CORE_PATH/serialization/src/main/proto/compile -I . -I $CORE_PATH/security/src/main/proto/

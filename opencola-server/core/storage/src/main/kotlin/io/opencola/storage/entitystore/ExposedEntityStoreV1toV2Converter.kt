@@ -1,7 +1,7 @@
 package io.opencola.storage.entitystore
 
 import io.opencola.model.*
-import io.opencola.model.value.emptyValue
+import io.opencola.model.value.EmptyValue
 import io.opencola.security.Signator
 import io.opencola.security.isValidSignature
 import io.opencola.serialization.EncodingFormat
@@ -14,7 +14,7 @@ import kotlin.io.path.exists
 private val logger = KotlinLogging.logger("EntityStoreConverter")
 
 fun cleanFact(fact: TransactionFact) : TransactionFact? {
-    return if(fact.operation == Operation.Add && fact.value == emptyValue) null else fact
+    return if(fact.operation == Operation.Add && fact.value == EmptyValue) null else fact
 }
 
 fun migrateTransaction(entityStoreV2: ExposedEntityStoreV2, transaction: Transaction) : Transaction {
