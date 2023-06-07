@@ -47,6 +47,9 @@ class ExposedEntityStoreV2(
         val value = blob("value")
         val operation = enumeration("operation", Operation::class)
         val epochSecond = long("epochSecond")
+        // This ordinal is used to order transactions from an authority. While it does refer to the id of
+        // a transaction in the transactions table at the source authority, it cannot be used as a
+        // foreign key because the id may not be unique across peers / authorities locally.
         val transactionOrdinal = long("transactionOrdinal")
     }
 
