@@ -6,7 +6,7 @@ import io.opencola.model.SignedTransaction
 import io.opencola.serialization.EncodingFormat
 import io.opencola.storage.ExposedEntityStoreContext
 import io.opencola.storage.addPersona
-import io.opencola.util.compress
+import io.opencola.util.deflate
 import org.junit.Test
 import java.net.URI
 
@@ -23,7 +23,7 @@ class ModelTest {
         val signedTransaction = context.entityStore.updateEntities(entity0, entity1)!!
 
         val encoded = SignedTransaction.encode(signedTransaction)
-        val compressedEncoded = compress(encoded)
+        val compressedEncoded = deflate(encoded)
 
         // Encode with protobuf for comparison
         val transaction = signedTransaction.transaction
@@ -32,7 +32,7 @@ class ModelTest {
         val protoSignedTransaction = SignedTransaction(EncodingFormat.PROTOBUF, protoEncoded, signature)
 
         val protoPacked = SignedTransaction.encodeProto(protoSignedTransaction)
-        val protoCompressed = compress(protoPacked)
+        val protoCompressed = deflate(protoPacked)
         val protoUnpacked = SignedTransaction.decodeProto(protoPacked)
         assertEquals(protoSignedTransaction, protoUnpacked)
 

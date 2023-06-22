@@ -7,8 +7,8 @@ class CompressionTest {
     @Test
     fun testCompress() {
         val bytes = "Hello World!".toByteArray()
-        val compressed = compress(bytes)
-        val decompressed = uncompress(compressed)
+        val compressed = deflate(bytes)
+        val decompressed = inflate(compressed)
         assertContentEquals(bytes, decompressed)
     }
 }

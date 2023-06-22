@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package io.opencola.util.protobuf;
+
+enum CompressionFormat {
+  NONE = 0;
+  DEFLATE = 1;
+}
+
+message CompressedBytes {
+  CompressionFormat format = 1;
+  bytes bytes = 2;
+}
+

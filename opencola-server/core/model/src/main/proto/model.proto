@@ -3,6 +3,7 @@ syntax = "proto3";
 package io.opencola.model.protobuf;
 
 import "google/protobuf/timestamp.proto";
+import "util.proto";
 import "security.proto";
 
 message Attribute {
@@ -100,4 +101,8 @@ message SignedTransaction {
    */
   bytes transaction = 1;
   io.opencola.security.protobuf.Signature signature = 2;
+}
+
+message CompressedSignedTransaction {
+  io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;
 }

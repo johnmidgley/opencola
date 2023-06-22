@@ -127,28 +127,16 @@ public final class Model {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <pre>
-     * TODO: For safety, make enum - refer to this in core attribute
-     * </pre>
-     *
      * <code>.io.opencola.model.protobuf.Attribute.CoreAttribute coreAttribute = 1;</code>
      * @return Whether the coreAttribute field is set.
      */
     boolean hasCoreAttribute();
     /**
-     * <pre>
-     * TODO: For safety, make enum - refer to this in core attribute
-     * </pre>
-     *
      * <code>.io.opencola.model.protobuf.Attribute.CoreAttribute coreAttribute = 1;</code>
      * @return The enum numeric value on the wire for coreAttribute.
      */
     int getCoreAttributeValue();
     /**
-     * <pre>
-     * TODO: For safety, make enum - refer to this in core attribute
-     * </pre>
-     *
      * <code>.io.opencola.model.protobuf.Attribute.CoreAttribute coreAttribute = 1;</code>
      * @return The coreAttribute.
      */
@@ -499,10 +487,6 @@ public final class Model {
 
     public static final int COREATTRIBUTE_FIELD_NUMBER = 1;
     /**
-     * <pre>
-     * TODO: For safety, make enum - refer to this in core attribute
-     * </pre>
-     *
      * <code>.io.opencola.model.protobuf.Attribute.CoreAttribute coreAttribute = 1;</code>
      * @return Whether the coreAttribute field is set.
      */
@@ -510,10 +494,6 @@ public final class Model {
       return valueCase_ == 1;
     }
     /**
-     * <pre>
-     * TODO: For safety, make enum - refer to this in core attribute
-     * </pre>
-     *
      * <code>.io.opencola.model.protobuf.Attribute.CoreAttribute coreAttribute = 1;</code>
      * @return The enum numeric value on the wire for coreAttribute.
      */
@@ -524,10 +504,6 @@ public final class Model {
       return 0;
     }
     /**
-     * <pre>
-     * TODO: For safety, make enum - refer to this in core attribute
-     * </pre>
-     *
      * <code>.io.opencola.model.protobuf.Attribute.CoreAttribute coreAttribute = 1;</code>
      * @return The coreAttribute.
      */
@@ -981,10 +957,6 @@ public final class Model {
       private int bitField0_;
 
       /**
-       * <pre>
-       * TODO: For safety, make enum - refer to this in core attribute
-       * </pre>
-       *
        * <code>.io.opencola.model.protobuf.Attribute.CoreAttribute coreAttribute = 1;</code>
        * @return Whether the coreAttribute field is set.
        */
@@ -993,10 +965,6 @@ public final class Model {
         return valueCase_ == 1;
       }
       /**
-       * <pre>
-       * TODO: For safety, make enum - refer to this in core attribute
-       * </pre>
-       *
        * <code>.io.opencola.model.protobuf.Attribute.CoreAttribute coreAttribute = 1;</code>
        * @return The enum numeric value on the wire for coreAttribute.
        */
@@ -1008,10 +976,6 @@ public final class Model {
         return 0;
       }
       /**
-       * <pre>
-       * TODO: For safety, make enum - refer to this in core attribute
-       * </pre>
-       *
        * <code>.io.opencola.model.protobuf.Attribute.CoreAttribute coreAttribute = 1;</code>
        * @param value The enum numeric value on the wire for coreAttribute to set.
        * @return This builder for chaining.
@@ -1023,10 +987,6 @@ public final class Model {
         return this;
       }
       /**
-       * <pre>
-       * TODO: For safety, make enum - refer to this in core attribute
-       * </pre>
-       *
        * <code>.io.opencola.model.protobuf.Attribute.CoreAttribute coreAttribute = 1;</code>
        * @return The coreAttribute.
        */
@@ -1040,10 +1000,6 @@ public final class Model {
         return io.opencola.model.protobuf.Model.Attribute.CoreAttribute.TYPE;
       }
       /**
-       * <pre>
-       * TODO: For safety, make enum - refer to this in core attribute
-       * </pre>
-       *
        * <code>.io.opencola.model.protobuf.Attribute.CoreAttribute coreAttribute = 1;</code>
        * @param value The coreAttribute to set.
        * @return This builder for chaining.
@@ -1058,10 +1014,6 @@ public final class Model {
         return this;
       }
       /**
-       * <pre>
-       * TODO: For safety, make enum - refer to this in core attribute
-       * </pre>
-       *
        * <code>.io.opencola.model.protobuf.Attribute.CoreAttribute coreAttribute = 1;</code>
        * @return This builder for chaining.
        */
@@ -8007,6 +7959,609 @@ public final class Model {
 
   }
 
+  public interface CompressedSignedTransactionOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:io.opencola.model.protobuf.CompressedSignedTransaction)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
+     * @return Whether the signedTransaction field is set.
+     */
+    boolean hasSignedTransaction();
+    /**
+     * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
+     * @return The signedTransaction.
+     */
+    io.opencola.util.protobuf.Util.CompressedBytes getSignedTransaction();
+    /**
+     * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
+     */
+    io.opencola.util.protobuf.Util.CompressedBytesOrBuilder getSignedTransactionOrBuilder();
+  }
+  /**
+   * Protobuf type {@code io.opencola.model.protobuf.CompressedSignedTransaction}
+   */
+  public static final class CompressedSignedTransaction extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:io.opencola.model.protobuf.CompressedSignedTransaction)
+      CompressedSignedTransactionOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use CompressedSignedTransaction.newBuilder() to construct.
+    private CompressedSignedTransaction(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private CompressedSignedTransaction() {
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new CompressedSignedTransaction();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return io.opencola.model.protobuf.Model.internal_static_io_opencola_model_protobuf_CompressedSignedTransaction_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return io.opencola.model.protobuf.Model.internal_static_io_opencola_model_protobuf_CompressedSignedTransaction_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              io.opencola.model.protobuf.Model.CompressedSignedTransaction.class, io.opencola.model.protobuf.Model.CompressedSignedTransaction.Builder.class);
+    }
+
+    public static final int SIGNEDTRANSACTION_FIELD_NUMBER = 1;
+    private io.opencola.util.protobuf.Util.CompressedBytes signedTransaction_;
+    /**
+     * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
+     * @return Whether the signedTransaction field is set.
+     */
+    @java.lang.Override
+    public boolean hasSignedTransaction() {
+      return signedTransaction_ != null;
+    }
+    /**
+     * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
+     * @return The signedTransaction.
+     */
+    @java.lang.Override
+    public io.opencola.util.protobuf.Util.CompressedBytes getSignedTransaction() {
+      return signedTransaction_ == null ? io.opencola.util.protobuf.Util.CompressedBytes.getDefaultInstance() : signedTransaction_;
+    }
+    /**
+     * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
+     */
+    @java.lang.Override
+    public io.opencola.util.protobuf.Util.CompressedBytesOrBuilder getSignedTransactionOrBuilder() {
+      return signedTransaction_ == null ? io.opencola.util.protobuf.Util.CompressedBytes.getDefaultInstance() : signedTransaction_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (signedTransaction_ != null) {
+        output.writeMessage(1, getSignedTransaction());
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (signedTransaction_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, getSignedTransaction());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof io.opencola.model.protobuf.Model.CompressedSignedTransaction)) {
+        return super.equals(obj);
+      }
+      io.opencola.model.protobuf.Model.CompressedSignedTransaction other = (io.opencola.model.protobuf.Model.CompressedSignedTransaction) obj;
+
+      if (hasSignedTransaction() != other.hasSignedTransaction()) return false;
+      if (hasSignedTransaction()) {
+        if (!getSignedTransaction()
+            .equals(other.getSignedTransaction())) return false;
+      }
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasSignedTransaction()) {
+        hash = (37 * hash) + SIGNEDTRANSACTION_FIELD_NUMBER;
+        hash = (53 * hash) + getSignedTransaction().hashCode();
+      }
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static io.opencola.model.protobuf.Model.CompressedSignedTransaction parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.opencola.model.protobuf.Model.CompressedSignedTransaction parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.opencola.model.protobuf.Model.CompressedSignedTransaction parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.opencola.model.protobuf.Model.CompressedSignedTransaction parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.opencola.model.protobuf.Model.CompressedSignedTransaction parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.opencola.model.protobuf.Model.CompressedSignedTransaction parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.opencola.model.protobuf.Model.CompressedSignedTransaction parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static io.opencola.model.protobuf.Model.CompressedSignedTransaction parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static io.opencola.model.protobuf.Model.CompressedSignedTransaction parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static io.opencola.model.protobuf.Model.CompressedSignedTransaction parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static io.opencola.model.protobuf.Model.CompressedSignedTransaction parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static io.opencola.model.protobuf.Model.CompressedSignedTransaction parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(io.opencola.model.protobuf.Model.CompressedSignedTransaction prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code io.opencola.model.protobuf.CompressedSignedTransaction}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:io.opencola.model.protobuf.CompressedSignedTransaction)
+        io.opencola.model.protobuf.Model.CompressedSignedTransactionOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return io.opencola.model.protobuf.Model.internal_static_io_opencola_model_protobuf_CompressedSignedTransaction_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return io.opencola.model.protobuf.Model.internal_static_io_opencola_model_protobuf_CompressedSignedTransaction_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                io.opencola.model.protobuf.Model.CompressedSignedTransaction.class, io.opencola.model.protobuf.Model.CompressedSignedTransaction.Builder.class);
+      }
+
+      // Construct using io.opencola.model.protobuf.Model.CompressedSignedTransaction.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        signedTransaction_ = null;
+        if (signedTransactionBuilder_ != null) {
+          signedTransactionBuilder_.dispose();
+          signedTransactionBuilder_ = null;
+        }
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return io.opencola.model.protobuf.Model.internal_static_io_opencola_model_protobuf_CompressedSignedTransaction_descriptor;
+      }
+
+      @java.lang.Override
+      public io.opencola.model.protobuf.Model.CompressedSignedTransaction getDefaultInstanceForType() {
+        return io.opencola.model.protobuf.Model.CompressedSignedTransaction.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public io.opencola.model.protobuf.Model.CompressedSignedTransaction build() {
+        io.opencola.model.protobuf.Model.CompressedSignedTransaction result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public io.opencola.model.protobuf.Model.CompressedSignedTransaction buildPartial() {
+        io.opencola.model.protobuf.Model.CompressedSignedTransaction result = new io.opencola.model.protobuf.Model.CompressedSignedTransaction(this);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartial0(io.opencola.model.protobuf.Model.CompressedSignedTransaction result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.signedTransaction_ = signedTransactionBuilder_ == null
+              ? signedTransaction_
+              : signedTransactionBuilder_.build();
+        }
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof io.opencola.model.protobuf.Model.CompressedSignedTransaction) {
+          return mergeFrom((io.opencola.model.protobuf.Model.CompressedSignedTransaction)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(io.opencola.model.protobuf.Model.CompressedSignedTransaction other) {
+        if (other == io.opencola.model.protobuf.Model.CompressedSignedTransaction.getDefaultInstance()) return this;
+        if (other.hasSignedTransaction()) {
+          mergeSignedTransaction(other.getSignedTransaction());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                input.readMessage(
+                    getSignedTransactionFieldBuilder().getBuilder(),
+                    extensionRegistry);
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      private int bitField0_;
+
+      private io.opencola.util.protobuf.Util.CompressedBytes signedTransaction_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          io.opencola.util.protobuf.Util.CompressedBytes, io.opencola.util.protobuf.Util.CompressedBytes.Builder, io.opencola.util.protobuf.Util.CompressedBytesOrBuilder> signedTransactionBuilder_;
+      /**
+       * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
+       * @return Whether the signedTransaction field is set.
+       */
+      public boolean hasSignedTransaction() {
+        return ((bitField0_ & 0x00000001) != 0);
+      }
+      /**
+       * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
+       * @return The signedTransaction.
+       */
+      public io.opencola.util.protobuf.Util.CompressedBytes getSignedTransaction() {
+        if (signedTransactionBuilder_ == null) {
+          return signedTransaction_ == null ? io.opencola.util.protobuf.Util.CompressedBytes.getDefaultInstance() : signedTransaction_;
+        } else {
+          return signedTransactionBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
+       */
+      public Builder setSignedTransaction(io.opencola.util.protobuf.Util.CompressedBytes value) {
+        if (signedTransactionBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          signedTransaction_ = value;
+        } else {
+          signedTransactionBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
+       */
+      public Builder setSignedTransaction(
+          io.opencola.util.protobuf.Util.CompressedBytes.Builder builderForValue) {
+        if (signedTransactionBuilder_ == null) {
+          signedTransaction_ = builderForValue.build();
+        } else {
+          signedTransactionBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
+       */
+      public Builder mergeSignedTransaction(io.opencola.util.protobuf.Util.CompressedBytes value) {
+        if (signedTransactionBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) != 0) &&
+            signedTransaction_ != null &&
+            signedTransaction_ != io.opencola.util.protobuf.Util.CompressedBytes.getDefaultInstance()) {
+            getSignedTransactionBuilder().mergeFrom(value);
+          } else {
+            signedTransaction_ = value;
+          }
+        } else {
+          signedTransactionBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
+       */
+      public Builder clearSignedTransaction() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        signedTransaction_ = null;
+        if (signedTransactionBuilder_ != null) {
+          signedTransactionBuilder_.dispose();
+          signedTransactionBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
+       */
+      public io.opencola.util.protobuf.Util.CompressedBytes.Builder getSignedTransactionBuilder() {
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return getSignedTransactionFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
+       */
+      public io.opencola.util.protobuf.Util.CompressedBytesOrBuilder getSignedTransactionOrBuilder() {
+        if (signedTransactionBuilder_ != null) {
+          return signedTransactionBuilder_.getMessageOrBuilder();
+        } else {
+          return signedTransaction_ == null ?
+              io.opencola.util.protobuf.Util.CompressedBytes.getDefaultInstance() : signedTransaction_;
+        }
+      }
+      /**
+       * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          io.opencola.util.protobuf.Util.CompressedBytes, io.opencola.util.protobuf.Util.CompressedBytes.Builder, io.opencola.util.protobuf.Util.CompressedBytesOrBuilder> 
+          getSignedTransactionFieldBuilder() {
+        if (signedTransactionBuilder_ == null) {
+          signedTransactionBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              io.opencola.util.protobuf.Util.CompressedBytes, io.opencola.util.protobuf.Util.CompressedBytes.Builder, io.opencola.util.protobuf.Util.CompressedBytesOrBuilder>(
+                  getSignedTransaction(),
+                  getParentForChildren(),
+                  isClean());
+          signedTransaction_ = null;
+        }
+        return signedTransactionBuilder_;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:io.opencola.model.protobuf.CompressedSignedTransaction)
+    }
+
+    // @@protoc_insertion_point(class_scope:io.opencola.model.protobuf.CompressedSignedTransaction)
+    private static final io.opencola.model.protobuf.Model.CompressedSignedTransaction DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new io.opencola.model.protobuf.Model.CompressedSignedTransaction();
+    }
+
+    public static io.opencola.model.protobuf.Model.CompressedSignedTransaction getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<CompressedSignedTransaction>
+        PARSER = new com.google.protobuf.AbstractParser<CompressedSignedTransaction>() {
+      @java.lang.Override
+      public CompressedSignedTransaction parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<CompressedSignedTransaction> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<CompressedSignedTransaction> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public io.opencola.model.protobuf.Model.CompressedSignedTransaction getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_io_opencola_model_protobuf_Attribute_descriptor;
   private static final 
@@ -8042,6 +8597,11 @@ public final class Model {
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_io_opencola_model_protobuf_SignedTransaction_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_io_opencola_model_protobuf_CompressedSignedTransaction_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_io_opencola_model_protobuf_CompressedSignedTransaction_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -8052,52 +8612,55 @@ public final class Model {
   static {
     java.lang.String[] descriptorData = {
       "\n\013model.proto\022\032io.opencola.model.protobu" +
-      "f\032\037google/protobuf/timestamp.proto\032\016secu" +
-      "rity.proto\"\345\002\n\tAttribute\022L\n\rcoreAttribut" +
-      "e\030\001 \001(\01623.io.opencola.model.protobuf.Att" +
-      "ribute.CoreAttributeH\000\022\r\n\003uri\030\002 \001(\tH\000\"\361\001" +
-      "\n\rCoreAttribute\022\010\n\004TYPE\020\000\022\r\n\tMIME_TYPE\020\001" +
-      "\022\007\n\003URI\020\002\022\013\n\007DATA_ID\020\003\022\016\n\nPUBLIC_KEY\020\004\022\010" +
-      "\n\004NAME\020\005\022\017\n\013DESCRIPTION\020\006\022\010\n\004TEXT\020\007\022\r\n\tI" +
-      "MAGE_URI\020\010\022\007\n\003TAG\020\t\022\t\n\005TRUST\020\n\022\010\n\004LIKE\020\013" +
-      "\022\n\n\006RATING\020\014\022\r\n\tPARENT_ID\020\r\022\016\n\nCOMMENT_I" +
-      "D\020\016\022\021\n\rNETWORK_TOKEN\020\017\022\021\n\rATTACHMENT_ID\020" +
-      "\020B\007\n\005value\"\324\003\n\005Value\0228\n\006ocType\030\001 \001(\0162(.i" +
-      "o.opencola.model.protobuf.Value.OCType\022\017" +
-      "\n\005empty\030\002 \001(\014H\000\022\021\n\007boolean\030\003 \001(\010H\000\022\r\n\003in" +
-      "t\030\004 \001(\005H\000\022\016\n\004long\030\005 \001(\003H\000\022\017\n\005float\030\006 \001(\002" +
-      "H\000\022\020\n\006double\030\007 \001(\001H\000\022\020\n\006string\030\010 \001(\tH\000\022\017" +
-      "\n\005bytes\030\t \001(\014H\000\022\r\n\003uri\030\n \001(\tH\000\022,\n\002id\030\013 \001" +
-      "(\0132\036.io.opencola.model.protobuf.IdH\000\022=\n\t" +
-      "publicKey\030\014 \001(\0132(.io.opencola.security.p" +
-      "rotobuf.PublicKeyH\000\"\202\001\n\006OCType\022\t\n\005EMPTY\020" +
-      "\000\022\013\n\007BOOLEAN\020\001\022\007\n\003INT\020\002\022\010\n\004LONG\020\003\022\t\n\005FLO" +
-      "AT\020\004\022\n\n\006DOUBLE\020\005\022\n\n\006STRING\020\006\022\t\n\005BYTES\020\007\022" +
-      "\007\n\003URI\020\010\022\006\n\002ID\020\t\022\016\n\nPUBLIC_KEY\020\nB\007\n\005valu" +
-      "e\"\267\001\n\017TransactionFact\0228\n\tattribute\030\001 \001(\013" +
-      "2%.io.opencola.model.protobuf.Attribute\022" +
-      "0\n\005value\030\002 \001(\0132!.io.opencola.model.proto" +
-      "buf.Value\0228\n\toperation\030\003 \001(\0162%.io.openco" +
-      "la.model.protobuf.Operation\"\023\n\002Id\022\r\n\005byt" +
-      "es\030\001 \001(\014\"\201\001\n\021TransactionEntity\0220\n\010entity" +
-      "Id\030\001 \001(\0132\036.io.opencola.model.protobuf.Id" +
-      "\022:\n\005facts\030\002 \003(\0132+.io.opencola.model.prot" +
-      "obuf.TransactionFact\"\351\001\n\013Transaction\022*\n\002" +
-      "id\030\001 \001(\0132\036.io.opencola.model.protobuf.Id" +
-      "\0223\n\013authorityId\030\002 \001(\0132\036.io.opencola.mode" +
-      "l.protobuf.Id\022J\n\023transactionEntities\030\003 \003" +
-      "(\0132-.io.opencola.model.protobuf.Transact" +
-      "ionEntity\022-\n\ttimestamp\030\004 \001(\0132\032.google.pr" +
-      "otobuf.Timestamp\"e\n\021SignedTransaction\022\023\n" +
-      "\013transaction\030\001 \001(\014\022;\n\tsignature\030\002 \001(\0132(." +
-      "io.opencola.security.protobuf.Signature*" +
-      "!\n\tOperation\022\013\n\007RETRACT\020\000\022\007\n\003ADD\020\001b\006prot" +
-      "o3"
+      "f\032\037google/protobuf/timestamp.proto\032\nutil" +
+      ".proto\032\016security.proto\"\345\002\n\tAttribute\022L\n\r" +
+      "coreAttribute\030\001 \001(\01623.io.opencola.model." +
+      "protobuf.Attribute.CoreAttributeH\000\022\r\n\003ur" +
+      "i\030\002 \001(\tH\000\"\361\001\n\rCoreAttribute\022\010\n\004TYPE\020\000\022\r\n" +
+      "\tMIME_TYPE\020\001\022\007\n\003URI\020\002\022\013\n\007DATA_ID\020\003\022\016\n\nPU" +
+      "BLIC_KEY\020\004\022\010\n\004NAME\020\005\022\017\n\013DESCRIPTION\020\006\022\010\n" +
+      "\004TEXT\020\007\022\r\n\tIMAGE_URI\020\010\022\007\n\003TAG\020\t\022\t\n\005TRUST" +
+      "\020\n\022\010\n\004LIKE\020\013\022\n\n\006RATING\020\014\022\r\n\tPARENT_ID\020\r\022" +
+      "\016\n\nCOMMENT_ID\020\016\022\021\n\rNETWORK_TOKEN\020\017\022\021\n\rAT" +
+      "TACHMENT_ID\020\020B\007\n\005value\"\324\003\n\005Value\0228\n\006ocTy" +
+      "pe\030\001 \001(\0162(.io.opencola.model.protobuf.Va" +
+      "lue.OCType\022\017\n\005empty\030\002 \001(\014H\000\022\021\n\007boolean\030\003" +
+      " \001(\010H\000\022\r\n\003int\030\004 \001(\005H\000\022\016\n\004long\030\005 \001(\003H\000\022\017\n" +
+      "\005float\030\006 \001(\002H\000\022\020\n\006double\030\007 \001(\001H\000\022\020\n\006stri" +
+      "ng\030\010 \001(\tH\000\022\017\n\005bytes\030\t \001(\014H\000\022\r\n\003uri\030\n \001(\t" +
+      "H\000\022,\n\002id\030\013 \001(\0132\036.io.opencola.model.proto" +
+      "buf.IdH\000\022=\n\tpublicKey\030\014 \001(\0132(.io.opencol" +
+      "a.security.protobuf.PublicKeyH\000\"\202\001\n\006OCTy" +
+      "pe\022\t\n\005EMPTY\020\000\022\013\n\007BOOLEAN\020\001\022\007\n\003INT\020\002\022\010\n\004L" +
+      "ONG\020\003\022\t\n\005FLOAT\020\004\022\n\n\006DOUBLE\020\005\022\n\n\006STRING\020\006" +
+      "\022\t\n\005BYTES\020\007\022\007\n\003URI\020\010\022\006\n\002ID\020\t\022\016\n\nPUBLIC_K" +
+      "EY\020\nB\007\n\005value\"\267\001\n\017TransactionFact\0228\n\tatt" +
+      "ribute\030\001 \001(\0132%.io.opencola.model.protobu" +
+      "f.Attribute\0220\n\005value\030\002 \001(\0132!.io.opencola" +
+      ".model.protobuf.Value\0228\n\toperation\030\003 \001(\016" +
+      "2%.io.opencola.model.protobuf.Operation\"" +
+      "\023\n\002Id\022\r\n\005bytes\030\001 \001(\014\"\201\001\n\021TransactionEnti" +
+      "ty\0220\n\010entityId\030\001 \001(\0132\036.io.opencola.model" +
+      ".protobuf.Id\022:\n\005facts\030\002 \003(\0132+.io.opencol" +
+      "a.model.protobuf.TransactionFact\"\351\001\n\013Tra" +
+      "nsaction\022*\n\002id\030\001 \001(\0132\036.io.opencola.model" +
+      ".protobuf.Id\0223\n\013authorityId\030\002 \001(\0132\036.io.o" +
+      "pencola.model.protobuf.Id\022J\n\023transaction" +
+      "Entities\030\003 \003(\0132-.io.opencola.model.proto" +
+      "buf.TransactionEntity\022-\n\ttimestamp\030\004 \001(\013" +
+      "2\032.google.protobuf.Timestamp\"e\n\021SignedTr" +
+      "ansaction\022\023\n\013transaction\030\001 \001(\014\022;\n\tsignat" +
+      "ure\030\002 \001(\0132(.io.opencola.security.protobu" +
+      "f.Signature\"d\n\033CompressedSignedTransacti" +
+      "on\022E\n\021signedTransaction\030\001 \001(\0132*.io.openc" +
+      "ola.util.protobuf.CompressedBytes*!\n\tOpe" +
+      "ration\022\013\n\007RETRACT\020\000\022\007\n\003ADD\020\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           com.google.protobuf.TimestampProto.getDescriptor(),
+          io.opencola.util.protobuf.Util.getDescriptor(),
           io.opencola.security.protobuf.Security.getDescriptor(),
         });
     internal_static_io_opencola_model_protobuf_Attribute_descriptor =
@@ -8142,7 +8705,14 @@ public final class Model {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_model_protobuf_SignedTransaction_descriptor,
         new java.lang.String[] { "Transaction", "Signature", });
+    internal_static_io_opencola_model_protobuf_CompressedSignedTransaction_descriptor =
+      getDescriptor().getMessageTypes().get(7);
+    internal_static_io_opencola_model_protobuf_CompressedSignedTransaction_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_io_opencola_model_protobuf_CompressedSignedTransaction_descriptor,
+        new java.lang.String[] { "SignedTransaction", });
     com.google.protobuf.TimestampProto.getDescriptor();
+    io.opencola.util.protobuf.Util.getDescriptor();
     io.opencola.security.protobuf.Security.getDescriptor();
   }
 
