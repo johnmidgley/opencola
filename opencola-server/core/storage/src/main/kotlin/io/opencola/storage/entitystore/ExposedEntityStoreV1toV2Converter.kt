@@ -7,6 +7,8 @@ import io.opencola.security.isValidSignature
 import io.opencola.serialization.EncodingFormat
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
+import io.opencola.util.CompressionFormat
+import io.opencola.util.compress
 import mu.KotlinLogging
 import java.nio.file.Path
 import kotlin.io.path.exists
@@ -58,11 +60,11 @@ fun convertExposedEntityStoreV1ToV2(
                     require(signedTransaction.transaction.authorityId == persona.entityId)
                     require(signedTransaction.encodingFormat == EncodingFormat.OC)
                     val migratedTransaction = migrateTransaction(entityStoreV2, signedTransaction.transaction)
-                    val v2TransactionBytes = migratedTransaction.encodeProto()
-                    val v2TransactionSignature = signator.signBytes(personaAlias, v2TransactionBytes)
+                    val v2CompressedTransaction = compress(CompressionFormat.DEFLATE, migratedTransaction.encodeProto())
+                    val v2TransactionSignature = signator.signBytes(personaAlias, v2CompressedTransaction.bytes)
                     val publicKey = addressBook.getPublicKey(persona.entityId)!!
-                    require(isValidSignature(publicKey, v2TransactionBytes, v2TransactionSignature))
-                    val v2SignedTransaction = SignedTransaction(EncodingFormat.PROTOBUF, v2TransactionBytes, v2TransactionSignature)
+                    require(isValidSignature(publicKey, v2CompressedTransaction.bytes, v2TransactionSignature))
+                    val v2SignedTransaction = SignedTransaction(EncodingFormat.PROTOBUF, v2CompressedTransaction, v2TransactionSignature)
                     entityStoreV2.addSignedTransactions(listOf(v2SignedTransaction))
                     numTransactionsConverted++
                 }

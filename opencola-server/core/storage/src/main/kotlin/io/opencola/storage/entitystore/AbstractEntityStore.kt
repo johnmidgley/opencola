@@ -12,6 +12,8 @@ import io.opencola.util.nullOrElse
 import io.opencola.security.Signator
 import io.opencola.serialization.EncodingFormat
 import io.opencola.storage.entitystore.EntityStore.TransactionOrder
+import io.opencola.util.CompressionFormat
+import io.opencola.util.compress
 
 // TODO: Should support multiple authorities
 // TODO: Organize methods by CRUD
@@ -193,10 +195,19 @@ abstract class AbstractEntityStore(
         }
     }
 
-    private fun signTransaction(transaction: Transaction): SignedTransaction {
+    private fun compressionFormat(encodingFormat: EncodingFormat): CompressionFormat {
+        return when (encodingFormat) {
+            EncodingFormat.OC -> CompressionFormat.NONE
+            EncodingFormat.PROTOBUF -> CompressionFormat.DEFLATE
+            else -> throw IllegalArgumentException("Unsupported encoding format: $transactionEncodingFormat")
+        }
+    }
+
+    private fun toSignedTransaction(transaction: Transaction): SignedTransaction {
         val encodedTransaction = encodeTransaction(transactionEncodingFormat, transaction)
-        val signature = signator.signBytes(transaction.authorityId.toString(), encodedTransaction)
-        return SignedTransaction(transactionEncodingFormat, encodedTransaction, signature)
+        val compressedTransaction = compress(compressionFormat(transactionEncodingFormat), encodedTransaction)
+        val signature = signator.signBytes(transaction.authorityId.toString(), compressedTransaction.bytes)
+        return SignedTransaction(transactionEncodingFormat, compressedTransaction, signature)
     }
 
     data class PersistTransactionResult(
@@ -214,7 +225,7 @@ abstract class AbstractEntityStore(
 
         val allFacts = validateFacts(authorityId, facts.plus(computedFacts(facts)).distinct())
         val transaction = Transaction.fromFacts(getNextTransactionId(authorityId), allFacts)
-        val signedTransaction = signTransaction(transaction)
+        val signedTransaction = toSignedTransaction(transaction)
         val transactionOrdinal = persistTransaction(signedTransaction)
 
         // TODO: Once switched over to all protobuf, just use SignedTransaction.encode

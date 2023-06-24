@@ -11,6 +11,9 @@ import io.opencola.security.sha256
 import io.opencola.serialization.EncodingFormat
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
+import io.opencola.util.CompressedBytes
+import io.opencola.util.CompressionFormat
+import io.opencola.util.compress
 import org.junit.Test
 import org.kodein.di.instance
 import java.io.ByteArrayInputStream
@@ -24,26 +27,28 @@ class TransactionTest {
 
     @Test
     fun testTransactionStructure() {
-        val stableStructureHash = "f2c880f7543f7307609d0d67b7e349798b705aab3a166989858fd5e50ad23467"
+        val stableStructureHash = "8d5f46320d50ee8032b8ef57093a2bf3cecab37ea6628813a8baa368636dd55f"
         val id = Id.ofData("".toByteArray())
         val fact = Fact(id, id, CoreAttribute.Type.spec, StringValue("").asAnyValue(), Operation.Add)
         val encodedTransaction = Transaction.fromFacts(id, listOf(fact), 0).encodeProto()
+        val compressedTransaction = CompressedBytes(CompressionFormat.NONE, encodedTransaction)
         val signedTransaction =
-            SignedTransaction(EncodingFormat.PROTOBUF, encodedTransaction, Signature(SIGNATURE_ALGO, "".toByteArray()))
+            SignedTransaction(EncodingFormat.PROTOBUF, compressedTransaction, Signature(SIGNATURE_ALGO, "".toByteArray()))
         val hash = sha256(signedTransaction.encodeProto()).toHexString()
 
         assertEquals(stableStructureHash, hash, "Serialization change in Transaction - likely a breaking change")
     }
 
     @Test
-    fun testTransactionRoundTrip() {
+    fun testTransactionRoundTripOC() {
         val personaId = persona.personaId
         val entityId = Id.ofData("entityId".toByteArray())
         val value = StringValue("value")
         val fact = Fact(personaId, entityId, CoreAttribute.Name.spec, value.asAnyValue(), Operation.Add)
         val transaction = Transaction.fromFacts(personaId, listOf(fact))
-        val signature = signator.signBytes(transaction.authorityId.toString(), Transaction.encode(transaction))
-        val signedTransaction = SignedTransaction(EncodingFormat.OC, transaction.encode(), Signature(signature.algorithm, signature.bytes))
+        val compressedTransaction = compress(CompressionFormat.NONE, Transaction.encode(transaction))
+        val signature = signator.signBytes(transaction.authorityId.toString(),compressedTransaction.bytes )
+        val signedTransaction = SignedTransaction(EncodingFormat.OC, compressedTransaction, signature)
 
         val encodedTransaction = ByteArrayOutputStream().use {
             SignedTransaction.encode(it, signedTransaction)
@@ -53,6 +58,24 @@ class TransactionTest {
         val decodedTransaction = ByteArrayInputStream(encodedTransaction).use {
             SignedTransaction.decode(it)
         }
+
+        decodedTransaction.hasValidSignature(persona.publicKey)
+        assertEquals(signedTransaction, decodedTransaction)
+    }
+
+    @Test
+    fun testTransactionRoundTripProto() {
+        val personaId = persona.personaId
+        val entityId = Id.ofData("entityId".toByteArray())
+        val value = StringValue("value")
+        val fact = Fact(personaId, entityId, CoreAttribute.Name.spec, value.asAnyValue(), Operation.Add)
+        val transaction = Transaction.fromFacts(personaId, listOf(fact))
+        val compressedTransaction = compress(CompressionFormat.DEFLATE, Transaction.encode(transaction))
+        val signature = signator.signBytes(transaction.authorityId.toString(),compressedTransaction.bytes )
+        val signedTransaction = SignedTransaction(EncodingFormat.PROTOBUF, compressedTransaction, signature)
+
+        val encodedTransaction = signedTransaction.encodeProto()
+        val decodedTransaction = SignedTransaction.decodeProto(encodedTransaction)
 
         decodedTransaction.hasValidSignature(persona.publicKey)
         assertEquals(signedTransaction, decodedTransaction)

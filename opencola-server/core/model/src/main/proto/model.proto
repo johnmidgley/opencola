@@ -99,10 +99,6 @@ message SignedTransaction {
   In order for a signature to validated, then, the exact bytes of the serialized transaction must be preserved, which
   is why we use a bytes type here, rather than a Transaction message.
    */
-  bytes transaction = 1;
+  io.opencola.util.protobuf.CompressedBytes compressedTransaction = 1;
   io.opencola.security.protobuf.Signature signature = 2;
-}
-
-message CompressedSignedTransaction {
-  io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;
 }

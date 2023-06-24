@@ -50,16 +50,33 @@ class CompressedBytes(val format: CompressionFormat, val bytes: ByteArray) {
         }
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (other !is CompressedBytes) return false
+        return format == other.format && bytes.contentEquals(other.bytes)
+    }
+
+    override fun hashCode(): Int {
+        var result = format.hashCode()
+        result = 31 * result + bytes.contentHashCode()
+        return result
+    }
+
     fun toProto(): Proto.CompressedBytes {
         return toProto(this)
     }
 }
 
 fun compress(format: CompressionFormat, bytes: ByteArray): CompressedBytes {
-    return when (format) {
+    val compressedBytes = when (format) {
         CompressionFormat.NONE -> CompressedBytes(format, bytes)
         CompressionFormat.DEFLATE -> CompressedBytes(format, deflate(bytes))
     }
+
+    // Only compress if it really makes the data smaller
+    return if(compressedBytes.bytes.size >= bytes.size)
+        CompressedBytes(CompressionFormat.NONE, bytes)
+    else
+        compressedBytes
 }
 
 fun uncompress(compressedBytes: CompressedBytes): ByteArray {

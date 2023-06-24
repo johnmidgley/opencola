@@ -10,6 +10,7 @@ import io.opencola.storage.entitystore.EntityStore.TransactionOrder
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import io.opencola.storage.entitystore.*
+import io.opencola.util.CompressionFormat
 import org.kodein.di.instance
 import java.net.URI
 import java.time.Instant
@@ -378,5 +379,27 @@ class EntityStoreTest {
         val facts = resource0.commitFacts(0, 0).plus(factWithEmptyValue)
         val resource1 = Entity.fromFacts(facts)!!
         assertFails { getFreshExposeEntityStore().updateEntities(resource1) }
+    }
+
+    @Test
+    fun testTransactionNoCompression() {
+        val context = EntityStoreContext()
+        val persona = context.addressBook.addPersona("Test")
+        val resource = ResourceEntity(persona.personaId, URI("https://opencola"))
+        resource.description = "012345" // No redundancy, so compression should not be used
+        val signedTransaction = context.entityStore.updateEntities(resource)!!
+
+        assertEquals(CompressionFormat.NONE, signedTransaction.compressedTransaction.format)
+    }
+
+    @Test
+    fun testTransactionCompression() {
+        val context = EntityStoreContext()
+        val persona = context.addressBook.addPersona("Test")
+        val resource = ResourceEntity(persona.personaId, URI("https://opencola"))
+        resource.description = "+".repeat(1000) // Add some redundancy to force compression
+        val signedTransaction = context.entityStore.updateEntities(resource)!!
+
+        assertEquals(CompressionFormat.DEFLATE, signedTransaction.compressedTransaction.format)
     }
 }

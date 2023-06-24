@@ -7256,10 +7256,35 @@ public final class Model {
      *is why we use a bytes type here, rather than a Transaction message.
      * </pre>
      *
-     * <code>bytes transaction = 1;</code>
-     * @return The transaction.
+     * <code>.io.opencola.util.protobuf.CompressedBytes compressedTransaction = 1;</code>
+     * @return Whether the compressedTransaction field is set.
      */
-    com.google.protobuf.ByteString getTransaction();
+    boolean hasCompressedTransaction();
+    /**
+     * <pre>
+     *From https://protobuf.dev/overview/:
+     * When protocol buffers are serialized, the same data can have many different binary serializations.
+     *You cannot compare two messages for equality without fully parsing them.
+     *In order for a signature to validated, then, the exact bytes of the serialized transaction must be preserved, which
+     *is why we use a bytes type here, rather than a Transaction message.
+     * </pre>
+     *
+     * <code>.io.opencola.util.protobuf.CompressedBytes compressedTransaction = 1;</code>
+     * @return The compressedTransaction.
+     */
+    io.opencola.util.protobuf.Util.CompressedBytes getCompressedTransaction();
+    /**
+     * <pre>
+     *From https://protobuf.dev/overview/:
+     * When protocol buffers are serialized, the same data can have many different binary serializations.
+     *You cannot compare two messages for equality without fully parsing them.
+     *In order for a signature to validated, then, the exact bytes of the serialized transaction must be preserved, which
+     *is why we use a bytes type here, rather than a Transaction message.
+     * </pre>
+     *
+     * <code>.io.opencola.util.protobuf.CompressedBytes compressedTransaction = 1;</code>
+     */
+    io.opencola.util.protobuf.Util.CompressedBytesOrBuilder getCompressedTransactionOrBuilder();
 
     /**
      * <code>.io.opencola.security.protobuf.Signature signature = 2;</code>
@@ -7289,7 +7314,6 @@ public final class Model {
       super(builder);
     }
     private SignedTransaction() {
-      transaction_ = com.google.protobuf.ByteString.EMPTY;
     }
 
     @java.lang.Override
@@ -7317,8 +7341,8 @@ public final class Model {
               io.opencola.model.protobuf.Model.SignedTransaction.class, io.opencola.model.protobuf.Model.SignedTransaction.Builder.class);
     }
 
-    public static final int TRANSACTION_FIELD_NUMBER = 1;
-    private com.google.protobuf.ByteString transaction_ = com.google.protobuf.ByteString.EMPTY;
+    public static final int COMPRESSEDTRANSACTION_FIELD_NUMBER = 1;
+    private io.opencola.util.protobuf.Util.CompressedBytes compressedTransaction_;
     /**
      * <pre>
      *From https://protobuf.dev/overview/:
@@ -7328,12 +7352,43 @@ public final class Model {
      *is why we use a bytes type here, rather than a Transaction message.
      * </pre>
      *
-     * <code>bytes transaction = 1;</code>
-     * @return The transaction.
+     * <code>.io.opencola.util.protobuf.CompressedBytes compressedTransaction = 1;</code>
+     * @return Whether the compressedTransaction field is set.
      */
     @java.lang.Override
-    public com.google.protobuf.ByteString getTransaction() {
-      return transaction_;
+    public boolean hasCompressedTransaction() {
+      return compressedTransaction_ != null;
+    }
+    /**
+     * <pre>
+     *From https://protobuf.dev/overview/:
+     * When protocol buffers are serialized, the same data can have many different binary serializations.
+     *You cannot compare two messages for equality without fully parsing them.
+     *In order for a signature to validated, then, the exact bytes of the serialized transaction must be preserved, which
+     *is why we use a bytes type here, rather than a Transaction message.
+     * </pre>
+     *
+     * <code>.io.opencola.util.protobuf.CompressedBytes compressedTransaction = 1;</code>
+     * @return The compressedTransaction.
+     */
+    @java.lang.Override
+    public io.opencola.util.protobuf.Util.CompressedBytes getCompressedTransaction() {
+      return compressedTransaction_ == null ? io.opencola.util.protobuf.Util.CompressedBytes.getDefaultInstance() : compressedTransaction_;
+    }
+    /**
+     * <pre>
+     *From https://protobuf.dev/overview/:
+     * When protocol buffers are serialized, the same data can have many different binary serializations.
+     *You cannot compare two messages for equality without fully parsing them.
+     *In order for a signature to validated, then, the exact bytes of the serialized transaction must be preserved, which
+     *is why we use a bytes type here, rather than a Transaction message.
+     * </pre>
+     *
+     * <code>.io.opencola.util.protobuf.CompressedBytes compressedTransaction = 1;</code>
+     */
+    @java.lang.Override
+    public io.opencola.util.protobuf.Util.CompressedBytesOrBuilder getCompressedTransactionOrBuilder() {
+      return compressedTransaction_ == null ? io.opencola.util.protobuf.Util.CompressedBytes.getDefaultInstance() : compressedTransaction_;
     }
 
     public static final int SIGNATURE_FIELD_NUMBER = 2;
@@ -7376,8 +7431,8 @@ public final class Model {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!transaction_.isEmpty()) {
-        output.writeBytes(1, transaction_);
+      if (compressedTransaction_ != null) {
+        output.writeMessage(1, getCompressedTransaction());
       }
       if (signature_ != null) {
         output.writeMessage(2, getSignature());
@@ -7391,9 +7446,9 @@ public final class Model {
       if (size != -1) return size;
 
       size = 0;
-      if (!transaction_.isEmpty()) {
+      if (compressedTransaction_ != null) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(1, transaction_);
+          .computeMessageSize(1, getCompressedTransaction());
       }
       if (signature_ != null) {
         size += com.google.protobuf.CodedOutputStream
@@ -7414,8 +7469,11 @@ public final class Model {
       }
       io.opencola.model.protobuf.Model.SignedTransaction other = (io.opencola.model.protobuf.Model.SignedTransaction) obj;
 
-      if (!getTransaction()
-          .equals(other.getTransaction())) return false;
+      if (hasCompressedTransaction() != other.hasCompressedTransaction()) return false;
+      if (hasCompressedTransaction()) {
+        if (!getCompressedTransaction()
+            .equals(other.getCompressedTransaction())) return false;
+      }
       if (hasSignature() != other.hasSignature()) return false;
       if (hasSignature()) {
         if (!getSignature()
@@ -7432,8 +7490,10 @@ public final class Model {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      hash = (37 * hash) + TRANSACTION_FIELD_NUMBER;
-      hash = (53 * hash) + getTransaction().hashCode();
+      if (hasCompressedTransaction()) {
+        hash = (37 * hash) + COMPRESSEDTRANSACTION_FIELD_NUMBER;
+        hash = (53 * hash) + getCompressedTransaction().hashCode();
+      }
       if (hasSignature()) {
         hash = (37 * hash) + SIGNATURE_FIELD_NUMBER;
         hash = (53 * hash) + getSignature().hashCode();
@@ -7567,7 +7627,11 @@ public final class Model {
       public Builder clear() {
         super.clear();
         bitField0_ = 0;
-        transaction_ = com.google.protobuf.ByteString.EMPTY;
+        compressedTransaction_ = null;
+        if (compressedTransactionBuilder_ != null) {
+          compressedTransactionBuilder_.dispose();
+          compressedTransactionBuilder_ = null;
+        }
         signature_ = null;
         if (signatureBuilder_ != null) {
           signatureBuilder_.dispose();
@@ -7607,7 +7671,9 @@ public final class Model {
       private void buildPartial0(io.opencola.model.protobuf.Model.SignedTransaction result) {
         int from_bitField0_ = bitField0_;
         if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.transaction_ = transaction_;
+          result.compressedTransaction_ = compressedTransactionBuilder_ == null
+              ? compressedTransaction_
+              : compressedTransactionBuilder_.build();
         }
         if (((from_bitField0_ & 0x00000002) != 0)) {
           result.signature_ = signatureBuilder_ == null
@@ -7660,8 +7726,8 @@ public final class Model {
 
       public Builder mergeFrom(io.opencola.model.protobuf.Model.SignedTransaction other) {
         if (other == io.opencola.model.protobuf.Model.SignedTransaction.getDefaultInstance()) return this;
-        if (other.getTransaction() != com.google.protobuf.ByteString.EMPTY) {
-          setTransaction(other.getTransaction());
+        if (other.hasCompressedTransaction()) {
+          mergeCompressedTransaction(other.getCompressedTransaction());
         }
         if (other.hasSignature()) {
           mergeSignature(other.getSignature());
@@ -7693,7 +7759,9 @@ public final class Model {
                 done = true;
                 break;
               case 10: {
-                transaction_ = input.readBytes();
+                input.readMessage(
+                    getCompressedTransactionFieldBuilder().getBuilder(),
+                    extensionRegistry);
                 bitField0_ |= 0x00000001;
                 break;
               } // case 10
@@ -7721,7 +7789,9 @@ public final class Model {
       }
       private int bitField0_;
 
-      private com.google.protobuf.ByteString transaction_ = com.google.protobuf.ByteString.EMPTY;
+      private io.opencola.util.protobuf.Util.CompressedBytes compressedTransaction_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          io.opencola.util.protobuf.Util.CompressedBytes, io.opencola.util.protobuf.Util.CompressedBytes.Builder, io.opencola.util.protobuf.Util.CompressedBytesOrBuilder> compressedTransactionBuilder_;
       /**
        * <pre>
        *From https://protobuf.dev/overview/:
@@ -7731,12 +7801,11 @@ public final class Model {
        *is why we use a bytes type here, rather than a Transaction message.
        * </pre>
        *
-       * <code>bytes transaction = 1;</code>
-       * @return The transaction.
+       * <code>.io.opencola.util.protobuf.CompressedBytes compressedTransaction = 1;</code>
+       * @return Whether the compressedTransaction field is set.
        */
-      @java.lang.Override
-      public com.google.protobuf.ByteString getTransaction() {
-        return transaction_;
+      public boolean hasCompressedTransaction() {
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <pre>
@@ -7747,13 +7816,36 @@ public final class Model {
        *is why we use a bytes type here, rather than a Transaction message.
        * </pre>
        *
-       * <code>bytes transaction = 1;</code>
-       * @param value The transaction to set.
-       * @return This builder for chaining.
+       * <code>.io.opencola.util.protobuf.CompressedBytes compressedTransaction = 1;</code>
+       * @return The compressedTransaction.
        */
-      public Builder setTransaction(com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
-        transaction_ = value;
+      public io.opencola.util.protobuf.Util.CompressedBytes getCompressedTransaction() {
+        if (compressedTransactionBuilder_ == null) {
+          return compressedTransaction_ == null ? io.opencola.util.protobuf.Util.CompressedBytes.getDefaultInstance() : compressedTransaction_;
+        } else {
+          return compressedTransactionBuilder_.getMessage();
+        }
+      }
+      /**
+       * <pre>
+       *From https://protobuf.dev/overview/:
+       * When protocol buffers are serialized, the same data can have many different binary serializations.
+       *You cannot compare two messages for equality without fully parsing them.
+       *In order for a signature to validated, then, the exact bytes of the serialized transaction must be preserved, which
+       *is why we use a bytes type here, rather than a Transaction message.
+       * </pre>
+       *
+       * <code>.io.opencola.util.protobuf.CompressedBytes compressedTransaction = 1;</code>
+       */
+      public Builder setCompressedTransaction(io.opencola.util.protobuf.Util.CompressedBytes value) {
+        if (compressedTransactionBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          compressedTransaction_ = value;
+        } else {
+          compressedTransactionBuilder_.setMessage(value);
+        }
         bitField0_ |= 0x00000001;
         onChanged();
         return this;
@@ -7767,14 +7859,125 @@ public final class Model {
        *is why we use a bytes type here, rather than a Transaction message.
        * </pre>
        *
-       * <code>bytes transaction = 1;</code>
-       * @return This builder for chaining.
+       * <code>.io.opencola.util.protobuf.CompressedBytes compressedTransaction = 1;</code>
        */
-      public Builder clearTransaction() {
-        bitField0_ = (bitField0_ & ~0x00000001);
-        transaction_ = getDefaultInstance().getTransaction();
+      public Builder setCompressedTransaction(
+          io.opencola.util.protobuf.Util.CompressedBytes.Builder builderForValue) {
+        if (compressedTransactionBuilder_ == null) {
+          compressedTransaction_ = builderForValue.build();
+        } else {
+          compressedTransactionBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
+      }
+      /**
+       * <pre>
+       *From https://protobuf.dev/overview/:
+       * When protocol buffers are serialized, the same data can have many different binary serializations.
+       *You cannot compare two messages for equality without fully parsing them.
+       *In order for a signature to validated, then, the exact bytes of the serialized transaction must be preserved, which
+       *is why we use a bytes type here, rather than a Transaction message.
+       * </pre>
+       *
+       * <code>.io.opencola.util.protobuf.CompressedBytes compressedTransaction = 1;</code>
+       */
+      public Builder mergeCompressedTransaction(io.opencola.util.protobuf.Util.CompressedBytes value) {
+        if (compressedTransactionBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) != 0) &&
+            compressedTransaction_ != null &&
+            compressedTransaction_ != io.opencola.util.protobuf.Util.CompressedBytes.getDefaultInstance()) {
+            getCompressedTransactionBuilder().mergeFrom(value);
+          } else {
+            compressedTransaction_ = value;
+          }
+        } else {
+          compressedTransactionBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *From https://protobuf.dev/overview/:
+       * When protocol buffers are serialized, the same data can have many different binary serializations.
+       *You cannot compare two messages for equality without fully parsing them.
+       *In order for a signature to validated, then, the exact bytes of the serialized transaction must be preserved, which
+       *is why we use a bytes type here, rather than a Transaction message.
+       * </pre>
+       *
+       * <code>.io.opencola.util.protobuf.CompressedBytes compressedTransaction = 1;</code>
+       */
+      public Builder clearCompressedTransaction() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        compressedTransaction_ = null;
+        if (compressedTransactionBuilder_ != null) {
+          compressedTransactionBuilder_.dispose();
+          compressedTransactionBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *From https://protobuf.dev/overview/:
+       * When protocol buffers are serialized, the same data can have many different binary serializations.
+       *You cannot compare two messages for equality without fully parsing them.
+       *In order for a signature to validated, then, the exact bytes of the serialized transaction must be preserved, which
+       *is why we use a bytes type here, rather than a Transaction message.
+       * </pre>
+       *
+       * <code>.io.opencola.util.protobuf.CompressedBytes compressedTransaction = 1;</code>
+       */
+      public io.opencola.util.protobuf.Util.CompressedBytes.Builder getCompressedTransactionBuilder() {
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return getCompressedTransactionFieldBuilder().getBuilder();
+      }
+      /**
+       * <pre>
+       *From https://protobuf.dev/overview/:
+       * When protocol buffers are serialized, the same data can have many different binary serializations.
+       *You cannot compare two messages for equality without fully parsing them.
+       *In order for a signature to validated, then, the exact bytes of the serialized transaction must be preserved, which
+       *is why we use a bytes type here, rather than a Transaction message.
+       * </pre>
+       *
+       * <code>.io.opencola.util.protobuf.CompressedBytes compressedTransaction = 1;</code>
+       */
+      public io.opencola.util.protobuf.Util.CompressedBytesOrBuilder getCompressedTransactionOrBuilder() {
+        if (compressedTransactionBuilder_ != null) {
+          return compressedTransactionBuilder_.getMessageOrBuilder();
+        } else {
+          return compressedTransaction_ == null ?
+              io.opencola.util.protobuf.Util.CompressedBytes.getDefaultInstance() : compressedTransaction_;
+        }
+      }
+      /**
+       * <pre>
+       *From https://protobuf.dev/overview/:
+       * When protocol buffers are serialized, the same data can have many different binary serializations.
+       *You cannot compare two messages for equality without fully parsing them.
+       *In order for a signature to validated, then, the exact bytes of the serialized transaction must be preserved, which
+       *is why we use a bytes type here, rather than a Transaction message.
+       * </pre>
+       *
+       * <code>.io.opencola.util.protobuf.CompressedBytes compressedTransaction = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          io.opencola.util.protobuf.Util.CompressedBytes, io.opencola.util.protobuf.Util.CompressedBytes.Builder, io.opencola.util.protobuf.Util.CompressedBytesOrBuilder> 
+          getCompressedTransactionFieldBuilder() {
+        if (compressedTransactionBuilder_ == null) {
+          compressedTransactionBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              io.opencola.util.protobuf.Util.CompressedBytes, io.opencola.util.protobuf.Util.CompressedBytes.Builder, io.opencola.util.protobuf.Util.CompressedBytesOrBuilder>(
+                  getCompressedTransaction(),
+                  getParentForChildren(),
+                  isClean());
+          compressedTransaction_ = null;
+        }
+        return compressedTransactionBuilder_;
       }
 
       private io.opencola.security.protobuf.Security.Signature signature_;
@@ -7959,609 +8162,6 @@ public final class Model {
 
   }
 
-  public interface CompressedSignedTransactionOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:io.opencola.model.protobuf.CompressedSignedTransaction)
-      com.google.protobuf.MessageOrBuilder {
-
-    /**
-     * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
-     * @return Whether the signedTransaction field is set.
-     */
-    boolean hasSignedTransaction();
-    /**
-     * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
-     * @return The signedTransaction.
-     */
-    io.opencola.util.protobuf.Util.CompressedBytes getSignedTransaction();
-    /**
-     * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
-     */
-    io.opencola.util.protobuf.Util.CompressedBytesOrBuilder getSignedTransactionOrBuilder();
-  }
-  /**
-   * Protobuf type {@code io.opencola.model.protobuf.CompressedSignedTransaction}
-   */
-  public static final class CompressedSignedTransaction extends
-      com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:io.opencola.model.protobuf.CompressedSignedTransaction)
-      CompressedSignedTransactionOrBuilder {
-  private static final long serialVersionUID = 0L;
-    // Use CompressedSignedTransaction.newBuilder() to construct.
-    private CompressedSignedTransaction(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
-      super(builder);
-    }
-    private CompressedSignedTransaction() {
-    }
-
-    @java.lang.Override
-    @SuppressWarnings({"unused"})
-    protected java.lang.Object newInstance(
-        UnusedPrivateParameter unused) {
-      return new CompressedSignedTransaction();
-    }
-
-    @java.lang.Override
-    public final com.google.protobuf.UnknownFieldSet
-    getUnknownFields() {
-      return this.unknownFields;
-    }
-    public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
-      return io.opencola.model.protobuf.Model.internal_static_io_opencola_model_protobuf_CompressedSignedTransaction_descriptor;
-    }
-
-    @java.lang.Override
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-        internalGetFieldAccessorTable() {
-      return io.opencola.model.protobuf.Model.internal_static_io_opencola_model_protobuf_CompressedSignedTransaction_fieldAccessorTable
-          .ensureFieldAccessorsInitialized(
-              io.opencola.model.protobuf.Model.CompressedSignedTransaction.class, io.opencola.model.protobuf.Model.CompressedSignedTransaction.Builder.class);
-    }
-
-    public static final int SIGNEDTRANSACTION_FIELD_NUMBER = 1;
-    private io.opencola.util.protobuf.Util.CompressedBytes signedTransaction_;
-    /**
-     * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
-     * @return Whether the signedTransaction field is set.
-     */
-    @java.lang.Override
-    public boolean hasSignedTransaction() {
-      return signedTransaction_ != null;
-    }
-    /**
-     * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
-     * @return The signedTransaction.
-     */
-    @java.lang.Override
-    public io.opencola.util.protobuf.Util.CompressedBytes getSignedTransaction() {
-      return signedTransaction_ == null ? io.opencola.util.protobuf.Util.CompressedBytes.getDefaultInstance() : signedTransaction_;
-    }
-    /**
-     * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
-     */
-    @java.lang.Override
-    public io.opencola.util.protobuf.Util.CompressedBytesOrBuilder getSignedTransactionOrBuilder() {
-      return signedTransaction_ == null ? io.opencola.util.protobuf.Util.CompressedBytes.getDefaultInstance() : signedTransaction_;
-    }
-
-    private byte memoizedIsInitialized = -1;
-    @java.lang.Override
-    public final boolean isInitialized() {
-      byte isInitialized = memoizedIsInitialized;
-      if (isInitialized == 1) return true;
-      if (isInitialized == 0) return false;
-
-      memoizedIsInitialized = 1;
-      return true;
-    }
-
-    @java.lang.Override
-    public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
-      if (signedTransaction_ != null) {
-        output.writeMessage(1, getSignedTransaction());
-      }
-      getUnknownFields().writeTo(output);
-    }
-
-    @java.lang.Override
-    public int getSerializedSize() {
-      int size = memoizedSize;
-      if (size != -1) return size;
-
-      size = 0;
-      if (signedTransaction_ != null) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, getSignedTransaction());
-      }
-      size += getUnknownFields().getSerializedSize();
-      memoizedSize = size;
-      return size;
-    }
-
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
-      if (obj == this) {
-       return true;
-      }
-      if (!(obj instanceof io.opencola.model.protobuf.Model.CompressedSignedTransaction)) {
-        return super.equals(obj);
-      }
-      io.opencola.model.protobuf.Model.CompressedSignedTransaction other = (io.opencola.model.protobuf.Model.CompressedSignedTransaction) obj;
-
-      if (hasSignedTransaction() != other.hasSignedTransaction()) return false;
-      if (hasSignedTransaction()) {
-        if (!getSignedTransaction()
-            .equals(other.getSignedTransaction())) return false;
-      }
-      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
-      return true;
-    }
-
-    @java.lang.Override
-    public int hashCode() {
-      if (memoizedHashCode != 0) {
-        return memoizedHashCode;
-      }
-      int hash = 41;
-      hash = (19 * hash) + getDescriptor().hashCode();
-      if (hasSignedTransaction()) {
-        hash = (37 * hash) + SIGNEDTRANSACTION_FIELD_NUMBER;
-        hash = (53 * hash) + getSignedTransaction().hashCode();
-      }
-      hash = (29 * hash) + getUnknownFields().hashCode();
-      memoizedHashCode = hash;
-      return hash;
-    }
-
-    public static io.opencola.model.protobuf.Model.CompressedSignedTransaction parseFrom(
-        java.nio.ByteBuffer data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static io.opencola.model.protobuf.Model.CompressedSignedTransaction parseFrom(
-        java.nio.ByteBuffer data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static io.opencola.model.protobuf.Model.CompressedSignedTransaction parseFrom(
-        com.google.protobuf.ByteString data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static io.opencola.model.protobuf.Model.CompressedSignedTransaction parseFrom(
-        com.google.protobuf.ByteString data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static io.opencola.model.protobuf.Model.CompressedSignedTransaction parseFrom(byte[] data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static io.opencola.model.protobuf.Model.CompressedSignedTransaction parseFrom(
-        byte[] data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static io.opencola.model.protobuf.Model.CompressedSignedTransaction parseFrom(java.io.InputStream input)
-        throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseWithIOException(PARSER, input);
-    }
-    public static io.opencola.model.protobuf.Model.CompressedSignedTransaction parseFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseWithIOException(PARSER, input, extensionRegistry);
-    }
-    public static io.opencola.model.protobuf.Model.CompressedSignedTransaction parseDelimitedFrom(java.io.InputStream input)
-        throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseDelimitedWithIOException(PARSER, input);
-    }
-    public static io.opencola.model.protobuf.Model.CompressedSignedTransaction parseDelimitedFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
-    }
-    public static io.opencola.model.protobuf.Model.CompressedSignedTransaction parseFrom(
-        com.google.protobuf.CodedInputStream input)
-        throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseWithIOException(PARSER, input);
-    }
-    public static io.opencola.model.protobuf.Model.CompressedSignedTransaction parseFrom(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseWithIOException(PARSER, input, extensionRegistry);
-    }
-
-    @java.lang.Override
-    public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder() {
-      return DEFAULT_INSTANCE.toBuilder();
-    }
-    public static Builder newBuilder(io.opencola.model.protobuf.Model.CompressedSignedTransaction prototype) {
-      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
-    }
-    @java.lang.Override
-    public Builder toBuilder() {
-      return this == DEFAULT_INSTANCE
-          ? new Builder() : new Builder().mergeFrom(this);
-    }
-
-    @java.lang.Override
-    protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
-      Builder builder = new Builder(parent);
-      return builder;
-    }
-    /**
-     * Protobuf type {@code io.opencola.model.protobuf.CompressedSignedTransaction}
-     */
-    public static final class Builder extends
-        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:io.opencola.model.protobuf.CompressedSignedTransaction)
-        io.opencola.model.protobuf.Model.CompressedSignedTransactionOrBuilder {
-      public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
-        return io.opencola.model.protobuf.Model.internal_static_io_opencola_model_protobuf_CompressedSignedTransaction_descriptor;
-      }
-
-      @java.lang.Override
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-          internalGetFieldAccessorTable() {
-        return io.opencola.model.protobuf.Model.internal_static_io_opencola_model_protobuf_CompressedSignedTransaction_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(
-                io.opencola.model.protobuf.Model.CompressedSignedTransaction.class, io.opencola.model.protobuf.Model.CompressedSignedTransaction.Builder.class);
-      }
-
-      // Construct using io.opencola.model.protobuf.Model.CompressedSignedTransaction.newBuilder()
-      private Builder() {
-
-      }
-
-      private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
-        super(parent);
-
-      }
-      @java.lang.Override
-      public Builder clear() {
-        super.clear();
-        bitField0_ = 0;
-        signedTransaction_ = null;
-        if (signedTransactionBuilder_ != null) {
-          signedTransactionBuilder_.dispose();
-          signedTransactionBuilder_ = null;
-        }
-        return this;
-      }
-
-      @java.lang.Override
-      public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
-        return io.opencola.model.protobuf.Model.internal_static_io_opencola_model_protobuf_CompressedSignedTransaction_descriptor;
-      }
-
-      @java.lang.Override
-      public io.opencola.model.protobuf.Model.CompressedSignedTransaction getDefaultInstanceForType() {
-        return io.opencola.model.protobuf.Model.CompressedSignedTransaction.getDefaultInstance();
-      }
-
-      @java.lang.Override
-      public io.opencola.model.protobuf.Model.CompressedSignedTransaction build() {
-        io.opencola.model.protobuf.Model.CompressedSignedTransaction result = buildPartial();
-        if (!result.isInitialized()) {
-          throw newUninitializedMessageException(result);
-        }
-        return result;
-      }
-
-      @java.lang.Override
-      public io.opencola.model.protobuf.Model.CompressedSignedTransaction buildPartial() {
-        io.opencola.model.protobuf.Model.CompressedSignedTransaction result = new io.opencola.model.protobuf.Model.CompressedSignedTransaction(this);
-        if (bitField0_ != 0) { buildPartial0(result); }
-        onBuilt();
-        return result;
-      }
-
-      private void buildPartial0(io.opencola.model.protobuf.Model.CompressedSignedTransaction result) {
-        int from_bitField0_ = bitField0_;
-        if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.signedTransaction_ = signedTransactionBuilder_ == null
-              ? signedTransaction_
-              : signedTransactionBuilder_.build();
-        }
-      }
-
-      @java.lang.Override
-      public Builder clone() {
-        return super.clone();
-      }
-      @java.lang.Override
-      public Builder setField(
-          com.google.protobuf.Descriptors.FieldDescriptor field,
-          java.lang.Object value) {
-        return super.setField(field, value);
-      }
-      @java.lang.Override
-      public Builder clearField(
-          com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return super.clearField(field);
-      }
-      @java.lang.Override
-      public Builder clearOneof(
-          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return super.clearOneof(oneof);
-      }
-      @java.lang.Override
-      public Builder setRepeatedField(
-          com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, java.lang.Object value) {
-        return super.setRepeatedField(field, index, value);
-      }
-      @java.lang.Override
-      public Builder addRepeatedField(
-          com.google.protobuf.Descriptors.FieldDescriptor field,
-          java.lang.Object value) {
-        return super.addRepeatedField(field, value);
-      }
-      @java.lang.Override
-      public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof io.opencola.model.protobuf.Model.CompressedSignedTransaction) {
-          return mergeFrom((io.opencola.model.protobuf.Model.CompressedSignedTransaction)other);
-        } else {
-          super.mergeFrom(other);
-          return this;
-        }
-      }
-
-      public Builder mergeFrom(io.opencola.model.protobuf.Model.CompressedSignedTransaction other) {
-        if (other == io.opencola.model.protobuf.Model.CompressedSignedTransaction.getDefaultInstance()) return this;
-        if (other.hasSignedTransaction()) {
-          mergeSignedTransaction(other.getSignedTransaction());
-        }
-        this.mergeUnknownFields(other.getUnknownFields());
-        onChanged();
-        return this;
-      }
-
-      @java.lang.Override
-      public final boolean isInitialized() {
-        return true;
-      }
-
-      @java.lang.Override
-      public Builder mergeFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
-        try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 10: {
-                input.readMessage(
-                    getSignedTransactionFieldBuilder().getBuilder(),
-                    extensionRegistry);
-                bitField0_ |= 0x00000001;
-                break;
-              } // case 10
-              default: {
-                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
-                  done = true; // was an endgroup tag
-                }
-                break;
-              } // default:
-            } // switch (tag)
-          } // while (!done)
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.unwrapIOException();
-        } finally {
-          onChanged();
-        } // finally
-        return this;
-      }
-      private int bitField0_;
-
-      private io.opencola.util.protobuf.Util.CompressedBytes signedTransaction_;
-      private com.google.protobuf.SingleFieldBuilderV3<
-          io.opencola.util.protobuf.Util.CompressedBytes, io.opencola.util.protobuf.Util.CompressedBytes.Builder, io.opencola.util.protobuf.Util.CompressedBytesOrBuilder> signedTransactionBuilder_;
-      /**
-       * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
-       * @return Whether the signedTransaction field is set.
-       */
-      public boolean hasSignedTransaction() {
-        return ((bitField0_ & 0x00000001) != 0);
-      }
-      /**
-       * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
-       * @return The signedTransaction.
-       */
-      public io.opencola.util.protobuf.Util.CompressedBytes getSignedTransaction() {
-        if (signedTransactionBuilder_ == null) {
-          return signedTransaction_ == null ? io.opencola.util.protobuf.Util.CompressedBytes.getDefaultInstance() : signedTransaction_;
-        } else {
-          return signedTransactionBuilder_.getMessage();
-        }
-      }
-      /**
-       * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
-       */
-      public Builder setSignedTransaction(io.opencola.util.protobuf.Util.CompressedBytes value) {
-        if (signedTransactionBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          signedTransaction_ = value;
-        } else {
-          signedTransactionBuilder_.setMessage(value);
-        }
-        bitField0_ |= 0x00000001;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
-       */
-      public Builder setSignedTransaction(
-          io.opencola.util.protobuf.Util.CompressedBytes.Builder builderForValue) {
-        if (signedTransactionBuilder_ == null) {
-          signedTransaction_ = builderForValue.build();
-        } else {
-          signedTransactionBuilder_.setMessage(builderForValue.build());
-        }
-        bitField0_ |= 0x00000001;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
-       */
-      public Builder mergeSignedTransaction(io.opencola.util.protobuf.Util.CompressedBytes value) {
-        if (signedTransactionBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) != 0) &&
-            signedTransaction_ != null &&
-            signedTransaction_ != io.opencola.util.protobuf.Util.CompressedBytes.getDefaultInstance()) {
-            getSignedTransactionBuilder().mergeFrom(value);
-          } else {
-            signedTransaction_ = value;
-          }
-        } else {
-          signedTransactionBuilder_.mergeFrom(value);
-        }
-        bitField0_ |= 0x00000001;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
-       */
-      public Builder clearSignedTransaction() {
-        bitField0_ = (bitField0_ & ~0x00000001);
-        signedTransaction_ = null;
-        if (signedTransactionBuilder_ != null) {
-          signedTransactionBuilder_.dispose();
-          signedTransactionBuilder_ = null;
-        }
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
-       */
-      public io.opencola.util.protobuf.Util.CompressedBytes.Builder getSignedTransactionBuilder() {
-        bitField0_ |= 0x00000001;
-        onChanged();
-        return getSignedTransactionFieldBuilder().getBuilder();
-      }
-      /**
-       * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
-       */
-      public io.opencola.util.protobuf.Util.CompressedBytesOrBuilder getSignedTransactionOrBuilder() {
-        if (signedTransactionBuilder_ != null) {
-          return signedTransactionBuilder_.getMessageOrBuilder();
-        } else {
-          return signedTransaction_ == null ?
-              io.opencola.util.protobuf.Util.CompressedBytes.getDefaultInstance() : signedTransaction_;
-        }
-      }
-      /**
-       * <code>.io.opencola.util.protobuf.CompressedBytes signedTransaction = 1;</code>
-       */
-      private com.google.protobuf.SingleFieldBuilderV3<
-          io.opencola.util.protobuf.Util.CompressedBytes, io.opencola.util.protobuf.Util.CompressedBytes.Builder, io.opencola.util.protobuf.Util.CompressedBytesOrBuilder> 
-          getSignedTransactionFieldBuilder() {
-        if (signedTransactionBuilder_ == null) {
-          signedTransactionBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              io.opencola.util.protobuf.Util.CompressedBytes, io.opencola.util.protobuf.Util.CompressedBytes.Builder, io.opencola.util.protobuf.Util.CompressedBytesOrBuilder>(
-                  getSignedTransaction(),
-                  getParentForChildren(),
-                  isClean());
-          signedTransaction_ = null;
-        }
-        return signedTransactionBuilder_;
-      }
-      @java.lang.Override
-      public final Builder setUnknownFields(
-          final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return super.setUnknownFields(unknownFields);
-      }
-
-      @java.lang.Override
-      public final Builder mergeUnknownFields(
-          final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return super.mergeUnknownFields(unknownFields);
-      }
-
-
-      // @@protoc_insertion_point(builder_scope:io.opencola.model.protobuf.CompressedSignedTransaction)
-    }
-
-    // @@protoc_insertion_point(class_scope:io.opencola.model.protobuf.CompressedSignedTransaction)
-    private static final io.opencola.model.protobuf.Model.CompressedSignedTransaction DEFAULT_INSTANCE;
-    static {
-      DEFAULT_INSTANCE = new io.opencola.model.protobuf.Model.CompressedSignedTransaction();
-    }
-
-    public static io.opencola.model.protobuf.Model.CompressedSignedTransaction getDefaultInstance() {
-      return DEFAULT_INSTANCE;
-    }
-
-    private static final com.google.protobuf.Parser<CompressedSignedTransaction>
-        PARSER = new com.google.protobuf.AbstractParser<CompressedSignedTransaction>() {
-      @java.lang.Override
-      public CompressedSignedTransaction parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        Builder builder = newBuilder();
-        try {
-          builder.mergeFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(builder.buildPartial());
-        } catch (com.google.protobuf.UninitializedMessageException e) {
-          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(e)
-              .setUnfinishedMessage(builder.buildPartial());
-        }
-        return builder.buildPartial();
-      }
-    };
-
-    public static com.google.protobuf.Parser<CompressedSignedTransaction> parser() {
-      return PARSER;
-    }
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<CompressedSignedTransaction> getParserForType() {
-      return PARSER;
-    }
-
-    @java.lang.Override
-    public io.opencola.model.protobuf.Model.CompressedSignedTransaction getDefaultInstanceForType() {
-      return DEFAULT_INSTANCE;
-    }
-
-  }
-
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_io_opencola_model_protobuf_Attribute_descriptor;
   private static final 
@@ -8597,11 +8197,6 @@ public final class Model {
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_io_opencola_model_protobuf_SignedTransaction_fieldAccessorTable;
-  private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_io_opencola_model_protobuf_CompressedSignedTransaction_descriptor;
-  private static final 
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_io_opencola_model_protobuf_CompressedSignedTransaction_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -8648,13 +8243,12 @@ public final class Model {
       "pencola.model.protobuf.Id\022J\n\023transaction" +
       "Entities\030\003 \003(\0132-.io.opencola.model.proto" +
       "buf.TransactionEntity\022-\n\ttimestamp\030\004 \001(\013" +
-      "2\032.google.protobuf.Timestamp\"e\n\021SignedTr" +
-      "ansaction\022\023\n\013transaction\030\001 \001(\014\022;\n\tsignat" +
-      "ure\030\002 \001(\0132(.io.opencola.security.protobu" +
-      "f.Signature\"d\n\033CompressedSignedTransacti" +
-      "on\022E\n\021signedTransaction\030\001 \001(\0132*.io.openc" +
-      "ola.util.protobuf.CompressedBytes*!\n\tOpe" +
-      "ration\022\013\n\007RETRACT\020\000\022\007\n\003ADD\020\001b\006proto3"
+      "2\032.google.protobuf.Timestamp\"\233\001\n\021SignedT" +
+      "ransaction\022I\n\025compressedTransaction\030\001 \001(" +
+      "\0132*.io.opencola.util.protobuf.Compressed" +
+      "Bytes\022;\n\tsignature\030\002 \001(\0132(.io.opencola.s" +
+      "ecurity.protobuf.Signature*!\n\tOperation\022" +
+      "\013\n\007RETRACT\020\000\022\007\n\003ADD\020\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -8704,13 +8298,7 @@ public final class Model {
     internal_static_io_opencola_model_protobuf_SignedTransaction_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_model_protobuf_SignedTransaction_descriptor,
-        new java.lang.String[] { "Transaction", "Signature", });
-    internal_static_io_opencola_model_protobuf_CompressedSignedTransaction_descriptor =
-      getDescriptor().getMessageTypes().get(7);
-    internal_static_io_opencola_model_protobuf_CompressedSignedTransaction_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_io_opencola_model_protobuf_CompressedSignedTransaction_descriptor,
-        new java.lang.String[] { "SignedTransaction", });
+        new java.lang.String[] { "CompressedTransaction", "Signature", });
     com.google.protobuf.TimestampProto.getDescriptor();
     io.opencola.util.protobuf.Util.getDescriptor();
     io.opencola.security.protobuf.Security.getDescriptor();
