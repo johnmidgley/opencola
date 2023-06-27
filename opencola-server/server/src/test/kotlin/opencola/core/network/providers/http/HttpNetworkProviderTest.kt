@@ -8,6 +8,7 @@ import io.opencola.network.message.PongMessage
 import io.opencola.network.message.SignedMessage
 import io.opencola.network.providers.http.HttpNetworkProvider
 import io.opencola.security.Signature
+import io.opencola.security.SignatureAlgorithm
 import io.opencola.security.generateKeyPair
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
@@ -68,7 +69,7 @@ class HttpNetworkProviderTest {
                     SignedMessage(
                         persona.personaId,
                         PingMessage(),
-                        Signature("", io.opencola.network.emptyByteArray)
+                        Signature(SignatureAlgorithm.SHA3_256_WITH_ECDSA, io.opencola.network.emptyByteArray)
                     )
                 )
             }
@@ -81,7 +82,7 @@ class HttpNetworkProviderTest {
                     SignedMessage(
                         badPersonaAddressBookEntry.personaId,
                         PingMessage(),
-                        Signature("", io.opencola.network.emptyByteArray)
+                        Signature(SignatureAlgorithm.SHA3_256_WITH_ECDSA, io.opencola.network.emptyByteArray)
                     )
                 )
             }

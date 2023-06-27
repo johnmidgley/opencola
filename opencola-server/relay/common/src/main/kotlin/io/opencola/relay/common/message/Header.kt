@@ -4,7 +4,7 @@ import com.google.protobuf.ByteString
 import io.opencola.model.Id
 import io.opencola.security.PublicKeyProtoCodec
 import io.opencola.relay.common.protobuf.Relay as Proto
-import io.opencola.security.SIGNATURE_ALGO
+import io.opencola.security.DEFAULT_SIGNATURE_ALGO
 import io.opencola.security.Signature
 import io.opencola.security.publicKeyFromBytes
 import io.opencola.serialization.StreamSerializer
@@ -35,7 +35,7 @@ class Header(val messageId: UUID, val from: PublicKey, val signature: Signature)
             // This was the original order of parameters, so need to keep it this way for backwards compatibility
             val from = publicKeyFromBytes(stream.readByteArray())
             val messageId = UUIDByteArrayCodecCodec.decode(stream.readByteArray())
-            val signature = Signature(SIGNATURE_ALGO, stream.readByteArray())
+            val signature = Signature(DEFAULT_SIGNATURE_ALGO, stream.readByteArray())
 
             return Header(messageId, from, signature)
         }

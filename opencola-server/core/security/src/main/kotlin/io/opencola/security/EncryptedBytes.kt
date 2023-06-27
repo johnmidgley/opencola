@@ -4,7 +4,7 @@ import com.google.protobuf.ByteString
 import io.opencola.serialization.protobuf.ProtoSerializable
 import io.opencola.security.protobuf.Security as Proto
 
-class EncryptedBytes(val transformation: String, val bytes: ByteArray) {
+class EncryptedBytes(val transformation: EncryptionTransformation, val bytes: ByteArray) {
     fun toProto(): Proto.EncryptedMessage {
         return toProto(this)
     }
@@ -16,14 +16,14 @@ class EncryptedBytes(val transformation: String, val bytes: ByteArray) {
     companion object : ProtoSerializable<EncryptedBytes, Proto.EncryptedMessage> {
         override fun toProto(value: EncryptedBytes): Proto.EncryptedMessage {
             return Proto.EncryptedMessage.newBuilder()
-                .setTransformation(value.transformation)
+                .setTransformation(value.transformation.protoValue)
                 .setBytes(ByteString.copyFrom(value.bytes))
                 .build()
 
         }
 
         override fun fromProto(value: Proto.EncryptedMessage): EncryptedBytes {
-            return EncryptedBytes(value.transformation, value.bytes.toByteArray())
+            return EncryptedBytes(EncryptionTransformation.fromProto(value.transformation), value.bytes.toByteArray())
         }
 
         override fun parseProto(bytes: ByteArray): Proto.EncryptedMessage {

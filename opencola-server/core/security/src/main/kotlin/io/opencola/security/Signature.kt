@@ -7,7 +7,7 @@ import io.opencola.util.Base58
 import java.security.PrivateKey
 import java.security.PublicKey
 
-class Signature(val algorithm: String, val bytes: ByteArray) {
+class Signature(val algorithm: SignatureAlgorithm, val bytes: ByteArray) {
     fun encodeProto(): ByteArray {
         return encodeProto(this)
     }
@@ -19,13 +19,13 @@ class Signature(val algorithm: String, val bytes: ByteArray) {
 
         override fun toProto(value: Signature): Proto.Signature {
             return Proto.Signature.newBuilder()
-                .setAlgorithm(value.algorithm)
+                .setAlgorithm(value.algorithm.protoValue)
                 .setBytes(ByteString.copyFrom(value.bytes))
                 .build()
         }
 
         override fun fromProto(value: Proto.Signature): Signature {
-            return Signature(value.algorithm, value.bytes.toByteArray())
+            return Signature(SignatureAlgorithm.fromProto(value.algorithm), value.bytes.toByteArray())
         }
 
         override fun parseProto(bytes: ByteArray): Proto.Signature {

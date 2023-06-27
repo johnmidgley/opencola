@@ -30,7 +30,7 @@ fun createCertificate(name: String, keyPair: KeyPair): X509Certificate {
         keyPair.public
     )
 
-    val signer: ContentSigner = JcaContentSignerBuilder(SIGNATURE_ALGO).setProvider("BC").build(keyPair.private)
+    val signer: ContentSigner = JcaContentSignerBuilder(DEFAULT_SIGNATURE_ALGO.algorithmName).setProvider("BC").build(keyPair.private)
 
     return JcaX509CertificateConverter().setProvider("BC")
         .getCertificate(certBuilder.build(signer))

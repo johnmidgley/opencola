@@ -16,28 +16,32 @@ import javax.crypto.Cipher
 // https://metamug.com/article/security/sign-verify-digital-signature-ecdsa-java.html
 
 const val SPEC = "secp256r1" // "secp256k1"
-const val SIGNATURE_ALGO = "SHA3-256withECDSA" // "SHA256withECDSA"
 const val KEY_ALGO = "EC"
-const val ENCRYPTION_TRANSFORMATION = "ECIESwithAES-CBC"
+val DEFAULT_SIGNATURE_ALGO = SignatureAlgorithm.SHA3_256_WITH_ECDSA
+val DEFAULT_ENCRYPTION_TRANSFORMATION = EncryptionTransformation.ECIES_WITH_AES_CBC
 
-fun generateKeyPair() : KeyPair {
+fun generateKeyPair(): KeyPair {
     val ecSpec = ECGenParameterSpec(SPEC)
-    val g = KeyPairGenerator.getInstance("EC")
+    val g = KeyPairGenerator.getInstance(KEY_ALGO)
     g.initialize(ecSpec, SecureRandom())
     return g.generateKeyPair()
 }
 
-fun sign(privateKey: PrivateKey, data: ByteArray, algorithm: String = SIGNATURE_ALGO): Signature {
-    val ecdsaSign = java.security.Signature.getInstance(algorithm).also {
+fun sign(privateKey: PrivateKey, data: ByteArray, algorithm: SignatureAlgorithm = DEFAULT_SIGNATURE_ALGO): Signature {
+    val ecdsaSign = java.security.Signature.getInstance(algorithm.algorithmName).also {
         it.initSign(privateKey)
         it.update(data)
     }
     return Signature(algorithm, ecdsaSign.sign())
 }
 
-fun encrypt(publicKey: PublicKey, bytes: ByteArray, transformation: String = ENCRYPTION_TRANSFORMATION) : EncryptedBytes {
-    val encryptedBytes =  ByteArrayOutputStream().use{
-        val cipher = Cipher.getInstance(transformation).also { it.init(Cipher.ENCRYPT_MODE, publicKey) }
+fun encrypt(
+    publicKey: PublicKey,
+    bytes: ByteArray,
+    transformation: EncryptionTransformation = DEFAULT_ENCRYPTION_TRANSFORMATION
+): EncryptedBytes {
+    val encryptedBytes = ByteArrayOutputStream().use {
+        val cipher = Cipher.getInstance(transformation.transformationName).also { it.init(Cipher.ENCRYPT_MODE, publicKey) }
         it.writeByteArray(cipher.parameters.encoded)
         it.writeByteArray(cipher.doFinal(bytes))
         it.toByteArray()
@@ -46,24 +50,33 @@ fun encrypt(publicKey: PublicKey, bytes: ByteArray, transformation: String = ENC
     return EncryptedBytes(transformation, encryptedBytes)
 }
 
-fun decrypt(privateKey: PrivateKey, bytes: ByteArray, transformation: String = ENCRYPTION_TRANSFORMATION) : ByteArray {
-    ByteArrayInputStream(bytes).use{ stream ->
+fun decrypt(
+    privateKey: PrivateKey,
+    bytes: ByteArray,
+    transformation: EncryptionTransformation = DEFAULT_ENCRYPTION_TRANSFORMATION
+): ByteArray {
+    ByteArrayInputStream(bytes).use { stream ->
         val encodedParameters = stream.readByteArray()
         val cipherBytes = stream.readByteArray()
         val params = AlgorithmParameters.getInstance("IES").also { it.init(encodedParameters) }
 
-        return Cipher.getInstance(transformation)
+        return Cipher.getInstance(transformation.transformationName)
             .also { it.init(Cipher.DECRYPT_MODE, privateKey, params) }
             .doFinal(cipherBytes)
     }
 }
 
-fun decrypt(privateKey: PrivateKey, encryption: EncryptedBytes) : ByteArray {
+fun decrypt(privateKey: PrivateKey, encryption: EncryptedBytes): ByteArray {
     return decrypt(privateKey, encryption.bytes, encryption.transformation)
 }
 
-fun isValidSignature(publicKey: PublicKey, data: ByteArray, signature: ByteArray, algorithm: String = SIGNATURE_ALGO): Boolean {
-    val ecdsaVerify = java.security.Signature.getInstance(algorithm)
+fun isValidSignature(
+    publicKey: PublicKey,
+    data: ByteArray,
+    signature: ByteArray,
+    algorithm: SignatureAlgorithm = DEFAULT_SIGNATURE_ALGO
+): Boolean {
+    val ecdsaVerify = java.security.Signature.getInstance(algorithm.algorithmName)
     ecdsaVerify.initVerify(publicKey)
     ecdsaVerify.update(data)
     return ecdsaVerify.verify(signature)
@@ -79,32 +92,32 @@ fun getKeyFactory(): KeyFactory {
 }
 
 // https://docs.oracle.com/javase/tutorial/security/apisign/vstep2.html
-fun publicKeyFromBytes(bytes: ByteArray) : PublicKey {
+fun publicKeyFromBytes(bytes: ByteArray): PublicKey {
     return getKeyFactory().generatePublic(X509EncodedKeySpec(bytes))
 }
 
-fun PublicKey.encode() : String {
+fun PublicKey.encode(): String {
     return Base58.encode(this.encoded)
 }
 
-fun decodePublicKey(value: String) : PublicKey {
+fun decodePublicKey(value: String): PublicKey {
     return publicKeyFromBytes(
-        when(value.length){
+        when (value.length) {
             182 -> value.hexStringToByteArray()
             else -> Base58.decode(value)
         }
     )
 }
 
-fun privateKeyFromBytes(bytes: ByteArray) : PrivateKey {
+fun privateKeyFromBytes(bytes: ByteArray): PrivateKey {
     return getKeyFactory().generatePrivate(PKCS8EncodedKeySpec(bytes))
 }
 
-fun decodePrivateKey(value: String) : PrivateKey {
+fun decodePrivateKey(value: String): PrivateKey {
     return privateKeyFromBytes(value.hexStringToByteArray())
 }
 
-fun calculateDate(hoursInFuture: Int) : Date {
+fun calculateDate(hoursInFuture: Int): Date {
     val secs = System.currentTimeMillis() / 1000
     return Date((secs + (hoursInFuture * 60 * 60)) * 1000)
 }

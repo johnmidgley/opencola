@@ -2,6 +2,7 @@ package io.opencola.model
 
 import io.opencola.model.protobuf.Model as Proto
 import io.opencola.security.Signature
+import io.opencola.security.SignatureAlgorithm
 import io.opencola.security.isValidSignature
 import io.opencola.serialization.EncodingFormat
 import io.opencola.serialization.protobuf.ProtoSerializable
@@ -69,7 +70,7 @@ data class SignedTransaction(
             val transaction = Transaction.decode(uncompress(value.compressedTransaction))
             Transaction.encode(stream, transaction)
             value.signature.let {
-                stream.writeByteArray(it.algorithm.toByteArray())
+                stream.writeByteArray(it.algorithm.algorithmName.toByteArray())
                 stream.writeByteArray(it.bytes)
             }
         }
@@ -79,7 +80,7 @@ data class SignedTransaction(
             val compressedBytes = CompressedBytes(CompressionFormat.NONE, transactionBytes)
 
             val signature = Signature(
-                String(stream.readByteArray()),
+                SignatureAlgorithm.fromAlgorithmName(String(stream.readByteArray())),
                 stream.readByteArray()
             )
 

@@ -6,12 +6,20 @@ message PublicKey {
   bytes encoded = 1;
 }
 
+enum SignatureAlgorithm {
+  SHA3_256_WITH_ECDSA = 0;
+}
+
 message Signature {
-  string algorithm = 1;
+  SignatureAlgorithm algorithm = 1;
   bytes bytes = 2;
 }
 
+enum EncryptionTransformation {
+  ECIES_WITH_AES_CBC = 0;
+}
+
 message EncryptedMessage {
-  string transformation = 1;
+  EncryptionTransformation transformation = 1;
   bytes bytes = 2;
 }

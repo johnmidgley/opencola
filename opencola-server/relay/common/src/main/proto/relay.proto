@@ -8,7 +8,7 @@ message ConnectMessage {
 }
 
 message ChallengeMessage {
-  string algorithm = 1;
+  io.opencola.security.protobuf.SignatureAlgorithm algorithm = 1;
   bytes challenge = 2;
 }
 

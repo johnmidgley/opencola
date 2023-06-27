@@ -7,7 +7,7 @@ import io.opencola.relay.common.message.store.MemoryMessageStore
 import io.opencola.relay.common.message.store.MessageStore
 import io.opencola.security.isValidSignature
 import io.opencola.relay.server.AbstractRelayServer
-import io.opencola.security.SIGNATURE_ALGO
+import io.opencola.security.DEFAULT_SIGNATURE_ALGO
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import java.security.PublicKey
@@ -26,7 +26,7 @@ abstract class Server(numChallengeBytes: Int = 32, messageStore: MessageStore = 
             // Send challenge
             logger.debug { "Sending challenge" }
             val challenge = ByteArray(numChallengeBytes).also { random.nextBytes(it) }
-            val challengeMessage = ChallengeMessage(SIGNATURE_ALGO, challenge)
+            val challengeMessage = ChallengeMessage(DEFAULT_SIGNATURE_ALGO, challenge)
             socketSession.writeSizedByteArray(challengeMessage.encodeProto())
 
             // Read signed challenge
@@ -34,7 +34,7 @@ abstract class Server(numChallengeBytes: Int = 32, messageStore: MessageStore = 
             logger.debug { "Received challenge signature" }
 
             val status = if (
-                challengeResponse.signature.algorithm == SIGNATURE_ALGO &&
+                challengeResponse.signature.algorithm == DEFAULT_SIGNATURE_ALGO &&
                 isValidSignature(publicKey, challenge, challengeResponse.signature)
             )
                 AuthenticationStatus.AUTHENTICATED

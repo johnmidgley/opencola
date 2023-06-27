@@ -4,7 +4,7 @@ import io.opencola.model.*
 import io.opencola.application.TestApplication
 import io.opencola.model.value.StringValue
 import io.opencola.util.toHexString
-import io.opencola.security.SIGNATURE_ALGO
+import io.opencola.security.DEFAULT_SIGNATURE_ALGO
 import io.opencola.security.Signator
 import io.opencola.security.Signature
 import io.opencola.security.sha256
@@ -27,13 +27,13 @@ class TransactionTest {
 
     @Test
     fun testTransactionStructure() {
-        val stableStructureHash = "8d5f46320d50ee8032b8ef57093a2bf3cecab37ea6628813a8baa368636dd55f"
+        val stableStructureHash = "1e1dcd842032603e9c9973da372ba5c85f4ef6aa2532d60be5dcf44ee6e0632c"
         val id = Id.ofData("".toByteArray())
         val fact = Fact(id, id, CoreAttribute.Type.spec, StringValue("").asAnyValue(), Operation.Add)
         val encodedTransaction = Transaction.fromFacts(id, listOf(fact), 0).encodeProto()
         val compressedTransaction = CompressedBytes(CompressionFormat.NONE, encodedTransaction)
         val signedTransaction =
-            SignedTransaction(EncodingFormat.PROTOBUF, compressedTransaction, Signature(SIGNATURE_ALGO, "".toByteArray()))
+            SignedTransaction(EncodingFormat.PROTOBUF, compressedTransaction, Signature(DEFAULT_SIGNATURE_ALGO, "".toByteArray()))
         val hash = sha256(signedTransaction.encodeProto()).toHexString()
 
         assertEquals(stableStructureHash, hash, "Serialization change in Transaction - likely a breaking change")
