@@ -39,7 +39,7 @@ message MessageEnvelope {
   // passing signed messages is safe. If not (e.g. HttpNetworkProvider), the message should be encrypted.
   oneof message {
     SignedMessage signedMessage = 2;
-    io.opencola.security.protobuf.EncryptedMessage encryptedSignedMessage = 3;
+    io.opencola.security.protobuf.EncryptedBytes encryptedSignedMessage = 3;
   }
 }
 

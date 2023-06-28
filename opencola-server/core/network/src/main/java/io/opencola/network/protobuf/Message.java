@@ -202,6 +202,43 @@ public final class Message {
     getUnknownFields() {
       return this.unknownFields;
     }
+    private MessageHeader(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return io.opencola.network.protobuf.Message.internal_static_io_opencola_network_protobuf_MessageHeader_descriptor;
@@ -229,7 +266,7 @@ public final class Message {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
     @java.lang.Override
@@ -238,7 +275,7 @@ public final class Message {
       if (size != -1) return size;
 
       size = 0;
-      size += getUnknownFields().getSerializedSize();
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -253,7 +290,7 @@ public final class Message {
       }
       io.opencola.network.protobuf.Message.MessageHeader other = (io.opencola.network.protobuf.Message.MessageHeader) obj;
 
-      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
 
@@ -264,7 +301,7 @@ public final class Message {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      hash = (29 * hash) + getUnknownFields().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -385,13 +422,18 @@ public final class Message {
 
       // Construct using io.opencola.network.protobuf.Message.MessageHeader.newBuilder()
       private Builder() {
-
+        maybeForceBuilderInitialization();
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
       }
       @java.lang.Override
       public Builder clear() {
@@ -470,7 +512,7 @@ public final class Message {
 
       public Builder mergeFrom(io.opencola.network.protobuf.Message.MessageHeader other) {
         if (other == io.opencola.network.protobuf.Message.MessageHeader.getDefaultInstance()) return this;
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
@@ -485,30 +527,17 @@ public final class Message {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
+        io.opencola.network.protobuf.Message.MessageHeader parsedMessage = null;
         try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              default: {
-                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
-                  done = true; // was an endgroup tag
-                }
-                break;
-              } // default:
-            } // switch (tag)
-          } // while (!done)
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (io.opencola.network.protobuf.Message.MessageHeader) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          onChanged();
-        } // finally
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
         return this;
       }
       @java.lang.Override
@@ -544,18 +573,7 @@ public final class Message {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        Builder builder = newBuilder();
-        try {
-          builder.mergeFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(builder.buildPartial());
-        } catch (com.google.protobuf.UninitializedMessageException e) {
-          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(e)
-              .setUnfinishedMessage(builder.buildPartial());
-        }
-        return builder.buildPartial();
+        return new MessageHeader(input, extensionRegistry);
       }
     };
 
@@ -640,6 +658,67 @@ public final class Message {
     getUnknownFields() {
       return this.unknownFields;
     }
+    private UnsignedMessage(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+              io.opencola.network.protobuf.Message.MessageHeader.Builder subBuilder = null;
+              if (header_ != null) {
+                subBuilder = header_.toBuilder();
+              }
+              header_ = input.readMessage(io.opencola.network.protobuf.Message.MessageHeader.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(header_);
+                header_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 16: {
+              int rawValue = input.readEnum();
+
+              type_ = rawValue;
+              break;
+            }
+            case 26: {
+
+              payload_ = input.readBytes();
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return io.opencola.network.protobuf.Message.internal_static_io_opencola_network_protobuf_UnsignedMessage_descriptor;
@@ -676,11 +755,11 @@ public final class Message {
      */
     @java.lang.Override
     public io.opencola.network.protobuf.Message.MessageHeaderOrBuilder getHeaderOrBuilder() {
-      return header_ == null ? io.opencola.network.protobuf.Message.MessageHeader.getDefaultInstance() : header_;
+      return getHeader();
     }
 
     public static final int TYPE_FIELD_NUMBER = 2;
-    private int type_ = 0;
+    private int type_;
     /**
      * <code>.io.opencola.network.protobuf.MessageType type = 2;</code>
      * @return The enum numeric value on the wire for type.
@@ -693,12 +772,13 @@ public final class Message {
      * @return The type.
      */
     @java.lang.Override public io.opencola.network.protobuf.Message.MessageType getType() {
-      io.opencola.network.protobuf.Message.MessageType result = io.opencola.network.protobuf.Message.MessageType.forNumber(type_);
+      @SuppressWarnings("deprecation")
+      io.opencola.network.protobuf.Message.MessageType result = io.opencola.network.protobuf.Message.MessageType.valueOf(type_);
       return result == null ? io.opencola.network.protobuf.Message.MessageType.UNRECOGNIZED : result;
     }
 
     public static final int PAYLOAD_FIELD_NUMBER = 3;
-    private com.google.protobuf.ByteString payload_ = com.google.protobuf.ByteString.EMPTY;
+    private com.google.protobuf.ByteString payload_;
     /**
      * <code>bytes payload = 3;</code>
      * @return The payload.
@@ -731,7 +811,7 @@ public final class Message {
       if (!payload_.isEmpty()) {
         output.writeBytes(3, payload_);
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
     @java.lang.Override
@@ -752,7 +832,7 @@ public final class Message {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(3, payload_);
       }
-      size += getUnknownFields().getSerializedSize();
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -775,7 +855,7 @@ public final class Message {
       if (type_ != other.type_) return false;
       if (!getPayload()
           .equals(other.getPayload())) return false;
-      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
 
@@ -794,7 +874,7 @@ public final class Message {
       hash = (53 * hash) + type_;
       hash = (37 * hash) + PAYLOAD_FIELD_NUMBER;
       hash = (53 * hash) + getPayload().hashCode();
-      hash = (29 * hash) + getUnknownFields().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -911,25 +991,32 @@ public final class Message {
 
       // Construct using io.opencola.network.protobuf.Message.UnsignedMessage.newBuilder()
       private Builder() {
-
+        maybeForceBuilderInitialization();
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        bitField0_ = 0;
-        header_ = null;
-        if (headerBuilder_ != null) {
-          headerBuilder_.dispose();
+        if (headerBuilder_ == null) {
+          header_ = null;
+        } else {
+          header_ = null;
           headerBuilder_ = null;
         }
         type_ = 0;
+
         payload_ = com.google.protobuf.ByteString.EMPTY;
+
         return this;
       }
 
@@ -956,24 +1043,15 @@ public final class Message {
       @java.lang.Override
       public io.opencola.network.protobuf.Message.UnsignedMessage buildPartial() {
         io.opencola.network.protobuf.Message.UnsignedMessage result = new io.opencola.network.protobuf.Message.UnsignedMessage(this);
-        if (bitField0_ != 0) { buildPartial0(result); }
+        if (headerBuilder_ == null) {
+          result.header_ = header_;
+        } else {
+          result.header_ = headerBuilder_.build();
+        }
+        result.type_ = type_;
+        result.payload_ = payload_;
         onBuilt();
         return result;
-      }
-
-      private void buildPartial0(io.opencola.network.protobuf.Message.UnsignedMessage result) {
-        int from_bitField0_ = bitField0_;
-        if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.header_ = headerBuilder_ == null
-              ? header_
-              : headerBuilder_.build();
-        }
-        if (((from_bitField0_ & 0x00000002) != 0)) {
-          result.type_ = type_;
-        }
-        if (((from_bitField0_ & 0x00000004) != 0)) {
-          result.payload_ = payload_;
-        }
       }
 
       @java.lang.Override
@@ -1029,7 +1107,7 @@ public final class Message {
         if (other.getPayload() != com.google.protobuf.ByteString.EMPTY) {
           setPayload(other.getPayload());
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
@@ -1044,50 +1122,19 @@ public final class Message {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
+        io.opencola.network.protobuf.Message.UnsignedMessage parsedMessage = null;
         try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 10: {
-                input.readMessage(
-                    getHeaderFieldBuilder().getBuilder(),
-                    extensionRegistry);
-                bitField0_ |= 0x00000001;
-                break;
-              } // case 10
-              case 16: {
-                type_ = input.readEnum();
-                bitField0_ |= 0x00000002;
-                break;
-              } // case 16
-              case 26: {
-                payload_ = input.readBytes();
-                bitField0_ |= 0x00000004;
-                break;
-              } // case 26
-              default: {
-                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
-                  done = true; // was an endgroup tag
-                }
-                break;
-              } // default:
-            } // switch (tag)
-          } // while (!done)
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (io.opencola.network.protobuf.Message.UnsignedMessage) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          onChanged();
-        } // finally
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
         return this;
       }
-      private int bitField0_;
 
       private io.opencola.network.protobuf.Message.MessageHeader header_;
       private com.google.protobuf.SingleFieldBuilderV3<
@@ -1097,7 +1144,7 @@ public final class Message {
        * @return Whether the header field is set.
        */
       public boolean hasHeader() {
-        return ((bitField0_ & 0x00000001) != 0);
+        return headerBuilder_ != null || header_ != null;
       }
       /**
        * <code>.io.opencola.network.protobuf.MessageHeader header = 1;</code>
@@ -1119,11 +1166,11 @@ public final class Message {
             throw new NullPointerException();
           }
           header_ = value;
+          onChanged();
         } else {
           headerBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000001;
-        onChanged();
+
         return this;
       }
       /**
@@ -1133,11 +1180,11 @@ public final class Message {
           io.opencola.network.protobuf.Message.MessageHeader.Builder builderForValue) {
         if (headerBuilder_ == null) {
           header_ = builderForValue.build();
+          onChanged();
         } else {
           headerBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000001;
-        onChanged();
+
         return this;
       }
       /**
@@ -1145,38 +1192,38 @@ public final class Message {
        */
       public Builder mergeHeader(io.opencola.network.protobuf.Message.MessageHeader value) {
         if (headerBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) != 0) &&
-            header_ != null &&
-            header_ != io.opencola.network.protobuf.Message.MessageHeader.getDefaultInstance()) {
-            getHeaderBuilder().mergeFrom(value);
+          if (header_ != null) {
+            header_ =
+              io.opencola.network.protobuf.Message.MessageHeader.newBuilder(header_).mergeFrom(value).buildPartial();
           } else {
             header_ = value;
           }
+          onChanged();
         } else {
           headerBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000001;
-        onChanged();
+
         return this;
       }
       /**
        * <code>.io.opencola.network.protobuf.MessageHeader header = 1;</code>
        */
       public Builder clearHeader() {
-        bitField0_ = (bitField0_ & ~0x00000001);
-        header_ = null;
-        if (headerBuilder_ != null) {
-          headerBuilder_.dispose();
+        if (headerBuilder_ == null) {
+          header_ = null;
+          onChanged();
+        } else {
+          header_ = null;
           headerBuilder_ = null;
         }
-        onChanged();
+
         return this;
       }
       /**
        * <code>.io.opencola.network.protobuf.MessageHeader header = 1;</code>
        */
       public io.opencola.network.protobuf.Message.MessageHeader.Builder getHeaderBuilder() {
-        bitField0_ |= 0x00000001;
+        
         onChanged();
         return getHeaderFieldBuilder().getBuilder();
       }
@@ -1222,8 +1269,8 @@ public final class Message {
        * @return This builder for chaining.
        */
       public Builder setTypeValue(int value) {
+        
         type_ = value;
-        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -1233,7 +1280,8 @@ public final class Message {
        */
       @java.lang.Override
       public io.opencola.network.protobuf.Message.MessageType getType() {
-        io.opencola.network.protobuf.Message.MessageType result = io.opencola.network.protobuf.Message.MessageType.forNumber(type_);
+        @SuppressWarnings("deprecation")
+        io.opencola.network.protobuf.Message.MessageType result = io.opencola.network.protobuf.Message.MessageType.valueOf(type_);
         return result == null ? io.opencola.network.protobuf.Message.MessageType.UNRECOGNIZED : result;
       }
       /**
@@ -1245,7 +1293,7 @@ public final class Message {
         if (value == null) {
           throw new NullPointerException();
         }
-        bitField0_ |= 0x00000002;
+        
         type_ = value.getNumber();
         onChanged();
         return this;
@@ -1255,7 +1303,7 @@ public final class Message {
        * @return This builder for chaining.
        */
       public Builder clearType() {
-        bitField0_ = (bitField0_ & ~0x00000002);
+        
         type_ = 0;
         onChanged();
         return this;
@@ -1276,9 +1324,11 @@ public final class Message {
        * @return This builder for chaining.
        */
       public Builder setPayload(com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
         payload_ = value;
-        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
@@ -1287,7 +1337,7 @@ public final class Message {
        * @return This builder for chaining.
        */
       public Builder clearPayload() {
-        bitField0_ = (bitField0_ & ~0x00000004);
+        
         payload_ = getDefaultInstance().getPayload();
         onChanged();
         return this;
@@ -1325,18 +1375,7 @@ public final class Message {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        Builder builder = newBuilder();
-        try {
-          builder.mergeFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(builder.buildPartial());
-        } catch (com.google.protobuf.UninitializedMessageException e) {
-          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(e)
-              .setUnfinishedMessage(builder.buildPartial());
-        }
-        return builder.buildPartial();
+        return new UnsignedMessage(input, extensionRegistry);
       }
     };
 
@@ -1429,6 +1468,74 @@ public final class Message {
     getUnknownFields() {
       return this.unknownFields;
     }
+    private SignedMessage(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+              io.opencola.model.protobuf.Model.Id.Builder subBuilder = null;
+              if (from_ != null) {
+                subBuilder = from_.toBuilder();
+              }
+              from_ = input.readMessage(io.opencola.model.protobuf.Model.Id.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(from_);
+                from_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 18: {
+
+              unsignedMessageBytes_ = input.readBytes();
+              break;
+            }
+            case 26: {
+              io.opencola.security.protobuf.Security.Signature.Builder subBuilder = null;
+              if (signature_ != null) {
+                subBuilder = signature_.toBuilder();
+              }
+              signature_ = input.readMessage(io.opencola.security.protobuf.Security.Signature.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(signature_);
+                signature_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return io.opencola.network.protobuf.Message.internal_static_io_opencola_network_protobuf_SignedMessage_descriptor;
@@ -1465,11 +1572,11 @@ public final class Message {
      */
     @java.lang.Override
     public io.opencola.model.protobuf.Model.IdOrBuilder getFromOrBuilder() {
-      return from_ == null ? io.opencola.model.protobuf.Model.Id.getDefaultInstance() : from_;
+      return getFrom();
     }
 
     public static final int UNSIGNEDMESSAGEBYTES_FIELD_NUMBER = 2;
-    private com.google.protobuf.ByteString unsignedMessageBytes_ = com.google.protobuf.ByteString.EMPTY;
+    private com.google.protobuf.ByteString unsignedMessageBytes_;
     /**
      * <pre>
      * The message needs to have a stable set of bytes to sign, so we use the serialized bytes here
@@ -1507,7 +1614,7 @@ public final class Message {
      */
     @java.lang.Override
     public io.opencola.security.protobuf.Security.SignatureOrBuilder getSignatureOrBuilder() {
-      return signature_ == null ? io.opencola.security.protobuf.Security.Signature.getDefaultInstance() : signature_;
+      return getSignature();
     }
 
     private byte memoizedIsInitialized = -1;
@@ -1533,7 +1640,7 @@ public final class Message {
       if (signature_ != null) {
         output.writeMessage(3, getSignature());
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
     @java.lang.Override
@@ -1554,7 +1661,7 @@ public final class Message {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(3, getSignature());
       }
-      size += getUnknownFields().getSerializedSize();
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -1581,7 +1688,7 @@ public final class Message {
         if (!getSignature()
             .equals(other.getSignature())) return false;
       }
-      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
 
@@ -1602,7 +1709,7 @@ public final class Message {
         hash = (37 * hash) + SIGNATURE_FIELD_NUMBER;
         hash = (53 * hash) + getSignature().hashCode();
       }
-      hash = (29 * hash) + getUnknownFields().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -1719,27 +1826,34 @@ public final class Message {
 
       // Construct using io.opencola.network.protobuf.Message.SignedMessage.newBuilder()
       private Builder() {
-
+        maybeForceBuilderInitialization();
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        bitField0_ = 0;
-        from_ = null;
-        if (fromBuilder_ != null) {
-          fromBuilder_.dispose();
+        if (fromBuilder_ == null) {
+          from_ = null;
+        } else {
+          from_ = null;
           fromBuilder_ = null;
         }
         unsignedMessageBytes_ = com.google.protobuf.ByteString.EMPTY;
-        signature_ = null;
-        if (signatureBuilder_ != null) {
-          signatureBuilder_.dispose();
+
+        if (signatureBuilder_ == null) {
+          signature_ = null;
+        } else {
+          signature_ = null;
           signatureBuilder_ = null;
         }
         return this;
@@ -1768,26 +1882,19 @@ public final class Message {
       @java.lang.Override
       public io.opencola.network.protobuf.Message.SignedMessage buildPartial() {
         io.opencola.network.protobuf.Message.SignedMessage result = new io.opencola.network.protobuf.Message.SignedMessage(this);
-        if (bitField0_ != 0) { buildPartial0(result); }
+        if (fromBuilder_ == null) {
+          result.from_ = from_;
+        } else {
+          result.from_ = fromBuilder_.build();
+        }
+        result.unsignedMessageBytes_ = unsignedMessageBytes_;
+        if (signatureBuilder_ == null) {
+          result.signature_ = signature_;
+        } else {
+          result.signature_ = signatureBuilder_.build();
+        }
         onBuilt();
         return result;
-      }
-
-      private void buildPartial0(io.opencola.network.protobuf.Message.SignedMessage result) {
-        int from_bitField0_ = bitField0_;
-        if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.from_ = fromBuilder_ == null
-              ? from_
-              : fromBuilder_.build();
-        }
-        if (((from_bitField0_ & 0x00000002) != 0)) {
-          result.unsignedMessageBytes_ = unsignedMessageBytes_;
-        }
-        if (((from_bitField0_ & 0x00000004) != 0)) {
-          result.signature_ = signatureBuilder_ == null
-              ? signature_
-              : signatureBuilder_.build();
-        }
       }
 
       @java.lang.Override
@@ -1843,7 +1950,7 @@ public final class Message {
         if (other.hasSignature()) {
           mergeSignature(other.getSignature());
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
@@ -1858,52 +1965,19 @@ public final class Message {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
+        io.opencola.network.protobuf.Message.SignedMessage parsedMessage = null;
         try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 10: {
-                input.readMessage(
-                    getFromFieldBuilder().getBuilder(),
-                    extensionRegistry);
-                bitField0_ |= 0x00000001;
-                break;
-              } // case 10
-              case 18: {
-                unsignedMessageBytes_ = input.readBytes();
-                bitField0_ |= 0x00000002;
-                break;
-              } // case 18
-              case 26: {
-                input.readMessage(
-                    getSignatureFieldBuilder().getBuilder(),
-                    extensionRegistry);
-                bitField0_ |= 0x00000004;
-                break;
-              } // case 26
-              default: {
-                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
-                  done = true; // was an endgroup tag
-                }
-                break;
-              } // default:
-            } // switch (tag)
-          } // while (!done)
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (io.opencola.network.protobuf.Message.SignedMessage) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          onChanged();
-        } // finally
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
         return this;
       }
-      private int bitField0_;
 
       private io.opencola.model.protobuf.Model.Id from_;
       private com.google.protobuf.SingleFieldBuilderV3<
@@ -1913,7 +1987,7 @@ public final class Message {
        * @return Whether the from field is set.
        */
       public boolean hasFrom() {
-        return ((bitField0_ & 0x00000001) != 0);
+        return fromBuilder_ != null || from_ != null;
       }
       /**
        * <code>.io.opencola.model.protobuf.Id from = 1;</code>
@@ -1935,11 +2009,11 @@ public final class Message {
             throw new NullPointerException();
           }
           from_ = value;
+          onChanged();
         } else {
           fromBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000001;
-        onChanged();
+
         return this;
       }
       /**
@@ -1949,11 +2023,11 @@ public final class Message {
           io.opencola.model.protobuf.Model.Id.Builder builderForValue) {
         if (fromBuilder_ == null) {
           from_ = builderForValue.build();
+          onChanged();
         } else {
           fromBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000001;
-        onChanged();
+
         return this;
       }
       /**
@@ -1961,38 +2035,38 @@ public final class Message {
        */
       public Builder mergeFrom(io.opencola.model.protobuf.Model.Id value) {
         if (fromBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) != 0) &&
-            from_ != null &&
-            from_ != io.opencola.model.protobuf.Model.Id.getDefaultInstance()) {
-            getFromBuilder().mergeFrom(value);
+          if (from_ != null) {
+            from_ =
+              io.opencola.model.protobuf.Model.Id.newBuilder(from_).mergeFrom(value).buildPartial();
           } else {
             from_ = value;
           }
+          onChanged();
         } else {
           fromBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000001;
-        onChanged();
+
         return this;
       }
       /**
        * <code>.io.opencola.model.protobuf.Id from = 1;</code>
        */
       public Builder clearFrom() {
-        bitField0_ = (bitField0_ & ~0x00000001);
-        from_ = null;
-        if (fromBuilder_ != null) {
-          fromBuilder_.dispose();
+        if (fromBuilder_ == null) {
+          from_ = null;
+          onChanged();
+        } else {
+          from_ = null;
           fromBuilder_ = null;
         }
-        onChanged();
+
         return this;
       }
       /**
        * <code>.io.opencola.model.protobuf.Id from = 1;</code>
        */
       public io.opencola.model.protobuf.Model.Id.Builder getFromBuilder() {
-        bitField0_ |= 0x00000001;
+        
         onChanged();
         return getFromFieldBuilder().getBuilder();
       }
@@ -2049,9 +2123,11 @@ public final class Message {
        * @return This builder for chaining.
        */
       public Builder setUnsignedMessageBytes(com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
         unsignedMessageBytes_ = value;
-        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -2065,7 +2141,7 @@ public final class Message {
        * @return This builder for chaining.
        */
       public Builder clearUnsignedMessageBytes() {
-        bitField0_ = (bitField0_ & ~0x00000002);
+        
         unsignedMessageBytes_ = getDefaultInstance().getUnsignedMessageBytes();
         onChanged();
         return this;
@@ -2079,7 +2155,7 @@ public final class Message {
        * @return Whether the signature field is set.
        */
       public boolean hasSignature() {
-        return ((bitField0_ & 0x00000004) != 0);
+        return signatureBuilder_ != null || signature_ != null;
       }
       /**
        * <code>.io.opencola.security.protobuf.Signature signature = 3;</code>
@@ -2101,11 +2177,11 @@ public final class Message {
             throw new NullPointerException();
           }
           signature_ = value;
+          onChanged();
         } else {
           signatureBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000004;
-        onChanged();
+
         return this;
       }
       /**
@@ -2115,11 +2191,11 @@ public final class Message {
           io.opencola.security.protobuf.Security.Signature.Builder builderForValue) {
         if (signatureBuilder_ == null) {
           signature_ = builderForValue.build();
+          onChanged();
         } else {
           signatureBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000004;
-        onChanged();
+
         return this;
       }
       /**
@@ -2127,38 +2203,38 @@ public final class Message {
        */
       public Builder mergeSignature(io.opencola.security.protobuf.Security.Signature value) {
         if (signatureBuilder_ == null) {
-          if (((bitField0_ & 0x00000004) != 0) &&
-            signature_ != null &&
-            signature_ != io.opencola.security.protobuf.Security.Signature.getDefaultInstance()) {
-            getSignatureBuilder().mergeFrom(value);
+          if (signature_ != null) {
+            signature_ =
+              io.opencola.security.protobuf.Security.Signature.newBuilder(signature_).mergeFrom(value).buildPartial();
           } else {
             signature_ = value;
           }
+          onChanged();
         } else {
           signatureBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000004;
-        onChanged();
+
         return this;
       }
       /**
        * <code>.io.opencola.security.protobuf.Signature signature = 3;</code>
        */
       public Builder clearSignature() {
-        bitField0_ = (bitField0_ & ~0x00000004);
-        signature_ = null;
-        if (signatureBuilder_ != null) {
-          signatureBuilder_.dispose();
+        if (signatureBuilder_ == null) {
+          signature_ = null;
+          onChanged();
+        } else {
+          signature_ = null;
           signatureBuilder_ = null;
         }
-        onChanged();
+
         return this;
       }
       /**
        * <code>.io.opencola.security.protobuf.Signature signature = 3;</code>
        */
       public io.opencola.security.protobuf.Security.Signature.Builder getSignatureBuilder() {
-        bitField0_ |= 0x00000004;
+        
         onChanged();
         return getSignatureFieldBuilder().getBuilder();
       }
@@ -2222,18 +2298,7 @@ public final class Message {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        Builder builder = newBuilder();
-        try {
-          builder.mergeFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(builder.buildPartial());
-        } catch (com.google.protobuf.UninitializedMessageException e) {
-          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(e)
-              .setUnfinishedMessage(builder.buildPartial());
-        }
-        return builder.buildPartial();
+        return new SignedMessage(input, extensionRegistry);
       }
     };
 
@@ -2288,19 +2353,19 @@ public final class Message {
     io.opencola.network.protobuf.Message.SignedMessageOrBuilder getSignedMessageOrBuilder();
 
     /**
-     * <code>.io.opencola.security.protobuf.EncryptedMessage encryptedSignedMessage = 3;</code>
+     * <code>.io.opencola.security.protobuf.EncryptedBytes encryptedSignedMessage = 3;</code>
      * @return Whether the encryptedSignedMessage field is set.
      */
     boolean hasEncryptedSignedMessage();
     /**
-     * <code>.io.opencola.security.protobuf.EncryptedMessage encryptedSignedMessage = 3;</code>
+     * <code>.io.opencola.security.protobuf.EncryptedBytes encryptedSignedMessage = 3;</code>
      * @return The encryptedSignedMessage.
      */
-    io.opencola.security.protobuf.Security.EncryptedMessage getEncryptedSignedMessage();
+    io.opencola.security.protobuf.Security.EncryptedBytes getEncryptedSignedMessage();
     /**
-     * <code>.io.opencola.security.protobuf.EncryptedMessage encryptedSignedMessage = 3;</code>
+     * <code>.io.opencola.security.protobuf.EncryptedBytes encryptedSignedMessage = 3;</code>
      */
-    io.opencola.security.protobuf.Security.EncryptedMessageOrBuilder getEncryptedSignedMessageOrBuilder();
+    io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder getEncryptedSignedMessageOrBuilder();
 
     public io.opencola.network.protobuf.Message.MessageEnvelope.MessageCase getMessageCase();
   }
@@ -2330,6 +2395,84 @@ public final class Message {
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
+    }
+    private MessageEnvelope(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+              io.opencola.model.protobuf.Model.Id.Builder subBuilder = null;
+              if (to_ != null) {
+                subBuilder = to_.toBuilder();
+              }
+              to_ = input.readMessage(io.opencola.model.protobuf.Model.Id.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(to_);
+                to_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 18: {
+              io.opencola.network.protobuf.Message.SignedMessage.Builder subBuilder = null;
+              if (messageCase_ == 2) {
+                subBuilder = ((io.opencola.network.protobuf.Message.SignedMessage) message_).toBuilder();
+              }
+              message_ =
+                  input.readMessage(io.opencola.network.protobuf.Message.SignedMessage.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom((io.opencola.network.protobuf.Message.SignedMessage) message_);
+                message_ = subBuilder.buildPartial();
+              }
+              messageCase_ = 2;
+              break;
+            }
+            case 26: {
+              io.opencola.security.protobuf.Security.EncryptedBytes.Builder subBuilder = null;
+              if (messageCase_ == 3) {
+                subBuilder = ((io.opencola.security.protobuf.Security.EncryptedBytes) message_).toBuilder();
+              }
+              message_ =
+                  input.readMessage(io.opencola.security.protobuf.Security.EncryptedBytes.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom((io.opencola.security.protobuf.Security.EncryptedBytes) message_);
+                message_ = subBuilder.buildPartial();
+              }
+              messageCase_ = 3;
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
@@ -2408,7 +2551,7 @@ public final class Message {
      */
     @java.lang.Override
     public io.opencola.model.protobuf.Model.IdOrBuilder getToOrBuilder() {
-      return to_ == null ? io.opencola.model.protobuf.Model.Id.getDefaultInstance() : to_;
+      return getTo();
     }
 
     public static final int SIGNEDMESSAGE_FIELD_NUMBER = 2;
@@ -2444,7 +2587,7 @@ public final class Message {
 
     public static final int ENCRYPTEDSIGNEDMESSAGE_FIELD_NUMBER = 3;
     /**
-     * <code>.io.opencola.security.protobuf.EncryptedMessage encryptedSignedMessage = 3;</code>
+     * <code>.io.opencola.security.protobuf.EncryptedBytes encryptedSignedMessage = 3;</code>
      * @return Whether the encryptedSignedMessage field is set.
      */
     @java.lang.Override
@@ -2452,25 +2595,25 @@ public final class Message {
       return messageCase_ == 3;
     }
     /**
-     * <code>.io.opencola.security.protobuf.EncryptedMessage encryptedSignedMessage = 3;</code>
+     * <code>.io.opencola.security.protobuf.EncryptedBytes encryptedSignedMessage = 3;</code>
      * @return The encryptedSignedMessage.
      */
     @java.lang.Override
-    public io.opencola.security.protobuf.Security.EncryptedMessage getEncryptedSignedMessage() {
+    public io.opencola.security.protobuf.Security.EncryptedBytes getEncryptedSignedMessage() {
       if (messageCase_ == 3) {
-         return (io.opencola.security.protobuf.Security.EncryptedMessage) message_;
+         return (io.opencola.security.protobuf.Security.EncryptedBytes) message_;
       }
-      return io.opencola.security.protobuf.Security.EncryptedMessage.getDefaultInstance();
+      return io.opencola.security.protobuf.Security.EncryptedBytes.getDefaultInstance();
     }
     /**
-     * <code>.io.opencola.security.protobuf.EncryptedMessage encryptedSignedMessage = 3;</code>
+     * <code>.io.opencola.security.protobuf.EncryptedBytes encryptedSignedMessage = 3;</code>
      */
     @java.lang.Override
-    public io.opencola.security.protobuf.Security.EncryptedMessageOrBuilder getEncryptedSignedMessageOrBuilder() {
+    public io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder getEncryptedSignedMessageOrBuilder() {
       if (messageCase_ == 3) {
-         return (io.opencola.security.protobuf.Security.EncryptedMessage) message_;
+         return (io.opencola.security.protobuf.Security.EncryptedBytes) message_;
       }
-      return io.opencola.security.protobuf.Security.EncryptedMessage.getDefaultInstance();
+      return io.opencola.security.protobuf.Security.EncryptedBytes.getDefaultInstance();
     }
 
     private byte memoizedIsInitialized = -1;
@@ -2494,9 +2637,9 @@ public final class Message {
         output.writeMessage(2, (io.opencola.network.protobuf.Message.SignedMessage) message_);
       }
       if (messageCase_ == 3) {
-        output.writeMessage(3, (io.opencola.security.protobuf.Security.EncryptedMessage) message_);
+        output.writeMessage(3, (io.opencola.security.protobuf.Security.EncryptedBytes) message_);
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
     @java.lang.Override
@@ -2515,9 +2658,9 @@ public final class Message {
       }
       if (messageCase_ == 3) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(3, (io.opencola.security.protobuf.Security.EncryptedMessage) message_);
+          .computeMessageSize(3, (io.opencola.security.protobuf.Security.EncryptedBytes) message_);
       }
-      size += getUnknownFields().getSerializedSize();
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -2550,7 +2693,7 @@ public final class Message {
         case 0:
         default:
       }
-      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
 
@@ -2577,7 +2720,7 @@ public final class Message {
         case 0:
         default:
       }
-      hash = (29 * hash) + getUnknownFields().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -2694,28 +2837,27 @@ public final class Message {
 
       // Construct using io.opencola.network.protobuf.Message.MessageEnvelope.newBuilder()
       private Builder() {
-
+        maybeForceBuilderInitialization();
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        bitField0_ = 0;
-        to_ = null;
-        if (toBuilder_ != null) {
-          toBuilder_.dispose();
+        if (toBuilder_ == null) {
+          to_ = null;
+        } else {
+          to_ = null;
           toBuilder_ = null;
-        }
-        if (signedMessageBuilder_ != null) {
-          signedMessageBuilder_.clear();
-        }
-        if (encryptedSignedMessageBuilder_ != null) {
-          encryptedSignedMessageBuilder_.clear();
         }
         messageCase_ = 0;
         message_ = null;
@@ -2745,32 +2887,28 @@ public final class Message {
       @java.lang.Override
       public io.opencola.network.protobuf.Message.MessageEnvelope buildPartial() {
         io.opencola.network.protobuf.Message.MessageEnvelope result = new io.opencola.network.protobuf.Message.MessageEnvelope(this);
-        if (bitField0_ != 0) { buildPartial0(result); }
-        buildPartialOneofs(result);
+        if (toBuilder_ == null) {
+          result.to_ = to_;
+        } else {
+          result.to_ = toBuilder_.build();
+        }
+        if (messageCase_ == 2) {
+          if (signedMessageBuilder_ == null) {
+            result.message_ = message_;
+          } else {
+            result.message_ = signedMessageBuilder_.build();
+          }
+        }
+        if (messageCase_ == 3) {
+          if (encryptedSignedMessageBuilder_ == null) {
+            result.message_ = message_;
+          } else {
+            result.message_ = encryptedSignedMessageBuilder_.build();
+          }
+        }
+        result.messageCase_ = messageCase_;
         onBuilt();
         return result;
-      }
-
-      private void buildPartial0(io.opencola.network.protobuf.Message.MessageEnvelope result) {
-        int from_bitField0_ = bitField0_;
-        if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.to_ = toBuilder_ == null
-              ? to_
-              : toBuilder_.build();
-        }
-      }
-
-      private void buildPartialOneofs(io.opencola.network.protobuf.Message.MessageEnvelope result) {
-        result.messageCase_ = messageCase_;
-        result.message_ = this.message_;
-        if (messageCase_ == 2 &&
-            signedMessageBuilder_ != null) {
-          result.message_ = signedMessageBuilder_.build();
-        }
-        if (messageCase_ == 3 &&
-            encryptedSignedMessageBuilder_ != null) {
-          result.message_ = encryptedSignedMessageBuilder_.build();
-        }
       }
 
       @java.lang.Override
@@ -2833,7 +2971,7 @@ public final class Message {
             break;
           }
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
@@ -2848,51 +2986,17 @@ public final class Message {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
+        io.opencola.network.protobuf.Message.MessageEnvelope parsedMessage = null;
         try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 10: {
-                input.readMessage(
-                    getToFieldBuilder().getBuilder(),
-                    extensionRegistry);
-                bitField0_ |= 0x00000001;
-                break;
-              } // case 10
-              case 18: {
-                input.readMessage(
-                    getSignedMessageFieldBuilder().getBuilder(),
-                    extensionRegistry);
-                messageCase_ = 2;
-                break;
-              } // case 18
-              case 26: {
-                input.readMessage(
-                    getEncryptedSignedMessageFieldBuilder().getBuilder(),
-                    extensionRegistry);
-                messageCase_ = 3;
-                break;
-              } // case 26
-              default: {
-                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
-                  done = true; // was an endgroup tag
-                }
-                break;
-              } // default:
-            } // switch (tag)
-          } // while (!done)
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (io.opencola.network.protobuf.Message.MessageEnvelope) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          onChanged();
-        } // finally
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
         return this;
       }
       private int messageCase_ = 0;
@@ -2910,7 +3014,6 @@ public final class Message {
         return this;
       }
 
-      private int bitField0_;
 
       private io.opencola.model.protobuf.Model.Id to_;
       private com.google.protobuf.SingleFieldBuilderV3<
@@ -2920,7 +3023,7 @@ public final class Message {
        * @return Whether the to field is set.
        */
       public boolean hasTo() {
-        return ((bitField0_ & 0x00000001) != 0);
+        return toBuilder_ != null || to_ != null;
       }
       /**
        * <code>.io.opencola.model.protobuf.Id to = 1;</code>
@@ -2942,11 +3045,11 @@ public final class Message {
             throw new NullPointerException();
           }
           to_ = value;
+          onChanged();
         } else {
           toBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000001;
-        onChanged();
+
         return this;
       }
       /**
@@ -2956,11 +3059,11 @@ public final class Message {
           io.opencola.model.protobuf.Model.Id.Builder builderForValue) {
         if (toBuilder_ == null) {
           to_ = builderForValue.build();
+          onChanged();
         } else {
           toBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000001;
-        onChanged();
+
         return this;
       }
       /**
@@ -2968,38 +3071,38 @@ public final class Message {
        */
       public Builder mergeTo(io.opencola.model.protobuf.Model.Id value) {
         if (toBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) != 0) &&
-            to_ != null &&
-            to_ != io.opencola.model.protobuf.Model.Id.getDefaultInstance()) {
-            getToBuilder().mergeFrom(value);
+          if (to_ != null) {
+            to_ =
+              io.opencola.model.protobuf.Model.Id.newBuilder(to_).mergeFrom(value).buildPartial();
           } else {
             to_ = value;
           }
+          onChanged();
         } else {
           toBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000001;
-        onChanged();
+
         return this;
       }
       /**
        * <code>.io.opencola.model.protobuf.Id to = 1;</code>
        */
       public Builder clearTo() {
-        bitField0_ = (bitField0_ & ~0x00000001);
-        to_ = null;
-        if (toBuilder_ != null) {
-          toBuilder_.dispose();
+        if (toBuilder_ == null) {
+          to_ = null;
+          onChanged();
+        } else {
+          to_ = null;
           toBuilder_ = null;
         }
-        onChanged();
+
         return this;
       }
       /**
        * <code>.io.opencola.model.protobuf.Id to = 1;</code>
        */
       public io.opencola.model.protobuf.Model.Id.Builder getToBuilder() {
-        bitField0_ |= 0x00000001;
+        
         onChanged();
         return getToFieldBuilder().getBuilder();
       }
@@ -3105,9 +3208,8 @@ public final class Message {
         } else {
           if (messageCase_ == 2) {
             signedMessageBuilder_.mergeFrom(value);
-          } else {
-            signedMessageBuilder_.setMessage(value);
           }
+          signedMessageBuilder_.setMessage(value);
         }
         messageCase_ = 2;
         return this;
@@ -3169,14 +3271,14 @@ public final class Message {
           message_ = null;
         }
         messageCase_ = 2;
-        onChanged();
+        onChanged();;
         return signedMessageBuilder_;
       }
 
       private com.google.protobuf.SingleFieldBuilderV3<
-          io.opencola.security.protobuf.Security.EncryptedMessage, io.opencola.security.protobuf.Security.EncryptedMessage.Builder, io.opencola.security.protobuf.Security.EncryptedMessageOrBuilder> encryptedSignedMessageBuilder_;
+          io.opencola.security.protobuf.Security.EncryptedBytes, io.opencola.security.protobuf.Security.EncryptedBytes.Builder, io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder> encryptedSignedMessageBuilder_;
       /**
-       * <code>.io.opencola.security.protobuf.EncryptedMessage encryptedSignedMessage = 3;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes encryptedSignedMessage = 3;</code>
        * @return Whether the encryptedSignedMessage field is set.
        */
       @java.lang.Override
@@ -3184,27 +3286,27 @@ public final class Message {
         return messageCase_ == 3;
       }
       /**
-       * <code>.io.opencola.security.protobuf.EncryptedMessage encryptedSignedMessage = 3;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes encryptedSignedMessage = 3;</code>
        * @return The encryptedSignedMessage.
        */
       @java.lang.Override
-      public io.opencola.security.protobuf.Security.EncryptedMessage getEncryptedSignedMessage() {
+      public io.opencola.security.protobuf.Security.EncryptedBytes getEncryptedSignedMessage() {
         if (encryptedSignedMessageBuilder_ == null) {
           if (messageCase_ == 3) {
-            return (io.opencola.security.protobuf.Security.EncryptedMessage) message_;
+            return (io.opencola.security.protobuf.Security.EncryptedBytes) message_;
           }
-          return io.opencola.security.protobuf.Security.EncryptedMessage.getDefaultInstance();
+          return io.opencola.security.protobuf.Security.EncryptedBytes.getDefaultInstance();
         } else {
           if (messageCase_ == 3) {
             return encryptedSignedMessageBuilder_.getMessage();
           }
-          return io.opencola.security.protobuf.Security.EncryptedMessage.getDefaultInstance();
+          return io.opencola.security.protobuf.Security.EncryptedBytes.getDefaultInstance();
         }
       }
       /**
-       * <code>.io.opencola.security.protobuf.EncryptedMessage encryptedSignedMessage = 3;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes encryptedSignedMessage = 3;</code>
        */
-      public Builder setEncryptedSignedMessage(io.opencola.security.protobuf.Security.EncryptedMessage value) {
+      public Builder setEncryptedSignedMessage(io.opencola.security.protobuf.Security.EncryptedBytes value) {
         if (encryptedSignedMessageBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -3218,10 +3320,10 @@ public final class Message {
         return this;
       }
       /**
-       * <code>.io.opencola.security.protobuf.EncryptedMessage encryptedSignedMessage = 3;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes encryptedSignedMessage = 3;</code>
        */
       public Builder setEncryptedSignedMessage(
-          io.opencola.security.protobuf.Security.EncryptedMessage.Builder builderForValue) {
+          io.opencola.security.protobuf.Security.EncryptedBytes.Builder builderForValue) {
         if (encryptedSignedMessageBuilder_ == null) {
           message_ = builderForValue.build();
           onChanged();
@@ -3232,13 +3334,13 @@ public final class Message {
         return this;
       }
       /**
-       * <code>.io.opencola.security.protobuf.EncryptedMessage encryptedSignedMessage = 3;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes encryptedSignedMessage = 3;</code>
        */
-      public Builder mergeEncryptedSignedMessage(io.opencola.security.protobuf.Security.EncryptedMessage value) {
+      public Builder mergeEncryptedSignedMessage(io.opencola.security.protobuf.Security.EncryptedBytes value) {
         if (encryptedSignedMessageBuilder_ == null) {
           if (messageCase_ == 3 &&
-              message_ != io.opencola.security.protobuf.Security.EncryptedMessage.getDefaultInstance()) {
-            message_ = io.opencola.security.protobuf.Security.EncryptedMessage.newBuilder((io.opencola.security.protobuf.Security.EncryptedMessage) message_)
+              message_ != io.opencola.security.protobuf.Security.EncryptedBytes.getDefaultInstance()) {
+            message_ = io.opencola.security.protobuf.Security.EncryptedBytes.newBuilder((io.opencola.security.protobuf.Security.EncryptedBytes) message_)
                 .mergeFrom(value).buildPartial();
           } else {
             message_ = value;
@@ -3247,15 +3349,14 @@ public final class Message {
         } else {
           if (messageCase_ == 3) {
             encryptedSignedMessageBuilder_.mergeFrom(value);
-          } else {
-            encryptedSignedMessageBuilder_.setMessage(value);
           }
+          encryptedSignedMessageBuilder_.setMessage(value);
         }
         messageCase_ = 3;
         return this;
       }
       /**
-       * <code>.io.opencola.security.protobuf.EncryptedMessage encryptedSignedMessage = 3;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes encryptedSignedMessage = 3;</code>
        */
       public Builder clearEncryptedSignedMessage() {
         if (encryptedSignedMessageBuilder_ == null) {
@@ -3274,44 +3375,44 @@ public final class Message {
         return this;
       }
       /**
-       * <code>.io.opencola.security.protobuf.EncryptedMessage encryptedSignedMessage = 3;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes encryptedSignedMessage = 3;</code>
        */
-      public io.opencola.security.protobuf.Security.EncryptedMessage.Builder getEncryptedSignedMessageBuilder() {
+      public io.opencola.security.protobuf.Security.EncryptedBytes.Builder getEncryptedSignedMessageBuilder() {
         return getEncryptedSignedMessageFieldBuilder().getBuilder();
       }
       /**
-       * <code>.io.opencola.security.protobuf.EncryptedMessage encryptedSignedMessage = 3;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes encryptedSignedMessage = 3;</code>
        */
       @java.lang.Override
-      public io.opencola.security.protobuf.Security.EncryptedMessageOrBuilder getEncryptedSignedMessageOrBuilder() {
+      public io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder getEncryptedSignedMessageOrBuilder() {
         if ((messageCase_ == 3) && (encryptedSignedMessageBuilder_ != null)) {
           return encryptedSignedMessageBuilder_.getMessageOrBuilder();
         } else {
           if (messageCase_ == 3) {
-            return (io.opencola.security.protobuf.Security.EncryptedMessage) message_;
+            return (io.opencola.security.protobuf.Security.EncryptedBytes) message_;
           }
-          return io.opencola.security.protobuf.Security.EncryptedMessage.getDefaultInstance();
+          return io.opencola.security.protobuf.Security.EncryptedBytes.getDefaultInstance();
         }
       }
       /**
-       * <code>.io.opencola.security.protobuf.EncryptedMessage encryptedSignedMessage = 3;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes encryptedSignedMessage = 3;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          io.opencola.security.protobuf.Security.EncryptedMessage, io.opencola.security.protobuf.Security.EncryptedMessage.Builder, io.opencola.security.protobuf.Security.EncryptedMessageOrBuilder> 
+          io.opencola.security.protobuf.Security.EncryptedBytes, io.opencola.security.protobuf.Security.EncryptedBytes.Builder, io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder> 
           getEncryptedSignedMessageFieldBuilder() {
         if (encryptedSignedMessageBuilder_ == null) {
           if (!(messageCase_ == 3)) {
-            message_ = io.opencola.security.protobuf.Security.EncryptedMessage.getDefaultInstance();
+            message_ = io.opencola.security.protobuf.Security.EncryptedBytes.getDefaultInstance();
           }
           encryptedSignedMessageBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              io.opencola.security.protobuf.Security.EncryptedMessage, io.opencola.security.protobuf.Security.EncryptedMessage.Builder, io.opencola.security.protobuf.Security.EncryptedMessageOrBuilder>(
-                  (io.opencola.security.protobuf.Security.EncryptedMessage) message_,
+              io.opencola.security.protobuf.Security.EncryptedBytes, io.opencola.security.protobuf.Security.EncryptedBytes.Builder, io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder>(
+                  (io.opencola.security.protobuf.Security.EncryptedBytes) message_,
                   getParentForChildren(),
                   isClean());
           message_ = null;
         }
         messageCase_ = 3;
-        onChanged();
+        onChanged();;
         return encryptedSignedMessageBuilder_;
       }
       @java.lang.Override
@@ -3347,18 +3448,7 @@ public final class Message {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        Builder builder = newBuilder();
-        try {
-          builder.mergeFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(builder.buildPartial());
-        } catch (com.google.protobuf.UninitializedMessageException e) {
-          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(e)
-              .setUnfinishedMessage(builder.buildPartial());
-        }
-        return builder.buildPartial();
+        return new MessageEnvelope(input, extensionRegistry);
       }
     };
 
@@ -3442,6 +3532,61 @@ public final class Message {
     getUnknownFields() {
       return this.unknownFields;
     }
+    private GetTransactionsMessage(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+              io.opencola.model.protobuf.Model.Id.Builder subBuilder = null;
+              if (currentTransactionId_ != null) {
+                subBuilder = currentTransactionId_.toBuilder();
+              }
+              currentTransactionId_ = input.readMessage(io.opencola.model.protobuf.Model.Id.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(currentTransactionId_);
+                currentTransactionId_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 16: {
+
+              maxTransactions_ = input.readInt32();
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return io.opencola.network.protobuf.Message.internal_static_io_opencola_network_protobuf_GetTransactionsMessage_descriptor;
@@ -3490,11 +3635,11 @@ public final class Message {
      */
     @java.lang.Override
     public io.opencola.model.protobuf.Model.IdOrBuilder getCurrentTransactionIdOrBuilder() {
-      return currentTransactionId_ == null ? io.opencola.model.protobuf.Model.Id.getDefaultInstance() : currentTransactionId_;
+      return getCurrentTransactionId();
     }
 
     public static final int MAXTRANSACTIONS_FIELD_NUMBER = 2;
-    private int maxTransactions_ = 0;
+    private int maxTransactions_;
     /**
      * <code>int32 maxTransactions = 2;</code>
      * @return The maxTransactions.
@@ -3524,7 +3669,7 @@ public final class Message {
       if (maxTransactions_ != 0) {
         output.writeInt32(2, maxTransactions_);
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
     @java.lang.Override
@@ -3541,7 +3686,7 @@ public final class Message {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(2, maxTransactions_);
       }
-      size += getUnknownFields().getSerializedSize();
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -3563,7 +3708,7 @@ public final class Message {
       }
       if (getMaxTransactions()
           != other.getMaxTransactions()) return false;
-      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
 
@@ -3580,7 +3725,7 @@ public final class Message {
       }
       hash = (37 * hash) + MAXTRANSACTIONS_FIELD_NUMBER;
       hash = (53 * hash) + getMaxTransactions();
-      hash = (29 * hash) + getUnknownFields().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -3697,24 +3842,30 @@ public final class Message {
 
       // Construct using io.opencola.network.protobuf.Message.GetTransactionsMessage.newBuilder()
       private Builder() {
-
+        maybeForceBuilderInitialization();
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        bitField0_ = 0;
-        currentTransactionId_ = null;
-        if (currentTransactionIdBuilder_ != null) {
-          currentTransactionIdBuilder_.dispose();
+        if (currentTransactionIdBuilder_ == null) {
+          currentTransactionId_ = null;
+        } else {
+          currentTransactionId_ = null;
           currentTransactionIdBuilder_ = null;
         }
         maxTransactions_ = 0;
+
         return this;
       }
 
@@ -3741,21 +3892,14 @@ public final class Message {
       @java.lang.Override
       public io.opencola.network.protobuf.Message.GetTransactionsMessage buildPartial() {
         io.opencola.network.protobuf.Message.GetTransactionsMessage result = new io.opencola.network.protobuf.Message.GetTransactionsMessage(this);
-        if (bitField0_ != 0) { buildPartial0(result); }
+        if (currentTransactionIdBuilder_ == null) {
+          result.currentTransactionId_ = currentTransactionId_;
+        } else {
+          result.currentTransactionId_ = currentTransactionIdBuilder_.build();
+        }
+        result.maxTransactions_ = maxTransactions_;
         onBuilt();
         return result;
-      }
-
-      private void buildPartial0(io.opencola.network.protobuf.Message.GetTransactionsMessage result) {
-        int from_bitField0_ = bitField0_;
-        if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.currentTransactionId_ = currentTransactionIdBuilder_ == null
-              ? currentTransactionId_
-              : currentTransactionIdBuilder_.build();
-        }
-        if (((from_bitField0_ & 0x00000002) != 0)) {
-          result.maxTransactions_ = maxTransactions_;
-        }
       }
 
       @java.lang.Override
@@ -3808,7 +3952,7 @@ public final class Message {
         if (other.getMaxTransactions() != 0) {
           setMaxTransactions(other.getMaxTransactions());
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
@@ -3823,45 +3967,19 @@ public final class Message {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
+        io.opencola.network.protobuf.Message.GetTransactionsMessage parsedMessage = null;
         try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 10: {
-                input.readMessage(
-                    getCurrentTransactionIdFieldBuilder().getBuilder(),
-                    extensionRegistry);
-                bitField0_ |= 0x00000001;
-                break;
-              } // case 10
-              case 16: {
-                maxTransactions_ = input.readInt32();
-                bitField0_ |= 0x00000002;
-                break;
-              } // case 16
-              default: {
-                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
-                  done = true; // was an endgroup tag
-                }
-                break;
-              } // default:
-            } // switch (tag)
-          } // while (!done)
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (io.opencola.network.protobuf.Message.GetTransactionsMessage) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          onChanged();
-        } // finally
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
         return this;
       }
-      private int bitField0_;
 
       private io.opencola.model.protobuf.Model.Id currentTransactionId_;
       private com.google.protobuf.SingleFieldBuilderV3<
@@ -3875,7 +3993,7 @@ public final class Message {
        * @return Whether the currentTransactionId field is set.
        */
       public boolean hasCurrentTransactionId() {
-        return ((bitField0_ & 0x00000001) != 0);
+        return currentTransactionIdBuilder_ != null || currentTransactionId_ != null;
       }
       /**
        * <pre>
@@ -3905,11 +4023,11 @@ public final class Message {
             throw new NullPointerException();
           }
           currentTransactionId_ = value;
+          onChanged();
         } else {
           currentTransactionIdBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000001;
-        onChanged();
+
         return this;
       }
       /**
@@ -3923,11 +4041,11 @@ public final class Message {
           io.opencola.model.protobuf.Model.Id.Builder builderForValue) {
         if (currentTransactionIdBuilder_ == null) {
           currentTransactionId_ = builderForValue.build();
+          onChanged();
         } else {
           currentTransactionIdBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000001;
-        onChanged();
+
         return this;
       }
       /**
@@ -3939,18 +4057,17 @@ public final class Message {
        */
       public Builder mergeCurrentTransactionId(io.opencola.model.protobuf.Model.Id value) {
         if (currentTransactionIdBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) != 0) &&
-            currentTransactionId_ != null &&
-            currentTransactionId_ != io.opencola.model.protobuf.Model.Id.getDefaultInstance()) {
-            getCurrentTransactionIdBuilder().mergeFrom(value);
+          if (currentTransactionId_ != null) {
+            currentTransactionId_ =
+              io.opencola.model.protobuf.Model.Id.newBuilder(currentTransactionId_).mergeFrom(value).buildPartial();
           } else {
             currentTransactionId_ = value;
           }
+          onChanged();
         } else {
           currentTransactionIdBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000001;
-        onChanged();
+
         return this;
       }
       /**
@@ -3961,13 +4078,14 @@ public final class Message {
        * <code>.io.opencola.model.protobuf.Id currentTransactionId = 1;</code>
        */
       public Builder clearCurrentTransactionId() {
-        bitField0_ = (bitField0_ & ~0x00000001);
-        currentTransactionId_ = null;
-        if (currentTransactionIdBuilder_ != null) {
-          currentTransactionIdBuilder_.dispose();
+        if (currentTransactionIdBuilder_ == null) {
+          currentTransactionId_ = null;
+          onChanged();
+        } else {
+          currentTransactionId_ = null;
           currentTransactionIdBuilder_ = null;
         }
-        onChanged();
+
         return this;
       }
       /**
@@ -3978,7 +4096,7 @@ public final class Message {
        * <code>.io.opencola.model.protobuf.Id currentTransactionId = 1;</code>
        */
       public io.opencola.model.protobuf.Model.Id.Builder getCurrentTransactionIdBuilder() {
-        bitField0_ |= 0x00000001;
+        
         onChanged();
         return getCurrentTransactionIdFieldBuilder().getBuilder();
       }
@@ -4035,7 +4153,6 @@ public final class Message {
       public Builder setMaxTransactions(int value) {
         
         maxTransactions_ = value;
-        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -4044,7 +4161,7 @@ public final class Message {
        * @return This builder for chaining.
        */
       public Builder clearMaxTransactions() {
-        bitField0_ = (bitField0_ & ~0x00000002);
+        
         maxTransactions_ = 0;
         onChanged();
         return this;
@@ -4082,18 +4199,7 @@ public final class Message {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        Builder builder = newBuilder();
-        try {
-          builder.mergeFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(builder.buildPartial());
-        } catch (com.google.protobuf.UninitializedMessageException e) {
-          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(e)
-              .setUnfinishedMessage(builder.buildPartial());
-        }
-        return builder.buildPartial();
+        return new GetTransactionsMessage(input, extensionRegistry);
       }
     };
 
@@ -4185,6 +4291,61 @@ public final class Message {
     getUnknownFields() {
       return this.unknownFields;
     }
+    private PutTransactionMessage(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+
+              signedTransaction_ = input.readBytes();
+              break;
+            }
+            case 18: {
+              io.opencola.model.protobuf.Model.Id.Builder subBuilder = null;
+              if (currentTransactionId_ != null) {
+                subBuilder = currentTransactionId_.toBuilder();
+              }
+              currentTransactionId_ = input.readMessage(io.opencola.model.protobuf.Model.Id.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(currentTransactionId_);
+                currentTransactionId_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return io.opencola.network.protobuf.Message.internal_static_io_opencola_network_protobuf_PutTransactionMessage_descriptor;
@@ -4199,7 +4360,7 @@ public final class Message {
     }
 
     public static final int SIGNEDTRANSACTION_FIELD_NUMBER = 1;
-    private com.google.protobuf.ByteString signedTransaction_ = com.google.protobuf.ByteString.EMPTY;
+    private com.google.protobuf.ByteString signedTransaction_;
     /**
      * <pre>
      * Transactions are sent as bytes to preserve signatures
@@ -4251,7 +4412,7 @@ public final class Message {
      */
     @java.lang.Override
     public io.opencola.model.protobuf.Model.IdOrBuilder getCurrentTransactionIdOrBuilder() {
-      return currentTransactionId_ == null ? io.opencola.model.protobuf.Model.Id.getDefaultInstance() : currentTransactionId_;
+      return getCurrentTransactionId();
     }
 
     private byte memoizedIsInitialized = -1;
@@ -4274,7 +4435,7 @@ public final class Message {
       if (currentTransactionId_ != null) {
         output.writeMessage(2, getCurrentTransactionId());
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
     @java.lang.Override
@@ -4291,7 +4452,7 @@ public final class Message {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(2, getCurrentTransactionId());
       }
-      size += getUnknownFields().getSerializedSize();
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -4313,7 +4474,7 @@ public final class Message {
         if (!getCurrentTransactionId()
             .equals(other.getCurrentTransactionId())) return false;
       }
-      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
 
@@ -4330,7 +4491,7 @@ public final class Message {
         hash = (37 * hash) + CURRENTTRANSACTIONID_FIELD_NUMBER;
         hash = (53 * hash) + getCurrentTransactionId().hashCode();
       }
-      hash = (29 * hash) + getUnknownFields().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -4447,22 +4608,28 @@ public final class Message {
 
       // Construct using io.opencola.network.protobuf.Message.PutTransactionMessage.newBuilder()
       private Builder() {
-
+        maybeForceBuilderInitialization();
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        bitField0_ = 0;
         signedTransaction_ = com.google.protobuf.ByteString.EMPTY;
-        currentTransactionId_ = null;
-        if (currentTransactionIdBuilder_ != null) {
-          currentTransactionIdBuilder_.dispose();
+
+        if (currentTransactionIdBuilder_ == null) {
+          currentTransactionId_ = null;
+        } else {
+          currentTransactionId_ = null;
           currentTransactionIdBuilder_ = null;
         }
         return this;
@@ -4491,21 +4658,14 @@ public final class Message {
       @java.lang.Override
       public io.opencola.network.protobuf.Message.PutTransactionMessage buildPartial() {
         io.opencola.network.protobuf.Message.PutTransactionMessage result = new io.opencola.network.protobuf.Message.PutTransactionMessage(this);
-        if (bitField0_ != 0) { buildPartial0(result); }
+        result.signedTransaction_ = signedTransaction_;
+        if (currentTransactionIdBuilder_ == null) {
+          result.currentTransactionId_ = currentTransactionId_;
+        } else {
+          result.currentTransactionId_ = currentTransactionIdBuilder_.build();
+        }
         onBuilt();
         return result;
-      }
-
-      private void buildPartial0(io.opencola.network.protobuf.Message.PutTransactionMessage result) {
-        int from_bitField0_ = bitField0_;
-        if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.signedTransaction_ = signedTransaction_;
-        }
-        if (((from_bitField0_ & 0x00000002) != 0)) {
-          result.currentTransactionId_ = currentTransactionIdBuilder_ == null
-              ? currentTransactionId_
-              : currentTransactionIdBuilder_.build();
-        }
       }
 
       @java.lang.Override
@@ -4558,7 +4718,7 @@ public final class Message {
         if (other.hasCurrentTransactionId()) {
           mergeCurrentTransactionId(other.getCurrentTransactionId());
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
@@ -4573,45 +4733,19 @@ public final class Message {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
+        io.opencola.network.protobuf.Message.PutTransactionMessage parsedMessage = null;
         try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 10: {
-                signedTransaction_ = input.readBytes();
-                bitField0_ |= 0x00000001;
-                break;
-              } // case 10
-              case 18: {
-                input.readMessage(
-                    getCurrentTransactionIdFieldBuilder().getBuilder(),
-                    extensionRegistry);
-                bitField0_ |= 0x00000002;
-                break;
-              } // case 18
-              default: {
-                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
-                  done = true; // was an endgroup tag
-                }
-                break;
-              } // default:
-            } // switch (tag)
-          } // while (!done)
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (io.opencola.network.protobuf.Message.PutTransactionMessage) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          onChanged();
-        } // finally
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
         return this;
       }
-      private int bitField0_;
 
       private com.google.protobuf.ByteString signedTransaction_ = com.google.protobuf.ByteString.EMPTY;
       /**
@@ -4636,9 +4770,11 @@ public final class Message {
        * @return This builder for chaining.
        */
       public Builder setSignedTransaction(com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
         signedTransaction_ = value;
-        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -4651,7 +4787,7 @@ public final class Message {
        * @return This builder for chaining.
        */
       public Builder clearSignedTransaction() {
-        bitField0_ = (bitField0_ & ~0x00000001);
+        
         signedTransaction_ = getDefaultInstance().getSignedTransaction();
         onChanged();
         return this;
@@ -4670,7 +4806,7 @@ public final class Message {
        * @return Whether the currentTransactionId field is set.
        */
       public boolean hasCurrentTransactionId() {
-        return ((bitField0_ & 0x00000002) != 0);
+        return currentTransactionIdBuilder_ != null || currentTransactionId_ != null;
       }
       /**
        * <pre>
@@ -4702,11 +4838,11 @@ public final class Message {
             throw new NullPointerException();
           }
           currentTransactionId_ = value;
+          onChanged();
         } else {
           currentTransactionIdBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000002;
-        onChanged();
+
         return this;
       }
       /**
@@ -4721,11 +4857,11 @@ public final class Message {
           io.opencola.model.protobuf.Model.Id.Builder builderForValue) {
         if (currentTransactionIdBuilder_ == null) {
           currentTransactionId_ = builderForValue.build();
+          onChanged();
         } else {
           currentTransactionIdBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000002;
-        onChanged();
+
         return this;
       }
       /**
@@ -4738,18 +4874,17 @@ public final class Message {
        */
       public Builder mergeCurrentTransactionId(io.opencola.model.protobuf.Model.Id value) {
         if (currentTransactionIdBuilder_ == null) {
-          if (((bitField0_ & 0x00000002) != 0) &&
-            currentTransactionId_ != null &&
-            currentTransactionId_ != io.opencola.model.protobuf.Model.Id.getDefaultInstance()) {
-            getCurrentTransactionIdBuilder().mergeFrom(value);
+          if (currentTransactionId_ != null) {
+            currentTransactionId_ =
+              io.opencola.model.protobuf.Model.Id.newBuilder(currentTransactionId_).mergeFrom(value).buildPartial();
           } else {
             currentTransactionId_ = value;
           }
+          onChanged();
         } else {
           currentTransactionIdBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000002;
-        onChanged();
+
         return this;
       }
       /**
@@ -4761,13 +4896,14 @@ public final class Message {
        * <code>.io.opencola.model.protobuf.Id currentTransactionId = 2;</code>
        */
       public Builder clearCurrentTransactionId() {
-        bitField0_ = (bitField0_ & ~0x00000002);
-        currentTransactionId_ = null;
-        if (currentTransactionIdBuilder_ != null) {
-          currentTransactionIdBuilder_.dispose();
+        if (currentTransactionIdBuilder_ == null) {
+          currentTransactionId_ = null;
+          onChanged();
+        } else {
+          currentTransactionId_ = null;
           currentTransactionIdBuilder_ = null;
         }
-        onChanged();
+
         return this;
       }
       /**
@@ -4779,7 +4915,7 @@ public final class Message {
        * <code>.io.opencola.model.protobuf.Id currentTransactionId = 2;</code>
        */
       public io.opencola.model.protobuf.Model.Id.Builder getCurrentTransactionIdBuilder() {
-        bitField0_ |= 0x00000002;
+        
         onChanged();
         return getCurrentTransactionIdFieldBuilder().getBuilder();
       }
@@ -4853,18 +4989,7 @@ public final class Message {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        Builder builder = newBuilder();
-        try {
-          builder.mergeFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(builder.buildPartial());
-        } catch (com.google.protobuf.UninitializedMessageException e) {
-          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(e)
-              .setUnfinishedMessage(builder.buildPartial());
-        }
-        return builder.buildPartial();
+        return new PutTransactionMessage(input, extensionRegistry);
       }
     };
 
@@ -4930,6 +5055,56 @@ public final class Message {
     getUnknownFields() {
       return this.unknownFields;
     }
+    private GetDataMessage(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+              io.opencola.model.protobuf.Model.Id.Builder subBuilder = null;
+              if (id_ != null) {
+                subBuilder = id_.toBuilder();
+              }
+              id_ = input.readMessage(io.opencola.model.protobuf.Model.Id.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(id_);
+                id_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return io.opencola.network.protobuf.Message.internal_static_io_opencola_network_protobuf_GetDataMessage_descriptor;
@@ -4966,7 +5141,7 @@ public final class Message {
      */
     @java.lang.Override
     public io.opencola.model.protobuf.Model.IdOrBuilder getIdOrBuilder() {
-      return id_ == null ? io.opencola.model.protobuf.Model.Id.getDefaultInstance() : id_;
+      return getId();
     }
 
     private byte memoizedIsInitialized = -1;
@@ -4986,7 +5161,7 @@ public final class Message {
       if (id_ != null) {
         output.writeMessage(1, getId());
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
     @java.lang.Override
@@ -4999,7 +5174,7 @@ public final class Message {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(1, getId());
       }
-      size += getUnknownFields().getSerializedSize();
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -5019,7 +5194,7 @@ public final class Message {
         if (!getId()
             .equals(other.getId())) return false;
       }
-      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
 
@@ -5034,7 +5209,7 @@ public final class Message {
         hash = (37 * hash) + ID_FIELD_NUMBER;
         hash = (53 * hash) + getId().hashCode();
       }
-      hash = (29 * hash) + getUnknownFields().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -5151,21 +5326,26 @@ public final class Message {
 
       // Construct using io.opencola.network.protobuf.Message.GetDataMessage.newBuilder()
       private Builder() {
-
+        maybeForceBuilderInitialization();
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        bitField0_ = 0;
-        id_ = null;
-        if (idBuilder_ != null) {
-          idBuilder_.dispose();
+        if (idBuilder_ == null) {
+          id_ = null;
+        } else {
+          id_ = null;
           idBuilder_ = null;
         }
         return this;
@@ -5194,18 +5374,13 @@ public final class Message {
       @java.lang.Override
       public io.opencola.network.protobuf.Message.GetDataMessage buildPartial() {
         io.opencola.network.protobuf.Message.GetDataMessage result = new io.opencola.network.protobuf.Message.GetDataMessage(this);
-        if (bitField0_ != 0) { buildPartial0(result); }
+        if (idBuilder_ == null) {
+          result.id_ = id_;
+        } else {
+          result.id_ = idBuilder_.build();
+        }
         onBuilt();
         return result;
-      }
-
-      private void buildPartial0(io.opencola.network.protobuf.Message.GetDataMessage result) {
-        int from_bitField0_ = bitField0_;
-        if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.id_ = idBuilder_ == null
-              ? id_
-              : idBuilder_.build();
-        }
       }
 
       @java.lang.Override
@@ -5255,7 +5430,7 @@ public final class Message {
         if (other.hasId()) {
           mergeId(other.getId());
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
@@ -5270,40 +5445,19 @@ public final class Message {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
+        io.opencola.network.protobuf.Message.GetDataMessage parsedMessage = null;
         try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 10: {
-                input.readMessage(
-                    getIdFieldBuilder().getBuilder(),
-                    extensionRegistry);
-                bitField0_ |= 0x00000001;
-                break;
-              } // case 10
-              default: {
-                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
-                  done = true; // was an endgroup tag
-                }
-                break;
-              } // default:
-            } // switch (tag)
-          } // while (!done)
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (io.opencola.network.protobuf.Message.GetDataMessage) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          onChanged();
-        } // finally
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
         return this;
       }
-      private int bitField0_;
 
       private io.opencola.model.protobuf.Model.Id id_;
       private com.google.protobuf.SingleFieldBuilderV3<
@@ -5313,7 +5467,7 @@ public final class Message {
        * @return Whether the id field is set.
        */
       public boolean hasId() {
-        return ((bitField0_ & 0x00000001) != 0);
+        return idBuilder_ != null || id_ != null;
       }
       /**
        * <code>.io.opencola.model.protobuf.Id id = 1;</code>
@@ -5335,11 +5489,11 @@ public final class Message {
             throw new NullPointerException();
           }
           id_ = value;
+          onChanged();
         } else {
           idBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000001;
-        onChanged();
+
         return this;
       }
       /**
@@ -5349,11 +5503,11 @@ public final class Message {
           io.opencola.model.protobuf.Model.Id.Builder builderForValue) {
         if (idBuilder_ == null) {
           id_ = builderForValue.build();
+          onChanged();
         } else {
           idBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000001;
-        onChanged();
+
         return this;
       }
       /**
@@ -5361,38 +5515,38 @@ public final class Message {
        */
       public Builder mergeId(io.opencola.model.protobuf.Model.Id value) {
         if (idBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) != 0) &&
-            id_ != null &&
-            id_ != io.opencola.model.protobuf.Model.Id.getDefaultInstance()) {
-            getIdBuilder().mergeFrom(value);
+          if (id_ != null) {
+            id_ =
+              io.opencola.model.protobuf.Model.Id.newBuilder(id_).mergeFrom(value).buildPartial();
           } else {
             id_ = value;
           }
+          onChanged();
         } else {
           idBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000001;
-        onChanged();
+
         return this;
       }
       /**
        * <code>.io.opencola.model.protobuf.Id id = 1;</code>
        */
       public Builder clearId() {
-        bitField0_ = (bitField0_ & ~0x00000001);
-        id_ = null;
-        if (idBuilder_ != null) {
-          idBuilder_.dispose();
+        if (idBuilder_ == null) {
+          id_ = null;
+          onChanged();
+        } else {
+          id_ = null;
           idBuilder_ = null;
         }
-        onChanged();
+
         return this;
       }
       /**
        * <code>.io.opencola.model.protobuf.Id id = 1;</code>
        */
       public io.opencola.model.protobuf.Model.Id.Builder getIdBuilder() {
-        bitField0_ |= 0x00000001;
+        
         onChanged();
         return getIdFieldBuilder().getBuilder();
       }
@@ -5456,18 +5610,7 @@ public final class Message {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        Builder builder = newBuilder();
-        try {
-          builder.mergeFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(builder.buildPartial());
-        } catch (com.google.protobuf.UninitializedMessageException e) {
-          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(e)
-              .setUnfinishedMessage(builder.buildPartial());
-        }
-        return builder.buildPartial();
+        return new GetDataMessage(input, extensionRegistry);
       }
     };
 
@@ -5540,6 +5683,61 @@ public final class Message {
     getUnknownFields() {
       return this.unknownFields;
     }
+    private PutDataMessage(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+              io.opencola.model.protobuf.Model.Id.Builder subBuilder = null;
+              if (id_ != null) {
+                subBuilder = id_.toBuilder();
+              }
+              id_ = input.readMessage(io.opencola.model.protobuf.Model.Id.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(id_);
+                id_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 18: {
+
+              data_ = input.readBytes();
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return io.opencola.network.protobuf.Message.internal_static_io_opencola_network_protobuf_PutDataMessage_descriptor;
@@ -5576,11 +5774,11 @@ public final class Message {
      */
     @java.lang.Override
     public io.opencola.model.protobuf.Model.IdOrBuilder getIdOrBuilder() {
-      return id_ == null ? io.opencola.model.protobuf.Model.Id.getDefaultInstance() : id_;
+      return getId();
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private com.google.protobuf.ByteString data_ = com.google.protobuf.ByteString.EMPTY;
+    private com.google.protobuf.ByteString data_;
     /**
      * <code>bytes data = 2;</code>
      * @return The data.
@@ -5610,7 +5808,7 @@ public final class Message {
       if (!data_.isEmpty()) {
         output.writeBytes(2, data_);
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
     @java.lang.Override
@@ -5627,7 +5825,7 @@ public final class Message {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(2, data_);
       }
-      size += getUnknownFields().getSerializedSize();
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -5649,7 +5847,7 @@ public final class Message {
       }
       if (!getData()
           .equals(other.getData())) return false;
-      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
 
@@ -5666,7 +5864,7 @@ public final class Message {
       }
       hash = (37 * hash) + DATA_FIELD_NUMBER;
       hash = (53 * hash) + getData().hashCode();
-      hash = (29 * hash) + getUnknownFields().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -5783,24 +5981,30 @@ public final class Message {
 
       // Construct using io.opencola.network.protobuf.Message.PutDataMessage.newBuilder()
       private Builder() {
-
+        maybeForceBuilderInitialization();
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        bitField0_ = 0;
-        id_ = null;
-        if (idBuilder_ != null) {
-          idBuilder_.dispose();
+        if (idBuilder_ == null) {
+          id_ = null;
+        } else {
+          id_ = null;
           idBuilder_ = null;
         }
         data_ = com.google.protobuf.ByteString.EMPTY;
+
         return this;
       }
 
@@ -5827,21 +6031,14 @@ public final class Message {
       @java.lang.Override
       public io.opencola.network.protobuf.Message.PutDataMessage buildPartial() {
         io.opencola.network.protobuf.Message.PutDataMessage result = new io.opencola.network.protobuf.Message.PutDataMessage(this);
-        if (bitField0_ != 0) { buildPartial0(result); }
+        if (idBuilder_ == null) {
+          result.id_ = id_;
+        } else {
+          result.id_ = idBuilder_.build();
+        }
+        result.data_ = data_;
         onBuilt();
         return result;
-      }
-
-      private void buildPartial0(io.opencola.network.protobuf.Message.PutDataMessage result) {
-        int from_bitField0_ = bitField0_;
-        if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.id_ = idBuilder_ == null
-              ? id_
-              : idBuilder_.build();
-        }
-        if (((from_bitField0_ & 0x00000002) != 0)) {
-          result.data_ = data_;
-        }
       }
 
       @java.lang.Override
@@ -5894,7 +6091,7 @@ public final class Message {
         if (other.getData() != com.google.protobuf.ByteString.EMPTY) {
           setData(other.getData());
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
@@ -5909,45 +6106,19 @@ public final class Message {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
+        io.opencola.network.protobuf.Message.PutDataMessage parsedMessage = null;
         try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 10: {
-                input.readMessage(
-                    getIdFieldBuilder().getBuilder(),
-                    extensionRegistry);
-                bitField0_ |= 0x00000001;
-                break;
-              } // case 10
-              case 18: {
-                data_ = input.readBytes();
-                bitField0_ |= 0x00000002;
-                break;
-              } // case 18
-              default: {
-                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
-                  done = true; // was an endgroup tag
-                }
-                break;
-              } // default:
-            } // switch (tag)
-          } // while (!done)
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (io.opencola.network.protobuf.Message.PutDataMessage) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          onChanged();
-        } // finally
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
         return this;
       }
-      private int bitField0_;
 
       private io.opencola.model.protobuf.Model.Id id_;
       private com.google.protobuf.SingleFieldBuilderV3<
@@ -5957,7 +6128,7 @@ public final class Message {
        * @return Whether the id field is set.
        */
       public boolean hasId() {
-        return ((bitField0_ & 0x00000001) != 0);
+        return idBuilder_ != null || id_ != null;
       }
       /**
        * <code>.io.opencola.model.protobuf.Id id = 1;</code>
@@ -5979,11 +6150,11 @@ public final class Message {
             throw new NullPointerException();
           }
           id_ = value;
+          onChanged();
         } else {
           idBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000001;
-        onChanged();
+
         return this;
       }
       /**
@@ -5993,11 +6164,11 @@ public final class Message {
           io.opencola.model.protobuf.Model.Id.Builder builderForValue) {
         if (idBuilder_ == null) {
           id_ = builderForValue.build();
+          onChanged();
         } else {
           idBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000001;
-        onChanged();
+
         return this;
       }
       /**
@@ -6005,38 +6176,38 @@ public final class Message {
        */
       public Builder mergeId(io.opencola.model.protobuf.Model.Id value) {
         if (idBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) != 0) &&
-            id_ != null &&
-            id_ != io.opencola.model.protobuf.Model.Id.getDefaultInstance()) {
-            getIdBuilder().mergeFrom(value);
+          if (id_ != null) {
+            id_ =
+              io.opencola.model.protobuf.Model.Id.newBuilder(id_).mergeFrom(value).buildPartial();
           } else {
             id_ = value;
           }
+          onChanged();
         } else {
           idBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000001;
-        onChanged();
+
         return this;
       }
       /**
        * <code>.io.opencola.model.protobuf.Id id = 1;</code>
        */
       public Builder clearId() {
-        bitField0_ = (bitField0_ & ~0x00000001);
-        id_ = null;
-        if (idBuilder_ != null) {
-          idBuilder_.dispose();
+        if (idBuilder_ == null) {
+          id_ = null;
+          onChanged();
+        } else {
+          id_ = null;
           idBuilder_ = null;
         }
-        onChanged();
+
         return this;
       }
       /**
        * <code>.io.opencola.model.protobuf.Id id = 1;</code>
        */
       public io.opencola.model.protobuf.Model.Id.Builder getIdBuilder() {
-        bitField0_ |= 0x00000001;
+        
         onChanged();
         return getIdFieldBuilder().getBuilder();
       }
@@ -6083,9 +6254,11 @@ public final class Message {
        * @return This builder for chaining.
        */
       public Builder setData(com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
         data_ = value;
-        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -6094,7 +6267,7 @@ public final class Message {
        * @return This builder for chaining.
        */
       public Builder clearData() {
-        bitField0_ = (bitField0_ & ~0x00000002);
+        
         data_ = getDefaultInstance().getData();
         onChanged();
         return this;
@@ -6132,18 +6305,7 @@ public final class Message {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        Builder builder = newBuilder();
-        try {
-          builder.mergeFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(builder.buildPartial());
-        } catch (com.google.protobuf.UninitializedMessageException e) {
-          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(e)
-              .setUnfinishedMessage(builder.buildPartial());
-        }
-        return builder.buildPartial();
+        return new PutDataMessage(input, extensionRegistry);
       }
     };
 
@@ -6222,24 +6384,24 @@ public final class Message {
       ".io.opencola.model.protobuf.Id\022\034\n\024unsign" +
       "edMessageBytes\030\002 \001(\014\022;\n\tsignature\030\003 \001(\0132" +
       "(.io.opencola.security.protobuf.Signatur" +
-      "e\"\341\001\n\017MessageEnvelope\022*\n\002to\030\001 \001(\0132\036.io.o" +
+      "e\"\337\001\n\017MessageEnvelope\022*\n\002to\030\001 \001(\0132\036.io.o" +
       "pencola.model.protobuf.Id\022D\n\rsignedMessa" +
       "ge\030\002 \001(\0132+.io.opencola.network.protobuf." +
-      "SignedMessageH\000\022Q\n\026encryptedSignedMessag" +
-      "e\030\003 \001(\0132/.io.opencola.security.protobuf." +
-      "EncryptedMessageH\000B\t\n\007message\"o\n\026GetTran" +
-      "sactionsMessage\022<\n\024currentTransactionId\030" +
-      "\001 \001(\0132\036.io.opencola.model.protobuf.Id\022\027\n" +
-      "\017maxTransactions\030\002 \001(\005\"p\n\025PutTransaction" +
-      "Message\022\031\n\021signedTransaction\030\001 \001(\014\022<\n\024cu" +
-      "rrentTransactionId\030\002 \001(\0132\036.io.opencola.m" +
-      "odel.protobuf.Id\"<\n\016GetDataMessage\022*\n\002id" +
-      "\030\001 \001(\0132\036.io.opencola.model.protobuf.Id\"J" +
-      "\n\016PutDataMessage\022*\n\002id\030\001 \001(\0132\036.io.openco" +
-      "la.model.protobuf.Id\022\014\n\004data\030\002 \001(\014*s\n\013Me" +
-      "ssageType\022\t\n\005EMPTY\020\000\022\010\n\004PING\020\001\022\010\n\004PONG\020\002" +
-      "\022\024\n\020GET_TRANSACTIONS\020\003\022\023\n\017PUT_TRANSACTIO" +
-      "N\020\004\022\014\n\010GET_DATA\020\005\022\014\n\010PUT_DATA\020\006b\006proto3"
+      "SignedMessageH\000\022O\n\026encryptedSignedMessag" +
+      "e\030\003 \001(\0132-.io.opencola.security.protobuf." +
+      "EncryptedBytesH\000B\t\n\007message\"o\n\026GetTransa" +
+      "ctionsMessage\022<\n\024currentTransactionId\030\001 " +
+      "\001(\0132\036.io.opencola.model.protobuf.Id\022\027\n\017m" +
+      "axTransactions\030\002 \001(\005\"p\n\025PutTransactionMe" +
+      "ssage\022\031\n\021signedTransaction\030\001 \001(\014\022<\n\024curr" +
+      "entTransactionId\030\002 \001(\0132\036.io.opencola.mod" +
+      "el.protobuf.Id\"<\n\016GetDataMessage\022*\n\002id\030\001" +
+      " \001(\0132\036.io.opencola.model.protobuf.Id\"J\n\016" +
+      "PutDataMessage\022*\n\002id\030\001 \001(\0132\036.io.opencola" +
+      ".model.protobuf.Id\022\014\n\004data\030\002 \001(\014*s\n\013Mess" +
+      "ageType\022\t\n\005EMPTY\020\000\022\010\n\004PING\020\001\022\010\n\004PONG\020\002\022\024" +
+      "\n\020GET_TRANSACTIONS\020\003\022\023\n\017PUT_TRANSACTION\020" +
+      "\004\022\014\n\010GET_DATA\020\005\022\014\n\010PUT_DATA\020\006b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

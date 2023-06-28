@@ -172,6 +172,54 @@ public final class Util {
     getUnknownFields() {
       return this.unknownFields;
     }
+    private CompressedBytes(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 8: {
+              int rawValue = input.readEnum();
+
+              format_ = rawValue;
+              break;
+            }
+            case 18: {
+
+              bytes_ = input.readBytes();
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return io.opencola.util.protobuf.Util.internal_static_io_opencola_util_protobuf_CompressedBytes_descriptor;
@@ -186,7 +234,7 @@ public final class Util {
     }
 
     public static final int FORMAT_FIELD_NUMBER = 1;
-    private int format_ = 0;
+    private int format_;
     /**
      * <code>.io.opencola.util.protobuf.CompressionFormat format = 1;</code>
      * @return The enum numeric value on the wire for format.
@@ -199,12 +247,13 @@ public final class Util {
      * @return The format.
      */
     @java.lang.Override public io.opencola.util.protobuf.Util.CompressionFormat getFormat() {
-      io.opencola.util.protobuf.Util.CompressionFormat result = io.opencola.util.protobuf.Util.CompressionFormat.forNumber(format_);
+      @SuppressWarnings("deprecation")
+      io.opencola.util.protobuf.Util.CompressionFormat result = io.opencola.util.protobuf.Util.CompressionFormat.valueOf(format_);
       return result == null ? io.opencola.util.protobuf.Util.CompressionFormat.UNRECOGNIZED : result;
     }
 
     public static final int BYTES_FIELD_NUMBER = 2;
-    private com.google.protobuf.ByteString bytes_ = com.google.protobuf.ByteString.EMPTY;
+    private com.google.protobuf.ByteString bytes_;
     /**
      * <code>bytes bytes = 2;</code>
      * @return The bytes.
@@ -234,7 +283,7 @@ public final class Util {
       if (!bytes_.isEmpty()) {
         output.writeBytes(2, bytes_);
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
     @java.lang.Override
@@ -251,7 +300,7 @@ public final class Util {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(2, bytes_);
       }
-      size += getUnknownFields().getSerializedSize();
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -269,7 +318,7 @@ public final class Util {
       if (format_ != other.format_) return false;
       if (!getBytes()
           .equals(other.getBytes())) return false;
-      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
 
@@ -284,7 +333,7 @@ public final class Util {
       hash = (53 * hash) + format_;
       hash = (37 * hash) + BYTES_FIELD_NUMBER;
       hash = (53 * hash) + getBytes().hashCode();
-      hash = (29 * hash) + getUnknownFields().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -401,20 +450,26 @@ public final class Util {
 
       // Construct using io.opencola.util.protobuf.Util.CompressedBytes.newBuilder()
       private Builder() {
-
+        maybeForceBuilderInitialization();
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        bitField0_ = 0;
         format_ = 0;
+
         bytes_ = com.google.protobuf.ByteString.EMPTY;
+
         return this;
       }
 
@@ -441,19 +496,10 @@ public final class Util {
       @java.lang.Override
       public io.opencola.util.protobuf.Util.CompressedBytes buildPartial() {
         io.opencola.util.protobuf.Util.CompressedBytes result = new io.opencola.util.protobuf.Util.CompressedBytes(this);
-        if (bitField0_ != 0) { buildPartial0(result); }
+        result.format_ = format_;
+        result.bytes_ = bytes_;
         onBuilt();
         return result;
-      }
-
-      private void buildPartial0(io.opencola.util.protobuf.Util.CompressedBytes result) {
-        int from_bitField0_ = bitField0_;
-        if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.format_ = format_;
-        }
-        if (((from_bitField0_ & 0x00000002) != 0)) {
-          result.bytes_ = bytes_;
-        }
       }
 
       @java.lang.Override
@@ -506,7 +552,7 @@ public final class Util {
         if (other.getBytes() != com.google.protobuf.ByteString.EMPTY) {
           setBytes(other.getBytes());
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
@@ -521,43 +567,19 @@ public final class Util {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
+        io.opencola.util.protobuf.Util.CompressedBytes parsedMessage = null;
         try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 8: {
-                format_ = input.readEnum();
-                bitField0_ |= 0x00000001;
-                break;
-              } // case 8
-              case 18: {
-                bytes_ = input.readBytes();
-                bitField0_ |= 0x00000002;
-                break;
-              } // case 18
-              default: {
-                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
-                  done = true; // was an endgroup tag
-                }
-                break;
-              } // default:
-            } // switch (tag)
-          } // while (!done)
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (io.opencola.util.protobuf.Util.CompressedBytes) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          onChanged();
-        } // finally
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
         return this;
       }
-      private int bitField0_;
 
       private int format_ = 0;
       /**
@@ -573,8 +595,8 @@ public final class Util {
        * @return This builder for chaining.
        */
       public Builder setFormatValue(int value) {
+        
         format_ = value;
-        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -584,7 +606,8 @@ public final class Util {
        */
       @java.lang.Override
       public io.opencola.util.protobuf.Util.CompressionFormat getFormat() {
-        io.opencola.util.protobuf.Util.CompressionFormat result = io.opencola.util.protobuf.Util.CompressionFormat.forNumber(format_);
+        @SuppressWarnings("deprecation")
+        io.opencola.util.protobuf.Util.CompressionFormat result = io.opencola.util.protobuf.Util.CompressionFormat.valueOf(format_);
         return result == null ? io.opencola.util.protobuf.Util.CompressionFormat.UNRECOGNIZED : result;
       }
       /**
@@ -596,7 +619,7 @@ public final class Util {
         if (value == null) {
           throw new NullPointerException();
         }
-        bitField0_ |= 0x00000001;
+        
         format_ = value.getNumber();
         onChanged();
         return this;
@@ -606,7 +629,7 @@ public final class Util {
        * @return This builder for chaining.
        */
       public Builder clearFormat() {
-        bitField0_ = (bitField0_ & ~0x00000001);
+        
         format_ = 0;
         onChanged();
         return this;
@@ -627,9 +650,11 @@ public final class Util {
        * @return This builder for chaining.
        */
       public Builder setBytes(com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
         bytes_ = value;
-        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -638,7 +663,7 @@ public final class Util {
        * @return This builder for chaining.
        */
       public Builder clearBytes() {
-        bitField0_ = (bitField0_ & ~0x00000002);
+        
         bytes_ = getDefaultInstance().getBytes();
         onChanged();
         return this;
@@ -676,18 +701,7 @@ public final class Util {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        Builder builder = newBuilder();
-        try {
-          builder.mergeFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(builder.buildPartial());
-        } catch (com.google.protobuf.UninitializedMessageException e) {
-          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(e)
-              .setUnfinishedMessage(builder.buildPartial());
-        }
-        return builder.buildPartial();
+        return new CompressedBytes(input, extensionRegistry);
       }
     };
 

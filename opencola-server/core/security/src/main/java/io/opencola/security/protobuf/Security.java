@@ -1303,8 +1303,703 @@ public final class Security {
 
   }
 
-  public interface EncryptedMessageOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:io.opencola.security.protobuf.EncryptedMessage)
+  public interface SignedBytesOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:io.opencola.security.protobuf.SignedBytes)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>.io.opencola.security.protobuf.Signature signature = 1;</code>
+     * @return Whether the signature field is set.
+     */
+    boolean hasSignature();
+    /**
+     * <code>.io.opencola.security.protobuf.Signature signature = 1;</code>
+     * @return The signature.
+     */
+    io.opencola.security.protobuf.Security.Signature getSignature();
+    /**
+     * <code>.io.opencola.security.protobuf.Signature signature = 1;</code>
+     */
+    io.opencola.security.protobuf.Security.SignatureOrBuilder getSignatureOrBuilder();
+
+    /**
+     * <code>bytes bytes = 2;</code>
+     * @return The bytes.
+     */
+    com.google.protobuf.ByteString getBytes();
+  }
+  /**
+   * Protobuf type {@code io.opencola.security.protobuf.SignedBytes}
+   */
+  public static final class SignedBytes extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:io.opencola.security.protobuf.SignedBytes)
+      SignedBytesOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use SignedBytes.newBuilder() to construct.
+    private SignedBytes(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private SignedBytes() {
+      bytes_ = com.google.protobuf.ByteString.EMPTY;
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new SignedBytes();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private SignedBytes(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+              io.opencola.security.protobuf.Security.Signature.Builder subBuilder = null;
+              if (signature_ != null) {
+                subBuilder = signature_.toBuilder();
+              }
+              signature_ = input.readMessage(io.opencola.security.protobuf.Security.Signature.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(signature_);
+                signature_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 18: {
+
+              bytes_ = input.readBytes();
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return io.opencola.security.protobuf.Security.internal_static_io_opencola_security_protobuf_SignedBytes_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return io.opencola.security.protobuf.Security.internal_static_io_opencola_security_protobuf_SignedBytes_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              io.opencola.security.protobuf.Security.SignedBytes.class, io.opencola.security.protobuf.Security.SignedBytes.Builder.class);
+    }
+
+    public static final int SIGNATURE_FIELD_NUMBER = 1;
+    private io.opencola.security.protobuf.Security.Signature signature_;
+    /**
+     * <code>.io.opencola.security.protobuf.Signature signature = 1;</code>
+     * @return Whether the signature field is set.
+     */
+    @java.lang.Override
+    public boolean hasSignature() {
+      return signature_ != null;
+    }
+    /**
+     * <code>.io.opencola.security.protobuf.Signature signature = 1;</code>
+     * @return The signature.
+     */
+    @java.lang.Override
+    public io.opencola.security.protobuf.Security.Signature getSignature() {
+      return signature_ == null ? io.opencola.security.protobuf.Security.Signature.getDefaultInstance() : signature_;
+    }
+    /**
+     * <code>.io.opencola.security.protobuf.Signature signature = 1;</code>
+     */
+    @java.lang.Override
+    public io.opencola.security.protobuf.Security.SignatureOrBuilder getSignatureOrBuilder() {
+      return getSignature();
+    }
+
+    public static final int BYTES_FIELD_NUMBER = 2;
+    private com.google.protobuf.ByteString bytes_;
+    /**
+     * <code>bytes bytes = 2;</code>
+     * @return The bytes.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString getBytes() {
+      return bytes_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (signature_ != null) {
+        output.writeMessage(1, getSignature());
+      }
+      if (!bytes_.isEmpty()) {
+        output.writeBytes(2, bytes_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (signature_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, getSignature());
+      }
+      if (!bytes_.isEmpty()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, bytes_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof io.opencola.security.protobuf.Security.SignedBytes)) {
+        return super.equals(obj);
+      }
+      io.opencola.security.protobuf.Security.SignedBytes other = (io.opencola.security.protobuf.Security.SignedBytes) obj;
+
+      if (hasSignature() != other.hasSignature()) return false;
+      if (hasSignature()) {
+        if (!getSignature()
+            .equals(other.getSignature())) return false;
+      }
+      if (!getBytes()
+          .equals(other.getBytes())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasSignature()) {
+        hash = (37 * hash) + SIGNATURE_FIELD_NUMBER;
+        hash = (53 * hash) + getSignature().hashCode();
+      }
+      hash = (37 * hash) + BYTES_FIELD_NUMBER;
+      hash = (53 * hash) + getBytes().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static io.opencola.security.protobuf.Security.SignedBytes parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.opencola.security.protobuf.Security.SignedBytes parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.opencola.security.protobuf.Security.SignedBytes parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.opencola.security.protobuf.Security.SignedBytes parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.opencola.security.protobuf.Security.SignedBytes parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.opencola.security.protobuf.Security.SignedBytes parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.opencola.security.protobuf.Security.SignedBytes parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static io.opencola.security.protobuf.Security.SignedBytes parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static io.opencola.security.protobuf.Security.SignedBytes parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static io.opencola.security.protobuf.Security.SignedBytes parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static io.opencola.security.protobuf.Security.SignedBytes parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static io.opencola.security.protobuf.Security.SignedBytes parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(io.opencola.security.protobuf.Security.SignedBytes prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code io.opencola.security.protobuf.SignedBytes}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:io.opencola.security.protobuf.SignedBytes)
+        io.opencola.security.protobuf.Security.SignedBytesOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return io.opencola.security.protobuf.Security.internal_static_io_opencola_security_protobuf_SignedBytes_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return io.opencola.security.protobuf.Security.internal_static_io_opencola_security_protobuf_SignedBytes_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                io.opencola.security.protobuf.Security.SignedBytes.class, io.opencola.security.protobuf.Security.SignedBytes.Builder.class);
+      }
+
+      // Construct using io.opencola.security.protobuf.Security.SignedBytes.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        if (signatureBuilder_ == null) {
+          signature_ = null;
+        } else {
+          signature_ = null;
+          signatureBuilder_ = null;
+        }
+        bytes_ = com.google.protobuf.ByteString.EMPTY;
+
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return io.opencola.security.protobuf.Security.internal_static_io_opencola_security_protobuf_SignedBytes_descriptor;
+      }
+
+      @java.lang.Override
+      public io.opencola.security.protobuf.Security.SignedBytes getDefaultInstanceForType() {
+        return io.opencola.security.protobuf.Security.SignedBytes.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public io.opencola.security.protobuf.Security.SignedBytes build() {
+        io.opencola.security.protobuf.Security.SignedBytes result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public io.opencola.security.protobuf.Security.SignedBytes buildPartial() {
+        io.opencola.security.protobuf.Security.SignedBytes result = new io.opencola.security.protobuf.Security.SignedBytes(this);
+        if (signatureBuilder_ == null) {
+          result.signature_ = signature_;
+        } else {
+          result.signature_ = signatureBuilder_.build();
+        }
+        result.bytes_ = bytes_;
+        onBuilt();
+        return result;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof io.opencola.security.protobuf.Security.SignedBytes) {
+          return mergeFrom((io.opencola.security.protobuf.Security.SignedBytes)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(io.opencola.security.protobuf.Security.SignedBytes other) {
+        if (other == io.opencola.security.protobuf.Security.SignedBytes.getDefaultInstance()) return this;
+        if (other.hasSignature()) {
+          mergeSignature(other.getSignature());
+        }
+        if (other.getBytes() != com.google.protobuf.ByteString.EMPTY) {
+          setBytes(other.getBytes());
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        io.opencola.security.protobuf.Security.SignedBytes parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (io.opencola.security.protobuf.Security.SignedBytes) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private io.opencola.security.protobuf.Security.Signature signature_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          io.opencola.security.protobuf.Security.Signature, io.opencola.security.protobuf.Security.Signature.Builder, io.opencola.security.protobuf.Security.SignatureOrBuilder> signatureBuilder_;
+      /**
+       * <code>.io.opencola.security.protobuf.Signature signature = 1;</code>
+       * @return Whether the signature field is set.
+       */
+      public boolean hasSignature() {
+        return signatureBuilder_ != null || signature_ != null;
+      }
+      /**
+       * <code>.io.opencola.security.protobuf.Signature signature = 1;</code>
+       * @return The signature.
+       */
+      public io.opencola.security.protobuf.Security.Signature getSignature() {
+        if (signatureBuilder_ == null) {
+          return signature_ == null ? io.opencola.security.protobuf.Security.Signature.getDefaultInstance() : signature_;
+        } else {
+          return signatureBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>.io.opencola.security.protobuf.Signature signature = 1;</code>
+       */
+      public Builder setSignature(io.opencola.security.protobuf.Security.Signature value) {
+        if (signatureBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          signature_ = value;
+          onChanged();
+        } else {
+          signatureBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.io.opencola.security.protobuf.Signature signature = 1;</code>
+       */
+      public Builder setSignature(
+          io.opencola.security.protobuf.Security.Signature.Builder builderForValue) {
+        if (signatureBuilder_ == null) {
+          signature_ = builderForValue.build();
+          onChanged();
+        } else {
+          signatureBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <code>.io.opencola.security.protobuf.Signature signature = 1;</code>
+       */
+      public Builder mergeSignature(io.opencola.security.protobuf.Security.Signature value) {
+        if (signatureBuilder_ == null) {
+          if (signature_ != null) {
+            signature_ =
+              io.opencola.security.protobuf.Security.Signature.newBuilder(signature_).mergeFrom(value).buildPartial();
+          } else {
+            signature_ = value;
+          }
+          onChanged();
+        } else {
+          signatureBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.io.opencola.security.protobuf.Signature signature = 1;</code>
+       */
+      public Builder clearSignature() {
+        if (signatureBuilder_ == null) {
+          signature_ = null;
+          onChanged();
+        } else {
+          signature_ = null;
+          signatureBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <code>.io.opencola.security.protobuf.Signature signature = 1;</code>
+       */
+      public io.opencola.security.protobuf.Security.Signature.Builder getSignatureBuilder() {
+        
+        onChanged();
+        return getSignatureFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>.io.opencola.security.protobuf.Signature signature = 1;</code>
+       */
+      public io.opencola.security.protobuf.Security.SignatureOrBuilder getSignatureOrBuilder() {
+        if (signatureBuilder_ != null) {
+          return signatureBuilder_.getMessageOrBuilder();
+        } else {
+          return signature_ == null ?
+              io.opencola.security.protobuf.Security.Signature.getDefaultInstance() : signature_;
+        }
+      }
+      /**
+       * <code>.io.opencola.security.protobuf.Signature signature = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          io.opencola.security.protobuf.Security.Signature, io.opencola.security.protobuf.Security.Signature.Builder, io.opencola.security.protobuf.Security.SignatureOrBuilder> 
+          getSignatureFieldBuilder() {
+        if (signatureBuilder_ == null) {
+          signatureBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              io.opencola.security.protobuf.Security.Signature, io.opencola.security.protobuf.Security.Signature.Builder, io.opencola.security.protobuf.Security.SignatureOrBuilder>(
+                  getSignature(),
+                  getParentForChildren(),
+                  isClean());
+          signature_ = null;
+        }
+        return signatureBuilder_;
+      }
+
+      private com.google.protobuf.ByteString bytes_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>bytes bytes = 2;</code>
+       * @return The bytes.
+       */
+      @java.lang.Override
+      public com.google.protobuf.ByteString getBytes() {
+        return bytes_;
+      }
+      /**
+       * <code>bytes bytes = 2;</code>
+       * @param value The bytes to set.
+       * @return This builder for chaining.
+       */
+      public Builder setBytes(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        bytes_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>bytes bytes = 2;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearBytes() {
+        
+        bytes_ = getDefaultInstance().getBytes();
+        onChanged();
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:io.opencola.security.protobuf.SignedBytes)
+    }
+
+    // @@protoc_insertion_point(class_scope:io.opencola.security.protobuf.SignedBytes)
+    private static final io.opencola.security.protobuf.Security.SignedBytes DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new io.opencola.security.protobuf.Security.SignedBytes();
+    }
+
+    public static io.opencola.security.protobuf.Security.SignedBytes getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<SignedBytes>
+        PARSER = new com.google.protobuf.AbstractParser<SignedBytes>() {
+      @java.lang.Override
+      public SignedBytes parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new SignedBytes(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<SignedBytes> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<SignedBytes> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public io.opencola.security.protobuf.Security.SignedBytes getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface EncryptedBytesOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:io.opencola.security.protobuf.EncryptedBytes)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -1325,18 +2020,18 @@ public final class Security {
     com.google.protobuf.ByteString getBytes();
   }
   /**
-   * Protobuf type {@code io.opencola.security.protobuf.EncryptedMessage}
+   * Protobuf type {@code io.opencola.security.protobuf.EncryptedBytes}
    */
-  public static final class EncryptedMessage extends
+  public static final class EncryptedBytes extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:io.opencola.security.protobuf.EncryptedMessage)
-      EncryptedMessageOrBuilder {
+      // @@protoc_insertion_point(message_implements:io.opencola.security.protobuf.EncryptedBytes)
+      EncryptedBytesOrBuilder {
   private static final long serialVersionUID = 0L;
-    // Use EncryptedMessage.newBuilder() to construct.
-    private EncryptedMessage(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+    // Use EncryptedBytes.newBuilder() to construct.
+    private EncryptedBytes(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
-    private EncryptedMessage() {
+    private EncryptedBytes() {
       transformation_ = 0;
       bytes_ = com.google.protobuf.ByteString.EMPTY;
     }
@@ -1345,7 +2040,7 @@ public final class Security {
     @SuppressWarnings({"unused"})
     protected java.lang.Object newInstance(
         UnusedPrivateParameter unused) {
-      return new EncryptedMessage();
+      return new EncryptedBytes();
     }
 
     @java.lang.Override
@@ -1353,7 +2048,7 @@ public final class Security {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private EncryptedMessage(
+    private EncryptedBytes(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -1403,15 +2098,15 @@ public final class Security {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.opencola.security.protobuf.Security.internal_static_io_opencola_security_protobuf_EncryptedMessage_descriptor;
+      return io.opencola.security.protobuf.Security.internal_static_io_opencola_security_protobuf_EncryptedBytes_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.opencola.security.protobuf.Security.internal_static_io_opencola_security_protobuf_EncryptedMessage_fieldAccessorTable
+      return io.opencola.security.protobuf.Security.internal_static_io_opencola_security_protobuf_EncryptedBytes_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              io.opencola.security.protobuf.Security.EncryptedMessage.class, io.opencola.security.protobuf.Security.EncryptedMessage.Builder.class);
+              io.opencola.security.protobuf.Security.EncryptedBytes.class, io.opencola.security.protobuf.Security.EncryptedBytes.Builder.class);
     }
 
     public static final int TRANSFORMATION_FIELD_NUMBER = 1;
@@ -1491,10 +2186,10 @@ public final class Security {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof io.opencola.security.protobuf.Security.EncryptedMessage)) {
+      if (!(obj instanceof io.opencola.security.protobuf.Security.EncryptedBytes)) {
         return super.equals(obj);
       }
-      io.opencola.security.protobuf.Security.EncryptedMessage other = (io.opencola.security.protobuf.Security.EncryptedMessage) obj;
+      io.opencola.security.protobuf.Security.EncryptedBytes other = (io.opencola.security.protobuf.Security.EncryptedBytes) obj;
 
       if (transformation_ != other.transformation_) return false;
       if (!getBytes()
@@ -1519,69 +2214,69 @@ public final class Security {
       return hash;
     }
 
-    public static io.opencola.security.protobuf.Security.EncryptedMessage parseFrom(
+    public static io.opencola.security.protobuf.Security.EncryptedBytes parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static io.opencola.security.protobuf.Security.EncryptedMessage parseFrom(
+    public static io.opencola.security.protobuf.Security.EncryptedBytes parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static io.opencola.security.protobuf.Security.EncryptedMessage parseFrom(
+    public static io.opencola.security.protobuf.Security.EncryptedBytes parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static io.opencola.security.protobuf.Security.EncryptedMessage parseFrom(
+    public static io.opencola.security.protobuf.Security.EncryptedBytes parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static io.opencola.security.protobuf.Security.EncryptedMessage parseFrom(byte[] data)
+    public static io.opencola.security.protobuf.Security.EncryptedBytes parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static io.opencola.security.protobuf.Security.EncryptedMessage parseFrom(
+    public static io.opencola.security.protobuf.Security.EncryptedBytes parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static io.opencola.security.protobuf.Security.EncryptedMessage parseFrom(java.io.InputStream input)
+    public static io.opencola.security.protobuf.Security.EncryptedBytes parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static io.opencola.security.protobuf.Security.EncryptedMessage parseFrom(
+    public static io.opencola.security.protobuf.Security.EncryptedBytes parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static io.opencola.security.protobuf.Security.EncryptedMessage parseDelimitedFrom(java.io.InputStream input)
+    public static io.opencola.security.protobuf.Security.EncryptedBytes parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static io.opencola.security.protobuf.Security.EncryptedMessage parseDelimitedFrom(
+    public static io.opencola.security.protobuf.Security.EncryptedBytes parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static io.opencola.security.protobuf.Security.EncryptedMessage parseFrom(
+    public static io.opencola.security.protobuf.Security.EncryptedBytes parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static io.opencola.security.protobuf.Security.EncryptedMessage parseFrom(
+    public static io.opencola.security.protobuf.Security.EncryptedBytes parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1594,7 +2289,7 @@ public final class Security {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(io.opencola.security.protobuf.Security.EncryptedMessage prototype) {
+    public static Builder newBuilder(io.opencola.security.protobuf.Security.EncryptedBytes prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -1610,26 +2305,26 @@ public final class Security {
       return builder;
     }
     /**
-     * Protobuf type {@code io.opencola.security.protobuf.EncryptedMessage}
+     * Protobuf type {@code io.opencola.security.protobuf.EncryptedBytes}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:io.opencola.security.protobuf.EncryptedMessage)
-        io.opencola.security.protobuf.Security.EncryptedMessageOrBuilder {
+        // @@protoc_insertion_point(builder_implements:io.opencola.security.protobuf.EncryptedBytes)
+        io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return io.opencola.security.protobuf.Security.internal_static_io_opencola_security_protobuf_EncryptedMessage_descriptor;
+        return io.opencola.security.protobuf.Security.internal_static_io_opencola_security_protobuf_EncryptedBytes_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return io.opencola.security.protobuf.Security.internal_static_io_opencola_security_protobuf_EncryptedMessage_fieldAccessorTable
+        return io.opencola.security.protobuf.Security.internal_static_io_opencola_security_protobuf_EncryptedBytes_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                io.opencola.security.protobuf.Security.EncryptedMessage.class, io.opencola.security.protobuf.Security.EncryptedMessage.Builder.class);
+                io.opencola.security.protobuf.Security.EncryptedBytes.class, io.opencola.security.protobuf.Security.EncryptedBytes.Builder.class);
       }
 
-      // Construct using io.opencola.security.protobuf.Security.EncryptedMessage.newBuilder()
+      // Construct using io.opencola.security.protobuf.Security.EncryptedBytes.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -1657,17 +2352,17 @@ public final class Security {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return io.opencola.security.protobuf.Security.internal_static_io_opencola_security_protobuf_EncryptedMessage_descriptor;
+        return io.opencola.security.protobuf.Security.internal_static_io_opencola_security_protobuf_EncryptedBytes_descriptor;
       }
 
       @java.lang.Override
-      public io.opencola.security.protobuf.Security.EncryptedMessage getDefaultInstanceForType() {
-        return io.opencola.security.protobuf.Security.EncryptedMessage.getDefaultInstance();
+      public io.opencola.security.protobuf.Security.EncryptedBytes getDefaultInstanceForType() {
+        return io.opencola.security.protobuf.Security.EncryptedBytes.getDefaultInstance();
       }
 
       @java.lang.Override
-      public io.opencola.security.protobuf.Security.EncryptedMessage build() {
-        io.opencola.security.protobuf.Security.EncryptedMessage result = buildPartial();
+      public io.opencola.security.protobuf.Security.EncryptedBytes build() {
+        io.opencola.security.protobuf.Security.EncryptedBytes result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -1675,8 +2370,8 @@ public final class Security {
       }
 
       @java.lang.Override
-      public io.opencola.security.protobuf.Security.EncryptedMessage buildPartial() {
-        io.opencola.security.protobuf.Security.EncryptedMessage result = new io.opencola.security.protobuf.Security.EncryptedMessage(this);
+      public io.opencola.security.protobuf.Security.EncryptedBytes buildPartial() {
+        io.opencola.security.protobuf.Security.EncryptedBytes result = new io.opencola.security.protobuf.Security.EncryptedBytes(this);
         result.transformation_ = transformation_;
         result.bytes_ = bytes_;
         onBuilt();
@@ -1717,16 +2412,16 @@ public final class Security {
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof io.opencola.security.protobuf.Security.EncryptedMessage) {
-          return mergeFrom((io.opencola.security.protobuf.Security.EncryptedMessage)other);
+        if (other instanceof io.opencola.security.protobuf.Security.EncryptedBytes) {
+          return mergeFrom((io.opencola.security.protobuf.Security.EncryptedBytes)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(io.opencola.security.protobuf.Security.EncryptedMessage other) {
-        if (other == io.opencola.security.protobuf.Security.EncryptedMessage.getDefaultInstance()) return this;
+      public Builder mergeFrom(io.opencola.security.protobuf.Security.EncryptedBytes other) {
+        if (other == io.opencola.security.protobuf.Security.EncryptedBytes.getDefaultInstance()) return this;
         if (other.transformation_ != 0) {
           setTransformationValue(other.getTransformationValue());
         }
@@ -1748,11 +2443,11 @@ public final class Security {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        io.opencola.security.protobuf.Security.EncryptedMessage parsedMessage = null;
+        io.opencola.security.protobuf.Security.EncryptedBytes parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (io.opencola.security.protobuf.Security.EncryptedMessage) e.getUnfinishedMessage();
+          parsedMessage = (io.opencola.security.protobuf.Security.EncryptedBytes) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -1862,41 +2557,41 @@ public final class Security {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:io.opencola.security.protobuf.EncryptedMessage)
+      // @@protoc_insertion_point(builder_scope:io.opencola.security.protobuf.EncryptedBytes)
     }
 
-    // @@protoc_insertion_point(class_scope:io.opencola.security.protobuf.EncryptedMessage)
-    private static final io.opencola.security.protobuf.Security.EncryptedMessage DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:io.opencola.security.protobuf.EncryptedBytes)
+    private static final io.opencola.security.protobuf.Security.EncryptedBytes DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new io.opencola.security.protobuf.Security.EncryptedMessage();
+      DEFAULT_INSTANCE = new io.opencola.security.protobuf.Security.EncryptedBytes();
     }
 
-    public static io.opencola.security.protobuf.Security.EncryptedMessage getDefaultInstance() {
+    public static io.opencola.security.protobuf.Security.EncryptedBytes getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    private static final com.google.protobuf.Parser<EncryptedMessage>
-        PARSER = new com.google.protobuf.AbstractParser<EncryptedMessage>() {
+    private static final com.google.protobuf.Parser<EncryptedBytes>
+        PARSER = new com.google.protobuf.AbstractParser<EncryptedBytes>() {
       @java.lang.Override
-      public EncryptedMessage parsePartialFrom(
+      public EncryptedBytes parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new EncryptedMessage(input, extensionRegistry);
+        return new EncryptedBytes(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<EncryptedMessage> parser() {
+    public static com.google.protobuf.Parser<EncryptedBytes> parser() {
       return PARSER;
     }
 
     @java.lang.Override
-    public com.google.protobuf.Parser<EncryptedMessage> getParserForType() {
+    public com.google.protobuf.Parser<EncryptedBytes> getParserForType() {
       return PARSER;
     }
 
     @java.lang.Override
-    public io.opencola.security.protobuf.Security.EncryptedMessage getDefaultInstanceForType() {
+    public io.opencola.security.protobuf.Security.EncryptedBytes getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1913,10 +2608,15 @@ public final class Security {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_io_opencola_security_protobuf_Signature_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_io_opencola_security_protobuf_EncryptedMessage_descriptor;
+    internal_static_io_opencola_security_protobuf_SignedBytes_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_io_opencola_security_protobuf_EncryptedMessage_fieldAccessorTable;
+      internal_static_io_opencola_security_protobuf_SignedBytes_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_io_opencola_security_protobuf_EncryptedBytes_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_io_opencola_security_protobuf_EncryptedBytes_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -1930,12 +2630,15 @@ public final class Security {
       "rotobuf\"\034\n\tPublicKey\022\017\n\007encoded\030\001 \001(\014\"`\n" +
       "\tSignature\022D\n\talgorithm\030\001 \001(\01621.io.openc" +
       "ola.security.protobuf.SignatureAlgorithm" +
-      "\022\r\n\005bytes\030\002 \001(\014\"r\n\020EncryptedMessage\022O\n\016t" +
-      "ransformation\030\001 \001(\01627.io.opencola.securi" +
-      "ty.protobuf.EncryptionTransformation\022\r\n\005" +
-      "bytes\030\002 \001(\014*-\n\022SignatureAlgorithm\022\027\n\023SHA" +
-      "3_256_WITH_ECDSA\020\000*2\n\030EncryptionTransfor" +
-      "mation\022\026\n\022ECIES_WITH_AES_CBC\020\000b\006proto3"
+      "\022\r\n\005bytes\030\002 \001(\014\"Y\n\013SignedBytes\022;\n\tsignat" +
+      "ure\030\001 \001(\0132(.io.opencola.security.protobu" +
+      "f.Signature\022\r\n\005bytes\030\002 \001(\014\"p\n\016EncryptedB" +
+      "ytes\022O\n\016transformation\030\001 \001(\01627.io.openco" +
+      "la.security.protobuf.EncryptionTransform" +
+      "ation\022\r\n\005bytes\030\002 \001(\014*-\n\022SignatureAlgorit" +
+      "hm\022\027\n\023SHA3_256_WITH_ECDSA\020\000*2\n\030Encryptio" +
+      "nTransformation\022\026\n\022ECIES_WITH_AES_CBC\020\000b" +
+      "\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -1953,11 +2656,17 @@ public final class Security {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_security_protobuf_Signature_descriptor,
         new java.lang.String[] { "Algorithm", "Bytes", });
-    internal_static_io_opencola_security_protobuf_EncryptedMessage_descriptor =
+    internal_static_io_opencola_security_protobuf_SignedBytes_descriptor =
       getDescriptor().getMessageTypes().get(2);
-    internal_static_io_opencola_security_protobuf_EncryptedMessage_fieldAccessorTable = new
+    internal_static_io_opencola_security_protobuf_SignedBytes_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_io_opencola_security_protobuf_EncryptedMessage_descriptor,
+        internal_static_io_opencola_security_protobuf_SignedBytes_descriptor,
+        new java.lang.String[] { "Signature", "Bytes", });
+    internal_static_io_opencola_security_protobuf_EncryptedBytes_descriptor =
+      getDescriptor().getMessageTypes().get(3);
+    internal_static_io_opencola_security_protobuf_EncryptedBytes_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_io_opencola_security_protobuf_EncryptedBytes_descriptor,
         new java.lang.String[] { "Transformation", "Bytes", });
   }
 

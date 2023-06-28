@@ -4,6 +4,8 @@ import io.opencola.model.Id
 import io.opencola.network.NetworkConfig
 import io.opencola.network.AbstractNetworkProvider
 import io.opencola.network.message.SignedMessage
+import io.opencola.relay.client.AbstractClient
+import io.opencola.relay.client.Event
 import io.opencola.security.Encryptor
 import io.opencola.security.Signator
 import io.opencola.storage.addressbook.AddressBook
@@ -39,8 +41,8 @@ class OCRelayNetworkProvider(
             if (other !is ConnectionParams) return false
 
             if (uri != other.uri) return false
-            if(!keyPair.public.encoded.contentEquals(other.keyPair.public.encoded)) return false
-            if(!keyPair.private.encoded.contentEquals(other.keyPair.private.encoded)) return false
+            if (!keyPair.public.encoded.contentEquals(other.keyPair.public.encoded)) return false
+            if (!keyPair.private.encoded.contentEquals(other.keyPair.private.encoded)) return false
 
             return true
         }
@@ -54,6 +56,16 @@ class OCRelayNetworkProvider(
     }
 
     private val connections = ConcurrentHashMap<ConnectionParams, ConnectionInfo>()
+
+    private fun handleQueueEmptyEvent(client: RelayClient) {
+        logger.warn { "Unhandled queue empty event received for client: $client" }
+    }
+
+    private fun handleEvent(client: RelayClient, event: Event) {
+        when(event) {
+            Event.QUEUE_EMPTY -> handleQueueEmptyEvent(client)
+        }
+    }
 
     @Synchronized
     private fun addClient(connectionParams: ConnectionParams): RelayClient {
@@ -73,6 +85,13 @@ class OCRelayNetworkProvider(
             try {
                 runBlocking {
                     logger.info { "Opening client: $connectionParams" }
+                    client.setEventHandler { event ->
+                        try {
+                            handleEvent(client, event)
+                        } catch (e: Throwable) {
+                            logger.error { "Error handling event: $e" }
+                        }
+                    }
                     client.open { _, request ->
                         try {
                             handleMessage(request, false)
@@ -93,6 +112,7 @@ class OCRelayNetworkProvider(
         return client
     }
 
+    // TODO: waitUntilReady is only used for testing. Find a way to do this that doesn't expose it through the interface
     override fun start(waitUntilReady: Boolean) {
         val (personaAuthorities, peerAuthorities) = addressBook.getEntries().partition { it is PersonaAddressBookEntry }
         val personas = personaAuthorities.associate { it.entityId to it as PersonaAddressBookEntry }
@@ -107,11 +127,12 @@ class OCRelayNetworkProvider(
                 addClient(it).also {
                     if (waitUntilReady) {
                         runBlocking {
-                            it.waitUntilOpen()
+                            (it as AbstractClient).waitUntilOpen()
                         }
                     }
                 }
             }
+
         started = true
         logger.info { "Started" }
     }
@@ -158,7 +179,7 @@ class OCRelayNetworkProvider(
         val persona = addressBook.getEntry(peer.personaId, peer.personaId) as? PersonaAddressBookEntry
             ?: throw IllegalStateException("Can't add peer ${peer.entityId} for unknown persona: ${peer.personaId}")
 
-         addClient(ConnectionParams(peer.address, persona.keyPair))
+        addClient(ConnectionParams(peer.address, persona.keyPair))
     }
 
     override fun removePeer(peer: AddressBookEntry) {

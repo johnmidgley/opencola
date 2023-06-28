@@ -15,11 +15,17 @@ message Signature {
   bytes bytes = 2;
 }
 
+message SignedBytes {
+  Signature signature = 1;
+  bytes bytes = 2;
+}
+
 enum EncryptionTransformation {
   ECIES_WITH_AES_CBC = 0;
 }
 
-message EncryptedMessage {
+message EncryptedBytes {
   EncryptionTransformation transformation = 1;
   bytes bytes = 2;
 }
+

@@ -6,6 +6,8 @@ import io.opencola.relay.common.*
 import io.opencola.relay.common.connection.Connection
 import io.opencola.relay.common.State.*
 import io.opencola.relay.common.connection.SocketSession
+import io.opencola.relay.common.message.ControlMessage
+import io.opencola.relay.common.message.ControlMessageType
 import io.opencola.relay.common.message.Message
 import io.opencola.relay.common.message.MessageKey
 import kotlinx.coroutines.*
@@ -27,6 +29,8 @@ abstract class AbstractClient(
     protected val logger = KotlinLogging.logger("RelayClient${if (name != null) " ($name)" else ""}")
     protected val hostname: String = uri.host
     protected val port = if (uri.port > 0) uri.port else defaultOCRPort
+    protected var serverPublicKey: PublicKey? = null
+    protected var eventHandler: EventHandler? = null
 
     // Not to be touched directly. Access by calling getConnections, which will ensure it's opened and ready
     private var _connection: Connection? = null
@@ -40,6 +44,10 @@ abstract class AbstractClient(
     init {
         if (uri.scheme != "ocr")
             throw IllegalArgumentException("Scheme must be 'ocr' for relay URI: $uri")
+
+        this.eventHandler = {
+            logger.warn { "Unhandled event: $it" }
+        }
     }
 
     abstract suspend fun getSocketSession(): SocketSession
@@ -53,7 +61,7 @@ abstract class AbstractClient(
     val state: State
         get() = _state
 
-    override suspend fun waitUntilOpen() {
+    suspend fun waitUntilOpen() {
         openMutex.withLock { }
     }
 
@@ -91,6 +99,10 @@ abstract class AbstractClient(
 
             _connection!!
         }
+    }
+
+    override suspend fun setEventHandler(eventHandler: EventHandler) {
+        this.eventHandler = eventHandler
     }
 
     override suspend fun open(messageHandler: MessageHandler) = coroutineScope {
@@ -144,17 +156,34 @@ abstract class AbstractClient(
         }
     }
 
+    private fun isControlMessage(message: Message): Boolean {
+        return message.header.from == serverPublicKey
+    }
+
+    private suspend fun handleControlMessage(message: Message) {
+        val controlMessage = ControlMessage.decodeProto(message.body)
+
+        when (controlMessage.type) {
+            ControlMessageType.QUEUE_EMPTY -> {
+                eventHandler?.let { it(Event.QUEUE_EMPTY) }
+            }
+        }
+    }
+
     private suspend fun handleMessage(payload: ByteArray, messageHandler: MessageHandler) {
         try {
             val message = decodePayload(payload)
             logger.info { "Handling message: ${message.header}" }
 
-            messageHandler(message.header.from, message.body)
+            if (isControlMessage(message)) {
+                handleControlMessage(message)
+            } else {
+                messageHandler(message.header.from, message.body)
+            }
         } catch (e: Exception) {
             logger.error { "Exception in handleMessage: $e" }
         }
     }
-
 
     override suspend fun close() {
         _state = Closed

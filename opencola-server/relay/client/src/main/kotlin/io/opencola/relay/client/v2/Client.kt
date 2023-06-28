@@ -36,6 +36,7 @@ abstract class Client(
             throw RuntimeException("Unable to authenticate connection: $authenticationResult.status")
         }
 
+        serverPublicKey = authenticationResult.publicKey
         logger.debug { "Authenticated" }
     }
 

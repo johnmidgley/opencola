@@ -49,5 +49,14 @@ message Envelope {
   bytes message = 3;
 }
 
+message ControlMessage {
+  enum Type {
+    QUEUE_EMPTY = 0;
+  }
+
+  Type type = 1;
+  optional bytes payload = 2;
+}
+
 
 

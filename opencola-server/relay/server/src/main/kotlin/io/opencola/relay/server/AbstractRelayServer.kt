@@ -3,12 +3,13 @@ package io.opencola.relay.server
 import io.opencola.model.Id
 import io.opencola.security.initProvider
 import io.opencola.relay.common.connection.Connection
-import io.opencola.relay.common.message.Envelope
 import io.opencola.relay.common.connection.SocketSession
 import io.opencola.relay.common.State.*
+import io.opencola.relay.common.message.*
 import io.opencola.relay.common.message.store.MemoryMessageStore
 import io.opencola.relay.common.message.store.MessageStore
 import io.opencola.relay.common.message.store.Usage
+import io.opencola.security.encrypt
 import io.opencola.security.generateKeyPair
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
@@ -45,6 +46,13 @@ abstract class AbstractRelayServer(
     protected abstract suspend fun authenticate(socketSession: SocketSession): PublicKey?
     protected abstract fun decodePayload(payload: ByteArray): Envelope
 
+    private fun getQueueEmptyMessage(to: PublicKey): ByteArray {
+        val queueEmptyMessage = ControlMessage(ControlMessageType.QUEUE_EMPTY)
+        val message = Message(keyPair, queueEmptyMessage.encodeProto())
+        val encryptedBytes = encrypt(to, message.encodeProto())
+        return encryptedBytes.encodeProto()
+    }
+
     private suspend fun sendStoredMessages(publicKey: PublicKey) {
         val connection = connections[publicKey] ?: return
 
@@ -52,6 +60,10 @@ abstract class AbstractRelayServer(
             val message = messageStore.getMessages(publicKey).firstOrNull() ?: break
             connection.writeSizedByteArray(message.envelope.message)
             messageStore.removeMessage(message)
+        }
+
+        if(messageStore != null) {
+            connection.writeSizedByteArray(getQueueEmptyMessage(publicKey))
         }
     }
 
