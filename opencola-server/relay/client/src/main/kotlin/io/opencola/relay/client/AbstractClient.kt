@@ -45,8 +45,9 @@ abstract class AbstractClient(
         if (uri.scheme != "ocr")
             throw IllegalArgumentException("Scheme must be 'ocr' for relay URI: $uri")
 
-        this.eventHandler = {
-            logger.warn { "Unhandled event: $it" }
+        this.eventHandler = { publicKey, event ->
+            val id = Id.ofPublicKey(publicKey)
+            logger.warn { "Unhandled event: $event for $id" }
         }
     }
 
@@ -165,7 +166,7 @@ abstract class AbstractClient(
 
         when (controlMessage.type) {
             ControlMessageType.QUEUE_EMPTY -> {
-                eventHandler?.let { it(Event.QUEUE_EMPTY) }
+                eventHandler?.let { it(publicKey, Event.QUEUE_EMPTY) }
             }
         }
     }

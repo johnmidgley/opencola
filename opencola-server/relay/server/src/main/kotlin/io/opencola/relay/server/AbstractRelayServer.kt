@@ -63,6 +63,7 @@ abstract class AbstractRelayServer(
         }
 
         if(messageStore != null) {
+            logger.info { "Queue empty for: ${Id.ofPublicKey(publicKey)}" }
             connection.writeSizedByteArray(getQueueEmptyMessage(publicKey))
         }
     }

@@ -17,6 +17,7 @@ import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import java.net.URI
 import java.security.KeyPair
+import java.security.PublicKey
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.thread
 
@@ -33,7 +34,7 @@ class OCRelayNetworkProvider(
     private data class ConnectionInfo(val client: RelayClient, val listenThread: Thread)
     private data class ConnectionParams(val uri: URI, val keyPair: KeyPair) {
         override fun toString(): String {
-            return "ConnectionParams(uri=$uri, keyPair=${Id.ofPublicKey(keyPair.public)})"
+            return "ConnectionParams(uri=$uri, publicKey=${Id.ofPublicKey(keyPair.public)})"
         }
 
         override fun equals(other: Any?): Boolean {
@@ -57,13 +58,14 @@ class OCRelayNetworkProvider(
 
     private val connections = ConcurrentHashMap<ConnectionParams, ConnectionInfo>()
 
-    private fun handleQueueEmptyEvent(client: RelayClient) {
-        logger.warn { "Unhandled queue empty event received for client: $client" }
+    private fun handleQueueEmptyEvent(publicKey: PublicKey) {
+        val id = Id.ofPublicKey(publicKey)
+        logger.warn { "Unhandled queue for: $id" }
     }
 
-    private fun handleEvent(client: RelayClient, event: Event) {
+    private fun handleEvent(publicKey: PublicKey, event: Event) {
         when(event) {
-            Event.QUEUE_EMPTY -> handleQueueEmptyEvent(client)
+            Event.QUEUE_EMPTY -> handleQueueEmptyEvent(publicKey)
         }
     }
 
@@ -85,9 +87,9 @@ class OCRelayNetworkProvider(
             try {
                 runBlocking {
                     logger.info { "Opening client: $connectionParams" }
-                    client.setEventHandler { event ->
+                    client.setEventHandler { publicKey, event ->
                         try {
-                            handleEvent(client, event)
+                            handleEvent(publicKey, event)
                         } catch (e: Throwable) {
                             logger.error { "Error handling event: $e" }
                         }
