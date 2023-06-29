@@ -11,7 +11,7 @@ import io.opencola.network.message.PingMessage
 import io.opencola.network.pongRoute
 import io.opencola.network.providers.relay.OCRelayNetworkProvider
 import io.opencola.storage.addressbook.AddressBook
-import io.opencola.relay.client.v1.WebSocketClient
+import io.opencola.relay.client.v2.WebSocketClient
 import io.opencola.relay.common.defaultOCRPort
 import io.opencola.relay.common.message.MessageKey
 import io.opencola.relay.server.startWebServer
