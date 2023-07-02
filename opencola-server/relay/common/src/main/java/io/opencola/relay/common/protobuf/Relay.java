@@ -5381,16 +5381,16 @@ public final class Relay {
     public enum Type
         implements com.google.protobuf.ProtocolMessageEnum {
       /**
-       * <code>QUEUE_EMPTY = 0;</code>
+       * <code>NO_PENDING_MESSAGES = 0;</code>
        */
-      QUEUE_EMPTY(0),
+      NO_PENDING_MESSAGES(0),
       UNRECOGNIZED(-1),
       ;
 
       /**
-       * <code>QUEUE_EMPTY = 0;</code>
+       * <code>NO_PENDING_MESSAGES = 0;</code>
        */
-      public static final int QUEUE_EMPTY_VALUE = 0;
+      public static final int NO_PENDING_MESSAGES_VALUE = 0;
 
 
       public final int getNumber() {
@@ -5417,7 +5417,7 @@ public final class Relay {
        */
       public static Type forNumber(int value) {
         switch (value) {
-          case 0: return QUEUE_EMPTY;
+          case 0: return NO_PENDING_MESSAGES;
           default: return null;
         }
       }
@@ -5527,7 +5527,7 @@ public final class Relay {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (type_ != io.opencola.relay.common.protobuf.Relay.ControlMessage.Type.QUEUE_EMPTY.getNumber()) {
+      if (type_ != io.opencola.relay.common.protobuf.Relay.ControlMessage.Type.NO_PENDING_MESSAGES.getNumber()) {
         output.writeEnum(1, type_);
       }
       if (((bitField0_ & 0x00000001) != 0)) {
@@ -5542,7 +5542,7 @@ public final class Relay {
       if (size != -1) return size;
 
       size = 0;
-      if (type_ != io.opencola.relay.common.protobuf.Relay.ControlMessage.Type.QUEUE_EMPTY.getNumber()) {
+      if (type_ != io.opencola.relay.common.protobuf.Relay.ControlMessage.Type.NO_PENDING_MESSAGES.getNumber()) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(1, type_);
       }
@@ -6060,13 +6060,13 @@ public final class Relay {
       "encola.relay.common.protobuf.Header\022\014\n\004b" +
       "ody\030\002 \001(\014\"^\n\010Envelope\0224\n\002to\030\001 \001(\0132(.io.o" +
       "pencola.security.protobuf.PublicKey\022\013\n\003k" +
-      "ey\030\002 \001(\014\022\017\n\007message\030\003 \001(\014\"\221\001\n\016ControlMes" +
+      "ey\030\002 \001(\014\022\017\n\007message\030\003 \001(\014\"\231\001\n\016ControlMes" +
       "sage\022D\n\004type\030\001 \001(\01626.io.opencola.relay.c" +
       "ommon.protobuf.ControlMessage.Type\022\024\n\007pa" +
-      "yload\030\002 \001(\014H\000\210\001\001\"\027\n\004Type\022\017\n\013QUEUE_EMPTY\020" +
-      "\000B\n\n\010_payload*?\n\024AuthenticationStatus\022\021\n" +
-      "\rAUTHENTICATED\020\000\022\024\n\020FAILED_CHALLENGE\020\001b\006" +
-      "proto3"
+      "yload\030\002 \001(\014H\000\210\001\001\"\037\n\004Type\022\027\n\023NO_PENDING_M" +
+      "ESSAGES\020\000B\n\n\010_payload*?\n\024AuthenticationS" +
+      "tatus\022\021\n\rAUTHENTICATED\020\000\022\024\n\020FAILED_CHALL" +
+      "ENGE\020\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

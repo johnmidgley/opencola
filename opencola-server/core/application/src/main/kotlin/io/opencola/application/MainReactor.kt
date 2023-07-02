@@ -62,7 +62,6 @@ class MainReactor(
 ) : Reactor {
     private fun handleNodeStarted(event: Event) {
         logger.info { event.name }
-        updatePeerTransactions()
     }
 
     private fun updatePeerTransactions() {
@@ -158,6 +157,18 @@ class MainReactor(
         updatePeerTransactions()
     }
 
+    private fun handleNoPendingNetworkMessages(event: Event) {
+        val id = Id.decodeProto(event.data)
+        logger.info { "Handling no pending network messages for persona: $id" }
+
+        // The persona has no pending network messages, so it's safe to request transactions from all peers connected
+        // to it without causing redundant requests.
+        addressBook
+            .getEntries().filter { it !is PersonaAddressBookEntry && it.isActive && it.personaId == id }
+            .forEach {requestTransactions(it) }
+    }
+
+
     override fun handleMessage(event: Event) {
         logger.info { "Handling event: $event" }
 
@@ -166,6 +177,7 @@ class MainReactor(
             Events.NodeResume -> handleNodeResume(event)
             Events.NewTransaction -> handleNewTransaction(event)
             Events.PeerNotification -> handlePeerNotification(event)
+            Events.NoPendingNetworkMessages -> handleNoPendingNetworkMessages(event)
         }
     }
 }

@@ -12,6 +12,7 @@ import io.opencola.network.NetworkConfig
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import io.opencola.network.AbstractNetworkProvider
+import io.opencola.network.NoPendingMessagesEvent
 import io.opencola.network.message.SignedMessage
 import io.opencola.security.*
 import io.opencola.storage.addressbook.AddressBook
@@ -44,6 +45,10 @@ class HttpNetworkProvider(
     override fun start(waitUntilReady: Boolean) {
         started = true
         logger.info { "Started" }
+
+        // There are no queued / buffered messages over http, so we can let the network know that all peers
+        // are ready for transaction requests
+        getPersonasForProvider().forEach { persona -> handleEvent(NoPendingMessagesEvent(persona.entityId)) }
     }
 
     override fun stop() {

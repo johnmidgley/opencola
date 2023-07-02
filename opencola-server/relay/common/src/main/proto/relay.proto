@@ -51,7 +51,7 @@ message Envelope {
 
 message ControlMessage {
   enum Type {
-    QUEUE_EMPTY = 0;
+    NO_PENDING_MESSAGES = 0;
   }
 
   Type type = 1;

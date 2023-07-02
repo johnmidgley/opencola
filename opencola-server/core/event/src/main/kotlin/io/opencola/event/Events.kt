@@ -6,4 +6,5 @@ enum class Events {
     NodeResume,
     NewTransaction,
     PeerNotification,
+    NoPendingNetworkMessages,
 }

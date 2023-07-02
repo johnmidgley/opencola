@@ -16,15 +16,30 @@ abstract class AbstractNetworkProvider(
     val signator: Signator,
     val encryptor: Encryptor,
 ) : NetworkProvider {
-    private var handler: ((from: Id, to: Id, signedMessage: SignedMessage) -> Unit)? = null
+    private var eventHandler: EventHandler? = null
+    private var messageHandler: MessageHandler? = null
     var started = false
 
-    override fun setMessageHandler(handler: (Id, Id, SignedMessage) -> Unit) {
-        this.handler = handler
+    fun getPersonasForProvider() : List<PersonaAddressBookEntry> {
+        return addressBook.getEntries()
+            .filterIsInstance<PersonaAddressBookEntry>()
+            .filter { it.address.scheme == getScheme() }
+    }
+
+    override fun setEventHandler(handler: EventHandler) {
+        this.eventHandler = handler
+    }
+
+    fun handleEvent(event: ProviderEvent) {
+        eventHandler?.invoke(event) ?: throw IllegalStateException("No event handler set")
+    }
+
+    override fun setMessageHandler(handler: MessageHandler) {
+        this.messageHandler = handler
     }
 
     // TODO: Remove this and create a new handler for testing
-    fun getRequestHandler() = this.handler
+    fun getRequestHandler() = this.messageHandler
 
     fun getEncodedEnvelope(fromId: Id, toId: Id, signedMessage: SignedMessage, encryptMessage: Boolean): ByteArray {
         addressBook.getEntry(fromId, fromId) ?: throw IllegalArgumentException("FromId $fromId is not a persona")
@@ -42,7 +57,7 @@ abstract class AbstractNetworkProvider(
         )
     }
 
-    fun validateMessageEnvelope(messageEnvelope: MessageEnvelope) {
+    private fun validateMessageEnvelope(messageEnvelope: MessageEnvelope) {
         val signedMessage = messageEnvelope.signedMessage
 
         // TODO: Change all if / throw IllegalArgumentException to require
@@ -60,7 +75,7 @@ abstract class AbstractNetworkProvider(
 
     fun handleMessage(envelopeBytes: ByteArray, useEncryption: Boolean) {
         if (!started) throw IllegalStateException("Provider is not started - can't handleRequest")
-        val handler = this.handler ?: throw IllegalStateException("Call to handleRequest when handler has not been set")
+        val handler = messageHandler ?: throw IllegalStateException("Call to handleRequest when handler has not been set")
         val encryptor = if (useEncryption) this.encryptor else null
         val envelope = MessageEnvelope.decode(envelopeBytes, encryptor).also { validateMessageEnvelope(it) }
         handler(envelope.signedMessage.from, envelope.to, envelope.signedMessage)

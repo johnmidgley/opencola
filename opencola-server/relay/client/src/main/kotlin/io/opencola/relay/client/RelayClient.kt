@@ -4,7 +4,7 @@ import io.opencola.relay.common.message.MessageKey
 import java.security.PublicKey
 
 typealias MessageHandler = suspend (from: PublicKey, message: ByteArray) -> Unit
-typealias EventHandler = suspend (publicKey: PublicKey, event: Event) -> Unit
+typealias EventHandler = suspend (publicKey: PublicKey, event: RelayEvent) -> Unit
 
 interface RelayClient {
     suspend fun open(messageHandler: MessageHandler)

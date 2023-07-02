@@ -6,7 +6,13 @@ import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import java.net.URI
 
+typealias EventHandler = (ProviderEvent) -> Unit
+typealias MessageHandler = (Id, Id, SignedMessage) -> Unit
+
 interface NetworkProvider {
+    fun setEventHandler(handler: EventHandler)
+    fun setMessageHandler(handler: MessageHandler)
+
     fun start(waitUntilReady: Boolean = false)
     fun stop()
 
@@ -18,5 +24,4 @@ interface NetworkProvider {
     fun removePeer(peer: AddressBookEntry)
 
     fun sendMessage(from: PersonaAddressBookEntry, to: AddressBookEntry, signedMessage: SignedMessage)
-    fun setMessageHandler(handler: (Id, Id, SignedMessage) -> Unit)
 }

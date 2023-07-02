@@ -52,6 +52,10 @@ data class Id(private val bytes: ByteArray) : Comparable<Id> {
         return Factory.toProto(this)
     }
 
+    fun encodeProto() : ByteArray {
+        return toProto().toByteArray()
+    }
+
     companion object Factory : ByteArrayCodec<Id>, StreamSerializer<Id>, ProtoSerializable<Id, Proto.Id> {
         val lengthInBytes = sha256("").size
 

@@ -47,7 +47,7 @@ abstract class AbstractRelayServer(
     protected abstract fun decodePayload(payload: ByteArray): Envelope
 
     private fun getQueueEmptyMessage(to: PublicKey): ByteArray {
-        val queueEmptyMessage = ControlMessage(ControlMessageType.QUEUE_EMPTY)
+        val queueEmptyMessage = ControlMessage(ControlMessageType.NO_PENDING_MESSAGES)
         val message = Message(keyPair, queueEmptyMessage.encodeProto())
         val encryptedBytes = encrypt(to, message.encodeProto())
         return encryptedBytes.encodeProto()

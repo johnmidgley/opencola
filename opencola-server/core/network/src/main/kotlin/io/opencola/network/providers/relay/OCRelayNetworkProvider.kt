@@ -3,9 +3,10 @@ package io.opencola.network.providers.relay
 import io.opencola.model.Id
 import io.opencola.network.NetworkConfig
 import io.opencola.network.AbstractNetworkProvider
+import io.opencola.network.NoPendingMessagesEvent
 import io.opencola.network.message.SignedMessage
 import io.opencola.relay.client.AbstractClient
-import io.opencola.relay.client.Event
+import io.opencola.relay.client.RelayEvent
 import io.opencola.security.Encryptor
 import io.opencola.security.Signator
 import io.opencola.storage.addressbook.AddressBook
@@ -58,15 +59,12 @@ class OCRelayNetworkProvider(
 
     private val connections = ConcurrentHashMap<ConnectionParams, ConnectionInfo>()
 
-    private fun handleQueueEmptyEvent(publicKey: PublicKey) {
-        val id = Id.ofPublicKey(publicKey)
-        logger.warn { "Unhandled queue for: $id" }
-    }
-
-    private fun handleEvent(publicKey: PublicKey, event: Event) {
-        when(event) {
-            Event.QUEUE_EMPTY -> handleQueueEmptyEvent(publicKey)
+    private fun handleEvent(publicKey: PublicKey, event: RelayEvent) {
+        val providerEvent = when(event) {
+            RelayEvent.NO_PENDING_MESSAGES -> NoPendingMessagesEvent(Id.ofPublicKey(publicKey))
         }
+
+        handleEvent(providerEvent)
     }
 
     @Synchronized

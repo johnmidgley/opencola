@@ -165,8 +165,8 @@ abstract class AbstractClient(
         val controlMessage = ControlMessage.decodeProto(message.body)
 
         when (controlMessage.type) {
-            ControlMessageType.QUEUE_EMPTY -> {
-                eventHandler?.let { it(publicKey, Event.QUEUE_EMPTY) }
+            ControlMessageType.NO_PENDING_MESSAGES -> {
+                eventHandler?.invoke(publicKey, RelayEvent.NO_PENDING_MESSAGES)
             }
         }
     }

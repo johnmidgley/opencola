@@ -2,8 +2,7 @@ package io.opencola.event
 
 import java.time.Instant
 
-// TODO: Make this a StoredEvent
-// TODO: Make Event a wrapper around a RawEvent(name: String, data: ByteArray).
+// TODO: Rework the events with a consistent Protobuf representation.
 class Event(
     val id: Long,
     val name: String,

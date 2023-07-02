@@ -95,7 +95,17 @@ class NetworkNode(
 
     private val providers = ConcurrentHashMap<String, NetworkProvider>()
 
-    private val messageHandler: (from: Id, to: Id, signedMessage: SignedMessage) -> Unit = { from, to, signedMessage ->
+    private val eventHandler: EventHandler = { event ->
+        when(event.type) {
+            ProviderEventType.NO_PENDING_MESSAGES -> {
+                val noPendingMessagesEvent = event as NoPendingMessagesEvent
+                val personaId = noPendingMessagesEvent.personaId
+                eventBus.sendMessage(Events.NoPendingNetworkMessages.toString(), personaId.encodeProto())
+            }
+        }
+    }
+
+    private val messageHandler: MessageHandler = { from, to, signedMessage ->
         if (addressBook.getEntry(to, from) !is PersonaAddressBookEntry)
             touchLastSeen(from)
 
@@ -136,6 +146,7 @@ class NetworkNode(
 
         // TODO: Check not already started?
 
+        provider.setEventHandler(eventHandler)
         provider.setMessageHandler(messageHandler)
         providers[scheme] = provider
 
