@@ -32,13 +32,9 @@ class NetworkNode(
     private val logger = KotlinLogging.logger("NetworkNode")
     private val peerStatuses = ConcurrentHashMap<Id, PeerStatus>()
 
-    private data class PeerStatus(val lastSeenEpochSeconds: Long? = null, val waitingForTransactions: Boolean = false) {
+    private data class PeerStatus(val lastSeenEpochSeconds: Long? = null) {
         fun setLastSeenEpochSeconds(epochSeconds: Long): PeerStatus {
-            return PeerStatus(epochSeconds, waitingForTransactions)
-        }
-
-        fun setWaitingForTransactions(waitingForTransactions: Boolean): PeerStatus {
-            return PeerStatus(lastSeenEpochSeconds, waitingForTransactions)
+            return PeerStatus(epochSeconds)
         }
 
         companion object {
@@ -129,10 +125,6 @@ class NetworkNode(
                 // Handler provided a response, so send it back
                 sendMessage(to, from, response)
             }
-
-//            if (signedMessage.body.type == PutTransactionsMessage.messageType)
-//                updatePeerStatus(from) { it.setWaitingForTransactions(false) }
-
         } catch (e: Throwable) {
             logger.error { "Error handling ${signedMessage.body.type}: $e" }
         }
@@ -247,17 +239,6 @@ class NetworkNode(
         val provider = to.address.scheme.let { scheme ->
             providers[scheme] ?: throw IllegalStateException("No provider found for scheme: $scheme")
         }
-
-//        if (message is GetTransactionsMessage) {
-//            val peerStatus = peerStatuses[to.entityId]
-//
-//            if (peerStatus?.waitingForTransactions == true) {
-//                logger.info { "Already waiting for transactions from $to - skipping message send" }
-//                return
-//            } else {
-//                updatePeerStatus(to.entityId) { it.setWaitingForTransactions(true) }
-//            }
-//        }
 
         provider.sendMessage(from, to, signMessage(from, message))
     }
