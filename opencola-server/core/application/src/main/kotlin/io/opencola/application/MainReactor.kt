@@ -3,20 +3,21 @@ package io.opencola.application
 import io.opencola.event.Event
 import io.opencola.event.Events
 import io.opencola.event.Reactor
-import io.opencola.model.DataEntity
-import io.opencola.model.Id
-import io.opencola.model.SignedTransaction
+import io.opencola.model.*
 import io.opencola.network.NetworkConfig
 import io.opencola.network.NetworkNode
 import io.opencola.network.Notification
 import io.opencola.network.PeerEvent
+import io.opencola.network.message.GetDataMessage
 import io.opencola.network.message.GetTransactionsMessage
+import io.opencola.network.message.PutDataMessage
 import io.opencola.network.message.PutTransactionMessage
 import io.opencola.search.SearchIndex
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.entitystore.EntityStore
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
+import io.opencola.storage.filestore.ContentBasedFileStore
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
@@ -59,6 +60,7 @@ class MainReactor(
     private val searchIndex: SearchIndex,
     private val networkNode: NetworkNode,
     private val addressBook: AddressBook,
+    private val fileStore: ContentBasedFileStore,
 ) : Reactor {
     private fun handleNodeStarted(event: Event) {
         logger.info { event.name }
@@ -113,6 +115,18 @@ class MainReactor(
         requestTransactions(peer)
     }
 
+    private fun broadcastAttachments(persona: PersonaAddressBookEntry, signedTransaction: SignedTransaction) {
+        // TODO: Optimize by filtering out peers that already have the data id
+        signedTransaction.transaction.transactionEntities
+            .flatMap { e -> e.facts.filter { f -> f.attribute == CoreAttribute.AttachmentIds.spec && f.operation == Operation.Add } }
+            .map { f -> f.value.get() as Id }
+            .forEach { dataId ->
+                fileStore.read(dataId)
+                    ?.let { data -> networkNode.broadcastMessage(persona, PutDataMessage(dataId, data)) }
+                    ?: logger.warn { "Could not find attachment in filestore - unable to send: $dataId" }
+            }
+    }
+
     private fun handleNewTransaction(event: Event) {
         logger.info { "Handling new transaction" }
         val signedTransaction = SignedTransaction.fromProto(ProtoModel.SignedTransaction.parseFrom(event.data))
@@ -122,7 +136,9 @@ class MainReactor(
         val persona = addressBook.getEntry(authorityId, authorityId) as? PersonaAddressBookEntry
 
         if (persona != null) {
-            // Transaction originated locally, so inform peers
+            // Transaction originated locally, so inform peers. Put any attachments first so that they're available
+            // when the transaction is processed
+            broadcastAttachments(persona, signedTransaction)
             networkNode.broadcastMessage(persona, PutTransactionMessage(signedTransaction))
         }
     }
@@ -165,7 +181,30 @@ class MainReactor(
         // to it without causing redundant requests.
         addressBook
             .getEntries().filter { it !is PersonaAddressBookEntry && it.isActive && it.personaId == id }
-            .forEach {requestTransactions(it) }
+            .forEach { requestTransactions(it) }
+    }
+
+    private fun handleDataMissing(event: Event) {
+        val dataId = Id.decodeProto(event.data)
+        val peers = addressBook.getPeers()
+        val peersById = peers.associateBy { it.entityId }
+        val peerIds = peers.map { it.entityId }.toSet()
+
+        val peerDataEntities = entityStore.getEntities(peerIds, setOf(dataId))
+
+        if (peerDataEntities.isEmpty()) {
+            logger.warn { "Unable to find remote DataEntity for: $dataId" }
+        } else {
+            val message = GetDataMessage(dataId)
+            peerDataEntities.forEach { entity ->
+                // NOTE: This requests data from all peers. Inefficient, but better user experience.
+                peersById[entity.authorityId]?.let {
+                    networkNode.sendMessage(it.personaId, entity.authorityId, message)
+                } ?: logger.warn { "Missing peer: ${entity.authorityId}" }
+            }
+        }
+
+        logger.info { "Handled missing data event for: $dataId" }
     }
 
 
@@ -178,6 +217,7 @@ class MainReactor(
             Events.NewTransaction -> handleNewTransaction(event)
             Events.PeerNotification -> handlePeerNotification(event)
             Events.NoPendingNetworkMessages -> handleNoPendingNetworkMessages(event)
+            Events.DataMissing -> handleDataMissing(event)
         }
     }
 }

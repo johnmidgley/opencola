@@ -26,4 +26,8 @@ class MockContentBasedFileStore : ContentBasedFileStore {
     override fun write(inputStream: InputStream): Id {
         return write(inputStream.readBytes())
     }
+
+    override fun delete(dataId: Id) {
+        files.remove(dataId)
+    }
 }

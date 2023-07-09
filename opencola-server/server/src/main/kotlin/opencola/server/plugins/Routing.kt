@@ -275,20 +275,20 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             }
 
             get("/entity/{entityId}") {
-                getEntity(call, expectPersona(call), app.inject(), app.inject())
+                getEntity(call, expectPersona(call), app.inject(), app.inject(), app.inject(), app.inject())
             }
 
             post("/entity/{entityId}") {
                 val entityId =
                     Id.decode(call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified"))
-                saveEntity(app.inject(), app.inject(), getContext(call), expectPersona(call), entityId)?.let {
+                saveEntity(app.inject(), app.inject(), app.inject(), app.inject(), getContext(call), expectPersona(call), entityId)?.let {
                     call.respond(it)
                 } ?: call.respond(HttpStatusCode.Unauthorized)
             }
 
             put("/entity/{entityId}") {
                 val entityPayload = call.receive<EntityPayload>()
-                updateEntity(app.inject(), app.inject(), getContext(call), expectPersona(call), entityPayload)?.let {
+                updateEntity(app.inject(), app.inject(), app.inject(), app.inject(), getContext(call), expectPersona(call), entityPayload)?.let {
                     call.respond(it)
                 } ?: call.respond(HttpStatusCode.Unauthorized)
             }
@@ -297,7 +297,7 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
                 val entityId = call.parameters["entityId"]?.let { Id.decode(it) }
                     ?: throw IllegalArgumentException("No entityId specified")
 
-                deleteEntity(app.inject(), app.inject(), getContext(call), expectPersona(call), entityId)?.let {
+                deleteEntity(app.inject(), app.inject(), app.inject(), app.inject(), getContext(call), expectPersona(call), entityId)?.let {
                     call.respond(it)
                 } ?: call.respond("{}")
             }
@@ -308,6 +308,8 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
                 val comment = call.receive<PostCommentPayload>()
 
                 updateComment(
+                    app.inject(),
+                    app.inject(),
                     app.inject(),
                     app.inject(),
                     getContext(call),
@@ -323,6 +325,7 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
                 val entityId =
                     Id.decode(call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified"))
                 addAttachment(
+                    app.inject(),
                     app.inject(),
                     app.inject(),
                     app.inject(),
@@ -346,6 +349,8 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
                 deleteAttachment(
                     app.inject(),
                     app.inject(),
+                    app.inject(),
+                    app.inject(),
                     getContext(call),
                     expectPersona(call).entityId,
                     entityId,
@@ -357,6 +362,8 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
 
             post("/post") {
                 newPost(
+                    app.inject(),
+                    app.inject(),
                     app.inject(),
                     app.inject(),
                     app.inject(),
@@ -393,7 +400,7 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
                         .filterIsInstance<PersonaAddressBookEntry>()
                         .map { it.personaId }.toSet()
                 val query = call.request.queryParameters["q"]
-                call.respond(handleGetFeed(personaIds, app.inject(), app.inject(), app.inject(), query))
+                call.respond(handleGetFeed(personaIds, app.inject(), app.inject(), app.inject(), app.inject(), app.inject(), query))
             }
 
             get("/peers") {

@@ -56,4 +56,15 @@ class LocalFileStoreTest{
         assert(data.contentEquals(data2))
     }
 
+    @Test
+    fun testDelete(){
+        val testString = "Test file data"
+        val data = testString.toByteArray()
+        val id = localFileStore.write(data)
+
+        assertTrue(localFileStore.exists(id))
+        localFileStore.delete(id)
+        assertFalse(localFileStore.exists(id))
+    }
+
 }

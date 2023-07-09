@@ -13,4 +13,8 @@ interface AddressBook : PublicKeyProvider<Id> {
     fun getEntry(personaId: Id, id: Id) : AddressBookEntry?
     fun getEntries() : List<AddressBookEntry>
     fun deleteEntry(personaId: Id, entityId: Id)
+
+    // Convenience methods
+    fun getPersonas() : List<PersonaAddressBookEntry> = getEntries().filterIsInstance<PersonaAddressBookEntry>()
+    fun getPeers() : List<AddressBookEntry> = getEntries().filter { it !is PersonaAddressBookEntry }
 }

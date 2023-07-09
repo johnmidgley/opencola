@@ -176,7 +176,7 @@ working properly, you can delete entity-store.db and address-book.db.
                 // TODO: Add unit tests for MhtCache
                 // TODO: Get cache name from config
                 bindSingleton { MhtCache(storagePath.resolve("mht-cache"), instance(), instance()) }
-                bindSingleton { MainReactor(config.network, instance(), instance(), instance(), instance()) }
+                bindSingleton { MainReactor(config.network, instance(), instance(), instance(), instance(), instance()) }
                 bindSingleton { ExposedEventBus(storagePath, config.eventBus) }
             }
 

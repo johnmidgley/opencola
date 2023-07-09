@@ -2,6 +2,7 @@ package opencola.server.handlers
 
 import io.opencola.model.*
 import io.opencola.application.TestApplication
+import io.opencola.event.EventBus
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.entitystore.EntityStore
@@ -83,6 +84,7 @@ class EntityTest {
         val persona = TestApplication.instance.getPersonas().first()
         val entityStore = app.inject<EntityStore>()
         val addressBook = app.inject<AddressBook>()
+        val eventBus = app.inject<EventBus>()
 
         // Make a post with a comment
         val post = PostEntity(persona.personaId, "name", "description")
@@ -92,7 +94,7 @@ class EntityTest {
         assertNotNull(entityStore.getEntity(persona.personaId, comment.entityId))
 
         // Delete the post and check that the comment is gone
-        deleteEntity(entityStore, addressBook, Context(""), persona, post.entityId)
+        deleteEntity(entityStore, addressBook, eventBus,app.inject(), Context(""), persona, post.entityId)
         assertNull(entityStore.getEntity(persona.personaId, post.entityId))
         assertNull(entityStore.getEntity(persona.personaId, comment.entityId))
     }

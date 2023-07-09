@@ -1,5 +1,7 @@
 package opencola.server.handlers
 
+import io.opencola.event.EventBus
+import io.opencola.event.Events
 import io.opencola.model.*
 import kotlinx.serialization.Serializable
 import io.opencola.util.nullOrElse
@@ -9,8 +11,12 @@ import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.entitystore.EntityStore
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
+import io.opencola.storage.filestore.ContentBasedFileStore
 import io.opencola.util.Base58
+import mu.KotlinLogging
 import opencola.server.handlers.EntityResult.*
+
+private val logger = KotlinLogging.logger("Feed")
 
 @Serializable
 data class FeedResult(val context: String?, val pagingToken: String?, val results: List<EntityResult>)
@@ -25,9 +31,9 @@ fun getPostedById(entities: List<Entity>): Id {
     }!!.authorityId
 }
 
-fun getSummary(entities: List<Entity>, idToAuthority: (Id) -> AddressBookEntry?): Summary {
+fun getSummary(entities: List<Entity>, authoritiesById: Map<Id, AddressBookEntry>): Summary {
     val entity = entities.maxByOrNull { e -> e.getCurrentFacts().maxOfOrNull { it.transactionOrdinal!! }!! }!!
-    val postedByAuthority = idToAuthority(getPostedById(entities))
+    val postedByAuthority = authoritiesById[getPostedById(entities)]
 
     return Summary(
         entityAttributeAsString(entity, Name.spec),
@@ -39,7 +45,7 @@ fun getSummary(entities: List<Entity>, idToAuthority: (Id) -> AddressBookEntry?)
     )
 }
 
-fun factToAction(comments: Map<Id, CommentEntity>, attachments: Map<Id, DataEntity>, fact: Fact): Action? {
+fun factToAction(children: Children, fact: Fact): Action? {
     return when (fact.attribute) {
         Type.spec -> Action(ActionType.Save, null, null)
         DataIds.spec -> Action(ActionType.Save, fact.unwrapValue(), null)
@@ -49,17 +55,22 @@ fun factToAction(comments: Map<Id, CommentEntity>, attachments: Map<Id, DataEnti
         Tags.spec -> Action(ActionType.Tag, null, fact.unwrapValue())
         CommentIds.spec -> {
             val commentId = fact.unwrapValue<Id>()
-            Action(ActionType.Comment, commentId, comments.getValue(commentId).text)
+            Action(ActionType.Comment, commentId, children.comments.getValue(commentId).text)
         }
+
         AttachmentIds.spec -> {
             val attachmentId = fact.unwrapValue<Id>()
-            Action(ActionType.Attach, attachmentId, attachments.getValue(attachmentId).name)
+            Action(ActionType.Attach, attachmentId, children.attachments.getValue(attachmentId).name)
         }
+
         else -> null
     }
 }
 
-fun factsToActions(comments: Map<Id, CommentEntity>, attachments: Map<Id, DataEntity>, facts: List<Fact>): List<Action> {
+fun factsToActions(
+    children: Children,
+    facts: List<Fact>
+): List<Action> {
     val factsByAttribute = facts.groupBy { it.attribute }
     val dataIdPresent = factsByAttribute[DataIds.spec] != null
 
@@ -69,15 +80,14 @@ fun factsToActions(comments: Map<Id, CommentEntity>, attachments: Map<Id, DataEn
             // When a dataId is present, don't double count the type property
             emptyList()
         } else
-            facts.mapNotNull { factToAction(comments, attachments, it) }
+            facts.mapNotNull { factToAction(children, it) }
     }
 }
 
 fun entityActivities(
     addressBookEntry: AddressBookEntry,
     entity: Entity,
-    comments: Map<Id, CommentEntity>,
-    attachments: Map<Id, DataEntity>
+    children: Children,
 ): List<Activity> {
     if (addressBookEntry.entityId != entity.authorityId) {
         throw IllegalArgumentException("authorityId does not match entity")
@@ -89,28 +99,26 @@ fun entityActivities(
             Activity(
                 addressBookEntry,
                 facts.first().epochSecond!!,
-                factsToActions(comments, attachments, facts)
+                factsToActions(children, facts)
             )
         }
 }
 
 fun activitiesByEntityId(
-    idToAuthority: (Id) -> AddressBookEntry?,
+    authoritiesById: Map<Id, AddressBookEntry>,
     entities: Iterable<Entity>,
-    comments: Map<Id, CommentEntity>,
-    attachments: Map<Id, DataEntity>
+    children: Children,
 ): Map<Id, List<Activity>> {
     return entities
         .groupBy { it.entityId }
         .map { (entityId, entities) ->
             val activities = entities
                 .mapNotNull { entity ->
-                    idToAuthority(entity.authorityId).nullOrElse {
+                    authoritiesById[entity.authorityId].nullOrElse {
                         entityActivities(
                             it,
                             entity,
-                            comments,
-                            attachments
+                            children,
                         )
                     }
                 }
@@ -149,57 +157,92 @@ fun getEntityIds(entityStore: EntityStore, authorityIds: Set<Id>, searchIndex: S
     return entityIds.toSet()
 }
 
-fun <T : Entity> getChildren(
-    entityStore: EntityStore,
-    entities: Iterable<Entity>,
-    childrenSelector: (Entity) -> Iterable<Id>
-): Map<Id, T> {
-    val ids = entities.flatMap { childrenSelector(it) }.toSet()
-
-    if (ids.isEmpty()) {
-        return emptyMap()
-    }
-
-    return entityStore.getEntities(emptySet(), ids)
-        .mapNotNull { it as? T }
-        .associateBy { it.entityId }
+fun getChildIds(entities: Iterable<Entity>, childSelector: (Entity) -> Iterable<Id>): Set<Id> {
+    return entities.flatMap { childSelector(it) }.toSet()
 }
 
-fun getAddressBookMap(addressBook: AddressBook): Map<Id, AddressBookEntry> {
-    return addressBook.getEntries().map {
-        if(it is PersonaAddressBookEntry)
-            AddressBookEntry(it.personaId, it.entityId, "You (${it.name})", it.publicKey, it.address, it.imageUri, it.isActive)
+data class Children(val comments: Map<Id, CommentEntity>, val attachments: Map<Id, DataEntity>)
+
+fun getChildren(
+    authorityIds: Set<Id>,
+    entityStore: EntityStore,
+    entities: Iterable<Entity>,
+): Children {
+    val ids = getChildIds(entities) { it.commentIds.plus(it.attachmentIds).toSet() }
+
+    if (ids.isEmpty()) {
+        return Children(emptyMap(), emptyMap())
+    }
+
+    val children = entityStore.getEntities(authorityIds, ids)
+    val comments = children.filterIsInstance<CommentEntity>().associateBy { it.entityId }
+    // TODO: Attachments are not necessarily unique. Should select best one
+    val attachments = children.filterIsInstance<DataEntity>().associateBy { it.entityId }
+
+    return Children(comments, attachments)
+}
+
+fun getAuthoritiesById(addressBook: AddressBook, personaIds: Set<Id>): Map<Id, AddressBookEntry> {
+    return addressBook.getEntries()
+        .filter { it.personaId in personaIds }
+        .map {
+        if (it is PersonaAddressBookEntry)
+            AddressBookEntry(
+                it.personaId,
+                it.entityId,
+                "You (${it.name})",
+                it.publicKey,
+                it.address,
+                it.imageUri,
+                it.isActive
+            )
         else
             it
     }.associateBy { it.entityId }
 }
 
-fun getPersonaId(addressBook: AddressBook, activities: List<Activity>) : Id {
+fun getPersonaId(addressBook: AddressBook, activities: List<Activity>): Id {
     val authorities = addressBook.getEntries()
     return activities.maxByOrNull { it.epochSecond }?.let { activity ->
         authorities.firstOrNull { it.entityId.toString() == activity.authorityId }?.personaId
     } ?: authorities.first { it is PersonaAddressBookEntry }.personaId
 }
 
+fun requestMissingAttachmentIds(
+    fileStore: ContentBasedFileStore,
+    eventBus: EventBus,
+    entities: Iterable<Entity>,
+) {
+    val allAttachmentIds = getChildIds(entities) { it.attachmentIds.toSet() }
+    val missingAttachmentIds = allAttachmentIds.filter { !fileStore.exists(it)  }
+    for (id in missingAttachmentIds) {
+        logger.info { "Requesting missing attachment $id" }
+        eventBus.sendMessage(Events.DataMissing.toString(), id.encodeProto())
+    }
+}
+
 fun getEntityResults(
     personaIds: Set<Id>,
     entityStore: EntityStore,
     addressBook: AddressBook,
-    entityIds: Set<Id>, // TODO: Could have emptySet() as default here
+    fileStore: ContentBasedFileStore,
+    eventBus: EventBus,
+    entityIds: Set<Id>,
 ): List<EntityResult> {
     if (entityIds.isEmpty()) {
         return emptyList()
     }
 
-    val authorityIds = addressBook.getEntries().filter { it.personaId in personaIds }.map { it.entityId }.toSet()
-    val addressBookMap = getAddressBookMap(addressBook)
-    val idToAuthority: (Id) -> AddressBookEntry? = { id -> addressBookMap[id] }
+    // TODO: Make a feed context that holds the address book, entities, children, etc.
+    val authoritiesById = getAuthoritiesById(addressBook, personaIds)
+    val authorityIds = authoritiesById.values.filter { it.personaId in personaIds }.map { it.entityId }.toSet()
     val entities = entityStore.getEntities(authorityIds, entityIds).filter { isEntityIsVisible(it) }
-    // TODO: Can comments and attachments be rolled into 1 entityStore call?
-    val comments = getChildren<CommentEntity>(entityStore, entities, Entity::commentIds)
-    val attachments = getChildren<DataEntity>(entityStore, entities, Entity::attachmentIds)
+    val children = getChildren(authorityIds, entityStore, entities)
     val entitiesByEntityId = entities.groupBy { it.entityId }
-    val activitiesByEntityId = activitiesByEntityId(idToAuthority, entities, comments, attachments)
+    val activitiesByEntityId = activitiesByEntityId(authoritiesById, entities, children)
+
+    // TODO: Filter out entities with missing attachments?
+    requestMissingAttachmentIds(fileStore, eventBus, entities)
 
     return entityIds
         .filter { entitiesByEntityId.containsKey(it) }
@@ -209,7 +252,7 @@ fun getEntityResults(
             EntityResult(
                 it,
                 getPersonaId(addressBook, activities),
-                getSummary(entitiesForId, idToAuthority),
+                getSummary(entitiesForId, authoritiesById),
                 activities
             )
         }
@@ -218,12 +261,14 @@ fun getEntityResults(
 fun getEntityResult(
     entityStore: EntityStore,
     addressBook: AddressBook,
+    eventBus: EventBus,
+    fileStore: ContentBasedFileStore,
     context: Context,
     personaId: Id,
     entityId: Id
 ): EntityResult? {
     val personaIds = context.getPersonaIds(personaId)
-    return getEntityResults(personaIds, entityStore, addressBook, setOf(entityId)).firstOrNull()
+    return getEntityResults(personaIds, entityStore, addressBook, fileStore, eventBus, setOf(entityId)).firstOrNull()
 }
 
 fun handleGetFeed(
@@ -231,11 +276,14 @@ fun handleGetFeed(
     entityStore: EntityStore,
     searchIndex: SearchIndex,
     addressBook: AddressBook,
+    eventBus: EventBus,
+    fileStore: ContentBasedFileStore,
     query: String?
 ): FeedResult {
+    logger.info { "Getting feed for ${personaIds.joinToString { it.toString() }}" }
     // TODO: This could be tightened up. We're accessing the address book multiple times. Could pass entries around instead
     val authorityIds = addressBook.getEntries().filter { it.personaId in personaIds }.map { it.entityId }.toSet()
     val entityIds = getEntityIds(entityStore, authorityIds, searchIndex, query)
     val context = Base58.encode(personaIds.joinToString { it.toString() }.toByteArray())
-    return FeedResult(context,null, getEntityResults(authorityIds, entityStore, addressBook, entityIds))
+    return FeedResult(context, null, getEntityResults(authorityIds, entityStore, addressBook, fileStore, eventBus, entityIds))
 }

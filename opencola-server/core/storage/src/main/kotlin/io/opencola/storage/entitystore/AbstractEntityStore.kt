@@ -283,13 +283,15 @@ abstract class AbstractEntityStore(
             if (!it.hasValidSignature(publicKey))
                 throw IllegalArgumentException("Transaction ${transaction.id} from $transactionAuthorityId has invalid signature")
 
-            if (transaction.id != getNextTransactionId(transactionAuthorityId))
+            if(getTransaction(transaction.id) != null)
+                logger.warn("Transaction ${transaction.id} already exists - skipping add")
+            else if (transaction.id != getNextTransactionId(transactionAuthorityId))
                 logger.warn("Transaction ${transaction.id} is out of order from $transactionAuthorityId - skipping add")
             else {
                 logger.info { "Adding transaction ${transaction.id} from $transactionAuthorityId" }
                 persistTransaction(it)
                 // TODO: Once switched over to all protobuf, just use SignedTransaction.encode
-                eventBus?.sendMessage(Events.NewTransaction.toString(), SignedTransaction.toProto(it).toByteArray())
+                eventBus?.sendMessage(Events.NewTransaction.toString(), it.encodeProto())
             }
         }
     }

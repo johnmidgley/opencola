@@ -1,14 +1,11 @@
 package opencola.server
 
 import io.opencola.application.TestApplication
-import io.opencola.storage.addressbook.AddressBook
-import io.opencola.storage.entitystore.EntityStore
 import opencola.server.handlers.Context
 import opencola.server.handlers.EntityPayload
 import opencola.server.handlers.newPost
 import opencola.server.handlers.EntityResult
 import org.junit.Test
-import org.kodein.di.instance
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -20,7 +17,7 @@ class PostTest {
     fun testNewPost() {
         val persona = app.getPersonas().first()
         val entityPayload = EntityPayload("", "Name", "https://image.com", "description", true, "tag", "comment")
-        val result = newPost(app.inject(), app.inject(), app.inject(), Context(""), persona, entityPayload)
+        val result = newPost(app.inject(), app.inject(), app.inject(), app.inject(), app.inject(), Context(""), persona, entityPayload)
 
         assertNotNull(result)
 

@@ -4,6 +4,7 @@ import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.opencola.content.*
+import io.opencola.event.EventBus
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import io.opencola.io.HttpClient
@@ -20,11 +21,18 @@ import java.net.URI
 private val logger = KotlinLogging.logger("EntityHandler")
 private val httpClient = HttpClient()
 
-suspend fun getEntity(call: ApplicationCall, persona: PersonaAddressBookEntry, entityStore: EntityStore, addressBook: AddressBook) {
+suspend fun getEntity(
+    call: ApplicationCall,
+    persona: PersonaAddressBookEntry,
+    entityStore: EntityStore,
+    addressBook: AddressBook,
+    eventBus: EventBus,
+    fileStore: ContentBasedFileStore,
+) {
     // TODO: Authority should be passed (and authenticated) in header
     val stringId = call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified")
     val entityId = Id.decode(stringId)
-    val entityResult = getEntityResult(entityStore, addressBook, Context(""), persona.personaId, entityId)
+    val entityResult = getEntityResult(entityStore, addressBook,  eventBus, fileStore, Context(""), persona.personaId, entityId)
 
     if (entityResult != null)
         call.respond(entityResult)
@@ -34,20 +42,22 @@ suspend fun getEntity(call: ApplicationCall, persona: PersonaAddressBookEntry, e
 fun deleteEntity(
     entityStore: EntityStore,
     addressBook: AddressBook,
+    eventBus: EventBus,
+    fileStore: ContentBasedFileStore,
     context: Context,
     persona: PersonaAddressBookEntry,
     entityId: Id,
 ): EntityResult? {
     logger.info { "Deleting $entityId" }
     entityStore.deleteEntities(persona.personaId, entityId)
-    return getEntityResult(entityStore, addressBook, context, persona.personaId, entityId)
+    return getEntityResult(entityStore, addressBook, eventBus, fileStore, context, persona.personaId, entityId)
 }
 
 @Serializable
 data class EntityPayload(
     val entityId: String? = null,
     val name: String? = null,
-    val imageUri: String? =null,
+    val imageUri: String? = null,
     val description: String? = null,
     val like: Boolean? = null,
     val tags: String? = null,
@@ -58,6 +68,8 @@ data class EntityPayload(
 fun updateEntity(
     entityStore: EntityStore,
     addressBook: AddressBook,
+    eventBus: EventBus,
+    fileStore: ContentBasedFileStore,
     context: Context,
     persona: PersonaAddressBookEntry,
     entity: Entity,
@@ -86,12 +98,14 @@ fun updateEntity(
     else
         entityStore.updateEntities(entity, CommentEntity(entity.authorityId, entity.entityId, entityPayload.comment))
 
-    return getEntityResult(entityStore, addressBook, context, persona.entityId, entity.entityId)
+    return getEntityResult(entityStore, addressBook, eventBus, fileStore, context, persona.entityId, entity.entityId)
 }
 
 fun updateEntity(
     entityStore: EntityStore,
     addressBook: AddressBook,
+    eventBus: EventBus,
+    fileStore: ContentBasedFileStore,
     context: Context,
     persona: PersonaAddressBookEntry,
     entityPayload: EntityPayload
@@ -103,7 +117,7 @@ fun updateEntity(
         // TODO: getOrCopy has already copied the entity (if it didn't exist) in a different transaction. Consider
         //  moving the getOrCopyEntity call into the updateEntity call and returning saving + update in a single
         //  transaction
-        updateEntity(entityStore, addressBook, context, persona, entity, entityPayload)
+        updateEntity(entityStore, addressBook, eventBus, fileStore, context, persona, entity, entityPayload)
     }
 }
 
@@ -178,13 +192,15 @@ data class PostCommentPayload(val commentId: String? = null, val text: String)
 fun updateComment(
     entityStore: EntityStore,
     addressBook: AddressBook,
+    eventBus: EventBus,
+    fileStore: ContentBasedFileStore,
     context: Context,
     persona: PersonaAddressBookEntry,
     entityId: Id,
     comment: PostCommentPayload
 ): EntityResult? {
     updateComment(persona, entityStore, entityId, comment.commentId.nullOrElse { Id.decode(it) }, comment.text)
-    return getEntityResult(entityStore, addressBook, context, persona.personaId, entityId)
+    return getEntityResult(entityStore, addressBook, eventBus, fileStore, context, persona.personaId, entityId)
 }
 
 suspend fun deleteComment(call: ApplicationCall, persona: PersonaAddressBookEntry, entityStore: EntityStore) {
@@ -196,6 +212,8 @@ suspend fun deleteComment(call: ApplicationCall, persona: PersonaAddressBookEntr
 fun saveEntity(
     entityStore: EntityStore,
     addressBook: AddressBook,
+    eventBus: EventBus,
+    fileStore: ContentBasedFileStore,
     context: Context,
     persona: PersonaAddressBookEntry,
     entityId: Id
@@ -204,7 +222,7 @@ fun saveEntity(
         ?: throw IllegalArgumentException("Unable to save unknown entity: $entityId")
 
     entityStore.updateEntities(entity)
-    return getEntityResult(entityStore, addressBook, context, persona.entityId, entityId)
+    return getEntityResult(entityStore, addressBook, eventBus, fileStore, context, persona.entityId, entityId)
 }
 
 fun updateEntityFromHtmlContent(resource: Entity, uri: URI, content: ByteArray): Entity {
@@ -228,7 +246,9 @@ fun updateEntityFromPdfContent(resource: Entity, uri: URI, content: ByteArray): 
 fun newResourceFromUri(
     persona: PersonaAddressBookEntry,
     entityStore: EntityStore,
+    eventBus: EventBus,
     addressBook: AddressBook,
+    fileStore: ContentBasedFileStore,
     contentTypeDetector: ContentTypeDetector,
     uri: URI
 ): EntityResult? {
@@ -241,7 +261,7 @@ fun newResourceFromUri(
         // TODO: If parsing fails, could call getOrCopyEntity(persona.personaId, entityStore, Id.ofUri(URI(url)))
         //  (i.e. copy from any existing resource, from any persona/peer
         // TODO: Just grab appropriate parser from contentParserRegistry based on content type
-        when(contentType) {
+        when (contentType) {
             "text/html" -> updateEntityFromHtmlContent(resource, uri, content)
             "application/pdf" -> updateEntityFromPdfContent(resource, uri, content)
             else -> {
@@ -249,12 +269,12 @@ fun newResourceFromUri(
             }
         }
 
-        if(resource.name == null && resource.description == null && resource.imageUri == null)
+        if (resource.name == null && resource.description == null && resource.imageUri == null)
             throw IllegalArgumentException("Unable to parse resource from url: $uri: No title, description or image found")
 
         entityStore.updateEntities(resource)
 
-        return getEntityResult(entityStore, addressBook, Context(""), persona.personaId, resource.entityId)
+        return getEntityResult(entityStore, addressBook, eventBus, fileStore, Context(""), persona.personaId, resource.entityId)
     } catch (e: Exception) {
         logger.error { e }
     }
@@ -265,6 +285,8 @@ fun newResourceFromUri(
 fun newPost(
     entityStore: EntityStore,
     addressBook: AddressBook,
+    eventBus: EventBus,
+    fileStore: ContentBasedFileStore,
     contentTypeDetector: ContentTypeDetector,
     context: Context,
     persona: PersonaAddressBookEntry,
@@ -273,18 +295,20 @@ fun newPost(
     val url = entityPayload.description?.trim()
 
     if (url != null && urlRegex.matchEntire(url) != null) {
-        val result = newResourceFromUri(persona, entityStore, addressBook, contentTypeDetector, URI(url))
+        val result = newResourceFromUri(persona, entityStore, eventBus, addressBook, fileStore, contentTypeDetector, URI(url))
+        // TODO: Handle comment and other fields
         if (result != null)
             return result
     }
 
-    return updateEntity(entityStore, addressBook, context, persona, PostEntity(persona.personaId), entityPayload)
+    return updateEntity(entityStore, addressBook, eventBus, fileStore, context, persona, PostEntity(persona.personaId), entityPayload)
 }
 
 suspend fun addAttachment(
     entityStore: EntityStore,
-    fileStore: ContentBasedFileStore,
     addressBook: AddressBook,
+    eventBus: EventBus,
+    fileStore: ContentBasedFileStore,
     context: Context,
     personaId: Id,
     entityId: Id,
@@ -295,12 +319,14 @@ suspend fun addAttachment(
         entityStore.getEntity(personaId, entityId) ?: throw IllegalArgumentException("Unknown entity: $entityId")
     entity.attachmentIds += dataEntities.map { it.entityId }
     entityStore.updateEntities(entity, *dataEntities.toTypedArray())
-    return getEntityResult(entityStore, addressBook, context, personaId, entityId)
+    return getEntityResult(entityStore, addressBook, eventBus, fileStore, context, personaId, entityId)
 }
 
 fun deleteAttachment(
     entityStore: EntityStore,
     addressBook: AddressBook,
+    eventBus: EventBus,
+    fileStore: ContentBasedFileStore,
     context: Context,
     personaId: Id,
     entityId: Id,
@@ -310,5 +336,5 @@ fun deleteAttachment(
         entityStore.getEntity(personaId, entityId) ?: throw IllegalArgumentException("Unknown entity: $entityId")
     entity.attachmentIds -= attachmentId
     entityStore.updateEntities(entity)
-    return getEntityResult(entityStore, addressBook, context, personaId, entityId)
+    return getEntityResult(entityStore, addressBook, eventBus, fileStore, context, personaId, entityId)
 }

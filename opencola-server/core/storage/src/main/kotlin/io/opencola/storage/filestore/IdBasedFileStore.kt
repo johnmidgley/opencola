@@ -22,4 +22,6 @@ interface IdBasedFileStore {
             it.write(bytes)
         }
     }
+
+    fun delete(id: Id)
 }

@@ -88,12 +88,12 @@ fun putDataRoute(entityStore: EntityStore, fileStore: ContentBasedFileStore): Ro
     return Route(MessageType.PUT_DATA) { from, to, message ->
         val putDataMessage = PutDataMessage.decodeProto(message.body.payload)
         val dataId = putDataMessage.id
-        logger.info { "putData: from=$from, to=$to, dataId=$dataId" }
 
         entityStore.getEntity(from, dataId) as? DataEntity
             ?: throw IllegalArgumentException("PutData request from $from to $to for unknown data id: $dataId")
         val id = fileStore.write(putDataMessage.data)
         require(id == putDataMessage.id)
+        logger.info { "putData: Wrote dataId=$dataId from=$from, to=$to" }
         emptyList()
     }
 }

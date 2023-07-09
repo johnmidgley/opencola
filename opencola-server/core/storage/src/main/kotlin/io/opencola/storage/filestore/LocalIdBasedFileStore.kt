@@ -33,4 +33,8 @@ class LocalIdBasedFileStore(val root: Path) : IdBasedFileStore {
     override fun getOutputStream(id: Id): OutputStream {
         return getPath(id, true).outputStream()
     }
+
+    override fun delete(id: Id) {
+        getPath(id).deleteIfExists()
+    }
 }

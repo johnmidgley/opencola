@@ -75,4 +75,8 @@ class LocalContentBasedFileStore(private val root: Path) : ContentBasedFileStore
         val bytes = inputStream.readAllBytes()
         return write(bytes)
     }
+
+    override fun delete(dataId: Id) {
+        getPath(dataId).deleteIfExists()
+    }
 }

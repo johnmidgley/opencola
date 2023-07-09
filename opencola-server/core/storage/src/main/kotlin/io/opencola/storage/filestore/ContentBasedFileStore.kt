@@ -14,5 +14,6 @@ interface ContentBasedFileStore {
     fun write(bytes: ByteArray) : Id
     fun write(inputStream: InputStream) : Id
 
+    fun delete(dataId: Id)
     // TODO: getMerkleTree and getPart(s)
 }

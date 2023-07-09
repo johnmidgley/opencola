@@ -7,4 +7,5 @@ enum class Events {
     NewTransaction,
     PeerNotification,
     NoPendingNetworkMessages,
+    DataMissing,
 }
