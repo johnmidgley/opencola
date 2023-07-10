@@ -44,6 +44,9 @@ fun getTransactionsRoute(entityStore: EntityStore): Route {
         // Generate sequence of PutTransactionMessage messages as response
         signedTransactions.map {
             --pendingTransactions
+            // TODO: This doesn't send attachments. Generally, since data is pushed, it's not a big deal, but
+            //  when connecting to a new peer, any attachments will be fault filled by feed requests. Think about
+            //  PUT ing attachment data in this loop.
             PutTransactionMessage(
                 it,
                 if (pendingTransactions == 0 && it.transaction.id != lastTransactionId) lastTransactionId else null
