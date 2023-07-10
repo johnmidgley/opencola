@@ -1,10 +1,11 @@
 package opencola.server.handlers
 
 import io.opencola.model.Id
+import io.opencola.util.Base58
 
-class Context(private val personaIds: Set<Id>) {
+class Context(val personaIds: Set<Id>) {
     constructor(context: String?) : this (
-        context
+         context?.let { String(Base58.decode(it)) }
             ?.split(",")
             ?.filter{ it.isNotBlank() }
             ?.map { Id.decode(it) }
@@ -14,7 +15,7 @@ class Context(private val personaIds: Set<Id>) {
 
     constructor(vararg personaIds: Id) : this(personaIds.toSet())
 
-    fun getPersonaIds(vararg defaultPersonaIds: Id): Set<Id> {
-        return personaIds.ifEmpty { defaultPersonaIds.toSet() }
+    override fun toString(): String {
+        return personaIds.joinToString(",").toByteArray().let { Base58.encode(it) }
     }
 }
