@@ -76,10 +76,11 @@
    #(on-success (model-to-view-item %))
    #(on-error (error-result->str %))))
 
-(defn add-attachments [context persona-id entity-id file-list on-success on-error]
+(defn add-attachments [context persona-id entity-id file-list on-progress on-success on-error]
   (ajax/upload-files
    (str "entity/" entity-id "/attachment?context=" context "&personaId=" persona-id)
    file-list
+   #(on-progress %)
    #(on-success (model-to-view-item %))
    #(on-error (error-result->str %))))
 
@@ -92,9 +93,10 @@
 (defn upload-result-to-attachments [upload-result]
   (map (fn [{:keys [id name]}] {:id id :value name}) (:items upload-result)))
 
-(defn upload-files [persona-id file-list on-success on-error]
+(defn upload-files [persona-id file-list on-progress on-success on-error]
   (ajax/upload-files
    (str "upload?personaId=" persona-id) 
    file-list
+   #(on-progress %)
    #(on-success %)
    #(on-error (error-result->str %))))

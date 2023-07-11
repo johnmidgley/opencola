@@ -2,6 +2,7 @@
   (:require [cljs.reader :as reader]
             [clojure.string :as string]
             [lambdaisland.uri :refer [uri]]
+            [opencola.web-ui.util :refer [distinct-by]]
             [opencola.web-ui.common :refer [toggle-atom]]
             [opencola.web-ui.location :as location]
             [opencola.web-ui.model.error :as error]
@@ -11,7 +12,7 @@
                                                       item-attachments]]
             [opencola.web-ui.view.comments :refer [comment-control
                                                    item-comments]]
-            [opencola.web-ui.view.common :refer [action-img hidden-file-input
+            [opencola.web-ui.view.common :refer [action-img hidden-file-input progress-bar upload-progress
                                                  image-divider inline-divider
                                                  md->component select-files-control simple-mde text-area text-input]]
             [opencola.web-ui.view.likes :refer [item-likes like-edit-control]]
@@ -141,6 +142,8 @@
   (let [action-expanded? (apply hash-map (mapcat #(vector % (atom false)) [:save :like :tag :comment :attach]))
         tagging? (atom false)
         commenting? (atom false)
+        uploading?! (atom false)
+        progress! (atom 0)
         context (:context @feed!)
         update-feed-item #(update-feed-item feed! %)
         error! (atom nil)
@@ -159,10 +162,17 @@
          inline-divider
          [action-summary persona-id! :comment action-expanded? activities #(swap! commenting? not)]
          inline-divider
-         [attachment-summary persona-id! action-expanded? activities #(model/add-attachments context @persona-id! entity-id % update-feed-item on-error)]
+         [attachment-summary 
+          persona-id! 
+          action-expanded? 
+          activities 
+          #(model/add-attachments context @persona-id! entity-id
+                                  % (fn [p] (reset! uploading?! true) (reset! progress! p)) 
+                                  (fn [i] (update-feed-item i) (reset! uploading?! false)) on-error)]
          inline-divider
          [edit-control editing?!]
          [:div.activity-block
+          [upload-progress uploading?! progress!]
           [tags-control persona-id! feed! item tagging?]
           [comment-control context persona-id! (get-item @feed! entity-id) nil "" commenting? update-feed-item]
           [item-saves (:save action-expanded?) (:save activities)]
@@ -254,13 +264,15 @@
    [:div
     [text-area comment on-change]]])
 
-(defn attach-files [edit-item! persona-id! attaching?! fs]
+(defn attach-files [edit-item! persona-id! uploading?! fs on-progress]
+  (reset! uploading?! true)
   (upload-files
    @persona-id!
    fs
+   on-progress
    (fn [r]
-     (swap! edit-item! update-in [:attachments] (fn [as] (distinct (concat as (upload-result-to-attachments r)))))
-     (reset! attaching?! false))
+     (swap! edit-item! update-in [:attachments] (fn [as] (distinct-by :id (concat as (upload-result-to-attachments r)))))
+     (reset! uploading?! false))
    #(error/set-error @edit-item! %)))
 
 ;; TODO: Put error in separate variable - then create and manage edit-iten only in here
@@ -269,7 +281,8 @@
         expanded?! (atom false)
         tagging?! (atom false)
         commenting?! (atom false)
-        attaching?! (atom false)
+        uploading?! (atom false)
+        progress! (atom 0)
         on-change (partial on-change edit-item!)]
     (fn [] 
       (let [name-expanded? (or @expanded?! (seq (:name @edit-item!)))
@@ -283,19 +296,20 @@
            [image-uri-edit-control edit-item!])
          (when (or name-expanded? image-url-expanded?)
            [:div.field-header "Description:"])
-         [description-edit-control edit-item! description-state!] 
+         [description-edit-control edit-item! description-state!]
          [attachments-preview (:attachments @edit-item!) true]
          [item-tags-summary-from-string (:tags @edit-item!)]
          [error/error-control @edit-item!]
          [:div.activities-summary
           (when personas!
-             [:span [persona-select personas! persona-id!] inline-divider]) 
+            [:span [persona-select personas! persona-id!] inline-divider])
           [:span {:on-click #(swap! expanded?! not)} [action-img "expand"]] inline-divider
           [like-edit-control edit-item!] inline-divider
           [:span {:on-click #(swap! tagging?! not)} [action-img "tag"]] inline-divider
           [:span {:on-click #(swap! commenting?! not)} [action-img "comment"]] inline-divider
-          [select-files-control (action-img "attach") #(attach-files edit-item! persona-id! attaching?! %)]] 
-         [:div 
+          [select-files-control (action-img "attach") #(attach-files edit-item! persona-id! uploading?! % (fn [p] (reset! progress! p)))]]
+         [:div.activity-block
+          [upload-progress uploading?! progress!]
           (when @tagging?!
             [tags-edit-control (:tags @edit-item!) (on-change :tags)])
           (when @commenting?!

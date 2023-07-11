@@ -104,6 +104,14 @@
                      (reset! edit-text! val)
                      (on-change val)))}]))
 
+(defn progress-bar [visible?! progress!]
+  [:progress {:class "attach-progress" :hidden (not @visible?!) :value @progress! :max 100}])
 
+(defn upload-progress [visible?! progress!]
+  (when @visible?!
+  [:span
+   "Uploading: "
+   [progress-bar visible?! progress!]
+   (when (= @progress! 100) " processing...")]))
 
 

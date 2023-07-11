@@ -44,13 +44,18 @@
         :handler success-handler
         :error-handler error-handler}))
 
-(defn upload-files [path file-list success-handler error-handler]
+
+(defn progress-event-to-percentage [e]
+  (int (/ (* 100 (.-loaded e)) (.-total e))))
+
+(defn upload-files [path file-list progress-handler success-handler error-handler]
   (let [form-data (js/FormData.)]
     (doseq [file (array-seq file-list)]
       (.append form-data "file" file))
     (ajax/POST (resolve-service-url path)
-               {:body form-data
-                :keywords? true
-                :response-format :json
-                :handler success-handler
-                :error-handler error-handler})))
+      {:body form-data
+       :keywords? true
+       :response-format :json
+       :progress-handler #(progress-handler (progress-event-to-percentage %))
+       :handler success-handler
+       :error-handler error-handler})))
