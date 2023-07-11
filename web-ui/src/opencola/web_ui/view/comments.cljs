@@ -4,7 +4,11 @@
    [opencola.web-ui.model.error :as error]
    [opencola.web-ui.model.feed :as model]
    [opencola.web-ui.time :refer [format-time]]
-   [opencola.web-ui.view.common :refer [action-img md->component]]))
+   [opencola.web-ui.view.common :refer [action-img md->component simple-mde]]))
+
+(defn comment-edit-control [id text state!] 
+  [:div.comment-edit-control
+   [simple-mde (str id "-cmt") "Enter your comment...." text state!]])
 
 (defn remove-comment [item comment-id]
   (update-in item
@@ -14,18 +18,16 @@
 
 (defn comment-control [context persona-id! item comment-id text expanded?! on-update]
   (let [entity-id (:entityId item)
-        text! (atom text)
+        state! (atom text)
         error! (atom {})
         on-error #(error/set-error! error! %)]
     (fn []
       (when @expanded?!
         [:div.item-comment
-         [:div.item-comment-edit
-          [:textarea.comment-text-edit {:type "text"
-                                        :value @text!
-                                        :on-change #(reset! text! (-> % .-target .-value))}]
+         [:div.item-comment-edit 
+          [comment-edit-control (:entity-id item) text state!]
           [error/error-control @error!]
-          [:button {:on-click #(model/update-comment context @persona-id! entity-id comment-id @text! on-update on-error)}
+          [:button {:on-click #(model/update-comment context @persona-id! entity-id comment-id (.value @state!) on-update on-error)}
            "Save"] " "
           [:button {:on-click #(reset! expanded?! false)} "Cancel"]
           (when comment-id

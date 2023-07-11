@@ -31,7 +31,7 @@
     :on-change #(swap! item! assoc-in [key] (-> % .-target .-checked))}])
 
 ;; https://github.com/reagent-project/reagent/blob/master/doc/CreatingReagentComponents.md
-(defn simple-mde [id text state!] 
+(defn simple-mde [id placeholder text state!] 
   (fn [] 
     (reagent/create-class           
      {:display-name  "my-component"
@@ -46,7 +46,7 @@
                         (clj->js 
                          {:element (js/document.getElementById id)
                           :forceSync true
-                          :placeholder "Type your post here (or paste a url)..."
+                          :placeholder placeholder
                           :autofocus true
                           :spellChecker false
                           :status false

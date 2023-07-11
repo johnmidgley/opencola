@@ -11,6 +11,7 @@
             [opencola.web-ui.view.attachments :refer [attachments-preview
                                                       item-attachments]]
             [opencola.web-ui.view.comments :refer [comment-control
+                                                   comment-edit-control
                                                    item-comments]]
             [opencola.web-ui.view.common :refer [action-img hidden-file-input progress-bar upload-progress
                                                  image-divider inline-divider
@@ -93,9 +94,9 @@
 
 (defn attachment-summary [persona-id! action-expanded? activities on-change]
   (let [input-id (str (random-uuid))]
-  [:span
-   [hidden-file-input input-id on-change]
-   [action-summary persona-id! :attach action-expanded? activities #(.click (js/document.getElementById input-id))]]))
+    [:span
+     [hidden-file-input input-id on-change]
+     [action-summary persona-id! :attach action-expanded? activities #(.click (js/document.getElementById input-id))]]))
 
 (defn update-display-entity [persona-id feed! edit-item item]
   (model/update-entity
@@ -162,12 +163,12 @@
          inline-divider
          [action-summary persona-id! :comment action-expanded? activities #(swap! commenting? not)]
          inline-divider
-         [attachment-summary 
-          persona-id! 
-          action-expanded? 
-          activities 
+         [attachment-summary
+          persona-id!
+          action-expanded?
+          activities
           #(model/add-attachments context @persona-id! entity-id
-                                  % (fn [p] (reset! uploading?! true) (reset! progress! p)) 
+                                  % (fn [p] (reset! uploading?! true) (reset! progress! p))
                                   (fn [i] (update-feed-item i) (reset! uploading?! false)) on-error)]
          inline-divider
          [edit-control editing?!]
@@ -208,7 +209,7 @@
         img [:img.item-img {:src image-uri}]]
     (when image-uri
       [:div.item-img-box
-       (if (empty? item-uri) 
+       (if (empty? item-uri)
          img
          [:a {:href item-uri :target "_blank"} img])])))
 
@@ -229,7 +230,7 @@
 (defn on-change [item! key]
   #(swap! item! assoc-in [key] %))
 
-(defn name-edit-control [name on-change] 
+(defn name-edit-control [name on-change]
   [:div.item-name
    [:div.field-header "Title:"]
    [text-input name on-change]])
@@ -254,15 +255,8 @@
 
 (defn description-edit-control [edit-item! state!]
   [:div.description-edit-control
-   #_[:div.field-header "Description:"]
    [:div.item-desc
-    [simple-mde (str (:entityId @edit-item!) "-desc") (:description @edit-item!) state!]]])
-
-(defn comment-edit-control [comment on-change]
-  [:div.comment-edit-control
-   [:div.field-header "Comment:"]
-   [:div
-    [text-area comment on-change]]])
+    [simple-mde (str (:entityId @edit-item!) "-desc") "Type your post here (or paste a url) ..." (:description @edit-item!) state!]]])
 
 (defn attach-files [edit-item! persona-id! uploading?! fs on-progress]
   (reset! uploading?! true)
@@ -278,16 +272,17 @@
 ;; TODO: Put error in separate variable - then create and manage edit-iten only in here
 (defn edit-item-control [personas! persona-id! item edit-item! on-save on-cancel on-delete]
   (let [description-state! (atom nil)
+        comment-state! (atom nil)
         expanded?! (atom false)
         tagging?! (atom false)
         commenting?! (atom false)
         uploading?! (atom false)
         progress! (atom 0)
         on-change (partial on-change edit-item!)]
-    (fn [] 
+    (fn []
       (let [name-expanded? (or @expanded?! (seq (:name @edit-item!)))
-            image-url-expanded? (or @expanded?! (seq (:imageUri @edit-item!))) 
-            deletable? (some #(= @persona-id! (:authorityId %)) (-> item :activities :save))] 
+            image-url-expanded? (or @expanded?! (seq (:imageUri @edit-item!)))
+            deletable? (some #(= @persona-id! (:authorityId %)) (-> item :activities :save))]
         [:div.feed-item
          [:div.error (:error @edit-item!)]
          (when name-expanded?
@@ -313,9 +308,12 @@
           (when @tagging?!
             [tags-edit-control (:tags @edit-item!) (on-change :tags)])
           (when @commenting?!
-            [comment-edit-control (:comment @edit-item!) (on-change :comment)])]
+            [:div.item-comment-edit
+             [comment-edit-control (:entity-id @edit-item!) nil comment-state!]])]
          [:div.edit-control-buttons
           [:button {:on-click (fn []
+                                ; nil check on comment-state! needed, since it may not be opened
+                                (when @comment-state! (swap! edit-item! assoc-in [:comment] (.value @comment-state!)))
                                 (swap! edit-item! assoc-in [:description] (.value @description-state!))
                                 (on-save @persona-id!))} "Save"] " "
           [:button {:on-click on-cancel} "Cancel"] " "

@@ -89,12 +89,16 @@ body {
     padding-top: 10px;
 }
 
+.item-comments {
+    padding-top: 10px;
+}
+
 .item-comment {
     padding-top: 10px;
 }
 
 .item-comment-edit {
-   background-color: #EAEBE0;
+   background-color: #f3f3e9;
    padding: 10px;
    padding-left: 8px;
    padding-right: 14px;
@@ -102,7 +106,7 @@ body {
 }
 
 .item-comment-text {
-   background-color: #EAEBE0;
+   background-color: #f3f3e9;
    padding: 1px;
    padding-left: 7px;
    padding-right: 7px;
@@ -327,5 +331,9 @@ input.input-text {
 
 .attachments-preview {
     margin-top: 10px;
+}
+
+.comment-edit-control {
+    margin-bottom: 10px;
 }
 
