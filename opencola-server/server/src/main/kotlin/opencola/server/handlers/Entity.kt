@@ -139,6 +139,7 @@ fun getOrCopyEntity(authorityId: Id, entityStore: EntityStore, entityId: Id): En
                 existingEntity.text,
                 existingEntity.imageUri
             )
+
         }
 
         is PostEntity -> {
@@ -152,8 +153,22 @@ fun getOrCopyEntity(authorityId: Id, entityStore: EntityStore, entityId: Id): En
             )
         }
 
+        is DataEntity -> {
+            DataEntity(
+                authorityId,
+                existingEntity.entityId,
+                existingEntity.mimeType!!,
+                existingEntity.name,
+                existingEntity.description,
+                existingEntity.text,
+                existingEntity.imageUri
+            )
+        }
+
         else -> throw IllegalArgumentException("Don't know how to add ${existingEntity.javaClass.simpleName}")
     }
+
+    newEntity.attachmentIds = existingEntity.attachmentIds
 
     // TODO: Remove any calls to update entity after calling this (getOrCopyEntity)
     entityStore.updateEntities(newEntity)
@@ -221,7 +236,12 @@ fun saveEntity(
     val entity = getOrCopyEntity(persona.personaId, entityStore, entityId)
         ?: throw IllegalArgumentException("Unable to save unknown entity: $entityId")
 
-    entityStore.updateEntities(entity)
+    // TODO: Should DB enforce that data id exists? Seems valid to point to data that isn't available locally, but think on it
+    val attachmentEntities = entity.attachmentIds.map {
+        getOrCopyEntity(persona.personaId, entityStore, it) ?: throw IllegalArgumentException("Unable to save unknown attachment: $it")
+    }
+
+    entityStore.updateEntities(entity, *attachmentEntities.toTypedArray())
     return getEntityResult(entityStore, addressBook, eventBus, fileStore, context, persona.entityId, entityId)
 }
 

@@ -46,7 +46,8 @@ fun Application.configureBootstrapRouting(
     authEncryptionParams: EncryptionParams,
     loginCredentials: CompletableDeferred<LoginCredentials>,
 ) {
-    val migratingData = storagePath.resolve("address-book.db").exists() && !storagePath.resolve("address-book").isDirectory()
+    val migratingData =
+        storagePath.resolve("address-book.db").exists() && !storagePath.resolve("address-book").isDirectory()
 
     routing {
         get("/") {
@@ -281,14 +282,30 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             post("/entity/{entityId}") {
                 val entityId =
                     Id.decode(call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified"))
-                saveEntity(app.inject(), app.inject(), app.inject(), app.inject(), getContext(call), expectPersona(call), entityId)?.let {
+                saveEntity(
+                    app.inject(),
+                    app.inject(),
+                    app.inject(),
+                    app.inject(),
+                    getContext(call),
+                    expectPersona(call),
+                    entityId
+                )?.let {
                     call.respond(it)
                 } ?: call.respond(HttpStatusCode.Unauthorized)
             }
 
             put("/entity/{entityId}") {
                 val entityPayload = call.receive<EntityPayload>()
-                updateEntity(app.inject(), app.inject(), app.inject(), app.inject(), getContext(call), expectPersona(call), entityPayload)?.let {
+                updateEntity(
+                    app.inject(),
+                    app.inject(),
+                    app.inject(),
+                    app.inject(),
+                    getContext(call),
+                    expectPersona(call),
+                    entityPayload
+                )?.let {
                     call.respond(it)
                 } ?: call.respond(HttpStatusCode.Unauthorized)
             }
@@ -297,7 +314,15 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
                 val entityId = call.parameters["entityId"]?.let { Id.decode(it) }
                     ?: throw IllegalArgumentException("No entityId specified")
 
-                deleteEntity(app.inject(), app.inject(), app.inject(), app.inject(), getContext(call), expectPersona(call), entityId)?.let {
+                deleteEntity(
+                    app.inject(),
+                    app.inject(),
+                    app.inject(),
+                    app.inject(),
+                    getContext(call),
+                    expectPersona(call),
+                    entityId
+                )?.let {
                     call.respond(it)
                 } ?: call.respond("{}")
             }
@@ -400,7 +425,17 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
                         .filterIsInstance<PersonaAddressBookEntry>()
                         .map { it.personaId }.toSet()
                 val query = call.request.queryParameters["q"]
-                call.respond(handleGetFeed(personaIds, app.inject(), app.inject(), app.inject(), app.inject(), app.inject(), query))
+                call.respond(
+                    handleGetFeed(
+                        personaIds,
+                        app.inject(),
+                        app.inject(),
+                        app.inject(),
+                        app.inject(),
+                        app.inject(),
+                        query
+                    )
+                )
             }
 
             get("/peers") {

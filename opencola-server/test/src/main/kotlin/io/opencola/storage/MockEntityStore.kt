@@ -49,7 +49,8 @@ class MockEntityStore(
 
     override fun getFacts(authorityIds: Set<Id>, entityIds: Set<Id>): List<Fact> {
         return facts.filter {
-            authorityIds.contains(it.authorityId) && entityIds.contains(it.entityId)
+            (authorityIds.isEmpty() || authorityIds.contains(it.authorityId)) &&
+                    (entityIds.isEmpty() || entityIds.contains(it.entityId))
         }
     }
 

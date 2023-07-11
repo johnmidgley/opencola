@@ -1,11 +1,18 @@
 package opencola.server
 
+import io.opencola.event.MockEventBus
 import io.opencola.io.StdoutMonitor
 import io.opencola.model.DataEntity
 import io.opencola.model.ResourceEntity
+import io.opencola.storage.EntityStoreContext
+import io.opencola.storage.MockContentBasedFileStore
+import io.opencola.storage.addPersona
 import io.opencola.storage.entitystore.EntityStore
 import io.opencola.storage.filestore.ContentBasedFileStore
+import opencola.server.handlers.Context
+import opencola.server.handlers.deleteAttachment
 import opencola.server.handlers.handleGetFeed
+import opencola.server.handlers.saveEntity
 import org.junit.Test
 import java.net.URI
 import kotlin.test.assertContentEquals
@@ -15,7 +22,7 @@ import kotlin.test.assertNull
 
 class AttachmentsTest {
     @Test
-    fun testAttachment(){
+    fun testAttachment() {
         val applications = getApplications(2)
         val (application0, application1) = applications
         val (server0, server1) = applications.map { getServer(it, AuthToken.encryptionParams) }
@@ -109,9 +116,102 @@ class AttachmentsTest {
             assertNotNull(fileStore1.read(dataEntity0.entityId))
 
         } finally {
-            applications.forEach{ it.close() }
+            applications.forEach { it.close() }
             server0.stop(1000, 1000)
             server1.stop(1000, 1000)
         }
+    }
+
+    @Test
+    fun testDeleteAttachment() {
+        val entityStoreContext = EntityStoreContext()
+        val persona0 = entityStoreContext.addressBook.addPersona("Test Persona")
+        val eventBus = MockEventBus()
+        val fileStore = MockContentBasedFileStore()
+
+        val data0 = "data0".toByteArray()
+        val dataEntity0 = DataEntity(persona0.entityId, fileStore.write(data0), "text/plain", "dataEntity0")
+
+        val resource0 = ResourceEntity(
+            persona0.entityId,
+            URI("http://www.opencola.io"),
+        )
+
+        resource0.attachmentIds = listOf(dataEntity0.entityId)
+        entityStoreContext.entityStore.updateEntities(resource0, dataEntity0)
+
+        val resource1 = entityStoreContext.entityStore.getEntity(persona0.personaId, resource0.entityId) as ResourceEntity
+        assertEquals(1, resource1.attachmentIds.size)
+
+        deleteAttachment(
+            entityStoreContext.entityStore,
+            entityStoreContext.addressBook,
+            eventBus,
+            fileStore,
+            Context(persona0.entityId),
+            persona0.personaId,
+            resource0.entityId,
+            dataEntity0.entityId
+        )
+
+        val resource2 = entityStoreContext.entityStore.getEntity(persona0.personaId, resource0.entityId) as ResourceEntity
+        assertEquals(0, resource2.attachmentIds.size)
+    }
+
+    @Test
+    fun testSaveEntityWithAttachments() {
+        val entityStoreContext = EntityStoreContext()
+        val persona0 = entityStoreContext.addressBook.addPersona("Test Persona")
+        val persona1 = entityStoreContext.addressBook.addPersona("Test Persona")
+        val eventBus = MockEventBus()
+        val fileStore = MockContentBasedFileStore()
+
+        val data0 = "data0".toByteArray()
+        val dataEntity0 = DataEntity(persona0.entityId, fileStore.write(data0), "text/plain", "dataEntity0")
+        val data1 = "data1".toByteArray()
+        val dataEntity1 = DataEntity(persona0.entityId, fileStore.write(data1), "text/plain", "dataEntity1")
+
+        val resource0 = ResourceEntity(
+            persona0.entityId,
+            URI("http://www.opencola.io"),
+        )
+        resource0.attachmentIds = listOf(dataEntity0.entityId, dataEntity1.entityId)
+        entityStoreContext.entityStore.updateEntities(resource0, dataEntity0, dataEntity1)
+
+        assertNull(entityStoreContext.entityStore.getEntity(persona1.entityId, resource0.entityId))
+        assertNull(entityStoreContext.entityStore.getEntity(persona1.entityId, dataEntity0.entityId))
+        assertNull(entityStoreContext.entityStore.getEntity(persona1.entityId, dataEntity1.entityId))
+
+        saveEntity(
+            entityStoreContext.entityStore,
+            entityStoreContext.addressBook,
+            eventBus,
+            fileStore,
+            Context(persona1.entityId),
+            persona1,
+            resource0.entityId
+        )
+
+        val resource0Persona1 = entityStoreContext.entityStore.getEntity(persona1.entityId, resource0.entityId)
+        assertNotNull(resource0Persona1)
+        assertEquals(persona1.entityId, resource0Persona1.authorityId)
+        assertEquals(resource0.entityId, resource0Persona1.entityId)
+        assertContentEquals(resource0Persona1.attachmentIds, listOf(dataEntity0.entityId, dataEntity1.entityId))
+
+        val dataEntity0Persona1 =
+            entityStoreContext.entityStore.getEntity(persona1.entityId, dataEntity0.entityId) as DataEntity
+        assertNotNull(dataEntity0Persona1)
+        assertEquals(persona1.entityId, dataEntity0Persona1.authorityId)
+        assertEquals(dataEntity0.entityId, dataEntity0Persona1.entityId)
+        assertEquals(dataEntity0.mimeType, dataEntity0Persona1.mimeType)
+        assertEquals(dataEntity0.name, dataEntity0Persona1.name)
+
+        val dataEntity1Persona1 =
+            entityStoreContext.entityStore.getEntity(persona1.entityId, dataEntity1.entityId) as DataEntity
+        assertNotNull(dataEntity1Persona1)
+        assertEquals(persona1.entityId, dataEntity1Persona1.authorityId)
+        assertEquals(dataEntity1.entityId, dataEntity1Persona1.entityId)
+        assertEquals(dataEntity1.mimeType, dataEntity1Persona1.mimeType)
+        assertEquals(dataEntity1.name, dataEntity1Persona1.name)
     }
 }
