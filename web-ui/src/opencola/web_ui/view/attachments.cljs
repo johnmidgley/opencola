@@ -1,7 +1,7 @@
 (ns opencola.web-ui.view.attachments
   (:require [opencola.web-ui.ajax :as ajax]
             [opencola.web-ui.time :refer [format-time]]
-            [opencola.web-ui.view.common :refer [action-img image?
+            [opencola.web-ui.view.common :refer [action-img img image?
                                                  keyed-divider]]))
 
 (defn item-attachment [action on-delete]
@@ -36,7 +36,7 @@
 
 (defn attachment-preview [attachment]
   (let [{:keys [id value]} attachment] 
-    [:span [:a.attachment-link {:href (ajax/resolve-service-url (str "data/" id)) :target "blank"} value]]))
+    [:span.attachment-preview [:a.attachment-link {:href (ajax/resolve-service-url (str "data/" id)) :target "blank"} value]]))
 
 (defn attachments-preview [attachments show-other?]
   ;; Partition attachments into images and other
@@ -48,5 +48,5 @@
              ^{:key attachment} [image-preview attachment]))
      (when show-other?
        (doall (interpose (keyed-divider)
-                         (for [attachment other]
-                           ^{:key attachment} [attachment-preview attachment]))))]))
+               (for [attachment other]
+                 ^{:key attachment} [attachment-preview attachment]))))]))

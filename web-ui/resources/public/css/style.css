@@ -15,6 +15,10 @@ body {
 
 .feed {
     border: 10px;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 1000px;
 }
 
 .feed-item {
@@ -22,13 +26,17 @@ body {
    padding: 10px;
    box-shadow: 5px 5px 5px 5px #EEEEEE;
    -webkit-box-shadow: 5px 5px 5px 5px #EEEEEE;
-   overflow: auto;
 }
 
-.item-img-box {
+.img-box {
     float: left;
     overflow: hidden;
     margin-right: 10px;
+}
+
+.item-body {
+    background-color: rgb(250, 250, 250);
+    padding: 5px;
 }
 
 /* Clear floats after the columns */
@@ -78,7 +86,18 @@ body {
 }
 
 .item-img {
-    height: 100px;
+    max-width: 100%;
+    max-height: 600px;
+}
+
+
+.item-img-box {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 95%;
+    align-content: center;
+    text-align: center;
+
 }
 
 .activities-summary {
@@ -163,23 +182,23 @@ body {
 
 
 .tags-text {
+    width: 100%;
     margin-bottom: 10px;
-    width: 100%
 }
 
 .edit-item-body {
-    margin-top: 10px;
+    margin-top: 10px;    
 }
 
 .tag {
-    font-size: 12px;
+    font-size: 9px;
     color: grey;
     background-color: #EAEBE0;
     font-weight: bold;
     padding: 3px;
-    padding-left: 15px;
-    padding-right: 15px;
-    border-radius: 15px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 10px;
 }
 
 .tag-cell {
@@ -191,8 +210,9 @@ td {
 }
 
 .tags {
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    /* padding-bottom: 10px; */ 
 }
 
 .item-tag {
@@ -328,12 +348,10 @@ input.input-text {
 .CodeMirror, .CodeMirror-scroll {
 	min-height: 100px;
 }
-
-.attachments-preview {
-    margin-top: 10px;
-}
-
 .comment-edit-control {
     margin-bottom: 10px;
 }
 
+.attachment-preview {
+    font-size: small;
+}

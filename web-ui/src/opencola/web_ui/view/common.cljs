@@ -13,8 +13,11 @@
 (def image-divider [:img.divider {:src "../img/divider.png"}])
 (def nbsp (gstring/unescapeEntities "&nbsp;"))
 
+(defn img [name class]
+  [:img {:class class :src (str "../img/" name ".png") :alt name :title name}])
+
 (defn action-img [name]
-  [:img.action-img {:src (str "../img/" name ".png") :alt name :title name}])
+  [img name "action-img"])
 
 (defn input-text [item! key editing?]
   [:input.input-text
@@ -58,6 +61,7 @@
 
 (defn md->component [attributes md-text]
   (let [hiccup (->> md-text (md2hic/md->hiccup) (md2hic/component))]
+    (println hiccup)
     (assoc hiccup 1 attributes)))
 
 (defn hidden-file-input [id on-change]

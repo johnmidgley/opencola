@@ -159,10 +159,6 @@
          inline-divider
          [action-summary persona-id! :like action-expanded? activities #(like-item @persona-id! feed! item)]
          inline-divider
-         [action-summary persona-id! :tag action-expanded?  activities #(swap! tagging? not)]
-         inline-divider
-         [action-summary persona-id! :comment action-expanded? activities #(swap! commenting? not)]
-         inline-divider
          [attachment-summary
           persona-id!
           action-expanded?
@@ -171,6 +167,10 @@
                                   % (fn [p] (reset! uploading?! true) (reset! progress! p))
                                   (fn [i] (update-feed-item i) (reset! uploading?! false)) on-error)]
          inline-divider
+         [action-summary persona-id! :tag action-expanded?  activities #(swap! tagging? not)]
+         inline-divider
+         [action-summary persona-id! :comment action-expanded? activities #(swap! commenting? not)]
+         inline-divider 
          [edit-control editing?!]
          [:div.activity-block
           [upload-progress uploading?! progress!]
@@ -217,12 +217,12 @@
   (let [summary (:summary item)]
     (fn []
       [:div.feed-item
-       [item-name summary]
+       [item-name summary] 
+       [item-tags-summary (-> item :activities :tag)]
        [:div.item-body
         [item-image summary]
-        [md->component {:class "item-desc"}  (:description summary)]]
-       [attachments-preview (-> item :activities :attach)]
-       [item-tags-summary (-> item :activities :tag)]
+        [md->component {:class "item-desc"}  (:description summary)]] 
+       [attachments-preview (-> item :activities :attach) true] 
        [:div.posted-by "Posted by: " (:postedBy summary)]
        [item-activities persona-id! personas! feed! item editing?!]
        [error/error-control item]])))
@@ -283,42 +283,43 @@
       (let [name-expanded? (or @expanded?! (seq (:name @edit-item!)))
             image-url-expanded? (or @expanded?! (seq (:imageUri @edit-item!)))
             deletable? (some #(= @persona-id! (:authorityId %)) (-> item :activities :save))]
-        [:div.feed-item
-         [:div.error (:error @edit-item!)]
-         (when name-expanded?
-           [name-edit-control (:name @edit-item!) (on-change :name)])
-         (when image-url-expanded?
-           [image-uri-edit-control edit-item!])
-         (when (or name-expanded? image-url-expanded?)
-           [:div.field-header "Description:"])
-         [description-edit-control edit-item! description-state!]
-         [attachments-preview (:attachments @edit-item!) true]
-         [item-tags-summary-from-string (:tags @edit-item!)]
-         [error/error-control @edit-item!]
-         [:div.activities-summary
-          (when personas!
-            [:span [persona-select personas! persona-id!] inline-divider])
-          [:span {:on-click #(swap! expanded?! not)} [action-img "expand"]] inline-divider
-          [like-edit-control edit-item!] inline-divider
-          [:span {:on-click #(swap! tagging?! not)} [action-img "tag"]] inline-divider
-          [:span {:on-click #(swap! commenting?! not)} [action-img "comment"]] inline-divider
-          [select-files-control (action-img "attach") #(attach-files edit-item! persona-id! uploading?! % (fn [p] (reset! progress! p)))]]
-         [:div.activity-block
-          [upload-progress uploading?! progress!]
-          (when @tagging?!
-            [tags-edit-control (:tags @edit-item!) (on-change :tags)])
-          (when @commenting?!
-            [:div.item-comment-edit
-             [comment-edit-control (:entity-id @edit-item!) nil comment-state!]])]
-         [:div.edit-control-buttons
-          [:button {:on-click (fn []
+        [:div.feed 
+         [:div.feed-item
+          [:div.error (:error @edit-item!)]
+          (when name-expanded?
+            [name-edit-control (:name @edit-item!) (on-change :name)])
+          (when image-url-expanded?
+            [image-uri-edit-control edit-item!])
+          (when (or name-expanded? image-url-expanded?)
+            [:div.field-header "Description:"])
+          [description-edit-control edit-item! description-state!]
+          [attachments-preview (:attachments @edit-item!) true]
+          [item-tags-summary-from-string (:tags @edit-item!)]
+          [error/error-control @edit-item!]
+          [:div.activities-summary
+           (when personas!
+             [:span [persona-select personas! persona-id!] inline-divider])
+           [:span {:on-click #(swap! expanded?! not)} [action-img "expand"]] inline-divider
+           [like-edit-control edit-item!] inline-divider
+           [:span {:on-click #(swap! tagging?! not)} [action-img "tag"]] inline-divider
+           [:span {:on-click #(swap! commenting?! not)} [action-img "comment"]] inline-divider
+           [select-files-control (action-img "attach") #(attach-files edit-item! persona-id! uploading?! % (fn [p] (reset! progress! p)))]]
+          [:div.activity-block
+           [upload-progress uploading?! progress!]
+           (when @tagging?!
+             [tags-edit-control (:tags @edit-item!) (on-change :tags)])
+           (when @commenting?!
+             [:div.item-comment-edit
+              [comment-edit-control (:entity-id @edit-item!) nil comment-state!]])]
+          [:div.edit-control-buttons
+           [:button {:on-click (fn []
                                 ; nil check on comment-state! needed, since it may not be opened
-                                (when @comment-state! (swap! edit-item! assoc-in [:comment] (.value @comment-state!)))
-                                (swap! edit-item! assoc-in [:description] (.value @description-state!))
-                                (on-save @persona-id!))} "Save"] " "
-          [:button {:on-click on-cancel} "Cancel"] " "
-          (when deletable?
-            [:button.delete-button {:on-click on-delete} "Delete"])]]))))
+                                 (when @comment-state! (swap! edit-item! assoc-in [:comment] (.value @comment-state!)))
+                                 (swap! edit-item! assoc-in [:description] (.value @description-state!))
+                                 (on-save @persona-id!))} "Save"] " "
+           [:button {:on-click on-cancel} "Cancel"] " "
+           (when deletable?
+             [:button.delete-button {:on-click on-delete} "Delete"])]]]))))
 
 
 (defn delete-feed-item [feed! entity-id]
