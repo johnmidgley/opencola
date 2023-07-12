@@ -147,6 +147,10 @@ body {
     margin-top: 10px;
 }
 
+.description-edit-control {
+    margin-bottom: 10px;
+}
+
 .item-desc-edit {
     width: 100%;
     height: 200px;
@@ -337,6 +341,7 @@ input.input-text {
 }
 
 .preview-img {
+    width: 95%;
     max-width: 100%;
 }
 
@@ -354,4 +359,12 @@ input.input-text {
 
 .attachment-preview {
     font-size: small;
+}
+
+.preview-images {
+    width: 100%;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: rgb(250, 250, 250);
 }
