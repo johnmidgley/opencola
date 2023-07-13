@@ -353,6 +353,7 @@ input.input-text {
 .CodeMirror, .CodeMirror-scroll {
 	min-height: 100px;
 }
+
 .comment-edit-control {
     margin-bottom: 10px;
 }

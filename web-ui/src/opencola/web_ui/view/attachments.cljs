@@ -44,8 +44,9 @@
         images (get groups true)
         other (get groups false)] 
     [:div.attachments-preview
-     (doall (for [attachment images]
-             ^{:key attachment} [image-preview attachment]))
+     [:div.preview-images
+      (doall (for [attachment images]
+               ^{:key attachment} [image-preview attachment]))]
      (when show-other?
        (doall (interpose (keyed-divider)
                (for [attachment other]
