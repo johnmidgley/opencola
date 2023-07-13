@@ -35,7 +35,7 @@ body {
 }
 
 .item-body {
-    background-color: rgb(250, 250, 250);
+    background-color: rgb(248, 248, 248);
     padding: 5px;
 }
 
@@ -117,7 +117,7 @@ body {
 }
 
 .item-comment-edit {
-   background-color: #f3f3e9;
+   background-color: rgb(248, 248, 248);
    padding: 10px;
    padding-left: 8px;
    padding-right: 14px;
@@ -125,7 +125,7 @@ body {
 }
 
 .item-comment-text {
-   background-color: #f3f3e9;
+   background-color: rgb(248, 248, 248);
    padding: 1px;
    padding-left: 7px;
    padding-right: 7px;
@@ -367,5 +367,5 @@ input.input-text {
     text-align: center;
     margin-left: auto;
     margin-right: auto;
-    background-color: rgb(250, 250, 250);
+    background-color: rgb(248, 248, 248);
 }

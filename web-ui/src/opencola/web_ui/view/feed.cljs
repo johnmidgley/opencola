@@ -159,6 +159,8 @@
          inline-divider
          [action-summary persona-id! :like action-expanded? activities #(like-item @persona-id! feed! item)]
          inline-divider
+         [action-summary persona-id! :tag action-expanded?  activities #(swap! tagging? not)]
+         inline-divider
          [attachment-summary
           persona-id!
           action-expanded?
@@ -167,10 +169,8 @@
                                   % (fn [p] (reset! uploading?! true) (reset! progress! p))
                                   (fn [i] (update-feed-item i) (reset! uploading?! false)) on-error)]
          inline-divider
-         [action-summary persona-id! :tag action-expanded?  activities #(swap! tagging? not)]
-         inline-divider
          [action-summary persona-id! :comment action-expanded? activities #(swap! commenting? not)]
-         inline-divider 
+         inline-divider
          [edit-control editing?!]
          [:div.activity-block
           [upload-progress uploading?! progress!]
@@ -288,13 +288,13 @@
           [:div.error (:error @edit-item!)]
           (when name-expanded?
             [name-edit-control (:name @edit-item!) (on-change :name)])
+          [item-tags-summary-from-string (:tags @edit-item!)] 
           (when image-url-expanded?
             [image-uri-edit-control edit-item!])
           (when (or name-expanded? image-url-expanded?)
             [:div.field-header "Description:"])
           [description-edit-control edit-item! description-state!]
-          [attachments-preview (:attachments @edit-item!) true]
-          [item-tags-summary-from-string (:tags @edit-item!)]
+          [attachments-preview (:attachments @edit-item!) true] 
           [error/error-control @edit-item!]
           [:div.activities-summary
            (when personas!
@@ -302,8 +302,8 @@
            [:span {:on-click #(swap! expanded?! not)} [action-img "expand"]] inline-divider
            [like-edit-control edit-item!] inline-divider
            [:span {:on-click #(swap! tagging?! not)} [action-img "tag"]] inline-divider
-           [:span {:on-click #(swap! commenting?! not)} [action-img "comment"]] inline-divider
-           [select-files-control (action-img "attach") #(attach-files edit-item! persona-id! uploading?! % (fn [p] (reset! progress! p)))]]
+           [select-files-control (action-img "attach") #(attach-files edit-item! persona-id! uploading?! % (fn [p] (reset! progress! p)))] inline-divider
+           [:span {:on-click #(swap! commenting?! not)} [action-img "comment"]]]
           [:div.activity-block
            [upload-progress uploading?! progress!]
            (when @tagging?!
