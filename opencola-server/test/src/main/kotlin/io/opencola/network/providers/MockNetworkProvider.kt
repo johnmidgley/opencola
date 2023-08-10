@@ -48,4 +48,8 @@ class MockNetworkProvider(addressBook: AddressBook,
             it(from, to, signedMessage)
         } ?: throw IllegalStateException("onSendRequest not set")
     }
+
+    override fun sendMessage(from: PersonaAddressBookEntry, to: Set<AddressBookEntry>, signedMessage: SignedMessage) {
+        to.forEach { sendMessage(from, it, signedMessage) }
+    }
 }

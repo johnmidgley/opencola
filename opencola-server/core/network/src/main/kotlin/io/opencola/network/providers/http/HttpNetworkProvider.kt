@@ -20,7 +20,6 @@ import io.opencola.security.Encryptor
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import java.net.URI
-import kotlin.IllegalStateException
 
 class HttpNetworkProvider(
     addressBook: AddressBook,
@@ -75,7 +74,7 @@ class HttpNetworkProvider(
 
     // Caller (Network Node) should check if peer is active
     override fun sendMessage(from: PersonaAddressBookEntry, to: AddressBookEntry, signedMessage: SignedMessage) {
-        if (!started) throw IllegalStateException("Provider is not started - can't sendRequest")
+        require (started) { "Provider is not started - can't sendMessage" }
 
         try {
             val urlString = "${to.address}/networkNode"
@@ -98,6 +97,13 @@ class HttpNetworkProvider(
         } catch (e: Exception) {
             logger.error { "sendRequest: $e" }
             throw e
+        }
+    }
+
+    // Network Node validates the call
+    override fun sendMessage(from: PersonaAddressBookEntry, to: Set<AddressBookEntry>, signedMessage: SignedMessage) {
+        to.forEach { peer ->
+            sendMessage(from, peer, signedMessage)
         }
     }
 }

@@ -235,4 +235,8 @@ class OCRelayNetworkProvider(
             }
         }
     }
+
+    override fun sendMessage(from: PersonaAddressBookEntry, to: Set<AddressBookEntry>, signedMessage: SignedMessage) {
+        to.forEach { sendMessage(from, it, signedMessage) }
+    }
 }

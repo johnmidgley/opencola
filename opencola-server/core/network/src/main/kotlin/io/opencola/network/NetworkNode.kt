@@ -150,18 +150,15 @@ class NetworkNode(
         if (config.offlineMode) return
 
         val peers = addressBook.getEntries()
-            .filter { it.personaId == from.personaId && it !is PersonaAddressBookEntry && it.isActive }
+            .filter { it.personaId == from.personaId && it !is PersonaAddressBookEntry && it.isActive && providers[it.address.scheme] != null }
             .distinctBy { it.entityId }
+            .toSet()
 
         if (peers.isNotEmpty()) {
-            logger.info { "Broadcasting request: ${message.type}" }
-
+            logger.info { "Broadcasting message - from: ${from.entityId} type: ${message.type}" }
             // TODO: This is currently called in the background from the event bus, so ok, but
             //  should switch to making these requests from a pool of peer threads
-            peers.forEach { peer ->
-                // TODO: Make batched, to limit simultaneous connections
-                sendMessage(from, peer, message)
-            }
+            sendMessage(from, peers, message)
         }
     }
 
@@ -232,35 +229,32 @@ class NetworkNode(
     }
 
     // @Synchronized
-    private fun sendMessage(from: PersonaAddressBookEntry, to: AddressBookEntry, message: Message) {
-        require(to !is PersonaAddressBookEntry)
-        if (config.offlineMode) return
+    private fun sendMessage(from: PersonaAddressBookEntry, to: Set<AddressBookEntry>, message: Message) {
+        require(from.isActive) { "Attempt to send request from inactive persona: $from" }
 
-        val provider = to.address.scheme.let { scheme ->
-            providers[scheme] ?: throw IllegalStateException("No provider found for scheme: $scheme")
+        to.forEach {
+            require(it !is PersonaAddressBookEntry) { "Attempt to send request to local persona: $it" }
+            require(it.personaId == from.personaId) { "Attempt to send request to unknown peer: $it" }
+            require(it !is PersonaAddressBookEntry) { "Attempt to send request to local persona: $it" }
+            require(it.isActive) { "Attempt to send request to inactive peer: $it" }
+            require(providers[it.address.scheme] != null) { "No provider found for peer: $it scheme: ${it.address.scheme}" }
         }
 
-        provider.sendMessage(from, to, signMessage(from, message))
-    }
-
-    fun sendMessage(fromId: Id, toId: Id, message: Message) {
         if (config.offlineMode) return
 
+        to.groupBy { it.address.scheme }.forEach { (scheme, peers) ->
+            providers[scheme]!!.sendMessage(from, peers.toSet(), signMessage(from, message))
+        }
+    }
+
+    // TODO: Make toIds instead of a single id?
+    fun sendMessage(fromId: Id, toId: Id, message: Message) {
         val persona = addressBook.getEntry(fromId, fromId) as? PersonaAddressBookEntry
             ?: throw IllegalArgumentException("Attempt to send from message from non Persona: $fromId")
-
-        if (!persona.isActive)
-            throw IllegalArgumentException("Attempt to send from inactive persona: $persona")
 
         val peer = addressBook.getEntry(fromId, toId)
             ?: throw IllegalArgumentException("Attempt to send request to unknown peer: $toId")
 
-        if (peer is PersonaAddressBookEntry)
-            throw IllegalArgumentException("Attempt to send request to local persona: $peer")
-
-        if (!peer.isActive)
-            throw IllegalArgumentException("Attempt to send request to inactive peer: $peer")
-
-        sendMessage(persona, peer, message)
+        sendMessage(persona, setOf(peer), message)
     }
 }

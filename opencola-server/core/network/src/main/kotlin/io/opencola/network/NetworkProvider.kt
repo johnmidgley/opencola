@@ -23,5 +23,8 @@ interface NetworkProvider {
     fun addPeer(peer: AddressBookEntry)
     fun removePeer(peer: AddressBookEntry)
 
-    fun sendMessage(from: PersonaAddressBookEntry, to: AddressBookEntry, signedMessage: SignedMessage)
+    fun sendMessage(from: PersonaAddressBookEntry, to: Set<AddressBookEntry>, signedMessage: SignedMessage)
+    fun sendMessage(from: PersonaAddressBookEntry, to: AddressBookEntry, signedMessage: SignedMessage) {
+        sendMessage(from, setOf(to), signedMessage)
+    }
 }
