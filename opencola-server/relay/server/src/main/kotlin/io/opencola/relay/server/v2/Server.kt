@@ -5,49 +5,60 @@ import io.opencola.relay.common.connection.SocketSession
 import io.opencola.relay.common.message.*
 import io.opencola.relay.common.message.store.MemoryMessageStore
 import io.opencola.relay.common.message.store.MessageStore
-import io.opencola.security.isValidSignature
 import io.opencola.relay.server.AbstractRelayServer
-import io.opencola.security.DEFAULT_SIGNATURE_ALGO
+import io.opencola.security.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
-import java.security.PublicKey
 
-abstract class Server(numChallengeBytes: Int = 32, messageStore: MessageStore = MemoryMessageStore()) :
-    AbstractRelayServer(numChallengeBytes, messageStore) {
-    override suspend fun authenticate(socketSession: SocketSession): PublicKey? {
+abstract class Server(numChallengeBytes: Int = 32, numSymmetricKeyBytes: Int = 32, messageStore: MessageStore = MemoryMessageStore()) :
+    AbstractRelayServer(numChallengeBytes, numSymmetricKeyBytes, messageStore) {
+    override suspend fun authenticate(socketSession: SocketSession): AuthenticationResult? {
         try {
-            logger.debug { "Authenticating" }
-            val connectMessage = ConnectMessage.decodeProto(socketSession.readSizedByteArray())
-            val publicKey = connectMessage.publicKey
-            val id = Id.ofPublicKey(publicKey)
+            logger.debug { "Sending server identity" }
+            // TODO: Figure out how to publish this key so client can ensure server is trusted
+            socketSession.writeSizedByteArray(IdentityMessage(serverKeyPair.public).encodeProto())
 
-            logger.debug { "Received public key: $id" }
+            logger.debug { "Reading server challenge" }
+            val serverChallenge = ChallengeMessage.decodeProto(socketSession.readSizedByteArray())
 
-            // Send challenge
-            logger.debug { "Sending challenge" }
-            val challenge = ByteArray(numChallengeBytes).also { random.nextBytes(it) }
-            val challengeMessage = ChallengeMessage(DEFAULT_SIGNATURE_ALGO, challenge)
-            socketSession.writeSizedByteArray(challengeMessage.encodeProto())
+            logger.debug { "Writing challenge response" }
+            val signature = sign(serverKeyPair.private, serverChallenge.challenge, serverChallenge.algorithm)
+            socketSession.writeSizedByteArray(ChallengeResponse(signature).encodeProto())
 
-            // Read signed challenge
-            val challengeResponse = ChallengeResponse.decodeProto(socketSession.readSizedByteArray())
-            logger.debug { "Received challenge signature" }
+            logger.debug { "Reading client identity" }
+            val encryptedClientIdentity = EncryptedBytes.decodeProto(socketSession.readSizedByteArray())
+            val clientIdentity = IdentityMessage.decodeProto(decrypt(serverKeyPair.private, encryptedClientIdentity))
+            val clientPublicKey = clientIdentity.publicKey
+            val clientId = Id.ofPublicKey(clientPublicKey)
+            logger.info { "Authenticating $clientId" }
+            if(!isAuthorized(clientPublicKey))
+                throw RuntimeException("$clientId is not authorized")
 
-            val status = if (
-                challengeResponse.signature.algorithm == DEFAULT_SIGNATURE_ALGO &&
-                isValidSignature(publicKey, challenge, challengeResponse.signature)
-            )
-                AuthenticationStatus.AUTHENTICATED
-            else
-                AuthenticationStatus.FAILED_CHALLENGE
+            logger.debug { "Writing client challenge" }
+            val clientChallenge = ChallengeMessage(DEFAULT_SIGNATURE_ALGO, random.nextBytes(numChallengeBytes))
+            socketSession.writeSizedByteArray(clientChallenge.encodeProto())
 
-            socketSession.writeSizedByteArray(AuthenticationResult(status, keyPair.public).encodeProto())
+            logger.debug { "Reading challenge response" }
+            val encryptedChallengeResponse = EncryptedBytes.decodeProto(socketSession.readSizedByteArray())
+            val clientChallengeResponse = ChallengeResponse.decodeProto(decrypt(serverKeyPair.private, encryptedChallengeResponse))
 
-            if (status != AuthenticationStatus.AUTHENTICATED)
-                throw RuntimeException("$id failed to authenticate: $status")
+            val authenticationResult = if (
+                clientChallengeResponse.signature.algorithm == DEFAULT_SIGNATURE_ALGO &&
+                isValidSignature(clientPublicKey, clientChallenge.challenge, clientChallengeResponse.signature)
+            ) {
+                val sessionKey = random.nextBytes(numSymmetricKeyBytes)
+                val encryptedSessionKey = encrypt(clientPublicKey, sessionKey)
+                AuthenticationResult(AuthenticationStatus.AUTHENTICATED, encryptedSessionKey)
+            } else
+                AuthenticationResult(AuthenticationStatus.FAILED_CHALLENGE, null)
+
+            socketSession.writeSizedByteArray(authenticationResult.encodeProto())
+
+            if (authenticationResult.status != AuthenticationStatus.AUTHENTICATED)
+                throw RuntimeException("$clientId failed to authenticate: $authenticationResult.status")
 
             logger.debug { "Client authenticated" }
-            return publicKey
+            return AuthenticationResult(clientPublicKey)
         } catch (e: CancellationException) {
             // Let job cancellation fall through
         } catch (e: ClosedReceiveChannelException) {

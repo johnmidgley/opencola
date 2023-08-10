@@ -122,8 +122,8 @@ public final class Relay {
     // @@protoc_insertion_point(enum_scope:io.opencola.relay.common.protobuf.AuthenticationStatus)
   }
 
-  public interface ConnectMessageOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:io.opencola.relay.common.protobuf.ConnectMessage)
+  public interface IdentityOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:io.opencola.relay.common.protobuf.Identity)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -142,25 +142,25 @@ public final class Relay {
     io.opencola.security.protobuf.Security.PublicKeyOrBuilder getPublicKeyOrBuilder();
   }
   /**
-   * Protobuf type {@code io.opencola.relay.common.protobuf.ConnectMessage}
+   * Protobuf type {@code io.opencola.relay.common.protobuf.Identity}
    */
-  public static final class ConnectMessage extends
+  public static final class Identity extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:io.opencola.relay.common.protobuf.ConnectMessage)
-      ConnectMessageOrBuilder {
+      // @@protoc_insertion_point(message_implements:io.opencola.relay.common.protobuf.Identity)
+      IdentityOrBuilder {
   private static final long serialVersionUID = 0L;
-    // Use ConnectMessage.newBuilder() to construct.
-    private ConnectMessage(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+    // Use Identity.newBuilder() to construct.
+    private Identity(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
-    private ConnectMessage() {
+    private Identity() {
     }
 
     @java.lang.Override
     @SuppressWarnings({"unused"})
     protected java.lang.Object newInstance(
         UnusedPrivateParameter unused) {
-      return new ConnectMessage();
+      return new Identity();
     }
 
     @java.lang.Override
@@ -168,7 +168,7 @@ public final class Relay {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private ConnectMessage(
+    private Identity(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -220,15 +220,15 @@ public final class Relay {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_ConnectMessage_descriptor;
+      return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_Identity_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_ConnectMessage_fieldAccessorTable
+      return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_Identity_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              io.opencola.relay.common.protobuf.Relay.ConnectMessage.class, io.opencola.relay.common.protobuf.Relay.ConnectMessage.Builder.class);
+              io.opencola.relay.common.protobuf.Relay.Identity.class, io.opencola.relay.common.protobuf.Relay.Identity.Builder.class);
     }
 
     public static final int PUBLICKEY_FIELD_NUMBER = 1;
@@ -297,10 +297,10 @@ public final class Relay {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof io.opencola.relay.common.protobuf.Relay.ConnectMessage)) {
+      if (!(obj instanceof io.opencola.relay.common.protobuf.Relay.Identity)) {
         return super.equals(obj);
       }
-      io.opencola.relay.common.protobuf.Relay.ConnectMessage other = (io.opencola.relay.common.protobuf.Relay.ConnectMessage) obj;
+      io.opencola.relay.common.protobuf.Relay.Identity other = (io.opencola.relay.common.protobuf.Relay.Identity) obj;
 
       if (hasPublicKey() != other.hasPublicKey()) return false;
       if (hasPublicKey()) {
@@ -327,69 +327,69 @@ public final class Relay {
       return hash;
     }
 
-    public static io.opencola.relay.common.protobuf.Relay.ConnectMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Identity parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ConnectMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Identity parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ConnectMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Identity parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ConnectMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Identity parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ConnectMessage parseFrom(byte[] data)
+    public static io.opencola.relay.common.protobuf.Relay.Identity parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ConnectMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Identity parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ConnectMessage parseFrom(java.io.InputStream input)
+    public static io.opencola.relay.common.protobuf.Relay.Identity parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ConnectMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Identity parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ConnectMessage parseDelimitedFrom(java.io.InputStream input)
+    public static io.opencola.relay.common.protobuf.Relay.Identity parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ConnectMessage parseDelimitedFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Identity parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ConnectMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Identity parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ConnectMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Identity parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -402,7 +402,7 @@ public final class Relay {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(io.opencola.relay.common.protobuf.Relay.ConnectMessage prototype) {
+    public static Builder newBuilder(io.opencola.relay.common.protobuf.Relay.Identity prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -418,26 +418,26 @@ public final class Relay {
       return builder;
     }
     /**
-     * Protobuf type {@code io.opencola.relay.common.protobuf.ConnectMessage}
+     * Protobuf type {@code io.opencola.relay.common.protobuf.Identity}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:io.opencola.relay.common.protobuf.ConnectMessage)
-        io.opencola.relay.common.protobuf.Relay.ConnectMessageOrBuilder {
+        // @@protoc_insertion_point(builder_implements:io.opencola.relay.common.protobuf.Identity)
+        io.opencola.relay.common.protobuf.Relay.IdentityOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_ConnectMessage_descriptor;
+        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_Identity_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_ConnectMessage_fieldAccessorTable
+        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_Identity_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                io.opencola.relay.common.protobuf.Relay.ConnectMessage.class, io.opencola.relay.common.protobuf.Relay.ConnectMessage.Builder.class);
+                io.opencola.relay.common.protobuf.Relay.Identity.class, io.opencola.relay.common.protobuf.Relay.Identity.Builder.class);
       }
 
-      // Construct using io.opencola.relay.common.protobuf.Relay.ConnectMessage.newBuilder()
+      // Construct using io.opencola.relay.common.protobuf.Relay.Identity.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -467,17 +467,17 @@ public final class Relay {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_ConnectMessage_descriptor;
+        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_Identity_descriptor;
       }
 
       @java.lang.Override
-      public io.opencola.relay.common.protobuf.Relay.ConnectMessage getDefaultInstanceForType() {
-        return io.opencola.relay.common.protobuf.Relay.ConnectMessage.getDefaultInstance();
+      public io.opencola.relay.common.protobuf.Relay.Identity getDefaultInstanceForType() {
+        return io.opencola.relay.common.protobuf.Relay.Identity.getDefaultInstance();
       }
 
       @java.lang.Override
-      public io.opencola.relay.common.protobuf.Relay.ConnectMessage build() {
-        io.opencola.relay.common.protobuf.Relay.ConnectMessage result = buildPartial();
+      public io.opencola.relay.common.protobuf.Relay.Identity build() {
+        io.opencola.relay.common.protobuf.Relay.Identity result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -485,8 +485,8 @@ public final class Relay {
       }
 
       @java.lang.Override
-      public io.opencola.relay.common.protobuf.Relay.ConnectMessage buildPartial() {
-        io.opencola.relay.common.protobuf.Relay.ConnectMessage result = new io.opencola.relay.common.protobuf.Relay.ConnectMessage(this);
+      public io.opencola.relay.common.protobuf.Relay.Identity buildPartial() {
+        io.opencola.relay.common.protobuf.Relay.Identity result = new io.opencola.relay.common.protobuf.Relay.Identity(this);
         if (publicKeyBuilder_ == null) {
           result.publicKey_ = publicKey_;
         } else {
@@ -530,16 +530,16 @@ public final class Relay {
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof io.opencola.relay.common.protobuf.Relay.ConnectMessage) {
-          return mergeFrom((io.opencola.relay.common.protobuf.Relay.ConnectMessage)other);
+        if (other instanceof io.opencola.relay.common.protobuf.Relay.Identity) {
+          return mergeFrom((io.opencola.relay.common.protobuf.Relay.Identity)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(io.opencola.relay.common.protobuf.Relay.ConnectMessage other) {
-        if (other == io.opencola.relay.common.protobuf.Relay.ConnectMessage.getDefaultInstance()) return this;
+      public Builder mergeFrom(io.opencola.relay.common.protobuf.Relay.Identity other) {
+        if (other == io.opencola.relay.common.protobuf.Relay.Identity.getDefaultInstance()) return this;
         if (other.hasPublicKey()) {
           mergePublicKey(other.getPublicKey());
         }
@@ -558,11 +558,11 @@ public final class Relay {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        io.opencola.relay.common.protobuf.Relay.ConnectMessage parsedMessage = null;
+        io.opencola.relay.common.protobuf.Relay.Identity parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (io.opencola.relay.common.protobuf.Relay.ConnectMessage) e.getUnfinishedMessage();
+          parsedMessage = (io.opencola.relay.common.protobuf.Relay.Identity) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -703,48 +703,48 @@ public final class Relay {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:io.opencola.relay.common.protobuf.ConnectMessage)
+      // @@protoc_insertion_point(builder_scope:io.opencola.relay.common.protobuf.Identity)
     }
 
-    // @@protoc_insertion_point(class_scope:io.opencola.relay.common.protobuf.ConnectMessage)
-    private static final io.opencola.relay.common.protobuf.Relay.ConnectMessage DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:io.opencola.relay.common.protobuf.Identity)
+    private static final io.opencola.relay.common.protobuf.Relay.Identity DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new io.opencola.relay.common.protobuf.Relay.ConnectMessage();
+      DEFAULT_INSTANCE = new io.opencola.relay.common.protobuf.Relay.Identity();
     }
 
-    public static io.opencola.relay.common.protobuf.Relay.ConnectMessage getDefaultInstance() {
+    public static io.opencola.relay.common.protobuf.Relay.Identity getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    private static final com.google.protobuf.Parser<ConnectMessage>
-        PARSER = new com.google.protobuf.AbstractParser<ConnectMessage>() {
+    private static final com.google.protobuf.Parser<Identity>
+        PARSER = new com.google.protobuf.AbstractParser<Identity>() {
       @java.lang.Override
-      public ConnectMessage parsePartialFrom(
+      public Identity parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new ConnectMessage(input, extensionRegistry);
+        return new Identity(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<ConnectMessage> parser() {
+    public static com.google.protobuf.Parser<Identity> parser() {
       return PARSER;
     }
 
     @java.lang.Override
-    public com.google.protobuf.Parser<ConnectMessage> getParserForType() {
+    public com.google.protobuf.Parser<Identity> getParserForType() {
       return PARSER;
     }
 
     @java.lang.Override
-    public io.opencola.relay.common.protobuf.Relay.ConnectMessage getDefaultInstanceForType() {
+    public io.opencola.relay.common.protobuf.Relay.Identity getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
   }
 
-  public interface ChallengeMessageOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:io.opencola.relay.common.protobuf.ChallengeMessage)
+  public interface ChallengeOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:io.opencola.relay.common.protobuf.Challenge)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -765,18 +765,18 @@ public final class Relay {
     com.google.protobuf.ByteString getChallenge();
   }
   /**
-   * Protobuf type {@code io.opencola.relay.common.protobuf.ChallengeMessage}
+   * Protobuf type {@code io.opencola.relay.common.protobuf.Challenge}
    */
-  public static final class ChallengeMessage extends
+  public static final class Challenge extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:io.opencola.relay.common.protobuf.ChallengeMessage)
-      ChallengeMessageOrBuilder {
+      // @@protoc_insertion_point(message_implements:io.opencola.relay.common.protobuf.Challenge)
+      ChallengeOrBuilder {
   private static final long serialVersionUID = 0L;
-    // Use ChallengeMessage.newBuilder() to construct.
-    private ChallengeMessage(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+    // Use Challenge.newBuilder() to construct.
+    private Challenge(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
-    private ChallengeMessage() {
+    private Challenge() {
       algorithm_ = 0;
       challenge_ = com.google.protobuf.ByteString.EMPTY;
     }
@@ -785,7 +785,7 @@ public final class Relay {
     @SuppressWarnings({"unused"})
     protected java.lang.Object newInstance(
         UnusedPrivateParameter unused) {
-      return new ChallengeMessage();
+      return new Challenge();
     }
 
     @java.lang.Override
@@ -793,7 +793,7 @@ public final class Relay {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private ChallengeMessage(
+    private Challenge(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -843,15 +843,15 @@ public final class Relay {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_ChallengeMessage_descriptor;
+      return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_Challenge_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_ChallengeMessage_fieldAccessorTable
+      return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_Challenge_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              io.opencola.relay.common.protobuf.Relay.ChallengeMessage.class, io.opencola.relay.common.protobuf.Relay.ChallengeMessage.Builder.class);
+              io.opencola.relay.common.protobuf.Relay.Challenge.class, io.opencola.relay.common.protobuf.Relay.Challenge.Builder.class);
     }
 
     public static final int ALGORITHM_FIELD_NUMBER = 1;
@@ -931,10 +931,10 @@ public final class Relay {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof io.opencola.relay.common.protobuf.Relay.ChallengeMessage)) {
+      if (!(obj instanceof io.opencola.relay.common.protobuf.Relay.Challenge)) {
         return super.equals(obj);
       }
-      io.opencola.relay.common.protobuf.Relay.ChallengeMessage other = (io.opencola.relay.common.protobuf.Relay.ChallengeMessage) obj;
+      io.opencola.relay.common.protobuf.Relay.Challenge other = (io.opencola.relay.common.protobuf.Relay.Challenge) obj;
 
       if (algorithm_ != other.algorithm_) return false;
       if (!getChallenge()
@@ -959,69 +959,69 @@ public final class Relay {
       return hash;
     }
 
-    public static io.opencola.relay.common.protobuf.Relay.ChallengeMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Challenge parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ChallengeMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Challenge parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ChallengeMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Challenge parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ChallengeMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Challenge parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ChallengeMessage parseFrom(byte[] data)
+    public static io.opencola.relay.common.protobuf.Relay.Challenge parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ChallengeMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Challenge parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ChallengeMessage parseFrom(java.io.InputStream input)
+    public static io.opencola.relay.common.protobuf.Relay.Challenge parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ChallengeMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Challenge parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ChallengeMessage parseDelimitedFrom(java.io.InputStream input)
+    public static io.opencola.relay.common.protobuf.Relay.Challenge parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ChallengeMessage parseDelimitedFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Challenge parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ChallengeMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Challenge parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ChallengeMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Challenge parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1034,7 +1034,7 @@ public final class Relay {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(io.opencola.relay.common.protobuf.Relay.ChallengeMessage prototype) {
+    public static Builder newBuilder(io.opencola.relay.common.protobuf.Relay.Challenge prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -1050,26 +1050,26 @@ public final class Relay {
       return builder;
     }
     /**
-     * Protobuf type {@code io.opencola.relay.common.protobuf.ChallengeMessage}
+     * Protobuf type {@code io.opencola.relay.common.protobuf.Challenge}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:io.opencola.relay.common.protobuf.ChallengeMessage)
-        io.opencola.relay.common.protobuf.Relay.ChallengeMessageOrBuilder {
+        // @@protoc_insertion_point(builder_implements:io.opencola.relay.common.protobuf.Challenge)
+        io.opencola.relay.common.protobuf.Relay.ChallengeOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_ChallengeMessage_descriptor;
+        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_Challenge_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_ChallengeMessage_fieldAccessorTable
+        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_Challenge_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                io.opencola.relay.common.protobuf.Relay.ChallengeMessage.class, io.opencola.relay.common.protobuf.Relay.ChallengeMessage.Builder.class);
+                io.opencola.relay.common.protobuf.Relay.Challenge.class, io.opencola.relay.common.protobuf.Relay.Challenge.Builder.class);
       }
 
-      // Construct using io.opencola.relay.common.protobuf.Relay.ChallengeMessage.newBuilder()
+      // Construct using io.opencola.relay.common.protobuf.Relay.Challenge.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -1097,17 +1097,17 @@ public final class Relay {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_ChallengeMessage_descriptor;
+        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_Challenge_descriptor;
       }
 
       @java.lang.Override
-      public io.opencola.relay.common.protobuf.Relay.ChallengeMessage getDefaultInstanceForType() {
-        return io.opencola.relay.common.protobuf.Relay.ChallengeMessage.getDefaultInstance();
+      public io.opencola.relay.common.protobuf.Relay.Challenge getDefaultInstanceForType() {
+        return io.opencola.relay.common.protobuf.Relay.Challenge.getDefaultInstance();
       }
 
       @java.lang.Override
-      public io.opencola.relay.common.protobuf.Relay.ChallengeMessage build() {
-        io.opencola.relay.common.protobuf.Relay.ChallengeMessage result = buildPartial();
+      public io.opencola.relay.common.protobuf.Relay.Challenge build() {
+        io.opencola.relay.common.protobuf.Relay.Challenge result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -1115,8 +1115,8 @@ public final class Relay {
       }
 
       @java.lang.Override
-      public io.opencola.relay.common.protobuf.Relay.ChallengeMessage buildPartial() {
-        io.opencola.relay.common.protobuf.Relay.ChallengeMessage result = new io.opencola.relay.common.protobuf.Relay.ChallengeMessage(this);
+      public io.opencola.relay.common.protobuf.Relay.Challenge buildPartial() {
+        io.opencola.relay.common.protobuf.Relay.Challenge result = new io.opencola.relay.common.protobuf.Relay.Challenge(this);
         result.algorithm_ = algorithm_;
         result.challenge_ = challenge_;
         onBuilt();
@@ -1157,16 +1157,16 @@ public final class Relay {
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof io.opencola.relay.common.protobuf.Relay.ChallengeMessage) {
-          return mergeFrom((io.opencola.relay.common.protobuf.Relay.ChallengeMessage)other);
+        if (other instanceof io.opencola.relay.common.protobuf.Relay.Challenge) {
+          return mergeFrom((io.opencola.relay.common.protobuf.Relay.Challenge)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(io.opencola.relay.common.protobuf.Relay.ChallengeMessage other) {
-        if (other == io.opencola.relay.common.protobuf.Relay.ChallengeMessage.getDefaultInstance()) return this;
+      public Builder mergeFrom(io.opencola.relay.common.protobuf.Relay.Challenge other) {
+        if (other == io.opencola.relay.common.protobuf.Relay.Challenge.getDefaultInstance()) return this;
         if (other.algorithm_ != 0) {
           setAlgorithmValue(other.getAlgorithmValue());
         }
@@ -1188,11 +1188,11 @@ public final class Relay {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        io.opencola.relay.common.protobuf.Relay.ChallengeMessage parsedMessage = null;
+        io.opencola.relay.common.protobuf.Relay.Challenge parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (io.opencola.relay.common.protobuf.Relay.ChallengeMessage) e.getUnfinishedMessage();
+          parsedMessage = (io.opencola.relay.common.protobuf.Relay.Challenge) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -1302,41 +1302,41 @@ public final class Relay {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:io.opencola.relay.common.protobuf.ChallengeMessage)
+      // @@protoc_insertion_point(builder_scope:io.opencola.relay.common.protobuf.Challenge)
     }
 
-    // @@protoc_insertion_point(class_scope:io.opencola.relay.common.protobuf.ChallengeMessage)
-    private static final io.opencola.relay.common.protobuf.Relay.ChallengeMessage DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:io.opencola.relay.common.protobuf.Challenge)
+    private static final io.opencola.relay.common.protobuf.Relay.Challenge DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new io.opencola.relay.common.protobuf.Relay.ChallengeMessage();
+      DEFAULT_INSTANCE = new io.opencola.relay.common.protobuf.Relay.Challenge();
     }
 
-    public static io.opencola.relay.common.protobuf.Relay.ChallengeMessage getDefaultInstance() {
+    public static io.opencola.relay.common.protobuf.Relay.Challenge getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    private static final com.google.protobuf.Parser<ChallengeMessage>
-        PARSER = new com.google.protobuf.AbstractParser<ChallengeMessage>() {
+    private static final com.google.protobuf.Parser<Challenge>
+        PARSER = new com.google.protobuf.AbstractParser<Challenge>() {
       @java.lang.Override
-      public ChallengeMessage parsePartialFrom(
+      public Challenge parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new ChallengeMessage(input, extensionRegistry);
+        return new Challenge(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<ChallengeMessage> parser() {
+    public static com.google.protobuf.Parser<Challenge> parser() {
       return PARSER;
     }
 
     @java.lang.Override
-    public com.google.protobuf.Parser<ChallengeMessage> getParserForType() {
+    public com.google.protobuf.Parser<Challenge> getParserForType() {
       return PARSER;
     }
 
     @java.lang.Override
-    public io.opencola.relay.common.protobuf.Relay.ChallengeMessage getDefaultInstanceForType() {
+    public io.opencola.relay.common.protobuf.Relay.Challenge getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1979,31 +1979,19 @@ public final class Relay {
     io.opencola.relay.common.protobuf.Relay.AuthenticationStatus getStatus();
 
     /**
-     * <pre>
-     * TODO: Use https or publish this key so client can ensure secure connection
-     * </pre>
-     *
-     * <code>.io.opencola.security.protobuf.PublicKey publicKey = 2;</code>
-     * @return Whether the publicKey field is set.
+     * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
+     * @return Whether the sessionKey field is set.
      */
-    boolean hasPublicKey();
+    boolean hasSessionKey();
     /**
-     * <pre>
-     * TODO: Use https or publish this key so client can ensure secure connection
-     * </pre>
-     *
-     * <code>.io.opencola.security.protobuf.PublicKey publicKey = 2;</code>
-     * @return The publicKey.
+     * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
+     * @return The sessionKey.
      */
-    io.opencola.security.protobuf.Security.PublicKey getPublicKey();
+    io.opencola.security.protobuf.Security.EncryptedBytes getSessionKey();
     /**
-     * <pre>
-     * TODO: Use https or publish this key so client can ensure secure connection
-     * </pre>
-     *
-     * <code>.io.opencola.security.protobuf.PublicKey publicKey = 2;</code>
+     * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
      */
-    io.opencola.security.protobuf.Security.PublicKeyOrBuilder getPublicKeyOrBuilder();
+    io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder getSessionKeyOrBuilder();
   }
   /**
    * Protobuf type {@code io.opencola.relay.common.protobuf.AuthenticationResult}
@@ -2058,14 +2046,14 @@ public final class Relay {
               break;
             }
             case 18: {
-              io.opencola.security.protobuf.Security.PublicKey.Builder subBuilder = null;
-              if (publicKey_ != null) {
-                subBuilder = publicKey_.toBuilder();
+              io.opencola.security.protobuf.Security.EncryptedBytes.Builder subBuilder = null;
+              if (sessionKey_ != null) {
+                subBuilder = sessionKey_.toBuilder();
               }
-              publicKey_ = input.readMessage(io.opencola.security.protobuf.Security.PublicKey.parser(), extensionRegistry);
+              sessionKey_ = input.readMessage(io.opencola.security.protobuf.Security.EncryptedBytes.parser(), extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(publicKey_);
-                publicKey_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(sessionKey_);
+                sessionKey_ = subBuilder.buildPartial();
               }
 
               break;
@@ -2121,42 +2109,30 @@ public final class Relay {
       return result == null ? io.opencola.relay.common.protobuf.Relay.AuthenticationStatus.UNRECOGNIZED : result;
     }
 
-    public static final int PUBLICKEY_FIELD_NUMBER = 2;
-    private io.opencola.security.protobuf.Security.PublicKey publicKey_;
+    public static final int SESSIONKEY_FIELD_NUMBER = 2;
+    private io.opencola.security.protobuf.Security.EncryptedBytes sessionKey_;
     /**
-     * <pre>
-     * TODO: Use https or publish this key so client can ensure secure connection
-     * </pre>
-     *
-     * <code>.io.opencola.security.protobuf.PublicKey publicKey = 2;</code>
-     * @return Whether the publicKey field is set.
+     * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
+     * @return Whether the sessionKey field is set.
      */
     @java.lang.Override
-    public boolean hasPublicKey() {
-      return publicKey_ != null;
+    public boolean hasSessionKey() {
+      return sessionKey_ != null;
     }
     /**
-     * <pre>
-     * TODO: Use https or publish this key so client can ensure secure connection
-     * </pre>
-     *
-     * <code>.io.opencola.security.protobuf.PublicKey publicKey = 2;</code>
-     * @return The publicKey.
+     * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
+     * @return The sessionKey.
      */
     @java.lang.Override
-    public io.opencola.security.protobuf.Security.PublicKey getPublicKey() {
-      return publicKey_ == null ? io.opencola.security.protobuf.Security.PublicKey.getDefaultInstance() : publicKey_;
+    public io.opencola.security.protobuf.Security.EncryptedBytes getSessionKey() {
+      return sessionKey_ == null ? io.opencola.security.protobuf.Security.EncryptedBytes.getDefaultInstance() : sessionKey_;
     }
     /**
-     * <pre>
-     * TODO: Use https or publish this key so client can ensure secure connection
-     * </pre>
-     *
-     * <code>.io.opencola.security.protobuf.PublicKey publicKey = 2;</code>
+     * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
      */
     @java.lang.Override
-    public io.opencola.security.protobuf.Security.PublicKeyOrBuilder getPublicKeyOrBuilder() {
-      return getPublicKey();
+    public io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder getSessionKeyOrBuilder() {
+      return getSessionKey();
     }
 
     private byte memoizedIsInitialized = -1;
@@ -2176,8 +2152,8 @@ public final class Relay {
       if (status_ != io.opencola.relay.common.protobuf.Relay.AuthenticationStatus.AUTHENTICATED.getNumber()) {
         output.writeEnum(1, status_);
       }
-      if (publicKey_ != null) {
-        output.writeMessage(2, getPublicKey());
+      if (sessionKey_ != null) {
+        output.writeMessage(2, getSessionKey());
       }
       unknownFields.writeTo(output);
     }
@@ -2192,9 +2168,9 @@ public final class Relay {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(1, status_);
       }
-      if (publicKey_ != null) {
+      if (sessionKey_ != null) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, getPublicKey());
+          .computeMessageSize(2, getSessionKey());
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -2212,10 +2188,10 @@ public final class Relay {
       io.opencola.relay.common.protobuf.Relay.AuthenticationResult other = (io.opencola.relay.common.protobuf.Relay.AuthenticationResult) obj;
 
       if (status_ != other.status_) return false;
-      if (hasPublicKey() != other.hasPublicKey()) return false;
-      if (hasPublicKey()) {
-        if (!getPublicKey()
-            .equals(other.getPublicKey())) return false;
+      if (hasSessionKey() != other.hasSessionKey()) return false;
+      if (hasSessionKey()) {
+        if (!getSessionKey()
+            .equals(other.getSessionKey())) return false;
       }
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
@@ -2230,9 +2206,9 @@ public final class Relay {
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + STATUS_FIELD_NUMBER;
       hash = (53 * hash) + status_;
-      if (hasPublicKey()) {
-        hash = (37 * hash) + PUBLICKEY_FIELD_NUMBER;
-        hash = (53 * hash) + getPublicKey().hashCode();
+      if (hasSessionKey()) {
+        hash = (37 * hash) + SESSIONKEY_FIELD_NUMBER;
+        hash = (53 * hash) + getSessionKey().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -2369,11 +2345,11 @@ public final class Relay {
         super.clear();
         status_ = 0;
 
-        if (publicKeyBuilder_ == null) {
-          publicKey_ = null;
+        if (sessionKeyBuilder_ == null) {
+          sessionKey_ = null;
         } else {
-          publicKey_ = null;
-          publicKeyBuilder_ = null;
+          sessionKey_ = null;
+          sessionKeyBuilder_ = null;
         }
         return this;
       }
@@ -2402,10 +2378,10 @@ public final class Relay {
       public io.opencola.relay.common.protobuf.Relay.AuthenticationResult buildPartial() {
         io.opencola.relay.common.protobuf.Relay.AuthenticationResult result = new io.opencola.relay.common.protobuf.Relay.AuthenticationResult(this);
         result.status_ = status_;
-        if (publicKeyBuilder_ == null) {
-          result.publicKey_ = publicKey_;
+        if (sessionKeyBuilder_ == null) {
+          result.sessionKey_ = sessionKey_;
         } else {
-          result.publicKey_ = publicKeyBuilder_.build();
+          result.sessionKey_ = sessionKeyBuilder_.build();
         }
         onBuilt();
         return result;
@@ -2458,8 +2434,8 @@ public final class Relay {
         if (other.status_ != 0) {
           setStatusValue(other.getStatusValue());
         }
-        if (other.hasPublicKey()) {
-          mergePublicKey(other.getPublicKey());
+        if (other.hasSessionKey()) {
+          mergeSessionKey(other.getSessionKey());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -2544,159 +2520,123 @@ public final class Relay {
         return this;
       }
 
-      private io.opencola.security.protobuf.Security.PublicKey publicKey_;
+      private io.opencola.security.protobuf.Security.EncryptedBytes sessionKey_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          io.opencola.security.protobuf.Security.PublicKey, io.opencola.security.protobuf.Security.PublicKey.Builder, io.opencola.security.protobuf.Security.PublicKeyOrBuilder> publicKeyBuilder_;
+          io.opencola.security.protobuf.Security.EncryptedBytes, io.opencola.security.protobuf.Security.EncryptedBytes.Builder, io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder> sessionKeyBuilder_;
       /**
-       * <pre>
-       * TODO: Use https or publish this key so client can ensure secure connection
-       * </pre>
-       *
-       * <code>.io.opencola.security.protobuf.PublicKey publicKey = 2;</code>
-       * @return Whether the publicKey field is set.
+       * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
+       * @return Whether the sessionKey field is set.
        */
-      public boolean hasPublicKey() {
-        return publicKeyBuilder_ != null || publicKey_ != null;
+      public boolean hasSessionKey() {
+        return sessionKeyBuilder_ != null || sessionKey_ != null;
       }
       /**
-       * <pre>
-       * TODO: Use https or publish this key so client can ensure secure connection
-       * </pre>
-       *
-       * <code>.io.opencola.security.protobuf.PublicKey publicKey = 2;</code>
-       * @return The publicKey.
+       * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
+       * @return The sessionKey.
        */
-      public io.opencola.security.protobuf.Security.PublicKey getPublicKey() {
-        if (publicKeyBuilder_ == null) {
-          return publicKey_ == null ? io.opencola.security.protobuf.Security.PublicKey.getDefaultInstance() : publicKey_;
+      public io.opencola.security.protobuf.Security.EncryptedBytes getSessionKey() {
+        if (sessionKeyBuilder_ == null) {
+          return sessionKey_ == null ? io.opencola.security.protobuf.Security.EncryptedBytes.getDefaultInstance() : sessionKey_;
         } else {
-          return publicKeyBuilder_.getMessage();
+          return sessionKeyBuilder_.getMessage();
         }
       }
       /**
-       * <pre>
-       * TODO: Use https or publish this key so client can ensure secure connection
-       * </pre>
-       *
-       * <code>.io.opencola.security.protobuf.PublicKey publicKey = 2;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
        */
-      public Builder setPublicKey(io.opencola.security.protobuf.Security.PublicKey value) {
-        if (publicKeyBuilder_ == null) {
+      public Builder setSessionKey(io.opencola.security.protobuf.Security.EncryptedBytes value) {
+        if (sessionKeyBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          publicKey_ = value;
+          sessionKey_ = value;
           onChanged();
         } else {
-          publicKeyBuilder_.setMessage(value);
+          sessionKeyBuilder_.setMessage(value);
         }
 
         return this;
       }
       /**
-       * <pre>
-       * TODO: Use https or publish this key so client can ensure secure connection
-       * </pre>
-       *
-       * <code>.io.opencola.security.protobuf.PublicKey publicKey = 2;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
        */
-      public Builder setPublicKey(
-          io.opencola.security.protobuf.Security.PublicKey.Builder builderForValue) {
-        if (publicKeyBuilder_ == null) {
-          publicKey_ = builderForValue.build();
+      public Builder setSessionKey(
+          io.opencola.security.protobuf.Security.EncryptedBytes.Builder builderForValue) {
+        if (sessionKeyBuilder_ == null) {
+          sessionKey_ = builderForValue.build();
           onChanged();
         } else {
-          publicKeyBuilder_.setMessage(builderForValue.build());
+          sessionKeyBuilder_.setMessage(builderForValue.build());
         }
 
         return this;
       }
       /**
-       * <pre>
-       * TODO: Use https or publish this key so client can ensure secure connection
-       * </pre>
-       *
-       * <code>.io.opencola.security.protobuf.PublicKey publicKey = 2;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
        */
-      public Builder mergePublicKey(io.opencola.security.protobuf.Security.PublicKey value) {
-        if (publicKeyBuilder_ == null) {
-          if (publicKey_ != null) {
-            publicKey_ =
-              io.opencola.security.protobuf.Security.PublicKey.newBuilder(publicKey_).mergeFrom(value).buildPartial();
+      public Builder mergeSessionKey(io.opencola.security.protobuf.Security.EncryptedBytes value) {
+        if (sessionKeyBuilder_ == null) {
+          if (sessionKey_ != null) {
+            sessionKey_ =
+              io.opencola.security.protobuf.Security.EncryptedBytes.newBuilder(sessionKey_).mergeFrom(value).buildPartial();
           } else {
-            publicKey_ = value;
+            sessionKey_ = value;
           }
           onChanged();
         } else {
-          publicKeyBuilder_.mergeFrom(value);
+          sessionKeyBuilder_.mergeFrom(value);
         }
 
         return this;
       }
       /**
-       * <pre>
-       * TODO: Use https or publish this key so client can ensure secure connection
-       * </pre>
-       *
-       * <code>.io.opencola.security.protobuf.PublicKey publicKey = 2;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
        */
-      public Builder clearPublicKey() {
-        if (publicKeyBuilder_ == null) {
-          publicKey_ = null;
+      public Builder clearSessionKey() {
+        if (sessionKeyBuilder_ == null) {
+          sessionKey_ = null;
           onChanged();
         } else {
-          publicKey_ = null;
-          publicKeyBuilder_ = null;
+          sessionKey_ = null;
+          sessionKeyBuilder_ = null;
         }
 
         return this;
       }
       /**
-       * <pre>
-       * TODO: Use https or publish this key so client can ensure secure connection
-       * </pre>
-       *
-       * <code>.io.opencola.security.protobuf.PublicKey publicKey = 2;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
        */
-      public io.opencola.security.protobuf.Security.PublicKey.Builder getPublicKeyBuilder() {
+      public io.opencola.security.protobuf.Security.EncryptedBytes.Builder getSessionKeyBuilder() {
         
         onChanged();
-        return getPublicKeyFieldBuilder().getBuilder();
+        return getSessionKeyFieldBuilder().getBuilder();
       }
       /**
-       * <pre>
-       * TODO: Use https or publish this key so client can ensure secure connection
-       * </pre>
-       *
-       * <code>.io.opencola.security.protobuf.PublicKey publicKey = 2;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
        */
-      public io.opencola.security.protobuf.Security.PublicKeyOrBuilder getPublicKeyOrBuilder() {
-        if (publicKeyBuilder_ != null) {
-          return publicKeyBuilder_.getMessageOrBuilder();
+      public io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder getSessionKeyOrBuilder() {
+        if (sessionKeyBuilder_ != null) {
+          return sessionKeyBuilder_.getMessageOrBuilder();
         } else {
-          return publicKey_ == null ?
-              io.opencola.security.protobuf.Security.PublicKey.getDefaultInstance() : publicKey_;
+          return sessionKey_ == null ?
+              io.opencola.security.protobuf.Security.EncryptedBytes.getDefaultInstance() : sessionKey_;
         }
       }
       /**
-       * <pre>
-       * TODO: Use https or publish this key so client can ensure secure connection
-       * </pre>
-       *
-       * <code>.io.opencola.security.protobuf.PublicKey publicKey = 2;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          io.opencola.security.protobuf.Security.PublicKey, io.opencola.security.protobuf.Security.PublicKey.Builder, io.opencola.security.protobuf.Security.PublicKeyOrBuilder> 
-          getPublicKeyFieldBuilder() {
-        if (publicKeyBuilder_ == null) {
-          publicKeyBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              io.opencola.security.protobuf.Security.PublicKey, io.opencola.security.protobuf.Security.PublicKey.Builder, io.opencola.security.protobuf.Security.PublicKeyOrBuilder>(
-                  getPublicKey(),
+          io.opencola.security.protobuf.Security.EncryptedBytes, io.opencola.security.protobuf.Security.EncryptedBytes.Builder, io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder> 
+          getSessionKeyFieldBuilder() {
+        if (sessionKeyBuilder_ == null) {
+          sessionKeyBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              io.opencola.security.protobuf.Security.EncryptedBytes, io.opencola.security.protobuf.Security.EncryptedBytes.Builder, io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder>(
+                  getSessionKey(),
                   getParentForChildren(),
                   isClean());
-          publicKey_ = null;
+          sessionKey_ = null;
         }
-        return publicKeyBuilder_;
+        return sessionKeyBuilder_;
       }
       @java.lang.Override
       public final Builder setUnknownFields(
@@ -3709,8 +3649,8 @@ public final class Relay {
 
   }
 
-  public interface RelayMessageOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:io.opencola.relay.common.protobuf.RelayMessage)
+  public interface MessageOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:io.opencola.relay.common.protobuf.Message)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -3735,18 +3675,18 @@ public final class Relay {
     com.google.protobuf.ByteString getBody();
   }
   /**
-   * Protobuf type {@code io.opencola.relay.common.protobuf.RelayMessage}
+   * Protobuf type {@code io.opencola.relay.common.protobuf.Message}
    */
-  public static final class RelayMessage extends
+  public static final class Message extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:io.opencola.relay.common.protobuf.RelayMessage)
-      RelayMessageOrBuilder {
+      // @@protoc_insertion_point(message_implements:io.opencola.relay.common.protobuf.Message)
+      MessageOrBuilder {
   private static final long serialVersionUID = 0L;
-    // Use RelayMessage.newBuilder() to construct.
-    private RelayMessage(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+    // Use Message.newBuilder() to construct.
+    private Message(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
-    private RelayMessage() {
+    private Message() {
       body_ = com.google.protobuf.ByteString.EMPTY;
     }
 
@@ -3754,7 +3694,7 @@ public final class Relay {
     @SuppressWarnings({"unused"})
     protected java.lang.Object newInstance(
         UnusedPrivateParameter unused) {
-      return new RelayMessage();
+      return new Message();
     }
 
     @java.lang.Override
@@ -3762,7 +3702,7 @@ public final class Relay {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private RelayMessage(
+    private Message(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -3819,15 +3759,15 @@ public final class Relay {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_RelayMessage_descriptor;
+      return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_Message_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_RelayMessage_fieldAccessorTable
+      return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_Message_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              io.opencola.relay.common.protobuf.Relay.RelayMessage.class, io.opencola.relay.common.protobuf.Relay.RelayMessage.Builder.class);
+              io.opencola.relay.common.protobuf.Relay.Message.class, io.opencola.relay.common.protobuf.Relay.Message.Builder.class);
     }
 
     public static final int HEADER_FIELD_NUMBER = 1;
@@ -3914,10 +3854,10 @@ public final class Relay {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof io.opencola.relay.common.protobuf.Relay.RelayMessage)) {
+      if (!(obj instanceof io.opencola.relay.common.protobuf.Relay.Message)) {
         return super.equals(obj);
       }
-      io.opencola.relay.common.protobuf.Relay.RelayMessage other = (io.opencola.relay.common.protobuf.Relay.RelayMessage) obj;
+      io.opencola.relay.common.protobuf.Relay.Message other = (io.opencola.relay.common.protobuf.Relay.Message) obj;
 
       if (hasHeader() != other.hasHeader()) return false;
       if (hasHeader()) {
@@ -3948,69 +3888,69 @@ public final class Relay {
       return hash;
     }
 
-    public static io.opencola.relay.common.protobuf.Relay.RelayMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Message parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static io.opencola.relay.common.protobuf.Relay.RelayMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Message parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static io.opencola.relay.common.protobuf.Relay.RelayMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Message parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static io.opencola.relay.common.protobuf.Relay.RelayMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Message parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static io.opencola.relay.common.protobuf.Relay.RelayMessage parseFrom(byte[] data)
+    public static io.opencola.relay.common.protobuf.Relay.Message parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static io.opencola.relay.common.protobuf.Relay.RelayMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Message parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static io.opencola.relay.common.protobuf.Relay.RelayMessage parseFrom(java.io.InputStream input)
+    public static io.opencola.relay.common.protobuf.Relay.Message parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static io.opencola.relay.common.protobuf.Relay.RelayMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Message parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static io.opencola.relay.common.protobuf.Relay.RelayMessage parseDelimitedFrom(java.io.InputStream input)
+    public static io.opencola.relay.common.protobuf.Relay.Message parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static io.opencola.relay.common.protobuf.Relay.RelayMessage parseDelimitedFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Message parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static io.opencola.relay.common.protobuf.Relay.RelayMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Message parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static io.opencola.relay.common.protobuf.Relay.RelayMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Message parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -4023,7 +3963,7 @@ public final class Relay {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(io.opencola.relay.common.protobuf.Relay.RelayMessage prototype) {
+    public static Builder newBuilder(io.opencola.relay.common.protobuf.Relay.Message prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -4039,26 +3979,26 @@ public final class Relay {
       return builder;
     }
     /**
-     * Protobuf type {@code io.opencola.relay.common.protobuf.RelayMessage}
+     * Protobuf type {@code io.opencola.relay.common.protobuf.Message}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:io.opencola.relay.common.protobuf.RelayMessage)
-        io.opencola.relay.common.protobuf.Relay.RelayMessageOrBuilder {
+        // @@protoc_insertion_point(builder_implements:io.opencola.relay.common.protobuf.Message)
+        io.opencola.relay.common.protobuf.Relay.MessageOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_RelayMessage_descriptor;
+        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_Message_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_RelayMessage_fieldAccessorTable
+        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_Message_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                io.opencola.relay.common.protobuf.Relay.RelayMessage.class, io.opencola.relay.common.protobuf.Relay.RelayMessage.Builder.class);
+                io.opencola.relay.common.protobuf.Relay.Message.class, io.opencola.relay.common.protobuf.Relay.Message.Builder.class);
       }
 
-      // Construct using io.opencola.relay.common.protobuf.Relay.RelayMessage.newBuilder()
+      // Construct using io.opencola.relay.common.protobuf.Relay.Message.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -4090,17 +4030,17 @@ public final class Relay {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_RelayMessage_descriptor;
+        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_Message_descriptor;
       }
 
       @java.lang.Override
-      public io.opencola.relay.common.protobuf.Relay.RelayMessage getDefaultInstanceForType() {
-        return io.opencola.relay.common.protobuf.Relay.RelayMessage.getDefaultInstance();
+      public io.opencola.relay.common.protobuf.Relay.Message getDefaultInstanceForType() {
+        return io.opencola.relay.common.protobuf.Relay.Message.getDefaultInstance();
       }
 
       @java.lang.Override
-      public io.opencola.relay.common.protobuf.Relay.RelayMessage build() {
-        io.opencola.relay.common.protobuf.Relay.RelayMessage result = buildPartial();
+      public io.opencola.relay.common.protobuf.Relay.Message build() {
+        io.opencola.relay.common.protobuf.Relay.Message result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -4108,8 +4048,8 @@ public final class Relay {
       }
 
       @java.lang.Override
-      public io.opencola.relay.common.protobuf.Relay.RelayMessage buildPartial() {
-        io.opencola.relay.common.protobuf.Relay.RelayMessage result = new io.opencola.relay.common.protobuf.Relay.RelayMessage(this);
+      public io.opencola.relay.common.protobuf.Relay.Message buildPartial() {
+        io.opencola.relay.common.protobuf.Relay.Message result = new io.opencola.relay.common.protobuf.Relay.Message(this);
         if (headerBuilder_ == null) {
           result.header_ = header_;
         } else {
@@ -4154,16 +4094,16 @@ public final class Relay {
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof io.opencola.relay.common.protobuf.Relay.RelayMessage) {
-          return mergeFrom((io.opencola.relay.common.protobuf.Relay.RelayMessage)other);
+        if (other instanceof io.opencola.relay.common.protobuf.Relay.Message) {
+          return mergeFrom((io.opencola.relay.common.protobuf.Relay.Message)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(io.opencola.relay.common.protobuf.Relay.RelayMessage other) {
-        if (other == io.opencola.relay.common.protobuf.Relay.RelayMessage.getDefaultInstance()) return this;
+      public Builder mergeFrom(io.opencola.relay.common.protobuf.Relay.Message other) {
+        if (other == io.opencola.relay.common.protobuf.Relay.Message.getDefaultInstance()) return this;
         if (other.hasHeader()) {
           mergeHeader(other.getHeader());
         }
@@ -4185,11 +4125,11 @@ public final class Relay {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        io.opencola.relay.common.protobuf.Relay.RelayMessage parsedMessage = null;
+        io.opencola.relay.common.protobuf.Relay.Message parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (io.opencola.relay.common.protobuf.Relay.RelayMessage) e.getUnfinishedMessage();
+          parsedMessage = (io.opencola.relay.common.protobuf.Relay.Message) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -4364,41 +4304,41 @@ public final class Relay {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:io.opencola.relay.common.protobuf.RelayMessage)
+      // @@protoc_insertion_point(builder_scope:io.opencola.relay.common.protobuf.Message)
     }
 
-    // @@protoc_insertion_point(class_scope:io.opencola.relay.common.protobuf.RelayMessage)
-    private static final io.opencola.relay.common.protobuf.Relay.RelayMessage DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:io.opencola.relay.common.protobuf.Message)
+    private static final io.opencola.relay.common.protobuf.Relay.Message DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new io.opencola.relay.common.protobuf.Relay.RelayMessage();
+      DEFAULT_INSTANCE = new io.opencola.relay.common.protobuf.Relay.Message();
     }
 
-    public static io.opencola.relay.common.protobuf.Relay.RelayMessage getDefaultInstance() {
+    public static io.opencola.relay.common.protobuf.Relay.Message getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    private static final com.google.protobuf.Parser<RelayMessage>
-        PARSER = new com.google.protobuf.AbstractParser<RelayMessage>() {
+    private static final com.google.protobuf.Parser<Message>
+        PARSER = new com.google.protobuf.AbstractParser<Message>() {
       @java.lang.Override
-      public RelayMessage parsePartialFrom(
+      public Message parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new RelayMessage(input, extensionRegistry);
+        return new Message(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<RelayMessage> parser() {
+    public static com.google.protobuf.Parser<Message> parser() {
       return PARSER;
     }
 
     @java.lang.Override
-    public com.google.protobuf.Parser<RelayMessage> getParserForType() {
+    public com.google.protobuf.Parser<Message> getParserForType() {
       return PARSER;
     }
 
     @java.lang.Override
-    public io.opencola.relay.common.protobuf.Relay.RelayMessage getDefaultInstanceForType() {
+    public io.opencola.relay.common.protobuf.Relay.Message getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -5258,20 +5198,20 @@ public final class Relay {
 
   }
 
-  public interface ControlMessageOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:io.opencola.relay.common.protobuf.ControlMessage)
+  public interface ControlOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:io.opencola.relay.common.protobuf.Control)
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>.io.opencola.relay.common.protobuf.ControlMessage.Type type = 1;</code>
+     * <code>.io.opencola.relay.common.protobuf.Control.Type type = 1;</code>
      * @return The enum numeric value on the wire for type.
      */
     int getTypeValue();
     /**
-     * <code>.io.opencola.relay.common.protobuf.ControlMessage.Type type = 1;</code>
+     * <code>.io.opencola.relay.common.protobuf.Control.Type type = 1;</code>
      * @return The type.
      */
-    io.opencola.relay.common.protobuf.Relay.ControlMessage.Type getType();
+    io.opencola.relay.common.protobuf.Relay.Control.Type getType();
 
     /**
      * <code>optional bytes payload = 2;</code>
@@ -5285,18 +5225,18 @@ public final class Relay {
     com.google.protobuf.ByteString getPayload();
   }
   /**
-   * Protobuf type {@code io.opencola.relay.common.protobuf.ControlMessage}
+   * Protobuf type {@code io.opencola.relay.common.protobuf.Control}
    */
-  public static final class ControlMessage extends
+  public static final class Control extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:io.opencola.relay.common.protobuf.ControlMessage)
-      ControlMessageOrBuilder {
+      // @@protoc_insertion_point(message_implements:io.opencola.relay.common.protobuf.Control)
+      ControlOrBuilder {
   private static final long serialVersionUID = 0L;
-    // Use ControlMessage.newBuilder() to construct.
-    private ControlMessage(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+    // Use Control.newBuilder() to construct.
+    private Control(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
-    private ControlMessage() {
+    private Control() {
       type_ = 0;
       payload_ = com.google.protobuf.ByteString.EMPTY;
     }
@@ -5305,7 +5245,7 @@ public final class Relay {
     @SuppressWarnings({"unused"})
     protected java.lang.Object newInstance(
         UnusedPrivateParameter unused) {
-      return new ControlMessage();
+      return new Control();
     }
 
     @java.lang.Override
@@ -5313,7 +5253,7 @@ public final class Relay {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private ControlMessage(
+    private Control(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -5364,19 +5304,19 @@ public final class Relay {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_ControlMessage_descriptor;
+      return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_Control_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_ControlMessage_fieldAccessorTable
+      return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_Control_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              io.opencola.relay.common.protobuf.Relay.ControlMessage.class, io.opencola.relay.common.protobuf.Relay.ControlMessage.Builder.class);
+              io.opencola.relay.common.protobuf.Relay.Control.class, io.opencola.relay.common.protobuf.Relay.Control.Builder.class);
     }
 
     /**
-     * Protobuf enum {@code io.opencola.relay.common.protobuf.ControlMessage.Type}
+     * Protobuf enum {@code io.opencola.relay.common.protobuf.Control.Type}
      */
     public enum Type
         implements com.google.protobuf.ProtocolMessageEnum {
@@ -5448,7 +5388,7 @@ public final class Relay {
       }
       public static final com.google.protobuf.Descriptors.EnumDescriptor
           getDescriptor() {
-        return io.opencola.relay.common.protobuf.Relay.ControlMessage.getDescriptor().getEnumTypes().get(0);
+        return io.opencola.relay.common.protobuf.Relay.Control.getDescriptor().getEnumTypes().get(0);
       }
 
       private static final Type[] VALUES = values();
@@ -5471,27 +5411,27 @@ public final class Relay {
         this.value = value;
       }
 
-      // @@protoc_insertion_point(enum_scope:io.opencola.relay.common.protobuf.ControlMessage.Type)
+      // @@protoc_insertion_point(enum_scope:io.opencola.relay.common.protobuf.Control.Type)
     }
 
     private int bitField0_;
     public static final int TYPE_FIELD_NUMBER = 1;
     private int type_;
     /**
-     * <code>.io.opencola.relay.common.protobuf.ControlMessage.Type type = 1;</code>
+     * <code>.io.opencola.relay.common.protobuf.Control.Type type = 1;</code>
      * @return The enum numeric value on the wire for type.
      */
     @java.lang.Override public int getTypeValue() {
       return type_;
     }
     /**
-     * <code>.io.opencola.relay.common.protobuf.ControlMessage.Type type = 1;</code>
+     * <code>.io.opencola.relay.common.protobuf.Control.Type type = 1;</code>
      * @return The type.
      */
-    @java.lang.Override public io.opencola.relay.common.protobuf.Relay.ControlMessage.Type getType() {
+    @java.lang.Override public io.opencola.relay.common.protobuf.Relay.Control.Type getType() {
       @SuppressWarnings("deprecation")
-      io.opencola.relay.common.protobuf.Relay.ControlMessage.Type result = io.opencola.relay.common.protobuf.Relay.ControlMessage.Type.valueOf(type_);
-      return result == null ? io.opencola.relay.common.protobuf.Relay.ControlMessage.Type.UNRECOGNIZED : result;
+      io.opencola.relay.common.protobuf.Relay.Control.Type result = io.opencola.relay.common.protobuf.Relay.Control.Type.valueOf(type_);
+      return result == null ? io.opencola.relay.common.protobuf.Relay.Control.Type.UNRECOGNIZED : result;
     }
 
     public static final int PAYLOAD_FIELD_NUMBER = 2;
@@ -5527,7 +5467,7 @@ public final class Relay {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (type_ != io.opencola.relay.common.protobuf.Relay.ControlMessage.Type.NO_PENDING_MESSAGES.getNumber()) {
+      if (type_ != io.opencola.relay.common.protobuf.Relay.Control.Type.NO_PENDING_MESSAGES.getNumber()) {
         output.writeEnum(1, type_);
       }
       if (((bitField0_ & 0x00000001) != 0)) {
@@ -5542,7 +5482,7 @@ public final class Relay {
       if (size != -1) return size;
 
       size = 0;
-      if (type_ != io.opencola.relay.common.protobuf.Relay.ControlMessage.Type.NO_PENDING_MESSAGES.getNumber()) {
+      if (type_ != io.opencola.relay.common.protobuf.Relay.Control.Type.NO_PENDING_MESSAGES.getNumber()) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(1, type_);
       }
@@ -5560,10 +5500,10 @@ public final class Relay {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof io.opencola.relay.common.protobuf.Relay.ControlMessage)) {
+      if (!(obj instanceof io.opencola.relay.common.protobuf.Relay.Control)) {
         return super.equals(obj);
       }
-      io.opencola.relay.common.protobuf.Relay.ControlMessage other = (io.opencola.relay.common.protobuf.Relay.ControlMessage) obj;
+      io.opencola.relay.common.protobuf.Relay.Control other = (io.opencola.relay.common.protobuf.Relay.Control) obj;
 
       if (type_ != other.type_) return false;
       if (hasPayload() != other.hasPayload()) return false;
@@ -5593,69 +5533,69 @@ public final class Relay {
       return hash;
     }
 
-    public static io.opencola.relay.common.protobuf.Relay.ControlMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Control parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ControlMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Control parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ControlMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Control parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ControlMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Control parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ControlMessage parseFrom(byte[] data)
+    public static io.opencola.relay.common.protobuf.Relay.Control parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ControlMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Control parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ControlMessage parseFrom(java.io.InputStream input)
+    public static io.opencola.relay.common.protobuf.Relay.Control parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ControlMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Control parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ControlMessage parseDelimitedFrom(java.io.InputStream input)
+    public static io.opencola.relay.common.protobuf.Relay.Control parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ControlMessage parseDelimitedFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Control parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ControlMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Control parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static io.opencola.relay.common.protobuf.Relay.ControlMessage parseFrom(
+    public static io.opencola.relay.common.protobuf.Relay.Control parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -5668,7 +5608,7 @@ public final class Relay {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(io.opencola.relay.common.protobuf.Relay.ControlMessage prototype) {
+    public static Builder newBuilder(io.opencola.relay.common.protobuf.Relay.Control prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -5684,26 +5624,26 @@ public final class Relay {
       return builder;
     }
     /**
-     * Protobuf type {@code io.opencola.relay.common.protobuf.ControlMessage}
+     * Protobuf type {@code io.opencola.relay.common.protobuf.Control}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:io.opencola.relay.common.protobuf.ControlMessage)
-        io.opencola.relay.common.protobuf.Relay.ControlMessageOrBuilder {
+        // @@protoc_insertion_point(builder_implements:io.opencola.relay.common.protobuf.Control)
+        io.opencola.relay.common.protobuf.Relay.ControlOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_ControlMessage_descriptor;
+        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_Control_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_ControlMessage_fieldAccessorTable
+        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_Control_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                io.opencola.relay.common.protobuf.Relay.ControlMessage.class, io.opencola.relay.common.protobuf.Relay.ControlMessage.Builder.class);
+                io.opencola.relay.common.protobuf.Relay.Control.class, io.opencola.relay.common.protobuf.Relay.Control.Builder.class);
       }
 
-      // Construct using io.opencola.relay.common.protobuf.Relay.ControlMessage.newBuilder()
+      // Construct using io.opencola.relay.common.protobuf.Relay.Control.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -5731,17 +5671,17 @@ public final class Relay {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_ControlMessage_descriptor;
+        return io.opencola.relay.common.protobuf.Relay.internal_static_io_opencola_relay_common_protobuf_Control_descriptor;
       }
 
       @java.lang.Override
-      public io.opencola.relay.common.protobuf.Relay.ControlMessage getDefaultInstanceForType() {
-        return io.opencola.relay.common.protobuf.Relay.ControlMessage.getDefaultInstance();
+      public io.opencola.relay.common.protobuf.Relay.Control getDefaultInstanceForType() {
+        return io.opencola.relay.common.protobuf.Relay.Control.getDefaultInstance();
       }
 
       @java.lang.Override
-      public io.opencola.relay.common.protobuf.Relay.ControlMessage build() {
-        io.opencola.relay.common.protobuf.Relay.ControlMessage result = buildPartial();
+      public io.opencola.relay.common.protobuf.Relay.Control build() {
+        io.opencola.relay.common.protobuf.Relay.Control result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -5749,8 +5689,8 @@ public final class Relay {
       }
 
       @java.lang.Override
-      public io.opencola.relay.common.protobuf.Relay.ControlMessage buildPartial() {
-        io.opencola.relay.common.protobuf.Relay.ControlMessage result = new io.opencola.relay.common.protobuf.Relay.ControlMessage(this);
+      public io.opencola.relay.common.protobuf.Relay.Control buildPartial() {
+        io.opencola.relay.common.protobuf.Relay.Control result = new io.opencola.relay.common.protobuf.Relay.Control(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         result.type_ = type_;
@@ -5797,16 +5737,16 @@ public final class Relay {
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof io.opencola.relay.common.protobuf.Relay.ControlMessage) {
-          return mergeFrom((io.opencola.relay.common.protobuf.Relay.ControlMessage)other);
+        if (other instanceof io.opencola.relay.common.protobuf.Relay.Control) {
+          return mergeFrom((io.opencola.relay.common.protobuf.Relay.Control)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(io.opencola.relay.common.protobuf.Relay.ControlMessage other) {
-        if (other == io.opencola.relay.common.protobuf.Relay.ControlMessage.getDefaultInstance()) return this;
+      public Builder mergeFrom(io.opencola.relay.common.protobuf.Relay.Control other) {
+        if (other == io.opencola.relay.common.protobuf.Relay.Control.getDefaultInstance()) return this;
         if (other.type_ != 0) {
           setTypeValue(other.getTypeValue());
         }
@@ -5828,11 +5768,11 @@ public final class Relay {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        io.opencola.relay.common.protobuf.Relay.ControlMessage parsedMessage = null;
+        io.opencola.relay.common.protobuf.Relay.Control parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (io.opencola.relay.common.protobuf.Relay.ControlMessage) e.getUnfinishedMessage();
+          parsedMessage = (io.opencola.relay.common.protobuf.Relay.Control) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -5845,14 +5785,14 @@ public final class Relay {
 
       private int type_ = 0;
       /**
-       * <code>.io.opencola.relay.common.protobuf.ControlMessage.Type type = 1;</code>
+       * <code>.io.opencola.relay.common.protobuf.Control.Type type = 1;</code>
        * @return The enum numeric value on the wire for type.
        */
       @java.lang.Override public int getTypeValue() {
         return type_;
       }
       /**
-       * <code>.io.opencola.relay.common.protobuf.ControlMessage.Type type = 1;</code>
+       * <code>.io.opencola.relay.common.protobuf.Control.Type type = 1;</code>
        * @param value The enum numeric value on the wire for type to set.
        * @return This builder for chaining.
        */
@@ -5863,21 +5803,21 @@ public final class Relay {
         return this;
       }
       /**
-       * <code>.io.opencola.relay.common.protobuf.ControlMessage.Type type = 1;</code>
+       * <code>.io.opencola.relay.common.protobuf.Control.Type type = 1;</code>
        * @return The type.
        */
       @java.lang.Override
-      public io.opencola.relay.common.protobuf.Relay.ControlMessage.Type getType() {
+      public io.opencola.relay.common.protobuf.Relay.Control.Type getType() {
         @SuppressWarnings("deprecation")
-        io.opencola.relay.common.protobuf.Relay.ControlMessage.Type result = io.opencola.relay.common.protobuf.Relay.ControlMessage.Type.valueOf(type_);
-        return result == null ? io.opencola.relay.common.protobuf.Relay.ControlMessage.Type.UNRECOGNIZED : result;
+        io.opencola.relay.common.protobuf.Relay.Control.Type result = io.opencola.relay.common.protobuf.Relay.Control.Type.valueOf(type_);
+        return result == null ? io.opencola.relay.common.protobuf.Relay.Control.Type.UNRECOGNIZED : result;
       }
       /**
-       * <code>.io.opencola.relay.common.protobuf.ControlMessage.Type type = 1;</code>
+       * <code>.io.opencola.relay.common.protobuf.Control.Type type = 1;</code>
        * @param value The type to set.
        * @return This builder for chaining.
        */
-      public Builder setType(io.opencola.relay.common.protobuf.Relay.ControlMessage.Type value) {
+      public Builder setType(io.opencola.relay.common.protobuf.Relay.Control.Type value) {
         if (value == null) {
           throw new NullPointerException();
         }
@@ -5887,7 +5827,7 @@ public final class Relay {
         return this;
       }
       /**
-       * <code>.io.opencola.relay.common.protobuf.ControlMessage.Type type = 1;</code>
+       * <code>.io.opencola.relay.common.protobuf.Control.Type type = 1;</code>
        * @return This builder for chaining.
        */
       public Builder clearType() {
@@ -5951,56 +5891,56 @@ public final class Relay {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:io.opencola.relay.common.protobuf.ControlMessage)
+      // @@protoc_insertion_point(builder_scope:io.opencola.relay.common.protobuf.Control)
     }
 
-    // @@protoc_insertion_point(class_scope:io.opencola.relay.common.protobuf.ControlMessage)
-    private static final io.opencola.relay.common.protobuf.Relay.ControlMessage DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:io.opencola.relay.common.protobuf.Control)
+    private static final io.opencola.relay.common.protobuf.Relay.Control DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new io.opencola.relay.common.protobuf.Relay.ControlMessage();
+      DEFAULT_INSTANCE = new io.opencola.relay.common.protobuf.Relay.Control();
     }
 
-    public static io.opencola.relay.common.protobuf.Relay.ControlMessage getDefaultInstance() {
+    public static io.opencola.relay.common.protobuf.Relay.Control getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    private static final com.google.protobuf.Parser<ControlMessage>
-        PARSER = new com.google.protobuf.AbstractParser<ControlMessage>() {
+    private static final com.google.protobuf.Parser<Control>
+        PARSER = new com.google.protobuf.AbstractParser<Control>() {
       @java.lang.Override
-      public ControlMessage parsePartialFrom(
+      public Control parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new ControlMessage(input, extensionRegistry);
+        return new Control(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<ControlMessage> parser() {
+    public static com.google.protobuf.Parser<Control> parser() {
       return PARSER;
     }
 
     @java.lang.Override
-    public com.google.protobuf.Parser<ControlMessage> getParserForType() {
+    public com.google.protobuf.Parser<Control> getParserForType() {
       return PARSER;
     }
 
     @java.lang.Override
-    public io.opencola.relay.common.protobuf.Relay.ControlMessage getDefaultInstanceForType() {
+    public io.opencola.relay.common.protobuf.Relay.Control getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
   }
 
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_io_opencola_relay_common_protobuf_ConnectMessage_descriptor;
+    internal_static_io_opencola_relay_common_protobuf_Identity_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_io_opencola_relay_common_protobuf_ConnectMessage_fieldAccessorTable;
+      internal_static_io_opencola_relay_common_protobuf_Identity_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_io_opencola_relay_common_protobuf_ChallengeMessage_descriptor;
+    internal_static_io_opencola_relay_common_protobuf_Challenge_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_io_opencola_relay_common_protobuf_ChallengeMessage_fieldAccessorTable;
+      internal_static_io_opencola_relay_common_protobuf_Challenge_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_io_opencola_relay_common_protobuf_ChallengeResponse_descriptor;
   private static final 
@@ -6017,20 +5957,20 @@ public final class Relay {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_io_opencola_relay_common_protobuf_Header_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_io_opencola_relay_common_protobuf_RelayMessage_descriptor;
+    internal_static_io_opencola_relay_common_protobuf_Message_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_io_opencola_relay_common_protobuf_RelayMessage_fieldAccessorTable;
+      internal_static_io_opencola_relay_common_protobuf_Message_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_io_opencola_relay_common_protobuf_Envelope_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_io_opencola_relay_common_protobuf_Envelope_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_io_opencola_relay_common_protobuf_ControlMessage_descriptor;
+    internal_static_io_opencola_relay_common_protobuf_Control_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_io_opencola_relay_common_protobuf_ControlMessage_fieldAccessorTable;
+      internal_static_io_opencola_relay_common_protobuf_Control_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -6041,49 +5981,48 @@ public final class Relay {
   static {
     java.lang.String[] descriptorData = {
       "\n\013relay.proto\022!io.opencola.relay.common." +
-      "protobuf\032\016security.proto\"M\n\016ConnectMessa" +
-      "ge\022;\n\tpublicKey\030\001 \001(\0132(.io.opencola.secu" +
-      "rity.protobuf.PublicKey\"k\n\020ChallengeMess" +
-      "age\022D\n\talgorithm\030\001 \001(\01621.io.opencola.sec" +
-      "urity.protobuf.SignatureAlgorithm\022\021\n\tcha" +
-      "llenge\030\002 \001(\014\"P\n\021ChallengeResponse\022;\n\tsig" +
-      "nature\030\001 \001(\0132(.io.opencola.security.prot" +
-      "obuf.Signature\"\234\001\n\024AuthenticationResult\022" +
-      "G\n\006status\030\001 \001(\01627.io.opencola.relay.comm" +
-      "on.protobuf.AuthenticationStatus\022;\n\tpubl" +
-      "icKey\030\002 \001(\0132(.io.opencola.security.proto" +
-      "buf.PublicKey\"\220\001\n\006Header\022\021\n\tmessageId\030\001 " +
-      "\001(\014\0226\n\004from\030\002 \001(\0132(.io.opencola.security" +
-      ".protobuf.PublicKey\022;\n\tsignature\030\003 \001(\0132(" +
-      ".io.opencola.security.protobuf.Signature" +
-      "\"W\n\014RelayMessage\0229\n\006header\030\001 \001(\0132).io.op" +
-      "encola.relay.common.protobuf.Header\022\014\n\004b" +
-      "ody\030\002 \001(\014\"^\n\010Envelope\0224\n\002to\030\001 \001(\0132(.io.o" +
-      "pencola.security.protobuf.PublicKey\022\013\n\003k" +
-      "ey\030\002 \001(\014\022\017\n\007message\030\003 \001(\014\"\231\001\n\016ControlMes" +
-      "sage\022D\n\004type\030\001 \001(\01626.io.opencola.relay.c" +
-      "ommon.protobuf.ControlMessage.Type\022\024\n\007pa" +
-      "yload\030\002 \001(\014H\000\210\001\001\"\037\n\004Type\022\027\n\023NO_PENDING_M" +
-      "ESSAGES\020\000B\n\n\010_payload*?\n\024AuthenticationS" +
-      "tatus\022\021\n\rAUTHENTICATED\020\000\022\024\n\020FAILED_CHALL" +
-      "ENGE\020\001b\006proto3"
+      "protobuf\032\016security.proto\"G\n\010Identity\022;\n\t" +
+      "publicKey\030\001 \001(\0132(.io.opencola.security.p" +
+      "rotobuf.PublicKey\"d\n\tChallenge\022D\n\talgori" +
+      "thm\030\001 \001(\01621.io.opencola.security.protobu" +
+      "f.SignatureAlgorithm\022\021\n\tchallenge\030\002 \001(\014\"" +
+      "P\n\021ChallengeResponse\022;\n\tsignature\030\001 \001(\0132" +
+      "(.io.opencola.security.protobuf.Signatur" +
+      "e\"\242\001\n\024AuthenticationResult\022G\n\006status\030\001 \001" +
+      "(\01627.io.opencola.relay.common.protobuf.A" +
+      "uthenticationStatus\022A\n\nsessionKey\030\002 \001(\0132" +
+      "-.io.opencola.security.protobuf.Encrypte" +
+      "dBytes\"\220\001\n\006Header\022\021\n\tmessageId\030\001 \001(\014\0226\n\004" +
+      "from\030\002 \001(\0132(.io.opencola.security.protob" +
+      "uf.PublicKey\022;\n\tsignature\030\003 \001(\0132(.io.ope" +
+      "ncola.security.protobuf.Signature\"R\n\007Mes" +
+      "sage\0229\n\006header\030\001 \001(\0132).io.opencola.relay" +
+      ".common.protobuf.Header\022\014\n\004body\030\002 \001(\014\"^\n" +
+      "\010Envelope\0224\n\002to\030\001 \001(\0132(.io.opencola.secu" +
+      "rity.protobuf.PublicKey\022\013\n\003key\030\002 \001(\014\022\017\n\007" +
+      "message\030\003 \001(\014\"\213\001\n\007Control\022=\n\004type\030\001 \001(\0162" +
+      "/.io.opencola.relay.common.protobuf.Cont" +
+      "rol.Type\022\024\n\007payload\030\002 \001(\014H\000\210\001\001\"\037\n\004Type\022\027" +
+      "\n\023NO_PENDING_MESSAGES\020\000B\n\n\010_payload*?\n\024A" +
+      "uthenticationStatus\022\021\n\rAUTHENTICATED\020\000\022\024" +
+      "\n\020FAILED_CHALLENGE\020\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           io.opencola.security.protobuf.Security.getDescriptor(),
         });
-    internal_static_io_opencola_relay_common_protobuf_ConnectMessage_descriptor =
+    internal_static_io_opencola_relay_common_protobuf_Identity_descriptor =
       getDescriptor().getMessageTypes().get(0);
-    internal_static_io_opencola_relay_common_protobuf_ConnectMessage_fieldAccessorTable = new
+    internal_static_io_opencola_relay_common_protobuf_Identity_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_io_opencola_relay_common_protobuf_ConnectMessage_descriptor,
+        internal_static_io_opencola_relay_common_protobuf_Identity_descriptor,
         new java.lang.String[] { "PublicKey", });
-    internal_static_io_opencola_relay_common_protobuf_ChallengeMessage_descriptor =
+    internal_static_io_opencola_relay_common_protobuf_Challenge_descriptor =
       getDescriptor().getMessageTypes().get(1);
-    internal_static_io_opencola_relay_common_protobuf_ChallengeMessage_fieldAccessorTable = new
+    internal_static_io_opencola_relay_common_protobuf_Challenge_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_io_opencola_relay_common_protobuf_ChallengeMessage_descriptor,
+        internal_static_io_opencola_relay_common_protobuf_Challenge_descriptor,
         new java.lang.String[] { "Algorithm", "Challenge", });
     internal_static_io_opencola_relay_common_protobuf_ChallengeResponse_descriptor =
       getDescriptor().getMessageTypes().get(2);
@@ -6096,18 +6035,18 @@ public final class Relay {
     internal_static_io_opencola_relay_common_protobuf_AuthenticationResult_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_relay_common_protobuf_AuthenticationResult_descriptor,
-        new java.lang.String[] { "Status", "PublicKey", });
+        new java.lang.String[] { "Status", "SessionKey", });
     internal_static_io_opencola_relay_common_protobuf_Header_descriptor =
       getDescriptor().getMessageTypes().get(4);
     internal_static_io_opencola_relay_common_protobuf_Header_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_relay_common_protobuf_Header_descriptor,
         new java.lang.String[] { "MessageId", "From", "Signature", });
-    internal_static_io_opencola_relay_common_protobuf_RelayMessage_descriptor =
+    internal_static_io_opencola_relay_common_protobuf_Message_descriptor =
       getDescriptor().getMessageTypes().get(5);
-    internal_static_io_opencola_relay_common_protobuf_RelayMessage_fieldAccessorTable = new
+    internal_static_io_opencola_relay_common_protobuf_Message_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_io_opencola_relay_common_protobuf_RelayMessage_descriptor,
+        internal_static_io_opencola_relay_common_protobuf_Message_descriptor,
         new java.lang.String[] { "Header", "Body", });
     internal_static_io_opencola_relay_common_protobuf_Envelope_descriptor =
       getDescriptor().getMessageTypes().get(6);
@@ -6115,11 +6054,11 @@ public final class Relay {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_relay_common_protobuf_Envelope_descriptor,
         new java.lang.String[] { "To", "Key", "Message", });
-    internal_static_io_opencola_relay_common_protobuf_ControlMessage_descriptor =
+    internal_static_io_opencola_relay_common_protobuf_Control_descriptor =
       getDescriptor().getMessageTypes().get(7);
-    internal_static_io_opencola_relay_common_protobuf_ControlMessage_fieldAccessorTable = new
+    internal_static_io_opencola_relay_common_protobuf_Control_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_io_opencola_relay_common_protobuf_ControlMessage_descriptor,
+        internal_static_io_opencola_relay_common_protobuf_Control_descriptor,
         new java.lang.String[] { "Type", "Payload", "Payload", });
     io.opencola.security.protobuf.Security.getDescriptor();
   }

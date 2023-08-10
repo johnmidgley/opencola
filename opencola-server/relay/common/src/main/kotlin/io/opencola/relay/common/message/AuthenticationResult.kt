@@ -1,11 +1,10 @@
 package io.opencola.relay.common.message
 
-import io.opencola.security.PublicKeyProtoCodec
+import io.opencola.security.EncryptedBytes
 import io.opencola.relay.common.protobuf.Relay as Proto
 import io.opencola.serialization.protobuf.ProtoSerializable
-import java.security.PublicKey
 
-class AuthenticationResult(val status: AuthenticationStatus, val publicKey: PublicKey) {
+class AuthenticationResult(val status: AuthenticationStatus, val sessionKey: EncryptedBytes?) {
     fun encodeProto() : ByteArray {
         return encodeProto(this)
     }
@@ -14,14 +13,14 @@ class AuthenticationResult(val status: AuthenticationStatus, val publicKey: Publ
         override fun toProto(value: AuthenticationResult): Proto.AuthenticationResult {
             return Proto.AuthenticationResult.newBuilder()
                 .setStatus(value.status.toProto())
-                .setPublicKey(PublicKeyProtoCodec.toProto(value.publicKey))
+                .also { if(value.sessionKey != null) it.setSessionKey(value.sessionKey.toProto()) }
                 .build()
         }
 
         override fun fromProto(value: Proto.AuthenticationResult): AuthenticationResult {
             return AuthenticationResult(
                 AuthenticationStatus.fromProto(value.status),
-                PublicKeyProtoCodec.fromProto(value.publicKey)
+                if(value.hasSessionKey()) EncryptedBytes.fromProto(value.sessionKey) else null
             )
         }
 

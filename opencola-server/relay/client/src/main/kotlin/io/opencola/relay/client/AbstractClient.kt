@@ -18,6 +18,7 @@ import java.net.ConnectException
 import java.net.URI
 import java.security.KeyPair
 import java.security.PublicKey
+import java.security.SecureRandom
 
 abstract class AbstractClient(
     protected val uri: URI,
@@ -31,6 +32,8 @@ abstract class AbstractClient(
     protected val port = if (uri.port > 0) uri.port else defaultOCRPort
     protected var serverPublicKey: PublicKey? = null
     protected var eventHandler: EventHandler? = null
+    protected val random = SecureRandom()
+    protected val numChallengeBytes = 32
 
     // Not to be touched directly. Access by calling getConnections, which will ensure it's opened and ready
     private var _connection: Connection? = null
@@ -55,6 +58,11 @@ abstract class AbstractClient(
     protected abstract fun getEncodeEnvelope(to: PublicKey, key: MessageKey, message: Message): ByteArray
     protected abstract fun decodePayload(payload: ByteArray): Message
     protected abstract suspend fun authenticate(socketSession: SocketSession)
+
+    fun isAuthorized(serverPublicKey: PublicKey): Boolean {
+        logger.info { "Authorizing server: ${Id.ofPublicKey(serverPublicKey)}" }
+        return true
+    }
 
     val publicKey: PublicKey
         get() = keyPair.public

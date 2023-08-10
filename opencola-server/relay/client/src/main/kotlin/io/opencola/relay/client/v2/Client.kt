@@ -17,26 +17,49 @@ abstract class Client(
     requestTimeoutMilliseconds: Long = 60000, // TODO: Make configurable
     retryPolicy: (Int) -> Long = retryExponentialBackoff(),
 ) : AbstractClient(uri, keyPair, "$name", requestTimeoutMilliseconds, retryPolicy) {
+    private var sessionKey: ByteArray? = null
+
     override suspend fun authenticate(socketSession: SocketSession) {
-        // Send public key
-        logger.debug { "Sending public key" }
-        socketSession.writeSizedByteArray(ConnectMessage(keyPair.public).encodeProto())
+        logger.info { "Authenticating" }
 
-        // Read challenge
-        logger.debug { "Reading challenge" }
-        val challengeMessage = ChallengeMessage.decodeProto(socketSession.readSizedByteArray())
+        logger.debug { "Reading server identity" }
+        val serverPublicKey = IdentityMessage.decodeProto(socketSession.readSizedByteArray()).publicKey
+        logger.debug { "Server public key: $serverPublicKey" }
+        if(!isAuthorized(serverPublicKey))
+            throw RuntimeException("Server is not authorized: $serverPublicKey")
 
-        // Sign challenge and send back
-        logger.debug { "Signing challenge" }
-        val signature = sign(keyPair.private, challengeMessage.challenge, challengeMessage.algorithm)
-        socketSession.writeSizedByteArray(ChallengeResponse(signature).encodeProto())
+        logger.debug { "Writing server challenge" }
+        val serverChallenge = ChallengeMessage(DEFAULT_SIGNATURE_ALGO, random.nextBytes(numChallengeBytes))
+        socketSession.writeSizedByteArray(serverChallenge.encodeProto())
 
+        logger.debug { "Reading challenge response" }
+        val serverChallengeResponse = ChallengeResponse.decodeProto(socketSession.readSizedByteArray())
+        if (!isValidSignature(serverPublicKey, serverChallenge.challenge, serverChallengeResponse.signature))
+            throw RuntimeException("Server failed challenge")
+
+        logger.debug { "Writing client identity" }
+        val encryptedIdentityMessage = encrypt(serverPublicKey, IdentityMessage(keyPair.public).encodeProto())
+        socketSession.writeSizedByteArray(encryptedIdentityMessage.encodeProto())
+
+        logger.debug { "Reading client challenge" }
+        val clientChallenge = ChallengeMessage.decodeProto(socketSession.readSizedByteArray())
+
+        logger.debug { "Writing challenge response" }
+        val signature = sign(keyPair.private, clientChallenge.challenge, clientChallenge.algorithm)
+        // Encrypt the signature with the server's public key so that MITM can't identify clients based on known public keys
+        val encryptedChallengeResponse = encrypt(serverPublicKey, ChallengeResponse(signature).encodeProto())
+        socketSession.writeSizedByteArray(encryptedChallengeResponse.encodeProto())
+
+        logger.debug { "Reading authentication result" }
         val authenticationResult = AuthenticationResult.decodeProto(socketSession.readSizedByteArray())
         if (authenticationResult.status != AuthenticationStatus.AUTHENTICATED) {
             throw RuntimeException("Unable to authenticate connection: $authenticationResult.status")
+        } else if (authenticationResult.sessionKey == null) {
+            throw RuntimeException("Unable to authenticate connection: No session key")
         }
 
-        serverPublicKey = authenticationResult.publicKey
+        this.serverPublicKey = serverPublicKey
+        this.sessionKey = decrypt(keyPair.private, authenticationResult.sessionKey!!)
         logger.debug { "Authenticated" }
     }
 

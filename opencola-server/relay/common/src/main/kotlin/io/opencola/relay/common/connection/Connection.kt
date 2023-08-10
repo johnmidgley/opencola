@@ -8,7 +8,7 @@ import mu.KotlinLogging
 
 typealias MessageHandler = suspend (ByteArray) -> Unit
 
-class Connection(private val socketSession: SocketSession, val name: String? = null) {
+class Connection(private val socketSession: SocketSession, val name: String? = null, val sessionKey: ByteArray? = null) {
     private val logger = KotlinLogging.logger("Connection${if(name != null) " ($name)" else ""}")
     private var state = Initialized
     private var listenJob: Job? = null

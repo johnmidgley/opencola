@@ -52,6 +52,22 @@ available in the outer envelope of the message.
 | key     | ```bytes```     | **V2 ONLY**: The key (typically the hash of some / all of the message data before encryption) used to control message storage. When not present, the message is considered transient and will **NOT** be stored. When present, only 1 ```Message``` with the same key is stored. |
 | message | ```bytes```     | The message to be sent.                                                                                                                                                                                                                                                          |
 
+## Authentication Handshake
+
+When a client connects to the server, a handshake is performed to authenticate both the server and the client. 
+are the steps in the handshake:
+
+| Message Source | Action                | Description                                                                                                                                                                            |
+|----------------|-----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Server         | Identify              | The server sends its public key to client                                                                                                                                              |
+| Client         | Challenge             | If the server identity is trusted, the client sends a challenge (a set of random bytes) to server                                                                                      |
+| Server         | Challenge Response    | The server signs the challenge and sends the signature to the client. There's no need to encrypt the signature, because the server publicly identifies itself.                         |
+| Client         | Identify              | The client verifies the challenge, and if valid, sends its public key to the server, encrypted with the server public key.                                                             |
+| Server         | Challenge             | The server decrypts the client's public key and if the client is authorized, generates a challenge and sends it to the client.                                                         | 
+| Client         | Challenge Response    | The client signs the challenge and sends the encrypted signature to server - encrypting protects against MITM scanning client public keys for signature matches.                       |
+| Server         | Authentication Result | The server decrypts and verifies the signature. If the signature is valid, authentication is successful and the server generates a session key to include in an authentication result. |
+
+
 
 
 

@@ -37,7 +37,7 @@ class Message(val header: Header, val body: ByteArray) {
         return this
     }
 
-    companion object : StreamSerializer<Message>, ProtoSerializable<Message, Proto.RelayMessage> {
+    companion object : StreamSerializer<Message>, ProtoSerializable<Message, Proto.Message> {
         override fun encode(stream: OutputStream, value: Message) {
             Header.encode(stream, value.header)
             stream.writeByteArray(value.body)
@@ -49,22 +49,22 @@ class Message(val header: Header, val body: ByteArray) {
                 stream.readByteArray())
         }
 
-        override fun toProto(value: Message): Proto.RelayMessage {
-            return Proto.RelayMessage.newBuilder()
+        override fun toProto(value: Message): Proto.Message {
+            return Proto.Message.newBuilder()
                 .setHeader(Header.toProto(value.header))
                 .setBody(ByteString.copyFrom(value.body))
                 .build()
         }
 
-        override fun fromProto(value: Proto.RelayMessage): Message {
+        override fun fromProto(value: Proto.Message): Message {
             return Message(
                 Header.fromProto(value.header),
                 value.body.toByteArray()
             )
         }
 
-        override fun parseProto(bytes: ByteArray): Proto.RelayMessage {
-            return Proto.RelayMessage.parseFrom(bytes)
+        override fun parseProto(bytes: ByteArray): Proto.Message {
+            return Proto.Message.parseFrom(bytes)
         }
     }
 }

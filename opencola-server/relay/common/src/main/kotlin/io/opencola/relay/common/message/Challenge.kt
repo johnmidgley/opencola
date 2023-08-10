@@ -10,20 +10,20 @@ class ChallengeMessage(val algorithm: SignatureAlgorithm, val challenge: ByteArr
         return encodeProto(this)
     }
 
-    companion object : ProtoSerializable<ChallengeMessage, Proto.ChallengeMessage> {
-        override fun toProto(value: ChallengeMessage): Proto.ChallengeMessage {
-            return Proto.ChallengeMessage.newBuilder()
+    companion object : ProtoSerializable<ChallengeMessage, Proto.Challenge> {
+        override fun toProto(value: ChallengeMessage): Proto.Challenge {
+            return Proto.Challenge.newBuilder()
                 .setAlgorithm(value.algorithm.protoValue)
                 .setChallenge(ByteString.copyFrom(value.challenge))
                 .build()
         }
 
-        override fun fromProto(value: Proto.ChallengeMessage): ChallengeMessage {
+        override fun fromProto(value: Proto.Challenge): ChallengeMessage {
             return ChallengeMessage(SignatureAlgorithm.fromProto(value.algorithm), value.challenge.toByteArray())
         }
 
-        override fun parseProto(bytes: ByteArray): Proto.ChallengeMessage {
-            return Proto.ChallengeMessage.parseFrom(bytes)
+        override fun parseProto(bytes: ByteArray): Proto.Challenge {
+            return Proto.Challenge.parseFrom(bytes)
         }
     }
 }

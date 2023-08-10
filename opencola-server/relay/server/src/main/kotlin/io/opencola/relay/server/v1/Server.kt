@@ -9,10 +9,9 @@ import io.opencola.relay.common.connection.SocketSession
 import io.opencola.relay.server.AbstractRelayServer
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
-import java.security.PublicKey
 
 abstract class Server(numChallengeBytes: Int = 32) : AbstractRelayServer(numChallengeBytes){
-    override suspend fun authenticate(socketSession: SocketSession): PublicKey? {
+    override suspend fun authenticate(socketSession: SocketSession): AuthenticationResult? {
         try {
             logger.debug { "Authenticating" }
             val encodedPublicKey = socketSession.readSizedByteArray()
@@ -35,7 +34,7 @@ abstract class Server(numChallengeBytes: Int = 32) : AbstractRelayServer(numChal
                 throw RuntimeException("Challenge signature is not valid")
 
             logger.debug { "Client authenticated" }
-            return publicKey
+            return AuthenticationResult(publicKey)
         } catch (e: CancellationException) {
             // Let job cancellation fall through
         } catch (e: ClosedReceiveChannelException) {

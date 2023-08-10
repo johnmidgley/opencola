@@ -3,11 +3,11 @@ syntax = "proto3";
 package io.opencola.relay.common.protobuf;
 import "security.proto";
 
-message ConnectMessage {
+message Identity {
   io.opencola.security.protobuf.PublicKey publicKey = 1;
 }
 
-message ChallengeMessage {
+message Challenge {
   io.opencola.security.protobuf.SignatureAlgorithm algorithm = 1;
   bytes challenge = 2;
 }
@@ -23,8 +23,7 @@ enum AuthenticationStatus {
 
 message AuthenticationResult {
   AuthenticationStatus status = 1;
-  // TODO: Use https or publish this key so client can ensure secure connection
-  io.opencola.security.protobuf.PublicKey publicKey = 2;
+  io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;
 }
 
 message Header {
@@ -33,7 +32,7 @@ message Header {
   io.opencola.security.protobuf.Signature signature = 3;
 }
 
-message RelayMessage {
+message Message {
   Header header = 1;
   bytes body = 2;
 }
@@ -49,7 +48,7 @@ message Envelope {
   bytes message = 3;
 }
 
-message ControlMessage {
+message Control {
   enum Type {
     NO_PENDING_MESSAGES = 0;
   }

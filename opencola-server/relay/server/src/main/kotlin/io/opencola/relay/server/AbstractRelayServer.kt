@@ -21,10 +21,11 @@ import java.util.concurrent.ConcurrentHashMap
 
 abstract class AbstractRelayServer(
     protected val numChallengeBytes: Int = 32,
+    protected val numSymmetricKeyBytes: Int = 32,
     private val messageStore: MessageStore? = null
 ) {
     private val connections = ConcurrentHashMap<PublicKey, Connection>()
-    protected val keyPair = generateKeyPair()
+    protected val serverKeyPair = generateKeyPair()
     protected val logger = KotlinLogging.logger("RelayServer")
     protected val openMutex = Mutex(true)
     protected val random = SecureRandom()
@@ -43,12 +44,19 @@ abstract class AbstractRelayServer(
         return (messageStore as? MemoryMessageStore)?.getUsage() ?: emptySequence()
     }
 
-    protected abstract suspend fun authenticate(socketSession: SocketSession): PublicKey?
+    class AuthenticationResult(val publicKey: PublicKey, val sessionKey: ByteArray? = null)
+    protected abstract suspend fun authenticate(socketSession: SocketSession): AuthenticationResult?
     protected abstract fun decodePayload(payload: ByteArray): Envelope
+
+    protected fun isAuthorized(clientPublicKey: PublicKey): Boolean {
+        // TODO: Support client lists
+        logger.debug { "Authorizing client: ${Id.ofPublicKey(clientPublicKey)}" }
+        return true
+    }
 
     private fun getQueueEmptyMessage(to: PublicKey): ByteArray {
         val queueEmptyMessage = ControlMessage(ControlMessageType.NO_PENDING_MESSAGES)
-        val message = Message(keyPair, queueEmptyMessage.encodeProto())
+        val message = Message(serverKeyPair, queueEmptyMessage.encodeProto())
         val encryptedBytes = encrypt(to, message.encodeProto())
         return encryptedBytes.encodeProto()
     }
@@ -69,8 +77,9 @@ abstract class AbstractRelayServer(
     }
 
     suspend fun handleSession(socketSession: SocketSession) {
-        authenticate(socketSession)?.let { publicKey ->
-            val connection = Connection(socketSession, Id.ofPublicKey(publicKey).toString())
+        authenticate(socketSession)?.let { authenticationResult ->
+            val publicKey = authenticationResult.publicKey
+            val connection = Connection(socketSession, Id.ofPublicKey(publicKey).toString(), authenticationResult.sessionKey)
             logger.info { "Session authenticated for: ${connection.name}" }
             connections[publicKey] = connection
 
