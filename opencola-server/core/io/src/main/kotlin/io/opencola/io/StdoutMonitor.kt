@@ -24,7 +24,7 @@ class StdoutMonitor(private val echo: Boolean = true, private val readTimeoutMil
     }
 
     fun waitUntil(until: String, timeoutMilliseconds: Long? = null) {
-        waitUntil(timeoutMilliseconds) { it.contains(until) }
+        waitUntil(timeoutMilliseconds) { it.contains(Regex(until)) }
     }
 
     fun flush() {
