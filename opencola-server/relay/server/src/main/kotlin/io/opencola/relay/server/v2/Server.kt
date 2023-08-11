@@ -9,10 +9,11 @@ import io.opencola.relay.server.AbstractRelayServer
 import io.opencola.security.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
+import java.security.PublicKey
 
 abstract class Server(numChallengeBytes: Int = 32, numSymmetricKeyBytes: Int = 32, messageStore: MessageStore = MemoryMessageStore()) :
     AbstractRelayServer(numChallengeBytes, numSymmetricKeyBytes, messageStore) {
-    override suspend fun authenticate(socketSession: SocketSession): AuthenticationResult? {
+    override suspend fun authenticate(socketSession: SocketSession): PublicKey?{
         try {
             logger.debug { "Sending server identity" }
             // TODO: Figure out how to publish this key so client can ensure server is trusted
@@ -42,23 +43,21 @@ abstract class Server(numChallengeBytes: Int = 32, numSymmetricKeyBytes: Int = 3
             val encryptedChallengeResponse = EncryptedBytes.decodeProto(socketSession.readSizedByteArray())
             val clientChallengeResponse = ChallengeResponse.decodeProto(decrypt(serverKeyPair.private, encryptedChallengeResponse))
 
-            val authenticationResult = if (
+            val status = if (
                 clientChallengeResponse.signature.algorithm == DEFAULT_SIGNATURE_ALGO &&
                 isValidSignature(clientPublicKey, clientChallenge.challenge, clientChallengeResponse.signature)
             ) {
-                val sessionKey = random.nextBytes(numSymmetricKeyBytes)
-                val encryptedSessionKey = encrypt(clientPublicKey, sessionKey)
-                AuthenticationResult(AuthenticationStatus.AUTHENTICATED, encryptedSessionKey)
+                AuthenticationStatus.AUTHENTICATED
             } else
-                AuthenticationResult(AuthenticationStatus.FAILED_CHALLENGE, null)
+                AuthenticationStatus.FAILED_CHALLENGE
 
-            socketSession.writeSizedByteArray(authenticationResult.encodeProto())
+            socketSession.writeSizedByteArray(AuthenticationResult(status).encodeProto())
 
-            if (authenticationResult.status != AuthenticationStatus.AUTHENTICATED)
-                throw RuntimeException("$clientId failed to authenticate: $authenticationResult.status")
+            if (status != AuthenticationStatus.AUTHENTICATED)
+                throw RuntimeException("$clientId failed to authenticate: $status")
 
             logger.debug { "Client authenticated" }
-            return AuthenticationResult(clientPublicKey)
+            return clientPublicKey
         } catch (e: CancellationException) {
             // Let job cancellation fall through
         } catch (e: ClosedReceiveChannelException) {
@@ -72,6 +71,8 @@ abstract class Server(numChallengeBytes: Int = 32, numSymmetricKeyBytes: Int = 3
     }
 
     override fun decodePayload(payload: ByteArray): Envelope {
-        return Envelope.decodeProto(payload)
+        val envelopeV2 = EnvelopeV2.decodeProto(payload)
+        val to = PublicKeyByteArrayCodec.decode(decrypt(serverKeyPair.private, envelopeV2.to))
+        return Envelope(to, envelopeV2.key, envelopeV2.message)
     }
 }

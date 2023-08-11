@@ -17,15 +17,13 @@ abstract class Client(
     requestTimeoutMilliseconds: Long = 60000, // TODO: Make configurable
     retryPolicy: (Int) -> Long = retryExponentialBackoff(),
 ) : AbstractClient(uri, keyPair, "$name", requestTimeoutMilliseconds, retryPolicy) {
-    private var sessionKey: ByteArray? = null
-
     override suspend fun authenticate(socketSession: SocketSession) {
         logger.info { "Authenticating" }
 
         logger.debug { "Reading server identity" }
         val serverPublicKey = IdentityMessage.decodeProto(socketSession.readSizedByteArray()).publicKey
         logger.debug { "Server public key: $serverPublicKey" }
-        if(!isAuthorized(serverPublicKey))
+        if (!isAuthorized(serverPublicKey))
             throw RuntimeException("Server is not authorized: $serverPublicKey")
 
         logger.debug { "Writing server challenge" }
@@ -54,17 +52,19 @@ abstract class Client(
         val authenticationResult = AuthenticationResult.decodeProto(socketSession.readSizedByteArray())
         if (authenticationResult.status != AuthenticationStatus.AUTHENTICATED) {
             throw RuntimeException("Unable to authenticate connection: $authenticationResult.status")
-        } else if (authenticationResult.sessionKey == null) {
-            throw RuntimeException("Unable to authenticate connection: No session key")
         }
 
         this.serverPublicKey = serverPublicKey
-        this.sessionKey = decrypt(keyPair.private, authenticationResult.sessionKey!!)
         logger.debug { "Authenticated" }
     }
 
     override fun getEncodeEnvelope(to: PublicKey, key: MessageKey, message: Message): ByteArray {
-        return Envelope(to, key, encrypt(to, message.encodeProto()).encodeProto()).encodeProto()
+        require(serverPublicKey != null) { "Not authenticated, cannot encode envelope without serverPublicKey" }
+        return EnvelopeV2(
+            encrypt(serverPublicKey!!, PublicKeyByteArrayCodec.encode(to)),
+            key,
+            encrypt(to, message.encodeProto()).encodeProto()
+        ).encodeProto()
     }
 
     override fun decodePayload(payload: ByteArray): Message {

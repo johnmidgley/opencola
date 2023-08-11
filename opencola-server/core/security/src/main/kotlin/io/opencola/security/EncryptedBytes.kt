@@ -5,6 +5,18 @@ import io.opencola.serialization.protobuf.ProtoSerializable
 import io.opencola.security.protobuf.Security as Proto
 
 class EncryptedBytes(val transformation: EncryptionTransformation, val bytes: ByteArray) {
+    override fun equals(other: Any?): Boolean {
+        if (other !is EncryptedBytes) return false
+        if (transformation != other.transformation) return false
+        return bytes.contentEquals(other.bytes)
+    }
+
+    override fun hashCode(): Int {
+        var result = transformation.hashCode()
+        result = 31 * result + bytes.contentHashCode()
+        return result
+    }
+
     fun toProto(): Proto.EncryptedBytes {
         return toProto(this)
     }

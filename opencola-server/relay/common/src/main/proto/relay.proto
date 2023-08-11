@@ -23,7 +23,6 @@ enum AuthenticationStatus {
 
 message AuthenticationResult {
   AuthenticationStatus status = 1;
-  io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;
 }
 
 message Header {
@@ -38,8 +37,8 @@ message Message {
 }
 
 message Envelope {
-  // Public key of the recipient
-  io.opencola.security.protobuf.PublicKey to = 1;
+  // Public key of the recipient, encrypted by the server's public key
+  io.opencola.security.protobuf.EncryptedBytes to = 1;
 
   // Message key used for deduplication. When present, if the relay has to store the message, only one with the same
   // key will be stored. If not present, the message is considered transient and will not be stored.

@@ -1977,21 +1977,6 @@ public final class Relay {
      * @return The status.
      */
     io.opencola.relay.common.protobuf.Relay.AuthenticationStatus getStatus();
-
-    /**
-     * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
-     * @return Whether the sessionKey field is set.
-     */
-    boolean hasSessionKey();
-    /**
-     * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
-     * @return The sessionKey.
-     */
-    io.opencola.security.protobuf.Security.EncryptedBytes getSessionKey();
-    /**
-     * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
-     */
-    io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder getSessionKeyOrBuilder();
   }
   /**
    * Protobuf type {@code io.opencola.relay.common.protobuf.AuthenticationResult}
@@ -2045,19 +2030,6 @@ public final class Relay {
               status_ = rawValue;
               break;
             }
-            case 18: {
-              io.opencola.security.protobuf.Security.EncryptedBytes.Builder subBuilder = null;
-              if (sessionKey_ != null) {
-                subBuilder = sessionKey_.toBuilder();
-              }
-              sessionKey_ = input.readMessage(io.opencola.security.protobuf.Security.EncryptedBytes.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(sessionKey_);
-                sessionKey_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
             default: {
               if (!parseUnknownField(
                   input, unknownFields, extensionRegistry, tag)) {
@@ -2109,32 +2081,6 @@ public final class Relay {
       return result == null ? io.opencola.relay.common.protobuf.Relay.AuthenticationStatus.UNRECOGNIZED : result;
     }
 
-    public static final int SESSIONKEY_FIELD_NUMBER = 2;
-    private io.opencola.security.protobuf.Security.EncryptedBytes sessionKey_;
-    /**
-     * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
-     * @return Whether the sessionKey field is set.
-     */
-    @java.lang.Override
-    public boolean hasSessionKey() {
-      return sessionKey_ != null;
-    }
-    /**
-     * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
-     * @return The sessionKey.
-     */
-    @java.lang.Override
-    public io.opencola.security.protobuf.Security.EncryptedBytes getSessionKey() {
-      return sessionKey_ == null ? io.opencola.security.protobuf.Security.EncryptedBytes.getDefaultInstance() : sessionKey_;
-    }
-    /**
-     * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
-     */
-    @java.lang.Override
-    public io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder getSessionKeyOrBuilder() {
-      return getSessionKey();
-    }
-
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -2152,9 +2098,6 @@ public final class Relay {
       if (status_ != io.opencola.relay.common.protobuf.Relay.AuthenticationStatus.AUTHENTICATED.getNumber()) {
         output.writeEnum(1, status_);
       }
-      if (sessionKey_ != null) {
-        output.writeMessage(2, getSessionKey());
-      }
       unknownFields.writeTo(output);
     }
 
@@ -2167,10 +2110,6 @@ public final class Relay {
       if (status_ != io.opencola.relay.common.protobuf.Relay.AuthenticationStatus.AUTHENTICATED.getNumber()) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(1, status_);
-      }
-      if (sessionKey_ != null) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, getSessionKey());
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -2188,11 +2127,6 @@ public final class Relay {
       io.opencola.relay.common.protobuf.Relay.AuthenticationResult other = (io.opencola.relay.common.protobuf.Relay.AuthenticationResult) obj;
 
       if (status_ != other.status_) return false;
-      if (hasSessionKey() != other.hasSessionKey()) return false;
-      if (hasSessionKey()) {
-        if (!getSessionKey()
-            .equals(other.getSessionKey())) return false;
-      }
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -2206,10 +2140,6 @@ public final class Relay {
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + STATUS_FIELD_NUMBER;
       hash = (53 * hash) + status_;
-      if (hasSessionKey()) {
-        hash = (37 * hash) + SESSIONKEY_FIELD_NUMBER;
-        hash = (53 * hash) + getSessionKey().hashCode();
-      }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -2345,12 +2275,6 @@ public final class Relay {
         super.clear();
         status_ = 0;
 
-        if (sessionKeyBuilder_ == null) {
-          sessionKey_ = null;
-        } else {
-          sessionKey_ = null;
-          sessionKeyBuilder_ = null;
-        }
         return this;
       }
 
@@ -2378,11 +2302,6 @@ public final class Relay {
       public io.opencola.relay.common.protobuf.Relay.AuthenticationResult buildPartial() {
         io.opencola.relay.common.protobuf.Relay.AuthenticationResult result = new io.opencola.relay.common.protobuf.Relay.AuthenticationResult(this);
         result.status_ = status_;
-        if (sessionKeyBuilder_ == null) {
-          result.sessionKey_ = sessionKey_;
-        } else {
-          result.sessionKey_ = sessionKeyBuilder_.build();
-        }
         onBuilt();
         return result;
       }
@@ -2433,9 +2352,6 @@ public final class Relay {
         if (other == io.opencola.relay.common.protobuf.Relay.AuthenticationResult.getDefaultInstance()) return this;
         if (other.status_ != 0) {
           setStatusValue(other.getStatusValue());
-        }
-        if (other.hasSessionKey()) {
-          mergeSessionKey(other.getSessionKey());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -2518,125 +2434,6 @@ public final class Relay {
         status_ = 0;
         onChanged();
         return this;
-      }
-
-      private io.opencola.security.protobuf.Security.EncryptedBytes sessionKey_;
-      private com.google.protobuf.SingleFieldBuilderV3<
-          io.opencola.security.protobuf.Security.EncryptedBytes, io.opencola.security.protobuf.Security.EncryptedBytes.Builder, io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder> sessionKeyBuilder_;
-      /**
-       * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
-       * @return Whether the sessionKey field is set.
-       */
-      public boolean hasSessionKey() {
-        return sessionKeyBuilder_ != null || sessionKey_ != null;
-      }
-      /**
-       * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
-       * @return The sessionKey.
-       */
-      public io.opencola.security.protobuf.Security.EncryptedBytes getSessionKey() {
-        if (sessionKeyBuilder_ == null) {
-          return sessionKey_ == null ? io.opencola.security.protobuf.Security.EncryptedBytes.getDefaultInstance() : sessionKey_;
-        } else {
-          return sessionKeyBuilder_.getMessage();
-        }
-      }
-      /**
-       * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
-       */
-      public Builder setSessionKey(io.opencola.security.protobuf.Security.EncryptedBytes value) {
-        if (sessionKeyBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          sessionKey_ = value;
-          onChanged();
-        } else {
-          sessionKeyBuilder_.setMessage(value);
-        }
-
-        return this;
-      }
-      /**
-       * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
-       */
-      public Builder setSessionKey(
-          io.opencola.security.protobuf.Security.EncryptedBytes.Builder builderForValue) {
-        if (sessionKeyBuilder_ == null) {
-          sessionKey_ = builderForValue.build();
-          onChanged();
-        } else {
-          sessionKeyBuilder_.setMessage(builderForValue.build());
-        }
-
-        return this;
-      }
-      /**
-       * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
-       */
-      public Builder mergeSessionKey(io.opencola.security.protobuf.Security.EncryptedBytes value) {
-        if (sessionKeyBuilder_ == null) {
-          if (sessionKey_ != null) {
-            sessionKey_ =
-              io.opencola.security.protobuf.Security.EncryptedBytes.newBuilder(sessionKey_).mergeFrom(value).buildPartial();
-          } else {
-            sessionKey_ = value;
-          }
-          onChanged();
-        } else {
-          sessionKeyBuilder_.mergeFrom(value);
-        }
-
-        return this;
-      }
-      /**
-       * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
-       */
-      public Builder clearSessionKey() {
-        if (sessionKeyBuilder_ == null) {
-          sessionKey_ = null;
-          onChanged();
-        } else {
-          sessionKey_ = null;
-          sessionKeyBuilder_ = null;
-        }
-
-        return this;
-      }
-      /**
-       * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
-       */
-      public io.opencola.security.protobuf.Security.EncryptedBytes.Builder getSessionKeyBuilder() {
-        
-        onChanged();
-        return getSessionKeyFieldBuilder().getBuilder();
-      }
-      /**
-       * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
-       */
-      public io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder getSessionKeyOrBuilder() {
-        if (sessionKeyBuilder_ != null) {
-          return sessionKeyBuilder_.getMessageOrBuilder();
-        } else {
-          return sessionKey_ == null ?
-              io.opencola.security.protobuf.Security.EncryptedBytes.getDefaultInstance() : sessionKey_;
-        }
-      }
-      /**
-       * <code>.io.opencola.security.protobuf.EncryptedBytes sessionKey = 2;</code>
-       */
-      private com.google.protobuf.SingleFieldBuilderV3<
-          io.opencola.security.protobuf.Security.EncryptedBytes, io.opencola.security.protobuf.Security.EncryptedBytes.Builder, io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder> 
-          getSessionKeyFieldBuilder() {
-        if (sessionKeyBuilder_ == null) {
-          sessionKeyBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              io.opencola.security.protobuf.Security.EncryptedBytes, io.opencola.security.protobuf.Security.EncryptedBytes.Builder, io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder>(
-                  getSessionKey(),
-                  getParentForChildren(),
-                  isClean());
-          sessionKey_ = null;
-        }
-        return sessionKeyBuilder_;
       }
       @java.lang.Override
       public final Builder setUnknownFields(
@@ -4350,30 +4147,30 @@ public final class Relay {
 
     /**
      * <pre>
-     * Public key of the recipient
+     * Public key of the recipient, encrypted by the server's public key
      * </pre>
      *
-     * <code>.io.opencola.security.protobuf.PublicKey to = 1;</code>
+     * <code>.io.opencola.security.protobuf.EncryptedBytes to = 1;</code>
      * @return Whether the to field is set.
      */
     boolean hasTo();
     /**
      * <pre>
-     * Public key of the recipient
+     * Public key of the recipient, encrypted by the server's public key
      * </pre>
      *
-     * <code>.io.opencola.security.protobuf.PublicKey to = 1;</code>
+     * <code>.io.opencola.security.protobuf.EncryptedBytes to = 1;</code>
      * @return The to.
      */
-    io.opencola.security.protobuf.Security.PublicKey getTo();
+    io.opencola.security.protobuf.Security.EncryptedBytes getTo();
     /**
      * <pre>
-     * Public key of the recipient
+     * Public key of the recipient, encrypted by the server's public key
      * </pre>
      *
-     * <code>.io.opencola.security.protobuf.PublicKey to = 1;</code>
+     * <code>.io.opencola.security.protobuf.EncryptedBytes to = 1;</code>
      */
-    io.opencola.security.protobuf.Security.PublicKeyOrBuilder getToOrBuilder();
+    io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder getToOrBuilder();
 
     /**
      * <pre>
@@ -4440,11 +4237,11 @@ public final class Relay {
               done = true;
               break;
             case 10: {
-              io.opencola.security.protobuf.Security.PublicKey.Builder subBuilder = null;
+              io.opencola.security.protobuf.Security.EncryptedBytes.Builder subBuilder = null;
               if (to_ != null) {
                 subBuilder = to_.toBuilder();
               }
-              to_ = input.readMessage(io.opencola.security.protobuf.Security.PublicKey.parser(), extensionRegistry);
+              to_ = input.readMessage(io.opencola.security.protobuf.Security.EncryptedBytes.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(to_);
                 to_ = subBuilder.buildPartial();
@@ -4495,13 +4292,13 @@ public final class Relay {
     }
 
     public static final int TO_FIELD_NUMBER = 1;
-    private io.opencola.security.protobuf.Security.PublicKey to_;
+    private io.opencola.security.protobuf.Security.EncryptedBytes to_;
     /**
      * <pre>
-     * Public key of the recipient
+     * Public key of the recipient, encrypted by the server's public key
      * </pre>
      *
-     * <code>.io.opencola.security.protobuf.PublicKey to = 1;</code>
+     * <code>.io.opencola.security.protobuf.EncryptedBytes to = 1;</code>
      * @return Whether the to field is set.
      */
     @java.lang.Override
@@ -4510,25 +4307,25 @@ public final class Relay {
     }
     /**
      * <pre>
-     * Public key of the recipient
+     * Public key of the recipient, encrypted by the server's public key
      * </pre>
      *
-     * <code>.io.opencola.security.protobuf.PublicKey to = 1;</code>
+     * <code>.io.opencola.security.protobuf.EncryptedBytes to = 1;</code>
      * @return The to.
      */
     @java.lang.Override
-    public io.opencola.security.protobuf.Security.PublicKey getTo() {
-      return to_ == null ? io.opencola.security.protobuf.Security.PublicKey.getDefaultInstance() : to_;
+    public io.opencola.security.protobuf.Security.EncryptedBytes getTo() {
+      return to_ == null ? io.opencola.security.protobuf.Security.EncryptedBytes.getDefaultInstance() : to_;
     }
     /**
      * <pre>
-     * Public key of the recipient
+     * Public key of the recipient, encrypted by the server's public key
      * </pre>
      *
-     * <code>.io.opencola.security.protobuf.PublicKey to = 1;</code>
+     * <code>.io.opencola.security.protobuf.EncryptedBytes to = 1;</code>
      */
     @java.lang.Override
-    public io.opencola.security.protobuf.Security.PublicKeyOrBuilder getToOrBuilder() {
+    public io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder getToOrBuilder() {
       return getTo();
     }
 
@@ -4908,15 +4705,15 @@ public final class Relay {
         return this;
       }
 
-      private io.opencola.security.protobuf.Security.PublicKey to_;
+      private io.opencola.security.protobuf.Security.EncryptedBytes to_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          io.opencola.security.protobuf.Security.PublicKey, io.opencola.security.protobuf.Security.PublicKey.Builder, io.opencola.security.protobuf.Security.PublicKeyOrBuilder> toBuilder_;
+          io.opencola.security.protobuf.Security.EncryptedBytes, io.opencola.security.protobuf.Security.EncryptedBytes.Builder, io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder> toBuilder_;
       /**
        * <pre>
-       * Public key of the recipient
+       * Public key of the recipient, encrypted by the server's public key
        * </pre>
        *
-       * <code>.io.opencola.security.protobuf.PublicKey to = 1;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes to = 1;</code>
        * @return Whether the to field is set.
        */
       public boolean hasTo() {
@@ -4924,27 +4721,27 @@ public final class Relay {
       }
       /**
        * <pre>
-       * Public key of the recipient
+       * Public key of the recipient, encrypted by the server's public key
        * </pre>
        *
-       * <code>.io.opencola.security.protobuf.PublicKey to = 1;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes to = 1;</code>
        * @return The to.
        */
-      public io.opencola.security.protobuf.Security.PublicKey getTo() {
+      public io.opencola.security.protobuf.Security.EncryptedBytes getTo() {
         if (toBuilder_ == null) {
-          return to_ == null ? io.opencola.security.protobuf.Security.PublicKey.getDefaultInstance() : to_;
+          return to_ == null ? io.opencola.security.protobuf.Security.EncryptedBytes.getDefaultInstance() : to_;
         } else {
           return toBuilder_.getMessage();
         }
       }
       /**
        * <pre>
-       * Public key of the recipient
+       * Public key of the recipient, encrypted by the server's public key
        * </pre>
        *
-       * <code>.io.opencola.security.protobuf.PublicKey to = 1;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes to = 1;</code>
        */
-      public Builder setTo(io.opencola.security.protobuf.Security.PublicKey value) {
+      public Builder setTo(io.opencola.security.protobuf.Security.EncryptedBytes value) {
         if (toBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -4959,13 +4756,13 @@ public final class Relay {
       }
       /**
        * <pre>
-       * Public key of the recipient
+       * Public key of the recipient, encrypted by the server's public key
        * </pre>
        *
-       * <code>.io.opencola.security.protobuf.PublicKey to = 1;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes to = 1;</code>
        */
       public Builder setTo(
-          io.opencola.security.protobuf.Security.PublicKey.Builder builderForValue) {
+          io.opencola.security.protobuf.Security.EncryptedBytes.Builder builderForValue) {
         if (toBuilder_ == null) {
           to_ = builderForValue.build();
           onChanged();
@@ -4977,16 +4774,16 @@ public final class Relay {
       }
       /**
        * <pre>
-       * Public key of the recipient
+       * Public key of the recipient, encrypted by the server's public key
        * </pre>
        *
-       * <code>.io.opencola.security.protobuf.PublicKey to = 1;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes to = 1;</code>
        */
-      public Builder mergeTo(io.opencola.security.protobuf.Security.PublicKey value) {
+      public Builder mergeTo(io.opencola.security.protobuf.Security.EncryptedBytes value) {
         if (toBuilder_ == null) {
           if (to_ != null) {
             to_ =
-              io.opencola.security.protobuf.Security.PublicKey.newBuilder(to_).mergeFrom(value).buildPartial();
+              io.opencola.security.protobuf.Security.EncryptedBytes.newBuilder(to_).mergeFrom(value).buildPartial();
           } else {
             to_ = value;
           }
@@ -4999,10 +4796,10 @@ public final class Relay {
       }
       /**
        * <pre>
-       * Public key of the recipient
+       * Public key of the recipient, encrypted by the server's public key
        * </pre>
        *
-       * <code>.io.opencola.security.protobuf.PublicKey to = 1;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes to = 1;</code>
        */
       public Builder clearTo() {
         if (toBuilder_ == null) {
@@ -5017,44 +4814,44 @@ public final class Relay {
       }
       /**
        * <pre>
-       * Public key of the recipient
+       * Public key of the recipient, encrypted by the server's public key
        * </pre>
        *
-       * <code>.io.opencola.security.protobuf.PublicKey to = 1;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes to = 1;</code>
        */
-      public io.opencola.security.protobuf.Security.PublicKey.Builder getToBuilder() {
+      public io.opencola.security.protobuf.Security.EncryptedBytes.Builder getToBuilder() {
         
         onChanged();
         return getToFieldBuilder().getBuilder();
       }
       /**
        * <pre>
-       * Public key of the recipient
+       * Public key of the recipient, encrypted by the server's public key
        * </pre>
        *
-       * <code>.io.opencola.security.protobuf.PublicKey to = 1;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes to = 1;</code>
        */
-      public io.opencola.security.protobuf.Security.PublicKeyOrBuilder getToOrBuilder() {
+      public io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder getToOrBuilder() {
         if (toBuilder_ != null) {
           return toBuilder_.getMessageOrBuilder();
         } else {
           return to_ == null ?
-              io.opencola.security.protobuf.Security.PublicKey.getDefaultInstance() : to_;
+              io.opencola.security.protobuf.Security.EncryptedBytes.getDefaultInstance() : to_;
         }
       }
       /**
        * <pre>
-       * Public key of the recipient
+       * Public key of the recipient, encrypted by the server's public key
        * </pre>
        *
-       * <code>.io.opencola.security.protobuf.PublicKey to = 1;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes to = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          io.opencola.security.protobuf.Security.PublicKey, io.opencola.security.protobuf.Security.PublicKey.Builder, io.opencola.security.protobuf.Security.PublicKeyOrBuilder> 
+          io.opencola.security.protobuf.Security.EncryptedBytes, io.opencola.security.protobuf.Security.EncryptedBytes.Builder, io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder> 
           getToFieldBuilder() {
         if (toBuilder_ == null) {
           toBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              io.opencola.security.protobuf.Security.PublicKey, io.opencola.security.protobuf.Security.PublicKey.Builder, io.opencola.security.protobuf.Security.PublicKeyOrBuilder>(
+              io.opencola.security.protobuf.Security.EncryptedBytes, io.opencola.security.protobuf.Security.EncryptedBytes.Builder, io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder>(
                   getTo(),
                   getParentForChildren(),
                   isClean());
@@ -5988,24 +5785,23 @@ public final class Relay {
       "f.SignatureAlgorithm\022\021\n\tchallenge\030\002 \001(\014\"" +
       "P\n\021ChallengeResponse\022;\n\tsignature\030\001 \001(\0132" +
       "(.io.opencola.security.protobuf.Signatur" +
-      "e\"\242\001\n\024AuthenticationResult\022G\n\006status\030\001 \001" +
-      "(\01627.io.opencola.relay.common.protobuf.A" +
-      "uthenticationStatus\022A\n\nsessionKey\030\002 \001(\0132" +
-      "-.io.opencola.security.protobuf.Encrypte" +
-      "dBytes\"\220\001\n\006Header\022\021\n\tmessageId\030\001 \001(\014\0226\n\004" +
-      "from\030\002 \001(\0132(.io.opencola.security.protob" +
-      "uf.PublicKey\022;\n\tsignature\030\003 \001(\0132(.io.ope" +
-      "ncola.security.protobuf.Signature\"R\n\007Mes" +
-      "sage\0229\n\006header\030\001 \001(\0132).io.opencola.relay" +
-      ".common.protobuf.Header\022\014\n\004body\030\002 \001(\014\"^\n" +
-      "\010Envelope\0224\n\002to\030\001 \001(\0132(.io.opencola.secu" +
-      "rity.protobuf.PublicKey\022\013\n\003key\030\002 \001(\014\022\017\n\007" +
-      "message\030\003 \001(\014\"\213\001\n\007Control\022=\n\004type\030\001 \001(\0162" +
-      "/.io.opencola.relay.common.protobuf.Cont" +
-      "rol.Type\022\024\n\007payload\030\002 \001(\014H\000\210\001\001\"\037\n\004Type\022\027" +
-      "\n\023NO_PENDING_MESSAGES\020\000B\n\n\010_payload*?\n\024A" +
-      "uthenticationStatus\022\021\n\rAUTHENTICATED\020\000\022\024" +
-      "\n\020FAILED_CHALLENGE\020\001b\006proto3"
+      "e\"_\n\024AuthenticationResult\022G\n\006status\030\001 \001(" +
+      "\01627.io.opencola.relay.common.protobuf.Au" +
+      "thenticationStatus\"\220\001\n\006Header\022\021\n\tmessage" +
+      "Id\030\001 \001(\014\0226\n\004from\030\002 \001(\0132(.io.opencola.sec" +
+      "urity.protobuf.PublicKey\022;\n\tsignature\030\003 " +
+      "\001(\0132(.io.opencola.security.protobuf.Sign" +
+      "ature\"R\n\007Message\0229\n\006header\030\001 \001(\0132).io.op" +
+      "encola.relay.common.protobuf.Header\022\014\n\004b" +
+      "ody\030\002 \001(\014\"c\n\010Envelope\0229\n\002to\030\001 \001(\0132-.io.o" +
+      "pencola.security.protobuf.EncryptedBytes" +
+      "\022\013\n\003key\030\002 \001(\014\022\017\n\007message\030\003 \001(\014\"\213\001\n\007Contr" +
+      "ol\022=\n\004type\030\001 \001(\0162/.io.opencola.relay.com" +
+      "mon.protobuf.Control.Type\022\024\n\007payload\030\002 \001" +
+      "(\014H\000\210\001\001\"\037\n\004Type\022\027\n\023NO_PENDING_MESSAGES\020\000" +
+      "B\n\n\010_payload*?\n\024AuthenticationStatus\022\021\n\r" +
+      "AUTHENTICATED\020\000\022\024\n\020FAILED_CHALLENGE\020\001b\006p" +
+      "roto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -6035,7 +5831,7 @@ public final class Relay {
     internal_static_io_opencola_relay_common_protobuf_AuthenticationResult_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_relay_common_protobuf_AuthenticationResult_descriptor,
-        new java.lang.String[] { "Status", "SessionKey", });
+        new java.lang.String[] { "Status", });
     internal_static_io_opencola_relay_common_protobuf_Header_descriptor =
       getDescriptor().getMessageTypes().get(4);
     internal_static_io_opencola_relay_common_protobuf_Header_fieldAccessorTable = new

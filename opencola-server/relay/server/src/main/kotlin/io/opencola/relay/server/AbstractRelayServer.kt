@@ -44,8 +44,7 @@ abstract class AbstractRelayServer(
         return (messageStore as? MemoryMessageStore)?.getUsage() ?: emptySequence()
     }
 
-    class AuthenticationResult(val publicKey: PublicKey, val sessionKey: ByteArray? = null)
-    protected abstract suspend fun authenticate(socketSession: SocketSession): AuthenticationResult?
+    protected abstract suspend fun authenticate(socketSession: SocketSession): PublicKey?
     protected abstract fun decodePayload(payload: ByteArray): Envelope
 
     protected fun isAuthorized(clientPublicKey: PublicKey): Boolean {
@@ -77,9 +76,8 @@ abstract class AbstractRelayServer(
     }
 
     suspend fun handleSession(socketSession: SocketSession) {
-        authenticate(socketSession)?.let { authenticationResult ->
-            val publicKey = authenticationResult.publicKey
-            val connection = Connection(socketSession, Id.ofPublicKey(publicKey).toString(), authenticationResult.sessionKey)
+        authenticate(socketSession)?.let { publicKey ->
+            val connection = Connection(socketSession, Id.ofPublicKey(publicKey).toString())
             logger.info { "Session authenticated for: ${connection.name}" }
             connections[publicKey] = connection
 
