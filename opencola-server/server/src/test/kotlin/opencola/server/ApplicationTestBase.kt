@@ -12,6 +12,7 @@ import opencola.server.plugins.configureContentNegotiation
 import opencola.server.plugins.configureRouting
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
+import io.opencola.security.generateAesKey
 import mu.KotlinLogging
 
 abstract class ApplicationTestBase(name: String = "ApplicationTest") {
@@ -28,7 +29,7 @@ abstract class ApplicationTestBase(name: String = "ApplicationTest") {
                 validate { session -> session }
             }
         }
-        app.configureRouting(application, AuthToken.encryptionParams)
+        app.configureRouting(application, generateAesKey())
         app.configureContentNegotiation()
         app.install(Sessions) {
             cookie<UserSession>("user_session")

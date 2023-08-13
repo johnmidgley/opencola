@@ -2,13 +2,13 @@ package io.opencola.security
 
 import io.opencola.security.protobuf.Security as proto
 
-enum class SignatureAlgorithm(val algorithmName: String, val protoValue: proto.SignatureAlgorithm) {
-    SHA3_256_WITH_ECDSA("SHA3-256withECDSA", proto.SignatureAlgorithm.SHA3_256_WITH_ECDSA);
+enum class SignatureAlgorithm(val algorithmName: String, val protoValue: proto.Signature.Algorithm) {
+    SHA3_256_WITH_ECDSA("SHA3-256withECDSA", proto.Signature.Algorithm.SHA3_256_WITH_ECDSA);
 
     companion object {
-        private val protoToEnumMap: Map<proto.SignatureAlgorithm, SignatureAlgorithm> = values().associateBy { it.protoValue }
+        private val protoToEnumMap: Map<proto.Signature.Algorithm, SignatureAlgorithm> = values().associateBy { it.protoValue }
 
-        fun fromProto(protoValue: proto.SignatureAlgorithm): SignatureAlgorithm {
+        fun fromProto(protoValue: proto.Signature.Algorithm): SignatureAlgorithm {
             return protoToEnumMap[protoValue] ?: throw IllegalArgumentException("Unknown proto value: $protoValue")
         }
 

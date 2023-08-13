@@ -1,6 +1,7 @@
 package opencola.server
 
 import io.opencola.model.ResourceEntity
+import io.opencola.security.generateAesKey
 import io.opencola.storage.entitystore.EntityStore
 import opencola.server.handlers.updateComment
 import org.junit.Test
@@ -14,7 +15,7 @@ class PeerCommentTest {
     fun testCommentOnPeerPost(){
         val applications = getApplications(2)
         val (application0, application1) = applications
-        val (server0, server1) = applications.map { getServer(it, AuthToken.encryptionParams) }
+        val (server0, server1) = applications.map { getServer(it, generateAesKey()) }
 
         try {
             // Start the first server and add a document

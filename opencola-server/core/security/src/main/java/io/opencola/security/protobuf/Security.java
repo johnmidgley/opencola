@@ -14,204 +14,6 @@ public final class Security {
     registerAllExtensions(
         (com.google.protobuf.ExtensionRegistryLite) registry);
   }
-  /**
-   * Protobuf enum {@code io.opencola.security.protobuf.SignatureAlgorithm}
-   */
-  public enum SignatureAlgorithm
-      implements com.google.protobuf.ProtocolMessageEnum {
-    /**
-     * <code>SHA3_256_WITH_ECDSA = 0;</code>
-     */
-    SHA3_256_WITH_ECDSA(0),
-    UNRECOGNIZED(-1),
-    ;
-
-    /**
-     * <code>SHA3_256_WITH_ECDSA = 0;</code>
-     */
-    public static final int SHA3_256_WITH_ECDSA_VALUE = 0;
-
-
-    public final int getNumber() {
-      if (this == UNRECOGNIZED) {
-        throw new java.lang.IllegalArgumentException(
-            "Can't get the number of an unknown enum value.");
-      }
-      return value;
-    }
-
-    /**
-     * @param value The numeric wire value of the corresponding enum entry.
-     * @return The enum associated with the given numeric wire value.
-     * @deprecated Use {@link #forNumber(int)} instead.
-     */
-    @java.lang.Deprecated
-    public static SignatureAlgorithm valueOf(int value) {
-      return forNumber(value);
-    }
-
-    /**
-     * @param value The numeric wire value of the corresponding enum entry.
-     * @return The enum associated with the given numeric wire value.
-     */
-    public static SignatureAlgorithm forNumber(int value) {
-      switch (value) {
-        case 0: return SHA3_256_WITH_ECDSA;
-        default: return null;
-      }
-    }
-
-    public static com.google.protobuf.Internal.EnumLiteMap<SignatureAlgorithm>
-        internalGetValueMap() {
-      return internalValueMap;
-    }
-    private static final com.google.protobuf.Internal.EnumLiteMap<
-        SignatureAlgorithm> internalValueMap =
-          new com.google.protobuf.Internal.EnumLiteMap<SignatureAlgorithm>() {
-            public SignatureAlgorithm findValueByNumber(int number) {
-              return SignatureAlgorithm.forNumber(number);
-            }
-          };
-
-    public final com.google.protobuf.Descriptors.EnumValueDescriptor
-        getValueDescriptor() {
-      if (this == UNRECOGNIZED) {
-        throw new java.lang.IllegalStateException(
-            "Can't get the descriptor of an unrecognized enum value.");
-      }
-      return getDescriptor().getValues().get(ordinal());
-    }
-    public final com.google.protobuf.Descriptors.EnumDescriptor
-        getDescriptorForType() {
-      return getDescriptor();
-    }
-    public static final com.google.protobuf.Descriptors.EnumDescriptor
-        getDescriptor() {
-      return io.opencola.security.protobuf.Security.getDescriptor().getEnumTypes().get(0);
-    }
-
-    private static final SignatureAlgorithm[] VALUES = values();
-
-    public static SignatureAlgorithm valueOf(
-        com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
-      if (desc.getType() != getDescriptor()) {
-        throw new java.lang.IllegalArgumentException(
-          "EnumValueDescriptor is not for this type.");
-      }
-      if (desc.getIndex() == -1) {
-        return UNRECOGNIZED;
-      }
-      return VALUES[desc.getIndex()];
-    }
-
-    private final int value;
-
-    private SignatureAlgorithm(int value) {
-      this.value = value;
-    }
-
-    // @@protoc_insertion_point(enum_scope:io.opencola.security.protobuf.SignatureAlgorithm)
-  }
-
-  /**
-   * Protobuf enum {@code io.opencola.security.protobuf.EncryptionTransformation}
-   */
-  public enum EncryptionTransformation
-      implements com.google.protobuf.ProtocolMessageEnum {
-    /**
-     * <code>ECIES_WITH_AES_CBC = 0;</code>
-     */
-    ECIES_WITH_AES_CBC(0),
-    UNRECOGNIZED(-1),
-    ;
-
-    /**
-     * <code>ECIES_WITH_AES_CBC = 0;</code>
-     */
-    public static final int ECIES_WITH_AES_CBC_VALUE = 0;
-
-
-    public final int getNumber() {
-      if (this == UNRECOGNIZED) {
-        throw new java.lang.IllegalArgumentException(
-            "Can't get the number of an unknown enum value.");
-      }
-      return value;
-    }
-
-    /**
-     * @param value The numeric wire value of the corresponding enum entry.
-     * @return The enum associated with the given numeric wire value.
-     * @deprecated Use {@link #forNumber(int)} instead.
-     */
-    @java.lang.Deprecated
-    public static EncryptionTransformation valueOf(int value) {
-      return forNumber(value);
-    }
-
-    /**
-     * @param value The numeric wire value of the corresponding enum entry.
-     * @return The enum associated with the given numeric wire value.
-     */
-    public static EncryptionTransformation forNumber(int value) {
-      switch (value) {
-        case 0: return ECIES_WITH_AES_CBC;
-        default: return null;
-      }
-    }
-
-    public static com.google.protobuf.Internal.EnumLiteMap<EncryptionTransformation>
-        internalGetValueMap() {
-      return internalValueMap;
-    }
-    private static final com.google.protobuf.Internal.EnumLiteMap<
-        EncryptionTransformation> internalValueMap =
-          new com.google.protobuf.Internal.EnumLiteMap<EncryptionTransformation>() {
-            public EncryptionTransformation findValueByNumber(int number) {
-              return EncryptionTransformation.forNumber(number);
-            }
-          };
-
-    public final com.google.protobuf.Descriptors.EnumValueDescriptor
-        getValueDescriptor() {
-      if (this == UNRECOGNIZED) {
-        throw new java.lang.IllegalStateException(
-            "Can't get the descriptor of an unrecognized enum value.");
-      }
-      return getDescriptor().getValues().get(ordinal());
-    }
-    public final com.google.protobuf.Descriptors.EnumDescriptor
-        getDescriptorForType() {
-      return getDescriptor();
-    }
-    public static final com.google.protobuf.Descriptors.EnumDescriptor
-        getDescriptor() {
-      return io.opencola.security.protobuf.Security.getDescriptor().getEnumTypes().get(1);
-    }
-
-    private static final EncryptionTransformation[] VALUES = values();
-
-    public static EncryptionTransformation valueOf(
-        com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
-      if (desc.getType() != getDescriptor()) {
-        throw new java.lang.IllegalArgumentException(
-          "EnumValueDescriptor is not for this type.");
-      }
-      if (desc.getIndex() == -1) {
-        return UNRECOGNIZED;
-      }
-      return VALUES[desc.getIndex()];
-    }
-
-    private final int value;
-
-    private EncryptionTransformation(int value) {
-      this.value = value;
-    }
-
-    // @@protoc_insertion_point(enum_scope:io.opencola.security.protobuf.EncryptionTransformation)
-  }
-
   public interface PublicKeyOrBuilder extends
       // @@protoc_insertion_point(interface_extends:io.opencola.security.protobuf.PublicKey)
       com.google.protobuf.MessageOrBuilder {
@@ -704,20 +506,512 @@ public final class Security {
 
   }
 
+  public interface SecretKeyOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:io.opencola.security.protobuf.SecretKey)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>bytes encoded = 1;</code>
+     * @return The encoded.
+     */
+    com.google.protobuf.ByteString getEncoded();
+  }
+  /**
+   * Protobuf type {@code io.opencola.security.protobuf.SecretKey}
+   */
+  public static final class SecretKey extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:io.opencola.security.protobuf.SecretKey)
+      SecretKeyOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use SecretKey.newBuilder() to construct.
+    private SecretKey(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private SecretKey() {
+      encoded_ = com.google.protobuf.ByteString.EMPTY;
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new SecretKey();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private SecretKey(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+
+              encoded_ = input.readBytes();
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return io.opencola.security.protobuf.Security.internal_static_io_opencola_security_protobuf_SecretKey_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return io.opencola.security.protobuf.Security.internal_static_io_opencola_security_protobuf_SecretKey_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              io.opencola.security.protobuf.Security.SecretKey.class, io.opencola.security.protobuf.Security.SecretKey.Builder.class);
+    }
+
+    public static final int ENCODED_FIELD_NUMBER = 1;
+    private com.google.protobuf.ByteString encoded_;
+    /**
+     * <code>bytes encoded = 1;</code>
+     * @return The encoded.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString getEncoded() {
+      return encoded_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (!encoded_.isEmpty()) {
+        output.writeBytes(1, encoded_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (!encoded_.isEmpty()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, encoded_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof io.opencola.security.protobuf.Security.SecretKey)) {
+        return super.equals(obj);
+      }
+      io.opencola.security.protobuf.Security.SecretKey other = (io.opencola.security.protobuf.Security.SecretKey) obj;
+
+      if (!getEncoded()
+          .equals(other.getEncoded())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + ENCODED_FIELD_NUMBER;
+      hash = (53 * hash) + getEncoded().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static io.opencola.security.protobuf.Security.SecretKey parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.opencola.security.protobuf.Security.SecretKey parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.opencola.security.protobuf.Security.SecretKey parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.opencola.security.protobuf.Security.SecretKey parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.opencola.security.protobuf.Security.SecretKey parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.opencola.security.protobuf.Security.SecretKey parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.opencola.security.protobuf.Security.SecretKey parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static io.opencola.security.protobuf.Security.SecretKey parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static io.opencola.security.protobuf.Security.SecretKey parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static io.opencola.security.protobuf.Security.SecretKey parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static io.opencola.security.protobuf.Security.SecretKey parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static io.opencola.security.protobuf.Security.SecretKey parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(io.opencola.security.protobuf.Security.SecretKey prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code io.opencola.security.protobuf.SecretKey}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:io.opencola.security.protobuf.SecretKey)
+        io.opencola.security.protobuf.Security.SecretKeyOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return io.opencola.security.protobuf.Security.internal_static_io_opencola_security_protobuf_SecretKey_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return io.opencola.security.protobuf.Security.internal_static_io_opencola_security_protobuf_SecretKey_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                io.opencola.security.protobuf.Security.SecretKey.class, io.opencola.security.protobuf.Security.SecretKey.Builder.class);
+      }
+
+      // Construct using io.opencola.security.protobuf.Security.SecretKey.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        encoded_ = com.google.protobuf.ByteString.EMPTY;
+
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return io.opencola.security.protobuf.Security.internal_static_io_opencola_security_protobuf_SecretKey_descriptor;
+      }
+
+      @java.lang.Override
+      public io.opencola.security.protobuf.Security.SecretKey getDefaultInstanceForType() {
+        return io.opencola.security.protobuf.Security.SecretKey.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public io.opencola.security.protobuf.Security.SecretKey build() {
+        io.opencola.security.protobuf.Security.SecretKey result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public io.opencola.security.protobuf.Security.SecretKey buildPartial() {
+        io.opencola.security.protobuf.Security.SecretKey result = new io.opencola.security.protobuf.Security.SecretKey(this);
+        result.encoded_ = encoded_;
+        onBuilt();
+        return result;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof io.opencola.security.protobuf.Security.SecretKey) {
+          return mergeFrom((io.opencola.security.protobuf.Security.SecretKey)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(io.opencola.security.protobuf.Security.SecretKey other) {
+        if (other == io.opencola.security.protobuf.Security.SecretKey.getDefaultInstance()) return this;
+        if (other.getEncoded() != com.google.protobuf.ByteString.EMPTY) {
+          setEncoded(other.getEncoded());
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        io.opencola.security.protobuf.Security.SecretKey parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (io.opencola.security.protobuf.Security.SecretKey) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private com.google.protobuf.ByteString encoded_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>bytes encoded = 1;</code>
+       * @return The encoded.
+       */
+      @java.lang.Override
+      public com.google.protobuf.ByteString getEncoded() {
+        return encoded_;
+      }
+      /**
+       * <code>bytes encoded = 1;</code>
+       * @param value The encoded to set.
+       * @return This builder for chaining.
+       */
+      public Builder setEncoded(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        encoded_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>bytes encoded = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearEncoded() {
+        
+        encoded_ = getDefaultInstance().getEncoded();
+        onChanged();
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:io.opencola.security.protobuf.SecretKey)
+    }
+
+    // @@protoc_insertion_point(class_scope:io.opencola.security.protobuf.SecretKey)
+    private static final io.opencola.security.protobuf.Security.SecretKey DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new io.opencola.security.protobuf.Security.SecretKey();
+    }
+
+    public static io.opencola.security.protobuf.Security.SecretKey getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<SecretKey>
+        PARSER = new com.google.protobuf.AbstractParser<SecretKey>() {
+      @java.lang.Override
+      public SecretKey parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new SecretKey(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<SecretKey> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<SecretKey> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public io.opencola.security.protobuf.Security.SecretKey getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   public interface SignatureOrBuilder extends
       // @@protoc_insertion_point(interface_extends:io.opencola.security.protobuf.Signature)
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>.io.opencola.security.protobuf.SignatureAlgorithm algorithm = 1;</code>
+     * <code>.io.opencola.security.protobuf.Signature.Algorithm algorithm = 1;</code>
      * @return The enum numeric value on the wire for algorithm.
      */
     int getAlgorithmValue();
     /**
-     * <code>.io.opencola.security.protobuf.SignatureAlgorithm algorithm = 1;</code>
+     * <code>.io.opencola.security.protobuf.Signature.Algorithm algorithm = 1;</code>
      * @return The algorithm.
      */
-    io.opencola.security.protobuf.Security.SignatureAlgorithm getAlgorithm();
+    io.opencola.security.protobuf.Security.Signature.Algorithm getAlgorithm();
 
     /**
      * <code>bytes bytes = 2;</code>
@@ -815,23 +1109,131 @@ public final class Security {
               io.opencola.security.protobuf.Security.Signature.class, io.opencola.security.protobuf.Security.Signature.Builder.class);
     }
 
+    /**
+     * Protobuf enum {@code io.opencola.security.protobuf.Signature.Algorithm}
+     */
+    public enum Algorithm
+        implements com.google.protobuf.ProtocolMessageEnum {
+      /**
+       * <code>NONE = 0;</code>
+       */
+      NONE(0),
+      /**
+       * <code>SHA3_256_WITH_ECDSA = 1;</code>
+       */
+      SHA3_256_WITH_ECDSA(1),
+      UNRECOGNIZED(-1),
+      ;
+
+      /**
+       * <code>NONE = 0;</code>
+       */
+      public static final int NONE_VALUE = 0;
+      /**
+       * <code>SHA3_256_WITH_ECDSA = 1;</code>
+       */
+      public static final int SHA3_256_WITH_ECDSA_VALUE = 1;
+
+
+      public final int getNumber() {
+        if (this == UNRECOGNIZED) {
+          throw new java.lang.IllegalArgumentException(
+              "Can't get the number of an unknown enum value.");
+        }
+        return value;
+      }
+
+      /**
+       * @param value The numeric wire value of the corresponding enum entry.
+       * @return The enum associated with the given numeric wire value.
+       * @deprecated Use {@link #forNumber(int)} instead.
+       */
+      @java.lang.Deprecated
+      public static Algorithm valueOf(int value) {
+        return forNumber(value);
+      }
+
+      /**
+       * @param value The numeric wire value of the corresponding enum entry.
+       * @return The enum associated with the given numeric wire value.
+       */
+      public static Algorithm forNumber(int value) {
+        switch (value) {
+          case 0: return NONE;
+          case 1: return SHA3_256_WITH_ECDSA;
+          default: return null;
+        }
+      }
+
+      public static com.google.protobuf.Internal.EnumLiteMap<Algorithm>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static final com.google.protobuf.Internal.EnumLiteMap<
+          Algorithm> internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<Algorithm>() {
+              public Algorithm findValueByNumber(int number) {
+                return Algorithm.forNumber(number);
+              }
+            };
+
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor
+          getValueDescriptor() {
+        if (this == UNRECOGNIZED) {
+          throw new java.lang.IllegalStateException(
+              "Can't get the descriptor of an unrecognized enum value.");
+        }
+        return getDescriptor().getValues().get(ordinal());
+      }
+      public final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptorForType() {
+        return getDescriptor();
+      }
+      public static final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptor() {
+        return io.opencola.security.protobuf.Security.Signature.getDescriptor().getEnumTypes().get(0);
+      }
+
+      private static final Algorithm[] VALUES = values();
+
+      public static Algorithm valueOf(
+          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException(
+            "EnumValueDescriptor is not for this type.");
+        }
+        if (desc.getIndex() == -1) {
+          return UNRECOGNIZED;
+        }
+        return VALUES[desc.getIndex()];
+      }
+
+      private final int value;
+
+      private Algorithm(int value) {
+        this.value = value;
+      }
+
+      // @@protoc_insertion_point(enum_scope:io.opencola.security.protobuf.Signature.Algorithm)
+    }
+
     public static final int ALGORITHM_FIELD_NUMBER = 1;
     private int algorithm_;
     /**
-     * <code>.io.opencola.security.protobuf.SignatureAlgorithm algorithm = 1;</code>
+     * <code>.io.opencola.security.protobuf.Signature.Algorithm algorithm = 1;</code>
      * @return The enum numeric value on the wire for algorithm.
      */
     @java.lang.Override public int getAlgorithmValue() {
       return algorithm_;
     }
     /**
-     * <code>.io.opencola.security.protobuf.SignatureAlgorithm algorithm = 1;</code>
+     * <code>.io.opencola.security.protobuf.Signature.Algorithm algorithm = 1;</code>
      * @return The algorithm.
      */
-    @java.lang.Override public io.opencola.security.protobuf.Security.SignatureAlgorithm getAlgorithm() {
+    @java.lang.Override public io.opencola.security.protobuf.Security.Signature.Algorithm getAlgorithm() {
       @SuppressWarnings("deprecation")
-      io.opencola.security.protobuf.Security.SignatureAlgorithm result = io.opencola.security.protobuf.Security.SignatureAlgorithm.valueOf(algorithm_);
-      return result == null ? io.opencola.security.protobuf.Security.SignatureAlgorithm.UNRECOGNIZED : result;
+      io.opencola.security.protobuf.Security.Signature.Algorithm result = io.opencola.security.protobuf.Security.Signature.Algorithm.valueOf(algorithm_);
+      return result == null ? io.opencola.security.protobuf.Security.Signature.Algorithm.UNRECOGNIZED : result;
     }
 
     public static final int BYTES_FIELD_NUMBER = 2;
@@ -859,7 +1261,7 @@ public final class Security {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (algorithm_ != io.opencola.security.protobuf.Security.SignatureAlgorithm.SHA3_256_WITH_ECDSA.getNumber()) {
+      if (algorithm_ != io.opencola.security.protobuf.Security.Signature.Algorithm.NONE.getNumber()) {
         output.writeEnum(1, algorithm_);
       }
       if (!bytes_.isEmpty()) {
@@ -874,7 +1276,7 @@ public final class Security {
       if (size != -1) return size;
 
       size = 0;
-      if (algorithm_ != io.opencola.security.protobuf.Security.SignatureAlgorithm.SHA3_256_WITH_ECDSA.getNumber()) {
+      if (algorithm_ != io.opencola.security.protobuf.Security.Signature.Algorithm.NONE.getNumber()) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(1, algorithm_);
       }
@@ -1165,14 +1567,14 @@ public final class Security {
 
       private int algorithm_ = 0;
       /**
-       * <code>.io.opencola.security.protobuf.SignatureAlgorithm algorithm = 1;</code>
+       * <code>.io.opencola.security.protobuf.Signature.Algorithm algorithm = 1;</code>
        * @return The enum numeric value on the wire for algorithm.
        */
       @java.lang.Override public int getAlgorithmValue() {
         return algorithm_;
       }
       /**
-       * <code>.io.opencola.security.protobuf.SignatureAlgorithm algorithm = 1;</code>
+       * <code>.io.opencola.security.protobuf.Signature.Algorithm algorithm = 1;</code>
        * @param value The enum numeric value on the wire for algorithm to set.
        * @return This builder for chaining.
        */
@@ -1183,21 +1585,21 @@ public final class Security {
         return this;
       }
       /**
-       * <code>.io.opencola.security.protobuf.SignatureAlgorithm algorithm = 1;</code>
+       * <code>.io.opencola.security.protobuf.Signature.Algorithm algorithm = 1;</code>
        * @return The algorithm.
        */
       @java.lang.Override
-      public io.opencola.security.protobuf.Security.SignatureAlgorithm getAlgorithm() {
+      public io.opencola.security.protobuf.Security.Signature.Algorithm getAlgorithm() {
         @SuppressWarnings("deprecation")
-        io.opencola.security.protobuf.Security.SignatureAlgorithm result = io.opencola.security.protobuf.Security.SignatureAlgorithm.valueOf(algorithm_);
-        return result == null ? io.opencola.security.protobuf.Security.SignatureAlgorithm.UNRECOGNIZED : result;
+        io.opencola.security.protobuf.Security.Signature.Algorithm result = io.opencola.security.protobuf.Security.Signature.Algorithm.valueOf(algorithm_);
+        return result == null ? io.opencola.security.protobuf.Security.Signature.Algorithm.UNRECOGNIZED : result;
       }
       /**
-       * <code>.io.opencola.security.protobuf.SignatureAlgorithm algorithm = 1;</code>
+       * <code>.io.opencola.security.protobuf.Signature.Algorithm algorithm = 1;</code>
        * @param value The algorithm to set.
        * @return This builder for chaining.
        */
-      public Builder setAlgorithm(io.opencola.security.protobuf.Security.SignatureAlgorithm value) {
+      public Builder setAlgorithm(io.opencola.security.protobuf.Security.Signature.Algorithm value) {
         if (value == null) {
           throw new NullPointerException();
         }
@@ -1207,7 +1609,7 @@ public final class Security {
         return this;
       }
       /**
-       * <code>.io.opencola.security.protobuf.SignatureAlgorithm algorithm = 1;</code>
+       * <code>.io.opencola.security.protobuf.Signature.Algorithm algorithm = 1;</code>
        * @return This builder for chaining.
        */
       public Builder clearAlgorithm() {
@@ -1998,23 +2400,754 @@ public final class Security {
 
   }
 
+  public interface EncryptionParametersOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:io.opencola.security.protobuf.EncryptionParameters)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>.io.opencola.security.protobuf.EncryptionParameters.Type type = 1;</code>
+     * @return The enum numeric value on the wire for type.
+     */
+    int getTypeValue();
+    /**
+     * <code>.io.opencola.security.protobuf.EncryptionParameters.Type type = 1;</code>
+     * @return The type.
+     */
+    io.opencola.security.protobuf.Security.EncryptionParameters.Type getType();
+
+    /**
+     * <code>bytes bytes = 2;</code>
+     * @return The bytes.
+     */
+    com.google.protobuf.ByteString getBytes();
+  }
+  /**
+   * Protobuf type {@code io.opencola.security.protobuf.EncryptionParameters}
+   */
+  public static final class EncryptionParameters extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:io.opencola.security.protobuf.EncryptionParameters)
+      EncryptionParametersOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use EncryptionParameters.newBuilder() to construct.
+    private EncryptionParameters(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private EncryptionParameters() {
+      type_ = 0;
+      bytes_ = com.google.protobuf.ByteString.EMPTY;
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new EncryptionParameters();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private EncryptionParameters(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 8: {
+              int rawValue = input.readEnum();
+
+              type_ = rawValue;
+              break;
+            }
+            case 18: {
+
+              bytes_ = input.readBytes();
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return io.opencola.security.protobuf.Security.internal_static_io_opencola_security_protobuf_EncryptionParameters_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return io.opencola.security.protobuf.Security.internal_static_io_opencola_security_protobuf_EncryptionParameters_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              io.opencola.security.protobuf.Security.EncryptionParameters.class, io.opencola.security.protobuf.Security.EncryptionParameters.Builder.class);
+    }
+
+    /**
+     * Protobuf enum {@code io.opencola.security.protobuf.EncryptionParameters.Type}
+     */
+    public enum Type
+        implements com.google.protobuf.ProtocolMessageEnum {
+      /**
+       * <code>NONE = 0;</code>
+       */
+      NONE(0),
+      /**
+       * <code>IV = 1;</code>
+       */
+      IV(1),
+      /**
+       * <code>IES = 2;</code>
+       */
+      IES(2),
+      UNRECOGNIZED(-1),
+      ;
+
+      /**
+       * <code>NONE = 0;</code>
+       */
+      public static final int NONE_VALUE = 0;
+      /**
+       * <code>IV = 1;</code>
+       */
+      public static final int IV_VALUE = 1;
+      /**
+       * <code>IES = 2;</code>
+       */
+      public static final int IES_VALUE = 2;
+
+
+      public final int getNumber() {
+        if (this == UNRECOGNIZED) {
+          throw new java.lang.IllegalArgumentException(
+              "Can't get the number of an unknown enum value.");
+        }
+        return value;
+      }
+
+      /**
+       * @param value The numeric wire value of the corresponding enum entry.
+       * @return The enum associated with the given numeric wire value.
+       * @deprecated Use {@link #forNumber(int)} instead.
+       */
+      @java.lang.Deprecated
+      public static Type valueOf(int value) {
+        return forNumber(value);
+      }
+
+      /**
+       * @param value The numeric wire value of the corresponding enum entry.
+       * @return The enum associated with the given numeric wire value.
+       */
+      public static Type forNumber(int value) {
+        switch (value) {
+          case 0: return NONE;
+          case 1: return IV;
+          case 2: return IES;
+          default: return null;
+        }
+      }
+
+      public static com.google.protobuf.Internal.EnumLiteMap<Type>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static final com.google.protobuf.Internal.EnumLiteMap<
+          Type> internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<Type>() {
+              public Type findValueByNumber(int number) {
+                return Type.forNumber(number);
+              }
+            };
+
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor
+          getValueDescriptor() {
+        if (this == UNRECOGNIZED) {
+          throw new java.lang.IllegalStateException(
+              "Can't get the descriptor of an unrecognized enum value.");
+        }
+        return getDescriptor().getValues().get(ordinal());
+      }
+      public final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptorForType() {
+        return getDescriptor();
+      }
+      public static final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptor() {
+        return io.opencola.security.protobuf.Security.EncryptionParameters.getDescriptor().getEnumTypes().get(0);
+      }
+
+      private static final Type[] VALUES = values();
+
+      public static Type valueOf(
+          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException(
+            "EnumValueDescriptor is not for this type.");
+        }
+        if (desc.getIndex() == -1) {
+          return UNRECOGNIZED;
+        }
+        return VALUES[desc.getIndex()];
+      }
+
+      private final int value;
+
+      private Type(int value) {
+        this.value = value;
+      }
+
+      // @@protoc_insertion_point(enum_scope:io.opencola.security.protobuf.EncryptionParameters.Type)
+    }
+
+    public static final int TYPE_FIELD_NUMBER = 1;
+    private int type_;
+    /**
+     * <code>.io.opencola.security.protobuf.EncryptionParameters.Type type = 1;</code>
+     * @return The enum numeric value on the wire for type.
+     */
+    @java.lang.Override public int getTypeValue() {
+      return type_;
+    }
+    /**
+     * <code>.io.opencola.security.protobuf.EncryptionParameters.Type type = 1;</code>
+     * @return The type.
+     */
+    @java.lang.Override public io.opencola.security.protobuf.Security.EncryptionParameters.Type getType() {
+      @SuppressWarnings("deprecation")
+      io.opencola.security.protobuf.Security.EncryptionParameters.Type result = io.opencola.security.protobuf.Security.EncryptionParameters.Type.valueOf(type_);
+      return result == null ? io.opencola.security.protobuf.Security.EncryptionParameters.Type.UNRECOGNIZED : result;
+    }
+
+    public static final int BYTES_FIELD_NUMBER = 2;
+    private com.google.protobuf.ByteString bytes_;
+    /**
+     * <code>bytes bytes = 2;</code>
+     * @return The bytes.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString getBytes() {
+      return bytes_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (type_ != io.opencola.security.protobuf.Security.EncryptionParameters.Type.NONE.getNumber()) {
+        output.writeEnum(1, type_);
+      }
+      if (!bytes_.isEmpty()) {
+        output.writeBytes(2, bytes_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (type_ != io.opencola.security.protobuf.Security.EncryptionParameters.Type.NONE.getNumber()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(1, type_);
+      }
+      if (!bytes_.isEmpty()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, bytes_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof io.opencola.security.protobuf.Security.EncryptionParameters)) {
+        return super.equals(obj);
+      }
+      io.opencola.security.protobuf.Security.EncryptionParameters other = (io.opencola.security.protobuf.Security.EncryptionParameters) obj;
+
+      if (type_ != other.type_) return false;
+      if (!getBytes()
+          .equals(other.getBytes())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + TYPE_FIELD_NUMBER;
+      hash = (53 * hash) + type_;
+      hash = (37 * hash) + BYTES_FIELD_NUMBER;
+      hash = (53 * hash) + getBytes().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static io.opencola.security.protobuf.Security.EncryptionParameters parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.opencola.security.protobuf.Security.EncryptionParameters parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.opencola.security.protobuf.Security.EncryptionParameters parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.opencola.security.protobuf.Security.EncryptionParameters parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.opencola.security.protobuf.Security.EncryptionParameters parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.opencola.security.protobuf.Security.EncryptionParameters parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.opencola.security.protobuf.Security.EncryptionParameters parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static io.opencola.security.protobuf.Security.EncryptionParameters parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static io.opencola.security.protobuf.Security.EncryptionParameters parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static io.opencola.security.protobuf.Security.EncryptionParameters parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static io.opencola.security.protobuf.Security.EncryptionParameters parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static io.opencola.security.protobuf.Security.EncryptionParameters parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(io.opencola.security.protobuf.Security.EncryptionParameters prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code io.opencola.security.protobuf.EncryptionParameters}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:io.opencola.security.protobuf.EncryptionParameters)
+        io.opencola.security.protobuf.Security.EncryptionParametersOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return io.opencola.security.protobuf.Security.internal_static_io_opencola_security_protobuf_EncryptionParameters_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return io.opencola.security.protobuf.Security.internal_static_io_opencola_security_protobuf_EncryptionParameters_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                io.opencola.security.protobuf.Security.EncryptionParameters.class, io.opencola.security.protobuf.Security.EncryptionParameters.Builder.class);
+      }
+
+      // Construct using io.opencola.security.protobuf.Security.EncryptionParameters.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        type_ = 0;
+
+        bytes_ = com.google.protobuf.ByteString.EMPTY;
+
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return io.opencola.security.protobuf.Security.internal_static_io_opencola_security_protobuf_EncryptionParameters_descriptor;
+      }
+
+      @java.lang.Override
+      public io.opencola.security.protobuf.Security.EncryptionParameters getDefaultInstanceForType() {
+        return io.opencola.security.protobuf.Security.EncryptionParameters.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public io.opencola.security.protobuf.Security.EncryptionParameters build() {
+        io.opencola.security.protobuf.Security.EncryptionParameters result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public io.opencola.security.protobuf.Security.EncryptionParameters buildPartial() {
+        io.opencola.security.protobuf.Security.EncryptionParameters result = new io.opencola.security.protobuf.Security.EncryptionParameters(this);
+        result.type_ = type_;
+        result.bytes_ = bytes_;
+        onBuilt();
+        return result;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof io.opencola.security.protobuf.Security.EncryptionParameters) {
+          return mergeFrom((io.opencola.security.protobuf.Security.EncryptionParameters)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(io.opencola.security.protobuf.Security.EncryptionParameters other) {
+        if (other == io.opencola.security.protobuf.Security.EncryptionParameters.getDefaultInstance()) return this;
+        if (other.type_ != 0) {
+          setTypeValue(other.getTypeValue());
+        }
+        if (other.getBytes() != com.google.protobuf.ByteString.EMPTY) {
+          setBytes(other.getBytes());
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        io.opencola.security.protobuf.Security.EncryptionParameters parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (io.opencola.security.protobuf.Security.EncryptionParameters) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private int type_ = 0;
+      /**
+       * <code>.io.opencola.security.protobuf.EncryptionParameters.Type type = 1;</code>
+       * @return The enum numeric value on the wire for type.
+       */
+      @java.lang.Override public int getTypeValue() {
+        return type_;
+      }
+      /**
+       * <code>.io.opencola.security.protobuf.EncryptionParameters.Type type = 1;</code>
+       * @param value The enum numeric value on the wire for type to set.
+       * @return This builder for chaining.
+       */
+      public Builder setTypeValue(int value) {
+        
+        type_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.io.opencola.security.protobuf.EncryptionParameters.Type type = 1;</code>
+       * @return The type.
+       */
+      @java.lang.Override
+      public io.opencola.security.protobuf.Security.EncryptionParameters.Type getType() {
+        @SuppressWarnings("deprecation")
+        io.opencola.security.protobuf.Security.EncryptionParameters.Type result = io.opencola.security.protobuf.Security.EncryptionParameters.Type.valueOf(type_);
+        return result == null ? io.opencola.security.protobuf.Security.EncryptionParameters.Type.UNRECOGNIZED : result;
+      }
+      /**
+       * <code>.io.opencola.security.protobuf.EncryptionParameters.Type type = 1;</code>
+       * @param value The type to set.
+       * @return This builder for chaining.
+       */
+      public Builder setType(io.opencola.security.protobuf.Security.EncryptionParameters.Type value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        
+        type_ = value.getNumber();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.io.opencola.security.protobuf.EncryptionParameters.Type type = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearType() {
+        
+        type_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.ByteString bytes_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>bytes bytes = 2;</code>
+       * @return The bytes.
+       */
+      @java.lang.Override
+      public com.google.protobuf.ByteString getBytes() {
+        return bytes_;
+      }
+      /**
+       * <code>bytes bytes = 2;</code>
+       * @param value The bytes to set.
+       * @return This builder for chaining.
+       */
+      public Builder setBytes(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        bytes_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>bytes bytes = 2;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearBytes() {
+        
+        bytes_ = getDefaultInstance().getBytes();
+        onChanged();
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:io.opencola.security.protobuf.EncryptionParameters)
+    }
+
+    // @@protoc_insertion_point(class_scope:io.opencola.security.protobuf.EncryptionParameters)
+    private static final io.opencola.security.protobuf.Security.EncryptionParameters DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new io.opencola.security.protobuf.Security.EncryptionParameters();
+    }
+
+    public static io.opencola.security.protobuf.Security.EncryptionParameters getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<EncryptionParameters>
+        PARSER = new com.google.protobuf.AbstractParser<EncryptionParameters>() {
+      @java.lang.Override
+      public EncryptionParameters parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new EncryptionParameters(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<EncryptionParameters> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<EncryptionParameters> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public io.opencola.security.protobuf.Security.EncryptionParameters getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   public interface EncryptedBytesOrBuilder extends
       // @@protoc_insertion_point(interface_extends:io.opencola.security.protobuf.EncryptedBytes)
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>.io.opencola.security.protobuf.EncryptionTransformation transformation = 1;</code>
+     * <code>.io.opencola.security.protobuf.EncryptedBytes.Transformation transformation = 1;</code>
      * @return The enum numeric value on the wire for transformation.
      */
     int getTransformationValue();
     /**
-     * <code>.io.opencola.security.protobuf.EncryptionTransformation transformation = 1;</code>
+     * <code>.io.opencola.security.protobuf.EncryptedBytes.Transformation transformation = 1;</code>
      * @return The transformation.
      */
-    io.opencola.security.protobuf.Security.EncryptionTransformation getTransformation();
+    io.opencola.security.protobuf.Security.EncryptedBytes.Transformation getTransformation();
 
     /**
-     * <code>bytes bytes = 2;</code>
+     * <code>.io.opencola.security.protobuf.EncryptionParameters parameters = 2;</code>
+     * @return Whether the parameters field is set.
+     */
+    boolean hasParameters();
+    /**
+     * <code>.io.opencola.security.protobuf.EncryptionParameters parameters = 2;</code>
+     * @return The parameters.
+     */
+    io.opencola.security.protobuf.Security.EncryptionParameters getParameters();
+    /**
+     * <code>.io.opencola.security.protobuf.EncryptionParameters parameters = 2;</code>
+     */
+    io.opencola.security.protobuf.Security.EncryptionParametersOrBuilder getParametersOrBuilder();
+
+    /**
+     * <code>bytes bytes = 3;</code>
      * @return The bytes.
      */
     com.google.protobuf.ByteString getBytes();
@@ -2073,6 +3206,19 @@ public final class Security {
               break;
             }
             case 18: {
+              io.opencola.security.protobuf.Security.EncryptionParameters.Builder subBuilder = null;
+              if (parameters_ != null) {
+                subBuilder = parameters_.toBuilder();
+              }
+              parameters_ = input.readMessage(io.opencola.security.protobuf.Security.EncryptionParameters.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(parameters_);
+                parameters_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 26: {
 
               bytes_ = input.readBytes();
               break;
@@ -2109,29 +3255,172 @@ public final class Security {
               io.opencola.security.protobuf.Security.EncryptedBytes.class, io.opencola.security.protobuf.Security.EncryptedBytes.Builder.class);
     }
 
+    /**
+     * Protobuf enum {@code io.opencola.security.protobuf.EncryptedBytes.Transformation}
+     */
+    public enum Transformation
+        implements com.google.protobuf.ProtocolMessageEnum {
+      /**
+       * <code>NONE = 0;</code>
+       */
+      NONE(0),
+      /**
+       * <code>AES_CBC_PKCS5PADDING = 1;</code>
+       */
+      AES_CBC_PKCS5PADDING(1),
+      /**
+       * <code>ECIES_WITH_AES_CBC = 2;</code>
+       */
+      ECIES_WITH_AES_CBC(2),
+      UNRECOGNIZED(-1),
+      ;
+
+      /**
+       * <code>NONE = 0;</code>
+       */
+      public static final int NONE_VALUE = 0;
+      /**
+       * <code>AES_CBC_PKCS5PADDING = 1;</code>
+       */
+      public static final int AES_CBC_PKCS5PADDING_VALUE = 1;
+      /**
+       * <code>ECIES_WITH_AES_CBC = 2;</code>
+       */
+      public static final int ECIES_WITH_AES_CBC_VALUE = 2;
+
+
+      public final int getNumber() {
+        if (this == UNRECOGNIZED) {
+          throw new java.lang.IllegalArgumentException(
+              "Can't get the number of an unknown enum value.");
+        }
+        return value;
+      }
+
+      /**
+       * @param value The numeric wire value of the corresponding enum entry.
+       * @return The enum associated with the given numeric wire value.
+       * @deprecated Use {@link #forNumber(int)} instead.
+       */
+      @java.lang.Deprecated
+      public static Transformation valueOf(int value) {
+        return forNumber(value);
+      }
+
+      /**
+       * @param value The numeric wire value of the corresponding enum entry.
+       * @return The enum associated with the given numeric wire value.
+       */
+      public static Transformation forNumber(int value) {
+        switch (value) {
+          case 0: return NONE;
+          case 1: return AES_CBC_PKCS5PADDING;
+          case 2: return ECIES_WITH_AES_CBC;
+          default: return null;
+        }
+      }
+
+      public static com.google.protobuf.Internal.EnumLiteMap<Transformation>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static final com.google.protobuf.Internal.EnumLiteMap<
+          Transformation> internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<Transformation>() {
+              public Transformation findValueByNumber(int number) {
+                return Transformation.forNumber(number);
+              }
+            };
+
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor
+          getValueDescriptor() {
+        if (this == UNRECOGNIZED) {
+          throw new java.lang.IllegalStateException(
+              "Can't get the descriptor of an unrecognized enum value.");
+        }
+        return getDescriptor().getValues().get(ordinal());
+      }
+      public final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptorForType() {
+        return getDescriptor();
+      }
+      public static final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptor() {
+        return io.opencola.security.protobuf.Security.EncryptedBytes.getDescriptor().getEnumTypes().get(0);
+      }
+
+      private static final Transformation[] VALUES = values();
+
+      public static Transformation valueOf(
+          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException(
+            "EnumValueDescriptor is not for this type.");
+        }
+        if (desc.getIndex() == -1) {
+          return UNRECOGNIZED;
+        }
+        return VALUES[desc.getIndex()];
+      }
+
+      private final int value;
+
+      private Transformation(int value) {
+        this.value = value;
+      }
+
+      // @@protoc_insertion_point(enum_scope:io.opencola.security.protobuf.EncryptedBytes.Transformation)
+    }
+
     public static final int TRANSFORMATION_FIELD_NUMBER = 1;
     private int transformation_;
     /**
-     * <code>.io.opencola.security.protobuf.EncryptionTransformation transformation = 1;</code>
+     * <code>.io.opencola.security.protobuf.EncryptedBytes.Transformation transformation = 1;</code>
      * @return The enum numeric value on the wire for transformation.
      */
     @java.lang.Override public int getTransformationValue() {
       return transformation_;
     }
     /**
-     * <code>.io.opencola.security.protobuf.EncryptionTransformation transformation = 1;</code>
+     * <code>.io.opencola.security.protobuf.EncryptedBytes.Transformation transformation = 1;</code>
      * @return The transformation.
      */
-    @java.lang.Override public io.opencola.security.protobuf.Security.EncryptionTransformation getTransformation() {
+    @java.lang.Override public io.opencola.security.protobuf.Security.EncryptedBytes.Transformation getTransformation() {
       @SuppressWarnings("deprecation")
-      io.opencola.security.protobuf.Security.EncryptionTransformation result = io.opencola.security.protobuf.Security.EncryptionTransformation.valueOf(transformation_);
-      return result == null ? io.opencola.security.protobuf.Security.EncryptionTransformation.UNRECOGNIZED : result;
+      io.opencola.security.protobuf.Security.EncryptedBytes.Transformation result = io.opencola.security.protobuf.Security.EncryptedBytes.Transformation.valueOf(transformation_);
+      return result == null ? io.opencola.security.protobuf.Security.EncryptedBytes.Transformation.UNRECOGNIZED : result;
     }
 
-    public static final int BYTES_FIELD_NUMBER = 2;
+    public static final int PARAMETERS_FIELD_NUMBER = 2;
+    private io.opencola.security.protobuf.Security.EncryptionParameters parameters_;
+    /**
+     * <code>.io.opencola.security.protobuf.EncryptionParameters parameters = 2;</code>
+     * @return Whether the parameters field is set.
+     */
+    @java.lang.Override
+    public boolean hasParameters() {
+      return parameters_ != null;
+    }
+    /**
+     * <code>.io.opencola.security.protobuf.EncryptionParameters parameters = 2;</code>
+     * @return The parameters.
+     */
+    @java.lang.Override
+    public io.opencola.security.protobuf.Security.EncryptionParameters getParameters() {
+      return parameters_ == null ? io.opencola.security.protobuf.Security.EncryptionParameters.getDefaultInstance() : parameters_;
+    }
+    /**
+     * <code>.io.opencola.security.protobuf.EncryptionParameters parameters = 2;</code>
+     */
+    @java.lang.Override
+    public io.opencola.security.protobuf.Security.EncryptionParametersOrBuilder getParametersOrBuilder() {
+      return getParameters();
+    }
+
+    public static final int BYTES_FIELD_NUMBER = 3;
     private com.google.protobuf.ByteString bytes_;
     /**
-     * <code>bytes bytes = 2;</code>
+     * <code>bytes bytes = 3;</code>
      * @return The bytes.
      */
     @java.lang.Override
@@ -2153,11 +3442,14 @@ public final class Security {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (transformation_ != io.opencola.security.protobuf.Security.EncryptionTransformation.ECIES_WITH_AES_CBC.getNumber()) {
+      if (transformation_ != io.opencola.security.protobuf.Security.EncryptedBytes.Transformation.NONE.getNumber()) {
         output.writeEnum(1, transformation_);
       }
+      if (parameters_ != null) {
+        output.writeMessage(2, getParameters());
+      }
       if (!bytes_.isEmpty()) {
-        output.writeBytes(2, bytes_);
+        output.writeBytes(3, bytes_);
       }
       unknownFields.writeTo(output);
     }
@@ -2168,13 +3460,17 @@ public final class Security {
       if (size != -1) return size;
 
       size = 0;
-      if (transformation_ != io.opencola.security.protobuf.Security.EncryptionTransformation.ECIES_WITH_AES_CBC.getNumber()) {
+      if (transformation_ != io.opencola.security.protobuf.Security.EncryptedBytes.Transformation.NONE.getNumber()) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(1, transformation_);
       }
+      if (parameters_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, getParameters());
+      }
       if (!bytes_.isEmpty()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(2, bytes_);
+          .computeBytesSize(3, bytes_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -2192,6 +3488,11 @@ public final class Security {
       io.opencola.security.protobuf.Security.EncryptedBytes other = (io.opencola.security.protobuf.Security.EncryptedBytes) obj;
 
       if (transformation_ != other.transformation_) return false;
+      if (hasParameters() != other.hasParameters()) return false;
+      if (hasParameters()) {
+        if (!getParameters()
+            .equals(other.getParameters())) return false;
+      }
       if (!getBytes()
           .equals(other.getBytes())) return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
@@ -2207,6 +3508,10 @@ public final class Security {
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + TRANSFORMATION_FIELD_NUMBER;
       hash = (53 * hash) + transformation_;
+      if (hasParameters()) {
+        hash = (37 * hash) + PARAMETERS_FIELD_NUMBER;
+        hash = (53 * hash) + getParameters().hashCode();
+      }
       hash = (37 * hash) + BYTES_FIELD_NUMBER;
       hash = (53 * hash) + getBytes().hashCode();
       hash = (29 * hash) + unknownFields.hashCode();
@@ -2344,6 +3649,12 @@ public final class Security {
         super.clear();
         transformation_ = 0;
 
+        if (parametersBuilder_ == null) {
+          parameters_ = null;
+        } else {
+          parameters_ = null;
+          parametersBuilder_ = null;
+        }
         bytes_ = com.google.protobuf.ByteString.EMPTY;
 
         return this;
@@ -2373,6 +3684,11 @@ public final class Security {
       public io.opencola.security.protobuf.Security.EncryptedBytes buildPartial() {
         io.opencola.security.protobuf.Security.EncryptedBytes result = new io.opencola.security.protobuf.Security.EncryptedBytes(this);
         result.transformation_ = transformation_;
+        if (parametersBuilder_ == null) {
+          result.parameters_ = parameters_;
+        } else {
+          result.parameters_ = parametersBuilder_.build();
+        }
         result.bytes_ = bytes_;
         onBuilt();
         return result;
@@ -2425,6 +3741,9 @@ public final class Security {
         if (other.transformation_ != 0) {
           setTransformationValue(other.getTransformationValue());
         }
+        if (other.hasParameters()) {
+          mergeParameters(other.getParameters());
+        }
         if (other.getBytes() != com.google.protobuf.ByteString.EMPTY) {
           setBytes(other.getBytes());
         }
@@ -2459,14 +3778,14 @@ public final class Security {
 
       private int transformation_ = 0;
       /**
-       * <code>.io.opencola.security.protobuf.EncryptionTransformation transformation = 1;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes.Transformation transformation = 1;</code>
        * @return The enum numeric value on the wire for transformation.
        */
       @java.lang.Override public int getTransformationValue() {
         return transformation_;
       }
       /**
-       * <code>.io.opencola.security.protobuf.EncryptionTransformation transformation = 1;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes.Transformation transformation = 1;</code>
        * @param value The enum numeric value on the wire for transformation to set.
        * @return This builder for chaining.
        */
@@ -2477,21 +3796,21 @@ public final class Security {
         return this;
       }
       /**
-       * <code>.io.opencola.security.protobuf.EncryptionTransformation transformation = 1;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes.Transformation transformation = 1;</code>
        * @return The transformation.
        */
       @java.lang.Override
-      public io.opencola.security.protobuf.Security.EncryptionTransformation getTransformation() {
+      public io.opencola.security.protobuf.Security.EncryptedBytes.Transformation getTransformation() {
         @SuppressWarnings("deprecation")
-        io.opencola.security.protobuf.Security.EncryptionTransformation result = io.opencola.security.protobuf.Security.EncryptionTransformation.valueOf(transformation_);
-        return result == null ? io.opencola.security.protobuf.Security.EncryptionTransformation.UNRECOGNIZED : result;
+        io.opencola.security.protobuf.Security.EncryptedBytes.Transformation result = io.opencola.security.protobuf.Security.EncryptedBytes.Transformation.valueOf(transformation_);
+        return result == null ? io.opencola.security.protobuf.Security.EncryptedBytes.Transformation.UNRECOGNIZED : result;
       }
       /**
-       * <code>.io.opencola.security.protobuf.EncryptionTransformation transformation = 1;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes.Transformation transformation = 1;</code>
        * @param value The transformation to set.
        * @return This builder for chaining.
        */
-      public Builder setTransformation(io.opencola.security.protobuf.Security.EncryptionTransformation value) {
+      public Builder setTransformation(io.opencola.security.protobuf.Security.EncryptedBytes.Transformation value) {
         if (value == null) {
           throw new NullPointerException();
         }
@@ -2501,7 +3820,7 @@ public final class Security {
         return this;
       }
       /**
-       * <code>.io.opencola.security.protobuf.EncryptionTransformation transformation = 1;</code>
+       * <code>.io.opencola.security.protobuf.EncryptedBytes.Transformation transformation = 1;</code>
        * @return This builder for chaining.
        */
       public Builder clearTransformation() {
@@ -2511,9 +3830,128 @@ public final class Security {
         return this;
       }
 
+      private io.opencola.security.protobuf.Security.EncryptionParameters parameters_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          io.opencola.security.protobuf.Security.EncryptionParameters, io.opencola.security.protobuf.Security.EncryptionParameters.Builder, io.opencola.security.protobuf.Security.EncryptionParametersOrBuilder> parametersBuilder_;
+      /**
+       * <code>.io.opencola.security.protobuf.EncryptionParameters parameters = 2;</code>
+       * @return Whether the parameters field is set.
+       */
+      public boolean hasParameters() {
+        return parametersBuilder_ != null || parameters_ != null;
+      }
+      /**
+       * <code>.io.opencola.security.protobuf.EncryptionParameters parameters = 2;</code>
+       * @return The parameters.
+       */
+      public io.opencola.security.protobuf.Security.EncryptionParameters getParameters() {
+        if (parametersBuilder_ == null) {
+          return parameters_ == null ? io.opencola.security.protobuf.Security.EncryptionParameters.getDefaultInstance() : parameters_;
+        } else {
+          return parametersBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>.io.opencola.security.protobuf.EncryptionParameters parameters = 2;</code>
+       */
+      public Builder setParameters(io.opencola.security.protobuf.Security.EncryptionParameters value) {
+        if (parametersBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          parameters_ = value;
+          onChanged();
+        } else {
+          parametersBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.io.opencola.security.protobuf.EncryptionParameters parameters = 2;</code>
+       */
+      public Builder setParameters(
+          io.opencola.security.protobuf.Security.EncryptionParameters.Builder builderForValue) {
+        if (parametersBuilder_ == null) {
+          parameters_ = builderForValue.build();
+          onChanged();
+        } else {
+          parametersBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <code>.io.opencola.security.protobuf.EncryptionParameters parameters = 2;</code>
+       */
+      public Builder mergeParameters(io.opencola.security.protobuf.Security.EncryptionParameters value) {
+        if (parametersBuilder_ == null) {
+          if (parameters_ != null) {
+            parameters_ =
+              io.opencola.security.protobuf.Security.EncryptionParameters.newBuilder(parameters_).mergeFrom(value).buildPartial();
+          } else {
+            parameters_ = value;
+          }
+          onChanged();
+        } else {
+          parametersBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.io.opencola.security.protobuf.EncryptionParameters parameters = 2;</code>
+       */
+      public Builder clearParameters() {
+        if (parametersBuilder_ == null) {
+          parameters_ = null;
+          onChanged();
+        } else {
+          parameters_ = null;
+          parametersBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <code>.io.opencola.security.protobuf.EncryptionParameters parameters = 2;</code>
+       */
+      public io.opencola.security.protobuf.Security.EncryptionParameters.Builder getParametersBuilder() {
+        
+        onChanged();
+        return getParametersFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>.io.opencola.security.protobuf.EncryptionParameters parameters = 2;</code>
+       */
+      public io.opencola.security.protobuf.Security.EncryptionParametersOrBuilder getParametersOrBuilder() {
+        if (parametersBuilder_ != null) {
+          return parametersBuilder_.getMessageOrBuilder();
+        } else {
+          return parameters_ == null ?
+              io.opencola.security.protobuf.Security.EncryptionParameters.getDefaultInstance() : parameters_;
+        }
+      }
+      /**
+       * <code>.io.opencola.security.protobuf.EncryptionParameters parameters = 2;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          io.opencola.security.protobuf.Security.EncryptionParameters, io.opencola.security.protobuf.Security.EncryptionParameters.Builder, io.opencola.security.protobuf.Security.EncryptionParametersOrBuilder> 
+          getParametersFieldBuilder() {
+        if (parametersBuilder_ == null) {
+          parametersBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              io.opencola.security.protobuf.Security.EncryptionParameters, io.opencola.security.protobuf.Security.EncryptionParameters.Builder, io.opencola.security.protobuf.Security.EncryptionParametersOrBuilder>(
+                  getParameters(),
+                  getParentForChildren(),
+                  isClean());
+          parameters_ = null;
+        }
+        return parametersBuilder_;
+      }
+
       private com.google.protobuf.ByteString bytes_ = com.google.protobuf.ByteString.EMPTY;
       /**
-       * <code>bytes bytes = 2;</code>
+       * <code>bytes bytes = 3;</code>
        * @return The bytes.
        */
       @java.lang.Override
@@ -2521,7 +3959,7 @@ public final class Security {
         return bytes_;
       }
       /**
-       * <code>bytes bytes = 2;</code>
+       * <code>bytes bytes = 3;</code>
        * @param value The bytes to set.
        * @return This builder for chaining.
        */
@@ -2535,7 +3973,7 @@ public final class Security {
         return this;
       }
       /**
-       * <code>bytes bytes = 2;</code>
+       * <code>bytes bytes = 3;</code>
        * @return This builder for chaining.
        */
       public Builder clearBytes() {
@@ -2603,6 +4041,11 @@ public final class Security {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_io_opencola_security_protobuf_PublicKey_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_io_opencola_security_protobuf_SecretKey_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_io_opencola_security_protobuf_SecretKey_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_io_opencola_security_protobuf_Signature_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -2612,6 +4055,11 @@ public final class Security {
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_io_opencola_security_protobuf_SignedBytes_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_io_opencola_security_protobuf_EncryptionParameters_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_io_opencola_security_protobuf_EncryptionParameters_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_io_opencola_security_protobuf_EncryptedBytes_descriptor;
   private static final 
@@ -2627,18 +4075,25 @@ public final class Security {
   static {
     java.lang.String[] descriptorData = {
       "\n\016security.proto\022\035io.opencola.security.p" +
-      "rotobuf\"\034\n\tPublicKey\022\017\n\007encoded\030\001 \001(\014\"`\n" +
-      "\tSignature\022D\n\talgorithm\030\001 \001(\01621.io.openc" +
-      "ola.security.protobuf.SignatureAlgorithm" +
-      "\022\r\n\005bytes\030\002 \001(\014\"Y\n\013SignedBytes\022;\n\tsignat" +
+      "rotobuf\"\034\n\tPublicKey\022\017\n\007encoded\030\001 \001(\014\"\034\n" +
+      "\tSecretKey\022\017\n\007encoded\030\001 \001(\014\"\221\001\n\tSignatur" +
+      "e\022E\n\talgorithm\030\001 \001(\01622.io.opencola.secur" +
+      "ity.protobuf.Signature.Algorithm\022\r\n\005byte" +
+      "s\030\002 \001(\014\".\n\tAlgorithm\022\010\n\004NONE\020\000\022\027\n\023SHA3_2" +
+      "56_WITH_ECDSA\020\001\"Y\n\013SignedBytes\022;\n\tsignat" +
       "ure\030\001 \001(\0132(.io.opencola.security.protobu" +
-      "f.Signature\022\r\n\005bytes\030\002 \001(\014\"p\n\016EncryptedB" +
-      "ytes\022O\n\016transformation\030\001 \001(\01627.io.openco" +
-      "la.security.protobuf.EncryptionTransform" +
-      "ation\022\r\n\005bytes\030\002 \001(\014*-\n\022SignatureAlgorit" +
-      "hm\022\027\n\023SHA3_256_WITH_ECDSA\020\000*2\n\030Encryptio" +
-      "nTransformation\022\026\n\022ECIES_WITH_AES_CBC\020\000b" +
-      "\006proto3"
+      "f.Signature\022\r\n\005bytes\030\002 \001(\014\"\220\001\n\024Encryptio" +
+      "nParameters\022F\n\004type\030\001 \001(\01628.io.opencola." +
+      "security.protobuf.EncryptionParameters.T" +
+      "ype\022\r\n\005bytes\030\002 \001(\014\"!\n\004Type\022\010\n\004NONE\020\000\022\006\n\002" +
+      "IV\020\001\022\007\n\003IES\020\002\"\214\002\n\016EncryptedBytes\022T\n\016tran" +
+      "sformation\030\001 \001(\0162<.io.opencola.security." +
+      "protobuf.EncryptedBytes.Transformation\022G" +
+      "\n\nparameters\030\002 \001(\01323.io.opencola.securit" +
+      "y.protobuf.EncryptionParameters\022\r\n\005bytes" +
+      "\030\003 \001(\014\"L\n\016Transformation\022\010\n\004NONE\020\000\022\030\n\024AE" +
+      "S_CBC_PKCS5PADDING\020\001\022\026\n\022ECIES_WITH_AES_C" +
+      "BC\020\002b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -2650,24 +4105,36 @@ public final class Security {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_security_protobuf_PublicKey_descriptor,
         new java.lang.String[] { "Encoded", });
-    internal_static_io_opencola_security_protobuf_Signature_descriptor =
+    internal_static_io_opencola_security_protobuf_SecretKey_descriptor =
       getDescriptor().getMessageTypes().get(1);
+    internal_static_io_opencola_security_protobuf_SecretKey_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_io_opencola_security_protobuf_SecretKey_descriptor,
+        new java.lang.String[] { "Encoded", });
+    internal_static_io_opencola_security_protobuf_Signature_descriptor =
+      getDescriptor().getMessageTypes().get(2);
     internal_static_io_opencola_security_protobuf_Signature_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_security_protobuf_Signature_descriptor,
         new java.lang.String[] { "Algorithm", "Bytes", });
     internal_static_io_opencola_security_protobuf_SignedBytes_descriptor =
-      getDescriptor().getMessageTypes().get(2);
+      getDescriptor().getMessageTypes().get(3);
     internal_static_io_opencola_security_protobuf_SignedBytes_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_security_protobuf_SignedBytes_descriptor,
         new java.lang.String[] { "Signature", "Bytes", });
+    internal_static_io_opencola_security_protobuf_EncryptionParameters_descriptor =
+      getDescriptor().getMessageTypes().get(4);
+    internal_static_io_opencola_security_protobuf_EncryptionParameters_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_io_opencola_security_protobuf_EncryptionParameters_descriptor,
+        new java.lang.String[] { "Type", "Bytes", });
     internal_static_io_opencola_security_protobuf_EncryptedBytes_descriptor =
-      getDescriptor().getMessageTypes().get(3);
+      getDescriptor().getMessageTypes().get(5);
     internal_static_io_opencola_security_protobuf_EncryptedBytes_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_security_protobuf_EncryptedBytes_descriptor,
-        new java.lang.String[] { "Transformation", "Bytes", });
+        new java.lang.String[] { "Transformation", "Parameters", "Bytes", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

@@ -3,12 +3,12 @@ package opencola.server.plugins
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.sessions.*
-import io.opencola.security.EncryptionParams
 import opencola.server.AuthToken
+import javax.crypto.SecretKey
 
 data class UserSession(val authToken: String) : Principal {
-    fun decodeAuthToken(encryptionParams: EncryptionParams): AuthToken? {
-        return AuthToken.decode(encryptionParams, authToken)
+    fun decodeAuthToken(authSecretKey: SecretKey): AuthToken? {
+        return AuthToken.decode(authSecretKey, authToken)
     }
 }
 

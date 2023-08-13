@@ -151,7 +151,7 @@ class ConnectionTest {
 
                 println("Sending message")
                 client0.sendMessage(client1.publicKey, MessageKey.unique(), "hello".toByteArray())
-                assertEquals("hello client1", String(result.await()))
+                withTimeout(3000) { assertEquals("hello client1", String(result.await())) }
             } finally {
                 client0?.close()
                 client1?.close()

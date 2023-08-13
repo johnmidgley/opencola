@@ -8,9 +8,16 @@ import io.opencola.relay.common.message.MessageKey
 import io.opencola.security.*
 import io.opencola.serialization.codecs.IntByteArrayCodec
 import io.opencola.relay.common.retryExponentialBackoff
+import io.opencola.serialization.readByteArray
+import io.opencola.serialization.writeByteArray
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.net.URI
+import java.security.AlgorithmParameters
 import java.security.KeyPair
+import java.security.PrivateKey
 import java.security.PublicKey
+import javax.crypto.Cipher
 
 abstract class Client(
     uri: URI,
@@ -42,8 +49,39 @@ abstract class Client(
         logger.debug { "Authenticated" }
     }
 
+    // OLD encryption code, only used in V1 client (doesn't use protobuf encoding)
+    private fun encrypt(
+        publicKey: PublicKey,
+        bytes: ByteArray,
+        transformation: EncryptionTransformation = DEFAULT_ENCRYPTION_TRANSFORMATION
+    ): ByteArray {
+        return ByteArrayOutputStream().use {
+            val cipher = Cipher.getInstance(transformation.transformationName).also { it.init(Cipher.ENCRYPT_MODE, publicKey) }
+            it.writeByteArray(cipher.parameters.encoded)
+            it.writeByteArray(cipher.doFinal(bytes))
+            it.toByteArray()
+        }
+    }
+
+    // OLD encryption code, only used in V1 client (doesn't use protobuf encoding)
+    private fun decrypt(
+        privateKey: PrivateKey,
+        bytes: ByteArray,
+        transformation: EncryptionTransformation = DEFAULT_ENCRYPTION_TRANSFORMATION
+    ): ByteArray {
+        ByteArrayInputStream(bytes).use { stream ->
+            val encodedParameters = stream.readByteArray()
+            val cipherBytes = stream.readByteArray()
+            val params = AlgorithmParameters.getInstance("IES").also { it.init(encodedParameters) }
+
+            return Cipher.getInstance(transformation.transformationName)
+                .also { it.init(Cipher.DECRYPT_MODE, privateKey, params) }
+                .doFinal(cipherBytes)
+        }
+    }
+
     override fun getEncodeEnvelope(to: PublicKey, key: MessageKey, message: Message): ByteArray {
-        return Envelope(to, key, encrypt(to, message.encode()).bytes).encode()
+        return Envelope(to, key, encrypt(to, message.encode())).encode()
     }
 
     override fun decodePayload(payload: ByteArray): Message {

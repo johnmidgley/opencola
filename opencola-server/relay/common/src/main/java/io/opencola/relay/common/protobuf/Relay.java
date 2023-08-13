@@ -748,15 +748,15 @@ public final class Relay {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>.io.opencola.security.protobuf.SignatureAlgorithm algorithm = 1;</code>
+     * <code>.io.opencola.security.protobuf.Signature.Algorithm algorithm = 1;</code>
      * @return The enum numeric value on the wire for algorithm.
      */
     int getAlgorithmValue();
     /**
-     * <code>.io.opencola.security.protobuf.SignatureAlgorithm algorithm = 1;</code>
+     * <code>.io.opencola.security.protobuf.Signature.Algorithm algorithm = 1;</code>
      * @return The algorithm.
      */
-    io.opencola.security.protobuf.Security.SignatureAlgorithm getAlgorithm();
+    io.opencola.security.protobuf.Security.Signature.Algorithm getAlgorithm();
 
     /**
      * <code>bytes challenge = 2;</code>
@@ -857,20 +857,20 @@ public final class Relay {
     public static final int ALGORITHM_FIELD_NUMBER = 1;
     private int algorithm_;
     /**
-     * <code>.io.opencola.security.protobuf.SignatureAlgorithm algorithm = 1;</code>
+     * <code>.io.opencola.security.protobuf.Signature.Algorithm algorithm = 1;</code>
      * @return The enum numeric value on the wire for algorithm.
      */
     @java.lang.Override public int getAlgorithmValue() {
       return algorithm_;
     }
     /**
-     * <code>.io.opencola.security.protobuf.SignatureAlgorithm algorithm = 1;</code>
+     * <code>.io.opencola.security.protobuf.Signature.Algorithm algorithm = 1;</code>
      * @return The algorithm.
      */
-    @java.lang.Override public io.opencola.security.protobuf.Security.SignatureAlgorithm getAlgorithm() {
+    @java.lang.Override public io.opencola.security.protobuf.Security.Signature.Algorithm getAlgorithm() {
       @SuppressWarnings("deprecation")
-      io.opencola.security.protobuf.Security.SignatureAlgorithm result = io.opencola.security.protobuf.Security.SignatureAlgorithm.valueOf(algorithm_);
-      return result == null ? io.opencola.security.protobuf.Security.SignatureAlgorithm.UNRECOGNIZED : result;
+      io.opencola.security.protobuf.Security.Signature.Algorithm result = io.opencola.security.protobuf.Security.Signature.Algorithm.valueOf(algorithm_);
+      return result == null ? io.opencola.security.protobuf.Security.Signature.Algorithm.UNRECOGNIZED : result;
     }
 
     public static final int CHALLENGE_FIELD_NUMBER = 2;
@@ -898,7 +898,7 @@ public final class Relay {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (algorithm_ != io.opencola.security.protobuf.Security.SignatureAlgorithm.SHA3_256_WITH_ECDSA.getNumber()) {
+      if (algorithm_ != io.opencola.security.protobuf.Security.Signature.Algorithm.NONE.getNumber()) {
         output.writeEnum(1, algorithm_);
       }
       if (!challenge_.isEmpty()) {
@@ -913,7 +913,7 @@ public final class Relay {
       if (size != -1) return size;
 
       size = 0;
-      if (algorithm_ != io.opencola.security.protobuf.Security.SignatureAlgorithm.SHA3_256_WITH_ECDSA.getNumber()) {
+      if (algorithm_ != io.opencola.security.protobuf.Security.Signature.Algorithm.NONE.getNumber()) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(1, algorithm_);
       }
@@ -1204,14 +1204,14 @@ public final class Relay {
 
       private int algorithm_ = 0;
       /**
-       * <code>.io.opencola.security.protobuf.SignatureAlgorithm algorithm = 1;</code>
+       * <code>.io.opencola.security.protobuf.Signature.Algorithm algorithm = 1;</code>
        * @return The enum numeric value on the wire for algorithm.
        */
       @java.lang.Override public int getAlgorithmValue() {
         return algorithm_;
       }
       /**
-       * <code>.io.opencola.security.protobuf.SignatureAlgorithm algorithm = 1;</code>
+       * <code>.io.opencola.security.protobuf.Signature.Algorithm algorithm = 1;</code>
        * @param value The enum numeric value on the wire for algorithm to set.
        * @return This builder for chaining.
        */
@@ -1222,21 +1222,21 @@ public final class Relay {
         return this;
       }
       /**
-       * <code>.io.opencola.security.protobuf.SignatureAlgorithm algorithm = 1;</code>
+       * <code>.io.opencola.security.protobuf.Signature.Algorithm algorithm = 1;</code>
        * @return The algorithm.
        */
       @java.lang.Override
-      public io.opencola.security.protobuf.Security.SignatureAlgorithm getAlgorithm() {
+      public io.opencola.security.protobuf.Security.Signature.Algorithm getAlgorithm() {
         @SuppressWarnings("deprecation")
-        io.opencola.security.protobuf.Security.SignatureAlgorithm result = io.opencola.security.protobuf.Security.SignatureAlgorithm.valueOf(algorithm_);
-        return result == null ? io.opencola.security.protobuf.Security.SignatureAlgorithm.UNRECOGNIZED : result;
+        io.opencola.security.protobuf.Security.Signature.Algorithm result = io.opencola.security.protobuf.Security.Signature.Algorithm.valueOf(algorithm_);
+        return result == null ? io.opencola.security.protobuf.Security.Signature.Algorithm.UNRECOGNIZED : result;
       }
       /**
-       * <code>.io.opencola.security.protobuf.SignatureAlgorithm algorithm = 1;</code>
+       * <code>.io.opencola.security.protobuf.Signature.Algorithm algorithm = 1;</code>
        * @param value The algorithm to set.
        * @return This builder for chaining.
        */
-      public Builder setAlgorithm(io.opencola.security.protobuf.Security.SignatureAlgorithm value) {
+      public Builder setAlgorithm(io.opencola.security.protobuf.Security.Signature.Algorithm value) {
         if (value == null) {
           throw new NullPointerException();
         }
@@ -1246,7 +1246,7 @@ public final class Relay {
         return this;
       }
       /**
-       * <code>.io.opencola.security.protobuf.SignatureAlgorithm algorithm = 1;</code>
+       * <code>.io.opencola.security.protobuf.Signature.Algorithm algorithm = 1;</code>
        * @return This builder for chaining.
        */
       public Builder clearAlgorithm() {
@@ -5780,28 +5780,28 @@ public final class Relay {
       "\n\013relay.proto\022!io.opencola.relay.common." +
       "protobuf\032\016security.proto\"G\n\010Identity\022;\n\t" +
       "publicKey\030\001 \001(\0132(.io.opencola.security.p" +
-      "rotobuf.PublicKey\"d\n\tChallenge\022D\n\talgori" +
-      "thm\030\001 \001(\01621.io.opencola.security.protobu" +
-      "f.SignatureAlgorithm\022\021\n\tchallenge\030\002 \001(\014\"" +
-      "P\n\021ChallengeResponse\022;\n\tsignature\030\001 \001(\0132" +
-      "(.io.opencola.security.protobuf.Signatur" +
-      "e\"_\n\024AuthenticationResult\022G\n\006status\030\001 \001(" +
-      "\01627.io.opencola.relay.common.protobuf.Au" +
-      "thenticationStatus\"\220\001\n\006Header\022\021\n\tmessage" +
-      "Id\030\001 \001(\014\0226\n\004from\030\002 \001(\0132(.io.opencola.sec" +
-      "urity.protobuf.PublicKey\022;\n\tsignature\030\003 " +
-      "\001(\0132(.io.opencola.security.protobuf.Sign" +
-      "ature\"R\n\007Message\0229\n\006header\030\001 \001(\0132).io.op" +
-      "encola.relay.common.protobuf.Header\022\014\n\004b" +
-      "ody\030\002 \001(\014\"c\n\010Envelope\0229\n\002to\030\001 \001(\0132-.io.o" +
-      "pencola.security.protobuf.EncryptedBytes" +
-      "\022\013\n\003key\030\002 \001(\014\022\017\n\007message\030\003 \001(\014\"\213\001\n\007Contr" +
-      "ol\022=\n\004type\030\001 \001(\0162/.io.opencola.relay.com" +
-      "mon.protobuf.Control.Type\022\024\n\007payload\030\002 \001" +
-      "(\014H\000\210\001\001\"\037\n\004Type\022\027\n\023NO_PENDING_MESSAGES\020\000" +
-      "B\n\n\010_payload*?\n\024AuthenticationStatus\022\021\n\r" +
-      "AUTHENTICATED\020\000\022\024\n\020FAILED_CHALLENGE\020\001b\006p" +
-      "roto3"
+      "rotobuf.PublicKey\"e\n\tChallenge\022E\n\talgori" +
+      "thm\030\001 \001(\01622.io.opencola.security.protobu" +
+      "f.Signature.Algorithm\022\021\n\tchallenge\030\002 \001(\014" +
+      "\"P\n\021ChallengeResponse\022;\n\tsignature\030\001 \001(\013" +
+      "2(.io.opencola.security.protobuf.Signatu" +
+      "re\"_\n\024AuthenticationResult\022G\n\006status\030\001 \001" +
+      "(\01627.io.opencola.relay.common.protobuf.A" +
+      "uthenticationStatus\"\220\001\n\006Header\022\021\n\tmessag" +
+      "eId\030\001 \001(\014\0226\n\004from\030\002 \001(\0132(.io.opencola.se" +
+      "curity.protobuf.PublicKey\022;\n\tsignature\030\003" +
+      " \001(\0132(.io.opencola.security.protobuf.Sig" +
+      "nature\"R\n\007Message\0229\n\006header\030\001 \001(\0132).io.o" +
+      "pencola.relay.common.protobuf.Header\022\014\n\004" +
+      "body\030\002 \001(\014\"c\n\010Envelope\0229\n\002to\030\001 \001(\0132-.io." +
+      "opencola.security.protobuf.EncryptedByte" +
+      "s\022\013\n\003key\030\002 \001(\014\022\017\n\007message\030\003 \001(\014\"\213\001\n\007Cont" +
+      "rol\022=\n\004type\030\001 \001(\0162/.io.opencola.relay.co" +
+      "mmon.protobuf.Control.Type\022\024\n\007payload\030\002 " +
+      "\001(\014H\000\210\001\001\"\037\n\004Type\022\027\n\023NO_PENDING_MESSAGES\020" +
+      "\000B\n\n\010_payload*?\n\024AuthenticationStatus\022\021\n" +
+      "\rAUTHENTICATED\020\000\022\024\n\020FAILED_CHALLENGE\020\001b\006" +
+      "proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

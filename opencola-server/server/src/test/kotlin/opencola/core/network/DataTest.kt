@@ -4,11 +4,11 @@ import io.opencola.io.waitForStdout
 import io.opencola.model.DataEntity
 import io.opencola.network.NetworkNode
 import io.opencola.network.message.GetDataMessage
+import io.opencola.security.generateAesKey
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import io.opencola.storage.entitystore.EntityStore
 import io.opencola.storage.filestore.ContentBasedFileStore
-import opencola.server.AuthToken
 import opencola.server.getApplications
 import opencola.server.getServer
 import opencola.server.startServer
@@ -21,7 +21,7 @@ class DataTest {
     fun testGetPutData() {
         val applications = getApplications(2)
         val (app0, app1) = applications
-        val (server0, server1) = applications.map { getServer(it, AuthToken.encryptionParams) }
+        val (server0, server1) = applications.map { getServer(it, generateAesKey()) }
 
         try {
             val app0Persona = app0.inject<AddressBook>().getEntries().filterIsInstance<PersonaAddressBookEntry>().first()
@@ -50,7 +50,5 @@ class DataTest {
             server0.stop(1000, 1000)
             server1.stop(1000, 1000)
         }
-
-
     }
 }

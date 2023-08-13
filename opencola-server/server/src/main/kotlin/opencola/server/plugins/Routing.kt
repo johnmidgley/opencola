@@ -15,7 +15,6 @@ import io.opencola.application.ServerConfig
 import io.opencola.application.getResourceFilePath
 import io.opencola.model.Id
 import io.opencola.network.providers.http.HttpNetworkProvider
-import io.opencola.security.EncryptionParams
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import io.opencola.system.*
@@ -28,13 +27,14 @@ import opencola.server.handlers.*
 import opencola.server.view.*
 import opencola.server.viewmodel.Persona
 import java.nio.file.Path
+import javax.crypto.SecretKey
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.readBytes
 import io.opencola.application.Application as app
 
-private fun ApplicationCall.getAuthToken(encryptionParams: EncryptionParams): AuthToken? {
-    return sessions.get<UserSession>()?.decodeAuthToken(encryptionParams)
+private fun ApplicationCall.getAuthToken(authSecretKey: SecretKey): AuthToken? {
+    return sessions.get<UserSession>()?.decodeAuthToken(authSecretKey)
 }
 
 private const val DEFAULT_USERNAME = "oc"
@@ -43,7 +43,7 @@ private const val DEFAULT_USERNAME = "oc"
 fun Application.configureBootstrapRouting(
     storagePath: Path,
     serverConfig: ServerConfig,
-    authEncryptionParams: EncryptionParams,
+    authSecretKey: SecretKey,
     loginCredentials: CompletableDeferred<LoginCredentials>,
 ) {
     val migratingData =
@@ -76,7 +76,7 @@ fun Application.configureBootstrapRouting(
                 startupForm(call, "Please enter a password")
             } else {
                 if (validateAuthorityKeyStorePassword(storagePath, password)) {
-                    startingPage(call, AuthToken(username).encode(authEncryptionParams), migratingData)
+                    startingPage(call, AuthToken(username).encode(authSecretKey), migratingData)
                     loginCredentials.complete(LoginCredentials(username, password.toString()))
                 } else
                     startupForm(call, "Bad password")
@@ -124,7 +124,7 @@ fun Application.configureBootstrapRouting(
                 if (autoStart) {
                     autoStart()
                 }
-                startingPage(call, AuthToken(username).encode(authEncryptionParams), migratingData)
+                startingPage(call, AuthToken(username).encode(authSecretKey), migratingData)
                 delay(1000)
                 loginCredentials.complete(LoginCredentials(username, password.toString()))
             }
@@ -191,7 +191,7 @@ fun Application.configureBootstrapRouting(
     }
 }
 
-fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParams) {
+fun Application.configureRouting(app: app, authSecretKey: SecretKey) {
     // TODO: Make and user general opencola.server
     val logger = KotlinLogging.logger("opencola.init")
 
@@ -243,7 +243,7 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
             if (password.isNullOrBlank()) {
                 loginPage(call, "Please enter a password")
             } else if (validateAuthorityKeyStorePassword(app.storagePath, password)) {
-                val authToken = AuthToken(username).encode(authEncryptionParams)
+                val authToken = AuthToken(username).encode(authSecretKey)
                 call.sessions.set(UserSession(authToken))
                 call.respondRedirect("/")
             } else {
@@ -252,14 +252,14 @@ fun Application.configureRouting(app: app, authEncryptionParams: EncryptionParam
         }
 
         get("logout") {
-            val username = call.getAuthToken(authEncryptionParams)?.username ?: app.config.security.login.username
-            val authToken = AuthToken(username, -1).encode(authEncryptionParams)
+            val username = call.getAuthToken(authSecretKey)?.username ?: app.config.security.login.username
+            val authToken = AuthToken(username, -1).encode(authSecretKey)
             call.sessions.set(UserSession(authToken))
             call.respondRedirect("/login")
         }
 
         get("/isLoggedIn") {
-            val authToken = call.getAuthToken(authEncryptionParams)
+            val authToken = call.getAuthToken(authSecretKey)
             if (authToken?.isValid() == true)
                 call.respond(HttpStatusCode.OK)
             else

@@ -3,6 +3,7 @@ package opencola.server
 import io.opencola.io.StdoutMonitor
 import io.opencola.io.waitForStdout
 import io.opencola.model.ResourceEntity
+import io.opencola.security.generateAesKey
 import io.opencola.storage.entitystore.EntityStore
 import opencola.server.handlers.handleSearch
 import org.junit.Test
@@ -16,7 +17,7 @@ class PeerTransactionTest {
     fun testTransactionReplication() {
         val applications = getApplications(2)
         val (application0, application1) = applications
-        val (server0, server1) = applications.map { getServer(it, AuthToken.encryptionParams) }
+        val (server0, server1) = applications.map { getServer(it, generateAesKey()) }
 
         try {
             // Start first server and add a resource to the store
@@ -81,8 +82,8 @@ class PeerTransactionTest {
     fun testRequestOnlineTrigger() {
         val applications = getApplications(2)
         val (application0, application1) = applications
-        val (server0, server1) = applications.map { getServer(it, AuthToken.encryptionParams) }
-        val server0restart = getServer(application0, AuthToken.encryptionParams)
+        val (server0, server1) = applications.map { getServer(it, generateAesKey()) }
+        val server0restart = getServer(application0, generateAesKey())
 
         try {
             // Start the first server and add a document

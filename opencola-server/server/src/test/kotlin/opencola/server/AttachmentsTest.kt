@@ -4,6 +4,7 @@ import io.opencola.event.MockEventBus
 import io.opencola.io.StdoutMonitor
 import io.opencola.model.DataEntity
 import io.opencola.model.ResourceEntity
+import io.opencola.security.generateAesKey
 import io.opencola.storage.EntityStoreContext
 import io.opencola.storage.MockContentBasedFileStore
 import io.opencola.storage.addPersona
@@ -25,7 +26,7 @@ class AttachmentsTest {
     fun testAttachment() {
         val applications = getApplications(2)
         val (application0, application1) = applications
-        val (server0, server1) = applications.map { getServer(it, AuthToken.encryptionParams) }
+        val (server0, server1) = applications.map { getServer(it, generateAesKey()) }
 
         try {
             // Start the first server and add a document

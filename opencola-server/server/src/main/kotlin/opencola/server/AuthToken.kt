@@ -7,6 +7,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.decodeFromString
 import java.util.*
+import javax.crypto.SecretKey
 
 @Serializable
 data class AuthToken(
@@ -24,19 +25,18 @@ data class AuthToken(
         return System.currentTimeMillis() <= issuedAt + lifespan
     }
 
-    fun encode(encryptionParams: EncryptionParams): String {
+    fun encode(secretKey: SecretKey): String {
         return Json.encodeToString(this)
             .toByteArray()
-            .let { encrypt(encryptionParams, it) }
-            .let { Base58.encode(it) }
+            .let { encrypt(secretKey, it) }
+            .let { Base58.encode(it.encodeProto()) }
     }
 
     companion object {
-        val encryptionParams = EncryptionParams("AES/CBC/PKCS5Padding", generateAesKey(), generateIv())
 
-        fun decode(encryptionParams: EncryptionParams, token: String): AuthToken? {
+        fun decode(secretKey: SecretKey, token: String): AuthToken? {
             return try {
-                String(decrypt(encryptionParams, Base58.decode(token)))
+                String(decrypt(secretKey, EncryptedBytes.decodeProto(Base58.decode(token))))
                     .let { Json.decodeFromString(it) }
             } catch (_: Exception) {
                 null

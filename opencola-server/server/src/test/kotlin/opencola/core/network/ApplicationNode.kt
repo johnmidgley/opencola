@@ -4,9 +4,9 @@ import io.ktor.server.netty.*
 import io.opencola.application.*
 import io.opencola.application.TestApplication
 import io.opencola.network.NetworkConfig
+import io.opencola.security.generateAesKey
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
-import opencola.server.AuthToken
 import opencola.server.getServer
 import opencola.server.handlers.*
 import java.io.File
@@ -23,7 +23,7 @@ class ApplicationNode(val application: Application) : Node {
     }
 
     override fun start(): Node {
-        server = getServer(application, AuthToken.encryptionParams).also { it.start() }
+        server = getServer(application, generateAesKey()).also { it.start() }
         return this
     }
 

@@ -10,8 +10,8 @@ import io.opencola.application.ServerConfig
 import io.opencola.event.EventBus
 import io.opencola.event.Events
 import io.opencola.network.NetworkNode
-import io.opencola.security.EncryptionParams
 import io.opencola.security.encode
+import io.opencola.security.generateAesKey
 import io.opencola.security.initProvider
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory
 import java.net.Inet4Address
 import java.net.URI
 import java.nio.file.Path
+import javax.crypto.SecretKey
 
 private val logger = KotlinLogging.logger("opencola")
 private const val sslCertStorePassword = "password"
@@ -57,11 +58,11 @@ fun getApplication(
 fun onServerStarted(application: Application) {
     val hostAddress = Inet4Address.getLocalHost().hostAddress
     application.inject<NetworkNode>().start()
-    application.inject<EventBus>().let {eventBus ->
+    application.inject<EventBus>().let { eventBus ->
         eventBus.sendMessage(Events.NodeStarted.toString())
-        application.config.system.resume.let{
-            if(it.enabled) {
-                logger.info{ "Resume detection enabled" }
+        application.config.system.resume.let {
+            if (it.enabled) {
+                logger.info { "Resume detection enabled" }
                 detectResume(
                     it.desiredDelayMillis,
                     it.maxDelayMillis
@@ -81,7 +82,7 @@ fun onServerStarted(application: Application) {
 @Serializable
 data class ErrorResponse(val message: String)
 
-fun getServer(application: Application, authEncryptionParams: EncryptionParams): NettyApplicationEngine {
+fun getServer(application: Application, authSecretKey: SecretKey): NettyApplicationEngine {
     val serverConfig = application.config.server
 
     val environment = applicationEngineEnvironment {
@@ -107,8 +108,8 @@ fun getServer(application: Application, authEncryptionParams: EncryptionParams):
         module {
             configureHTTP()
             configureContentNegotiation()
-            configureAuthentication(application.config.security.login, authEncryptionParams)
-            configureRouting(application, authEncryptionParams)
+            configureAuthentication(application.config.security.login, authSecretKey)
+            configureRouting(application, authSecretKey)
             configureStatusPages()
             configureSessions()
 
@@ -125,7 +126,7 @@ suspend fun getLoginCredentials(
     storagePath: Path,
     serverConfig: ServerConfig,
     loginConfig: LoginConfig,
-    authEncryptionParams: EncryptionParams,
+    authSecretKey: SecretKey,
 ): LoginCredentials {
     val loginCredentials = CompletableDeferred<LoginCredentials>()
 
@@ -155,7 +156,7 @@ suspend fun getLoginCredentials(
 
         module {
             configureHTTP()
-            configureBootstrapRouting(storagePath, serverConfig, authEncryptionParams, loginCredentials)
+            configureBootstrapRouting(storagePath, serverConfig, authSecretKey, loginCredentials)
             configureSessions()
         }
     }
@@ -177,9 +178,9 @@ fun startServer(storagePath: Path, config: Config) {
             }
         }
 
-        val loginCredentials =
-            getLoginCredentials(storagePath, config.server, config.security.login, AuthToken.encryptionParams)
+        val authSecretKey = generateAesKey()
+        val loginCredentials = getLoginCredentials(storagePath, config.server, config.security.login, authSecretKey)
         val application = getApplication(storagePath, config, loginCredentials)
-        getServer(application, AuthToken.encryptionParams).start()
+        getServer(application, authSecretKey).start()
     }
 }

@@ -8,7 +8,7 @@ message Identity {
 }
 
 message Challenge {
-  io.opencola.security.protobuf.SignatureAlgorithm algorithm = 1;
+  io.opencola.security.protobuf.Signature.Algorithm algorithm = 1;
   bytes challenge = 2;
 }
 

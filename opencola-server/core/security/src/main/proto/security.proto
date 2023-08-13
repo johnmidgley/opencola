@@ -6,26 +6,46 @@ message PublicKey {
   bytes encoded = 1;
 }
 
-enum SignatureAlgorithm {
-  SHA3_256_WITH_ECDSA = 0;
+message SecretKey {
+  bytes encoded = 1;
 }
 
+// WARNING: Modifying the structure of Signature could break existing transactions, which depend on signatures
+// to validate
 message Signature {
-  SignatureAlgorithm algorithm = 1;
+  enum Algorithm {
+    NONE = 0;
+    SHA3_256_WITH_ECDSA = 1;
+  }
+  Algorithm algorithm = 1;
   bytes bytes = 2;
 }
 
+// WARNING: Modifying the structure of SignedBytes could break existing transactions, which depend on signatures
+// to validate
 message SignedBytes {
   Signature signature = 1;
   bytes bytes = 2;
 }
 
-enum EncryptionTransformation {
-  ECIES_WITH_AES_CBC = 0;
+message EncryptionParameters {
+  enum Type {
+    NONE = 0;
+    IV = 1;
+    IES = 2;
+  }
+  Type type = 1;
+  bytes bytes = 2;
 }
 
 message EncryptedBytes {
-  EncryptionTransformation transformation = 1;
-  bytes bytes = 2;
+  enum Transformation {
+    NONE = 0;
+    AES_CBC_PKCS5PADDING = 1;
+    ECIES_WITH_AES_CBC = 2;
+  }
+  Transformation transformation = 1;
+  EncryptionParameters parameters = 2;
+  bytes bytes = 3;
 }
 

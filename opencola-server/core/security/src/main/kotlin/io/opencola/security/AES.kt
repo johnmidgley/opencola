@@ -8,8 +8,6 @@ import javax.crypto.spec.IvParameterSpec
 
 private val secureRandom = SecureRandom()
 
-data class EncryptionParams(val algorithm: String, val key: SecretKey, val iv: IvParameterSpec)
-
 fun generateAesKey(keySize: Int = 256): SecretKey {
     return KeyGenerator
         .getInstance("AES")
@@ -17,20 +15,46 @@ fun generateAesKey(keySize: Int = 256): SecretKey {
         .generateKey()
 }
 
-fun generateIv(size: Int = 16): IvParameterSpec{
-    return  IvParameterSpec(ByteArray(size).also { secureRandom.nextBytes(it) })
+fun generateIv(size: Int = 16): IvParameterSpec {
+    return IvParameterSpec(ByteArray(size).also { secureRandom.nextBytes(it) })
 }
 
-fun encrypt(encryptionParams: EncryptionParams, input: ByteArray): ByteArray {
-    return Cipher
-        .getInstance(encryptionParams.algorithm)
-        .also { it.init(Cipher.ENCRYPT_MODE, encryptionParams.key, encryptionParams.iv) }
-        .doFinal(input)
+// TODO: Unify AES / ECC encrypt routines?
+fun encrypt(
+    secretKey: SecretKey,
+    bytes: ByteArray,
+    ivParameterSpec: IvParameterSpec = generateIv(),
+    transformation: EncryptionTransformation = EncryptionTransformation.AES_CBC_PKCS5PADDING
+): EncryptedBytes {
+    val cipherBytes = Cipher
+        .getInstance(transformation.transformationName)
+        .also { it.init(Cipher.ENCRYPT_MODE, secretKey, ivParameterSpec) }
+        .doFinal(bytes)
+
+    return EncryptedBytes(
+        transformation,
+        EncryptionParameters(EncryptionParameters.Type.IV, ivParameterSpec.iv),
+        cipherBytes
+    )
 }
 
-fun decrypt(encryptionParams: EncryptionParams, cipherText: ByteArray): ByteArray {
+fun decrypt(
+    secretKey: SecretKey,
+    bytes: ByteArray,
+    ivParameterSpec: IvParameterSpec,
+    transformation: EncryptionTransformation = EncryptionTransformation.AES_CBC_PKCS5PADDING
+): ByteArray? {
     return Cipher
-        .getInstance(encryptionParams.algorithm)
-        .also { it.init(Cipher.DECRYPT_MODE, encryptionParams.key, encryptionParams.iv) }
-        .doFinal(cipherText)
+        .getInstance(transformation.transformationName)
+        .also { it.init(Cipher.DECRYPT_MODE, secretKey, ivParameterSpec) }
+        .doFinal(bytes)
+}
+
+fun decrypt(secretKey: SecretKey, encryptedBytes: EncryptedBytes): ByteArray {
+    require(encryptedBytes.parameters.type == EncryptionParameters.Type.IV)
+
+    return Cipher
+        .getInstance(encryptedBytes.transformation.transformationName)
+        .also { it.init(Cipher.DECRYPT_MODE, secretKey, IvParameterSpec(encryptedBytes.parameters.value)) }
+        .doFinal(encryptedBytes.bytes)
 }

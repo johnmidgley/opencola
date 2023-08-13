@@ -4,13 +4,13 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.opencola.application.LoginConfig
-import io.opencola.security.EncryptionParams
+import javax.crypto.SecretKey
 
-fun Application.configureAuthentication(loginConfig: LoginConfig, authEncryptionParams: EncryptionParams) {
+fun Application.configureAuthentication(loginConfig: LoginConfig, authSecretKey: SecretKey) {
     install(Authentication) {
         session<UserSession>("auth-session") {
             validate { session ->
-                if (session.decodeAuthToken(authEncryptionParams)?.isValid() == true) {
+                if (session.decodeAuthToken(authSecretKey)?.isValid() == true) {
                     session
                 } else {
                     null

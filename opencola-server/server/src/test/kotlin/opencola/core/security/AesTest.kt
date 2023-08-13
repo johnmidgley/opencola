@@ -13,21 +13,20 @@ class AesTest {
 
     @Test
     fun testEncryptDecrypt() {
-        val encryptionParams = EncryptionParams("AES/CBC/PKCS5Padding", generateAesKey(), generateIv())
+        val secretKey = generateAesKey()
         val input = "Hello World".toByteArray()
-        val cipherText = encrypt(encryptionParams, input)
-        val plainText = decrypt(encryptionParams, cipherText)
+        val encryptedBytes = encrypt(secretKey, input)
+        val plainText = decrypt(secretKey, encryptedBytes)
         assertContentEquals(input, plainText)
     }
 
     @Test
     fun testEncryptDecryptBadDecryptIv() {
         assertFails {
-            val encryptionParams = EncryptionParams("AES/CBC/PKCS5Padding", generateAesKey(), generateIv())
+            val secretKey = generateAesKey()
             val input = "Hello World".toByteArray()
-            val cipherText = encrypt(encryptionParams, input)
-            val badEncryptionParams = EncryptionParams("AES/CBC/PKCS5Padding", encryptionParams.key, generateIv())
-            decrypt(badEncryptionParams, cipherText)
+            val encryptedBytes = encrypt(secretKey, input)
+            decrypt(secretKey, encryptedBytes.bytes, generateIv())
         }
     }
 

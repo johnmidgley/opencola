@@ -2,10 +2,6 @@ package io.opencola.security
 
 import io.opencola.util.Base58
 import io.opencola.util.hexStringToByteArray
-import io.opencola.serialization.readByteArray
-import io.opencola.serialization.writeByteArray
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
 import java.security.*
 import java.security.spec.ECGenParameterSpec
 import java.security.spec.PKCS8EncodedKeySpec
@@ -40,34 +36,26 @@ fun encrypt(
     bytes: ByteArray,
     transformation: EncryptionTransformation = DEFAULT_ENCRYPTION_TRANSFORMATION
 ): EncryptedBytes {
-    val encryptedBytes = ByteArrayOutputStream().use {
-        val cipher = Cipher.getInstance(transformation.transformationName).also { it.init(Cipher.ENCRYPT_MODE, publicKey) }
-        it.writeByteArray(cipher.parameters.encoded)
-        it.writeByteArray(cipher.doFinal(bytes))
-        it.toByteArray()
-    }
-
-    return EncryptedBytes(transformation, encryptedBytes)
+    val cipher = Cipher.getInstance(transformation.transformationName).also { it.init(Cipher.ENCRYPT_MODE, publicKey) }
+    val encryptionParameters = EncryptionParameters(EncryptionParameters.Type.IES, cipher.parameters.encoded)
+    return EncryptedBytes(transformation, encryptionParameters, cipher.doFinal(bytes))
 }
 
 fun decrypt(
     privateKey: PrivateKey,
     bytes: ByteArray,
+    parameters: EncryptionParameters,
     transformation: EncryptionTransformation = DEFAULT_ENCRYPTION_TRANSFORMATION
 ): ByteArray {
-    ByteArrayInputStream(bytes).use { stream ->
-        val encodedParameters = stream.readByteArray()
-        val cipherBytes = stream.readByteArray()
-        val params = AlgorithmParameters.getInstance("IES").also { it.init(encodedParameters) }
-
-        return Cipher.getInstance(transformation.transformationName)
-            .also { it.init(Cipher.DECRYPT_MODE, privateKey, params) }
-            .doFinal(cipherBytes)
-    }
+    require(parameters.type == EncryptionParameters.Type.IES)
+    val params = AlgorithmParameters.getInstance(parameters.type.typeName).also { it.init(parameters.value) }
+    return Cipher.getInstance(transformation.transformationName)
+        .also { it.init(Cipher.DECRYPT_MODE, privateKey, params) }
+        .doFinal(bytes)
 }
 
 fun decrypt(privateKey: PrivateKey, encryption: EncryptedBytes): ByteArray {
-    return decrypt(privateKey, encryption.bytes, encryption.transformation)
+    return decrypt(privateKey, encryption.bytes, encryption.parameters, encryption.transformation)
 }
 
 fun isValidSignature(
