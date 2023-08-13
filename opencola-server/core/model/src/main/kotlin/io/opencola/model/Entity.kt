@@ -200,6 +200,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         return fact?.value
     }
 
+     @Suppress("UNCHECKED_CAST")
      fun <T> getMultiValue(propertyName: String, key: UUID) : MultiValueListItem<T>? {
         val (_, fact) = getFact(propertyName, key, null)
         return fact?.let { it.value as MultiValueListItem<T> }

@@ -11,6 +11,7 @@ abstract class Value<T>(val value: T) {
         return value
     }
 
+    @Suppress("UNCHECKED_CAST")
     fun asAnyValue() : Value<Any> {
         return this as Value<Any>
     }

@@ -10,6 +10,7 @@ import java.io.OutputStream
 
 // TODO: Might not be needed. Take a look.
 // TODO: Consider a ByteArraySerializable interface. Then allow encode / decode to be switched between OC/Proto
+@Suppress("UNCHECKED_CAST")
 interface ValueWrapper<T> : ByteArrayCodec<T>, ProtoSerializable<T, Proto.Value> {
     fun wrap(value: T): Value<T>
     fun unwrap(value: Value<T>): T

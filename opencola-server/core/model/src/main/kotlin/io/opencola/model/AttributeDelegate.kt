@@ -3,9 +3,10 @@ package io.opencola.model
 import io.opencola.model.value.*
 import kotlin.reflect.KProperty
 
+@Suppress("UNCHECKED_CAST")
 class AttributeDelegate<T>(val valueWrapper: ValueWrapper<T>, val resettable: Boolean = true) {
     operator fun getValue(thisRef: Entity, property: KProperty<*>): T? {
-        return thisRef.getValue(property.name)?.let { valueWrapper.unwrap(it as Value<T>) as? T }
+        return thisRef.getValue(property.name)?.let { valueWrapper.unwrap(it as Value<T>) }
     }
 
     operator fun setValue(thisRef: Entity, property: KProperty<*>, value: T?) {
