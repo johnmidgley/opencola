@@ -2,6 +2,12 @@ syntax = "proto3";
 
 package io.opencola.util.protobuf;
 
+message UUID {
+  // 128-bit UUID represented as two 64-bit integers (high and low parts)
+  fixed64 mostSignificantBits = 1;
+  fixed64 leastSignificantBits = 2;
+}
+
 enum CompressionFormat {
   NONE = 0;
   DEFLATE = 1;
