@@ -6,10 +6,10 @@ import io.opencola.relay.common.*
 import io.opencola.relay.common.connection.Connection
 import io.opencola.relay.common.State.*
 import io.opencola.relay.common.connection.SocketSession
-import io.opencola.relay.common.message.ControlMessage
-import io.opencola.relay.common.message.ControlMessageType
+import io.opencola.relay.common.message.v2.ControlMessage
+import io.opencola.relay.common.message.v2.ControlMessageType
 import io.opencola.relay.common.message.Message
-import io.opencola.relay.common.message.MessageKey
+import io.opencola.relay.common.message.v2.MessageKey
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock

@@ -13,7 +13,7 @@ import io.opencola.network.providers.relay.OCRelayNetworkProvider
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.relay.client.v2.WebSocketClient
 import io.opencola.relay.common.defaultOCRPort
-import io.opencola.relay.common.message.MessageKey
+import io.opencola.relay.common.message.v2.MessageKey
 import io.opencola.relay.server.startWebServer
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.addressbook.PersonaAddressBookEntry

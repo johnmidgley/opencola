@@ -1,4 +1,4 @@
-package io.opencola.relay.common.message
+package io.opencola.relay.common.message.v2
 
 import io.opencola.model.Id
 import io.opencola.util.Base58

@@ -1,10 +1,10 @@
 package io.opencola.relay.client.v1
 
 import io.opencola.relay.client.AbstractClient
-import io.opencola.relay.common.message.Envelope
+import io.opencola.relay.common.message.v1.Envelope
 import io.opencola.relay.common.message.Message
 import io.opencola.relay.common.connection.SocketSession
-import io.opencola.relay.common.message.MessageKey
+import io.opencola.relay.common.message.v2.MessageKey
 import io.opencola.security.*
 import io.opencola.serialization.codecs.IntByteArrayCodec
 import io.opencola.relay.common.retryExponentialBackoff

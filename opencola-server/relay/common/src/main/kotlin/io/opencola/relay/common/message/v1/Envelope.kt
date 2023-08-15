@@ -1,6 +1,7 @@
-package io.opencola.relay.common.message
+package io.opencola.relay.common.message.v1
 
 import io.opencola.model.Id
+import io.opencola.relay.common.message.v2.MessageKey
 import io.opencola.security.publicKeyFromBytes
 import io.opencola.serialization.StreamSerializer
 import io.opencola.serialization.readByteArray

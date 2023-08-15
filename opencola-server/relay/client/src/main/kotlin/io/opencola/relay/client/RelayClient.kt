@@ -1,6 +1,6 @@
 package io.opencola.relay.client
 
-import io.opencola.relay.common.message.MessageKey
+import io.opencola.relay.common.message.v2.MessageKey
 import java.security.PublicKey
 
 typealias MessageHandler = suspend (from: PublicKey, message: ByteArray) -> Unit

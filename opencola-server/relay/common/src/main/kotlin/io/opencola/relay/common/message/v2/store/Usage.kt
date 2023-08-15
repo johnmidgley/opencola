@@ -1,4 +1,4 @@
-package io.opencola.relay.common.message.store
+package io.opencola.relay.common.message.v2.store
 
 import java.security.PublicKey
 

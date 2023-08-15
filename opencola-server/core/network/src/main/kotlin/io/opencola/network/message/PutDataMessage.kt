@@ -2,7 +2,7 @@ package io.opencola.network.message
 
 import com.google.protobuf.ByteString
 import io.opencola.model.Id
-import io.opencola.relay.common.message.MessageKey
+import io.opencola.relay.common.message.v2.MessageKey
 import io.opencola.network.protobuf.Message as Proto
 import io.opencola.serialization.protobuf.ProtoSerializable
 

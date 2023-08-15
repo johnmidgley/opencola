@@ -1,8 +1,8 @@
-package io.opencola.relay.common.message.store
+package io.opencola.relay.common.message.v2.store
 
 import io.opencola.model.Id
-import io.opencola.relay.common.message.Envelope
-import io.opencola.relay.common.message.MessageKey
+import io.opencola.relay.common.message.v1.Envelope
+import io.opencola.relay.common.message.v2.MessageKey
 import mu.KotlinLogging
 import java.security.PublicKey
 

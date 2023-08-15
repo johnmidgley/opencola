@@ -1,7 +1,7 @@
-package io.opencola.relay.common.message.store
+package io.opencola.relay.common.message.v2.store
 
-import io.opencola.relay.common.message.Envelope
-import io.opencola.relay.common.message.MessageKey
+import io.opencola.relay.common.message.v1.Envelope
+import io.opencola.relay.common.message.v2.MessageKey
 
 
 // Stored messages are used only for transport, and are de-duplicated by the senderSpecificKey. The message in the

@@ -1,6 +1,6 @@
-package io.opencola.relay.common.message.store
+package io.opencola.relay.common.message.v2.store
 
-import io.opencola.relay.common.message.Envelope
+import io.opencola.relay.common.message.v1.Envelope
 import java.security.PublicKey
 
 interface MessageStore {

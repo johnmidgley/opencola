@@ -6,9 +6,12 @@ import io.opencola.relay.common.connection.Connection
 import io.opencola.relay.common.connection.SocketSession
 import io.opencola.relay.common.State.*
 import io.opencola.relay.common.message.*
-import io.opencola.relay.common.message.store.MemoryMessageStore
-import io.opencola.relay.common.message.store.MessageStore
-import io.opencola.relay.common.message.store.Usage
+import io.opencola.relay.common.message.v1.Envelope
+import io.opencola.relay.common.message.v2.ControlMessage
+import io.opencola.relay.common.message.v2.ControlMessageType
+import io.opencola.relay.common.message.v2.store.MemoryMessageStore
+import io.opencola.relay.common.message.v2.store.MessageStore
+import io.opencola.relay.common.message.v2.store.Usage
 import io.opencola.security.encrypt
 import io.opencola.security.generateKeyPair
 import kotlinx.coroutines.*

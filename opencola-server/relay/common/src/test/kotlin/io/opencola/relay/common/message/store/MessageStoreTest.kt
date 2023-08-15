@@ -1,7 +1,8 @@
 package io.opencola.relay.common.message.store
 
-import io.opencola.relay.common.message.Envelope
-import io.opencola.relay.common.message.MessageKey
+import io.opencola.relay.common.message.v1.Envelope
+import io.opencola.relay.common.message.v2.MessageKey
+import io.opencola.relay.common.message.v2.store.MemoryMessageStore
 import io.opencola.security.generateKeyPair
 import org.junit.Test
 import kotlin.test.assertFails

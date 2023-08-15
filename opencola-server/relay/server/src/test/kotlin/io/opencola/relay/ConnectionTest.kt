@@ -9,7 +9,7 @@ import io.opencola.relay.client.v1.WebSocketClient as WebSocketClientV1
 import io.opencola.relay.client.v2.WebSocketClient as WebSocketClientV2
 import io.opencola.relay.common.defaultOCRPort
 import io.opencola.relay.common.State
-import io.opencola.relay.common.message.MessageKey
+import io.opencola.relay.common.message.v2.MessageKey
 import io.opencola.relay.server.startWebServer
 import io.opencola.util.append
 import io.opencola.relay.server.v1.WebSocketRelayServer as WebSocketRelayServerV1
@@ -26,9 +26,10 @@ import java.util.stream.Collectors
 import kotlin.math.abs
 import kotlin.test.*
 
-private val relayServerUri = URI("ocr://0.0.0.0")
-
 class ConnectionTest {
+    private val localRelayServerUri = URI("ocr://0.0.0.0")
+    private val prodRelayServerUri = URI("ocr://relay.opencola.net")
+
     private class RelayServer {
         val webSocketRelayServerV1 = WebSocketRelayServerV1()
         val webSocketRelayServerV2 = WebSocketRelayServerV2()
@@ -55,6 +56,7 @@ class ConnectionTest {
         name: String,
         keyPair: KeyPair = generateKeyPair(),
         requestTimeoutInMilliseconds: Long = 5000,
+        relayServerUri: URI = localRelayServerUri,
     ): AbstractClient {
         return when (clientType) {
             ClientType.V1 -> WebSocketClientV1(relayServerUri, keyPair, name, requestTimeoutInMilliseconds)
@@ -69,16 +71,16 @@ class ConnectionTest {
         launch { client.open(messageHandler) }
     }
 
-    private fun testSendResponse(clientType: ClientType) {
+    private fun testSendResponse(clientType: ClientType, relayServerUri : URI = localRelayServerUri) {
         runBlocking {
             var server: RelayServer? = null
             var client0: AbstractClient? = null
             var client1: AbstractClient? = null
 
             try {
-                server = RelayServer().also { it.start() }
+                server = if(relayServerUri == localRelayServerUri) RelayServer().also { it.start() } else null
                 val result = CompletableDeferred<ByteArray>()
-                client0 = getClient(clientType, "client0").also {
+                client0 = getClient(clientType, "client0", relayServerUri = relayServerUri).also {
                     launch {
                         it.open { _, message ->
                             result.complete(message)
@@ -87,7 +89,7 @@ class ConnectionTest {
                     }
                     it.waitUntilOpen()
                 }
-                client1 = getClient(clientType, "client1")
+                client1 = getClient(clientType, "client1", relayServerUri = relayServerUri)
                     .also {
                         launch {
                             it.open { from, message ->
@@ -120,6 +122,11 @@ class ConnectionTest {
         testSendResponse(ClientType.V2)
     }
 
+    @Test
+    fun testSendResponseProd() {
+        testSendResponse(ClientType.V1, prodRelayServerUri)
+        // testSendResponse(ClientType.V2, prodRelayServerUri)
+    }
 
     private fun testClientConnectBeforeServer(clientType: ClientType) {
         runBlocking {

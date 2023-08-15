@@ -7,7 +7,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import io.opencola.model.Id
 import io.opencola.relay.common.connection.WebSocketSessionWrapper
-import io.opencola.relay.common.message.store.Usage
+import io.opencola.relay.common.message.v2.store.Usage
 import io.opencola.relay.server.v1.WebSocketRelayServer as WebSocketRelayServerV1
 import io.opencola.relay.server.v2.WebSocketRelayServer as WebSocketRelayServerV2
 

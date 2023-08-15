@@ -2,9 +2,10 @@ package io.opencola.relay.server.v2
 
 import io.opencola.model.Id
 import io.opencola.relay.common.connection.SocketSession
-import io.opencola.relay.common.message.*
-import io.opencola.relay.common.message.store.MemoryMessageStore
-import io.opencola.relay.common.message.store.MessageStore
+import io.opencola.relay.common.message.v1.Envelope
+import io.opencola.relay.common.message.v2.*
+import io.opencola.relay.common.message.v2.store.MemoryMessageStore
+import io.opencola.relay.common.message.v2.store.MessageStore
 import io.opencola.relay.server.AbstractRelayServer
 import io.opencola.security.*
 import kotlinx.coroutines.*
