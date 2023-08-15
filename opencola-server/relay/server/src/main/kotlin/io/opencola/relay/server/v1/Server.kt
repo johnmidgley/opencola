@@ -4,7 +4,6 @@ import io.opencola.model.Id
 import io.opencola.security.isValidSignature
 import io.opencola.security.publicKeyFromBytes
 import io.opencola.serialization.codecs.IntByteArrayCodec
-import io.opencola.relay.common.message.v1.Envelope
 import io.opencola.relay.common.connection.SocketSession
 import io.opencola.relay.server.AbstractRelayServer
 import kotlinx.coroutines.*
@@ -47,10 +46,4 @@ abstract class Server(numChallengeBytes: Int = 32) : AbstractRelayServer(numChal
 
         return null
     }
-
-    override fun decodePayload(payload: ByteArray): Envelope {
-        return Envelope.decode(payload)
-    }
-
-
 }

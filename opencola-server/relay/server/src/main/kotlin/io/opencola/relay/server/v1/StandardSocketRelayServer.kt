@@ -4,6 +4,7 @@ import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.opencola.relay.common.connection.StandardSocketSession
 import io.opencola.relay.common.State.*
+import io.opencola.relay.common.message.v1.Envelope
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -44,6 +45,10 @@ class StandardSocketRelayServer(
                 }
             }
         }
+    }
+
+    override fun decodePayload(payload: ByteArray): Envelope {
+        return Envelope.decode(payload)
     }
 
     override suspend fun close() {
