@@ -1,5 +1,6 @@
 package opencola.core.network
 
+import io.opencola.io.StdoutMonitor
 import io.opencola.io.waitForStdout
 import io.opencola.model.DataEntity
 import io.opencola.network.NetworkNode
@@ -24,18 +25,29 @@ class DataTest {
         val (server0, server1) = applications.map { getServer(it, generateAesKey()) }
 
         try {
-            val app0Persona = app0.inject<AddressBook>().getEntries().filterIsInstance<PersonaAddressBookEntry>().first()
-            val app1Persona = app1.inject<AddressBook>().getEntries().filterIsInstance<PersonaAddressBookEntry>().first()
+            val app0Persona =
+                app0.inject<AddressBook>().getEntries().filterIsInstance<PersonaAddressBookEntry>().first()
+            val app1Persona =
+                app1.inject<AddressBook>().getEntries().filterIsInstance<PersonaAddressBookEntry>().first()
 
+            println("Waiting for servers to finish requesting transactions")
             waitForStdout("Completed requesting transactions") { startServer(server0) }
             waitForStdout("Completed requesting transactions") { startServer(server1) }
 
+            println("Adding data to app0")
             val fileStore0 = app0.inject<ContentBasedFileStore>()
             val entityStore0 = app0.inject<EntityStore>()
             val data = "hello".toByteArray()
             val dataId = fileStore0.write(data)
-            entityStore0.updateEntities(DataEntity(app0Persona.entityId, dataId, "application/octet-stream"))
 
+            println("Waiting for apps to index transaction")
+            StdoutMonitor().use { monitor ->
+                entityStore0.updateEntities(DataEntity(app0Persona.entityId, dataId, "application/octet-stream"))
+                monitor.waitUntil("Indexed transaction", 3000)
+                monitor.waitUntil("Indexed transaction", 3000)
+            }
+
+            println("Requesting data from app1")
             val networkNode1 = app1.inject<NetworkNode>()
             val message = GetDataMessage(dataId)
             waitForStdout("RequestRouting: putData") {
@@ -44,8 +56,7 @@ class DataTest {
 
             assertNotNull(app1.inject<EntityStore>().getEntity(app0Persona.entityId, dataId) as? DataEntity)
             assertContentEquals(data, app1.inject<ContentBasedFileStore>().read(dataId))
-        }
-        finally {
+        } finally {
             applications.forEach { it.close() }
             server0.stop(1000, 1000)
             server1.stop(1000, 1000)
