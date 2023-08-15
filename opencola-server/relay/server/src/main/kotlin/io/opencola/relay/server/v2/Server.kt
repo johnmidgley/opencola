@@ -74,6 +74,7 @@ abstract class Server(numChallengeBytes: Int = 32, numSymmetricKeyBytes: Int = 3
     override fun decodePayload(payload: ByteArray): Envelope {
         val envelopeV2 = EnvelopeV2.decodeProto(payload)
         val to = PublicKeyByteArrayCodec.decode(decrypt(serverKeyPair.private, envelopeV2.to))
+        // TODO: Make EnvelopeV2 a subclass of AbstractEnvelope and return it vs. creating a v1 Envelope - required for multi recipients
         return Envelope(to, envelopeV2.key, envelopeV2.message)
     }
 }

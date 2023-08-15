@@ -1,6 +1,7 @@
 package io.opencola.relay.server.v1
 
 import io.opencola.relay.common.State.*
+import io.opencola.relay.common.message.AbstractEnvelope
 import io.opencola.relay.common.message.v1.Envelope
 
 class WebSocketRelayServer(
@@ -11,7 +12,7 @@ class WebSocketRelayServer(
         openMutex.unlock()
     }
 
-    override fun decodePayload(payload: ByteArray): Envelope {
+    override fun decodePayload(payload: ByteArray): AbstractEnvelope {
         return Envelope.decode(payload)
     }
 }

@@ -6,7 +6,6 @@ import io.opencola.relay.common.connection.Connection
 import io.opencola.relay.common.connection.SocketSession
 import io.opencola.relay.common.State.*
 import io.opencola.relay.common.message.*
-import io.opencola.relay.common.message.v1.Envelope
 import io.opencola.relay.common.message.v2.ControlMessage
 import io.opencola.relay.common.message.v2.ControlMessageType
 import io.opencola.relay.common.message.v2.MessageStorageKey
@@ -49,7 +48,7 @@ abstract class AbstractRelayServer(
     }
 
     protected abstract suspend fun authenticate(socketSession: SocketSession): PublicKey?
-    protected abstract fun decodePayload(payload: ByteArray): Envelope
+    protected abstract fun decodePayload(payload: ByteArray): AbstractEnvelope
 
     protected fun isAuthorized(clientPublicKey: PublicKey): Boolean {
         // TODO: Support client lists
@@ -142,7 +141,13 @@ abstract class AbstractRelayServer(
         // TODO: loop to deliver message should be outside tru
         try {
             decodePayload(payload).let { envelope ->
-                deliverMessage(from, Recipient(envelope.to), envelope.key, envelope.message)
+                envelope.recipients.forEach { recipient ->
+                    try {
+                        deliverMessage(from, recipient, envelope.messageStorageKey, envelope.message)
+                    } catch (e: Exception) {
+                        logger.error { "Error while delivering message from: $fromId to: ${recipient.id()} - $e" }
+                    }
+                }
             }
         } catch (e: Exception) {
             logger.error { "Error while handling message from $fromId: $e" }

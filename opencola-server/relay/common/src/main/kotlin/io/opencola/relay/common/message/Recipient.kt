@@ -10,6 +10,10 @@ class Recipient(val publicKey: PublicKey, /* val messageSecretKey: EncryptedByte
         return "Recipient(to=${Id.ofPublicKey(publicKey)}, messageSecretKey=ENCRYPTED)"
     }
 
+    fun id() : Id {
+        return Id.ofPublicKey(publicKey)
+    }
+
 //    fun toProto(): Proto.Recipient {
 //        return toProto(this)
 //    }

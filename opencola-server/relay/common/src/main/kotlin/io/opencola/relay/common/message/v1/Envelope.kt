@@ -1,6 +1,8 @@
 package io.opencola.relay.common.message.v1
 
 import io.opencola.model.Id
+import io.opencola.relay.common.message.AbstractEnvelope
+import io.opencola.relay.common.message.Recipient
 import io.opencola.relay.common.message.v2.MessageStorageKey
 import io.opencola.security.publicKeyFromBytes
 import io.opencola.serialization.StreamSerializer
@@ -11,23 +13,25 @@ import java.io.OutputStream
 import java.security.PublicKey
 
 // This class can be removed after V2 migration and replace by envelopeV2
-class Envelope(val to: PublicKey, val key: MessageStorageKey, val message: ByteArray) {
+// TODO: MessageStorageKey is not used in V1, remove it
+class Envelope(val to: PublicKey, messageStorageKey: MessageStorageKey, message: ByteArray) :
+    AbstractEnvelope(listOf(Recipient(to)), messageStorageKey, message) {
     override fun toString(): String {
-        return "Envelope(to=${Id.ofPublicKey(to)}, key=$key, message=${message.size} bytes)"
+        return "Envelope(to=${Id.ofPublicKey(to)}, key=$messageStorageKey, message=${message.size} bytes)"
     }
 
     override fun equals(other: Any?): Boolean {
         if (other !is Envelope) return false
         if (to != other.to) return false
-        if (key == MessageStorageKey.none && other.key != MessageStorageKey.none) return false
-        if (key != MessageStorageKey.none && other.key == MessageStorageKey.none) return false
-        if (key != MessageStorageKey.none && key != other.key) return false
+        if (messageStorageKey == MessageStorageKey.none && other.messageStorageKey != MessageStorageKey.none) return false
+        if (messageStorageKey != MessageStorageKey.none && other.messageStorageKey == MessageStorageKey.none) return false
+        if (messageStorageKey != MessageStorageKey.none && messageStorageKey != other.messageStorageKey) return false
         return message.contentEquals(other.message)
     }
 
     override fun hashCode(): Int {
         var result = to.hashCode()
-        result = 31 * result + (key.hashCode())
+        result = 31 * result + (messageStorageKey.hashCode())
         result = 31 * result + message.contentHashCode()
         return result
     }
