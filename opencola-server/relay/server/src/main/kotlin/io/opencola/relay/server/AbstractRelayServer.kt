@@ -9,6 +9,7 @@ import io.opencola.relay.common.message.*
 import io.opencola.relay.common.message.v1.Envelope
 import io.opencola.relay.common.message.v2.ControlMessage
 import io.opencola.relay.common.message.v2.ControlMessageType
+import io.opencola.relay.common.message.v2.MessageStorageKey
 import io.opencola.relay.common.message.v2.store.MemoryMessageStore
 import io.opencola.relay.common.message.v2.store.MessageStore
 import io.opencola.relay.common.message.v2.store.Usage
@@ -72,7 +73,7 @@ abstract class AbstractRelayServer(
             messageStore.removeMessage(storedMessage)
         }
 
-        if(messageStore != null) {
+        if (messageStore != null) {
             logger.info { "Queue empty for: ${Id.ofPublicKey(publicKey)}" }
             connection.writeSizedByteArray(getQueueEmptyMessage(publicKey))
         }
@@ -100,38 +101,51 @@ abstract class AbstractRelayServer(
 
     abstract suspend fun open()
 
-    private suspend fun handleMessage(from: PublicKey, payload: ByteArray) {
+    private suspend fun deliverMessage(
+        from: PublicKey,
+        to: Recipient,
+        messageStorageKey: MessageStorageKey?,
+        message: ByteArray
+    ) {
+        require(from != to.publicKey) { "Attempt to deliver message to self" }
         val fromId = Id.ofPublicKey(from)
+        val toId = Id.ofPublicKey(to.publicKey)
+        val prefix = "from=$fromId, to=$toId:"
         var messageDelivered = false
-        var envelope: Envelope? = null
 
         try {
-            envelope = decodePayload(payload)
-            val toId = Id.ofPublicKey(envelope.to)
-            val prefix = "from=$fromId, to=$toId:"
+            val connection = connections[to.publicKey]
 
-            if (from != envelope.to) {
-                val connection = connections[envelope.to]
-
-                if (connection == null) {
-                    logger.info { "$prefix no connection to receiver" }
-                } else if (!connection.isReady()) {
-                    logger.info { "$prefix Removing closed connection for receiver" }
-                } else {
-                    logger.info { "$prefix Delivering ${envelope.message.size} bytes" }
-                    connection.writeSizedByteArray(envelope.message)
-                    messageDelivered = true
-                }
+            if (connection == null) {
+                logger.info { "$prefix no connection to receiver" }
+            } else if (!connection.isReady()) {
+                logger.info { "$prefix Removing closed connection for receiver" }
+            } else {
+                logger.info { "$prefix Delivering ${message.size} bytes" }
+                connection.writeSizedByteArray(message)
+                messageDelivered = true
             }
         } catch (e: Exception) {
             logger.error { "Error while handling message from $fromId: $e" }
         } finally {
             try {
-                if (!messageDelivered && envelope?.key != null)
-                    messageStore?.addMessage(from, Recipient(envelope.to), envelope.key, envelope.message)
+                if (!messageDelivered && messageStorageKey != null)
+                    messageStore?.addMessage(from, to, messageStorageKey, message)
             } catch (e: Exception) {
-                logger.error { "Error while storing message $envelope: $e" }
+                logger.error { "Error while storing message - from: $fromId to: $toId e: $e" }
             }
+        }
+    }
+
+    private suspend fun handleMessage(from: PublicKey, payload: ByteArray) {
+        val fromId = Id.ofPublicKey(from)
+        // TODO: loop to deliver message should be outside tru
+        try {
+            decodePayload(payload).let { envelope ->
+                deliverMessage(from, Recipient(envelope.to), envelope.key, envelope.message)
+            }
+        } catch (e: Exception) {
+            logger.error { "Error while handling message from $fromId: $e" }
         }
     }
 
