@@ -5,14 +5,14 @@ import io.opencola.util.Base58
 import io.opencola.util.toByteArray
 import java.util.*
 
-class MessageKey private constructor(val value: ByteArray?) {
+class MessageStorageKey private constructor(val value: ByteArray?) {
     override fun toString(): String {
         return value?.let { Base58.encode(it) } ?: "none"
     }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is MessageKey) return false
+        if (other !is MessageStorageKey) return false
         if (value == null && other.value == null) return true
         return value.contentEquals(other.value)
     }
@@ -28,27 +28,27 @@ class MessageKey private constructor(val value: ByteArray?) {
             return Id.ofData(bytes).encoded().copyOfRange(0, KEY_LENGTH_IN_BYTES)
         }
 
-        val none = MessageKey(null)
+        val none = MessageStorageKey(null)
 
-        fun unique(): MessageKey {
-            return MessageKey(bytesToKeyBytes(UUID.randomUUID().toByteArray()))
+        fun unique(): MessageStorageKey {
+            return MessageStorageKey(bytesToKeyBytes(UUID.randomUUID().toByteArray()))
         }
 
-        fun of(bytes: ByteArray): MessageKey {
-            return MessageKey(bytesToKeyBytes(bytes))
+        fun of(bytes: ByteArray): MessageStorageKey {
+            return MessageStorageKey(bytesToKeyBytes(bytes))
         }
 
-        fun of(vararg ids: Id): MessageKey {
-            return MessageKey(bytesToKeyBytes(ids.map { it.encoded() }.reduce { acc, bytes -> acc + bytes }))
+        fun of(vararg ids: Id): MessageStorageKey {
+            return MessageStorageKey(bytesToKeyBytes(ids.map { it.encoded() }.reduce { acc, bytes -> acc + bytes }))
         }
 
-        fun of(key: String) : MessageKey {
-            return MessageKey(bytesToKeyBytes(key.toByteArray()))
+        fun of(key: String) : MessageStorageKey {
+            return MessageStorageKey(bytesToKeyBytes(key.toByteArray()))
         }
 
-        fun ofEncoded(key: ByteArray) : MessageKey {
+        fun ofEncoded(key: ByteArray) : MessageStorageKey {
             require(key.size == KEY_LENGTH_IN_BYTES) { "Key must be $KEY_LENGTH_IN_BYTES bytes" }
-            return MessageKey(key)
+            return MessageStorageKey(key)
         }
     }
 }

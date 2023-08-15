@@ -13,7 +13,7 @@ import io.opencola.network.providers.relay.OCRelayNetworkProvider
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.relay.client.v2.WebSocketClient
 import io.opencola.relay.common.defaultOCRPort
-import io.opencola.relay.common.message.v2.MessageKey
+import io.opencola.relay.common.message.v2.MessageStorageKey
 import io.opencola.relay.server.startWebServer
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
@@ -160,12 +160,12 @@ class OCRelayNetworkProviderTest {
                     val envelope = relayProvider.getEncodedEnvelope(
                         app0.getPersonas().single().entityId,
                         app1.getPersonas().single().entityId,
-                        UnsignedMessage(MessageType.PUT_DATA, MessageKey.none, emptyByteArray),
+                        UnsignedMessage(MessageType.PUT_DATA, MessageStorageKey.none, emptyByteArray),
                         false
                     )
 
                     StdoutMonitor(readTimeoutMilliseconds = 3000).use {
-                        relayClient.sendMessage(app1.getPersonas().single().publicKey, MessageKey.none, envelope)
+                        relayClient.sendMessage(app1.getPersonas().single().publicKey, MessageStorageKey.none, envelope)
                         // Check that receiver gets the message and ignores it
                         it.waitUntil("Error handling PUT_DATA: java.lang.AssertionError: Invalid id")
                     }

@@ -4,7 +4,7 @@ import io.opencola.relay.client.AbstractClient
 import io.opencola.relay.common.message.v1.Envelope
 import io.opencola.relay.common.message.Message
 import io.opencola.relay.common.connection.SocketSession
-import io.opencola.relay.common.message.v2.MessageKey
+import io.opencola.relay.common.message.v2.MessageStorageKey
 import io.opencola.security.*
 import io.opencola.serialization.codecs.IntByteArrayCodec
 import io.opencola.relay.common.retryExponentialBackoff
@@ -80,7 +80,7 @@ abstract class Client(
         }
     }
 
-    override fun getEncodeEnvelope(to: PublicKey, key: MessageKey, message: Message): ByteArray {
+    override fun getEncodeEnvelope(to: PublicKey, key: MessageStorageKey, message: Message): ByteArray {
         return Envelope(to, key, encrypt(to, message.encode())).encode()
     }
 

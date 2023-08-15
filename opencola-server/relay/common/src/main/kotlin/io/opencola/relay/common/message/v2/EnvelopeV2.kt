@@ -6,7 +6,7 @@ import io.opencola.security.EncryptedBytes
 import io.opencola.relay.common.protobuf.Relay as Proto
 import io.opencola.serialization.protobuf.ProtoSerializable
 
-class EnvelopeV2(val to: EncryptedBytes, val key: MessageKey, val message: ByteArray) {
+class EnvelopeV2(val to: EncryptedBytes, val key: MessageStorageKey, val message: ByteArray) {
     override fun toString(): String {
         return "Envelope(to=ENCRYPTED, key=$key, message=${message.size} bytes)"
     }
@@ -14,9 +14,9 @@ class EnvelopeV2(val to: EncryptedBytes, val key: MessageKey, val message: ByteA
     override fun equals(other: Any?): Boolean {
         if (other !is EnvelopeV2) return false
         if (to != other.to) return false
-        if (key == MessageKey.none && other.key != MessageKey.none) return false
-        if (key != MessageKey.none && other.key == MessageKey.none) return false
-        if (key != MessageKey.none && key != other.key) return false
+        if (key == MessageStorageKey.none && other.key != MessageStorageKey.none) return false
+        if (key != MessageStorageKey.none && other.key == MessageStorageKey.none) return false
+        if (key != MessageStorageKey.none && key != other.key) return false
         return message.contentEquals(other.message)
     }
 
@@ -43,7 +43,7 @@ class EnvelopeV2(val to: EncryptedBytes, val key: MessageKey, val message: ByteA
         override fun fromProto(value: Proto.Envelope): EnvelopeV2 {
             return EnvelopeV2(
                 EncryptedBytes.fromProto(value.to),
-                if (value.key.isEmpty) MessageKey.none else MessageKey.ofEncoded(value.key.toByteArray()),
+                if (value.key.isEmpty) MessageStorageKey.none else MessageStorageKey.ofEncoded(value.key.toByteArray()),
                 value.message.toByteArray()
             )
         }

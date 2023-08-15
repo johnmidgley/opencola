@@ -58,7 +58,7 @@ abstract class Client(
         logger.debug { "Authenticated" }
     }
 
-    override fun getEncodeEnvelope(to: PublicKey, key: MessageKey, message: Message): ByteArray {
+    override fun getEncodeEnvelope(to: PublicKey, key: MessageStorageKey, message: Message): ByteArray {
         require(serverPublicKey != null) { "Not authenticated, cannot encode envelope without serverPublicKey" }
         return EnvelopeV2(
             encrypt(serverPublicKey!!, PublicKeyByteArrayCodec.encode(to)),

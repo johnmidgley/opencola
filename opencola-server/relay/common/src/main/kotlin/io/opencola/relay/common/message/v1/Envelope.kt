@@ -1,7 +1,7 @@
 package io.opencola.relay.common.message.v1
 
 import io.opencola.model.Id
-import io.opencola.relay.common.message.v2.MessageKey
+import io.opencola.relay.common.message.v2.MessageStorageKey
 import io.opencola.security.publicKeyFromBytes
 import io.opencola.serialization.StreamSerializer
 import io.opencola.serialization.readByteArray
@@ -11,7 +11,7 @@ import java.io.OutputStream
 import java.security.PublicKey
 
 // This class can be removed after V2 migration and replace by envelopeV2
-class Envelope(val to: PublicKey, val key: MessageKey, val message: ByteArray) {
+class Envelope(val to: PublicKey, val key: MessageStorageKey, val message: ByteArray) {
     override fun toString(): String {
         return "Envelope(to=${Id.ofPublicKey(to)}, key=$key, message=${message.size} bytes)"
     }
@@ -19,9 +19,9 @@ class Envelope(val to: PublicKey, val key: MessageKey, val message: ByteArray) {
     override fun equals(other: Any?): Boolean {
         if (other !is Envelope) return false
         if (to != other.to) return false
-        if (key == MessageKey.none && other.key != MessageKey.none) return false
-        if (key != MessageKey.none && other.key == MessageKey.none) return false
-        if (key != MessageKey.none && key != other.key) return false
+        if (key == MessageStorageKey.none && other.key != MessageStorageKey.none) return false
+        if (key != MessageStorageKey.none && other.key == MessageStorageKey.none) return false
+        if (key != MessageStorageKey.none && key != other.key) return false
         return message.contentEquals(other.message)
     }
 
@@ -48,7 +48,7 @@ class Envelope(val to: PublicKey, val key: MessageKey, val message: ByteArray) {
         override fun decode(stream: InputStream): Envelope {
             return Envelope(
                 publicKeyFromBytes(stream.readByteArray()),
-                MessageKey.none,
+                MessageStorageKey.none,
                 stream.readByteArray()
             )
         }

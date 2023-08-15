@@ -1,7 +1,7 @@
 package io.opencola.relay.common.message.store
 
-import io.opencola.relay.common.message.v1.Envelope
-import io.opencola.relay.common.message.v2.MessageKey
+import io.opencola.relay.common.message.Recipient
+import io.opencola.relay.common.message.v2.MessageStorageKey
 import io.opencola.relay.common.message.v2.store.MemoryMessageStore
 import io.opencola.security.generateKeyPair
 import org.junit.Test
@@ -13,25 +13,20 @@ class MessageStoreTest {
     fun testBasicAdd() {
         val messageStore = MemoryMessageStore(32)
         val toPublicKey = generateKeyPair().public
+        val recipient = Recipient(toPublicKey)
         val fromPublicKey = generateKeyPair().public
+        val messageStorageKey = MessageStorageKey.of("key")
+        val message = "message".toByteArray()
 
-        val envelope = Envelope(
-            to = toPublicKey,
-            key = MessageKey.of("key"),
-            message = "message".toByteArray()
-        )
-
-        messageStore.addMessage(fromPublicKey, envelope)
+        messageStore.addMessage(fromPublicKey, recipient, messageStorageKey, message)
         val storedMessages = messageStore.getMessages(toPublicKey).toList()
 
         assert(storedMessages.size == 1)
-        val message0 = storedMessages[0]
-        assert(message0.envelope == envelope)
-        assert(message0.envelope.to == toPublicKey)
-        assert(message0.envelope.key == envelope.key)
-        assert(message0.envelope.message.contentEquals(envelope.message))
+        val storedMessage0 = storedMessages[0]
+        assert(storedMessage0.to.publicKey == toPublicKey)
+        assert(storedMessage0.message.contentEquals(message))
 
-        messageStore.removeMessage(message0)
+        messageStore.removeMessage(storedMessage0)
         assert(messageStore.getMessages(toPublicKey).toList().isEmpty())
     }
 
@@ -39,76 +34,58 @@ class MessageStoreTest {
     fun testAddMultipleMessages() {
         val messageStore = MemoryMessageStore(32)
         val toPublicKey = generateKeyPair().public
+        val recipient = Recipient(toPublicKey)
         val fromPublicKey = generateKeyPair().public
+        val messageStorageKey = MessageStorageKey.of("key")
+        val message = "message".toByteArray()
 
-        val envelope = Envelope(
-            to = toPublicKey,
-            key = MessageKey.of("key"),
-            message = "message".toByteArray()
-        )
-        messageStore.addMessage(fromPublicKey, envelope)
+        messageStore.addMessage(fromPublicKey, recipient, messageStorageKey, message)
 
-        val envelope1 = Envelope(
-            to = toPublicKey,
-            key = MessageKey.of("key1"),
-            message = "message1".toByteArray()
-        )
-        messageStore.addMessage(fromPublicKey, envelope1)
+        val messageStorageKey1 = MessageStorageKey.of("key1")
+        val message1 = "message1".toByteArray()
+
+        messageStore.addMessage(fromPublicKey, recipient, messageStorageKey1, message1)
 
         val storedMessages = messageStore.getMessages(toPublicKey).toList()
 
-        // Check that only 2nd message is returned (it should overwrite the first)
         assert(storedMessages.size == 2)
-        val message0 = storedMessages[0]
-        assert(message0.envelope == envelope)
-        assert(message0.envelope.to == toPublicKey)
-        assert(message0.envelope.key == envelope.key)
-        assert(message0.envelope.message.contentEquals(envelope.message))
+        val storedMessage0 = storedMessages[0]
+        assert(storedMessage0.to.publicKey == toPublicKey)
+        assert(storedMessage0.message.contentEquals(message))
 
-        val message1 = storedMessages[1]
-        assert(message1.envelope == envelope1)
-        assert(message1.envelope.to == toPublicKey)
-        assert(message1.envelope.key == envelope1.key)
-        assert(message1.envelope.message.contentEquals(envelope1.message))
+        val storedMessage1 = storedMessages[1]
+        assert(storedMessage1.to.publicKey == toPublicKey)
+        assert(storedMessage1.message.contentEquals(message1))
 
-        messageStore.removeMessage(message0)
-        messageStore.removeMessage(message1)
+        messageStore.removeMessage(storedMessage0)
+        messageStore.removeMessage(storedMessage1)
         assert(messageStore.getMessages(toPublicKey).toList().isEmpty())
     }
 
     @Test
-    fun testAddWithDuplicateMessageKey() {
+    fun testAddWithDuplicateMessageStorageKey() {
         val messageStore = MemoryMessageStore(32)
         val toPublicKey = generateKeyPair().public
+        val recipient = Recipient(toPublicKey)
+
         val fromPublicKey = generateKeyPair().public
+        val messageStorageKey = MessageStorageKey.of("key")
+        val message = "message".toByteArray()
 
-        val envelope = Envelope(
-            to = toPublicKey,
-            key = MessageKey.of("key"),
-            message = "message".toByteArray()
-        )
+        messageStore.addMessage(fromPublicKey, recipient, messageStorageKey, message)
 
-        messageStore.addMessage(fromPublicKey, envelope)
-
-        val envelope1 = Envelope(
-            to = toPublicKey,
-            key = MessageKey.of("key"),
-            message = "message1".toByteArray()
-        )
-
-        messageStore.addMessage(fromPublicKey, envelope1)
+        val message1 = "message1".toByteArray()
+        messageStore.addMessage(fromPublicKey, recipient, messageStorageKey, message1)
 
         val storedMessages = messageStore.getMessages(toPublicKey).toList()
 
         // Check that only 2nd message is returned (it should overwrite the first)
         assert(storedMessages.size == 1)
-        val message0 = storedMessages[0]
-        assert(message0.envelope == envelope1)
-        assert(message0.envelope.to == toPublicKey)
-        assert(message0.envelope.key == envelope1.key)
-        assert(message0.envelope.message.contentEquals(envelope1.message))
+        val storedMessage0 = storedMessages[0]
+        assert(storedMessage0.to.publicKey == toPublicKey)
+        assert(storedMessage0.message.contentEquals(message1))
 
-        messageStore.removeMessage(message0)
+        messageStore.removeMessage(storedMessage0)
         assert(messageStore.getMessages(toPublicKey).toList().isEmpty())
     }
 
@@ -116,110 +93,87 @@ class MessageStoreTest {
     fun testRejectMessageWhenOverQuota() {
         val messageStore = MemoryMessageStore(32)
         val toPublicKey = generateKeyPair().public
+        val recipient = Recipient(toPublicKey)
         val from1PublicKey = generateKeyPair().public
         val from2PublicKey = generateKeyPair().public
+        val messageStorageKey = MessageStorageKey.of("key")
+        val message = "012345678901234567890123456789".toByteArray()
 
-        val envelope = Envelope(
-            to = toPublicKey,
-            key = MessageKey.of("key"),
-            message = "012345678901234567890123456789".toByteArray()
-        )
+        messageStore.addMessage(from1PublicKey, recipient, messageStorageKey, message)
 
-        messageStore.addMessage(from1PublicKey, envelope)
+        val messageStorageKey1 = MessageStorageKey.of("key1")
+        val message1 = "0123456789".toByteArray()
 
-        val envelope1 = Envelope(
-            to = toPublicKey,
-            key = MessageKey.of("key1"),
-            message = "0123456789".toByteArray()
-        )
-
-        messageStore.addMessage(from1PublicKey, envelope1)
-
+        messageStore.addMessage(from1PublicKey, recipient, messageStorageKey1, message1)
 
         // Check only first message is stored - 2nd message should be rejected
         val storedMessages = messageStore.getMessages(toPublicKey).toList()
         assert(storedMessages.size == 1)
-        val message0 = storedMessages[0]
-        assert(message0.envelope == envelope)
-        assert(message0.envelope.to == toPublicKey)
-        assert(message0.envelope.key == envelope.key)
-        assert(message0.envelope.message.contentEquals(envelope.message))
+        val storedMessage0 = storedMessages[0]
+        assert(storedMessage0.to.publicKey == toPublicKey)
+        assert(storedMessage0.message.contentEquals(message))
 
         // Add same message from different sender - it should be rejected too
-        messageStore.addMessage(from2PublicKey, envelope)
+        messageStore.addMessage(from2PublicKey, recipient, messageStorageKey, message)
         val storedMessages1 = messageStore.getMessages(toPublicKey).toList()
         assert(storedMessages1.size == 1)
-        val message1 = storedMessages[0]
-        assert(message1.envelope == envelope)
-        assert(message1.envelope.to == toPublicKey)
-        assert(message1.envelope.key == envelope.key)
-        assert(message1.envelope.message.contentEquals(envelope.message))
+        val storedMessage1 = storedMessages[0]
+        assert(storedMessage1.to.publicKey == toPublicKey)
+        assert(storedMessage1.message.contentEquals(message))
 
         // Remove message
-        messageStore.removeMessage(message0)
+        messageStore.removeMessage(storedMessage0)
         assert(messageStore.getMessages(toPublicKey).toList().isEmpty())
 
         // Now try adding the 2nd message again - it should be accepted this time
-        messageStore.addMessage(from1PublicKey, envelope1)
+        messageStore.addMessage(from1PublicKey, recipient, messageStorageKey1, message1)
 
         val storedMessages2 = messageStore.getMessages(toPublicKey).toList()
         assert(storedMessages2.size == 1)
-        val message2 = storedMessages2[0]
-        assert(message2.envelope == envelope1)
-        assert(message2.envelope.to == toPublicKey)
-        assert(message2.envelope.key == envelope1.key)
-        assert(message2.envelope.message.contentEquals(envelope1.message))
+        val storedMessage2 = storedMessages2[0]
+        assert(storedMessage2.to.publicKey == toPublicKey)
+        assert(storedMessage2.message.contentEquals(message1))
     }
 
     @Test
     fun testAddAddSameMessageDifferentFrom() {
         val messageStore = MemoryMessageStore(32)
         val toPublicKey = generateKeyPair().public
+        val recipient = Recipient(toPublicKey)
         val from1PublicKey = generateKeyPair().public
         val from2PublicKey = generateKeyPair().public
+        val messageStorageKey = MessageStorageKey.of("key")
+        val message = "0123456789".toByteArray()
 
         assert(!from1PublicKey.equals(from2PublicKey))
 
-        val envelope = Envelope(
-            to = toPublicKey,
-            key = MessageKey.of("key"),
-            message = "0123456789".toByteArray()
-        )
-
         // Even though messages are identical, they should be stored, as they come from different senders
-        messageStore.addMessage(from1PublicKey, envelope)
-        messageStore.addMessage(from2PublicKey, envelope)
+        messageStore.addMessage(from1PublicKey, recipient, messageStorageKey, message)
+        messageStore.addMessage(from2PublicKey, recipient, messageStorageKey, message)
 
         val storedMessages = messageStore.getMessages(toPublicKey).toList()
         assert(storedMessages.size == 2)
 
-        val message0 = storedMessages[0]
-        assert(message0.envelope == envelope)
-        assert(message0.envelope.to == toPublicKey)
-        assert(message0.envelope.key == envelope.key)
-        assert(message0.envelope.message.contentEquals(envelope.message))
+        val storedMessage0 = storedMessages[0]
+        assert(storedMessage0.to.publicKey == toPublicKey)
+        assert(storedMessage0.message.contentEquals(message))
 
-        val message1 = storedMessages[1]
-        assert(message1.envelope == envelope)
-        assert(message1.envelope.to == toPublicKey)
-        assert(message1.envelope.key == envelope.key)
-        assert(message1.envelope.message.contentEquals(envelope.message))
+        val storedMessage1 = storedMessages[1]
+        assert(storedMessage1.to.publicKey == toPublicKey)
+        assert(storedMessage1.message.contentEquals(message))
 
-        assert(message0.senderSpecificKey != message1.senderSpecificKey)
+        assert(storedMessage0.senderSpecificKey != storedMessage1.senderSpecificKey)
     }
 
     @Test
-    fun testNoMessageKey() {
+    fun testNoMessageStorageKey() {
         val messageStore = MemoryMessageStore(32)
         val toPublicKey = generateKeyPair().public
+        val recipient = Recipient(toPublicKey)
         val fromPublicKey = generateKeyPair().public
+        val messageStorageKey = MessageStorageKey.none
+        val message = "message".toByteArray()
 
-        val envelope = Envelope(
-            to = toPublicKey,
-            key = MessageKey.none,
-            message = "message".toByteArray()
-        )
-
-        assertFails { messageStore.addMessage(fromPublicKey, envelope) }
+        assertFails { messageStore.addMessage(fromPublicKey, recipient, messageStorageKey, message) }
     }
 }

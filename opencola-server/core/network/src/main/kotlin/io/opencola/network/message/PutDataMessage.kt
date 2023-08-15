@@ -2,11 +2,11 @@ package io.opencola.network.message
 
 import com.google.protobuf.ByteString
 import io.opencola.model.Id
-import io.opencola.relay.common.message.v2.MessageKey
+import io.opencola.relay.common.message.v2.MessageStorageKey
 import io.opencola.network.protobuf.Message as Proto
 import io.opencola.serialization.protobuf.ProtoSerializable
 
-class PutDataMessage(val id: Id, val data: ByteArray) : Message(MessageType.PUT_DATA, MessageKey.of(id)) {
+class PutDataMessage(val id: Id, val data: ByteArray) : Message(MessageType.PUT_DATA, MessageStorageKey.of(id)) {
     companion object : ProtoSerializable<PutDataMessage, Proto.PutDataMessage>  {
         override fun toProto(value: PutDataMessage): Proto.PutDataMessage {
             return Proto.PutDataMessage

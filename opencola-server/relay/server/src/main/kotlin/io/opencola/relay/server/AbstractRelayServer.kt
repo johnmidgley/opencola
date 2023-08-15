@@ -67,9 +67,9 @@ abstract class AbstractRelayServer(
         val connection = connections[publicKey] ?: return
 
         while (messageStore != null) {
-            val message = messageStore.getMessages(publicKey).firstOrNull() ?: break
-            connection.writeSizedByteArray(message.envelope.message)
-            messageStore.removeMessage(message)
+            val storedMessage = messageStore.getMessages(publicKey).firstOrNull() ?: break
+            connection.writeSizedByteArray(storedMessage.message)
+            messageStore.removeMessage(storedMessage)
         }
 
         if(messageStore != null) {
@@ -128,7 +128,7 @@ abstract class AbstractRelayServer(
         } finally {
             try {
                 if (!messageDelivered && envelope?.key != null)
-                    messageStore?.addMessage(from, envelope)
+                    messageStore?.addMessage(from, Recipient(envelope.to), envelope.key, envelope.message)
             } catch (e: Exception) {
                 logger.error { "Error while storing message $envelope: $e" }
             }

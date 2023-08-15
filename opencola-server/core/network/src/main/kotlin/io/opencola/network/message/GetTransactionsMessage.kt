@@ -2,12 +2,12 @@ package io.opencola.network.message
 
 import com.google.protobuf.GeneratedMessageV3
 import io.opencola.model.Id
-import io.opencola.relay.common.message.v2.MessageKey
+import io.opencola.relay.common.message.v2.MessageStorageKey
 import io.opencola.serialization.protobuf.ProtoSerializable
 import io.opencola.network.protobuf.Message as Proto
 
 class GetTransactionsMessage(val mostRecentTransactionId: Id?, val maxTransactions: Int = 10) :
-    Message(MessageType.GET_TRANSACTIONS, MessageKey.of("GET_TRANSACTIONS")) {
+    Message(MessageType.GET_TRANSACTIONS, MessageStorageKey.of("GET_TRANSACTIONS")) {
 
     companion object : ProtoSerializable<GetTransactionsMessage, Proto.GetTransactionsMessage> {
         override fun toProto(value: GetTransactionsMessage): Proto.GetTransactionsMessage {

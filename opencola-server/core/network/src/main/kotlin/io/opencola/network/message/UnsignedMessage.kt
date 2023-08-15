@@ -2,13 +2,13 @@ package io.opencola.network.message
 
 import com.google.protobuf.ByteString
 import com.google.protobuf.GeneratedMessageV3
-import io.opencola.relay.common.message.v2.MessageKey
+import io.opencola.relay.common.message.v2.MessageStorageKey
 import io.opencola.serialization.protobuf.ProtoSerializable
 import io.opencola.network.protobuf.Message as Proto
 
 // "Unsigned" is more specific and does not conflict with Protobuf naming
-open class UnsignedMessage(type: MessageType, key: MessageKey, val payload: ByteArray) : Message(type, key) {
-    constructor(type: MessageType, key: MessageKey, protoMessage: GeneratedMessageV3) : this(
+open class UnsignedMessage(type: MessageType, key: MessageStorageKey, val payload: ByteArray) : Message(type, key) {
+    constructor(type: MessageType, key: MessageStorageKey, protoMessage: GeneratedMessageV3) : this(
         type,
         key,
         protoMessage.toByteArray()
@@ -25,7 +25,7 @@ open class UnsignedMessage(type: MessageType, key: MessageKey, val payload: Byte
         override fun fromProto(value: Proto.UnsignedMessage): UnsignedMessage {
             return UnsignedMessage(
                 MessageTypeProtoCodec.fromProto(value.type),
-                MessageKey.none,
+                MessageStorageKey.none,
                 value.payload.toByteArray()
             )
         }

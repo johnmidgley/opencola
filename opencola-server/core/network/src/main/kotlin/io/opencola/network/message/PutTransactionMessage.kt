@@ -3,7 +3,7 @@ package io.opencola.network.message
 import com.google.protobuf.ByteString
 import io.opencola.model.Id
 import io.opencola.model.SignedTransaction
-import io.opencola.relay.common.message.v2.MessageKey
+import io.opencola.relay.common.message.v2.MessageStorageKey
 import io.opencola.serialization.protobuf.ProtoSerializable
 import io.opencola.network.protobuf.Message as Proto
 
@@ -11,11 +11,11 @@ import io.opencola.network.protobuf.Message as Proto
 // use the bytes computed when the transaction was persisted.
 class PutTransactionMessage private constructor(
     private val encodedSignedTransaction: ByteArray,
-    key: MessageKey,
+    key: MessageStorageKey,
     val lastTransactionId: Id? = null
 ) : Message(MessageType.PUT_TRANSACTION, key) {
     constructor(signedTransaction: SignedTransaction, lastTransactionId: Id? = null) :
-            this(signedTransaction.encodeProto(), MessageKey.of(signedTransaction.transaction.id) , lastTransactionId)
+            this(signedTransaction.encodeProto(), MessageStorageKey.of(signedTransaction.transaction.id) , lastTransactionId)
 
     companion object : ProtoSerializable<PutTransactionMessage, Proto.PutTransactionMessage> {
         override fun toProto(value: PutTransactionMessage): Proto.PutTransactionMessage {
@@ -30,7 +30,7 @@ class PutTransactionMessage private constructor(
         override fun fromProto(value: Proto.PutTransactionMessage): PutTransactionMessage {
             return PutTransactionMessage(
                 value.signedTransaction.toByteArray(),
-                MessageKey.none,
+                MessageStorageKey.none,
                 if (value.hasCurrentTransactionId()) Id.fromProto(value.currentTransactionId) else null
             )
         }
