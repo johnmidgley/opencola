@@ -8,6 +8,10 @@ import java.security.PrivateKey
 import java.security.PublicKey
 
 class Signature(val algorithm: SignatureAlgorithm, val bytes: ByteArray) {
+    override fun toString(): String {
+        return "Signature(algorithm=$algorithm, bytes=${Base58.encode(bytes)})"
+    }
+
     fun encodeProto(): ByteArray {
         return encodeProto(this)
     }
@@ -41,10 +45,6 @@ class Signature(val algorithm: SignatureAlgorithm, val bytes: ByteArray) {
         return toProto(this)
     }
 
-    override fun toString(): String {
-        return Base58.encode(bytes)
-    }
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Signature) return false
@@ -59,3 +59,5 @@ class Signature(val algorithm: SignatureAlgorithm, val bytes: ByteArray) {
         return result
     }
 }
+
+fun Proto.Signature.toSignature(): Signature = Signature.fromProto(this)
