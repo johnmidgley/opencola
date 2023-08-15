@@ -13,9 +13,9 @@ import java.io.OutputStream
 import java.security.KeyPair
 import java.util.*
 
-class Message(val header: Header, val body: ByteArray) {
+class Message(val header: MessageHeader, val body: ByteArray) {
     constructor(senderKeyPair: KeyPair, body: ByteArray)
-            : this (Header(UUID.randomUUID(), senderKeyPair.public, Signature.of(senderKeyPair.private, body)), body)
+            : this (MessageHeader(UUID.randomUUID(), senderKeyPair.public, Signature.of(senderKeyPair.private, body)), body)
 
     override fun toString(): String {
         return "Message(header=$header, body=${body.size} bytes)"
@@ -39,26 +39,26 @@ class Message(val header: Header, val body: ByteArray) {
 
     companion object : StreamSerializer<Message>, ProtoSerializable<Message, Proto.Message> {
         override fun encode(stream: OutputStream, value: Message) {
-            Header.encode(stream, value.header)
+            MessageHeader.encode(stream, value.header)
             stream.writeByteArray(value.body)
         }
 
         override fun decode(stream: InputStream): Message {
             return Message(
-                Header.decode(stream),
+                MessageHeader.decode(stream),
                 stream.readByteArray())
         }
 
         override fun toProto(value: Message): Proto.Message {
             return Proto.Message.newBuilder()
-                .setHeader(Header.toProto(value.header))
+                .setHeader(MessageHeader.toProto(value.header))
                 .setBody(ByteString.copyFrom(value.body))
                 .build()
         }
 
         override fun fromProto(value: Proto.Message): Message {
             return Message(
-                Header.fromProto(value.header),
+                MessageHeader.fromProto(value.header),
                 value.body.toByteArray()
             )
         }
