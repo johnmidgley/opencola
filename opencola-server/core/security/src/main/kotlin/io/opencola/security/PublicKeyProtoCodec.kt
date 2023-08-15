@@ -20,3 +20,6 @@ object PublicKeyProtoCodec : ProtoSerializable<PublicKey, Proto.PublicKey> {
         return Proto.PublicKey.parseFrom(bytes)
     }
 }
+
+fun PublicKey.toProto(): Proto.PublicKey = PublicKeyProtoCodec.toProto(this)
+fun Proto.PublicKey.toPublicKey(): PublicKey = PublicKeyProtoCodec.fromProto(this)
