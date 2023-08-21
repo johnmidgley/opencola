@@ -10,7 +10,7 @@ class SignatureTest {
     fun testValidSignature() {
         val data = "hello".toByteArray()
         val keyPair = generateKeyPair()
-        val signature = sign(keyPair.private, data)
+        val signature = sign(keyPair.private, data).signature
         assert(isValidSignature(keyPair.public, data, signature))
     }
 
@@ -19,7 +19,7 @@ class SignatureTest {
         val data1 = "hello".toByteArray()
         val data2 = "hi".toByteArray()
         val keyPair = generateKeyPair()
-        val signature = sign(keyPair.private, data1)
+        val signature = sign(keyPair.private, data1).signature
         assert(!isValidSignature(keyPair.public, data2, signature))
     }
 }

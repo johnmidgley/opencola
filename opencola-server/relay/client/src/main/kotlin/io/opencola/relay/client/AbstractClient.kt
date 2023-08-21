@@ -6,6 +6,7 @@ import io.opencola.relay.common.*
 import io.opencola.relay.common.connection.Connection
 import io.opencola.relay.common.State.*
 import io.opencola.relay.common.connection.SocketSession
+import io.opencola.relay.common.message.Envelope
 import io.opencola.relay.common.message.v2.ControlMessage
 import io.opencola.relay.common.message.v2.ControlMessageType
 import io.opencola.relay.common.message.Message
@@ -55,8 +56,8 @@ abstract class AbstractClient(
     }
 
     abstract suspend fun getSocketSession(): SocketSession
-    protected abstract fun getEncodeEnvelope(to: PublicKey, key: MessageStorageKey, message: Message): ByteArray
-    protected abstract fun decodePayload(payload: ByteArray): Message
+    protected abstract fun encodePayload(to: PublicKey, messageStorageKey: MessageStorageKey, message: Message): ByteArray
+    protected abstract fun decodePayload(payload: ByteArray): Envelope
     protected abstract suspend fun authenticate(socketSession: SocketSession)
 
     fun isAuthorized(serverPublicKey: PublicKey): Boolean {
@@ -145,13 +146,14 @@ abstract class AbstractClient(
         }
     }
 
+    // TODO: Support list of 'to's.
     override suspend fun sendMessage(to: PublicKey, key: MessageStorageKey, body: ByteArray) {
-        val message = Message(keyPair, body)
         try {
+            val message = Message(keyPair.public, body)
             // TODO: Should there be a limit on the size of messages?
-            logger.info { "Sending message: ${message.header}" }
+            logger.info { "Sending message: $message" }
             withTimeout(requestTimeoutMilliseconds) {
-                getConnection().writeSizedByteArray(getEncodeEnvelope(to, key, Message(keyPair, body)))
+                getConnection().writeSizedByteArray(encodePayload(to, key, message))
             }
         } catch (e: ConnectException) {
             // Pass exception through so caller knows message wasn't sent
@@ -166,13 +168,16 @@ abstract class AbstractClient(
     }
 
     private fun isControlMessage(message: Message): Boolean {
-        return message.header.from == serverPublicKey
+        return message.from == serverPublicKey
     }
 
     private suspend fun handleControlMessage(message: Message) {
         val controlMessage = ControlMessage.decodeProto(message.body)
 
         when (controlMessage.type) {
+            ControlMessageType.NONE -> {
+                logger.error { "Received control message with type NONE" }
+            }
             ControlMessageType.NO_PENDING_MESSAGES -> {
                 eventHandler?.invoke(publicKey, RelayEvent.NO_PENDING_MESSAGES)
             }
@@ -181,13 +186,13 @@ abstract class AbstractClient(
 
     private suspend fun handleMessage(payload: ByteArray, messageHandler: MessageHandler) {
         try {
-            val message = decodePayload(payload)
-            logger.info { "Handling message: ${message.header}" }
+            val message = decodePayload(payload).decryptMessage(keyPair)
+            logger.info { "Handling message: $message" }
 
             if (isControlMessage(message)) {
                 handleControlMessage(message)
             } else {
-                messageHandler(message.header.from, message.body)
+                messageHandler(message.from, message.body)
             }
         } catch (e: Exception) {
             logger.error { "Exception in handleMessage: $e" }

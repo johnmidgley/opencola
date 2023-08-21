@@ -1,9 +1,12 @@
 package io.opencola.relay.client.v1
 
 import io.opencola.relay.client.AbstractClient
-import io.opencola.relay.common.message.v1.Envelope
+import io.opencola.relay.common.message.v1.PayloadEnvelope
 import io.opencola.relay.common.message.Message
 import io.opencola.relay.common.connection.SocketSession
+import io.opencola.relay.common.message.Envelope
+import io.opencola.relay.common.message.Recipient
+import io.opencola.relay.common.message.v1.MessageV1
 import io.opencola.relay.common.message.v2.MessageStorageKey
 import io.opencola.security.*
 import io.opencola.serialization.codecs.IntByteArrayCodec
@@ -13,9 +16,7 @@ import io.opencola.serialization.writeByteArray
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.net.URI
-import java.security.AlgorithmParameters
 import java.security.KeyPair
-import java.security.PrivateKey
 import java.security.PublicKey
 import javax.crypto.Cipher
 
@@ -39,7 +40,7 @@ abstract class Client(
 
         // Sign challenge and send back
         logger.debug { "Signing challenge" }
-        socketSession.writeSizedByteArray(sign(keyPair.private, challengeBytes).bytes)
+        socketSession.writeSizedByteArray(sign(keyPair.private, challengeBytes).signature.bytes)
 
         val authenticationResponse = IntByteArrayCodec.decode(socketSession.readSizedByteArray())
         if (authenticationResponse != 0) {
@@ -50,41 +51,39 @@ abstract class Client(
     }
 
     // OLD encryption code, only used in V1 client (doesn't use protobuf encoding)
-    private fun encrypt(
+    private fun encryptV1(
         publicKey: PublicKey,
         bytes: ByteArray,
         transformation: EncryptionTransformation = DEFAULT_ENCRYPTION_TRANSFORMATION
     ): ByteArray {
         return ByteArrayOutputStream().use {
-            val cipher = Cipher.getInstance(transformation.transformationName).also { it.init(Cipher.ENCRYPT_MODE, publicKey) }
+            val cipher =
+                Cipher.getInstance(transformation.transformationName).also { it.init(Cipher.ENCRYPT_MODE, publicKey) }
             it.writeByteArray(cipher.parameters.encoded)
             it.writeByteArray(cipher.doFinal(bytes))
             it.toByteArray()
         }
     }
 
-    // OLD encryption code, only used in V1 client (doesn't use protobuf encoding)
-    private fun decrypt(
-        privateKey: PrivateKey,
-        bytes: ByteArray,
-        transformation: EncryptionTransformation = DEFAULT_ENCRYPTION_TRANSFORMATION
-    ): ByteArray {
-        ByteArrayInputStream(bytes).use { stream ->
+    override fun encodePayload(to: PublicKey, messageStorageKey: MessageStorageKey, message: Message): ByteArray {
+        return PayloadEnvelope(to, encryptV1(to, MessageV1(keyPair, message.body).encode())).encode()
+    }
+
+    override fun decodePayload(payload: ByteArray): Envelope {
+        // V1 relay doesn't support per client symmetric key encryption, so we need to generate a dummy key
+        val dummyEncryptedMessageKey = encrypt(keyPair.public, generateAesKey().encoded)
+        val recipient = Recipient(keyPair.public, dummyEncryptedMessageKey)
+
+        val encryptedBytes = ByteArrayInputStream(payload).use { stream ->
             val encodedParameters = stream.readByteArray()
             val cipherBytes = stream.readByteArray()
-            val params = AlgorithmParameters.getInstance("IES").also { it.init(encodedParameters) }
-
-            return Cipher.getInstance(transformation.transformationName)
-                .also { it.init(Cipher.DECRYPT_MODE, privateKey, params) }
-                .doFinal(cipherBytes)
+            EncryptedBytes(
+                EncryptionTransformation.ECIES_WITH_AES_CBC,
+                EncryptionParameters(EncryptionParameters.Type.IES, encodedParameters),
+                cipherBytes
+            )
         }
-    }
 
-    override fun getEncodeEnvelope(to: PublicKey, key: MessageStorageKey, message: Message): ByteArray {
-        return Envelope(to, key, encrypt(to, message.encode())).encode()
-    }
-
-    override fun decodePayload(payload: ByteArray): Message {
-        return Message.decode(decrypt(keyPair.private, payload)).validate()
+        return Envelope(recipient, null, encryptedBytes)
     }
 }

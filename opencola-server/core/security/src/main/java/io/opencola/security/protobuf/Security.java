@@ -1020,6 +1020,11 @@ public final class Security {
     com.google.protobuf.ByteString getBytes();
   }
   /**
+   * <pre>
+   * WARNING: Modifying the structure of Signature could break existing transactions, which depend on signatures
+   * to validate
+   * </pre>
+   *
    * Protobuf type {@code io.opencola.security.protobuf.Signature}
    */
   public static final class Signature extends
@@ -1413,6 +1418,11 @@ public final class Security {
       return builder;
     }
     /**
+     * <pre>
+     * WARNING: Modifying the structure of Signature could break existing transactions, which depend on signatures
+     * to validate
+     * </pre>
+     *
      * Protobuf type {@code io.opencola.security.protobuf.Signature}
      */
     public static final class Builder extends
@@ -1731,6 +1741,11 @@ public final class Security {
     com.google.protobuf.ByteString getBytes();
   }
   /**
+   * <pre>
+   * WARNING: Modifying the structure of SignedBytes could break existing transactions, which depend on signatures
+   * to validate
+   * </pre>
+   *
    * Protobuf type {@code io.opencola.security.protobuf.SignedBytes}
    */
   public static final class SignedBytes extends
@@ -2035,6 +2050,11 @@ public final class Security {
       return builder;
     }
     /**
+     * <pre>
+     * WARNING: Modifying the structure of SignedBytes could break existing transactions, which depend on signatures
+     * to validate
+     * </pre>
+     *
      * Protobuf type {@code io.opencola.security.protobuf.SignedBytes}
      */
     public static final class Builder extends

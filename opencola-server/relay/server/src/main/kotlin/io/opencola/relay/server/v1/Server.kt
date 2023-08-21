@@ -1,11 +1,13 @@
 package io.opencola.relay.server.v1
 
 import io.opencola.model.Id
-import io.opencola.security.isValidSignature
-import io.opencola.security.publicKeyFromBytes
 import io.opencola.serialization.codecs.IntByteArrayCodec
 import io.opencola.relay.common.connection.SocketSession
+import io.opencola.relay.common.message.Envelope
+import io.opencola.relay.common.message.Recipient
+import io.opencola.relay.common.message.v1.PayloadEnvelope
 import io.opencola.relay.server.AbstractRelayServer
+import io.opencola.security.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import java.security.PublicKey
@@ -45,5 +47,28 @@ abstract class Server(numChallengeBytes: Int = 32) : AbstractRelayServer(numChal
         }
 
         return null
+    }
+
+    override fun encodePayload(to: PublicKey, envelope: Envelope): ByteArray {
+        require(to == envelope.recipients.single().publicKey)
+        require(envelope.message.transformation == EncryptionTransformation.NONE)
+        require(envelope.message.parameters.type == EncryptionParameters.Type.NONE)
+
+        // In V1, message is already encoded and ready to go.
+        return envelope.message.bytes
+    }
+
+    override fun decodePayload(from: PublicKey, payload: ByteArray): Envelope {
+        val payloadEnvelope = PayloadEnvelope.decode(payload)
+        return Envelope(
+            Recipient(payloadEnvelope.to, encrypt(payloadEnvelope.to, "".toByteArray())),
+            null,
+            // Just pass message through (It's encrypted already for the recipient) - encodePayload() knows what to do.
+            EncryptedBytes(
+                EncryptionTransformation.NONE,
+                EncryptionParameters(EncryptionParameters.Type.NONE, ByteArray(0)),
+                payloadEnvelope.message
+            )
+        )
     }
 }

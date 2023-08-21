@@ -29,8 +29,8 @@ class KeyStoreTest {
         assertNotNull(publicKey1)
 
         val data = "data to sign".toByteArray()
-        val signature = sign(keyPair.private, data)
-        val signature1 = sign(privateKey1, data)
+        val signature = sign(keyPair.private, data).signature
+        val signature1 = sign(privateKey1, data).signature
 
         assert(isValidSignature(keyPair.public, data, signature))
         assert(isValidSignature(keyPair.public, data, signature1))

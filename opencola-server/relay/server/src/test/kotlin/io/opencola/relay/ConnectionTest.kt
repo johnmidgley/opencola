@@ -71,14 +71,50 @@ class ConnectionTest {
         launch { client.open(messageHandler) }
     }
 
-    private fun testSendResponse(clientType: ClientType, relayServerUri : URI = localRelayServerUri) {
+    private fun testAuthentication(clientType: ClientType, relayServerUri: URI = localRelayServerUri) {
+        println("testAuthentication($clientType, $relayServerUri)")
+        runBlocking {
+            var server: RelayServer? = null
+            var client0: AbstractClient? = null
+
+            try {
+                StdoutMonitor(readTimeoutMilliseconds = 3000).use { monitor ->
+                    println("Starting RelayServer")
+                    server = if (relayServerUri == localRelayServerUri) RelayServer().also { it.start() } else null
+                    println("Starting client0")
+                    client0 = getClient(clientType, "client0", relayServerUri = relayServerUri).also {
+                        launch { it.open { _, _ -> "".toByteArray() } }
+                        it.waitUntilOpen()
+                    }
+
+                    monitor.waitUntil("Session authenticated for:")
+                }
+            } finally {
+                println("Closing resources")
+                server?.stop()
+                client0?.close()
+            }
+        }
+    }
+
+    @Test
+    fun testAuthenticationV1() {
+        testAuthentication(ClientType.V1)
+    }
+
+    @Test
+    fun testAuthenticationV2() {
+        testAuthentication(ClientType.V2)
+    }
+
+    private fun testSendResponse(clientType: ClientType, relayServerUri: URI = localRelayServerUri) {
         runBlocking {
             var server: RelayServer? = null
             var client0: AbstractClient? = null
             var client1: AbstractClient? = null
 
             try {
-                server = if(relayServerUri == localRelayServerUri) RelayServer().also { it.start() } else null
+                server = if (relayServerUri == localRelayServerUri) RelayServer().also { it.start() } else null
                 val result = CompletableDeferred<ByteArray>()
                 client0 = getClient(clientType, "client0", relayServerUri = relayServerUri).also {
                     launch {

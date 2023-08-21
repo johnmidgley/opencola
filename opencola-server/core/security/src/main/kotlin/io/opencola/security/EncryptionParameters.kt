@@ -6,6 +6,7 @@ import io.opencola.security.protobuf.Security as Proto
 
 class EncryptionParameters(val type: Type, val value: ByteArray) {
     enum class Type(val typeName: String, val protoValue: Proto.EncryptionParameters.Type) {
+        NONE("NONE", Proto.EncryptionParameters.Type.NONE),
         IES("IES", Proto.EncryptionParameters.Type.IES),
         IV("IV", Proto.EncryptionParameters.Type.IV);
 

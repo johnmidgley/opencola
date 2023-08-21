@@ -23,12 +23,12 @@ fun generateKeyPair(): KeyPair {
     return g.generateKeyPair()
 }
 
-fun sign(privateKey: PrivateKey, data: ByteArray, algorithm: SignatureAlgorithm = DEFAULT_SIGNATURE_ALGO): Signature {
+fun sign(privateKey: PrivateKey, bytes: ByteArray, algorithm: SignatureAlgorithm = DEFAULT_SIGNATURE_ALGO): SignedBytes {
     val ecdsaSign = java.security.Signature.getInstance(algorithm.algorithmName).also {
         it.initSign(privateKey)
-        it.update(data)
+        it.update(bytes)
     }
-    return Signature(algorithm, ecdsaSign.sign())
+    return SignedBytes(Signature(algorithm, ecdsaSign.sign()), bytes)
 }
 
 fun encrypt(

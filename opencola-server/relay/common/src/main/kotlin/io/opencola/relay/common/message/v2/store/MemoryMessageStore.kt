@@ -1,24 +1,23 @@
 package io.opencola.relay.common.message.v2.store
 
-import io.opencola.relay.common.message.Recipient
+import io.opencola.relay.common.message.Envelope
 import io.opencola.relay.common.message.v2.MessageStorageKey
 import java.security.PublicKey
 import java.util.concurrent.ConcurrentHashMap
 
+// TODO: Add global memory limit
 class MemoryMessageStore(private val maxStoredBytesPerConnection: Int = 1024 * 1024 * 50) : MessageStore {
     private val messageQueues = ConcurrentHashMap<PublicKey, MessageQueue>()
 
-    // TODO: Shouldn't store messages that don't have key. Message bytes will change if we re-encrypt, so not stable for
-    //  duplicate detection.
-    override fun addMessage(from: PublicKey, to: Recipient, messageStorageKey: MessageStorageKey, message: ByteArray) {
+    override fun addMessage(from: PublicKey, to: PublicKey, envelope: Envelope) {
+        val messageStorageKey = envelope.messageStorageKey
+        require(messageStorageKey != null)
         require(messageStorageKey != MessageStorageKey.none)
         require(messageStorageKey.value != null)
 
-        messageQueues.getOrPut(to.publicKey) { MessageQueue(to.publicKey, maxStoredBytesPerConnection) }
-            .apply {
-                val senderSpecificKey = MessageStorageKey.of(from.encoded.plus(messageStorageKey.value))
-                addMessage(to, senderSpecificKey, message)
-            }
+        messageQueues
+            .getOrPut(to) { MessageQueue(to, maxStoredBytesPerConnection) }
+            .apply { addMessage(from, to, envelope) }
     }
 
     override fun getMessages(to: PublicKey): Sequence<StoredMessage> {
@@ -26,7 +25,7 @@ class MemoryMessageStore(private val maxStoredBytesPerConnection: Int = 1024 * 1
     }
 
     override fun removeMessage(storedMessage: StoredMessage) {
-        messageQueues[storedMessage.to.publicKey]?.removeMessage(storedMessage.senderSpecificKey)
+        messageQueues[storedMessage.to]?.removeMessage(storedMessage.senderSpecificKey)
     }
 
     fun getUsage() : Sequence<Usage> {

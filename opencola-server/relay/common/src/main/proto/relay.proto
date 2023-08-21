@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package io.opencola.relay.common.protobuf;
 import "security.proto";
+import "util.proto";
 
 message Identity {
   io.opencola.security.protobuf.PublicKey publicKey = 1;
@@ -17,39 +18,44 @@ message ChallengeResponse {
 }
 
 enum AuthenticationStatus {
-  AUTHENTICATED = 0;
-  FAILED_CHALLENGE = 1;
+  NONE = 0;
+  AUTHENTICATED = 1;
+  FAILED_CHALLENGE = 2;
 }
 
 message AuthenticationResult {
   AuthenticationStatus status = 1;
 }
 
-message Header {
-  bytes messageId = 1;
-  io.opencola.security.protobuf.PublicKey from = 2; // Public key of the sender
-  io.opencola.security.protobuf.Signature signature = 3;
+message Recipient {
+  io.opencola.security.protobuf.PublicKey to = 1;
+  io.opencola.security.protobuf.EncryptedBytes messageSecretKey = 2; // Encrypted io.opencola.security.protobuf.SecretKey
 }
 
+// Signed and encrypted and then put in an Envelope
 message Message {
-  Header header = 1;
-  bytes body = 2;
+  io.opencola.util.protobuf.UUID id = 1;
+  io.opencola.security.protobuf.PublicKey from = 2;
+  bytes body = 3;
+}
+
+message EnvelopeHeader {
+    repeated Recipient recipients = 1;
+    bytes storageKey = 2;
 }
 
 message Envelope {
-  // Public key of the recipient, encrypted by the server's public key
-  io.opencola.security.protobuf.EncryptedBytes to = 1;
+  // Encrypted with recipients / server public key
+  io.opencola.security.protobuf.EncryptedBytes header = 1;
 
-  // Message key used for deduplication. When present, if the relay has to store the message, only one with the same
-  // key will be stored. If not present, the message is considered transient and will not be stored.
-  bytes key = 2;
-
-  bytes message = 3;
+  // Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message
+  io.opencola.security.protobuf.EncryptedBytes message = 2;
 }
 
-message Control {
+message ControlMessage {
   enum Type {
-    NO_PENDING_MESSAGES = 0;
+    NONE = 0;
+    NO_PENDING_MESSAGES = 1;
   }
 
   Type type = 1;

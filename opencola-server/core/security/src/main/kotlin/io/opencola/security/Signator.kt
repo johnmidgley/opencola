@@ -7,7 +7,7 @@ class Signator(private val keystore: KeyStore) {
         val privateKey = keystore.getKeyPair(alias)?.private
             ?: throw RuntimeException("Unable to find private key for alias: $alias")
 
-        return sign(privateKey, bytes)
+        return sign(privateKey, bytes).signature
     }
 
     fun canSign(alias: String): Boolean {

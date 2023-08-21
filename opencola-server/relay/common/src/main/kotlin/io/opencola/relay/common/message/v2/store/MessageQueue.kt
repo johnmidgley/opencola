@@ -1,7 +1,7 @@
 package io.opencola.relay.common.message.v2.store
 
 import io.opencola.model.Id
-import io.opencola.relay.common.message.Recipient
+import io.opencola.relay.common.message.Envelope
 import io.opencola.relay.common.message.v2.MessageStorageKey
 import mu.KotlinLogging
 import java.security.PublicKey
@@ -13,13 +13,15 @@ class MessageQueue(private val recipientPublicKey: PublicKey, private val maxSto
 
     private val storedMessages = mutableListOf<StoredMessage>()
 
-    fun addMessage(to: Recipient, messageStorageKey: MessageStorageKey, message: ByteArray) {
-        require(to.publicKey == recipientPublicKey)
-        require(messageStorageKey.value != null)
-        val receiverId = Id.ofPublicKey(to.publicKey)
+    fun addMessage(from: PublicKey, to: PublicKey, envelope: Envelope) {
+        require(to == recipientPublicKey)
+        require(envelope.messageStorageKey != null)
+        require(envelope.messageStorageKey.value != null)
+        val receiverId = Id.ofPublicKey(to)
 
-        logger.info { "Adding message: Receiver=$receiverId, key=$$messageStorageKey" }
+        logger.info { "Adding message: Receiver=$receiverId, key=$$envelope.messageStorageKey" }
 
+        val senderSpecificKey = MessageStorageKey.of(from.encoded.plus(envelope.messageStorageKey.value))
         val storedMessages = storedMessages
             .mapIndexed { index, storedMessage ->
                 object {
@@ -27,10 +29,10 @@ class MessageQueue(private val recipientPublicKey: PublicKey, private val maxSto
                     val storedMessage = storedMessage
                 }
             }
-            .filter { it.storedMessage.senderSpecificKey == messageStorageKey }
-        val existingMessageSize = storedMessages.sumOf { it.storedMessage.message.size }
+            .filter { it.storedMessage.senderSpecificKey == senderSpecificKey }
+        val existingMessageSize = storedMessages.sumOf { it.storedMessage.envelope.message.bytes.size }
 
-        if (bytesStored + message.size - existingMessageSize > maxStoredBytes) {
+        if (bytesStored + envelope.message.bytes.size - existingMessageSize > maxStoredBytes) {
             logger.info { "Message store for $receiverId is full - dropping message" }
             return
         }
@@ -38,7 +40,7 @@ class MessageQueue(private val recipientPublicKey: PublicKey, private val maxSto
         // Remove any existing messages from the same sender. We do this, rather than ignoring the message,
         // since newer messages with the same key may contain more recent data.
         val existingMessage = storedMessages.firstOrNull()
-        val messageToStore = StoredMessage(messageStorageKey, to, message)
+        val messageToStore = StoredMessage(senderSpecificKey, to, envelope)
 
         if (existingMessage != null) {
             bytesStored -= existingMessageSize
@@ -46,7 +48,8 @@ class MessageQueue(private val recipientPublicKey: PublicKey, private val maxSto
         } else
             this.storedMessages.add(messageToStore)
 
-        bytesStored += message.size
+        // TODO: This is over counting total memory usage, as a single envelope might be store multiple times
+        bytesStored += envelope.message.bytes.size
     }
 
     fun getMessages(): Sequence<StoredMessage> {
@@ -57,11 +60,12 @@ class MessageQueue(private val recipientPublicKey: PublicKey, private val maxSto
         val matchingMessages = storedMessages.filter { it.senderSpecificKey == key }
 
         matchingMessages.forEach {
-            val receiverId = Id.ofPublicKey(it.to.publicKey)
+            val receiverId = Id.ofPublicKey(it.to)
             logger.info { "Removing message: Receiver=$receiverId, key=$key" }
         }
 
         storedMessages.removeAll(matchingMessages)
-        bytesStored -= matchingMessages.sumOf { it.message.size }
+        // TODO: This currently not accurate for total memory usage, as a single envelope might be store multiple times
+        bytesStored -= matchingMessages.sumOf { it.envelope.message.bytes.size }
     }
 }

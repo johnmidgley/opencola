@@ -5,6 +5,7 @@ import io.opencola.util.Base58
 import io.opencola.util.toByteArray
 import java.util.*
 
+// TODO: Should value be nullable? The MessageStorageKey itself seems to be nullable, so it doesn't seem necessary here.
 class MessageStorageKey private constructor(val value: ByteArray?) {
     override fun toString(): String {
         return value?.let { Base58.encode(it) } ?: "none"
@@ -19,6 +20,10 @@ class MessageStorageKey private constructor(val value: ByteArray?) {
 
     override fun hashCode(): Int {
         return value.contentHashCode()
+    }
+
+    fun encoded() : ByteArray? {
+        return value
     }
 
     companion object {

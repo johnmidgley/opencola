@@ -18,7 +18,7 @@ class Signature(val algorithm: SignatureAlgorithm, val bytes: ByteArray) {
 
     companion object : ProtoSerializable<Signature, Proto.Signature> {
         fun of(privateKey: PrivateKey, bytes: ByteArray): Signature {
-            return sign(privateKey, bytes)
+            return sign(privateKey, bytes).signature
         }
 
         override fun toProto(value: Signature): Proto.Signature {

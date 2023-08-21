@@ -12,7 +12,7 @@ class EncryptedBytes(
     override fun equals(other: Any?): Boolean {
         if (other !is EncryptedBytes) return false
         if (transformation != other.transformation) return false
-        if (!parameters.equals(other.parameters)) return false
+        if (parameters != other.parameters) return false
         return bytes.contentEquals(other.bytes)
     }
 
@@ -53,6 +53,7 @@ class EncryptedBytes(
         override fun parseProto(bytes: ByteArray): Proto.EncryptedBytes {
             return Proto.EncryptedBytes.parseFrom(bytes)
         }
-
     }
 }
+
+fun Proto.EncryptedBytes.toEncryptedBytes(): EncryptedBytes = EncryptedBytes.fromProto(this)

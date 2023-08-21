@@ -2,7 +2,8 @@ package io.opencola.relay.server.v2
 
 import io.opencola.model.Id
 import io.opencola.relay.common.connection.SocketSession
-import io.opencola.relay.common.message.v1.Envelope
+import io.opencola.relay.common.message.Envelope
+import io.opencola.relay.common.message.v2.EnvelopeHeader
 import io.opencola.relay.common.message.v2.*
 import io.opencola.relay.common.message.v2.store.MemoryMessageStore
 import io.opencola.relay.common.message.v2.store.MessageStore
@@ -24,8 +25,8 @@ abstract class Server(numChallengeBytes: Int = 32, numSymmetricKeyBytes: Int = 3
             val serverChallenge = ChallengeMessage.decodeProto(socketSession.readSizedByteArray())
 
             logger.debug { "Writing challenge response" }
-            val signature = sign(serverKeyPair.private, serverChallenge.challenge, serverChallenge.algorithm)
-            socketSession.writeSizedByteArray(ChallengeResponse(signature).encodeProto())
+            val signedBytes = sign(serverKeyPair.private, serverChallenge.challenge, serverChallenge.algorithm)
+            socketSession.writeSizedByteArray(ChallengeResponse(signedBytes.signature).encodeProto())
 
             logger.debug { "Reading client identity" }
             val encryptedClientIdentity = EncryptedBytes.decodeProto(socketSession.readSizedByteArray())
@@ -71,10 +72,13 @@ abstract class Server(numChallengeBytes: Int = 32, numSymmetricKeyBytes: Int = 3
         return null
     }
 
-    override fun decodePayload(payload: ByteArray): Envelope {
-        val envelopeV2 = EnvelopeV2.decodeProto(payload)
-        val to = PublicKeyByteArrayCodec.decode(decrypt(serverKeyPair.private, envelopeV2.to))
-        // TODO: Make EnvelopeV2 a subclass of AbstractEnvelope and return it vs. creating a v1 Envelope - required for multi recipients
-        return Envelope(to, envelopeV2.key, envelopeV2.message)
+    override fun encodePayload(to: PublicKey, envelope: Envelope): ByteArray {
+        return PayloadEnvelope.from(serverKeyPair.private, to, envelope).encodeProto()
+    }
+
+    override fun decodePayload(from: PublicKey, payload: ByteArray): Envelope {
+        val envelopeV2 = PayloadEnvelope.decodeProto(payload)
+        val envelopeHeader = EnvelopeHeader.decryptAndVerifySignature(serverKeyPair.private, from, envelopeV2.header)
+        return Envelope(envelopeHeader.recipients.single(), envelopeHeader.messageStorageKey, envelopeV2.message)
     }
 }
