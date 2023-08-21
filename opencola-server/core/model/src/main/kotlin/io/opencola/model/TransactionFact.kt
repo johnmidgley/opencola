@@ -41,6 +41,8 @@ data class TransactionFact(val attribute: Attribute, val value: Value<Any>, val 
                 .also {
                     if (value.value !is EmptyValue)
                         it.setValue(value.attribute.valueWrapper.toProto(value.value.get()))
+                    else
+                        it.setValue(EmptyValue.proto)
                 }
                 .setOperation(Operation.toProto(value.operation))
                 .build()
@@ -50,6 +52,9 @@ data class TransactionFact(val attribute: Attribute, val value: Value<Any>, val 
             val attribute = Attribute.fromProto(value.attribute) ?: return null
 
             val valueWrapper = attribute.valueWrapper
+            if(value.value.ocType == Proto.Value.OCType.NONE)
+                throw IllegalArgumentException("TransactionFact value cannot be NONE")
+
             val wrappedValue =
                 if (value.value.ocType == Proto.Value.OCType.EMPTY)
                     EmptyValue

@@ -8,23 +8,24 @@ import "security.proto";
 
 message Attribute {
   enum CoreAttribute {
-    TYPE = 0;
-    MIME_TYPE = 1;
-    URI = 2;
-    DATA_ID = 3;
-    PUBLIC_KEY = 4;
-    NAME = 5;
-    DESCRIPTION = 6;
-    TEXT = 7;
-    IMAGE_URI = 8;
-    TAG = 9;
-    TRUST = 10;
-    LIKE = 11;
-    RATING = 12;
-    PARENT_ID = 13;
-    COMMENT_ID = 14;
-    NETWORK_TOKEN = 15;
-    ATTACHMENT_ID = 16;
+    NONE = 0;
+    TYPE = 1;
+    MIME_TYPE = 2;
+    URI = 3;
+    DATA_ID = 4;
+    PUBLIC_KEY = 5;
+    NAME = 6;
+    DESCRIPTION = 7;
+    TEXT = 8;
+    IMAGE_URI = 9;
+    TAG = 10;
+    TRUST = 11;
+    LIKE = 12;
+    RATING = 13;
+    PARENT_ID = 14;
+    COMMENT_ID = 15;
+    NETWORK_TOKEN = 16;
+    ATTACHMENT_ID = 17;
   }
   oneof value {
     CoreAttribute coreAttribute = 1;
@@ -34,17 +35,18 @@ message Attribute {
 
 message Value {
   enum OCType {
-    EMPTY = 0;
-    BOOLEAN = 1;
-    INT = 2;
-    LONG = 3;
-    FLOAT = 4;
-    DOUBLE = 5;
-    STRING = 6;
-    BYTES = 7;
-    URI = 8;
-    ID = 9;
-    PUBLIC_KEY = 10;
+    NONE = 0;
+    EMPTY = 1;
+    BOOLEAN = 2;
+    INT = 3;
+    LONG = 4;
+    FLOAT = 5;
+    DOUBLE = 6;
+    STRING = 7;
+    BYTES = 8;
+    URI = 9;
+    ID = 10;
+    PUBLIC_KEY = 11;
   }
   OCType ocType = 1;
   oneof value {
@@ -63,8 +65,9 @@ message Value {
 }
 
 enum Operation {
-  RETRACT = 0;
-  ADD = 1;
+  NONE = 0;
+  RETRACT = 1;
+  ADD = 2;
 }
 
 message TransactionFact {

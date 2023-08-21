@@ -10,7 +10,8 @@ object MessageTypeProtoCodec {
             MessageType.GET_TRANSACTIONS to MessageTypeProto.GET_TRANSACTIONS,
             MessageType.PUT_TRANSACTION to MessageTypeProto.PUT_TRANSACTION,
             MessageType.GET_DATA to MessageTypeProto.GET_DATA,
-            MessageType.PUT_DATA to MessageTypeProto.PUT_DATA)
+            MessageType.PUT_DATA to MessageTypeProto.PUT_DATA
+        )
 
     private val messageTypeProtoToMessageTypeMap =
         messageTypeToMessageTypeProtoMap.map { (k, v) -> v to k }.toMap()

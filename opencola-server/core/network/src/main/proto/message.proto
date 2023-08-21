@@ -10,13 +10,14 @@ message MessageHeader {
 }
 
 enum MessageType {
-  EMPTY = 0;
-  PING = 1;
-  PONG = 2;
-  GET_TRANSACTIONS = 3;
-  PUT_TRANSACTION = 4;
-  GET_DATA = 5;
-  PUT_DATA = 6;
+  NONE = 0;
+  EMPTY = 1;
+  PING = 2;
+  PONG = 3;
+  GET_TRANSACTIONS = 4;
+  PUT_TRANSACTION = 5;
+  GET_DATA = 6;
+  PUT_DATA = 7;
 }
 
 message UnsignedMessage {

@@ -20,64 +20,72 @@ public final class Message {
   public enum MessageType
       implements com.google.protobuf.ProtocolMessageEnum {
     /**
-     * <code>EMPTY = 0;</code>
+     * <code>NONE = 0;</code>
      */
-    EMPTY(0),
+    NONE(0),
     /**
-     * <code>PING = 1;</code>
+     * <code>EMPTY = 1;</code>
      */
-    PING(1),
+    EMPTY(1),
     /**
-     * <code>PONG = 2;</code>
+     * <code>PING = 2;</code>
      */
-    PONG(2),
+    PING(2),
     /**
-     * <code>GET_TRANSACTIONS = 3;</code>
+     * <code>PONG = 3;</code>
      */
-    GET_TRANSACTIONS(3),
+    PONG(3),
     /**
-     * <code>PUT_TRANSACTION = 4;</code>
+     * <code>GET_TRANSACTIONS = 4;</code>
      */
-    PUT_TRANSACTION(4),
+    GET_TRANSACTIONS(4),
     /**
-     * <code>GET_DATA = 5;</code>
+     * <code>PUT_TRANSACTION = 5;</code>
      */
-    GET_DATA(5),
+    PUT_TRANSACTION(5),
     /**
-     * <code>PUT_DATA = 6;</code>
+     * <code>GET_DATA = 6;</code>
      */
-    PUT_DATA(6),
+    GET_DATA(6),
+    /**
+     * <code>PUT_DATA = 7;</code>
+     */
+    PUT_DATA(7),
     UNRECOGNIZED(-1),
     ;
 
     /**
-     * <code>EMPTY = 0;</code>
+     * <code>NONE = 0;</code>
      */
-    public static final int EMPTY_VALUE = 0;
+    public static final int NONE_VALUE = 0;
     /**
-     * <code>PING = 1;</code>
+     * <code>EMPTY = 1;</code>
      */
-    public static final int PING_VALUE = 1;
+    public static final int EMPTY_VALUE = 1;
     /**
-     * <code>PONG = 2;</code>
+     * <code>PING = 2;</code>
      */
-    public static final int PONG_VALUE = 2;
+    public static final int PING_VALUE = 2;
     /**
-     * <code>GET_TRANSACTIONS = 3;</code>
+     * <code>PONG = 3;</code>
      */
-    public static final int GET_TRANSACTIONS_VALUE = 3;
+    public static final int PONG_VALUE = 3;
     /**
-     * <code>PUT_TRANSACTION = 4;</code>
+     * <code>GET_TRANSACTIONS = 4;</code>
      */
-    public static final int PUT_TRANSACTION_VALUE = 4;
+    public static final int GET_TRANSACTIONS_VALUE = 4;
     /**
-     * <code>GET_DATA = 5;</code>
+     * <code>PUT_TRANSACTION = 5;</code>
      */
-    public static final int GET_DATA_VALUE = 5;
+    public static final int PUT_TRANSACTION_VALUE = 5;
     /**
-     * <code>PUT_DATA = 6;</code>
+     * <code>GET_DATA = 6;</code>
      */
-    public static final int PUT_DATA_VALUE = 6;
+    public static final int GET_DATA_VALUE = 6;
+    /**
+     * <code>PUT_DATA = 7;</code>
+     */
+    public static final int PUT_DATA_VALUE = 7;
 
 
     public final int getNumber() {
@@ -104,13 +112,14 @@ public final class Message {
      */
     public static MessageType forNumber(int value) {
       switch (value) {
-        case 0: return EMPTY;
-        case 1: return PING;
-        case 2: return PONG;
-        case 3: return GET_TRANSACTIONS;
-        case 4: return PUT_TRANSACTION;
-        case 5: return GET_DATA;
-        case 6: return PUT_DATA;
+        case 0: return NONE;
+        case 1: return EMPTY;
+        case 2: return PING;
+        case 3: return PONG;
+        case 4: return GET_TRANSACTIONS;
+        case 5: return PUT_TRANSACTION;
+        case 6: return GET_DATA;
+        case 7: return PUT_DATA;
         default: return null;
       }
     }
@@ -805,7 +814,7 @@ public final class Message {
       if (header_ != null) {
         output.writeMessage(1, getHeader());
       }
-      if (type_ != io.opencola.network.protobuf.Message.MessageType.EMPTY.getNumber()) {
+      if (type_ != io.opencola.network.protobuf.Message.MessageType.NONE.getNumber()) {
         output.writeEnum(2, type_);
       }
       if (!payload_.isEmpty()) {
@@ -824,7 +833,7 @@ public final class Message {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(1, getHeader());
       }
-      if (type_ != io.opencola.network.protobuf.Message.MessageType.EMPTY.getNumber()) {
+      if (type_ != io.opencola.network.protobuf.Message.MessageType.NONE.getNumber()) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(2, type_);
       }
@@ -6398,10 +6407,11 @@ public final class Message {
       "el.protobuf.Id\"<\n\016GetDataMessage\022*\n\002id\030\001" +
       " \001(\0132\036.io.opencola.model.protobuf.Id\"J\n\016" +
       "PutDataMessage\022*\n\002id\030\001 \001(\0132\036.io.opencola" +
-      ".model.protobuf.Id\022\014\n\004data\030\002 \001(\014*s\n\013Mess" +
-      "ageType\022\t\n\005EMPTY\020\000\022\010\n\004PING\020\001\022\010\n\004PONG\020\002\022\024" +
-      "\n\020GET_TRANSACTIONS\020\003\022\023\n\017PUT_TRANSACTION\020" +
-      "\004\022\014\n\010GET_DATA\020\005\022\014\n\010PUT_DATA\020\006b\006proto3"
+      ".model.protobuf.Id\022\014\n\004data\030\002 \001(\014*}\n\013Mess" +
+      "ageType\022\010\n\004NONE\020\000\022\t\n\005EMPTY\020\001\022\010\n\004PING\020\002\022\010" +
+      "\n\004PONG\020\003\022\024\n\020GET_TRANSACTIONS\020\004\022\023\n\017PUT_TR" +
+      "ANSACTION\020\005\022\014\n\010GET_DATA\020\006\022\014\n\010PUT_DATA\020\007b" +
+      "\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

@@ -31,7 +31,7 @@ interface ValueWrapper<T> : ByteArrayCodec<T>, ProtoSerializable<T, Proto.Value>
 
     fun encodeProtoAny(value: Value<Any>) : ByteArray {
         return if (value is EmptyValue)
-            EmptyValue.bytes
+            EmptyValue.encodedProto
         else
             toProto(value.get() as T).toByteArray()
     }

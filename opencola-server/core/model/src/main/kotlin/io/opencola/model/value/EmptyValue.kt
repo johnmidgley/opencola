@@ -6,6 +6,8 @@ private val emptyBytes = ByteArray(0)
 
 object EmptyValue : Value<Any>(emptyBytes) {
     val bytes = emptyBytes
+    val proto = toProto()
+    val encodedProto: ByteArray = proto.toByteArray()
 
     override fun equals(other: Any?): Boolean {
         return other is EmptyValue
@@ -15,7 +17,7 @@ object EmptyValue : Value<Any>(emptyBytes) {
         return value.hashCode()
     }
 
-    fun toProto(): Model.Value {
+    private fun toProto(): Model.Value {
         return Model.Value.newBuilder()
             .setOcType(Model.Value.OCType.EMPTY)
             .build()
