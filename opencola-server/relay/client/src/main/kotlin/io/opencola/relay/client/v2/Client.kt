@@ -7,6 +7,7 @@ import io.opencola.relay.common.connection.SocketSession
 import io.opencola.relay.common.message.Envelope
 import io.opencola.relay.common.message.Message
 import io.opencola.relay.common.message.v2.*
+import kotlinx.coroutines.runBlocking
 import java.net.URI
 import java.security.KeyPair
 import java.security.PublicKey
@@ -46,7 +47,8 @@ abstract class Client(
         logger.debug { "Writing challenge response" }
         val signedBytes = sign(keyPair.private, clientChallenge.challenge, clientChallenge.algorithm)
         // Encrypt the signature with the server's public key so that MITM can't identify clients based on known public keys
-        val encryptedChallengeResponse = encrypt(serverPublicKey, ChallengeResponse(signedBytes.signature).encodeProto())
+        val encryptedChallengeResponse =
+            encrypt(serverPublicKey, ChallengeResponse(signedBytes.signature).encodeProto())
         socketSession.writeSizedByteArray(encryptedChallengeResponse.encodeProto())
 
         logger.debug { "Reading authentication result" }
@@ -59,21 +61,25 @@ abstract class Client(
         logger.debug { "Authenticated" }
     }
 
-    override fun encodePayload(to: PublicKey, messageStorageKey: MessageStorageKey, message: Message): ByteArray {
-        require(serverPublicKey != null) { "Not authenticated, cannot encode envelope without serverPublicKey" }
-        return PayloadEnvelope.encodePayload(keyPair.private, serverPublicKey!!, to, messageStorageKey, message)
+    override fun encodePayload(
+        to: List<PublicKey>,
+        messageStorageKey: MessageStorageKey,
+        message: Message
+    ): List<ByteArray> {
+        if(serverPublicKey == null) runBlocking { getConnection() }
+        return listOf(PayloadEnvelope.encodePayload(keyPair.private, serverPublicKey!!, to, messageStorageKey, message))
     }
 
     override fun decodePayload(payload: ByteArray): Envelope {
         require(serverPublicKey != null) { "Not authenticated, cannot decode envelope without serverPublicKey" }
         val envelope = PayloadEnvelope.decodePayload(keyPair.private, serverPublicKey!!, payload)
 
-        if(envelope.recipients.count() != 1)
+        if (envelope.recipients.count() != 1)
             throw RuntimeException("Expected 1 recipient, got ${envelope.recipients.count()}")
 
         val recipient = envelope.recipients.single()
 
-        if(recipient.publicKey != publicKey)
+        if (recipient.publicKey != publicKey)
             throw RuntimeException("Received message for unknown public key")
 
         return envelope

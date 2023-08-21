@@ -65,8 +65,8 @@ abstract class Client(
         }
     }
 
-    override fun encodePayload(to: PublicKey, messageStorageKey: MessageStorageKey, message: Message): ByteArray {
-        return PayloadEnvelope(to, encryptV1(to, MessageV1(keyPair, message.body).encode())).encode()
+    override fun encodePayload(to: List<PublicKey>, messageStorageKey: MessageStorageKey, message: Message): List<ByteArray> {
+        return to.map { PayloadEnvelope(it, encryptV1(it, MessageV1(keyPair, message.body).encode())).encode() }
     }
 
     override fun decodePayload(payload: ByteArray): Envelope {

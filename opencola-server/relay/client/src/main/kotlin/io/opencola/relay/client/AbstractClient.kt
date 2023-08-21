@@ -56,7 +56,14 @@ abstract class AbstractClient(
     }
 
     abstract suspend fun getSocketSession(): SocketSession
-    protected abstract fun encodePayload(to: PublicKey, messageStorageKey: MessageStorageKey, message: Message): ByteArray
+
+    // V1 Client can't support sending to multiple recipients in one payload, so multiple payload need to be supported - remove when V1 is deprecated
+    protected abstract fun encodePayload(
+        to: List<PublicKey>,
+        messageStorageKey: MessageStorageKey,
+        message: Message
+    ): List<ByteArray>
+
     protected abstract fun decodePayload(payload: ByteArray): Envelope
     protected abstract suspend fun authenticate(socketSession: SocketSession)
 
@@ -146,20 +153,26 @@ abstract class AbstractClient(
         }
     }
 
-    // TODO: Support list of 'to's.
-    override suspend fun sendMessage(to: PublicKey, key: MessageStorageKey, body: ByteArray) {
+    override suspend fun sendMessage(to: List<PublicKey>, key: MessageStorageKey, body: ByteArray) {
         try {
+            val connection = getConnection()
             val message = Message(keyPair.public, body)
+
             // TODO: Should there be a limit on the size of messages?
             logger.info { "Sending message: $message" }
-            withTimeout(requestTimeoutMilliseconds) {
-                getConnection().writeSizedByteArray(encodePayload(to, key, message))
+
+            // V1 does not support sending to multiple recipients in one payload, so multiple payload need to be supported - remove when V1 is deprecated
+            encodePayload(to, key, message).forEach { payload ->
+                withTimeout(requestTimeoutMilliseconds) {
+                    connection.writeSizedByteArray(payload)
+                }
             }
         } catch (e: ConnectException) {
             // Pass exception through so caller knows message wasn't sent
             throw e
         } catch (e: TimeoutCancellationException) {
-            logger.warn { "Timeout sending message to: ${Id.ofPublicKey(to)}" }
+            val toString = to.joinToString { Id.ofPublicKey(it).toString() }
+            logger.warn { "Timeout sending message to: $toString" }
         } catch (e: CancellationException) {
             // Let exception flow through
         } catch (e: Exception) {
@@ -178,6 +191,7 @@ abstract class AbstractClient(
             ControlMessageType.NONE -> {
                 logger.error { "Received control message with type NONE" }
             }
+
             ControlMessageType.NO_PENDING_MESSAGES -> {
                 eventHandler?.invoke(publicKey, RelayEvent.NO_PENDING_MESSAGES)
             }

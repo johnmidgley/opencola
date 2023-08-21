@@ -55,7 +55,7 @@ class PayloadEnvelope(val header: EncryptedBytes, val message: EncryptedBytes) {
         fun encodePayload(
             from: PrivateKey,
             headerTo: PublicKey,
-            messageTo: PublicKey,
+            messageTo: List<PublicKey>,
             messageStorageKey: MessageStorageKey,
             message: Message
         ): ByteArray {

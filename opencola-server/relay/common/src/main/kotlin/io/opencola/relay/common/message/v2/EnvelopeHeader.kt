@@ -15,8 +15,8 @@ class EnvelopeHeader(val recipients: List<Recipient>, val messageStorageKey: Mes
         messageStorageKey
     )
 
-    constructor(to: PublicKey, messageStorageKey: MessageStorageKey, messageSecretKey: SecretKey) : this(
-        listOf(Recipient(to, encrypt(to, messageSecretKey.encoded))),
+    constructor(to: List<PublicKey>, messageStorageKey: MessageStorageKey, messageSecretKey: SecretKey) : this(
+        to.map { Recipient(it, encrypt(it, messageSecretKey.encoded)) },
         messageStorageKey
     )
 
