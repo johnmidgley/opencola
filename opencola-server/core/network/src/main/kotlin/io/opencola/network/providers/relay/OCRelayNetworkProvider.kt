@@ -60,7 +60,7 @@ class OCRelayNetworkProvider(
     private val connections = ConcurrentHashMap<ConnectionParams, ConnectionInfo>()
 
     private fun handleEvent(publicKey: PublicKey, event: RelayEvent) {
-        val providerEvent = when(event) {
+        val providerEvent = when (event) {
             RelayEvent.NO_PENDING_MESSAGES -> NoPendingMessagesEvent(Id.ofPublicKey(publicKey))
         }
 
@@ -197,30 +197,22 @@ class OCRelayNetworkProvider(
         }
     }
 
+    private fun getClient(ocrAddress: URI, keyPair: KeyPair): RelayClient {
+        val connectionParams = ConnectionParams(ocrAddress, keyPair)
+
+        if (connections[connectionParams] == null) {
+            logger.warn { "Connection params missing for: $connectionParams" }
+            addClient(connectionParams)
+        }
+
+        return connections[connectionParams]!!.client
+    }
+
     // TODO: Since to Authority has a persona associated with it, do we need the from Authority?
     // TODO: Should from and to be entries of ids?
     override fun sendMessage(from: PersonaAddressBookEntry, to: AddressBookEntry, signedMessage: SignedMessage) {
-        val peerUri = to.address
-
-        if (peerUri.scheme != openColaRelayScheme) {
-            logger.warn { "Unexpected uri scheme in sendRequest: $peerUri" }
-        }
-
-        val peerPublicKey = to.publicKey
-
-        // TODO: Seems weird that we look this up again - from is passed in. This does block from sending to a peer
-        //  not in the address book. Maybe ids should be passed in.
-        val connectionParams = (addressBook.getEntry(from.personaId, from.entityId) as? PersonaAddressBookEntry)?.let {
-            ConnectionParams(
-                peerUri,
-                it.keyPair
-            )
-        }
-            ?: throw IllegalStateException("Can't send request from unknown persona: ${from.personaId}")
-
-        if (connections[connectionParams] == null) {
-            logger.warn { "Connection info missing for: $to" }
-            addClient(connectionParams)
+        if (to.address.scheme != openColaRelayScheme) {
+            logger.warn { "Unexpected uri scheme in sendRequest: $to.address" }
         }
 
         logger.info { "Sending request from: ${from.name} to: ${to.name} request: $signedMessage" }
@@ -228,8 +220,8 @@ class OCRelayNetworkProvider(
         runBlocking {
             try {
                 val envelopeBytes = getEncodedEnvelope(from.entityId, to.entityId, signedMessage, false)
-                val client = connections[connectionParams]!!.client
-                client.sendMessage(peerPublicKey, signedMessage.body.key, envelopeBytes)
+                val client = getClient(to.address, from.keyPair)
+                client.sendMessage(to.publicKey, signedMessage.body.key, envelopeBytes)
             } catch (e: Exception) {
                 logger.error { "sendMessage: $e" }
             }
