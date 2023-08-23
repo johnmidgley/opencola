@@ -13,6 +13,7 @@ val bcprovVersion: String by project
 val hopliteVersion: String by project
 val kodeinVersion: String by project
 val kotlinxCliVersion: String by project
+val protobufVersion: String by project
 
 
 plugins {
@@ -95,6 +96,7 @@ dependencies {
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+    testImplementation("com.google.protobuf:protobuf-java:$protobufVersion")
 
     implementation(compose.desktop.currentOs)
 }

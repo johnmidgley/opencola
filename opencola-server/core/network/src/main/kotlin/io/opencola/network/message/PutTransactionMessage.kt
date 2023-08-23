@@ -5,7 +5,7 @@ import io.opencola.model.Id
 import io.opencola.model.SignedTransaction
 import io.opencola.relay.common.message.v2.MessageStorageKey
 import io.opencola.serialization.protobuf.ProtoSerializable
-import io.opencola.network.protobuf.Message as Proto
+import io.opencola.network.protobuf.Network as Proto
 
 // Since transactions are dependent on a stable signature, and hence serialization, we don't re-serialize here, we just
 // use the bytes computed when the transaction was persisted.
@@ -13,7 +13,7 @@ class PutTransactionMessage private constructor(
     private val encodedSignedTransaction: ByteArray,
     key: MessageStorageKey,
     val lastTransactionId: Id? = null
-) : Message(MessageType.PUT_TRANSACTION, key) {
+) : Message(key) {
     constructor(signedTransaction: SignedTransaction, lastTransactionId: Id? = null) :
             this(signedTransaction.encodeProto(), MessageStorageKey.of(signedTransaction.transaction.id) , lastTransactionId)
 
@@ -38,10 +38,6 @@ class PutTransactionMessage private constructor(
         override fun parseProto(bytes: ByteArray): Proto.PutTransactionMessage {
             return Proto.PutTransactionMessage.parseFrom(bytes)
         }
-    }
-
-    override fun toProto(): Proto.PutTransactionMessage {
-        return toProto(this)
     }
 
     fun getSignedTransaction(): SignedTransaction {

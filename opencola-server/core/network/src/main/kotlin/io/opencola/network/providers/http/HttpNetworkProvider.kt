@@ -8,26 +8,32 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
+import io.opencola.model.Id
 import io.opencola.network.NetworkConfig
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
-import io.opencola.network.AbstractNetworkProvider
+import io.opencola.network.providers.AbstractNetworkProvider
 import io.opencola.network.NoPendingMessagesEvent
-import io.opencola.network.message.SignedMessage
+import io.opencola.network.message.*
+import io.opencola.network.providers.ProviderContext
 import io.opencola.security.*
 import io.opencola.storage.addressbook.AddressBook
-import io.opencola.security.Encryptor
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import java.net.URI
+import java.security.PublicKey
 
 class HttpNetworkProvider(
     addressBook: AddressBook,
-    signator: Signator,
-    encryptor: Encryptor,
+    signator: Signator, // TODO: Likely don't need signator anymore - keyPair in persona entry
     networkConfig: NetworkConfig,
-) : AbstractNetworkProvider(addressBook, signator, encryptor) {
+) : AbstractNetworkProvider(addressBook, signator) {
     private val logger = KotlinLogging.logger("HttpNetworkProvider")
+
+    private val providerKeyPair = generateKeyPair()
+    val publicKey: PublicKey
+        get() = providerKeyPair.public
+
 
     private val httpClient = HttpClient(OkHttp) {
         install(ContentNegotiation) {
@@ -72,21 +78,85 @@ class HttpNetworkProvider(
         // Nothing to do
     }
 
+    private fun getPayload(
+        from: PersonaAddressBookEntry,
+        to: AddressBookEntry,
+        headerPublicKey: PublicKey,
+        message: Message
+    ): ByteArray {
+        val messageSecretKey = generateAesKey()
+
+        // TODO: Break this up (decode payload too)
+        val recipient = Recipient(from, to, messageSecretKey)
+        val header = EnvelopeHeader(recipient, message.messageStorageKey)
+        val encryptedHeader = encrypt(headerPublicKey, header.encodeProto())
+        val signedHeader = sign(from.keyPair.private, encryptedHeader.encodeProto())
+
+        val messagePayload = MessagePayload(from.entityId, message).encodeProto()
+        val encryptedMessage = encrypt(messageSecretKey, messagePayload)
+        val signedMessage = sign(from.keyPair.private, encryptedMessage.encodeProto())
+
+        val envelope = Envelope(signedHeader, signedMessage)
+        return envelope.encodeProto()
+    }
+
+    private fun getPersona(id: Id) : PersonaAddressBookEntry {
+        return  addressBook.getEntry(id, id)?.let { it as PersonaAddressBookEntry }
+            ?: throw RuntimeException("No persona found for id $id")
+    }
+
+    private fun getPeer(personaId : Id,  peerId: Id) : AddressBookEntry {
+        return  addressBook.getEntry(personaId, peerId)  ?: throw RuntimeException("No peer found for persona=$personaId peer=$peerId")
+    }
+
+    private class DecodedPayload(
+        val from: AddressBookEntry,
+        val to: PersonaAddressBookEntry,
+        val message: Message,
+    )
+
+    private fun decodePayload(payload: ByteArray) : DecodedPayload {
+        val envelope = Envelope.decodeProto(payload)
+        val header = envelope.header.bytes
+            .let { EncryptedBytes.decodeProto(it) }
+            .let { decrypt(providerKeyPair.private, it) }
+            .let { EnvelopeHeader.decodeProto(it) }
+        require(header.recipients.size == 1) { "HttpNetworkProvider only supports one recipient" }
+        val recipient = header.recipients.single()
+        val toPersona = getPersona(recipient.to)
+        val messageSecretKey = recipient.decryptMessageSecretKey(toPersona.keyPair.private)
+        val messagePayload = envelope.message.bytes
+            .let { EncryptedBytes.decodeProto(it) }
+            .let { decrypt(messageSecretKey, it) }
+            .let { MessagePayload.decodeProto(it) }
+        val peer = getPeer(toPersona.entityId, messagePayload.from)
+        require(envelope.header.validate(peer.publicKey)) { "Invalid header signature" }
+        require(recipient.messageSecretKey.validate(peer.publicKey)) { "Invalid messageSecretKey signature" }
+        messagePayload.message
+
+        return DecodedPayload(peer, toPersona, messagePayload.message)
+    }
+
+    private suspend fun getServerPublicKey(networkNodeUrlStirng: String): PublicKey {
+        return publicKeyFromBytes(httpClient.get("$networkNodeUrlStirng/pk").body<ByteArray>())
+    }
+
     // Caller (Network Node) should check if peer is active
-    override fun sendMessage(from: PersonaAddressBookEntry, to: AddressBookEntry, signedMessage: SignedMessage) {
-        require (started) { "Provider is not started - can't sendMessage" }
+    // TODO: Should this be sendMessage(to: Id, message: Message) with to: Id in the message?
+    override fun sendMessage(from: PersonaAddressBookEntry, to: AddressBookEntry, message: Message) {
+        require(started) { "Provider is not started - can't sendMessage" }
 
         try {
             val urlString = "${to.address}/networkNode"
-            logger.info { "Sending request $signedMessage" }
+            logger.info { "Sending request $message" }
 
             return runBlocking {
+                val serverPublicKey = getServerPublicKey(urlString)
+
+                logger.info { "Sending request" }
                 val httpResponse = httpClient.post(urlString) {
                     contentType(ContentType.Application.OctetStream)
-                    signedMessage.encode()
-                    val encryptedPayload =
-                        getEncodedEnvelope(from.entityId, to.entityId, signedMessage, true)
-                    setBody(encryptedPayload)
+                    setBody(getPayload(from, to, serverPublicKey, message))
                 }
 
                 if (httpResponse.status != HttpStatusCode.OK)
@@ -101,9 +171,14 @@ class HttpNetworkProvider(
     }
 
     // Network Node validates the call
-    override fun sendMessage(from: PersonaAddressBookEntry, to: Set<AddressBookEntry>, signedMessage: SignedMessage) {
+    override fun sendMessage(from: PersonaAddressBookEntry, to: Set<AddressBookEntry>, message: Message) {
         to.forEach { peer ->
-            sendMessage(from, peer, signedMessage)
+            sendMessage(from, peer, message)
         }
+    }
+
+    override fun handleMessage(envelopeBytes: ByteArray, context: ProviderContext?) {
+        val decodedPayload = decodePayload(envelopeBytes)
+        handleMessage(decodedPayload.from.entityId, decodedPayload.to.entityId, decodedPayload.message)
     }
 }

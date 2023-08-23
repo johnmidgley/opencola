@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package io.opencola.network.protobuf;
+
+import "security.proto";
+import "model.proto";
+import "util.proto";
+
+message PingMessage {
+  bytes payload = 1;
+}
+
+message PongMessage {
+  bytes payload = 1;
+}
+
+message GetTransactionsMessage {
+  // Current transaction id from the peer requesting transactions
+  io.opencola.model.protobuf.Id currentTransactionId = 1;
+  int32 maxTransactions = 2;
+}
+
+message PutTransactionMessage {
+  // Transactions are sent as bytes to preserve signatures
+  bytes signedTransaction = 1;
+
+  // The persona's current transaction id, used to determine whether more transactions should be
+  // requested from the peer receiving the transaction
+  io.opencola.model.protobuf.Id currentTransactionId = 2;
+}
+
+message GetDataMessage {
+  io.opencola.model.protobuf.Id id = 1;
+}
+
+message PutDataMessage {
+  io.opencola.model.protobuf.Id id = 1;
+  bytes data = 2;
+}
+
+message Message {
+  io.opencola.util.protobuf.UUID id = 1;
+  io.opencola.model.protobuf.Id from = 2;
+  oneof body {
+    PingMessage ping = 3;
+    PongMessage pong = 4;
+    GetTransactionsMessage getTransactions = 5;
+    PutTransactionMessage putTransaction = 6;
+    GetDataMessage getData = 7;
+    PutDataMessage putData = 8;
+  }
+}
+
+message Recipient {
+  io.opencola.model.protobuf.Id to = 1;
+
+  // When a message is sent, is encrypted with a secret symmetric key. Each recipient gets the key encrypted by their
+  // public key and signed by the sender. This allows the sender to send a single message to multiple recipients without
+  // having to encrypt the message multiple times. Signing the key ensures that no other recipient can forge a message
+  // replay message. Messages can however be replayed by potential MITM attackers, which should not cause any security
+  // issues, but could disrupt the system.
+  io.opencola.security.protobuf.SignedBytes messageSecretKey = 2;
+}
+
+// Header gets signed by the previous node in a trust chain. In most cases, this will just be the sender.
+message EnvelopeHeader {
+  repeated Recipient recipients = 1;
+  bytes storageKey = 2;
+}
+
+message Envelope {
+  // Encryption is done first so that messages can't be replayed with different secret keys
+  io.opencola.security.protobuf.SignedBytes header = 1; // Encrypted then signed header
+  io.opencola.security.protobuf.SignedBytes message = 2; // Encrypted then signed message
+}

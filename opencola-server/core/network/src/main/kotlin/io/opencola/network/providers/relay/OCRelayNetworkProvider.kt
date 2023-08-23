@@ -2,9 +2,11 @@ package io.opencola.network.providers.relay
 
 import io.opencola.model.Id
 import io.opencola.network.NetworkConfig
-import io.opencola.network.AbstractNetworkProvider
+import io.opencola.network.providers.AbstractNetworkProvider
 import io.opencola.network.NoPendingMessagesEvent
-import io.opencola.network.message.SignedMessage
+import io.opencola.network.message.Message
+import io.opencola.network.message.MessagePayload
+import io.opencola.network.providers.ProviderContext
 import io.opencola.relay.client.AbstractClient
 import io.opencola.relay.client.RelayEvent
 import io.opencola.security.Encryptor
@@ -27,9 +29,8 @@ const val openColaRelayScheme = "ocr"
 class OCRelayNetworkProvider(
     addressBook: AddressBook,
     signator: Signator,
-    encryptor: Encryptor,
     private val networkConfig: NetworkConfig,
-) : AbstractNetworkProvider(addressBook, signator, encryptor) {
+) : AbstractNetworkProvider(addressBook, signator) {
     private val logger = KotlinLogging.logger("OCRelayNetworkProvider")
 
     private data class ConnectionInfo(val client: RelayClient, val listenThread: Thread)
@@ -80,6 +81,7 @@ class OCRelayNetworkProvider(
 
         val client =
             WebSocketClient(uri, connectionParams.keyPair, uri.toString(), networkConfig.requestTimeoutMilliseconds)
+        val context = OCRelayNetworkProviderContext(connectionParams.keyPair.public)
         // TODO: Move away from threads, or at least just use one
         val listenThread = thread {
             try {
@@ -92,9 +94,9 @@ class OCRelayNetworkProvider(
                             logger.error { "Error handling event: $e" }
                         }
                     }
-                    client.open { _, request ->
+                    client.open { _, payload ->
                         try {
-                            handleMessage(request, false)
+                            handleMessage(payload, context)
                         } catch (e: Throwable) {
                             logger.error { "Error handling message: $e" }
                         }
@@ -210,25 +212,37 @@ class OCRelayNetworkProvider(
 
     // TODO: Since to Authority has a persona associated with it, do we need the from Authority?
     // TODO: Should from and to be entries of ids?
-    override fun sendMessage(from: PersonaAddressBookEntry, to: AddressBookEntry, signedMessage: SignedMessage) {
+    override fun sendMessage(from: PersonaAddressBookEntry, to: AddressBookEntry, message: Message) {
         if (to.address.scheme != openColaRelayScheme) {
             logger.warn { "Unexpected uri scheme in sendRequest: $to.address" }
         }
 
-        logger.info { "Sending request from: ${from.name} to: ${to.name} request: $signedMessage" }
+        logger.info { "Sending request from: ${from.name} to: ${to.name} request: $message" }
 
         runBlocking {
             try {
-                val envelopeBytes = getEncodedEnvelope(from.entityId, to.entityId, signedMessage, false)
+                val body = MessagePayload(from.entityId, message).encodeProto()
                 val client = getClient(to.address, from.keyPair)
-                client.sendMessage(to.publicKey, signedMessage.body.key, envelopeBytes)
+                client.sendMessage(to.publicKey, message.messageStorageKey, body)
             } catch (e: Exception) {
                 logger.error { "sendMessage: $e" }
             }
         }
     }
 
-    override fun sendMessage(from: PersonaAddressBookEntry, to: Set<AddressBookEntry>, signedMessage: SignedMessage) {
-        to.forEach { sendMessage(from, it, signedMessage) }
+    override fun sendMessage(from: PersonaAddressBookEntry, to: Set<AddressBookEntry>, message: Message) {
+        to.forEach { sendMessage(from, it, message) }
+    }
+
+    override fun handleMessage(envelopeBytes: ByteArray, context: ProviderContext?) {
+        require(context is OCRelayNetworkProviderContext) { "Invalid context: $context" }
+
+        val toId = Id.ofPublicKey(context.clientPublicKey)
+        val messagePayload = MessagePayload.decodeProto(envelopeBytes)
+        val message = messagePayload.message
+
+        handleMessage(messagePayload.from, toId, message)
+
+        logger.info { "Received message: $message" }
     }
 }

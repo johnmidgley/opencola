@@ -14,11 +14,12 @@ import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import io.opencola.storage.entitystore.ExposedEntityStoreV2
 import io.opencola.storage.entitystore.getSQLiteDB
+import io.opencola.util.poll
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.junit.Test
-import java.security.PublicKey
+import java.lang.IllegalArgumentException
 import java.util.UUID
 import java.util.concurrent.LinkedBlockingDeque
 import java.util.concurrent.TimeUnit
@@ -72,12 +73,11 @@ class NetworkNodeTest {
     fun testSendValidMessage() {
         val context = NetworkNodeContext()
         val peer0 = context.addPeer("Peer0")
-        val envelopeBytes = context.getEncodedEnvelope(peer0.keyPair, context.persona.personaId, pingMessage)
 
         runBlocking {
             val result = CompletableDeferred<Unit>()
-            context.setRoute(Route(MessageType.PING) { _, _, _ -> result.complete(Unit); emptyList() })
-            context.provider.handleMessage(envelopeBytes, false)
+            context.setRoute(Route(PingMessage::class) { _, _, _ -> result.complete(Unit); emptyList() })
+            context.provider.handleMessage(peer0.addressBookEntry.entityId, context.persona.personaId, pingMessage)
             withTimeout(3000) { result.await() }
         }
     }
@@ -87,16 +87,19 @@ class NetworkNodeTest {
         val context = NetworkNodeContext()
         val persona = context.addressBook.addPersona("Persona0", false)
         val peer0 = context.addPeer("Peer0")
-        val envelopeBytes = context.getEncodedEnvelope(peer0.keyPair, persona.personaId, pingMessage)
-        assertFails { context.provider.handleMessage(envelopeBytes, false) }
+        // TODO: Replace assertFails with more specific assertFailsWith<Exception> calls
+        assertFailsWith<IllegalArgumentException> {
+            context.provider.handleMessage(peer0.addressBookEntry.entityId, persona.personaId, pingMessage)
+        }
     }
 
     @Test
     fun testReceiveMessageFromInactivePeer() {
         val context = NetworkNodeContext()
         val peer0 = context.addPeer("Peer0", false)
-        val envelopeBytes = context.getEncodedEnvelope(peer0.keyPair, context.persona.personaId, pingMessage)
-        assertFails { context.provider.handleMessage(envelopeBytes, false) }
+        assertFailsWith<IllegalArgumentException> {
+            context.provider.handleMessage(peer0.addressBookEntry.entityId, context.persona.personaId, pingMessage)
+        }
     }
 
     @Test
@@ -104,12 +107,13 @@ class NetworkNodeTest {
         val context = NetworkNodeContext()
         val peer0 = context.addPeer("Peer0")
         val persona1 = context.addressBook.addPersona("Persona1")
-        val envelopeBytes = context.getEncodedEnvelope(peer0.keyPair, persona1.personaId, pingMessage)
-        assertFails { context.provider.handleMessage(envelopeBytes, false) }
+        assertFailsWith<IllegalArgumentException> {
+            context.provider.handleMessage(peer0.addressBookEntry.entityId, persona1.entityId, pingMessage)
+        }
     }
 
-    private fun validateRecipient(validRecipients: Set<AddressBookEntry>): (PersonaAddressBookEntry, AddressBookEntry, SignedMessage) -> Unit {
-        return { from: PersonaAddressBookEntry, to: AddressBookEntry, _: SignedMessage ->
+    private fun validateRecipient(validRecipients: Set<AddressBookEntry>): (PersonaAddressBookEntry, AddressBookEntry, Message) -> Unit {
+        return { from: PersonaAddressBookEntry, to: AddressBookEntry, _: Message ->
             if (!validRecipients.contains(to))
                 throw IllegalStateException("Invalid call to SendMessage: from: $from to: $to")
         }
@@ -138,7 +142,7 @@ class NetworkNodeTest {
     fun testGetData() {
         runBlocking {
             val context = NetworkNodeContext()
-            val result = CompletableDeferred<SignedMessage>()
+            val result = CompletableDeferred<Message>()
             context.provider.onSendMessage = { _, _, message -> result.complete(message) }
 
             // Create persona and peer
@@ -150,47 +154,31 @@ class NetworkNodeTest {
 
             // Request data without data entity - should fail
             waitForStdout("for unknown data id") {
-                val message = GetDataMessage(dataId).toUnsignedMessage()
-                val envelopeBytes = context.getEncodedEnvelope(peer0.keyPair, context.persona.personaId, message)
-                context.provider.handleMessage(envelopeBytes, false)
+                context.provider.handleMessage(
+                    peer0.addressBookEntry.entityId,
+                    context.persona.personaId,
+                    GetDataMessage(dataId)
+                )
             }
 
             // Add data reference to entity store
             context.entityStore.updateEntities(DataEntity(context.persona.personaId, dataId, ""))
 
             // Try to get data - should succeed now
-            val message = GetDataMessage(dataId).toUnsignedMessage()
-            val envelopeBytes = context.getEncodedEnvelope(peer0.keyPair, context.persona.personaId, message)
-            context.provider.handleMessage(envelopeBytes, false)
-
-            val signedMessage = withTimeout(3000) { result.await() }
-            assertEquals(MessageType.PUT_DATA, signedMessage.body.type)
-            val putDataMessage = PutDataMessage.decodeProto(signedMessage.body.payload)
-            assertEquals(dataId, putDataMessage.id)
+            context.provider.handleMessage(peer0.addressBookEntry.entityId, context.persona.personaId, GetDataMessage(dataId))
+            val message = withTimeout(3000) { result.await() }
+            val putDataMessage = message as? PutDataMessage ?: fail("Expected PutDataMessage")
+            assertEquals(dataId, putDataMessage.dataId)
             assertContentEquals(data, context.contentBasedFileStore.read(dataId))
         }
-    }
-
-    fun decodePutTransactionsMessage(publicKey: PublicKey, signedMessage: SignedMessage?): PutTransactionMessage {
-        assertNotNull(signedMessage)
-        assertEquals(MessageType.PUT_TRANSACTION, signedMessage.body.type)
-        assert(signedMessage.hasValidSignature(publicKey))
-        return PutTransactionMessage.decodeProto(signedMessage.body.payload).also {
-            assert(it.getSignedTransaction().hasValidSignature(publicKey))
-        }
-    }
-
-    fun <T> poll(q: LinkedBlockingDeque<T>): T? {
-        return q.poll(1000, TimeUnit.MILLISECONDS)
     }
 
     @Test
     fun testGetTransactionBatching() {
         val context = NetworkNodeContext()
-        val persona = context.persona
         val peer0 = context.addPeer("Peer0")
-        val results = LinkedBlockingDeque<SignedMessage>()
-        context.provider.onSendMessage = { _, _, message -> results.add(message) }
+        val results = LinkedBlockingDeque<PutTransactionMessage>()
+        context.provider.onSendMessage = { _, _, message -> results.add(message as PutTransactionMessage) }
 
         val transactionIds = (0 until 10)
             .map { getTestEntity(context.persona, it) }
@@ -200,16 +188,16 @@ class NetworkNodeTest {
         var transactionNum = 0
 
         val message0 = GetTransactionsMessage(null, 4)
-        context.handleMessage(peer0, context.persona.entityId, message0.toUnsignedMessage())
+        context.handleMessage(peer0, context.persona.entityId, message0)
 
         repeat(3) {
-            decodePutTransactionsMessage(persona.publicKey, poll(results)).let {
+            poll(results)?.let {
                 assertEquals(transactionIds[transactionNum++], it.getSignedTransaction().transaction.id)
                 assertNull(it.lastTransactionId)
-            }
+            } ?: fail("Expected message")
         }
 
-        val putTransactionMessage = decodePutTransactionsMessage(persona.publicKey, poll(results))
+        val putTransactionMessage = poll(results) ?: fail("Expected message")
         val signedTransaction = putTransactionMessage.getSignedTransaction()
         assertEquals(transactionIds[transactionNum++], signedTransaction.transaction.id)
         assertNotNull(putTransactionMessage.lastTransactionId)
@@ -218,13 +206,13 @@ class NetworkNodeTest {
         assertNull(results.poll(500, TimeUnit.MILLISECONDS))
 
         val message1 = GetTransactionsMessage(signedTransaction.transaction.id, 10)
-        context.handleMessage(peer0, context.persona.entityId, message1.toUnsignedMessage())
+        context.handleMessage(peer0, context.persona.entityId, message1)
 
         repeat(6) {
-            decodePutTransactionsMessage(persona.publicKey, poll(results)).let {
+            poll(results)?.let {
                 assertEquals(transactionIds[transactionNum++], it.getSignedTransaction().transaction.id)
                 assertNull(it.lastTransactionId)
-            }
+            } ?: fail("Expected message")
         }
 
         // Make sure no pending messages
@@ -268,14 +256,14 @@ class NetworkNodeTest {
         (9 downTo 1)
             .forEach {
                 val tx = signedTransactions[it]
-                val message = PutTransactionMessage(tx).toUnsignedMessage()
+                val message = PutTransactionMessage(tx)
                 networkNodeContext.handleMessage(peer, networkNodeContext.persona.entityId, message)
                 assertEquals(0, networkNodeContext.entityStore.getAllSignedTransactions().count())
             }
 
         // Add last transaction (first in id order) and check that all other transactions are added
         val tx0 = signedTransactions[0]
-        val message = PutTransactionMessage(tx0).toUnsignedMessage()
+        val message = PutTransactionMessage(tx0)
         networkNodeContext.handleMessage(peer, networkNodeContext.persona.entityId, message)
         val allSignedTransactions = networkNodeContext.entityStore.getAllSignedTransactions().toList()
         assertEquals(10, allSignedTransactions.count())

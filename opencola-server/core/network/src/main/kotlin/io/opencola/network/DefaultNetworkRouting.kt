@@ -17,16 +17,16 @@ fun handleGetData(fileStore: ContentBasedFileStore, dataId: Id): ByteArray? {
 }
 
 fun pingRoute(): Route {
-    return Route(MessageType.PING) { _, _, _ -> listOf(PongMessage()) }
+    return Route(PingMessage::class) { _, _, _ -> listOf(PongMessage()) }
 }
 
 fun pongRoute(handler: messageHandler = { _, _, _ -> emptyList() }): Route {
-    return Route(MessageType.PONG, handler)
+    return Route(PongMessage::class, handler)
 }
 
 fun getTransactionsRoute(entityStore: EntityStore): Route {
-    return Route(MessageType.GET_TRANSACTIONS) { _, to, message ->
-        val getTransactionsMessage = GetTransactionsMessage.decodeProto(message.body.payload)
+    return Route(GetTransactionsMessage::class) { _, to, message ->
+        val getTransactionsMessage = message as GetTransactionsMessage
 
         val extra = (if (getTransactionsMessage.mostRecentTransactionId == null) 0 else 1)
         // TODO: Add local limit on max transactions
@@ -56,8 +56,8 @@ fun getTransactionsRoute(entityStore: EntityStore): Route {
 }
 
 fun putTransactionRoute(entityStore: EntityStore): Route {
-    return Route(MessageType.PUT_TRANSACTION) { from, _, message ->
-        val putTransactionsMessage = PutTransactionMessage.decodeProto(message.body.payload)
+    return Route(PutTransactionMessage::class) { from, _, message ->
+        val putTransactionsMessage = message as PutTransactionMessage
         val signedTransaction = putTransactionsMessage.getSignedTransaction()
         logger.info { "Received transaction ${signedTransaction.transaction.id} from $from" }
         entityStore.addSignedTransaction(signedTransaction)
@@ -75,9 +75,9 @@ fun putTransactionRoute(entityStore: EntityStore): Route {
 }
 
 fun getDataRoute(entityStore: EntityStore, fileStore: ContentBasedFileStore): Route {
-    return Route(MessageType.GET_DATA) { from, to, message ->
-        val getDataMessage = GetDataMessage.decodeProto(message.body.payload)
-        val dataId = getDataMessage.id
+    return Route(GetDataMessage::class) { from, to, message ->
+        val getDataMessage = message as GetDataMessage
+        val dataId = getDataMessage.dataId
         logger.info { "getData: from=$from, to=$to, dataId=$dataId" }
 
         entityStore.getEntity(to, dataId) as? DataEntity
@@ -88,14 +88,14 @@ fun getDataRoute(entityStore: EntityStore, fileStore: ContentBasedFileStore): Ro
 }
 
 fun putDataRoute(entityStore: EntityStore, fileStore: ContentBasedFileStore): Route {
-    return Route(MessageType.PUT_DATA) { from, to, message ->
-        val putDataMessage = PutDataMessage.decodeProto(message.body.payload)
-        val dataId = putDataMessage.id
+    return Route(PutDataMessage::class) { from, to, message ->
+        val putDataMessage = message as PutDataMessage
+        val dataId = putDataMessage.dataId
 
         entityStore.getEntity(from, dataId) as? DataEntity
             ?: throw IllegalArgumentException("PutData request from $from to $to for unknown data id: $dataId")
         val id = fileStore.write(putDataMessage.data)
-        require(id == putDataMessage.id)
+        require(id == putDataMessage.dataId)
         logger.info { "putData: Wrote dataId=$dataId from=$from, to=$to" }
         emptyList()
     }

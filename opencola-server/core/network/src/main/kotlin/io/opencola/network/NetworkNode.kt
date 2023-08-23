@@ -4,8 +4,10 @@ import io.opencola.event.EventBus
 import io.opencola.event.Events
 import io.opencola.model.Id
 import io.opencola.network.message.Message
-import io.opencola.network.message.MessageType
-import io.opencola.network.message.SignedMessage
+import io.opencola.network.providers.EventHandler
+import io.opencola.network.providers.MessageHandler
+import io.opencola.network.providers.NetworkProvider
+import io.opencola.network.providers.ProviderEventType
 import io.opencola.security.Signator
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.AddressBookEntry
@@ -14,8 +16,9 @@ import mu.KotlinLogging
 import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.set
+import kotlin.reflect.KClass
 
-typealias messageHandler = (from: Id, to: Id, signedMessage: SignedMessage) -> List<Message>
+typealias messageHandler = (from: Id, to: Id, message: Message) -> List<Message>
 
 // TODO: If another node suspends and (which looks offline) and then wakes up, other nodes will not be aware that it's
 //  back online. Ping when coming out of suspend, or ping / request transactions periodically?
@@ -25,9 +28,8 @@ class NetworkNode(
     var routes: List<Route>, // TODO: Make map
     private val addressBook: AddressBook,
     private val eventBus: EventBus,
-    private val signator: Signator,
 ) {
-    class Route(val messageType: MessageType, val handler: messageHandler)
+    class Route(val messageClass: KClass<out Message>, val handler: messageHandler)
 
     private val logger = KotlinLogging.logger("NetworkNode")
     private val peerStatuses = ConcurrentHashMap<Id, PeerStatus>()
@@ -101,7 +103,7 @@ class NetworkNode(
         }
     }
 
-    private val messageHandler: MessageHandler = { from, to, signedMessage ->
+    private val messageHandler: MessageHandler = { from, to, message ->
         if (addressBook.getEntry(to, from) !is PersonaAddressBookEntry)
             touchLastSeen(from)
 
@@ -118,15 +120,15 @@ class NetworkNode(
             throw IllegalArgumentException("Received request to inactive persona (from: $from to: $to)")
 
         try {
-            val handler = routes.firstOrNull { it.messageType == signedMessage.body.type }?.handler
-                ?: throw IllegalArgumentException("No handler for \"${signedMessage.body.type}\"")
+            val handler = routes.firstOrNull { it.messageClass == message::class }?.handler
+                ?: throw IllegalArgumentException("No handler for \"${message::class.simpleName}\"")
 
-            handler(from, to, signedMessage).forEach { response ->
+            handler(from, to, message).forEach { response ->
                 // Handler provided a response, so send it back
                 sendMessage(to, from, response)
             }
         } catch (e: Throwable) {
-            logger.error { "Error handling ${signedMessage.body.type}: $e" }
+            logger.error { "Error handling $message: $e" }
         }
     }
 
@@ -155,7 +157,7 @@ class NetworkNode(
             .toSet()
 
         if (peers.isNotEmpty()) {
-            logger.info { "Broadcasting message - from: ${from.entityId} type: ${message.type}" }
+            logger.info { "Broadcasting message - from: ${from.entityId} message: $message}" }
             // TODO: This is currently called in the background from the event bus, so ok, but
             //  should switch to making these requests from a pool of peer threads
             sendMessage(from, peers, message)
@@ -219,15 +221,6 @@ class NetworkNode(
         logger.info { "Stopped" }
     }
 
-    fun signMessage(from: PersonaAddressBookEntry, message: Message): SignedMessage {
-        val unsignedMessage = message.toUnsignedMessage()
-        return SignedMessage(
-            from.personaId,
-            unsignedMessage,
-            signator.signBytes(from.personaId.toString(), unsignedMessage.payload)
-        )
-    }
-
     // @Synchronized
     private fun sendMessage(from: PersonaAddressBookEntry, to: Set<AddressBookEntry>, message: Message) {
         require(from.isActive) { "Attempt to send request from inactive persona: $from" }
@@ -243,7 +236,7 @@ class NetworkNode(
         if (config.offlineMode) return
 
         to.groupBy { it.address.scheme }.forEach { (scheme, peers) ->
-            providers[scheme]!!.sendMessage(from, peers.toSet(), signMessage(from, message))
+            providers[scheme]!!.sendMessage(from, peers.toSet(), message)
         }
     }
 

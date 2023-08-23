@@ -1,5 +1,6 @@
 package io.opencola.event
 
+import io.opencola.model.Id
 import mu.KotlinLogging
 
 class MockEventBus : EventBus {
@@ -14,6 +15,6 @@ class MockEventBus : EventBus {
     }
 
     override fun sendMessage(name: String, data: ByteArray) {
-        logger.warn { "IGNORING - MockEventBus.sendMessage($name, $data)" }
+        logger.warn { "IGNORING - MockEventBus.sendMessage($name, ${Id.ofData(data)})" }
     }
 }

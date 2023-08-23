@@ -1,8 +1,6 @@
 package io.opencola.network.providers
 
-import io.opencola.network.AbstractNetworkProvider
-import io.opencola.network.message.SignedMessage
-import io.opencola.security.Encryptor
+import io.opencola.network.message.Message
 import io.opencola.security.KeyStore
 import io.opencola.security.Signator
 import io.opencola.storage.addressbook.AddressBook
@@ -12,9 +10,10 @@ import java.net.URI
 
 class MockNetworkProvider(addressBook: AddressBook,
                           keyStore: KeyStore
-) : AbstractNetworkProvider(addressBook, Signator(keyStore), Encryptor(keyStore)) {
+) : AbstractNetworkProvider(addressBook, Signator(keyStore)) {
     private val logger = mu.KotlinLogging.logger("MockNetworkProvider")
-    var onSendMessage: ((PersonaAddressBookEntry, AddressBookEntry, SignedMessage) -> Unit)? = null
+    var onSendMessage: ((PersonaAddressBookEntry, AddressBookEntry, Message) -> Unit)? = null
+
 
     override fun start(waitUntilReady: Boolean) {
         logger.info { "Starting MockNetworkProvider" }
@@ -43,13 +42,17 @@ class MockNetworkProvider(addressBook: AddressBook,
         logger.info { "Removing peer: $peer" }
     }
 
-    override fun sendMessage(from: PersonaAddressBookEntry, to: AddressBookEntry, signedMessage: SignedMessage) {
+    override fun sendMessage(from: PersonaAddressBookEntry, to: AddressBookEntry, message: Message) {
         onSendMessage?.let{
-            it(from, to, signedMessage)
+            it(from, to, message)
         } ?: throw IllegalStateException("onSendRequest not set")
     }
 
-    override fun sendMessage(from: PersonaAddressBookEntry, to: Set<AddressBookEntry>, signedMessage: SignedMessage) {
-        to.forEach { sendMessage(from, it, signedMessage) }
+    override fun sendMessage(from: PersonaAddressBookEntry, to: Set<AddressBookEntry>, message: Message) {
+        to.forEach { sendMessage(from, it, message) }
+    }
+
+    override fun handleMessage(envelopeBytes: ByteArray, context: ProviderContext?) {
+        throw NotImplementedError("MockNetworkProvider does not support receiving messages")
     }
 }

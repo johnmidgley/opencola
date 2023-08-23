@@ -69,6 +69,7 @@ data class Id(private val bytes: ByteArray) : Comparable<Id> {
             )
         }
 
+        // TODO: Convert of* methods to extension methods?
         fun ofPublicKey(publicKey: PublicKey) : Id {
             return Id(sha256(publicKey.encoded))
         }
@@ -119,3 +120,6 @@ data class Id(private val bytes: ByteArray) : Comparable<Id> {
     }
 }
 
+fun Proto.Id.toId() : Id {
+    return Id.fromProto(this)
+}

@@ -2,13 +2,9 @@ package opencola.core.network.providers.http
 
 import io.opencola.model.Authority
 import io.opencola.network.NetworkNode
-import io.opencola.network.message.MessageType
 import io.opencola.network.message.PingMessage
 import io.opencola.network.message.PongMessage
-import io.opencola.network.message.SignedMessage
 import io.opencola.network.providers.http.HttpNetworkProvider
-import io.opencola.security.Signature
-import io.opencola.security.SignatureAlgorithm
 import io.opencola.security.generateKeyPair
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
@@ -27,34 +23,31 @@ class HttpNetworkProviderTest {
             getApplicationNode().also { it.start() }
         val app = applicationNode.application
         val persona = app.getPersonas().first()
-        val networkNode = app.inject<NetworkNode>()
         val networkProvider = app.inject<HttpNetworkProvider>()
         val originalRequestHandler = networkProvider.getRequestHandler()!!
 
         try {
             runBlocking {
                 val deferredResult = CompletableDeferred<String>()
-                networkProvider.setMessageHandler { _, _, signedMessage ->
-                    val message = signedMessage.body
-                    when (message.type) {
-                        MessageType.PING -> {
-                            networkNode.signMessage(persona, PongMessage())
+                networkProvider.setMessageHandler { _, _, message ->
+                    when (message) {
+                         is PingMessage -> {
                             networkProvider.sendMessage(
                                 persona,
                                 persona,
-                                networkNode.signMessage(persona, PongMessage())
+                                PongMessage()
                             )
                         }
 
-                        MessageType.PONG -> {
+                        is PongMessage -> {
                             deferredResult.complete("Pong")
                         }
 
-                        else -> throw IllegalArgumentException("Unknown message type: ${message.type}")
+                        else -> throw IllegalArgumentException("Unknown message type: $message")
                     }
                 }
 
-                val goodMessage = networkNode.signMessage(persona, PingMessage())
+                val goodMessage = PingMessage()
                 networkProvider.sendMessage(persona, persona, goodMessage)
                 withTimeout(3000) { deferredResult.await() }
             }
@@ -62,28 +55,22 @@ class HttpNetworkProviderTest {
             val badKeyPair = generateKeyPair()
             val badAuthority = Authority(badKeyPair.public, persona.address, "Bad Authority")
 
+            println("Testing sending message to unknown peer")
             assertFails {
                 networkProvider.sendMessage(
                     persona,
                     AddressBookEntry(badAuthority),
-                    SignedMessage(
-                        persona.personaId,
-                        PingMessage(),
-                        Signature(SignatureAlgorithm.SHA3_256_WITH_ECDSA, io.opencola.network.emptyByteArray)
-                    )
+                    PingMessage()
                 )
             }
 
+            println("Testing sending message from unknown persona")
             assertFails {
                 val badPersonaAddressBookEntry = PersonaAddressBookEntry(badAuthority, badKeyPair)
                 networkProvider.sendMessage(
                     badPersonaAddressBookEntry,
                     persona,
-                    SignedMessage(
-                        badPersonaAddressBookEntry.personaId,
-                        PingMessage(),
-                        Signature(SignatureAlgorithm.SHA3_256_WITH_ECDSA, io.opencola.network.emptyByteArray)
-                    )
+                    PingMessage()
                 )
             }
         } finally {

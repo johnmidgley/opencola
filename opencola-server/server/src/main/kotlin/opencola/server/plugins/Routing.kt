@@ -528,9 +528,15 @@ fun Application.configureRouting(app: app, authSecretKey: SecretKey) {
         }
 
         post("/networkNode") {
-            val envelopeBytes = call.receive<ByteArray>()
-            app.inject<HttpNetworkProvider>().handleMessage(envelopeBytes, useEncryption = true)
+            app.inject<HttpNetworkProvider>().handleMessage(call.receive<ByteArray>())
             call.respond(HttpStatusCode.OK)
+        }
+
+        get("/networkNode/pk") {
+            call.respondBytes(
+                app.inject<HttpNetworkProvider>().publicKey.encoded,
+                ContentType("application", "octet-stream")
+            )
         }
     }
 }

@@ -4,12 +4,10 @@ import io.opencola.application.Application
 import io.opencola.io.StdoutMonitor
 import io.opencola.model.Id
 import io.opencola.network.NetworkNode
-import io.opencola.network.emptyByteArray
-import io.opencola.network.message.MessageType
-import io.opencola.network.message.UnsignedMessage
 import io.opencola.network.message.PingMessage
+import io.opencola.network.message.PongMessage
 import io.opencola.network.pongRoute
-import io.opencola.network.providers.relay.OCRelayNetworkProvider
+import io.opencola.network.protobuf.Network as Proto
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.relay.client.v2.WebSocketClient
 import io.opencola.relay.common.defaultOCRPort
@@ -17,6 +15,7 @@ import io.opencola.relay.common.message.v2.MessageStorageKey
 import io.opencola.relay.server.startWebServer
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
+import io.opencola.util.toProto
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -26,6 +25,7 @@ import opencola.server.getApplications
 import opencola.server.testConnectAndReplicate
 import org.junit.Test
 import java.net.URI
+import java.util.*
 import kotlin.test.assertFails
 
 class OCRelayNetworkProviderTest {
@@ -73,7 +73,7 @@ class OCRelayNetworkProviderTest {
                 // Trap pong messages so that we can tell when the ping was successful
                 val results = Channel<Unit>()
                 networkNode0.routes = networkNode0.routes.map {
-                    if (it.messageType == MessageType.PONG)
+                    if (it.messageClass == PongMessage::class)
                         pongRoute { _, _, _ -> launch { results.send(Unit) }; emptyList() }
                     else
                         it
@@ -127,6 +127,15 @@ class OCRelayNetworkProviderTest {
     }
 
 
+    fun getBadPutDataMessageBytes(from: Id): ByteArray {
+        return Proto.Message.newBuilder()
+            .setId(UUID.randomUUID().toProto())
+            .setFrom(from.toProto())
+            .setPutData(Proto.PutDataMessage.newBuilder().build())
+            .build()
+            .toByteArray()
+    }
+
     @Test
     fun testIgnoreBadSerialization() {
         runBlocking {
@@ -156,18 +165,14 @@ class OCRelayNetworkProviderTest {
             try {
                 println("Testing bad message")
                 run {
-                    val relayProvider = app0.inject<OCRelayNetworkProvider>()
-                    val envelope = relayProvider.getEncodedEnvelope(
-                        app0.getPersonas().single().entityId,
-                        app1.getPersonas().single().entityId,
-                        UnsignedMessage(MessageType.PUT_DATA, MessageStorageKey.none, emptyByteArray),
-                        false
-                    )
-
                     StdoutMonitor(readTimeoutMilliseconds = 3000).use {
-                        relayClient.sendMessage(app1.getPersonas().single().publicKey, MessageStorageKey.none, envelope)
+                        relayClient.sendMessage(
+                            app1.getPersonas().single().publicKey,
+                            MessageStorageKey.none,
+                            getBadPutDataMessageBytes(app0.getPersonas().single().entityId)
+                        )
                         // Check that receiver gets the message and ignores it
-                        it.waitUntil("Error handling PUT_DATA: java.lang.AssertionError: Invalid id")
+                        it.waitUntil("Error handling message: java.lang.AssertionError: Invalid id")
                     }
                 }
             } finally {

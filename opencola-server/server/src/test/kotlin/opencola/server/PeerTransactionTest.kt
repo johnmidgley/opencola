@@ -29,7 +29,7 @@ class PeerTransactionTest {
 
             println("Updating resource0")
             // TODO: Could make set of functions: waitForBroadcast, waitForIndexing, etc.
-            waitForStdout("Broadcasting message .* type: PUT_TRANSACTION") { entityStore0.updateEntities(resource0) }
+            waitForStdout("Broadcasting message .* message: PutTransactionMessage") { entityStore0.updateEntities(resource0) }
 
             println("Starting server1")
             waitForStdout("Indexed authorityId:") { startServer(server1) }
@@ -95,7 +95,7 @@ class PeerTransactionTest {
             val entityStore0 by application0.injector.instance<EntityStore>()
 
             println("Adding entity")
-            waitForStdout("Sending request SignedMessage") { entityStore0.updateEntities(resource0) }
+            waitForStdout("Sending request PutTransactionMessage") { entityStore0.updateEntities(resource0) }
 
             // Stop the server so the transaction won't be available when the 2nd server starts up
             println("Stopping ${application0.config.name}")

@@ -1,13 +1,10 @@
 package io.opencola.network.message
 
-import com.google.protobuf.GeneratedMessageV3
 import io.opencola.relay.common.message.v2.MessageStorageKey
+import java.util.*
 
-// TODO: Make consistent with how Events are modeled
-abstract class Message(val type: MessageType, val key: MessageStorageKey) {
-    abstract fun toProto(): GeneratedMessageV3
-
-    open fun toUnsignedMessage() : UnsignedMessage {
-        return if (this is UnsignedMessage) this else UnsignedMessage(type, key, toProto())
+abstract class Message(val messageStorageKey: MessageStorageKey, val id: UUID = UUID.randomUUID()) {
+    override fun toString(): String {
+        return "${this::class.simpleName}(id=$id)"
     }
 }

@@ -1,13 +1,15 @@
-package io.opencola.network
+package io.opencola.network.providers
 
 import io.opencola.model.Id
-import io.opencola.network.message.SignedMessage
+import io.opencola.network.message.Message
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import java.net.URI
 
 typealias EventHandler = (ProviderEvent) -> Unit
-typealias MessageHandler = (Id, Id, SignedMessage) -> Unit
+typealias MessageHandler = (Id, Id, Message) -> Unit
+
+// TODO: remove 's' io.opencola.network.providers -> io.opencola.network.provider
 
 interface NetworkProvider {
     fun setEventHandler(handler: EventHandler)
@@ -23,8 +25,8 @@ interface NetworkProvider {
     fun addPeer(peer: AddressBookEntry)
     fun removePeer(peer: AddressBookEntry)
 
-    fun sendMessage(from: PersonaAddressBookEntry, to: Set<AddressBookEntry>, signedMessage: SignedMessage)
-    fun sendMessage(from: PersonaAddressBookEntry, to: AddressBookEntry, signedMessage: SignedMessage) {
-        sendMessage(from, setOf(to), signedMessage)
+    fun sendMessage(from: PersonaAddressBookEntry, to: Set<AddressBookEntry>, message: Message)
+    fun sendMessage(from: PersonaAddressBookEntry, to: AddressBookEntry, message: Message) {
+        sendMessage(from, setOf(to), message)
     }
 }
