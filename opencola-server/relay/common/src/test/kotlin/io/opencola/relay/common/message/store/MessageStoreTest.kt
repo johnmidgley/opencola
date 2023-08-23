@@ -10,18 +10,18 @@ import java.security.PublicKey
 import kotlin.test.assertFails
 
 class MessageStoreTest : SecurityProviderDependent() {
-    private val dummyMessageSecretKey = encrypt(generateKeyPair().public, ByteArray(0))
+    private val emptyBytes = ByteArray(0)
+    private val dummyMessageSecretKey = encrypt(generateKeyPair().public, emptyBytes)
 
-    private fun String.toEncryptedBytes() : EncryptedBytes {
-        return EncryptedBytes(
-            EncryptionTransformation.NONE,
-            EncryptionParameters(EncryptionParameters.Type.NONE, ByteArray(0)),
+    private fun String.toSignedBytes() : SignedBytes {
+        return SignedBytes(
+            Signature(SignatureAlgorithm.NONE, emptyBytes),
             this.toByteArray()
         )
     }
 
     private fun getEnvelope(to: PublicKey, key: String, message: String) : Envelope {
-        return Envelope(Recipient(to, dummyMessageSecretKey), MessageStorageKey.of(key), message.toEncryptedBytes())
+        return Envelope(Recipient(to, dummyMessageSecretKey), MessageStorageKey.of(key), message.toSignedBytes())
     }
 
     @Test
@@ -172,7 +172,7 @@ class MessageStoreTest : SecurityProviderDependent() {
         val toPublicKey = generateKeyPair().public
         val fromPublicKey = generateKeyPair().public
         val messageStorageKey = MessageStorageKey.none
-        val message = "message".toEncryptedBytes()
+        val message = "message".toSignedBytes()
         val envelope = Envelope(Recipient(toPublicKey, dummyMessageSecretKey), messageStorageKey, message)
 
         assertFails { messageStore.addMessage(fromPublicKey, toPublicKey, envelope) }

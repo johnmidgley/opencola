@@ -11,9 +11,9 @@ import java.security.PublicKey
 data class Envelope(
     val recipients: List<Recipient>,
     val messageStorageKey: MessageStorageKey?, // TODO: Make optional?
-    val message: EncryptedBytes // Encrypted bytes here, since the server uses this class, and it doesn't have access to the message.
+    val message: SignedBytes // Encrypted and then signed bytes here, since the server uses this class, and it doesn't have access to the message.
 ) {
-    constructor(recipient: Recipient, messageStorageKey: MessageStorageKey?, message: EncryptedBytes)
+    constructor(recipient: Recipient, messageStorageKey: MessageStorageKey?, message: SignedBytes)
             : this(listOf(recipient), messageStorageKey, message)
 
     companion object {
@@ -29,7 +29,7 @@ data class Envelope(
             return Envelope(
                 to.map { Recipient(it, encrypt(it, messageSecretKeyEncoded)) },
                 messageStorageKey,
-                message.signAndEncrypt(from, messageSecretKey)
+                message.encryptAndSign(from, messageSecretKey)
             )
         }
 
@@ -44,9 +44,10 @@ data class Envelope(
     }
 
     fun decryptMessage(recipientKeyPair: KeyPair): Message {
-        if (message.transformation == EncryptionTransformation.ECIES_WITH_AES_CBC) {
+        val encryptedBytes = EncryptedBytes.decodeProto(message.bytes)
+        if (encryptedBytes.transformation == EncryptionTransformation.ECIES_WITH_AES_CBC) {
             // TODO: Hack to support Message V1 - remove when V1 is removed
-            val messageBytes = decrypt(recipientKeyPair.private, message)
+            val messageBytes = decrypt(recipientKeyPair.private, encryptedBytes)
             val messageV1 = MessageV1.decode(messageBytes).also { it.validate() }
             return Message(messageV1.header.messageId, messageV1.header.from, messageV1.body)
         }

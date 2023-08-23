@@ -24,10 +24,9 @@ class EnvelopeHeader(val recipients: List<Recipient>, val messageStorageKey: Mes
         return "EnvelopeHeaderV2(recipients=$recipients, storageKey=$messageStorageKey)"
     }
 
-    fun signAndEncrypt(from: PrivateKey, to: PublicKey): EncryptedBytes {
-        return encrypt(to, sign(from, encodeProto()).encodeProto())
+    fun encryptAndSign(from: PrivateKey, to: PublicKey): SignedBytes {
+        return sign(from, encrypt(to, encodeProto()).encodeProto())
     }
-
     fun encodeProto(): ByteArray {
         return encodeProto(this)
     }
@@ -56,15 +55,13 @@ class EnvelopeHeader(val recipients: List<Recipient>, val messageStorageKey: Mes
             return EnvelopeHeader(listOf(recipient), messageStorageKey)
         }
 
-        fun decryptAndVerifySignature(to: PrivateKey, from: PublicKey, encrypted: EncryptedBytes): EnvelopeHeader {
-            val signedBytes = decrypt(to, encrypted)
-            val signedBytesDecoded = SignedBytes.decodeProto(signedBytes)
+        fun decryptAndVerifySignature(to: PrivateKey, from: PublicKey, signedBytes: SignedBytes): EnvelopeHeader {
+            require(signedBytes.validate(from)) { "Signature validation failed" }
 
-            if (!signedBytesDecoded.validate(from)) {
-                throw SecurityException("Signature validation failed")
-            }
-
-            return fromProto(Proto.EnvelopeHeader.parseFrom(signedBytesDecoded.bytes))
+            return signedBytes.bytes
+                .let { EncryptedBytes.decodeProto(it) }
+                .let { decrypt(to, it) }
+                .let { EnvelopeHeader.decodeProto(it) }
         }
     }
 }

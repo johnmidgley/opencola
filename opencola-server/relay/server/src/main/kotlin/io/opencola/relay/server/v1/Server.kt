@@ -50,9 +50,8 @@ abstract class Server(numChallengeBytes: Int = 32) : AbstractRelayServer(numChal
     }
 
     override fun encodePayload(to: PublicKey, envelope: Envelope): ByteArray {
-        require(to == envelope.recipients.single().publicKey)
-        require(envelope.message.transformation == EncryptionTransformation.NONE)
-        require(envelope.message.parameters.type == EncryptionParameters.Type.NONE)
+        require(to == envelope.recipients.single().publicKey) { "Recipient mismatch" }
+        require(envelope.message.signature == Signature.none) { "Unexpected signature" }
 
         // In V1, message is already encoded and ready to go.
         return envelope.message.bytes
@@ -64,11 +63,7 @@ abstract class Server(numChallengeBytes: Int = 32) : AbstractRelayServer(numChal
             Recipient(payloadEnvelope.to, encrypt(payloadEnvelope.to, "".toByteArray())),
             null,
             // Just pass message through (It's encrypted already for the recipient) - encodePayload() knows what to do.
-            EncryptedBytes(
-                EncryptionTransformation.NONE,
-                EncryptionParameters(EncryptionParameters.Type.NONE, ByteArray(0)),
-                payloadEnvelope.message
-            )
+            SignedBytes(Signature.none, payloadEnvelope.message)
         )
     }
 }

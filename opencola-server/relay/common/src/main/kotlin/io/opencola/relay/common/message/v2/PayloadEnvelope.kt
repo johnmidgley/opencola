@@ -3,14 +3,14 @@ package io.opencola.relay.common.message.v2
 import io.opencola.relay.common.message.Envelope
 import io.opencola.relay.common.message.Message
 import io.opencola.relay.common.protobuf.Relay
-import io.opencola.security.EncryptedBytes
+import io.opencola.security.SignedBytes
 import io.opencola.security.generateAesKey
 import io.opencola.relay.common.protobuf.Relay as Proto
 import io.opencola.serialization.protobuf.ProtoSerializable
 import java.security.PrivateKey
 import java.security.PublicKey
 
-class PayloadEnvelope(val header: EncryptedBytes, val message: EncryptedBytes) {
+class PayloadEnvelope(val header: SignedBytes, val message: SignedBytes) {
     override fun toString(): String {
         return "EnvelopeV2(header=ENCRYPTED, message=ENCRYPTED)"
     }
@@ -43,8 +43,8 @@ class PayloadEnvelope(val header: EncryptedBytes, val message: EncryptedBytes) {
 
         override fun fromProto(value: Proto.Envelope): PayloadEnvelope {
             return PayloadEnvelope(
-                EncryptedBytes.fromProto(value.header),
-                EncryptedBytes.fromProto(value.message)
+                SignedBytes.fromProto(value.header),
+                SignedBytes.fromProto(value.message)
             )
         }
 
@@ -60,10 +60,10 @@ class PayloadEnvelope(val header: EncryptedBytes, val message: EncryptedBytes) {
             message: Message
         ): ByteArray {
             val messageSecretKey = generateAesKey()
-            val encryptedHeader =
-                EnvelopeHeader(messageTo, messageStorageKey, messageSecretKey).signAndEncrypt(from, headerTo)
-            val encryptedSignedMessage = message.signAndEncrypt(from, messageSecretKey)
-            return PayloadEnvelope(encryptedHeader, encryptedSignedMessage).encodeProto()
+            val signedEncryptedHeader =
+                EnvelopeHeader(messageTo, messageStorageKey, messageSecretKey).encryptAndSign(from, headerTo)
+            val signedEncryptedMessage = message.encryptAndSign(from, messageSecretKey)
+            return PayloadEnvelope(signedEncryptedHeader, signedEncryptedMessage).encodeProto()
         }
 
         fun decodePayload(to: PrivateKey, from: PublicKey, payload: ByteArray): Envelope {
@@ -75,7 +75,7 @@ class PayloadEnvelope(val header: EncryptedBytes, val message: EncryptedBytes) {
         // Server uses this to prune down recipients when forwarding to a single recipient
         fun from(from: PrivateKey, to: PublicKey, envelope: Envelope): PayloadEnvelope {
             val recipient = envelope.recipients.single { it.publicKey == to }
-            val encryptedHeader = EnvelopeHeader(recipient, envelope.messageStorageKey).signAndEncrypt(from, to)
+            val encryptedHeader = EnvelopeHeader(recipient, envelope.messageStorageKey).encryptAndSign(from, to)
             return PayloadEnvelope(encryptedHeader, envelope.message)
         }
     }

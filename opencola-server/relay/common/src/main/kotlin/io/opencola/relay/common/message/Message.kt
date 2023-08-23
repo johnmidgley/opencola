@@ -23,8 +23,8 @@ class Message(val id: UUID, val from: PublicKey, val body: ByteArray) {
         return encodeProto(this)
     }
 
-    fun signAndEncrypt(from: PrivateKey, messageSecretKey: SecretKey) : EncryptedBytes {
-        return encrypt(messageSecretKey, sign(from, encodeProto()).encodeProto())
+    fun encryptAndSign(from: PrivateKey, messageSecretKey: SecretKey) : SignedBytes {
+        return sign(from, encrypt(messageSecretKey, encodeProto()).encodeProto())
     }
 
     companion object : ProtoSerializable<Message, Proto.Message> {
@@ -48,9 +48,9 @@ class Message(val id: UUID, val from: PublicKey, val body: ByteArray) {
             return Proto.Message.parseFrom(bytes)
         }
 
-        fun decryptAndVerifySignature(messageSecretKey: SecretKey, encryptedMessage: EncryptedBytes) : Message {
-            val signedMessage = SignedBytes.decodeProto(decrypt(messageSecretKey, encryptedMessage))
-            val message = decodeProto(signedMessage.bytes)
+        fun decryptAndVerifySignature(messageSecretKey: SecretKey, signedMessage: SignedBytes) : Message {
+            val decryptedBytes = decrypt(messageSecretKey, EncryptedBytes.decodeProto(signedMessage.bytes))
+            val message = decodeProto(decryptedBytes)
 
             if(!signedMessage.validate(message.from)) {
                 throw SecurityException("Message signature is invalid")

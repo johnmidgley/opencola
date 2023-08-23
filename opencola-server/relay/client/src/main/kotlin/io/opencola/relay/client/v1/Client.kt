@@ -84,6 +84,8 @@ abstract class Client(
             )
         }
 
-        return Envelope(recipient, null, encryptedBytes)
+        val signedBytes = SignedBytes(Signature.none, encryptedBytes.encodeProto())
+
+        return Envelope(recipient, null, signedBytes)
     }
 }

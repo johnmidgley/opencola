@@ -3,6 +3,7 @@ package io.opencola.security
 import io.opencola.security.protobuf.Security as proto
 
 enum class SignatureAlgorithm(val algorithmName: String, val protoValue: proto.Signature.Algorithm) {
+    NONE("NONE", proto.Signature.Algorithm.NONE),
     SHA3_256_WITH_ECDSA("SHA3-256withECDSA", proto.Signature.Algorithm.SHA3_256_WITH_ECDSA);
 
     companion object {

@@ -5160,57 +5160,57 @@ public final class Relay {
 
     /**
      * <pre>
-     * Encrypted with recipients / server public key
+     * Encrypted with recipients / server public key and then signed by sender (or intermediate trust node)
      * </pre>
      *
-     * <code>.io.opencola.security.protobuf.EncryptedBytes header = 1;</code>
+     * <code>.io.opencola.security.protobuf.SignedBytes header = 1;</code>
      * @return Whether the header field is set.
      */
     boolean hasHeader();
     /**
      * <pre>
-     * Encrypted with recipients / server public key
+     * Encrypted with recipients / server public key and then signed by sender (or intermediate trust node)
      * </pre>
      *
-     * <code>.io.opencola.security.protobuf.EncryptedBytes header = 1;</code>
+     * <code>.io.opencola.security.protobuf.SignedBytes header = 1;</code>
      * @return The header.
      */
-    io.opencola.security.protobuf.Security.EncryptedBytes getHeader();
+    io.opencola.security.protobuf.Security.SignedBytes getHeader();
     /**
      * <pre>
-     * Encrypted with recipients / server public key
+     * Encrypted with recipients / server public key and then signed by sender (or intermediate trust node)
      * </pre>
      *
-     * <code>.io.opencola.security.protobuf.EncryptedBytes header = 1;</code>
+     * <code>.io.opencola.security.protobuf.SignedBytes header = 1;</code>
      */
-    io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder getHeaderOrBuilder();
+    io.opencola.security.protobuf.Security.SignedBytesOrBuilder getHeaderOrBuilder();
 
     /**
      * <pre>
-     * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message
+     * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message and then signed by sender
      * </pre>
      *
-     * <code>.io.opencola.security.protobuf.EncryptedBytes message = 2;</code>
+     * <code>.io.opencola.security.protobuf.SignedBytes message = 2;</code>
      * @return Whether the message field is set.
      */
     boolean hasMessage();
     /**
      * <pre>
-     * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message
+     * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message and then signed by sender
      * </pre>
      *
-     * <code>.io.opencola.security.protobuf.EncryptedBytes message = 2;</code>
+     * <code>.io.opencola.security.protobuf.SignedBytes message = 2;</code>
      * @return The message.
      */
-    io.opencola.security.protobuf.Security.EncryptedBytes getMessage();
+    io.opencola.security.protobuf.Security.SignedBytes getMessage();
     /**
      * <pre>
-     * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message
+     * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message and then signed by sender
      * </pre>
      *
-     * <code>.io.opencola.security.protobuf.EncryptedBytes message = 2;</code>
+     * <code>.io.opencola.security.protobuf.SignedBytes message = 2;</code>
      */
-    io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder getMessageOrBuilder();
+    io.opencola.security.protobuf.Security.SignedBytesOrBuilder getMessageOrBuilder();
   }
   /**
    * Protobuf type {@code io.opencola.relay.common.protobuf.Envelope}
@@ -5258,11 +5258,11 @@ public final class Relay {
               done = true;
               break;
             case 10: {
-              io.opencola.security.protobuf.Security.EncryptedBytes.Builder subBuilder = null;
+              io.opencola.security.protobuf.Security.SignedBytes.Builder subBuilder = null;
               if (header_ != null) {
                 subBuilder = header_.toBuilder();
               }
-              header_ = input.readMessage(io.opencola.security.protobuf.Security.EncryptedBytes.parser(), extensionRegistry);
+              header_ = input.readMessage(io.opencola.security.protobuf.Security.SignedBytes.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(header_);
                 header_ = subBuilder.buildPartial();
@@ -5271,11 +5271,11 @@ public final class Relay {
               break;
             }
             case 18: {
-              io.opencola.security.protobuf.Security.EncryptedBytes.Builder subBuilder = null;
+              io.opencola.security.protobuf.Security.SignedBytes.Builder subBuilder = null;
               if (message_ != null) {
                 subBuilder = message_.toBuilder();
               }
-              message_ = input.readMessage(io.opencola.security.protobuf.Security.EncryptedBytes.parser(), extensionRegistry);
+              message_ = input.readMessage(io.opencola.security.protobuf.Security.SignedBytes.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(message_);
                 message_ = subBuilder.buildPartial();
@@ -5316,13 +5316,13 @@ public final class Relay {
     }
 
     public static final int HEADER_FIELD_NUMBER = 1;
-    private io.opencola.security.protobuf.Security.EncryptedBytes header_;
+    private io.opencola.security.protobuf.Security.SignedBytes header_;
     /**
      * <pre>
-     * Encrypted with recipients / server public key
+     * Encrypted with recipients / server public key and then signed by sender (or intermediate trust node)
      * </pre>
      *
-     * <code>.io.opencola.security.protobuf.EncryptedBytes header = 1;</code>
+     * <code>.io.opencola.security.protobuf.SignedBytes header = 1;</code>
      * @return Whether the header field is set.
      */
     @java.lang.Override
@@ -5331,36 +5331,36 @@ public final class Relay {
     }
     /**
      * <pre>
-     * Encrypted with recipients / server public key
+     * Encrypted with recipients / server public key and then signed by sender (or intermediate trust node)
      * </pre>
      *
-     * <code>.io.opencola.security.protobuf.EncryptedBytes header = 1;</code>
+     * <code>.io.opencola.security.protobuf.SignedBytes header = 1;</code>
      * @return The header.
      */
     @java.lang.Override
-    public io.opencola.security.protobuf.Security.EncryptedBytes getHeader() {
-      return header_ == null ? io.opencola.security.protobuf.Security.EncryptedBytes.getDefaultInstance() : header_;
+    public io.opencola.security.protobuf.Security.SignedBytes getHeader() {
+      return header_ == null ? io.opencola.security.protobuf.Security.SignedBytes.getDefaultInstance() : header_;
     }
     /**
      * <pre>
-     * Encrypted with recipients / server public key
+     * Encrypted with recipients / server public key and then signed by sender (or intermediate trust node)
      * </pre>
      *
-     * <code>.io.opencola.security.protobuf.EncryptedBytes header = 1;</code>
+     * <code>.io.opencola.security.protobuf.SignedBytes header = 1;</code>
      */
     @java.lang.Override
-    public io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder getHeaderOrBuilder() {
+    public io.opencola.security.protobuf.Security.SignedBytesOrBuilder getHeaderOrBuilder() {
       return getHeader();
     }
 
     public static final int MESSAGE_FIELD_NUMBER = 2;
-    private io.opencola.security.protobuf.Security.EncryptedBytes message_;
+    private io.opencola.security.protobuf.Security.SignedBytes message_;
     /**
      * <pre>
-     * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message
+     * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message and then signed by sender
      * </pre>
      *
-     * <code>.io.opencola.security.protobuf.EncryptedBytes message = 2;</code>
+     * <code>.io.opencola.security.protobuf.SignedBytes message = 2;</code>
      * @return Whether the message field is set.
      */
     @java.lang.Override
@@ -5369,25 +5369,25 @@ public final class Relay {
     }
     /**
      * <pre>
-     * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message
+     * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message and then signed by sender
      * </pre>
      *
-     * <code>.io.opencola.security.protobuf.EncryptedBytes message = 2;</code>
+     * <code>.io.opencola.security.protobuf.SignedBytes message = 2;</code>
      * @return The message.
      */
     @java.lang.Override
-    public io.opencola.security.protobuf.Security.EncryptedBytes getMessage() {
-      return message_ == null ? io.opencola.security.protobuf.Security.EncryptedBytes.getDefaultInstance() : message_;
+    public io.opencola.security.protobuf.Security.SignedBytes getMessage() {
+      return message_ == null ? io.opencola.security.protobuf.Security.SignedBytes.getDefaultInstance() : message_;
     }
     /**
      * <pre>
-     * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message
+     * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message and then signed by sender
      * </pre>
      *
-     * <code>.io.opencola.security.protobuf.EncryptedBytes message = 2;</code>
+     * <code>.io.opencola.security.protobuf.SignedBytes message = 2;</code>
      */
     @java.lang.Override
-    public io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder getMessageOrBuilder() {
+    public io.opencola.security.protobuf.Security.SignedBytesOrBuilder getMessageOrBuilder() {
       return getMessage();
     }
 
@@ -5736,15 +5736,15 @@ public final class Relay {
         return this;
       }
 
-      private io.opencola.security.protobuf.Security.EncryptedBytes header_;
+      private io.opencola.security.protobuf.Security.SignedBytes header_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          io.opencola.security.protobuf.Security.EncryptedBytes, io.opencola.security.protobuf.Security.EncryptedBytes.Builder, io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder> headerBuilder_;
+          io.opencola.security.protobuf.Security.SignedBytes, io.opencola.security.protobuf.Security.SignedBytes.Builder, io.opencola.security.protobuf.Security.SignedBytesOrBuilder> headerBuilder_;
       /**
        * <pre>
-       * Encrypted with recipients / server public key
+       * Encrypted with recipients / server public key and then signed by sender (or intermediate trust node)
        * </pre>
        *
-       * <code>.io.opencola.security.protobuf.EncryptedBytes header = 1;</code>
+       * <code>.io.opencola.security.protobuf.SignedBytes header = 1;</code>
        * @return Whether the header field is set.
        */
       public boolean hasHeader() {
@@ -5752,27 +5752,27 @@ public final class Relay {
       }
       /**
        * <pre>
-       * Encrypted with recipients / server public key
+       * Encrypted with recipients / server public key and then signed by sender (or intermediate trust node)
        * </pre>
        *
-       * <code>.io.opencola.security.protobuf.EncryptedBytes header = 1;</code>
+       * <code>.io.opencola.security.protobuf.SignedBytes header = 1;</code>
        * @return The header.
        */
-      public io.opencola.security.protobuf.Security.EncryptedBytes getHeader() {
+      public io.opencola.security.protobuf.Security.SignedBytes getHeader() {
         if (headerBuilder_ == null) {
-          return header_ == null ? io.opencola.security.protobuf.Security.EncryptedBytes.getDefaultInstance() : header_;
+          return header_ == null ? io.opencola.security.protobuf.Security.SignedBytes.getDefaultInstance() : header_;
         } else {
           return headerBuilder_.getMessage();
         }
       }
       /**
        * <pre>
-       * Encrypted with recipients / server public key
+       * Encrypted with recipients / server public key and then signed by sender (or intermediate trust node)
        * </pre>
        *
-       * <code>.io.opencola.security.protobuf.EncryptedBytes header = 1;</code>
+       * <code>.io.opencola.security.protobuf.SignedBytes header = 1;</code>
        */
-      public Builder setHeader(io.opencola.security.protobuf.Security.EncryptedBytes value) {
+      public Builder setHeader(io.opencola.security.protobuf.Security.SignedBytes value) {
         if (headerBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -5787,13 +5787,13 @@ public final class Relay {
       }
       /**
        * <pre>
-       * Encrypted with recipients / server public key
+       * Encrypted with recipients / server public key and then signed by sender (or intermediate trust node)
        * </pre>
        *
-       * <code>.io.opencola.security.protobuf.EncryptedBytes header = 1;</code>
+       * <code>.io.opencola.security.protobuf.SignedBytes header = 1;</code>
        */
       public Builder setHeader(
-          io.opencola.security.protobuf.Security.EncryptedBytes.Builder builderForValue) {
+          io.opencola.security.protobuf.Security.SignedBytes.Builder builderForValue) {
         if (headerBuilder_ == null) {
           header_ = builderForValue.build();
           onChanged();
@@ -5805,16 +5805,16 @@ public final class Relay {
       }
       /**
        * <pre>
-       * Encrypted with recipients / server public key
+       * Encrypted with recipients / server public key and then signed by sender (or intermediate trust node)
        * </pre>
        *
-       * <code>.io.opencola.security.protobuf.EncryptedBytes header = 1;</code>
+       * <code>.io.opencola.security.protobuf.SignedBytes header = 1;</code>
        */
-      public Builder mergeHeader(io.opencola.security.protobuf.Security.EncryptedBytes value) {
+      public Builder mergeHeader(io.opencola.security.protobuf.Security.SignedBytes value) {
         if (headerBuilder_ == null) {
           if (header_ != null) {
             header_ =
-              io.opencola.security.protobuf.Security.EncryptedBytes.newBuilder(header_).mergeFrom(value).buildPartial();
+              io.opencola.security.protobuf.Security.SignedBytes.newBuilder(header_).mergeFrom(value).buildPartial();
           } else {
             header_ = value;
           }
@@ -5827,10 +5827,10 @@ public final class Relay {
       }
       /**
        * <pre>
-       * Encrypted with recipients / server public key
+       * Encrypted with recipients / server public key and then signed by sender (or intermediate trust node)
        * </pre>
        *
-       * <code>.io.opencola.security.protobuf.EncryptedBytes header = 1;</code>
+       * <code>.io.opencola.security.protobuf.SignedBytes header = 1;</code>
        */
       public Builder clearHeader() {
         if (headerBuilder_ == null) {
@@ -5845,44 +5845,44 @@ public final class Relay {
       }
       /**
        * <pre>
-       * Encrypted with recipients / server public key
+       * Encrypted with recipients / server public key and then signed by sender (or intermediate trust node)
        * </pre>
        *
-       * <code>.io.opencola.security.protobuf.EncryptedBytes header = 1;</code>
+       * <code>.io.opencola.security.protobuf.SignedBytes header = 1;</code>
        */
-      public io.opencola.security.protobuf.Security.EncryptedBytes.Builder getHeaderBuilder() {
+      public io.opencola.security.protobuf.Security.SignedBytes.Builder getHeaderBuilder() {
         
         onChanged();
         return getHeaderFieldBuilder().getBuilder();
       }
       /**
        * <pre>
-       * Encrypted with recipients / server public key
+       * Encrypted with recipients / server public key and then signed by sender (or intermediate trust node)
        * </pre>
        *
-       * <code>.io.opencola.security.protobuf.EncryptedBytes header = 1;</code>
+       * <code>.io.opencola.security.protobuf.SignedBytes header = 1;</code>
        */
-      public io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder getHeaderOrBuilder() {
+      public io.opencola.security.protobuf.Security.SignedBytesOrBuilder getHeaderOrBuilder() {
         if (headerBuilder_ != null) {
           return headerBuilder_.getMessageOrBuilder();
         } else {
           return header_ == null ?
-              io.opencola.security.protobuf.Security.EncryptedBytes.getDefaultInstance() : header_;
+              io.opencola.security.protobuf.Security.SignedBytes.getDefaultInstance() : header_;
         }
       }
       /**
        * <pre>
-       * Encrypted with recipients / server public key
+       * Encrypted with recipients / server public key and then signed by sender (or intermediate trust node)
        * </pre>
        *
-       * <code>.io.opencola.security.protobuf.EncryptedBytes header = 1;</code>
+       * <code>.io.opencola.security.protobuf.SignedBytes header = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          io.opencola.security.protobuf.Security.EncryptedBytes, io.opencola.security.protobuf.Security.EncryptedBytes.Builder, io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder> 
+          io.opencola.security.protobuf.Security.SignedBytes, io.opencola.security.protobuf.Security.SignedBytes.Builder, io.opencola.security.protobuf.Security.SignedBytesOrBuilder> 
           getHeaderFieldBuilder() {
         if (headerBuilder_ == null) {
           headerBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              io.opencola.security.protobuf.Security.EncryptedBytes, io.opencola.security.protobuf.Security.EncryptedBytes.Builder, io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder>(
+              io.opencola.security.protobuf.Security.SignedBytes, io.opencola.security.protobuf.Security.SignedBytes.Builder, io.opencola.security.protobuf.Security.SignedBytesOrBuilder>(
                   getHeader(),
                   getParentForChildren(),
                   isClean());
@@ -5891,15 +5891,15 @@ public final class Relay {
         return headerBuilder_;
       }
 
-      private io.opencola.security.protobuf.Security.EncryptedBytes message_;
+      private io.opencola.security.protobuf.Security.SignedBytes message_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          io.opencola.security.protobuf.Security.EncryptedBytes, io.opencola.security.protobuf.Security.EncryptedBytes.Builder, io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder> messageBuilder_;
+          io.opencola.security.protobuf.Security.SignedBytes, io.opencola.security.protobuf.Security.SignedBytes.Builder, io.opencola.security.protobuf.Security.SignedBytesOrBuilder> messageBuilder_;
       /**
        * <pre>
-       * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message
+       * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message and then signed by sender
        * </pre>
        *
-       * <code>.io.opencola.security.protobuf.EncryptedBytes message = 2;</code>
+       * <code>.io.opencola.security.protobuf.SignedBytes message = 2;</code>
        * @return Whether the message field is set.
        */
       public boolean hasMessage() {
@@ -5907,27 +5907,27 @@ public final class Relay {
       }
       /**
        * <pre>
-       * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message
+       * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message and then signed by sender
        * </pre>
        *
-       * <code>.io.opencola.security.protobuf.EncryptedBytes message = 2;</code>
+       * <code>.io.opencola.security.protobuf.SignedBytes message = 2;</code>
        * @return The message.
        */
-      public io.opencola.security.protobuf.Security.EncryptedBytes getMessage() {
+      public io.opencola.security.protobuf.Security.SignedBytes getMessage() {
         if (messageBuilder_ == null) {
-          return message_ == null ? io.opencola.security.protobuf.Security.EncryptedBytes.getDefaultInstance() : message_;
+          return message_ == null ? io.opencola.security.protobuf.Security.SignedBytes.getDefaultInstance() : message_;
         } else {
           return messageBuilder_.getMessage();
         }
       }
       /**
        * <pre>
-       * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message
+       * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message and then signed by sender
        * </pre>
        *
-       * <code>.io.opencola.security.protobuf.EncryptedBytes message = 2;</code>
+       * <code>.io.opencola.security.protobuf.SignedBytes message = 2;</code>
        */
-      public Builder setMessage(io.opencola.security.protobuf.Security.EncryptedBytes value) {
+      public Builder setMessage(io.opencola.security.protobuf.Security.SignedBytes value) {
         if (messageBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -5942,13 +5942,13 @@ public final class Relay {
       }
       /**
        * <pre>
-       * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message
+       * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message and then signed by sender
        * </pre>
        *
-       * <code>.io.opencola.security.protobuf.EncryptedBytes message = 2;</code>
+       * <code>.io.opencola.security.protobuf.SignedBytes message = 2;</code>
        */
       public Builder setMessage(
-          io.opencola.security.protobuf.Security.EncryptedBytes.Builder builderForValue) {
+          io.opencola.security.protobuf.Security.SignedBytes.Builder builderForValue) {
         if (messageBuilder_ == null) {
           message_ = builderForValue.build();
           onChanged();
@@ -5960,16 +5960,16 @@ public final class Relay {
       }
       /**
        * <pre>
-       * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message
+       * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message and then signed by sender
        * </pre>
        *
-       * <code>.io.opencola.security.protobuf.EncryptedBytes message = 2;</code>
+       * <code>.io.opencola.security.protobuf.SignedBytes message = 2;</code>
        */
-      public Builder mergeMessage(io.opencola.security.protobuf.Security.EncryptedBytes value) {
+      public Builder mergeMessage(io.opencola.security.protobuf.Security.SignedBytes value) {
         if (messageBuilder_ == null) {
           if (message_ != null) {
             message_ =
-              io.opencola.security.protobuf.Security.EncryptedBytes.newBuilder(message_).mergeFrom(value).buildPartial();
+              io.opencola.security.protobuf.Security.SignedBytes.newBuilder(message_).mergeFrom(value).buildPartial();
           } else {
             message_ = value;
           }
@@ -5982,10 +5982,10 @@ public final class Relay {
       }
       /**
        * <pre>
-       * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message
+       * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message and then signed by sender
        * </pre>
        *
-       * <code>.io.opencola.security.protobuf.EncryptedBytes message = 2;</code>
+       * <code>.io.opencola.security.protobuf.SignedBytes message = 2;</code>
        */
       public Builder clearMessage() {
         if (messageBuilder_ == null) {
@@ -6000,44 +6000,44 @@ public final class Relay {
       }
       /**
        * <pre>
-       * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message
+       * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message and then signed by sender
        * </pre>
        *
-       * <code>.io.opencola.security.protobuf.EncryptedBytes message = 2;</code>
+       * <code>.io.opencola.security.protobuf.SignedBytes message = 2;</code>
        */
-      public io.opencola.security.protobuf.Security.EncryptedBytes.Builder getMessageBuilder() {
+      public io.opencola.security.protobuf.Security.SignedBytes.Builder getMessageBuilder() {
         
         onChanged();
         return getMessageFieldBuilder().getBuilder();
       }
       /**
        * <pre>
-       * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message
+       * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message and then signed by sender
        * </pre>
        *
-       * <code>.io.opencola.security.protobuf.EncryptedBytes message = 2;</code>
+       * <code>.io.opencola.security.protobuf.SignedBytes message = 2;</code>
        */
-      public io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder getMessageOrBuilder() {
+      public io.opencola.security.protobuf.Security.SignedBytesOrBuilder getMessageOrBuilder() {
         if (messageBuilder_ != null) {
           return messageBuilder_.getMessageOrBuilder();
         } else {
           return message_ == null ?
-              io.opencola.security.protobuf.Security.EncryptedBytes.getDefaultInstance() : message_;
+              io.opencola.security.protobuf.Security.SignedBytes.getDefaultInstance() : message_;
         }
       }
       /**
        * <pre>
-       * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message
+       * Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message and then signed by sender
        * </pre>
        *
-       * <code>.io.opencola.security.protobuf.EncryptedBytes message = 2;</code>
+       * <code>.io.opencola.security.protobuf.SignedBytes message = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          io.opencola.security.protobuf.Security.EncryptedBytes, io.opencola.security.protobuf.Security.EncryptedBytes.Builder, io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder> 
+          io.opencola.security.protobuf.Security.SignedBytes, io.opencola.security.protobuf.Security.SignedBytes.Builder, io.opencola.security.protobuf.Security.SignedBytesOrBuilder> 
           getMessageFieldBuilder() {
         if (messageBuilder_ == null) {
           messageBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              io.opencola.security.protobuf.Security.EncryptedBytes, io.opencola.security.protobuf.Security.EncryptedBytes.Builder, io.opencola.security.protobuf.Security.EncryptedBytesOrBuilder>(
+              io.opencola.security.protobuf.Security.SignedBytes, io.opencola.security.protobuf.Security.SignedBytes.Builder, io.opencola.security.protobuf.Security.SignedBytesOrBuilder>(
                   getMessage(),
                   getParentForChildren(),
                   isClean());
@@ -6914,16 +6914,16 @@ public final class Relay {
       "cKey\022\014\n\004body\030\003 \001(\014\"f\n\016EnvelopeHeader\022@\n\n" +
       "recipients\030\001 \003(\0132,.io.opencola.relay.com" +
       "mon.protobuf.Recipient\022\022\n\nstorageKey\030\002 \001" +
-      "(\014\"\211\001\n\010Envelope\022=\n\006header\030\001 \001(\0132-.io.ope" +
-      "ncola.security.protobuf.EncryptedBytes\022>" +
-      "\n\007message\030\002 \001(\0132-.io.opencola.security.p" +
-      "rotobuf.EncryptedBytes\"\243\001\n\016ControlMessag" +
-      "e\022D\n\004type\030\001 \001(\01626.io.opencola.relay.comm" +
-      "on.protobuf.ControlMessage.Type\022\024\n\007paylo" +
-      "ad\030\002 \001(\014H\000\210\001\001\")\n\004Type\022\010\n\004NONE\020\000\022\027\n\023NO_PE" +
-      "NDING_MESSAGES\020\001B\n\n\010_payload*I\n\024Authenti" +
-      "cationStatus\022\010\n\004NONE\020\000\022\021\n\rAUTHENTICATED\020" +
-      "\001\022\024\n\020FAILED_CHALLENGE\020\002b\006proto3"
+      "(\014\"\203\001\n\010Envelope\022:\n\006header\030\001 \001(\0132*.io.ope" +
+      "ncola.security.protobuf.SignedBytes\022;\n\007m" +
+      "essage\030\002 \001(\0132*.io.opencola.security.prot" +
+      "obuf.SignedBytes\"\243\001\n\016ControlMessage\022D\n\004t" +
+      "ype\030\001 \001(\01626.io.opencola.relay.common.pro" +
+      "tobuf.ControlMessage.Type\022\024\n\007payload\030\002 \001" +
+      "(\014H\000\210\001\001\")\n\004Type\022\010\n\004NONE\020\000\022\027\n\023NO_PENDING_" +
+      "MESSAGES\020\001B\n\n\010_payload*I\n\024Authentication" +
+      "Status\022\010\n\004NONE\020\000\022\021\n\rAUTHENTICATED\020\001\022\024\n\020F" +
+      "AILED_CHALLENGE\020\002b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

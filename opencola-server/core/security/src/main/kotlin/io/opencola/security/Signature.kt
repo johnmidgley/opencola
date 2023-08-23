@@ -17,6 +17,8 @@ class Signature(val algorithm: SignatureAlgorithm, val bytes: ByteArray) {
     }
 
     companion object : ProtoSerializable<Signature, Proto.Signature> {
+        val none = Signature(SignatureAlgorithm.NONE, ByteArray(0))
+
         fun of(privateKey: PrivateKey, bytes: ByteArray): Signature {
             return sign(privateKey, bytes).signature
         }

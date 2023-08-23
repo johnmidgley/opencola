@@ -45,11 +45,11 @@ message EnvelopeHeader {
 }
 
 message Envelope {
-  // Encrypted with recipients / server public key
-  io.opencola.security.protobuf.EncryptedBytes header = 1;
+  // Encrypted with recipients / server public key and then signed by sender (or intermediate trust node)
+  io.opencola.security.protobuf.SignedBytes header = 1;
 
-  // Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message
-  io.opencola.security.protobuf.EncryptedBytes message = 2;
+  // Encrypted with per message AES key. Contains SignedBytes that proto decodes to Message and then signed by sender
+  io.opencola.security.protobuf.SignedBytes message = 2;
 }
 
 message ControlMessage {
