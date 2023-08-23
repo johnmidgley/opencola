@@ -9,7 +9,6 @@ import io.opencola.network.message.MessagePayload
 import io.opencola.network.providers.ProviderContext
 import io.opencola.relay.client.AbstractClient
 import io.opencola.relay.client.RelayEvent
-import io.opencola.security.Encryptor
 import io.opencola.security.Signator
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.relay.client.RelayClient
@@ -212,26 +211,20 @@ class OCRelayNetworkProvider(
 
     // TODO: Since to Authority has a persona associated with it, do we need the from Authority?
     // TODO: Should from and to be entries of ids?
-    override fun sendMessage(from: PersonaAddressBookEntry, to: AddressBookEntry, message: Message) {
-        if (to.address.scheme != openColaRelayScheme) {
-            logger.warn { "Unexpected uri scheme in sendRequest: $to.address" }
-        }
+    override fun sendMessage(from: PersonaAddressBookEntry, to: Set<AddressBookEntry>, message: Message) {
+        require(to.all { it.address.scheme == openColaRelayScheme }) { "Unexpected uri scheme in sendRequest" }
 
-        logger.info { "Sending request from: ${from.name} to: ${to.name} request: $message" }
-
-        runBlocking {
-            try {
-                val body = MessagePayload(from.entityId, message).encodeProto()
-                val client = getClient(to.address, from.keyPair)
-                client.sendMessage(to.publicKey, message.messageStorageKey, body)
-            } catch (e: Exception) {
-                logger.error { "sendMessage: $e" }
+        to.groupBy { it.address }.forEach { (address, recipients) ->
+            runBlocking {
+                try {
+                    val body = MessagePayload(from.entityId, message).encodeProto()
+                    val client = getClient(address, from.keyPair)
+                    client.sendMessage(recipients.map { it.publicKey }, message.messageStorageKey, body)
+                } catch (e: Exception) {
+                    logger.error { "sendMessage: $e" }
+                }
             }
         }
-    }
-
-    override fun sendMessage(from: PersonaAddressBookEntry, to: Set<AddressBookEntry>, message: Message) {
-        to.forEach { sendMessage(from, it, message) }
     }
 
     override fun handleMessage(envelopeBytes: ByteArray, context: ProviderContext?) {
