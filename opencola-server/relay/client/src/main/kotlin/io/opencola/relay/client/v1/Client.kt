@@ -74,6 +74,7 @@ abstract class Client(
         val dummyEncryptedMessageKey = encrypt(keyPair.public, generateAesKey().encoded)
         val recipient = Recipient(keyPair.public, dummyEncryptedMessageKey)
 
+        // Repackage old custom V1 encryption format into standard EncryptedBytes so that Envelope can decrypt
         val encryptedBytes = ByteArrayInputStream(payload).use { stream ->
             val encodedParameters = stream.readByteArray()
             val cipherBytes = stream.readByteArray()
