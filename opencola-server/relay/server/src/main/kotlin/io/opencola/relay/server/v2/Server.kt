@@ -79,6 +79,6 @@ abstract class Server(numChallengeBytes: Int = 32, numSymmetricKeyBytes: Int = 3
     override fun decodePayload(from: PublicKey, payload: ByteArray): Envelope {
         val envelopeV2 = PayloadEnvelope.decodeProto(payload)
         val envelopeHeader = EnvelopeHeader.decryptAndVerifySignature(serverKeyPair.private, from, envelopeV2.header)
-        return Envelope(envelopeHeader.recipients.single(), envelopeHeader.messageStorageKey, envelopeV2.message)
+        return Envelope(envelopeHeader.recipients, envelopeHeader.messageStorageKey, envelopeV2.message)
     }
 }

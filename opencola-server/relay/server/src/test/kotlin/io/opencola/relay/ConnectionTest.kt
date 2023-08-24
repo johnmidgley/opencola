@@ -540,4 +540,47 @@ class ConnectionTest {
             }
         }
     }
+
+
+
+    fun testSendSingleMessageToMultipleRecipients(relayServerUri: URI = localRelayServerUri) {
+        runBlocking {
+            var server: RelayServer? = null
+            var clients: List<AbstractClient>? = null
+            val results = Channel<String>()
+
+
+            try {
+                StdoutMonitor(readTimeoutMilliseconds = 3000).use { monitor ->
+                    println("Starting RelayServer")
+                    server = if (relayServerUri == localRelayServerUri) RelayServer().also { it.start() } else null
+
+                    clients = (0..2).map { i ->
+                        println("Starting client$i")
+                        getClient(ClientType.V2, "client$i", relayServerUri = relayServerUri).also {
+                            launch { it.open { _, m -> results.send("$i:${String(m)}") } }
+                            it.also { it.waitUntilOpen() }
+                        }
+                    }
+
+                    val sender = clients!![0]
+                    val receivers = clients!!.subList(1, clients!!.size).map { it.publicKey }
+                    println("Sending multi-recipient message")
+                    sender.sendMessage(receivers, MessageStorageKey.none, "hello".toByteArray())
+                    monitor.waitUntil("Handling message from: .* to 2 recipients")
+                    assertEquals(setOf("1:hello", "2:hello"),  setOf(results.receive(), results.receive()))
+                }
+            } finally {
+                println("Closing resources")
+                server?.stop()
+                clients?.forEach{ it.close() }
+            }
+        }
+    }
+
+    @Test
+    fun testSendSingleMessageToMultipleRecipientsLocal() {
+        testSendSingleMessageToMultipleRecipients(localRelayServerUri)
+    }
+
 }

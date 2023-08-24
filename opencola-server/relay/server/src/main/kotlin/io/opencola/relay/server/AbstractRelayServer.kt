@@ -144,6 +144,7 @@ abstract class AbstractRelayServer(
         val fromId = Id.ofPublicKey(from)
         try {
             decodePayload(from, payload).let { envelope ->
+                logger.info { "Handling message from: $fromId to ${envelope.recipients.size} recipients" }
                 envelope.recipients.forEach { recipient ->
                     try {
                         deliverMessage(from, recipient.publicKey, envelope)
