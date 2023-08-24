@@ -63,6 +63,7 @@ class ApplicationNode(val application: Application) : Node {
         // TODO: Move to interface or base class
         private const val basePort = 5750
 
+        // TODO: Better way to do this would be to pass an update function to update the root authority vs. being name specific
         private fun setRootAuthorityName(instance: Application, name: String) {
             instance.inject<AddressBook>()
                 .let { addressBook ->
