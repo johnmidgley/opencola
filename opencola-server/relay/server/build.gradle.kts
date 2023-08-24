@@ -52,6 +52,7 @@ dependencies {
 
     testImplementation(project(":core:util"))
     testImplementation(project(":core:io"))
+    testImplementation(project(":test"))
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVersion")
 }

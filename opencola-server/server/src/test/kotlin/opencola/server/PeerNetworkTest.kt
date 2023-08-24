@@ -17,12 +17,13 @@ private var nextServerNum = 0
 private val basePortNumber: Int = 6001
 
 
-fun getApplications(nServers: Int): List<Application> {
+fun getApplications(nServers: Int, defaultAddress: URI? = null): List<Application> {
     return io.opencola.application.getApplications(
         TestApplication.storagePath,
         TestApplication.config,
         basePortNumber,
-        nServers
+        nServers,
+        defaultAddress
     )
 }
 

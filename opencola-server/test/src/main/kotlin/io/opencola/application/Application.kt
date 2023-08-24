@@ -15,7 +15,8 @@ fun getApplications(
     rootStoragePath: Path,
     baseAppConfig: Config,
     basePortNumber: Int,
-    nServers: Int
+    nServers: Int,
+    personaAddress: URI? = null
 ): List<Application> {
     @Suppress("HttpUrlsUsage") val instanceConfigs =
         (0 until nServers).map {
@@ -27,7 +28,7 @@ fun getApplications(
                         .setName(name)
                         .setServer(ServerConfig(baseAppConfig.server.host, basePortNumber + serverNum, null))
                 val keyPairs = Application.getOrCreateRootKeyPair(storagePath, "password")
-                val address = URI("http://${config.server.host}:${config.server.port}")
+                val address = personaAddress ?: URI("http://${config.server.host}:${config.server.port}")
             }
         }
 

@@ -16,6 +16,7 @@ repositories {
 }
 
 dependencies {
+    implementation(project(":core:io"))
     implementation(project(":core:serialization"))
     implementation(project(":core:model"))
     implementation(project(":core:security"))
@@ -24,11 +25,13 @@ dependencies {
     implementation(project(":core:search"))
     implementation(project(":core:network"))
     implementation(project(":core:application"))
+    implementation(project(":relay:common"))
+    implementation(project(":relay:server"))
     implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
     implementation("org.kodein.di:kodein-di:$kodeinVersion")
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
-    implementation(project(mapOf("path" to ":core:io")))
+    implementation("io.ktor:ktor-server-netty-jvm:$ktorVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
 }
