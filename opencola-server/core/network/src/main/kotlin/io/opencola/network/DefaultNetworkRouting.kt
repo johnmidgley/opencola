@@ -24,16 +24,29 @@ fun pongRoute(handler: messageHandler = { _, _, _ -> emptyList() }): Route {
     return Route(PongMessage::class, handler)
 }
 
-fun getTransactionsRoute(entityStore: EntityStore): Route {
-    return Route(GetTransactionsMessage::class) { _, to, message ->
-        val getTransactionsMessage = message as GetTransactionsMessage
+fun getTransactionsMessage(entityStore: EntityStore, peer: Id, peerCurrentTransactionId: Id?): List<GetTransactionsMessage> {
+    if(peerCurrentTransactionId != null && entityStore.getTransaction(peerCurrentTransactionId) == null) {
+        logger.info { "Requesting transaction $peerCurrentTransactionId from $peer" }
+        val localPeerCurrentTransactionId = entityStore.getLastTransactionId(peer)
+        // Since we're being called for transactions, we don't need to fill in the currentTransactionId here, since
+        // it is sent in the last PutTransactionMessage response.
+        return listOf(GetTransactionsMessage(null, localPeerCurrentTransactionId))
+    }
 
-        val extra = (if (getTransactionsMessage.mostRecentTransactionId == null) 0 else 1)
+    return emptyList()
+}
+
+fun getTransactionsRoute(entityStore: EntityStore): Route {
+    return Route(GetTransactionsMessage::class) { from, to, message ->
+        val getTransactionsMessage = message as GetTransactionsMessage
+        logger.info { "from=$from, to=$to, message=$getTransactionsMessage" }
+
+        val extra = (if (getTransactionsMessage.receiverCurrentTransactionId == null) 0 else 1)
         // TODO: Add local limit on max transactions
         val totalNumTransactions = (getTransactionsMessage.maxTransactions) + extra
         val signedTransactions = entityStore.getSignedTransactions(
             to,
-            getTransactionsMessage.mostRecentTransactionId,
+            getTransactionsMessage.receiverCurrentTransactionId,
             EntityStore.TransactionOrder.IdAscending,
             totalNumTransactions
         ).drop(extra)
@@ -51,12 +64,12 @@ fun getTransactionsRoute(entityStore: EntityStore): Route {
                 it,
                 if (pendingTransactions == 0 && it.transaction.id != lastTransactionId) lastTransactionId else null
             )
-        }
+        }.plus(getTransactionsMessage(entityStore, from, getTransactionsMessage.receiverCurrentTransactionId))
     }
 }
 
 fun putTransactionRoute(entityStore: EntityStore): Route {
-    return Route(PutTransactionMessage::class) { from, _, message ->
+    return Route(PutTransactionMessage::class) { from, to, message ->
         val putTransactionsMessage = message as PutTransactionMessage
         val signedTransaction = putTransactionsMessage.getSignedTransaction()
         logger.info { "Received transaction ${signedTransaction.transaction.id} from $from" }
@@ -66,8 +79,14 @@ fun putTransactionRoute(entityStore: EntityStore): Route {
             // Peer has indicated that it is appropriate to request more transactions (i.e. this is the last
             // transaction in response to a getTransactions request), so check if we need to request more transactions.
             val peerMostRecentTransactionId = entityStore.getLastTransactionId(from)
-            if (putTransactionsMessage.lastTransactionId != peerMostRecentTransactionId)
-                return@Route listOf(GetTransactionsMessage(peerMostRecentTransactionId))
+            if (putTransactionsMessage.lastTransactionId != peerMostRecentTransactionId) {
+                return@Route listOf(
+                    GetTransactionsMessage(
+                        entityStore.getLastTransactionId(to),
+                        peerMostRecentTransactionId
+                    )
+                )
+            }
         }
 
         emptyList()

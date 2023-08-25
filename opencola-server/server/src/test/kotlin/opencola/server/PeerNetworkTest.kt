@@ -52,6 +52,9 @@ fun testConnectAndReplicate(application0: ApplicationNode, application1: Applica
     val stdoutMonitor = StdoutMonitor(readTimeoutMilliseconds = 5000)
 
     try {
+        application0.start()
+        application1.start()
+
         println("Adding entity to application0")
         val authority0 = application0.application.getPersonas().single()
         val resource0 = ResourceEntity(authority0.entityId, URI("https://resource0"), "Resource0")
@@ -81,7 +84,8 @@ fun testConnectAndReplicate(application0: ApplicationNode, application1: Applica
         println("Done")
     } finally {
         println("Closing resources")
-        stdoutMonitor.close()
         application0.stop()
+        application1.stop()
+        stdoutMonitor.close()
     }
 }

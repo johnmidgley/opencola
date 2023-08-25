@@ -93,8 +93,14 @@ class MainReactor(
         if (!peer.isActive)
             return
 
-        val mostRecentTransactionId = entityStore.getLastTransactionId(peer.entityId)
-        networkNode.sendMessage(peer.personaId, peer.entityId, GetTransactionsMessage(mostRecentTransactionId))
+        val senderCurrentTransactionId = entityStore.getLastTransactionId(peer.personaId)
+        val receiverCurrentTransactionId = entityStore.getLastTransactionId(peer.entityId)
+        logger.info { "Requesting transactions from: ${peer.name} - most recent transaction: $receiverCurrentTransactionId" }
+        networkNode.sendMessage(
+            peer.personaId,
+            peer.entityId,
+            GetTransactionsMessage(senderCurrentTransactionId, receiverCurrentTransactionId)
+        )
 
         logger.info { "Completed requesting transactions from: ${peer.name}" }
     }
@@ -156,8 +162,6 @@ class MainReactor(
 
         when (notification.event) {
             PeerEvent.Added -> requestTransactions(notification.peerId)
-            PeerEvent.Online -> requestTransactions(notification.peerId)
-            // PeerEvent.NewTransaction -> requestTransactions(notification.peerId)
             else -> logger.warn { "Ignoring notification for peer ${notification.peerId} event: ${notification.event}" }
         }
     }

@@ -22,7 +22,7 @@ class PutTransactionMessage private constructor(
             return Proto.PutTransactionMessage.newBuilder()
                 .setSignedTransaction(ByteString.copyFrom(value.encodedSignedTransaction))
                 .also { builder ->
-                    value.lastTransactionId?.let { builder.setCurrentTransactionId(it.toProto()) }
+                    value.lastTransactionId?.let { builder.setSenderCurrentTransactionId(it.toProto()) }
                 }
                 .build()
         }
@@ -31,7 +31,7 @@ class PutTransactionMessage private constructor(
             return PutTransactionMessage(
                 value.signedTransaction.toByteArray(),
                 MessageStorageKey.none,
-                if (value.hasCurrentTransactionId()) Id.fromProto(value.currentTransactionId) else null
+                if (value.hasSenderCurrentTransactionId()) Id.fromProto(value.senderCurrentTransactionId) else null
             )
         }
 

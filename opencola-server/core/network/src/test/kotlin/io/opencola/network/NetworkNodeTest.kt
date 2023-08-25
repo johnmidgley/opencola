@@ -187,7 +187,7 @@ class NetworkNodeTest {
         assert(transactionIds.count() == 10)
         var transactionNum = 0
 
-        val message0 = GetTransactionsMessage(null, 4)
+        val message0 = GetTransactionsMessage(null, null, 4)
         context.handleMessage(peer0, context.persona.entityId, message0)
 
         repeat(3) {
@@ -205,7 +205,7 @@ class NetworkNodeTest {
         // Make sure no pending messages
         assertNull(results.poll(500, TimeUnit.MILLISECONDS))
 
-        val message1 = GetTransactionsMessage(signedTransaction.transaction.id, 10)
+        val message1 = GetTransactionsMessage(null, signedTransaction.transaction.id, 10)
         context.handleMessage(peer0, context.persona.entityId, message1)
 
         repeat(6) {

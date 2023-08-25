@@ -182,6 +182,7 @@ class EntityStoreTest {
     @Test
     fun testGetFacts() {
         val applications = getApplications(TestApplication.storagePath, TestApplication.config, 6000, 2)
+        applications.forEach { it.open(true) }
 
         try {
             // Create some entities for first authority
@@ -222,6 +223,7 @@ class EntityStoreTest {
             assertTrue(entity1Facts.any { it.authorityId == authority0.personaId })
             assertTrue(entity1Facts.any { it.authorityId == authority1.personaId })
         } finally {
+            println("Closing applications")
             applications.forEach { it.close() }
         }
     }
@@ -375,7 +377,8 @@ class EntityStoreTest {
     fun testRejectEmptyValue() {
         val uri = URI("https://opencola")
         val resource0 = ResourceEntity(persona.personaId, uri)
-        val factWithEmptyValue = Fact(resource0.authorityId, resource0.entityId, CoreAttribute.Name.spec, EmptyValue, Operation.Add, 0, 0)
+        val factWithEmptyValue =
+            Fact(resource0.authorityId, resource0.entityId, CoreAttribute.Name.spec, EmptyValue, Operation.Add, 0, 0)
         val facts = resource0.commitFacts(0, 0).plus(factWithEmptyValue)
         val resource1 = Entity.fromFacts(facts)!!
         assertFails { getFreshExposeEntityStore().updateEntities(resource1) }

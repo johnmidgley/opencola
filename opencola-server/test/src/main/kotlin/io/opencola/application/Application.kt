@@ -16,7 +16,7 @@ fun getApplications(
     baseAppConfig: Config,
     basePortNumber: Int,
     nServers: Int,
-    personaAddress: URI? = null
+    personaAddress: URI? = null // When null, http is used. Used to specify relay address, when needed for test
 ): List<Application> {
     @Suppress("HttpUrlsUsage") val instanceConfigs =
         (0 until nServers).map {
@@ -37,6 +37,8 @@ fun getApplications(
             // Connect to peers
             val addressBook = application.inject<AddressBook>()
             val persona = addressBook.getEntries().filterIsInstance<PersonaAddressBookEntry>().single()
+            personaAddress?.let { addressBook.updateEntry(persona.copy(address = it)) }
+
             instanceConfigs
                 .filter { it != ic }
                 .forEach {

@@ -17,6 +17,7 @@ import io.opencola.storage.entitystore.EntityStore
 import io.opencola.storage.filestore.ContentBasedFileStore
 import java.security.KeyPair
 
+// TODO: Make closeable end use .use{ }?
 class NetworkNodeContext(
     val keyStore: KeyStore = MockKeyStore(),
     val eventBus: EventBus = MockEventBus(),
@@ -32,10 +33,28 @@ class NetworkNodeContext(
         addressBook,
         eventBus,
     ).also { it.addProvider(provider) },
+    autoStart: Boolean = true
 ) {
+    init {
+        if (autoStart) {
+            start()
+        }
+    }
+
     data class Peer(val keyPair: KeyPair, val addressBookEntry: AddressBookEntry)
 
     val persona = addressBook.addPersona("Persona0")
+
+    fun start() {
+        eventBus.start()
+        networkNode.start()
+    }
+
+    fun stop() {
+        networkNode.stop()
+        eventBus.stop()
+    }
+
 
     fun addPeer(name: String, isActive: Boolean = true, keyPair: KeyPair = generateKeyPair()): Peer {
         return Peer(keyPair, addressBook.addPeer(persona.personaId, name, isActive, keyPair.public))

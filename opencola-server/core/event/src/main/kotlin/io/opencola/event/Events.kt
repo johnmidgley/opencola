@@ -4,7 +4,7 @@ package io.opencola.event
 enum class Events {
     NodeStarted,
     NodeResume,
-    NewTransaction,
+    NewTransaction, // Not used anymore - could be removed
     PeerNotification,
     NoPendingNetworkMessages,
     DataMissing,

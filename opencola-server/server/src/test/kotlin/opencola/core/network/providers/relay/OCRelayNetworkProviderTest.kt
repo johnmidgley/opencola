@@ -64,9 +64,10 @@ class OCRelayNetworkProviderTest {
         println("Starting relay server")
         val webServer = startWebServer(defaultOCRPort)
         println("Starting network node0")
-        val networkNode0 = app0.inject<NetworkNode>().also { it.start(true) }
+        app0.open(true)
+        val networkNode0 = app0.inject<NetworkNode>()
         println("Starting network node1")
-        app1.inject<NetworkNode>().also { it.start(true) }
+        app1.open(true)
 
         try {
             runBlocking {
@@ -107,8 +108,8 @@ class OCRelayNetworkProviderTest {
 
     @Test
     fun testRelayConnectAndReplicate() {
-        val application0 = getApplicationNode().also { it.start() }
-        val application1 = getApplicationNode().also { it.start() }
+        val application0 = getApplicationNode()
+        val application1 = getApplicationNode()
         val app0 = application0.application
         val app1 = application1.application
 
@@ -120,12 +121,9 @@ class OCRelayNetworkProviderTest {
         try {
             testConnectAndReplicate(application0, application1)
         } finally {
-            application0.stop()
-            application1.stop()
             relayServer.stop(200, 200)
         }
     }
-
 
     fun getBadPutDataMessageBytes(from: Id): ByteArray {
         return Proto.Message.newBuilder()
@@ -150,14 +148,14 @@ class OCRelayNetworkProviderTest {
             val webServer = startWebServer(defaultOCRPort)
 
             println("Starting network node0")
-            val networkNode0 = app0.inject<NetworkNode>().also { it.start(true) }
+            app0.open(true)
+            val networkNode0 = app0.inject<NetworkNode>()
 
             println("Starting network node1")
-            app1.inject<NetworkNode>().also { it.start(true) }
+            app1.open()
 
             println("Creating relay client")
             val app0KeyPair = Application.getOrCreateRootKeyPair(app0.storagePath, "password").single()
-            networkNode0.stop()
             val relayClient = WebSocketClient(URI("ocr://0.0.0.0"), app0KeyPair, "client", 5000)
             launch { relayClient.open { _, _ -> "nothing".toByteArray() } }
             relayClient.waitUntilOpen()

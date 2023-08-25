@@ -16,7 +16,7 @@ import kotlin.test.assertNull
 class EntityTest {
     private fun saveEntity(getEntity: (Id) -> Entity): Entity {
         // Make a peer transaction that contains a resource
-        val peerApplication = TestApplication.newApplication()
+        val peerApplication = TestApplication.newApplication().also { it.open() }
         val peerPersona = peerApplication.getPersonas().first()
         val peerEntity = getEntity(peerPersona.personaId)
         val peerEntityStore by peerApplication.injector.instance<EntityStore>()

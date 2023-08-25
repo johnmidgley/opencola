@@ -8,7 +8,6 @@ import io.opencola.network.providers.EventHandler
 import io.opencola.network.providers.MessageHandler
 import io.opencola.network.providers.NetworkProvider
 import io.opencola.network.providers.ProviderEventType
-import io.opencola.security.Signator
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
@@ -32,7 +31,13 @@ class NetworkNode(
     class Route(val messageClass: KClass<out Message>, val handler: messageHandler)
 
     private val logger = KotlinLogging.logger("NetworkNode")
+    private var started = false
     private val peerStatuses = ConcurrentHashMap<Id, PeerStatus>()
+
+    private fun expectStarted() {
+        if (!started)
+            throw IllegalStateException("Not started")
+    }
 
     private data class PeerStatus(val lastSeenEpochSeconds: Long? = null) {
         fun setLastSeenEpochSeconds(epochSeconds: Long): PeerStatus {
@@ -54,6 +59,8 @@ class NetworkNode(
     }
 
     @Synchronized
+    // TODO: Should this just be removed for now? Was used to figure out when to request transactions, but
+    //  not sure if that's needed anymore
     private fun updatePeerStatus(
         peerId: Id,
         suppressNotifications: Boolean = false,
@@ -73,14 +80,6 @@ class NetworkNode(
             if (newStatus != previousStatus) {
                 logger.info { "Updating peer ${peer.name} to $newStatus" }
                 peerStatuses[peerId] = newStatus
-
-                // TODO: Why ignore anything but online?
-                if (!suppressNotifications && previousStatus.lastSeenEpochSeconds == null && newStatus.lastSeenEpochSeconds != null) {
-                    eventBus.sendMessage(
-                        Events.PeerNotification.toString(),
-                        Notification(peerId, PeerEvent.Online).encode()
-                    )
-                }
             }
 
             return previousStatus
@@ -94,7 +93,7 @@ class NetworkNode(
     private val providers = ConcurrentHashMap<String, NetworkProvider>()
 
     private val eventHandler: EventHandler = { event ->
-        when(event.type) {
+        when (event.type) {
             ProviderEventType.NO_PENDING_MESSAGES -> {
                 val noPendingMessagesEvent = event as NoPendingMessagesEvent
                 val personaId = noPendingMessagesEvent.personaId
@@ -144,11 +143,13 @@ class NetworkNode(
         provider.setMessageHandler(messageHandler)
         providers[scheme] = provider
 
-        if (!config.offlineMode)
+        if (!config.offlineMode && started)
             provider.start()
     }
 
+    // TODO: Make consistent with sendMessage, which currently uses ids publicly, but has a private method with address book entries
     fun broadcastMessage(from: PersonaAddressBookEntry, message: Message) {
+        expectStarted()
         if (config.offlineMode) return
 
         val peers = addressBook.getEntries()
@@ -201,6 +202,9 @@ class NetworkNode(
         }
 
     fun start(waitUntilReady: Boolean = false) {
+        if (started) throw IllegalStateException("Already started")
+        started = true
+
         if (config.offlineMode) {
             logger.warn { "Offline mode enabled, not starting network node" }
             return
@@ -213,12 +217,14 @@ class NetworkNode(
     }
 
     fun stop() {
+        expectStarted()
         if (config.offlineMode) return
 
         logger.info { "Stopping..." }
         addressBook.removeUpdateHandler(peerUpdateHandler)
         providers.values.forEach { it.stop() }
         logger.info { "Stopped" }
+        started = false
     }
 
     // @Synchronized
@@ -240,14 +246,25 @@ class NetworkNode(
         }
     }
 
-    // TODO: Make toIds instead of a single id?
-    fun sendMessage(fromId: Id, toId: Id, message: Message) {
-        val persona = addressBook.getEntry(fromId, fromId) as? PersonaAddressBookEntry
-            ?: throw IllegalArgumentException("Attempt to send from message from non Persona: $fromId")
+    fun sendMessage(from: Id, to: Set<Id>, message: Message) {
+        expectStarted()
 
-        val peer = addressBook.getEntry(fromId, toId)
-            ?: throw IllegalArgumentException("Attempt to send request to unknown peer: $toId")
+        val persona = addressBook.getEntry(from, from) as? PersonaAddressBookEntry
+            ?: throw IllegalArgumentException("Attempt to send from message from non Persona: $from")
 
-        sendMessage(persona, setOf(peer), message)
+        val peers = addressBook.getPeers()
+            .filter { it.isActive && it.personaId == persona.entityId && to.contains(it.entityId) }
+            .toSet()
+
+        val missingIds = to - peers.map { it.entityId }.toSet()
+        if (missingIds.isNotEmpty())
+            throw IllegalArgumentException("Attempt to send message to unknown peers: ${missingIds.joinToString()}")
+
+        sendMessage(persona, peers, message)
+    }
+
+    fun sendMessage(from: Id, to: Id, message: Message) {
+        expectStarted()
+        sendMessage(from, setOf(to), message)
     }
 }

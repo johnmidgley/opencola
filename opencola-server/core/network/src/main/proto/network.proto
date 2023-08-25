@@ -15,18 +15,18 @@ message PongMessage {
 }
 
 message GetTransactionsMessage {
-  // Current transaction id from the peer requesting transactions
-  io.opencola.model.protobuf.Id currentTransactionId = 1;
-  int32 maxTransactions = 2;
+  io.opencola.model.protobuf.Id senderCurrentTransactionId   = 1; // Current transaction id for the sender   of the message
+  io.opencola.model.protobuf.Id receiverCurrentTransactionId = 2; // Current transaction id for the receiver of the message
+  int32 maxTransactions = 3;
 }
 
 message PutTransactionMessage {
   // Transactions are sent as bytes to preserve signatures
   bytes signedTransaction = 1;
 
-  // The persona's current transaction id, used to determine whether more transactions should be
-  // requested from the peer receiving the transaction
-  io.opencola.model.protobuf.Id currentTransactionId = 2;
+  // The current transaction id of the persona sending this transaction, used to determine whether more transactions
+  // should be requested by the peer receiving this transaction
+  io.opencola.model.protobuf.Id senderCurrentTransactionId = 2;
 }
 
 message GetDataMessage {

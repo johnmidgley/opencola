@@ -1,7 +1,6 @@
 package opencola.core.network.providers.http
 
 import io.opencola.model.Authority
-import io.opencola.network.NetworkNode
 import io.opencola.network.message.PingMessage
 import io.opencola.network.message.PongMessage
 import io.opencola.network.providers.http.HttpNetworkProvider
@@ -83,14 +82,6 @@ class HttpNetworkProviderTest {
 
     @Test
     fun testHttpConnectAndReplicate() {
-        val application0 = getApplicationNode().also { it.start() }
-        val application1 = getApplicationNode().also { it.start() }
-
-        try {
-            testConnectAndReplicate(application0, application1)
-        } finally {
-            application0.stop()
-            application1.stop()
-        }
+        testConnectAndReplicate(getApplicationNode(), getApplicationNode())
     }
 }

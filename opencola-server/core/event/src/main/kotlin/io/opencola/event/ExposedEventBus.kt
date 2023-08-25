@@ -12,6 +12,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.nio.file.Path
 import java.sql.Connection
 import java.time.Instant
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class ExposedEventBus(private val storagePath: Path, config: EventBusConfig) : EventBus {
@@ -19,12 +20,13 @@ class ExposedEventBus(private val storagePath: Path, config: EventBusConfig) : E
     private var reactor: Reactor? = null
     private val messages = Messages()
     private val maxAttempts = config.maxAttempts
-    private val executorService = Executors.newSingleThreadExecutor()
+    private var executorService: ExecutorService? = null
     private val db by lazy {
         val db = Database.connect("jdbc:sqlite:$storagePath/${config.name}.db", "org.sqlite.JDBC")
         TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
         db
     }
+    private var started = false
 
     init {
         transaction(db) {
@@ -32,17 +34,27 @@ class ExposedEventBus(private val storagePath: Path, config: EventBusConfig) : E
         }
     }
 
-    // Reactor is defined independently of EventBus in order to avoid circular dependencies
-    override fun start(reactor: Reactor) {
-        if(this.reactor != null)
-            throw IllegalStateException("Attempt to re-start event bus")
-
+    override fun setReactor(reactor: Reactor) {
         this.reactor = reactor
+    }
+
+    // Reactor is defined independently of EventBus in order to avoid circular dependencies
+    override fun start() {
+        if (started) throw IllegalStateException("Event bus already started")
+        this.reactor ?: throw IllegalStateException("Unable to start event bus without a reactor")
+        executorService = Executors.newSingleThreadExecutor()
+        started = true
+        logger.info { "Started" }
     }
 
     // TODO: Call this on dispose / finalize?
     override fun stop() {
-        executorService.shutdownWithTimout(800)
+        if(!started)
+            throw IllegalStateException("Event bus not started")
+        executorService?.shutdownWithTimout(800)
+        executorService = null
+        started = false
+        logger.info { "Stopped" }
     }
 
     private class Messages() : LongIdTable("messages") {
@@ -90,17 +102,10 @@ class ExposedEventBus(private val storagePath: Path, config: EventBusConfig) : E
     }
 
     override fun sendMessage(name: String, data: ByteArray) {
-        if(reactor == null){
-            throw IllegalStateException("Attempt to sendMessage without having set a reactor")
-        }
-
-        if(executorService.isShutdown) {
-            logger.warn("Unable to process message $name - executor has shut down")
-            return
-        }
-
+        if(!started)
+            throw IllegalStateException("Event bus not started")
         addMessageToStore(name, data, 1)
-        executorService.execute { processMessages() }
+        executorService!!.execute { processMessages() }
     }
 
     private fun processMessage(message: Event) {
@@ -126,7 +131,7 @@ class ExposedEventBus(private val storagePath: Path, config: EventBusConfig) : E
             // Process remaining messages. We don't loop here, to give the executor a chance to shut down
             // TODO: Fix - have started flag and loop here
             if (messages.count() > 1)
-                executorService.execute { processMessages() }
+                executorService!!.execute { processMessages() }
         }
     }
 }

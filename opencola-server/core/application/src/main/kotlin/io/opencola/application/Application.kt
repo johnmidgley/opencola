@@ -77,7 +77,7 @@ working properly, you can delete entity-store.db and address-book.db.
             val reactor by injector.instance<Reactor>()
             val eventBus by injector.instance<EventBus>()
 
-            eventBus.start(reactor)
+            eventBus.setReactor(reactor)
         }
 
         private fun initAddressBook(injector: DI, personaKeyPairs: List<KeyPair>, networkConfig: NetworkConfig) {
@@ -196,6 +196,11 @@ working properly, you can delete entity-store.db and address-book.db.
             val personaKeyPairs = getOrCreateRootKeyPair(storagePath, password)
             return instance(storagePath, appConfig, personaKeyPairs, password)
         }
+    }
+
+    fun open(waitUntilReady: Boolean = false) {
+        inject<EventBus>().start()
+        inject<NetworkNode>().start(waitUntilReady)
     }
 
     override fun close() {

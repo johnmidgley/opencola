@@ -86,8 +86,14 @@ class PeerTransactionTest {
         val server0restart = getServer(application0, generateAesKey())
 
         try {
+            val persona0 = application0.getPersonas().single()
+            val persona1 = application1.getPersonas().single()
+
+            println("${application0.config.name} id ${persona0.entityId}")
+            println("${application1.config.name} id ${persona1.entityId}")
+
             // Start the first server and add a document
-            println("Starting ${application0.config.name}")
+            println("Starting ${application0.config.name} ")
             startServer(server0)
             val persona = application0.getPersonas().first()
             val resource0 =
@@ -100,6 +106,7 @@ class PeerTransactionTest {
             // Stop the server so the transaction won't be available when the 2nd server starts up
             println("Stopping ${application0.config.name}")
             server0.stop(1500, 1500)
+            application0.close()
 
             // Start the 2nd server and add a doc to it. This should trigger a request for transactions that will fail, since
             // the first server is not running
@@ -126,7 +133,7 @@ class PeerTransactionTest {
     @Test
     fun testConnectAndBidirectionalReplicate() {
         val server0 = getApplicationNode().also { it.start() }
-        val server1 = getApplicationNode()// .also { it.start() }
+        val server1 = getApplicationNode()
 
         try {
             val app0 = server0.application
@@ -195,8 +202,6 @@ class PeerTransactionTest {
             assertNotNull(app0Resource1FromServer1)
             assertEquals(app0Resource1.name, app0Resource1FromServer1.name)
         } finally {
-            server0.application.close()
-            server1.application.close()
             server0.stop()
             server1.stop()
         }

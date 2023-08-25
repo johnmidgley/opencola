@@ -56,9 +56,10 @@ fun getApplication(
 }
 
 fun onServerStarted(application: Application) {
-    val hostAddress = Inet4Address.getLocalHost().hostAddress
-    application.inject<NetworkNode>().start()
-    application.inject<EventBus>().let { eventBus ->
+    try {
+        val hostAddress = Inet4Address.getLocalHost().hostAddress
+        val eventBus = application.inject<EventBus>().also { it.start() }
+        application.inject<NetworkNode>().start()
         eventBus.sendMessage(Events.NodeStarted.toString())
         application.config.system.resume.let {
             if (it.enabled) {
@@ -71,11 +72,13 @@ fun onServerStarted(application: Application) {
                 logger.info { "Resume detection disabled" }
         }
 
-    }
-
-    logger.info { "Server started: http://$hostAddress:${application.config.server.port}" }
-    application.config.server.ssl?.let {
-        logger.info { "Server started: https://$hostAddress:${it.port} - certs needed" }
+        logger.info { "Server started: http://$hostAddress:${application.config.server.port}" }
+        application.config.server.ssl?.let {
+            logger.info { "Server started: https://$hostAddress:${it.port} - certs needed" }
+        }
+    } catch (e: Throwable) {
+        logger.error { "Error starting server: $e" }
+        System.exit(1)
     }
 }
 

@@ -54,7 +54,7 @@ object TestApplication {
         index.create()
 
         // Return the instance
-        instance
+        instance.also { it.open() }
     }
 
     val config by lazy {

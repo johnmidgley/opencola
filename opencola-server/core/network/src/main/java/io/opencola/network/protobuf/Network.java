@@ -1004,33 +1004,60 @@ public final class Network {
 
     /**
      * <pre>
-     * Current transaction id from the peer requesting transactions
+     * Current transaction id for the sender   of the message
      * </pre>
      *
-     * <code>.io.opencola.model.protobuf.Id currentTransactionId = 1;</code>
-     * @return Whether the currentTransactionId field is set.
+     * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 1;</code>
+     * @return Whether the senderCurrentTransactionId field is set.
      */
-    boolean hasCurrentTransactionId();
+    boolean hasSenderCurrentTransactionId();
     /**
      * <pre>
-     * Current transaction id from the peer requesting transactions
+     * Current transaction id for the sender   of the message
      * </pre>
      *
-     * <code>.io.opencola.model.protobuf.Id currentTransactionId = 1;</code>
-     * @return The currentTransactionId.
+     * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 1;</code>
+     * @return The senderCurrentTransactionId.
      */
-    io.opencola.model.protobuf.Model.Id getCurrentTransactionId();
+    io.opencola.model.protobuf.Model.Id getSenderCurrentTransactionId();
     /**
      * <pre>
-     * Current transaction id from the peer requesting transactions
+     * Current transaction id for the sender   of the message
      * </pre>
      *
-     * <code>.io.opencola.model.protobuf.Id currentTransactionId = 1;</code>
+     * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 1;</code>
      */
-    io.opencola.model.protobuf.Model.IdOrBuilder getCurrentTransactionIdOrBuilder();
+    io.opencola.model.protobuf.Model.IdOrBuilder getSenderCurrentTransactionIdOrBuilder();
 
     /**
-     * <code>int32 maxTransactions = 2;</code>
+     * <pre>
+     * Current transaction id for the receiver of the message
+     * </pre>
+     *
+     * <code>.io.opencola.model.protobuf.Id receiverCurrentTransactionId = 2;</code>
+     * @return Whether the receiverCurrentTransactionId field is set.
+     */
+    boolean hasReceiverCurrentTransactionId();
+    /**
+     * <pre>
+     * Current transaction id for the receiver of the message
+     * </pre>
+     *
+     * <code>.io.opencola.model.protobuf.Id receiverCurrentTransactionId = 2;</code>
+     * @return The receiverCurrentTransactionId.
+     */
+    io.opencola.model.protobuf.Model.Id getReceiverCurrentTransactionId();
+    /**
+     * <pre>
+     * Current transaction id for the receiver of the message
+     * </pre>
+     *
+     * <code>.io.opencola.model.protobuf.Id receiverCurrentTransactionId = 2;</code>
+     */
+    io.opencola.model.protobuf.Model.IdOrBuilder getReceiverCurrentTransactionIdOrBuilder();
+
+    /**
+     * <code>int32 maxTransactions = 3;</code>
      * @return The maxTransactions.
      */
     int getMaxTransactions();
@@ -1082,18 +1109,31 @@ public final class Network {
               break;
             case 10: {
               io.opencola.model.protobuf.Model.Id.Builder subBuilder = null;
-              if (currentTransactionId_ != null) {
-                subBuilder = currentTransactionId_.toBuilder();
+              if (senderCurrentTransactionId_ != null) {
+                subBuilder = senderCurrentTransactionId_.toBuilder();
               }
-              currentTransactionId_ = input.readMessage(io.opencola.model.protobuf.Model.Id.parser(), extensionRegistry);
+              senderCurrentTransactionId_ = input.readMessage(io.opencola.model.protobuf.Model.Id.parser(), extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(currentTransactionId_);
-                currentTransactionId_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(senderCurrentTransactionId_);
+                senderCurrentTransactionId_ = subBuilder.buildPartial();
               }
 
               break;
             }
-            case 16: {
+            case 18: {
+              io.opencola.model.protobuf.Model.Id.Builder subBuilder = null;
+              if (receiverCurrentTransactionId_ != null) {
+                subBuilder = receiverCurrentTransactionId_.toBuilder();
+              }
+              receiverCurrentTransactionId_ = input.readMessage(io.opencola.model.protobuf.Model.Id.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(receiverCurrentTransactionId_);
+                receiverCurrentTransactionId_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 24: {
 
               maxTransactions_ = input.readInt32();
               break;
@@ -1130,48 +1170,86 @@ public final class Network {
               io.opencola.network.protobuf.Network.GetTransactionsMessage.class, io.opencola.network.protobuf.Network.GetTransactionsMessage.Builder.class);
     }
 
-    public static final int CURRENTTRANSACTIONID_FIELD_NUMBER = 1;
-    private io.opencola.model.protobuf.Model.Id currentTransactionId_;
+    public static final int SENDERCURRENTTRANSACTIONID_FIELD_NUMBER = 1;
+    private io.opencola.model.protobuf.Model.Id senderCurrentTransactionId_;
     /**
      * <pre>
-     * Current transaction id from the peer requesting transactions
+     * Current transaction id for the sender   of the message
      * </pre>
      *
-     * <code>.io.opencola.model.protobuf.Id currentTransactionId = 1;</code>
-     * @return Whether the currentTransactionId field is set.
+     * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 1;</code>
+     * @return Whether the senderCurrentTransactionId field is set.
      */
     @java.lang.Override
-    public boolean hasCurrentTransactionId() {
-      return currentTransactionId_ != null;
+    public boolean hasSenderCurrentTransactionId() {
+      return senderCurrentTransactionId_ != null;
     }
     /**
      * <pre>
-     * Current transaction id from the peer requesting transactions
+     * Current transaction id for the sender   of the message
      * </pre>
      *
-     * <code>.io.opencola.model.protobuf.Id currentTransactionId = 1;</code>
-     * @return The currentTransactionId.
+     * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 1;</code>
+     * @return The senderCurrentTransactionId.
      */
     @java.lang.Override
-    public io.opencola.model.protobuf.Model.Id getCurrentTransactionId() {
-      return currentTransactionId_ == null ? io.opencola.model.protobuf.Model.Id.getDefaultInstance() : currentTransactionId_;
+    public io.opencola.model.protobuf.Model.Id getSenderCurrentTransactionId() {
+      return senderCurrentTransactionId_ == null ? io.opencola.model.protobuf.Model.Id.getDefaultInstance() : senderCurrentTransactionId_;
     }
     /**
      * <pre>
-     * Current transaction id from the peer requesting transactions
+     * Current transaction id for the sender   of the message
      * </pre>
      *
-     * <code>.io.opencola.model.protobuf.Id currentTransactionId = 1;</code>
+     * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 1;</code>
      */
     @java.lang.Override
-    public io.opencola.model.protobuf.Model.IdOrBuilder getCurrentTransactionIdOrBuilder() {
-      return getCurrentTransactionId();
+    public io.opencola.model.protobuf.Model.IdOrBuilder getSenderCurrentTransactionIdOrBuilder() {
+      return getSenderCurrentTransactionId();
     }
 
-    public static final int MAXTRANSACTIONS_FIELD_NUMBER = 2;
+    public static final int RECEIVERCURRENTTRANSACTIONID_FIELD_NUMBER = 2;
+    private io.opencola.model.protobuf.Model.Id receiverCurrentTransactionId_;
+    /**
+     * <pre>
+     * Current transaction id for the receiver of the message
+     * </pre>
+     *
+     * <code>.io.opencola.model.protobuf.Id receiverCurrentTransactionId = 2;</code>
+     * @return Whether the receiverCurrentTransactionId field is set.
+     */
+    @java.lang.Override
+    public boolean hasReceiverCurrentTransactionId() {
+      return receiverCurrentTransactionId_ != null;
+    }
+    /**
+     * <pre>
+     * Current transaction id for the receiver of the message
+     * </pre>
+     *
+     * <code>.io.opencola.model.protobuf.Id receiverCurrentTransactionId = 2;</code>
+     * @return The receiverCurrentTransactionId.
+     */
+    @java.lang.Override
+    public io.opencola.model.protobuf.Model.Id getReceiverCurrentTransactionId() {
+      return receiverCurrentTransactionId_ == null ? io.opencola.model.protobuf.Model.Id.getDefaultInstance() : receiverCurrentTransactionId_;
+    }
+    /**
+     * <pre>
+     * Current transaction id for the receiver of the message
+     * </pre>
+     *
+     * <code>.io.opencola.model.protobuf.Id receiverCurrentTransactionId = 2;</code>
+     */
+    @java.lang.Override
+    public io.opencola.model.protobuf.Model.IdOrBuilder getReceiverCurrentTransactionIdOrBuilder() {
+      return getReceiverCurrentTransactionId();
+    }
+
+    public static final int MAXTRANSACTIONS_FIELD_NUMBER = 3;
     private int maxTransactions_;
     /**
-     * <code>int32 maxTransactions = 2;</code>
+     * <code>int32 maxTransactions = 3;</code>
      * @return The maxTransactions.
      */
     @java.lang.Override
@@ -1193,11 +1271,14 @@ public final class Network {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (currentTransactionId_ != null) {
-        output.writeMessage(1, getCurrentTransactionId());
+      if (senderCurrentTransactionId_ != null) {
+        output.writeMessage(1, getSenderCurrentTransactionId());
+      }
+      if (receiverCurrentTransactionId_ != null) {
+        output.writeMessage(2, getReceiverCurrentTransactionId());
       }
       if (maxTransactions_ != 0) {
-        output.writeInt32(2, maxTransactions_);
+        output.writeInt32(3, maxTransactions_);
       }
       unknownFields.writeTo(output);
     }
@@ -1208,13 +1289,17 @@ public final class Network {
       if (size != -1) return size;
 
       size = 0;
-      if (currentTransactionId_ != null) {
+      if (senderCurrentTransactionId_ != null) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, getCurrentTransactionId());
+          .computeMessageSize(1, getSenderCurrentTransactionId());
+      }
+      if (receiverCurrentTransactionId_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, getReceiverCurrentTransactionId());
       }
       if (maxTransactions_ != 0) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(2, maxTransactions_);
+          .computeInt32Size(3, maxTransactions_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -1231,10 +1316,15 @@ public final class Network {
       }
       io.opencola.network.protobuf.Network.GetTransactionsMessage other = (io.opencola.network.protobuf.Network.GetTransactionsMessage) obj;
 
-      if (hasCurrentTransactionId() != other.hasCurrentTransactionId()) return false;
-      if (hasCurrentTransactionId()) {
-        if (!getCurrentTransactionId()
-            .equals(other.getCurrentTransactionId())) return false;
+      if (hasSenderCurrentTransactionId() != other.hasSenderCurrentTransactionId()) return false;
+      if (hasSenderCurrentTransactionId()) {
+        if (!getSenderCurrentTransactionId()
+            .equals(other.getSenderCurrentTransactionId())) return false;
+      }
+      if (hasReceiverCurrentTransactionId() != other.hasReceiverCurrentTransactionId()) return false;
+      if (hasReceiverCurrentTransactionId()) {
+        if (!getReceiverCurrentTransactionId()
+            .equals(other.getReceiverCurrentTransactionId())) return false;
       }
       if (getMaxTransactions()
           != other.getMaxTransactions()) return false;
@@ -1249,9 +1339,13 @@ public final class Network {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      if (hasCurrentTransactionId()) {
-        hash = (37 * hash) + CURRENTTRANSACTIONID_FIELD_NUMBER;
-        hash = (53 * hash) + getCurrentTransactionId().hashCode();
+      if (hasSenderCurrentTransactionId()) {
+        hash = (37 * hash) + SENDERCURRENTTRANSACTIONID_FIELD_NUMBER;
+        hash = (53 * hash) + getSenderCurrentTransactionId().hashCode();
+      }
+      if (hasReceiverCurrentTransactionId()) {
+        hash = (37 * hash) + RECEIVERCURRENTTRANSACTIONID_FIELD_NUMBER;
+        hash = (53 * hash) + getReceiverCurrentTransactionId().hashCode();
       }
       hash = (37 * hash) + MAXTRANSACTIONS_FIELD_NUMBER;
       hash = (53 * hash) + getMaxTransactions();
@@ -1388,11 +1482,17 @@ public final class Network {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        if (currentTransactionIdBuilder_ == null) {
-          currentTransactionId_ = null;
+        if (senderCurrentTransactionIdBuilder_ == null) {
+          senderCurrentTransactionId_ = null;
         } else {
-          currentTransactionId_ = null;
-          currentTransactionIdBuilder_ = null;
+          senderCurrentTransactionId_ = null;
+          senderCurrentTransactionIdBuilder_ = null;
+        }
+        if (receiverCurrentTransactionIdBuilder_ == null) {
+          receiverCurrentTransactionId_ = null;
+        } else {
+          receiverCurrentTransactionId_ = null;
+          receiverCurrentTransactionIdBuilder_ = null;
         }
         maxTransactions_ = 0;
 
@@ -1422,10 +1522,15 @@ public final class Network {
       @java.lang.Override
       public io.opencola.network.protobuf.Network.GetTransactionsMessage buildPartial() {
         io.opencola.network.protobuf.Network.GetTransactionsMessage result = new io.opencola.network.protobuf.Network.GetTransactionsMessage(this);
-        if (currentTransactionIdBuilder_ == null) {
-          result.currentTransactionId_ = currentTransactionId_;
+        if (senderCurrentTransactionIdBuilder_ == null) {
+          result.senderCurrentTransactionId_ = senderCurrentTransactionId_;
         } else {
-          result.currentTransactionId_ = currentTransactionIdBuilder_.build();
+          result.senderCurrentTransactionId_ = senderCurrentTransactionIdBuilder_.build();
+        }
+        if (receiverCurrentTransactionIdBuilder_ == null) {
+          result.receiverCurrentTransactionId_ = receiverCurrentTransactionId_;
+        } else {
+          result.receiverCurrentTransactionId_ = receiverCurrentTransactionIdBuilder_.build();
         }
         result.maxTransactions_ = maxTransactions_;
         onBuilt();
@@ -1476,8 +1581,11 @@ public final class Network {
 
       public Builder mergeFrom(io.opencola.network.protobuf.Network.GetTransactionsMessage other) {
         if (other == io.opencola.network.protobuf.Network.GetTransactionsMessage.getDefaultInstance()) return this;
-        if (other.hasCurrentTransactionId()) {
-          mergeCurrentTransactionId(other.getCurrentTransactionId());
+        if (other.hasSenderCurrentTransactionId()) {
+          mergeSenderCurrentTransactionId(other.getSenderCurrentTransactionId());
+        }
+        if (other.hasReceiverCurrentTransactionId()) {
+          mergeReceiverCurrentTransactionId(other.getReceiverCurrentTransactionId());
         }
         if (other.getMaxTransactions() != 0) {
           setMaxTransactions(other.getMaxTransactions());
@@ -1511,164 +1619,319 @@ public final class Network {
         return this;
       }
 
-      private io.opencola.model.protobuf.Model.Id currentTransactionId_;
+      private io.opencola.model.protobuf.Model.Id senderCurrentTransactionId_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          io.opencola.model.protobuf.Model.Id, io.opencola.model.protobuf.Model.Id.Builder, io.opencola.model.protobuf.Model.IdOrBuilder> currentTransactionIdBuilder_;
+          io.opencola.model.protobuf.Model.Id, io.opencola.model.protobuf.Model.Id.Builder, io.opencola.model.protobuf.Model.IdOrBuilder> senderCurrentTransactionIdBuilder_;
       /**
        * <pre>
-       * Current transaction id from the peer requesting transactions
+       * Current transaction id for the sender   of the message
        * </pre>
        *
-       * <code>.io.opencola.model.protobuf.Id currentTransactionId = 1;</code>
-       * @return Whether the currentTransactionId field is set.
+       * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 1;</code>
+       * @return Whether the senderCurrentTransactionId field is set.
        */
-      public boolean hasCurrentTransactionId() {
-        return currentTransactionIdBuilder_ != null || currentTransactionId_ != null;
+      public boolean hasSenderCurrentTransactionId() {
+        return senderCurrentTransactionIdBuilder_ != null || senderCurrentTransactionId_ != null;
       }
       /**
        * <pre>
-       * Current transaction id from the peer requesting transactions
+       * Current transaction id for the sender   of the message
        * </pre>
        *
-       * <code>.io.opencola.model.protobuf.Id currentTransactionId = 1;</code>
-       * @return The currentTransactionId.
+       * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 1;</code>
+       * @return The senderCurrentTransactionId.
        */
-      public io.opencola.model.protobuf.Model.Id getCurrentTransactionId() {
-        if (currentTransactionIdBuilder_ == null) {
-          return currentTransactionId_ == null ? io.opencola.model.protobuf.Model.Id.getDefaultInstance() : currentTransactionId_;
+      public io.opencola.model.protobuf.Model.Id getSenderCurrentTransactionId() {
+        if (senderCurrentTransactionIdBuilder_ == null) {
+          return senderCurrentTransactionId_ == null ? io.opencola.model.protobuf.Model.Id.getDefaultInstance() : senderCurrentTransactionId_;
         } else {
-          return currentTransactionIdBuilder_.getMessage();
+          return senderCurrentTransactionIdBuilder_.getMessage();
         }
       }
       /**
        * <pre>
-       * Current transaction id from the peer requesting transactions
+       * Current transaction id for the sender   of the message
        * </pre>
        *
-       * <code>.io.opencola.model.protobuf.Id currentTransactionId = 1;</code>
+       * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 1;</code>
        */
-      public Builder setCurrentTransactionId(io.opencola.model.protobuf.Model.Id value) {
-        if (currentTransactionIdBuilder_ == null) {
+      public Builder setSenderCurrentTransactionId(io.opencola.model.protobuf.Model.Id value) {
+        if (senderCurrentTransactionIdBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          currentTransactionId_ = value;
+          senderCurrentTransactionId_ = value;
           onChanged();
         } else {
-          currentTransactionIdBuilder_.setMessage(value);
+          senderCurrentTransactionIdBuilder_.setMessage(value);
         }
 
         return this;
       }
       /**
        * <pre>
-       * Current transaction id from the peer requesting transactions
+       * Current transaction id for the sender   of the message
        * </pre>
        *
-       * <code>.io.opencola.model.protobuf.Id currentTransactionId = 1;</code>
+       * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 1;</code>
        */
-      public Builder setCurrentTransactionId(
+      public Builder setSenderCurrentTransactionId(
           io.opencola.model.protobuf.Model.Id.Builder builderForValue) {
-        if (currentTransactionIdBuilder_ == null) {
-          currentTransactionId_ = builderForValue.build();
+        if (senderCurrentTransactionIdBuilder_ == null) {
+          senderCurrentTransactionId_ = builderForValue.build();
           onChanged();
         } else {
-          currentTransactionIdBuilder_.setMessage(builderForValue.build());
+          senderCurrentTransactionIdBuilder_.setMessage(builderForValue.build());
         }
 
         return this;
       }
       /**
        * <pre>
-       * Current transaction id from the peer requesting transactions
+       * Current transaction id for the sender   of the message
        * </pre>
        *
-       * <code>.io.opencola.model.protobuf.Id currentTransactionId = 1;</code>
+       * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 1;</code>
        */
-      public Builder mergeCurrentTransactionId(io.opencola.model.protobuf.Model.Id value) {
-        if (currentTransactionIdBuilder_ == null) {
-          if (currentTransactionId_ != null) {
-            currentTransactionId_ =
-              io.opencola.model.protobuf.Model.Id.newBuilder(currentTransactionId_).mergeFrom(value).buildPartial();
+      public Builder mergeSenderCurrentTransactionId(io.opencola.model.protobuf.Model.Id value) {
+        if (senderCurrentTransactionIdBuilder_ == null) {
+          if (senderCurrentTransactionId_ != null) {
+            senderCurrentTransactionId_ =
+              io.opencola.model.protobuf.Model.Id.newBuilder(senderCurrentTransactionId_).mergeFrom(value).buildPartial();
           } else {
-            currentTransactionId_ = value;
+            senderCurrentTransactionId_ = value;
           }
           onChanged();
         } else {
-          currentTransactionIdBuilder_.mergeFrom(value);
+          senderCurrentTransactionIdBuilder_.mergeFrom(value);
         }
 
         return this;
       }
       /**
        * <pre>
-       * Current transaction id from the peer requesting transactions
+       * Current transaction id for the sender   of the message
        * </pre>
        *
-       * <code>.io.opencola.model.protobuf.Id currentTransactionId = 1;</code>
+       * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 1;</code>
        */
-      public Builder clearCurrentTransactionId() {
-        if (currentTransactionIdBuilder_ == null) {
-          currentTransactionId_ = null;
+      public Builder clearSenderCurrentTransactionId() {
+        if (senderCurrentTransactionIdBuilder_ == null) {
+          senderCurrentTransactionId_ = null;
           onChanged();
         } else {
-          currentTransactionId_ = null;
-          currentTransactionIdBuilder_ = null;
+          senderCurrentTransactionId_ = null;
+          senderCurrentTransactionIdBuilder_ = null;
         }
 
         return this;
       }
       /**
        * <pre>
-       * Current transaction id from the peer requesting transactions
+       * Current transaction id for the sender   of the message
        * </pre>
        *
-       * <code>.io.opencola.model.protobuf.Id currentTransactionId = 1;</code>
+       * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 1;</code>
        */
-      public io.opencola.model.protobuf.Model.Id.Builder getCurrentTransactionIdBuilder() {
+      public io.opencola.model.protobuf.Model.Id.Builder getSenderCurrentTransactionIdBuilder() {
         
         onChanged();
-        return getCurrentTransactionIdFieldBuilder().getBuilder();
+        return getSenderCurrentTransactionIdFieldBuilder().getBuilder();
       }
       /**
        * <pre>
-       * Current transaction id from the peer requesting transactions
+       * Current transaction id for the sender   of the message
        * </pre>
        *
-       * <code>.io.opencola.model.protobuf.Id currentTransactionId = 1;</code>
+       * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 1;</code>
        */
-      public io.opencola.model.protobuf.Model.IdOrBuilder getCurrentTransactionIdOrBuilder() {
-        if (currentTransactionIdBuilder_ != null) {
-          return currentTransactionIdBuilder_.getMessageOrBuilder();
+      public io.opencola.model.protobuf.Model.IdOrBuilder getSenderCurrentTransactionIdOrBuilder() {
+        if (senderCurrentTransactionIdBuilder_ != null) {
+          return senderCurrentTransactionIdBuilder_.getMessageOrBuilder();
         } else {
-          return currentTransactionId_ == null ?
-              io.opencola.model.protobuf.Model.Id.getDefaultInstance() : currentTransactionId_;
+          return senderCurrentTransactionId_ == null ?
+              io.opencola.model.protobuf.Model.Id.getDefaultInstance() : senderCurrentTransactionId_;
         }
       }
       /**
        * <pre>
-       * Current transaction id from the peer requesting transactions
+       * Current transaction id for the sender   of the message
        * </pre>
        *
-       * <code>.io.opencola.model.protobuf.Id currentTransactionId = 1;</code>
+       * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
           io.opencola.model.protobuf.Model.Id, io.opencola.model.protobuf.Model.Id.Builder, io.opencola.model.protobuf.Model.IdOrBuilder> 
-          getCurrentTransactionIdFieldBuilder() {
-        if (currentTransactionIdBuilder_ == null) {
-          currentTransactionIdBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+          getSenderCurrentTransactionIdFieldBuilder() {
+        if (senderCurrentTransactionIdBuilder_ == null) {
+          senderCurrentTransactionIdBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               io.opencola.model.protobuf.Model.Id, io.opencola.model.protobuf.Model.Id.Builder, io.opencola.model.protobuf.Model.IdOrBuilder>(
-                  getCurrentTransactionId(),
+                  getSenderCurrentTransactionId(),
                   getParentForChildren(),
                   isClean());
-          currentTransactionId_ = null;
+          senderCurrentTransactionId_ = null;
         }
-        return currentTransactionIdBuilder_;
+        return senderCurrentTransactionIdBuilder_;
+      }
+
+      private io.opencola.model.protobuf.Model.Id receiverCurrentTransactionId_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          io.opencola.model.protobuf.Model.Id, io.opencola.model.protobuf.Model.Id.Builder, io.opencola.model.protobuf.Model.IdOrBuilder> receiverCurrentTransactionIdBuilder_;
+      /**
+       * <pre>
+       * Current transaction id for the receiver of the message
+       * </pre>
+       *
+       * <code>.io.opencola.model.protobuf.Id receiverCurrentTransactionId = 2;</code>
+       * @return Whether the receiverCurrentTransactionId field is set.
+       */
+      public boolean hasReceiverCurrentTransactionId() {
+        return receiverCurrentTransactionIdBuilder_ != null || receiverCurrentTransactionId_ != null;
+      }
+      /**
+       * <pre>
+       * Current transaction id for the receiver of the message
+       * </pre>
+       *
+       * <code>.io.opencola.model.protobuf.Id receiverCurrentTransactionId = 2;</code>
+       * @return The receiverCurrentTransactionId.
+       */
+      public io.opencola.model.protobuf.Model.Id getReceiverCurrentTransactionId() {
+        if (receiverCurrentTransactionIdBuilder_ == null) {
+          return receiverCurrentTransactionId_ == null ? io.opencola.model.protobuf.Model.Id.getDefaultInstance() : receiverCurrentTransactionId_;
+        } else {
+          return receiverCurrentTransactionIdBuilder_.getMessage();
+        }
+      }
+      /**
+       * <pre>
+       * Current transaction id for the receiver of the message
+       * </pre>
+       *
+       * <code>.io.opencola.model.protobuf.Id receiverCurrentTransactionId = 2;</code>
+       */
+      public Builder setReceiverCurrentTransactionId(io.opencola.model.protobuf.Model.Id value) {
+        if (receiverCurrentTransactionIdBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          receiverCurrentTransactionId_ = value;
+          onChanged();
+        } else {
+          receiverCurrentTransactionIdBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * Current transaction id for the receiver of the message
+       * </pre>
+       *
+       * <code>.io.opencola.model.protobuf.Id receiverCurrentTransactionId = 2;</code>
+       */
+      public Builder setReceiverCurrentTransactionId(
+          io.opencola.model.protobuf.Model.Id.Builder builderForValue) {
+        if (receiverCurrentTransactionIdBuilder_ == null) {
+          receiverCurrentTransactionId_ = builderForValue.build();
+          onChanged();
+        } else {
+          receiverCurrentTransactionIdBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * Current transaction id for the receiver of the message
+       * </pre>
+       *
+       * <code>.io.opencola.model.protobuf.Id receiverCurrentTransactionId = 2;</code>
+       */
+      public Builder mergeReceiverCurrentTransactionId(io.opencola.model.protobuf.Model.Id value) {
+        if (receiverCurrentTransactionIdBuilder_ == null) {
+          if (receiverCurrentTransactionId_ != null) {
+            receiverCurrentTransactionId_ =
+              io.opencola.model.protobuf.Model.Id.newBuilder(receiverCurrentTransactionId_).mergeFrom(value).buildPartial();
+          } else {
+            receiverCurrentTransactionId_ = value;
+          }
+          onChanged();
+        } else {
+          receiverCurrentTransactionIdBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * Current transaction id for the receiver of the message
+       * </pre>
+       *
+       * <code>.io.opencola.model.protobuf.Id receiverCurrentTransactionId = 2;</code>
+       */
+      public Builder clearReceiverCurrentTransactionId() {
+        if (receiverCurrentTransactionIdBuilder_ == null) {
+          receiverCurrentTransactionId_ = null;
+          onChanged();
+        } else {
+          receiverCurrentTransactionId_ = null;
+          receiverCurrentTransactionIdBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * Current transaction id for the receiver of the message
+       * </pre>
+       *
+       * <code>.io.opencola.model.protobuf.Id receiverCurrentTransactionId = 2;</code>
+       */
+      public io.opencola.model.protobuf.Model.Id.Builder getReceiverCurrentTransactionIdBuilder() {
+        
+        onChanged();
+        return getReceiverCurrentTransactionIdFieldBuilder().getBuilder();
+      }
+      /**
+       * <pre>
+       * Current transaction id for the receiver of the message
+       * </pre>
+       *
+       * <code>.io.opencola.model.protobuf.Id receiverCurrentTransactionId = 2;</code>
+       */
+      public io.opencola.model.protobuf.Model.IdOrBuilder getReceiverCurrentTransactionIdOrBuilder() {
+        if (receiverCurrentTransactionIdBuilder_ != null) {
+          return receiverCurrentTransactionIdBuilder_.getMessageOrBuilder();
+        } else {
+          return receiverCurrentTransactionId_ == null ?
+              io.opencola.model.protobuf.Model.Id.getDefaultInstance() : receiverCurrentTransactionId_;
+        }
+      }
+      /**
+       * <pre>
+       * Current transaction id for the receiver of the message
+       * </pre>
+       *
+       * <code>.io.opencola.model.protobuf.Id receiverCurrentTransactionId = 2;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          io.opencola.model.protobuf.Model.Id, io.opencola.model.protobuf.Model.Id.Builder, io.opencola.model.protobuf.Model.IdOrBuilder> 
+          getReceiverCurrentTransactionIdFieldBuilder() {
+        if (receiverCurrentTransactionIdBuilder_ == null) {
+          receiverCurrentTransactionIdBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              io.opencola.model.protobuf.Model.Id, io.opencola.model.protobuf.Model.Id.Builder, io.opencola.model.protobuf.Model.IdOrBuilder>(
+                  getReceiverCurrentTransactionId(),
+                  getParentForChildren(),
+                  isClean());
+          receiverCurrentTransactionId_ = null;
+        }
+        return receiverCurrentTransactionIdBuilder_;
       }
 
       private int maxTransactions_ ;
       /**
-       * <code>int32 maxTransactions = 2;</code>
+       * <code>int32 maxTransactions = 3;</code>
        * @return The maxTransactions.
        */
       @java.lang.Override
@@ -1676,7 +1939,7 @@ public final class Network {
         return maxTransactions_;
       }
       /**
-       * <code>int32 maxTransactions = 2;</code>
+       * <code>int32 maxTransactions = 3;</code>
        * @param value The maxTransactions to set.
        * @return This builder for chaining.
        */
@@ -1687,7 +1950,7 @@ public final class Network {
         return this;
       }
       /**
-       * <code>int32 maxTransactions = 2;</code>
+       * <code>int32 maxTransactions = 3;</code>
        * @return This builder for chaining.
        */
       public Builder clearMaxTransactions() {
@@ -1765,33 +2028,33 @@ public final class Network {
 
     /**
      * <pre>
-     * The persona's current transaction id, used to determine whether more transactions should be
-     * requested from the peer receiving the transaction
+     * The current transaction id of the persona sending this transaction, used to determine whether more transactions
+     * should be requested by the peer receiving this transaction
      * </pre>
      *
-     * <code>.io.opencola.model.protobuf.Id currentTransactionId = 2;</code>
-     * @return Whether the currentTransactionId field is set.
+     * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 2;</code>
+     * @return Whether the senderCurrentTransactionId field is set.
      */
-    boolean hasCurrentTransactionId();
+    boolean hasSenderCurrentTransactionId();
     /**
      * <pre>
-     * The persona's current transaction id, used to determine whether more transactions should be
-     * requested from the peer receiving the transaction
+     * The current transaction id of the persona sending this transaction, used to determine whether more transactions
+     * should be requested by the peer receiving this transaction
      * </pre>
      *
-     * <code>.io.opencola.model.protobuf.Id currentTransactionId = 2;</code>
-     * @return The currentTransactionId.
+     * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 2;</code>
+     * @return The senderCurrentTransactionId.
      */
-    io.opencola.model.protobuf.Model.Id getCurrentTransactionId();
+    io.opencola.model.protobuf.Model.Id getSenderCurrentTransactionId();
     /**
      * <pre>
-     * The persona's current transaction id, used to determine whether more transactions should be
-     * requested from the peer receiving the transaction
+     * The current transaction id of the persona sending this transaction, used to determine whether more transactions
+     * should be requested by the peer receiving this transaction
      * </pre>
      *
-     * <code>.io.opencola.model.protobuf.Id currentTransactionId = 2;</code>
+     * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 2;</code>
      */
-    io.opencola.model.protobuf.Model.IdOrBuilder getCurrentTransactionIdOrBuilder();
+    io.opencola.model.protobuf.Model.IdOrBuilder getSenderCurrentTransactionIdOrBuilder();
   }
   /**
    * Protobuf type {@code io.opencola.network.protobuf.PutTransactionMessage}
@@ -1846,13 +2109,13 @@ public final class Network {
             }
             case 18: {
               io.opencola.model.protobuf.Model.Id.Builder subBuilder = null;
-              if (currentTransactionId_ != null) {
-                subBuilder = currentTransactionId_.toBuilder();
+              if (senderCurrentTransactionId_ != null) {
+                subBuilder = senderCurrentTransactionId_.toBuilder();
               }
-              currentTransactionId_ = input.readMessage(io.opencola.model.protobuf.Model.Id.parser(), extensionRegistry);
+              senderCurrentTransactionId_ = input.readMessage(io.opencola.model.protobuf.Model.Id.parser(), extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(currentTransactionId_);
-                currentTransactionId_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(senderCurrentTransactionId_);
+                senderCurrentTransactionId_ = subBuilder.buildPartial();
               }
 
               break;
@@ -1904,45 +2167,45 @@ public final class Network {
       return signedTransaction_;
     }
 
-    public static final int CURRENTTRANSACTIONID_FIELD_NUMBER = 2;
-    private io.opencola.model.protobuf.Model.Id currentTransactionId_;
+    public static final int SENDERCURRENTTRANSACTIONID_FIELD_NUMBER = 2;
+    private io.opencola.model.protobuf.Model.Id senderCurrentTransactionId_;
     /**
      * <pre>
-     * The persona's current transaction id, used to determine whether more transactions should be
-     * requested from the peer receiving the transaction
+     * The current transaction id of the persona sending this transaction, used to determine whether more transactions
+     * should be requested by the peer receiving this transaction
      * </pre>
      *
-     * <code>.io.opencola.model.protobuf.Id currentTransactionId = 2;</code>
-     * @return Whether the currentTransactionId field is set.
+     * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 2;</code>
+     * @return Whether the senderCurrentTransactionId field is set.
      */
     @java.lang.Override
-    public boolean hasCurrentTransactionId() {
-      return currentTransactionId_ != null;
+    public boolean hasSenderCurrentTransactionId() {
+      return senderCurrentTransactionId_ != null;
     }
     /**
      * <pre>
-     * The persona's current transaction id, used to determine whether more transactions should be
-     * requested from the peer receiving the transaction
+     * The current transaction id of the persona sending this transaction, used to determine whether more transactions
+     * should be requested by the peer receiving this transaction
      * </pre>
      *
-     * <code>.io.opencola.model.protobuf.Id currentTransactionId = 2;</code>
-     * @return The currentTransactionId.
+     * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 2;</code>
+     * @return The senderCurrentTransactionId.
      */
     @java.lang.Override
-    public io.opencola.model.protobuf.Model.Id getCurrentTransactionId() {
-      return currentTransactionId_ == null ? io.opencola.model.protobuf.Model.Id.getDefaultInstance() : currentTransactionId_;
+    public io.opencola.model.protobuf.Model.Id getSenderCurrentTransactionId() {
+      return senderCurrentTransactionId_ == null ? io.opencola.model.protobuf.Model.Id.getDefaultInstance() : senderCurrentTransactionId_;
     }
     /**
      * <pre>
-     * The persona's current transaction id, used to determine whether more transactions should be
-     * requested from the peer receiving the transaction
+     * The current transaction id of the persona sending this transaction, used to determine whether more transactions
+     * should be requested by the peer receiving this transaction
      * </pre>
      *
-     * <code>.io.opencola.model.protobuf.Id currentTransactionId = 2;</code>
+     * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 2;</code>
      */
     @java.lang.Override
-    public io.opencola.model.protobuf.Model.IdOrBuilder getCurrentTransactionIdOrBuilder() {
-      return getCurrentTransactionId();
+    public io.opencola.model.protobuf.Model.IdOrBuilder getSenderCurrentTransactionIdOrBuilder() {
+      return getSenderCurrentTransactionId();
     }
 
     private byte memoizedIsInitialized = -1;
@@ -1962,8 +2225,8 @@ public final class Network {
       if (!signedTransaction_.isEmpty()) {
         output.writeBytes(1, signedTransaction_);
       }
-      if (currentTransactionId_ != null) {
-        output.writeMessage(2, getCurrentTransactionId());
+      if (senderCurrentTransactionId_ != null) {
+        output.writeMessage(2, getSenderCurrentTransactionId());
       }
       unknownFields.writeTo(output);
     }
@@ -1978,9 +2241,9 @@ public final class Network {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(1, signedTransaction_);
       }
-      if (currentTransactionId_ != null) {
+      if (senderCurrentTransactionId_ != null) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, getCurrentTransactionId());
+          .computeMessageSize(2, getSenderCurrentTransactionId());
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -1999,10 +2262,10 @@ public final class Network {
 
       if (!getSignedTransaction()
           .equals(other.getSignedTransaction())) return false;
-      if (hasCurrentTransactionId() != other.hasCurrentTransactionId()) return false;
-      if (hasCurrentTransactionId()) {
-        if (!getCurrentTransactionId()
-            .equals(other.getCurrentTransactionId())) return false;
+      if (hasSenderCurrentTransactionId() != other.hasSenderCurrentTransactionId()) return false;
+      if (hasSenderCurrentTransactionId()) {
+        if (!getSenderCurrentTransactionId()
+            .equals(other.getSenderCurrentTransactionId())) return false;
       }
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
@@ -2017,9 +2280,9 @@ public final class Network {
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + SIGNEDTRANSACTION_FIELD_NUMBER;
       hash = (53 * hash) + getSignedTransaction().hashCode();
-      if (hasCurrentTransactionId()) {
-        hash = (37 * hash) + CURRENTTRANSACTIONID_FIELD_NUMBER;
-        hash = (53 * hash) + getCurrentTransactionId().hashCode();
+      if (hasSenderCurrentTransactionId()) {
+        hash = (37 * hash) + SENDERCURRENTTRANSACTIONID_FIELD_NUMBER;
+        hash = (53 * hash) + getSenderCurrentTransactionId().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -2156,11 +2419,11 @@ public final class Network {
         super.clear();
         signedTransaction_ = com.google.protobuf.ByteString.EMPTY;
 
-        if (currentTransactionIdBuilder_ == null) {
-          currentTransactionId_ = null;
+        if (senderCurrentTransactionIdBuilder_ == null) {
+          senderCurrentTransactionId_ = null;
         } else {
-          currentTransactionId_ = null;
-          currentTransactionIdBuilder_ = null;
+          senderCurrentTransactionId_ = null;
+          senderCurrentTransactionIdBuilder_ = null;
         }
         return this;
       }
@@ -2189,10 +2452,10 @@ public final class Network {
       public io.opencola.network.protobuf.Network.PutTransactionMessage buildPartial() {
         io.opencola.network.protobuf.Network.PutTransactionMessage result = new io.opencola.network.protobuf.Network.PutTransactionMessage(this);
         result.signedTransaction_ = signedTransaction_;
-        if (currentTransactionIdBuilder_ == null) {
-          result.currentTransactionId_ = currentTransactionId_;
+        if (senderCurrentTransactionIdBuilder_ == null) {
+          result.senderCurrentTransactionId_ = senderCurrentTransactionId_;
         } else {
-          result.currentTransactionId_ = currentTransactionIdBuilder_.build();
+          result.senderCurrentTransactionId_ = senderCurrentTransactionIdBuilder_.build();
         }
         onBuilt();
         return result;
@@ -2245,8 +2508,8 @@ public final class Network {
         if (other.getSignedTransaction() != com.google.protobuf.ByteString.EMPTY) {
           setSignedTransaction(other.getSignedTransaction());
         }
-        if (other.hasCurrentTransactionId()) {
-          mergeCurrentTransactionId(other.getCurrentTransactionId());
+        if (other.hasSenderCurrentTransactionId()) {
+          mergeSenderCurrentTransactionId(other.getSenderCurrentTransactionId());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -2323,168 +2586,168 @@ public final class Network {
         return this;
       }
 
-      private io.opencola.model.protobuf.Model.Id currentTransactionId_;
+      private io.opencola.model.protobuf.Model.Id senderCurrentTransactionId_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          io.opencola.model.protobuf.Model.Id, io.opencola.model.protobuf.Model.Id.Builder, io.opencola.model.protobuf.Model.IdOrBuilder> currentTransactionIdBuilder_;
+          io.opencola.model.protobuf.Model.Id, io.opencola.model.protobuf.Model.Id.Builder, io.opencola.model.protobuf.Model.IdOrBuilder> senderCurrentTransactionIdBuilder_;
       /**
        * <pre>
-       * The persona's current transaction id, used to determine whether more transactions should be
-       * requested from the peer receiving the transaction
+       * The current transaction id of the persona sending this transaction, used to determine whether more transactions
+       * should be requested by the peer receiving this transaction
        * </pre>
        *
-       * <code>.io.opencola.model.protobuf.Id currentTransactionId = 2;</code>
-       * @return Whether the currentTransactionId field is set.
+       * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 2;</code>
+       * @return Whether the senderCurrentTransactionId field is set.
        */
-      public boolean hasCurrentTransactionId() {
-        return currentTransactionIdBuilder_ != null || currentTransactionId_ != null;
+      public boolean hasSenderCurrentTransactionId() {
+        return senderCurrentTransactionIdBuilder_ != null || senderCurrentTransactionId_ != null;
       }
       /**
        * <pre>
-       * The persona's current transaction id, used to determine whether more transactions should be
-       * requested from the peer receiving the transaction
+       * The current transaction id of the persona sending this transaction, used to determine whether more transactions
+       * should be requested by the peer receiving this transaction
        * </pre>
        *
-       * <code>.io.opencola.model.protobuf.Id currentTransactionId = 2;</code>
-       * @return The currentTransactionId.
+       * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 2;</code>
+       * @return The senderCurrentTransactionId.
        */
-      public io.opencola.model.protobuf.Model.Id getCurrentTransactionId() {
-        if (currentTransactionIdBuilder_ == null) {
-          return currentTransactionId_ == null ? io.opencola.model.protobuf.Model.Id.getDefaultInstance() : currentTransactionId_;
+      public io.opencola.model.protobuf.Model.Id getSenderCurrentTransactionId() {
+        if (senderCurrentTransactionIdBuilder_ == null) {
+          return senderCurrentTransactionId_ == null ? io.opencola.model.protobuf.Model.Id.getDefaultInstance() : senderCurrentTransactionId_;
         } else {
-          return currentTransactionIdBuilder_.getMessage();
+          return senderCurrentTransactionIdBuilder_.getMessage();
         }
       }
       /**
        * <pre>
-       * The persona's current transaction id, used to determine whether more transactions should be
-       * requested from the peer receiving the transaction
+       * The current transaction id of the persona sending this transaction, used to determine whether more transactions
+       * should be requested by the peer receiving this transaction
        * </pre>
        *
-       * <code>.io.opencola.model.protobuf.Id currentTransactionId = 2;</code>
+       * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 2;</code>
        */
-      public Builder setCurrentTransactionId(io.opencola.model.protobuf.Model.Id value) {
-        if (currentTransactionIdBuilder_ == null) {
+      public Builder setSenderCurrentTransactionId(io.opencola.model.protobuf.Model.Id value) {
+        if (senderCurrentTransactionIdBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          currentTransactionId_ = value;
+          senderCurrentTransactionId_ = value;
           onChanged();
         } else {
-          currentTransactionIdBuilder_.setMessage(value);
+          senderCurrentTransactionIdBuilder_.setMessage(value);
         }
 
         return this;
       }
       /**
        * <pre>
-       * The persona's current transaction id, used to determine whether more transactions should be
-       * requested from the peer receiving the transaction
+       * The current transaction id of the persona sending this transaction, used to determine whether more transactions
+       * should be requested by the peer receiving this transaction
        * </pre>
        *
-       * <code>.io.opencola.model.protobuf.Id currentTransactionId = 2;</code>
+       * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 2;</code>
        */
-      public Builder setCurrentTransactionId(
+      public Builder setSenderCurrentTransactionId(
           io.opencola.model.protobuf.Model.Id.Builder builderForValue) {
-        if (currentTransactionIdBuilder_ == null) {
-          currentTransactionId_ = builderForValue.build();
+        if (senderCurrentTransactionIdBuilder_ == null) {
+          senderCurrentTransactionId_ = builderForValue.build();
           onChanged();
         } else {
-          currentTransactionIdBuilder_.setMessage(builderForValue.build());
+          senderCurrentTransactionIdBuilder_.setMessage(builderForValue.build());
         }
 
         return this;
       }
       /**
        * <pre>
-       * The persona's current transaction id, used to determine whether more transactions should be
-       * requested from the peer receiving the transaction
+       * The current transaction id of the persona sending this transaction, used to determine whether more transactions
+       * should be requested by the peer receiving this transaction
        * </pre>
        *
-       * <code>.io.opencola.model.protobuf.Id currentTransactionId = 2;</code>
+       * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 2;</code>
        */
-      public Builder mergeCurrentTransactionId(io.opencola.model.protobuf.Model.Id value) {
-        if (currentTransactionIdBuilder_ == null) {
-          if (currentTransactionId_ != null) {
-            currentTransactionId_ =
-              io.opencola.model.protobuf.Model.Id.newBuilder(currentTransactionId_).mergeFrom(value).buildPartial();
+      public Builder mergeSenderCurrentTransactionId(io.opencola.model.protobuf.Model.Id value) {
+        if (senderCurrentTransactionIdBuilder_ == null) {
+          if (senderCurrentTransactionId_ != null) {
+            senderCurrentTransactionId_ =
+              io.opencola.model.protobuf.Model.Id.newBuilder(senderCurrentTransactionId_).mergeFrom(value).buildPartial();
           } else {
-            currentTransactionId_ = value;
+            senderCurrentTransactionId_ = value;
           }
           onChanged();
         } else {
-          currentTransactionIdBuilder_.mergeFrom(value);
+          senderCurrentTransactionIdBuilder_.mergeFrom(value);
         }
 
         return this;
       }
       /**
        * <pre>
-       * The persona's current transaction id, used to determine whether more transactions should be
-       * requested from the peer receiving the transaction
+       * The current transaction id of the persona sending this transaction, used to determine whether more transactions
+       * should be requested by the peer receiving this transaction
        * </pre>
        *
-       * <code>.io.opencola.model.protobuf.Id currentTransactionId = 2;</code>
+       * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 2;</code>
        */
-      public Builder clearCurrentTransactionId() {
-        if (currentTransactionIdBuilder_ == null) {
-          currentTransactionId_ = null;
+      public Builder clearSenderCurrentTransactionId() {
+        if (senderCurrentTransactionIdBuilder_ == null) {
+          senderCurrentTransactionId_ = null;
           onChanged();
         } else {
-          currentTransactionId_ = null;
-          currentTransactionIdBuilder_ = null;
+          senderCurrentTransactionId_ = null;
+          senderCurrentTransactionIdBuilder_ = null;
         }
 
         return this;
       }
       /**
        * <pre>
-       * The persona's current transaction id, used to determine whether more transactions should be
-       * requested from the peer receiving the transaction
+       * The current transaction id of the persona sending this transaction, used to determine whether more transactions
+       * should be requested by the peer receiving this transaction
        * </pre>
        *
-       * <code>.io.opencola.model.protobuf.Id currentTransactionId = 2;</code>
+       * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 2;</code>
        */
-      public io.opencola.model.protobuf.Model.Id.Builder getCurrentTransactionIdBuilder() {
+      public io.opencola.model.protobuf.Model.Id.Builder getSenderCurrentTransactionIdBuilder() {
         
         onChanged();
-        return getCurrentTransactionIdFieldBuilder().getBuilder();
+        return getSenderCurrentTransactionIdFieldBuilder().getBuilder();
       }
       /**
        * <pre>
-       * The persona's current transaction id, used to determine whether more transactions should be
-       * requested from the peer receiving the transaction
+       * The current transaction id of the persona sending this transaction, used to determine whether more transactions
+       * should be requested by the peer receiving this transaction
        * </pre>
        *
-       * <code>.io.opencola.model.protobuf.Id currentTransactionId = 2;</code>
+       * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 2;</code>
        */
-      public io.opencola.model.protobuf.Model.IdOrBuilder getCurrentTransactionIdOrBuilder() {
-        if (currentTransactionIdBuilder_ != null) {
-          return currentTransactionIdBuilder_.getMessageOrBuilder();
+      public io.opencola.model.protobuf.Model.IdOrBuilder getSenderCurrentTransactionIdOrBuilder() {
+        if (senderCurrentTransactionIdBuilder_ != null) {
+          return senderCurrentTransactionIdBuilder_.getMessageOrBuilder();
         } else {
-          return currentTransactionId_ == null ?
-              io.opencola.model.protobuf.Model.Id.getDefaultInstance() : currentTransactionId_;
+          return senderCurrentTransactionId_ == null ?
+              io.opencola.model.protobuf.Model.Id.getDefaultInstance() : senderCurrentTransactionId_;
         }
       }
       /**
        * <pre>
-       * The persona's current transaction id, used to determine whether more transactions should be
-       * requested from the peer receiving the transaction
+       * The current transaction id of the persona sending this transaction, used to determine whether more transactions
+       * should be requested by the peer receiving this transaction
        * </pre>
        *
-       * <code>.io.opencola.model.protobuf.Id currentTransactionId = 2;</code>
+       * <code>.io.opencola.model.protobuf.Id senderCurrentTransactionId = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
           io.opencola.model.protobuf.Model.Id, io.opencola.model.protobuf.Model.Id.Builder, io.opencola.model.protobuf.Model.IdOrBuilder> 
-          getCurrentTransactionIdFieldBuilder() {
-        if (currentTransactionIdBuilder_ == null) {
-          currentTransactionIdBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+          getSenderCurrentTransactionIdFieldBuilder() {
+        if (senderCurrentTransactionIdBuilder_ == null) {
+          senderCurrentTransactionIdBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               io.opencola.model.protobuf.Model.Id, io.opencola.model.protobuf.Model.Id.Builder, io.opencola.model.protobuf.Model.IdOrBuilder>(
-                  getCurrentTransactionId(),
+                  getSenderCurrentTransactionId(),
                   getParentForChildren(),
                   isClean());
-          currentTransactionId_ = null;
+          senderCurrentTransactionId_ = null;
         }
-        return currentTransactionIdBuilder_;
+        return senderCurrentTransactionIdBuilder_;
       }
       @java.lang.Override
       public final Builder setUnknownFields(
@@ -8949,39 +9212,41 @@ public final class Network {
       "\n\rnetwork.proto\022\034io.opencola.network.pro" +
       "tobuf\032\016security.proto\032\013model.proto\032\nutil" +
       ".proto\"\036\n\013PingMessage\022\017\n\007payload\030\001 \001(\014\"\036" +
-      "\n\013PongMessage\022\017\n\007payload\030\001 \001(\014\"o\n\026GetTra" +
-      "nsactionsMessage\022<\n\024currentTransactionId" +
-      "\030\001 \001(\0132\036.io.opencola.model.protobuf.Id\022\027" +
-      "\n\017maxTransactions\030\002 \001(\005\"p\n\025PutTransactio" +
-      "nMessage\022\031\n\021signedTransaction\030\001 \001(\014\022<\n\024c" +
-      "urrentTransactionId\030\002 \001(\0132\036.io.opencola." +
-      "model.protobuf.Id\"<\n\016GetDataMessage\022*\n\002i" +
-      "d\030\001 \001(\0132\036.io.opencola.model.protobuf.Id\"" +
-      "J\n\016PutDataMessage\022*\n\002id\030\001 \001(\0132\036.io.openc" +
-      "ola.model.protobuf.Id\022\014\n\004data\030\002 \001(\014\"\204\004\n\007" +
-      "Message\022+\n\002id\030\001 \001(\0132\037.io.opencola.util.p" +
-      "rotobuf.UUID\022,\n\004from\030\002 \001(\0132\036.io.opencola" +
-      ".model.protobuf.Id\0229\n\004ping\030\003 \001(\0132).io.op" +
-      "encola.network.protobuf.PingMessageH\000\0229\n" +
-      "\004pong\030\004 \001(\0132).io.opencola.network.protob" +
-      "uf.PongMessageH\000\022O\n\017getTransactions\030\005 \001(" +
-      "\01324.io.opencola.network.protobuf.GetTran" +
-      "sactionsMessageH\000\022M\n\016putTransaction\030\006 \001(" +
-      "\01323.io.opencola.network.protobuf.PutTran" +
-      "sactionMessageH\000\022?\n\007getData\030\007 \001(\0132,.io.o" +
-      "pencola.network.protobuf.GetDataMessageH" +
-      "\000\022?\n\007putData\030\010 \001(\0132,.io.opencola.network" +
-      ".protobuf.PutDataMessageH\000B\006\n\004body\"}\n\tRe" +
-      "cipient\022*\n\002to\030\001 \001(\0132\036.io.opencola.model." +
-      "protobuf.Id\022D\n\020messageSecretKey\030\002 \001(\0132*." +
-      "io.opencola.security.protobuf.SignedByte" +
-      "s\"a\n\016EnvelopeHeader\022;\n\nrecipients\030\001 \003(\0132" +
-      "\'.io.opencola.network.protobuf.Recipient" +
-      "\022\022\n\nstorageKey\030\002 \001(\014\"\203\001\n\010Envelope\022:\n\006hea" +
-      "der\030\001 \001(\0132*.io.opencola.security.protobu" +
-      "f.SignedBytes\022;\n\007message\030\002 \001(\0132*.io.open" +
-      "cola.security.protobuf.SignedBytesb\006prot" +
-      "o3"
+      "\n\013PongMessage\022\017\n\007payload\030\001 \001(\014\"\273\001\n\026GetTr" +
+      "ansactionsMessage\022B\n\032senderCurrentTransa" +
+      "ctionId\030\001 \001(\0132\036.io.opencola.model.protob" +
+      "uf.Id\022D\n\034receiverCurrentTransactionId\030\002 " +
+      "\001(\0132\036.io.opencola.model.protobuf.Id\022\027\n\017m" +
+      "axTransactions\030\003 \001(\005\"v\n\025PutTransactionMe" +
+      "ssage\022\031\n\021signedTransaction\030\001 \001(\014\022B\n\032send" +
+      "erCurrentTransactionId\030\002 \001(\0132\036.io.openco" +
+      "la.model.protobuf.Id\"<\n\016GetDataMessage\022*" +
+      "\n\002id\030\001 \001(\0132\036.io.opencola.model.protobuf." +
+      "Id\"J\n\016PutDataMessage\022*\n\002id\030\001 \001(\0132\036.io.op" +
+      "encola.model.protobuf.Id\022\014\n\004data\030\002 \001(\014\"\204" +
+      "\004\n\007Message\022+\n\002id\030\001 \001(\0132\037.io.opencola.uti" +
+      "l.protobuf.UUID\022,\n\004from\030\002 \001(\0132\036.io.openc" +
+      "ola.model.protobuf.Id\0229\n\004ping\030\003 \001(\0132).io" +
+      ".opencola.network.protobuf.PingMessageH\000" +
+      "\0229\n\004pong\030\004 \001(\0132).io.opencola.network.pro" +
+      "tobuf.PongMessageH\000\022O\n\017getTransactions\030\005" +
+      " \001(\01324.io.opencola.network.protobuf.GetT" +
+      "ransactionsMessageH\000\022M\n\016putTransaction\030\006" +
+      " \001(\01323.io.opencola.network.protobuf.PutT" +
+      "ransactionMessageH\000\022?\n\007getData\030\007 \001(\0132,.i" +
+      "o.opencola.network.protobuf.GetDataMessa" +
+      "geH\000\022?\n\007putData\030\010 \001(\0132,.io.opencola.netw" +
+      "ork.protobuf.PutDataMessageH\000B\006\n\004body\"}\n" +
+      "\tRecipient\022*\n\002to\030\001 \001(\0132\036.io.opencola.mod" +
+      "el.protobuf.Id\022D\n\020messageSecretKey\030\002 \001(\013" +
+      "2*.io.opencola.security.protobuf.SignedB" +
+      "ytes\"a\n\016EnvelopeHeader\022;\n\nrecipients\030\001 \003" +
+      "(\0132\'.io.opencola.network.protobuf.Recipi" +
+      "ent\022\022\n\nstorageKey\030\002 \001(\014\"\203\001\n\010Envelope\022:\n\006" +
+      "header\030\001 \001(\0132*.io.opencola.security.prot" +
+      "obuf.SignedBytes\022;\n\007message\030\002 \001(\0132*.io.o" +
+      "pencola.security.protobuf.SignedBytesb\006p" +
+      "roto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -9007,13 +9272,13 @@ public final class Network {
     internal_static_io_opencola_network_protobuf_GetTransactionsMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_network_protobuf_GetTransactionsMessage_descriptor,
-        new java.lang.String[] { "CurrentTransactionId", "MaxTransactions", });
+        new java.lang.String[] { "SenderCurrentTransactionId", "ReceiverCurrentTransactionId", "MaxTransactions", });
     internal_static_io_opencola_network_protobuf_PutTransactionMessage_descriptor =
       getDescriptor().getMessageTypes().get(3);
     internal_static_io_opencola_network_protobuf_PutTransactionMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_network_protobuf_PutTransactionMessage_descriptor,
-        new java.lang.String[] { "SignedTransaction", "CurrentTransactionId", });
+        new java.lang.String[] { "SignedTransaction", "SenderCurrentTransactionId", });
     internal_static_io_opencola_network_protobuf_GetDataMessage_descriptor =
       getDescriptor().getMessageTypes().get(4);
     internal_static_io_opencola_network_protobuf_GetDataMessage_fieldAccessorTable = new

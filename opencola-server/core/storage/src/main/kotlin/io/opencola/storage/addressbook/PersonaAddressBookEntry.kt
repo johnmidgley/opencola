@@ -30,14 +30,37 @@ class PersonaAddressBookEntry(
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         val that = other as? PersonaAddressBookEntry ?: return false
-        if(this.keyPair.public != that.keyPair.public) return false
-        if(this.keyPair.private != that.keyPair.private) return false
+        if (this.keyPair.public != that.keyPair.public) return false
+        if (this.keyPair.private != that.keyPair.private) return false
         return super.equals(that)
     }
+
     override fun hashCode(): Int {
         var result = super.hashCode()
         result = 31 * result + keyPair.public.hashCode()
         result = 31 * result + keyPair.private.hashCode()
         return result
+    }
+
+    fun copy(
+        personaId: Id = this.personaId,
+        entityId: Id? = this.entityId,
+        name: String? = this.name,
+        publicKey: PublicKey? = this.publicKey,
+        address: URI? = this.address,
+        imageUri: URI? = this.imageUri,
+        isActive: Boolean = this.isActive,
+        keyPair: KeyPair = this.keyPair
+    ): PersonaAddressBookEntry {
+        return PersonaAddressBookEntry(
+            personaId,
+            entityId ?: this.entityId,
+            name ?: this.name,
+            publicKey ?: this.publicKey,
+            address ?: this.address,
+            imageUri ?: this.imageUri,
+            isActive,
+            keyPair
+        )
     }
 }
