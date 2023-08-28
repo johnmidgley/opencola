@@ -16,13 +16,12 @@ class ByteArrayValue(value: ByteArray) : Value<ByteArray>(value) {
 
         override fun toProto(value: ByteArray): Proto.Value {
             return Proto.Value.newBuilder()
-                .setOcType(Proto.Value.OCType.BYTES)
                 .setBytes(ByteString.copyFrom(value))
                 .build()
         }
 
         override fun fromProto(value: Proto.Value): ByteArray {
-            require(value.ocType == Proto.Value.OCType.BYTES)
+            require(value.dataCase == Proto.Value.DataCase.BYTES)
             return value.bytes.toByteArray()
         }
 

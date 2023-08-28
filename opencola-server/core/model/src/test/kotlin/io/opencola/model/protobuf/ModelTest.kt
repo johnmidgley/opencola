@@ -1,8 +1,11 @@
 package io.opencola.model.protobuf
 
 import io.opencola.application.TestApplication
+import io.opencola.model.Id
 import io.opencola.model.ResourceEntity
 import io.opencola.model.SignedTransaction
+import io.opencola.model.value.*
+import io.opencola.security.generateKeyPair
 import io.opencola.serialization.EncodingFormat
 import io.opencola.storage.ExposedEntityStoreContext
 import io.opencola.storage.addPersona
@@ -11,13 +14,57 @@ import io.opencola.util.compress
 import io.opencola.util.deflate
 import org.junit.Test
 import java.net.URI
+import kotlin.test.assertContentEquals
 
 import kotlin.test.assertEquals
 
 
 class ModelTest {
+
     @Test
-    fun testProtobufSerialization() {
+    fun testBooleanValueSerialization() {
+        assertEquals(true, BooleanValue.decodeProto(BooleanValue.encodeProto(true)))
+        assertEquals(false, BooleanValue.decodeProto(BooleanValue.encodeProto(false)))
+    }
+
+    @Test
+    fun testByteArrayValueSerialization() {
+        val testBytes = "test".toByteArray()
+        assertContentEquals(testBytes, ByteArrayValue.decodeProto(ByteArrayValue.encodeProto(testBytes)))
+    }
+
+    @Test
+    fun testFloatValueSerialization() {
+        val testFloat = 1.0f
+        assertEquals(testFloat, FloatValue.decodeProto(FloatValue.encodeProto(testFloat)))
+    }
+
+    @Test
+    fun testIdValueSerialization() {
+        val testId = Id.ofData("test".toByteArray())
+        assertEquals(testId, IdValue.decodeProto(IdValue.encodeProto(testId)))
+    }
+
+    @Test
+    fun testPublicKeyValueSerialization() {
+        val testPublicKey = generateKeyPair().public
+        assertEquals(testPublicKey, PublicKeyValue.decodeProto(PublicKeyValue.encodeProto(testPublicKey)))
+    }
+
+    @Test
+    fun testStringValueSerialization() {
+        val testString = "test"
+        assertEquals(testString, StringValue.decodeProto(StringValue.encodeProto(testString)))
+    }
+
+    @Test
+    fun testUriValueSerialization() {
+        val testUri = URI("http://test.com")
+        assertEquals(testUri, UriValue.decodeProto(UriValue.encodeProto(testUri)))
+    }
+
+    @Test
+    fun testProtobufTransactionSerialization() {
         val context = ExposedEntityStoreContext(TestApplication.getTmpDirectory(".storage"))
         val persona = context.addressBook.addPersona("Persona0", false)
         val entity0 = ResourceEntity(persona.personaId, URI("mock://entity0"), "entity0", "description0", "text0")

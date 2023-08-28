@@ -1,6 +1,5 @@
 package io.opencola.model.value
 
-import com.google.protobuf.ByteString
 import io.opencola.model.Id
 import io.opencola.model.protobuf.Model as Proto
 
@@ -16,14 +15,13 @@ class IdValue(value: Id) : Value<Id>(value) {
 
         override fun toProto(value: Id): Proto.Value {
             return Proto.Value.newBuilder()
-                .setOcType(Proto.Value.OCType.ID)
-                .setBytes(ByteString.copyFrom(Id.encode(value)))
+                .setId(Id.toProto(value))
                 .build()
         }
 
         override fun fromProto(value: Proto.Value): Id {
-            require(value.ocType == Proto.Value.OCType.ID)
-            return Id.decode(value.bytes.toByteArray())
+            require(value.dataCase == Proto.Value.DataCase.ID)
+            return Id.decodeProto(value.id.toByteArray())
         }
 
         override fun parseProto(bytes: ByteArray): Proto.Value {

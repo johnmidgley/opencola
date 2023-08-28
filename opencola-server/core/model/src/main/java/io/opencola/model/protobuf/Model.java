@@ -1223,160 +1223,155 @@ public final class Model {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>.io.opencola.model.protobuf.Value.OCType ocType = 1;</code>
-     * @return The enum numeric value on the wire for ocType.
-     */
-    int getOcTypeValue();
-    /**
-     * <code>.io.opencola.model.protobuf.Value.OCType ocType = 1;</code>
-     * @return The ocType.
-     */
-    io.opencola.model.protobuf.Model.Value.OCType getOcType();
-
-    /**
-     * <code>bytes empty = 2;</code>
+     * <code>bytes empty = 1;</code>
      * @return Whether the empty field is set.
      */
     boolean hasEmpty();
     /**
-     * <code>bytes empty = 2;</code>
+     * <code>bytes empty = 1;</code>
      * @return The empty.
      */
     com.google.protobuf.ByteString getEmpty();
 
     /**
-     * <code>bool boolean = 3;</code>
+     * <code>bool boolean = 2;</code>
      * @return Whether the boolean field is set.
      */
     boolean hasBoolean();
     /**
-     * <code>bool boolean = 3;</code>
+     * <code>bool boolean = 2;</code>
      * @return The boolean.
      */
     boolean getBoolean();
 
     /**
-     * <code>int32 int = 4;</code>
+     * <code>int32 int = 3;</code>
      * @return Whether the int field is set.
      */
     boolean hasInt();
     /**
-     * <code>int32 int = 4;</code>
+     * <code>int32 int = 3;</code>
      * @return The int.
      */
     int getInt();
 
     /**
-     * <code>int64 long = 5;</code>
+     * <code>int64 long = 4;</code>
      * @return Whether the long field is set.
      */
     boolean hasLong();
     /**
-     * <code>int64 long = 5;</code>
+     * <code>int64 long = 4;</code>
      * @return The long.
      */
     long getLong();
 
     /**
-     * <code>float float = 6;</code>
+     * <code>float float = 5;</code>
      * @return Whether the float field is set.
      */
     boolean hasFloat();
     /**
-     * <code>float float = 6;</code>
+     * <code>float float = 5;</code>
      * @return The float.
      */
     float getFloat();
 
     /**
-     * <code>double double = 7;</code>
+     * <code>double double = 6;</code>
      * @return Whether the double field is set.
      */
     boolean hasDouble();
     /**
-     * <code>double double = 7;</code>
+     * <code>double double = 6;</code>
      * @return The double.
      */
     double getDouble();
 
     /**
-     * <code>string string = 8;</code>
+     * <code>string string = 7;</code>
      * @return Whether the string field is set.
      */
     boolean hasString();
     /**
-     * <code>string string = 8;</code>
+     * <code>string string = 7;</code>
      * @return The string.
      */
     java.lang.String getString();
     /**
-     * <code>string string = 8;</code>
+     * <code>string string = 7;</code>
      * @return The bytes for string.
      */
     com.google.protobuf.ByteString
         getStringBytes();
 
     /**
-     * <code>bytes bytes = 9;</code>
+     * <code>bytes bytes = 8;</code>
      * @return Whether the bytes field is set.
      */
     boolean hasBytes();
     /**
-     * <code>bytes bytes = 9;</code>
+     * <code>bytes bytes = 8;</code>
      * @return The bytes.
      */
     com.google.protobuf.ByteString getBytes();
 
     /**
-     * <code>string uri = 10;</code>
+     * <code>string uri = 9;</code>
      * @return Whether the uri field is set.
      */
     boolean hasUri();
     /**
-     * <code>string uri = 10;</code>
+     * <code>string uri = 9;</code>
      * @return The uri.
      */
     java.lang.String getUri();
     /**
-     * <code>string uri = 10;</code>
+     * <code>string uri = 9;</code>
      * @return The bytes for uri.
      */
     com.google.protobuf.ByteString
         getUriBytes();
 
     /**
-     * <code>.io.opencola.model.protobuf.Id id = 11;</code>
+     * <code>.io.opencola.model.protobuf.Id id = 10;</code>
      * @return Whether the id field is set.
      */
     boolean hasId();
     /**
-     * <code>.io.opencola.model.protobuf.Id id = 11;</code>
+     * <code>.io.opencola.model.protobuf.Id id = 10;</code>
      * @return The id.
      */
     io.opencola.model.protobuf.Model.Id getId();
     /**
-     * <code>.io.opencola.model.protobuf.Id id = 11;</code>
+     * <code>.io.opencola.model.protobuf.Id id = 10;</code>
      */
     io.opencola.model.protobuf.Model.IdOrBuilder getIdOrBuilder();
 
     /**
-     * <code>.io.opencola.security.protobuf.PublicKey publicKey = 12;</code>
+     * <code>.io.opencola.security.protobuf.PublicKey publicKey = 11;</code>
      * @return Whether the publicKey field is set.
      */
     boolean hasPublicKey();
     /**
-     * <code>.io.opencola.security.protobuf.PublicKey publicKey = 12;</code>
+     * <code>.io.opencola.security.protobuf.PublicKey publicKey = 11;</code>
      * @return The publicKey.
      */
     io.opencola.security.protobuf.Security.PublicKey getPublicKey();
     /**
-     * <code>.io.opencola.security.protobuf.PublicKey publicKey = 12;</code>
+     * <code>.io.opencola.security.protobuf.PublicKey publicKey = 11;</code>
      */
     io.opencola.security.protobuf.Security.PublicKeyOrBuilder getPublicKeyOrBuilder();
 
-    public io.opencola.model.protobuf.Model.Value.ValueCase getValueCase();
+    public io.opencola.model.protobuf.Model.Value.DataCase getDataCase();
   }
   /**
+   * <pre>
+   * Specifying a value this way, vs just using 'oneof' inside TransactionFact (below) is more flexible: It allows for
+   * the value to be used more cleanly in other contexts (i.e. outside of transactions) and allows for metadata to be
+   * added to values in the future.
+   * </pre>
+   *
    * Protobuf type {@code io.opencola.model.protobuf.Value}
    */
   public static final class Value extends
@@ -1389,7 +1384,6 @@ public final class Model {
       super(builder);
     }
     private Value() {
-      ocType_ = 0;
     }
 
     @java.lang.Override
@@ -1422,85 +1416,79 @@ public final class Model {
             case 0:
               done = true;
               break;
-            case 8: {
-              int rawValue = input.readEnum();
-
-              ocType_ = rawValue;
+            case 10: {
+              data_ = input.readBytes();
+              dataCase_ = 1;
               break;
             }
-            case 18: {
-              value_ = input.readBytes();
-              valueCase_ = 2;
+            case 16: {
+              data_ = input.readBool();
+              dataCase_ = 2;
               break;
             }
             case 24: {
-              value_ = input.readBool();
-              valueCase_ = 3;
+              data_ = input.readInt32();
+              dataCase_ = 3;
               break;
             }
             case 32: {
-              value_ = input.readInt32();
-              valueCase_ = 4;
+              data_ = input.readInt64();
+              dataCase_ = 4;
               break;
             }
-            case 40: {
-              value_ = input.readInt64();
-              valueCase_ = 5;
+            case 45: {
+              data_ = input.readFloat();
+              dataCase_ = 5;
               break;
             }
-            case 53: {
-              value_ = input.readFloat();
-              valueCase_ = 6;
+            case 49: {
+              data_ = input.readDouble();
+              dataCase_ = 6;
               break;
             }
-            case 57: {
-              value_ = input.readDouble();
-              valueCase_ = 7;
+            case 58: {
+              java.lang.String s = input.readStringRequireUtf8();
+              dataCase_ = 7;
+              data_ = s;
               break;
             }
             case 66: {
-              java.lang.String s = input.readStringRequireUtf8();
-              valueCase_ = 8;
-              value_ = s;
+              data_ = input.readBytes();
+              dataCase_ = 8;
               break;
             }
             case 74: {
-              value_ = input.readBytes();
-              valueCase_ = 9;
+              java.lang.String s = input.readStringRequireUtf8();
+              dataCase_ = 9;
+              data_ = s;
               break;
             }
             case 82: {
-              java.lang.String s = input.readStringRequireUtf8();
-              valueCase_ = 10;
-              value_ = s;
+              io.opencola.model.protobuf.Model.Id.Builder subBuilder = null;
+              if (dataCase_ == 10) {
+                subBuilder = ((io.opencola.model.protobuf.Model.Id) data_).toBuilder();
+              }
+              data_ =
+                  input.readMessage(io.opencola.model.protobuf.Model.Id.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom((io.opencola.model.protobuf.Model.Id) data_);
+                data_ = subBuilder.buildPartial();
+              }
+              dataCase_ = 10;
               break;
             }
             case 90: {
-              io.opencola.model.protobuf.Model.Id.Builder subBuilder = null;
-              if (valueCase_ == 11) {
-                subBuilder = ((io.opencola.model.protobuf.Model.Id) value_).toBuilder();
-              }
-              value_ =
-                  input.readMessage(io.opencola.model.protobuf.Model.Id.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom((io.opencola.model.protobuf.Model.Id) value_);
-                value_ = subBuilder.buildPartial();
-              }
-              valueCase_ = 11;
-              break;
-            }
-            case 98: {
               io.opencola.security.protobuf.Security.PublicKey.Builder subBuilder = null;
-              if (valueCase_ == 12) {
-                subBuilder = ((io.opencola.security.protobuf.Security.PublicKey) value_).toBuilder();
+              if (dataCase_ == 11) {
+                subBuilder = ((io.opencola.security.protobuf.Security.PublicKey) data_).toBuilder();
               }
-              value_ =
+              data_ =
                   input.readMessage(io.opencola.security.protobuf.Security.PublicKey.parser(), extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom((io.opencola.security.protobuf.Security.PublicKey) value_);
-                value_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom((io.opencola.security.protobuf.Security.PublicKey) data_);
+                data_ = subBuilder.buildPartial();
               }
-              valueCase_ = 12;
+              dataCase_ = 11;
               break;
             }
             default: {
@@ -1535,137 +1523,39 @@ public final class Model {
               io.opencola.model.protobuf.Model.Value.class, io.opencola.model.protobuf.Model.Value.Builder.class);
     }
 
-    /**
-     * Protobuf enum {@code io.opencola.model.protobuf.Value.OCType}
-     */
-    public enum OCType
-        implements com.google.protobuf.ProtocolMessageEnum {
-      /**
-       * <code>NONE = 0;</code>
-       */
-      NONE(0),
-      /**
-       * <code>EMPTY = 1;</code>
-       */
+    private int dataCase_ = 0;
+    private java.lang.Object data_;
+    public enum DataCase
+        implements com.google.protobuf.Internal.EnumLite,
+            com.google.protobuf.AbstractMessage.InternalOneOfEnum {
       EMPTY(1),
-      /**
-       * <code>BOOLEAN = 2;</code>
-       */
       BOOLEAN(2),
-      /**
-       * <code>INT = 3;</code>
-       */
       INT(3),
-      /**
-       * <code>LONG = 4;</code>
-       */
       LONG(4),
-      /**
-       * <code>FLOAT = 5;</code>
-       */
       FLOAT(5),
-      /**
-       * <code>DOUBLE = 6;</code>
-       */
       DOUBLE(6),
-      /**
-       * <code>STRING = 7;</code>
-       */
       STRING(7),
-      /**
-       * <code>BYTES = 8;</code>
-       */
       BYTES(8),
-      /**
-       * <code>URI = 9;</code>
-       */
       URI(9),
-      /**
-       * <code>ID = 10;</code>
-       */
       ID(10),
-      /**
-       * <code>PUBLIC_KEY = 11;</code>
-       */
-      PUBLIC_KEY(11),
-      UNRECOGNIZED(-1),
-      ;
-
-      /**
-       * <code>NONE = 0;</code>
-       */
-      public static final int NONE_VALUE = 0;
-      /**
-       * <code>EMPTY = 1;</code>
-       */
-      public static final int EMPTY_VALUE = 1;
-      /**
-       * <code>BOOLEAN = 2;</code>
-       */
-      public static final int BOOLEAN_VALUE = 2;
-      /**
-       * <code>INT = 3;</code>
-       */
-      public static final int INT_VALUE = 3;
-      /**
-       * <code>LONG = 4;</code>
-       */
-      public static final int LONG_VALUE = 4;
-      /**
-       * <code>FLOAT = 5;</code>
-       */
-      public static final int FLOAT_VALUE = 5;
-      /**
-       * <code>DOUBLE = 6;</code>
-       */
-      public static final int DOUBLE_VALUE = 6;
-      /**
-       * <code>STRING = 7;</code>
-       */
-      public static final int STRING_VALUE = 7;
-      /**
-       * <code>BYTES = 8;</code>
-       */
-      public static final int BYTES_VALUE = 8;
-      /**
-       * <code>URI = 9;</code>
-       */
-      public static final int URI_VALUE = 9;
-      /**
-       * <code>ID = 10;</code>
-       */
-      public static final int ID_VALUE = 10;
-      /**
-       * <code>PUBLIC_KEY = 11;</code>
-       */
-      public static final int PUBLIC_KEY_VALUE = 11;
-
-
-      public final int getNumber() {
-        if (this == UNRECOGNIZED) {
-          throw new java.lang.IllegalArgumentException(
-              "Can't get the number of an unknown enum value.");
-        }
-        return value;
+      PUBLICKEY(11),
+      DATA_NOT_SET(0);
+      private final int value;
+      private DataCase(int value) {
+        this.value = value;
       }
-
       /**
-       * @param value The numeric wire value of the corresponding enum entry.
-       * @return The enum associated with the given numeric wire value.
+       * @param value The number of the enum to look for.
+       * @return The enum associated with the given number.
        * @deprecated Use {@link #forNumber(int)} instead.
        */
       @java.lang.Deprecated
-      public static OCType valueOf(int value) {
+      public static DataCase valueOf(int value) {
         return forNumber(value);
       }
 
-      /**
-       * @param value The numeric wire value of the corresponding enum entry.
-       * @return The enum associated with the given numeric wire value.
-       */
-      public static OCType forNumber(int value) {
+      public static DataCase forNumber(int value) {
         switch (value) {
-          case 0: return NONE;
           case 1: return EMPTY;
           case 2: return BOOLEAN;
           case 3: return INT;
@@ -1676,108 +1566,8 @@ public final class Model {
           case 8: return BYTES;
           case 9: return URI;
           case 10: return ID;
-          case 11: return PUBLIC_KEY;
-          default: return null;
-        }
-      }
-
-      public static com.google.protobuf.Internal.EnumLiteMap<OCType>
-          internalGetValueMap() {
-        return internalValueMap;
-      }
-      private static final com.google.protobuf.Internal.EnumLiteMap<
-          OCType> internalValueMap =
-            new com.google.protobuf.Internal.EnumLiteMap<OCType>() {
-              public OCType findValueByNumber(int number) {
-                return OCType.forNumber(number);
-              }
-            };
-
-      public final com.google.protobuf.Descriptors.EnumValueDescriptor
-          getValueDescriptor() {
-        if (this == UNRECOGNIZED) {
-          throw new java.lang.IllegalStateException(
-              "Can't get the descriptor of an unrecognized enum value.");
-        }
-        return getDescriptor().getValues().get(ordinal());
-      }
-      public final com.google.protobuf.Descriptors.EnumDescriptor
-          getDescriptorForType() {
-        return getDescriptor();
-      }
-      public static final com.google.protobuf.Descriptors.EnumDescriptor
-          getDescriptor() {
-        return io.opencola.model.protobuf.Model.Value.getDescriptor().getEnumTypes().get(0);
-      }
-
-      private static final OCType[] VALUES = values();
-
-      public static OCType valueOf(
-          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
-        if (desc.getType() != getDescriptor()) {
-          throw new java.lang.IllegalArgumentException(
-            "EnumValueDescriptor is not for this type.");
-        }
-        if (desc.getIndex() == -1) {
-          return UNRECOGNIZED;
-        }
-        return VALUES[desc.getIndex()];
-      }
-
-      private final int value;
-
-      private OCType(int value) {
-        this.value = value;
-      }
-
-      // @@protoc_insertion_point(enum_scope:io.opencola.model.protobuf.Value.OCType)
-    }
-
-    private int valueCase_ = 0;
-    private java.lang.Object value_;
-    public enum ValueCase
-        implements com.google.protobuf.Internal.EnumLite,
-            com.google.protobuf.AbstractMessage.InternalOneOfEnum {
-      EMPTY(2),
-      BOOLEAN(3),
-      INT(4),
-      LONG(5),
-      FLOAT(6),
-      DOUBLE(7),
-      STRING(8),
-      BYTES(9),
-      URI(10),
-      ID(11),
-      PUBLICKEY(12),
-      VALUE_NOT_SET(0);
-      private final int value;
-      private ValueCase(int value) {
-        this.value = value;
-      }
-      /**
-       * @param value The number of the enum to look for.
-       * @return The enum associated with the given number.
-       * @deprecated Use {@link #forNumber(int)} instead.
-       */
-      @java.lang.Deprecated
-      public static ValueCase valueOf(int value) {
-        return forNumber(value);
-      }
-
-      public static ValueCase forNumber(int value) {
-        switch (value) {
-          case 2: return EMPTY;
-          case 3: return BOOLEAN;
-          case 4: return INT;
-          case 5: return LONG;
-          case 6: return FLOAT;
-          case 7: return DOUBLE;
-          case 8: return STRING;
-          case 9: return BYTES;
-          case 10: return URI;
-          case 11: return ID;
-          case 12: return PUBLICKEY;
-          case 0: return VALUE_NOT_SET;
+          case 11: return PUBLICKEY;
+          case 0: return DATA_NOT_SET;
           default: return null;
         }
       }
@@ -1786,173 +1576,154 @@ public final class Model {
       }
     };
 
-    public ValueCase
-    getValueCase() {
-      return ValueCase.forNumber(
-          valueCase_);
+    public DataCase
+    getDataCase() {
+      return DataCase.forNumber(
+          dataCase_);
     }
 
-    public static final int OCTYPE_FIELD_NUMBER = 1;
-    private int ocType_;
+    public static final int EMPTY_FIELD_NUMBER = 1;
     /**
-     * <code>.io.opencola.model.protobuf.Value.OCType ocType = 1;</code>
-     * @return The enum numeric value on the wire for ocType.
-     */
-    @java.lang.Override public int getOcTypeValue() {
-      return ocType_;
-    }
-    /**
-     * <code>.io.opencola.model.protobuf.Value.OCType ocType = 1;</code>
-     * @return The ocType.
-     */
-    @java.lang.Override public io.opencola.model.protobuf.Model.Value.OCType getOcType() {
-      @SuppressWarnings("deprecation")
-      io.opencola.model.protobuf.Model.Value.OCType result = io.opencola.model.protobuf.Model.Value.OCType.valueOf(ocType_);
-      return result == null ? io.opencola.model.protobuf.Model.Value.OCType.UNRECOGNIZED : result;
-    }
-
-    public static final int EMPTY_FIELD_NUMBER = 2;
-    /**
-     * <code>bytes empty = 2;</code>
+     * <code>bytes empty = 1;</code>
      * @return Whether the empty field is set.
      */
     @java.lang.Override
     public boolean hasEmpty() {
-      return valueCase_ == 2;
+      return dataCase_ == 1;
     }
     /**
-     * <code>bytes empty = 2;</code>
+     * <code>bytes empty = 1;</code>
      * @return The empty.
      */
     @java.lang.Override
     public com.google.protobuf.ByteString getEmpty() {
-      if (valueCase_ == 2) {
-        return (com.google.protobuf.ByteString) value_;
+      if (dataCase_ == 1) {
+        return (com.google.protobuf.ByteString) data_;
       }
       return com.google.protobuf.ByteString.EMPTY;
     }
 
-    public static final int BOOLEAN_FIELD_NUMBER = 3;
+    public static final int BOOLEAN_FIELD_NUMBER = 2;
     /**
-     * <code>bool boolean = 3;</code>
+     * <code>bool boolean = 2;</code>
      * @return Whether the boolean field is set.
      */
     @java.lang.Override
     public boolean hasBoolean() {
-      return valueCase_ == 3;
+      return dataCase_ == 2;
     }
     /**
-     * <code>bool boolean = 3;</code>
+     * <code>bool boolean = 2;</code>
      * @return The boolean.
      */
     @java.lang.Override
     public boolean getBoolean() {
-      if (valueCase_ == 3) {
-        return (java.lang.Boolean) value_;
+      if (dataCase_ == 2) {
+        return (java.lang.Boolean) data_;
       }
       return false;
     }
 
-    public static final int INT_FIELD_NUMBER = 4;
+    public static final int INT_FIELD_NUMBER = 3;
     /**
-     * <code>int32 int = 4;</code>
+     * <code>int32 int = 3;</code>
      * @return Whether the int field is set.
      */
     @java.lang.Override
     public boolean hasInt() {
-      return valueCase_ == 4;
+      return dataCase_ == 3;
     }
     /**
-     * <code>int32 int = 4;</code>
+     * <code>int32 int = 3;</code>
      * @return The int.
      */
     @java.lang.Override
     public int getInt() {
-      if (valueCase_ == 4) {
-        return (java.lang.Integer) value_;
+      if (dataCase_ == 3) {
+        return (java.lang.Integer) data_;
       }
       return 0;
     }
 
-    public static final int LONG_FIELD_NUMBER = 5;
+    public static final int LONG_FIELD_NUMBER = 4;
     /**
-     * <code>int64 long = 5;</code>
+     * <code>int64 long = 4;</code>
      * @return Whether the long field is set.
      */
     @java.lang.Override
     public boolean hasLong() {
-      return valueCase_ == 5;
+      return dataCase_ == 4;
     }
     /**
-     * <code>int64 long = 5;</code>
+     * <code>int64 long = 4;</code>
      * @return The long.
      */
     @java.lang.Override
     public long getLong() {
-      if (valueCase_ == 5) {
-        return (java.lang.Long) value_;
+      if (dataCase_ == 4) {
+        return (java.lang.Long) data_;
       }
       return 0L;
     }
 
-    public static final int FLOAT_FIELD_NUMBER = 6;
+    public static final int FLOAT_FIELD_NUMBER = 5;
     /**
-     * <code>float float = 6;</code>
+     * <code>float float = 5;</code>
      * @return Whether the float field is set.
      */
     @java.lang.Override
     public boolean hasFloat() {
-      return valueCase_ == 6;
+      return dataCase_ == 5;
     }
     /**
-     * <code>float float = 6;</code>
+     * <code>float float = 5;</code>
      * @return The float.
      */
     @java.lang.Override
     public float getFloat() {
-      if (valueCase_ == 6) {
-        return (java.lang.Float) value_;
+      if (dataCase_ == 5) {
+        return (java.lang.Float) data_;
       }
       return 0F;
     }
 
-    public static final int DOUBLE_FIELD_NUMBER = 7;
+    public static final int DOUBLE_FIELD_NUMBER = 6;
     /**
-     * <code>double double = 7;</code>
+     * <code>double double = 6;</code>
      * @return Whether the double field is set.
      */
     @java.lang.Override
     public boolean hasDouble() {
-      return valueCase_ == 7;
+      return dataCase_ == 6;
     }
     /**
-     * <code>double double = 7;</code>
+     * <code>double double = 6;</code>
      * @return The double.
      */
     @java.lang.Override
     public double getDouble() {
-      if (valueCase_ == 7) {
-        return (java.lang.Double) value_;
+      if (dataCase_ == 6) {
+        return (java.lang.Double) data_;
       }
       return 0D;
     }
 
-    public static final int STRING_FIELD_NUMBER = 8;
+    public static final int STRING_FIELD_NUMBER = 7;
     /**
-     * <code>string string = 8;</code>
+     * <code>string string = 7;</code>
      * @return Whether the string field is set.
      */
     public boolean hasString() {
-      return valueCase_ == 8;
+      return dataCase_ == 7;
     }
     /**
-     * <code>string string = 8;</code>
+     * <code>string string = 7;</code>
      * @return The string.
      */
     public java.lang.String getString() {
       java.lang.Object ref = "";
-      if (valueCase_ == 8) {
-        ref = value_;
+      if (dataCase_ == 7) {
+        ref = data_;
       }
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
@@ -1960,28 +1731,28 @@ public final class Model {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
-        if (valueCase_ == 8) {
-          value_ = s;
+        if (dataCase_ == 7) {
+          data_ = s;
         }
         return s;
       }
     }
     /**
-     * <code>string string = 8;</code>
+     * <code>string string = 7;</code>
      * @return The bytes for string.
      */
     public com.google.protobuf.ByteString
         getStringBytes() {
       java.lang.Object ref = "";
-      if (valueCase_ == 8) {
-        ref = value_;
+      if (dataCase_ == 7) {
+        ref = data_;
       }
       if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        if (valueCase_ == 8) {
-          value_ = b;
+        if (dataCase_ == 7) {
+          data_ = b;
         }
         return b;
       } else {
@@ -1989,43 +1760,43 @@ public final class Model {
       }
     }
 
-    public static final int BYTES_FIELD_NUMBER = 9;
+    public static final int BYTES_FIELD_NUMBER = 8;
     /**
-     * <code>bytes bytes = 9;</code>
+     * <code>bytes bytes = 8;</code>
      * @return Whether the bytes field is set.
      */
     @java.lang.Override
     public boolean hasBytes() {
-      return valueCase_ == 9;
+      return dataCase_ == 8;
     }
     /**
-     * <code>bytes bytes = 9;</code>
+     * <code>bytes bytes = 8;</code>
      * @return The bytes.
      */
     @java.lang.Override
     public com.google.protobuf.ByteString getBytes() {
-      if (valueCase_ == 9) {
-        return (com.google.protobuf.ByteString) value_;
+      if (dataCase_ == 8) {
+        return (com.google.protobuf.ByteString) data_;
       }
       return com.google.protobuf.ByteString.EMPTY;
     }
 
-    public static final int URI_FIELD_NUMBER = 10;
+    public static final int URI_FIELD_NUMBER = 9;
     /**
-     * <code>string uri = 10;</code>
+     * <code>string uri = 9;</code>
      * @return Whether the uri field is set.
      */
     public boolean hasUri() {
-      return valueCase_ == 10;
+      return dataCase_ == 9;
     }
     /**
-     * <code>string uri = 10;</code>
+     * <code>string uri = 9;</code>
      * @return The uri.
      */
     public java.lang.String getUri() {
       java.lang.Object ref = "";
-      if (valueCase_ == 10) {
-        ref = value_;
+      if (dataCase_ == 9) {
+        ref = data_;
       }
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
@@ -2033,28 +1804,28 @@ public final class Model {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
-        if (valueCase_ == 10) {
-          value_ = s;
+        if (dataCase_ == 9) {
+          data_ = s;
         }
         return s;
       }
     }
     /**
-     * <code>string uri = 10;</code>
+     * <code>string uri = 9;</code>
      * @return The bytes for uri.
      */
     public com.google.protobuf.ByteString
         getUriBytes() {
       java.lang.Object ref = "";
-      if (valueCase_ == 10) {
-        ref = value_;
+      if (dataCase_ == 9) {
+        ref = data_;
       }
       if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        if (valueCase_ == 10) {
-          value_ = b;
+        if (dataCase_ == 9) {
+          data_ = b;
         }
         return b;
       } else {
@@ -2062,64 +1833,64 @@ public final class Model {
       }
     }
 
-    public static final int ID_FIELD_NUMBER = 11;
+    public static final int ID_FIELD_NUMBER = 10;
     /**
-     * <code>.io.opencola.model.protobuf.Id id = 11;</code>
+     * <code>.io.opencola.model.protobuf.Id id = 10;</code>
      * @return Whether the id field is set.
      */
     @java.lang.Override
     public boolean hasId() {
-      return valueCase_ == 11;
+      return dataCase_ == 10;
     }
     /**
-     * <code>.io.opencola.model.protobuf.Id id = 11;</code>
+     * <code>.io.opencola.model.protobuf.Id id = 10;</code>
      * @return The id.
      */
     @java.lang.Override
     public io.opencola.model.protobuf.Model.Id getId() {
-      if (valueCase_ == 11) {
-         return (io.opencola.model.protobuf.Model.Id) value_;
+      if (dataCase_ == 10) {
+         return (io.opencola.model.protobuf.Model.Id) data_;
       }
       return io.opencola.model.protobuf.Model.Id.getDefaultInstance();
     }
     /**
-     * <code>.io.opencola.model.protobuf.Id id = 11;</code>
+     * <code>.io.opencola.model.protobuf.Id id = 10;</code>
      */
     @java.lang.Override
     public io.opencola.model.protobuf.Model.IdOrBuilder getIdOrBuilder() {
-      if (valueCase_ == 11) {
-         return (io.opencola.model.protobuf.Model.Id) value_;
+      if (dataCase_ == 10) {
+         return (io.opencola.model.protobuf.Model.Id) data_;
       }
       return io.opencola.model.protobuf.Model.Id.getDefaultInstance();
     }
 
-    public static final int PUBLICKEY_FIELD_NUMBER = 12;
+    public static final int PUBLICKEY_FIELD_NUMBER = 11;
     /**
-     * <code>.io.opencola.security.protobuf.PublicKey publicKey = 12;</code>
+     * <code>.io.opencola.security.protobuf.PublicKey publicKey = 11;</code>
      * @return Whether the publicKey field is set.
      */
     @java.lang.Override
     public boolean hasPublicKey() {
-      return valueCase_ == 12;
+      return dataCase_ == 11;
     }
     /**
-     * <code>.io.opencola.security.protobuf.PublicKey publicKey = 12;</code>
+     * <code>.io.opencola.security.protobuf.PublicKey publicKey = 11;</code>
      * @return The publicKey.
      */
     @java.lang.Override
     public io.opencola.security.protobuf.Security.PublicKey getPublicKey() {
-      if (valueCase_ == 12) {
-         return (io.opencola.security.protobuf.Security.PublicKey) value_;
+      if (dataCase_ == 11) {
+         return (io.opencola.security.protobuf.Security.PublicKey) data_;
       }
       return io.opencola.security.protobuf.Security.PublicKey.getDefaultInstance();
     }
     /**
-     * <code>.io.opencola.security.protobuf.PublicKey publicKey = 12;</code>
+     * <code>.io.opencola.security.protobuf.PublicKey publicKey = 11;</code>
      */
     @java.lang.Override
     public io.opencola.security.protobuf.Security.PublicKeyOrBuilder getPublicKeyOrBuilder() {
-      if (valueCase_ == 12) {
-         return (io.opencola.security.protobuf.Security.PublicKey) value_;
+      if (dataCase_ == 11) {
+         return (io.opencola.security.protobuf.Security.PublicKey) data_;
       }
       return io.opencola.security.protobuf.Security.PublicKey.getDefaultInstance();
     }
@@ -2138,48 +1909,45 @@ public final class Model {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (ocType_ != io.opencola.model.protobuf.Model.Value.OCType.NONE.getNumber()) {
-        output.writeEnum(1, ocType_);
-      }
-      if (valueCase_ == 2) {
+      if (dataCase_ == 1) {
         output.writeBytes(
-            2, (com.google.protobuf.ByteString) value_);
+            1, (com.google.protobuf.ByteString) data_);
       }
-      if (valueCase_ == 3) {
+      if (dataCase_ == 2) {
         output.writeBool(
-            3, (boolean)((java.lang.Boolean) value_));
+            2, (boolean)((java.lang.Boolean) data_));
       }
-      if (valueCase_ == 4) {
+      if (dataCase_ == 3) {
         output.writeInt32(
-            4, (int)((java.lang.Integer) value_));
+            3, (int)((java.lang.Integer) data_));
       }
-      if (valueCase_ == 5) {
+      if (dataCase_ == 4) {
         output.writeInt64(
-            5, (long)((java.lang.Long) value_));
+            4, (long)((java.lang.Long) data_));
       }
-      if (valueCase_ == 6) {
+      if (dataCase_ == 5) {
         output.writeFloat(
-            6, (float)((java.lang.Float) value_));
+            5, (float)((java.lang.Float) data_));
       }
-      if (valueCase_ == 7) {
+      if (dataCase_ == 6) {
         output.writeDouble(
-            7, (double)((java.lang.Double) value_));
+            6, (double)((java.lang.Double) data_));
       }
-      if (valueCase_ == 8) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 8, value_);
+      if (dataCase_ == 7) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 7, data_);
       }
-      if (valueCase_ == 9) {
+      if (dataCase_ == 8) {
         output.writeBytes(
-            9, (com.google.protobuf.ByteString) value_);
+            8, (com.google.protobuf.ByteString) data_);
       }
-      if (valueCase_ == 10) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 10, value_);
+      if (dataCase_ == 9) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 9, data_);
       }
-      if (valueCase_ == 11) {
-        output.writeMessage(11, (io.opencola.model.protobuf.Model.Id) value_);
+      if (dataCase_ == 10) {
+        output.writeMessage(10, (io.opencola.model.protobuf.Model.Id) data_);
       }
-      if (valueCase_ == 12) {
-        output.writeMessage(12, (io.opencola.security.protobuf.Security.PublicKey) value_);
+      if (dataCase_ == 11) {
+        output.writeMessage(11, (io.opencola.security.protobuf.Security.PublicKey) data_);
       }
       unknownFields.writeTo(output);
     }
@@ -2190,58 +1958,54 @@ public final class Model {
       if (size != -1) return size;
 
       size = 0;
-      if (ocType_ != io.opencola.model.protobuf.Model.Value.OCType.NONE.getNumber()) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeEnumSize(1, ocType_);
-      }
-      if (valueCase_ == 2) {
+      if (dataCase_ == 1) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(
-              2, (com.google.protobuf.ByteString) value_);
+              1, (com.google.protobuf.ByteString) data_);
       }
-      if (valueCase_ == 3) {
+      if (dataCase_ == 2) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(
-              3, (boolean)((java.lang.Boolean) value_));
+              2, (boolean)((java.lang.Boolean) data_));
       }
-      if (valueCase_ == 4) {
+      if (dataCase_ == 3) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(
-              4, (int)((java.lang.Integer) value_));
+              3, (int)((java.lang.Integer) data_));
       }
-      if (valueCase_ == 5) {
+      if (dataCase_ == 4) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(
-              5, (long)((java.lang.Long) value_));
+              4, (long)((java.lang.Long) data_));
       }
-      if (valueCase_ == 6) {
+      if (dataCase_ == 5) {
         size += com.google.protobuf.CodedOutputStream
           .computeFloatSize(
-              6, (float)((java.lang.Float) value_));
+              5, (float)((java.lang.Float) data_));
       }
-      if (valueCase_ == 7) {
+      if (dataCase_ == 6) {
         size += com.google.protobuf.CodedOutputStream
           .computeDoubleSize(
-              7, (double)((java.lang.Double) value_));
+              6, (double)((java.lang.Double) data_));
       }
-      if (valueCase_ == 8) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(8, value_);
+      if (dataCase_ == 7) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(7, data_);
       }
-      if (valueCase_ == 9) {
+      if (dataCase_ == 8) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(
-              9, (com.google.protobuf.ByteString) value_);
+              8, (com.google.protobuf.ByteString) data_);
       }
-      if (valueCase_ == 10) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, value_);
+      if (dataCase_ == 9) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(9, data_);
       }
-      if (valueCase_ == 11) {
+      if (dataCase_ == 10) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(11, (io.opencola.model.protobuf.Model.Id) value_);
+          .computeMessageSize(10, (io.opencola.model.protobuf.Model.Id) data_);
       }
-      if (valueCase_ == 12) {
+      if (dataCase_ == 11) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(12, (io.opencola.security.protobuf.Security.PublicKey) value_);
+          .computeMessageSize(11, (io.opencola.security.protobuf.Security.PublicKey) data_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -2258,52 +2022,51 @@ public final class Model {
       }
       io.opencola.model.protobuf.Model.Value other = (io.opencola.model.protobuf.Model.Value) obj;
 
-      if (ocType_ != other.ocType_) return false;
-      if (!getValueCase().equals(other.getValueCase())) return false;
-      switch (valueCase_) {
-        case 2:
+      if (!getDataCase().equals(other.getDataCase())) return false;
+      switch (dataCase_) {
+        case 1:
           if (!getEmpty()
               .equals(other.getEmpty())) return false;
           break;
-        case 3:
+        case 2:
           if (getBoolean()
               != other.getBoolean()) return false;
           break;
-        case 4:
+        case 3:
           if (getInt()
               != other.getInt()) return false;
           break;
-        case 5:
+        case 4:
           if (getLong()
               != other.getLong()) return false;
           break;
-        case 6:
+        case 5:
           if (java.lang.Float.floatToIntBits(getFloat())
               != java.lang.Float.floatToIntBits(
                   other.getFloat())) return false;
           break;
-        case 7:
+        case 6:
           if (java.lang.Double.doubleToLongBits(getDouble())
               != java.lang.Double.doubleToLongBits(
                   other.getDouble())) return false;
           break;
-        case 8:
+        case 7:
           if (!getString()
               .equals(other.getString())) return false;
           break;
-        case 9:
+        case 8:
           if (!getBytes()
               .equals(other.getBytes())) return false;
           break;
-        case 10:
+        case 9:
           if (!getUri()
               .equals(other.getUri())) return false;
           break;
-        case 11:
+        case 10:
           if (!getId()
               .equals(other.getId())) return false;
           break;
-        case 12:
+        case 11:
           if (!getPublicKey()
               .equals(other.getPublicKey())) return false;
           break;
@@ -2321,54 +2084,52 @@ public final class Model {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      hash = (37 * hash) + OCTYPE_FIELD_NUMBER;
-      hash = (53 * hash) + ocType_;
-      switch (valueCase_) {
-        case 2:
+      switch (dataCase_) {
+        case 1:
           hash = (37 * hash) + EMPTY_FIELD_NUMBER;
           hash = (53 * hash) + getEmpty().hashCode();
           break;
-        case 3:
+        case 2:
           hash = (37 * hash) + BOOLEAN_FIELD_NUMBER;
           hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
               getBoolean());
           break;
-        case 4:
+        case 3:
           hash = (37 * hash) + INT_FIELD_NUMBER;
           hash = (53 * hash) + getInt();
           break;
-        case 5:
+        case 4:
           hash = (37 * hash) + LONG_FIELD_NUMBER;
           hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
               getLong());
           break;
-        case 6:
+        case 5:
           hash = (37 * hash) + FLOAT_FIELD_NUMBER;
           hash = (53 * hash) + java.lang.Float.floatToIntBits(
               getFloat());
           break;
-        case 7:
+        case 6:
           hash = (37 * hash) + DOUBLE_FIELD_NUMBER;
           hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
               java.lang.Double.doubleToLongBits(getDouble()));
           break;
-        case 8:
+        case 7:
           hash = (37 * hash) + STRING_FIELD_NUMBER;
           hash = (53 * hash) + getString().hashCode();
           break;
-        case 9:
+        case 8:
           hash = (37 * hash) + BYTES_FIELD_NUMBER;
           hash = (53 * hash) + getBytes().hashCode();
           break;
-        case 10:
+        case 9:
           hash = (37 * hash) + URI_FIELD_NUMBER;
           hash = (53 * hash) + getUri().hashCode();
           break;
-        case 11:
+        case 10:
           hash = (37 * hash) + ID_FIELD_NUMBER;
           hash = (53 * hash) + getId().hashCode();
           break;
-        case 12:
+        case 11:
           hash = (37 * hash) + PUBLICKEY_FIELD_NUMBER;
           hash = (53 * hash) + getPublicKey().hashCode();
           break;
@@ -2471,6 +2232,12 @@ public final class Model {
       return builder;
     }
     /**
+     * <pre>
+     * Specifying a value this way, vs just using 'oneof' inside TransactionFact (below) is more flexible: It allows for
+     * the value to be used more cleanly in other contexts (i.e. outside of transactions) and allows for metadata to be
+     * added to values in the future.
+     * </pre>
+     *
      * Protobuf type {@code io.opencola.model.protobuf.Value}
      */
     public static final class Builder extends
@@ -2508,10 +2275,8 @@ public final class Model {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        ocType_ = 0;
-
-        valueCase_ = 0;
-        value_ = null;
+        dataCase_ = 0;
+        data_ = null;
         return this;
       }
 
@@ -2538,49 +2303,48 @@ public final class Model {
       @java.lang.Override
       public io.opencola.model.protobuf.Model.Value buildPartial() {
         io.opencola.model.protobuf.Model.Value result = new io.opencola.model.protobuf.Model.Value(this);
-        result.ocType_ = ocType_;
-        if (valueCase_ == 2) {
-          result.value_ = value_;
+        if (dataCase_ == 1) {
+          result.data_ = data_;
         }
-        if (valueCase_ == 3) {
-          result.value_ = value_;
+        if (dataCase_ == 2) {
+          result.data_ = data_;
         }
-        if (valueCase_ == 4) {
-          result.value_ = value_;
+        if (dataCase_ == 3) {
+          result.data_ = data_;
         }
-        if (valueCase_ == 5) {
-          result.value_ = value_;
+        if (dataCase_ == 4) {
+          result.data_ = data_;
         }
-        if (valueCase_ == 6) {
-          result.value_ = value_;
+        if (dataCase_ == 5) {
+          result.data_ = data_;
         }
-        if (valueCase_ == 7) {
-          result.value_ = value_;
+        if (dataCase_ == 6) {
+          result.data_ = data_;
         }
-        if (valueCase_ == 8) {
-          result.value_ = value_;
+        if (dataCase_ == 7) {
+          result.data_ = data_;
         }
-        if (valueCase_ == 9) {
-          result.value_ = value_;
+        if (dataCase_ == 8) {
+          result.data_ = data_;
         }
-        if (valueCase_ == 10) {
-          result.value_ = value_;
+        if (dataCase_ == 9) {
+          result.data_ = data_;
         }
-        if (valueCase_ == 11) {
+        if (dataCase_ == 10) {
           if (idBuilder_ == null) {
-            result.value_ = value_;
+            result.data_ = data_;
           } else {
-            result.value_ = idBuilder_.build();
+            result.data_ = idBuilder_.build();
           }
         }
-        if (valueCase_ == 12) {
+        if (dataCase_ == 11) {
           if (publicKeyBuilder_ == null) {
-            result.value_ = value_;
+            result.data_ = data_;
           } else {
-            result.value_ = publicKeyBuilder_.build();
+            result.data_ = publicKeyBuilder_.build();
           }
         }
-        result.valueCase_ = valueCase_;
+        result.dataCase_ = dataCase_;
         onBuilt();
         return result;
       }
@@ -2629,10 +2393,7 @@ public final class Model {
 
       public Builder mergeFrom(io.opencola.model.protobuf.Model.Value other) {
         if (other == io.opencola.model.protobuf.Model.Value.getDefaultInstance()) return this;
-        if (other.ocType_ != 0) {
-          setOcTypeValue(other.getOcTypeValue());
-        }
-        switch (other.getValueCase()) {
+        switch (other.getDataCase()) {
           case EMPTY: {
             setEmpty(other.getEmpty());
             break;
@@ -2658,8 +2419,8 @@ public final class Model {
             break;
           }
           case STRING: {
-            valueCase_ = 8;
-            value_ = other.value_;
+            dataCase_ = 7;
+            data_ = other.data_;
             onChanged();
             break;
           }
@@ -2668,8 +2429,8 @@ public final class Model {
             break;
           }
           case URI: {
-            valueCase_ = 10;
-            value_ = other.value_;
+            dataCase_ = 9;
+            data_ = other.data_;
             onChanged();
             break;
           }
@@ -2681,7 +2442,7 @@ public final class Model {
             mergePublicKey(other.getPublicKey());
             break;
           }
-          case VALUE_NOT_SET: {
+          case DATA_NOT_SET: {
             break;
           }
         }
@@ -2713,95 +2474,41 @@ public final class Model {
         }
         return this;
       }
-      private int valueCase_ = 0;
-      private java.lang.Object value_;
-      public ValueCase
-          getValueCase() {
-        return ValueCase.forNumber(
-            valueCase_);
+      private int dataCase_ = 0;
+      private java.lang.Object data_;
+      public DataCase
+          getDataCase() {
+        return DataCase.forNumber(
+            dataCase_);
       }
 
-      public Builder clearValue() {
-        valueCase_ = 0;
-        value_ = null;
+      public Builder clearData() {
+        dataCase_ = 0;
+        data_ = null;
         onChanged();
         return this;
       }
 
 
-      private int ocType_ = 0;
       /**
-       * <code>.io.opencola.model.protobuf.Value.OCType ocType = 1;</code>
-       * @return The enum numeric value on the wire for ocType.
-       */
-      @java.lang.Override public int getOcTypeValue() {
-        return ocType_;
-      }
-      /**
-       * <code>.io.opencola.model.protobuf.Value.OCType ocType = 1;</code>
-       * @param value The enum numeric value on the wire for ocType to set.
-       * @return This builder for chaining.
-       */
-      public Builder setOcTypeValue(int value) {
-        
-        ocType_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>.io.opencola.model.protobuf.Value.OCType ocType = 1;</code>
-       * @return The ocType.
-       */
-      @java.lang.Override
-      public io.opencola.model.protobuf.Model.Value.OCType getOcType() {
-        @SuppressWarnings("deprecation")
-        io.opencola.model.protobuf.Model.Value.OCType result = io.opencola.model.protobuf.Model.Value.OCType.valueOf(ocType_);
-        return result == null ? io.opencola.model.protobuf.Model.Value.OCType.UNRECOGNIZED : result;
-      }
-      /**
-       * <code>.io.opencola.model.protobuf.Value.OCType ocType = 1;</code>
-       * @param value The ocType to set.
-       * @return This builder for chaining.
-       */
-      public Builder setOcType(io.opencola.model.protobuf.Model.Value.OCType value) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        
-        ocType_ = value.getNumber();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>.io.opencola.model.protobuf.Value.OCType ocType = 1;</code>
-       * @return This builder for chaining.
-       */
-      public Builder clearOcType() {
-        
-        ocType_ = 0;
-        onChanged();
-        return this;
-      }
-
-      /**
-       * <code>bytes empty = 2;</code>
+       * <code>bytes empty = 1;</code>
        * @return Whether the empty field is set.
        */
       public boolean hasEmpty() {
-        return valueCase_ == 2;
+        return dataCase_ == 1;
       }
       /**
-       * <code>bytes empty = 2;</code>
+       * <code>bytes empty = 1;</code>
        * @return The empty.
        */
       public com.google.protobuf.ByteString getEmpty() {
-        if (valueCase_ == 2) {
-          return (com.google.protobuf.ByteString) value_;
+        if (dataCase_ == 1) {
+          return (com.google.protobuf.ByteString) data_;
         }
         return com.google.protobuf.ByteString.EMPTY;
       }
       /**
-       * <code>bytes empty = 2;</code>
+       * <code>bytes empty = 1;</code>
        * @param value The empty to set.
        * @return This builder for chaining.
        */
@@ -2809,253 +2516,253 @@ public final class Model {
         if (value == null) {
     throw new NullPointerException();
   }
-  valueCase_ = 2;
-        value_ = value;
+  dataCase_ = 1;
+        data_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>bytes empty = 2;</code>
+       * <code>bytes empty = 1;</code>
        * @return This builder for chaining.
        */
       public Builder clearEmpty() {
-        if (valueCase_ == 2) {
-          valueCase_ = 0;
-          value_ = null;
+        if (dataCase_ == 1) {
+          dataCase_ = 0;
+          data_ = null;
           onChanged();
         }
         return this;
       }
 
       /**
-       * <code>bool boolean = 3;</code>
+       * <code>bool boolean = 2;</code>
        * @return Whether the boolean field is set.
        */
       public boolean hasBoolean() {
-        return valueCase_ == 3;
+        return dataCase_ == 2;
       }
       /**
-       * <code>bool boolean = 3;</code>
+       * <code>bool boolean = 2;</code>
        * @return The boolean.
        */
       public boolean getBoolean() {
-        if (valueCase_ == 3) {
-          return (java.lang.Boolean) value_;
+        if (dataCase_ == 2) {
+          return (java.lang.Boolean) data_;
         }
         return false;
       }
       /**
-       * <code>bool boolean = 3;</code>
+       * <code>bool boolean = 2;</code>
        * @param value The boolean to set.
        * @return This builder for chaining.
        */
       public Builder setBoolean(boolean value) {
-        valueCase_ = 3;
-        value_ = value;
+        dataCase_ = 2;
+        data_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>bool boolean = 3;</code>
+       * <code>bool boolean = 2;</code>
        * @return This builder for chaining.
        */
       public Builder clearBoolean() {
-        if (valueCase_ == 3) {
-          valueCase_ = 0;
-          value_ = null;
+        if (dataCase_ == 2) {
+          dataCase_ = 0;
+          data_ = null;
           onChanged();
         }
         return this;
       }
 
       /**
-       * <code>int32 int = 4;</code>
+       * <code>int32 int = 3;</code>
        * @return Whether the int field is set.
        */
       public boolean hasInt() {
-        return valueCase_ == 4;
+        return dataCase_ == 3;
       }
       /**
-       * <code>int32 int = 4;</code>
+       * <code>int32 int = 3;</code>
        * @return The int.
        */
       public int getInt() {
-        if (valueCase_ == 4) {
-          return (java.lang.Integer) value_;
+        if (dataCase_ == 3) {
+          return (java.lang.Integer) data_;
         }
         return 0;
       }
       /**
-       * <code>int32 int = 4;</code>
+       * <code>int32 int = 3;</code>
        * @param value The int to set.
        * @return This builder for chaining.
        */
       public Builder setInt(int value) {
-        valueCase_ = 4;
-        value_ = value;
+        dataCase_ = 3;
+        data_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>int32 int = 4;</code>
+       * <code>int32 int = 3;</code>
        * @return This builder for chaining.
        */
       public Builder clearInt() {
-        if (valueCase_ == 4) {
-          valueCase_ = 0;
-          value_ = null;
+        if (dataCase_ == 3) {
+          dataCase_ = 0;
+          data_ = null;
           onChanged();
         }
         return this;
       }
 
       /**
-       * <code>int64 long = 5;</code>
+       * <code>int64 long = 4;</code>
        * @return Whether the long field is set.
        */
       public boolean hasLong() {
-        return valueCase_ == 5;
+        return dataCase_ == 4;
       }
       /**
-       * <code>int64 long = 5;</code>
+       * <code>int64 long = 4;</code>
        * @return The long.
        */
       public long getLong() {
-        if (valueCase_ == 5) {
-          return (java.lang.Long) value_;
+        if (dataCase_ == 4) {
+          return (java.lang.Long) data_;
         }
         return 0L;
       }
       /**
-       * <code>int64 long = 5;</code>
+       * <code>int64 long = 4;</code>
        * @param value The long to set.
        * @return This builder for chaining.
        */
       public Builder setLong(long value) {
-        valueCase_ = 5;
-        value_ = value;
+        dataCase_ = 4;
+        data_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>int64 long = 5;</code>
+       * <code>int64 long = 4;</code>
        * @return This builder for chaining.
        */
       public Builder clearLong() {
-        if (valueCase_ == 5) {
-          valueCase_ = 0;
-          value_ = null;
+        if (dataCase_ == 4) {
+          dataCase_ = 0;
+          data_ = null;
           onChanged();
         }
         return this;
       }
 
       /**
-       * <code>float float = 6;</code>
+       * <code>float float = 5;</code>
        * @return Whether the float field is set.
        */
       public boolean hasFloat() {
-        return valueCase_ == 6;
+        return dataCase_ == 5;
       }
       /**
-       * <code>float float = 6;</code>
+       * <code>float float = 5;</code>
        * @return The float.
        */
       public float getFloat() {
-        if (valueCase_ == 6) {
-          return (java.lang.Float) value_;
+        if (dataCase_ == 5) {
+          return (java.lang.Float) data_;
         }
         return 0F;
       }
       /**
-       * <code>float float = 6;</code>
+       * <code>float float = 5;</code>
        * @param value The float to set.
        * @return This builder for chaining.
        */
       public Builder setFloat(float value) {
-        valueCase_ = 6;
-        value_ = value;
+        dataCase_ = 5;
+        data_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>float float = 6;</code>
+       * <code>float float = 5;</code>
        * @return This builder for chaining.
        */
       public Builder clearFloat() {
-        if (valueCase_ == 6) {
-          valueCase_ = 0;
-          value_ = null;
+        if (dataCase_ == 5) {
+          dataCase_ = 0;
+          data_ = null;
           onChanged();
         }
         return this;
       }
 
       /**
-       * <code>double double = 7;</code>
+       * <code>double double = 6;</code>
        * @return Whether the double field is set.
        */
       public boolean hasDouble() {
-        return valueCase_ == 7;
+        return dataCase_ == 6;
       }
       /**
-       * <code>double double = 7;</code>
+       * <code>double double = 6;</code>
        * @return The double.
        */
       public double getDouble() {
-        if (valueCase_ == 7) {
-          return (java.lang.Double) value_;
+        if (dataCase_ == 6) {
+          return (java.lang.Double) data_;
         }
         return 0D;
       }
       /**
-       * <code>double double = 7;</code>
+       * <code>double double = 6;</code>
        * @param value The double to set.
        * @return This builder for chaining.
        */
       public Builder setDouble(double value) {
-        valueCase_ = 7;
-        value_ = value;
+        dataCase_ = 6;
+        data_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>double double = 7;</code>
+       * <code>double double = 6;</code>
        * @return This builder for chaining.
        */
       public Builder clearDouble() {
-        if (valueCase_ == 7) {
-          valueCase_ = 0;
-          value_ = null;
+        if (dataCase_ == 6) {
+          dataCase_ = 0;
+          data_ = null;
           onChanged();
         }
         return this;
       }
 
       /**
-       * <code>string string = 8;</code>
+       * <code>string string = 7;</code>
        * @return Whether the string field is set.
        */
       @java.lang.Override
       public boolean hasString() {
-        return valueCase_ == 8;
+        return dataCase_ == 7;
       }
       /**
-       * <code>string string = 8;</code>
+       * <code>string string = 7;</code>
        * @return The string.
        */
       @java.lang.Override
       public java.lang.String getString() {
         java.lang.Object ref = "";
-        if (valueCase_ == 8) {
-          ref = value_;
+        if (dataCase_ == 7) {
+          ref = data_;
         }
         if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
-          if (valueCase_ == 8) {
-            value_ = s;
+          if (dataCase_ == 7) {
+            data_ = s;
           }
           return s;
         } else {
@@ -3063,22 +2770,22 @@ public final class Model {
         }
       }
       /**
-       * <code>string string = 8;</code>
+       * <code>string string = 7;</code>
        * @return The bytes for string.
        */
       @java.lang.Override
       public com.google.protobuf.ByteString
           getStringBytes() {
         java.lang.Object ref = "";
-        if (valueCase_ == 8) {
-          ref = value_;
+        if (dataCase_ == 7) {
+          ref = data_;
         }
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
-          if (valueCase_ == 8) {
-            value_ = b;
+          if (dataCase_ == 7) {
+            data_ = b;
           }
           return b;
         } else {
@@ -3086,7 +2793,7 @@ public final class Model {
         }
       }
       /**
-       * <code>string string = 8;</code>
+       * <code>string string = 7;</code>
        * @param value The string to set.
        * @return This builder for chaining.
        */
@@ -3095,25 +2802,25 @@ public final class Model {
         if (value == null) {
     throw new NullPointerException();
   }
-  valueCase_ = 8;
-        value_ = value;
+  dataCase_ = 7;
+        data_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string string = 8;</code>
+       * <code>string string = 7;</code>
        * @return This builder for chaining.
        */
       public Builder clearString() {
-        if (valueCase_ == 8) {
-          valueCase_ = 0;
-          value_ = null;
+        if (dataCase_ == 7) {
+          dataCase_ = 0;
+          data_ = null;
           onChanged();
         }
         return this;
       }
       /**
-       * <code>string string = 8;</code>
+       * <code>string string = 7;</code>
        * @param value The bytes for string to set.
        * @return This builder for chaining.
        */
@@ -3123,31 +2830,31 @@ public final class Model {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-        valueCase_ = 8;
-        value_ = value;
+        dataCase_ = 7;
+        data_ = value;
         onChanged();
         return this;
       }
 
       /**
-       * <code>bytes bytes = 9;</code>
+       * <code>bytes bytes = 8;</code>
        * @return Whether the bytes field is set.
        */
       public boolean hasBytes() {
-        return valueCase_ == 9;
+        return dataCase_ == 8;
       }
       /**
-       * <code>bytes bytes = 9;</code>
+       * <code>bytes bytes = 8;</code>
        * @return The bytes.
        */
       public com.google.protobuf.ByteString getBytes() {
-        if (valueCase_ == 9) {
-          return (com.google.protobuf.ByteString) value_;
+        if (dataCase_ == 8) {
+          return (com.google.protobuf.ByteString) data_;
         }
         return com.google.protobuf.ByteString.EMPTY;
       }
       /**
-       * <code>bytes bytes = 9;</code>
+       * <code>bytes bytes = 8;</code>
        * @param value The bytes to set.
        * @return This builder for chaining.
        */
@@ -3155,48 +2862,48 @@ public final class Model {
         if (value == null) {
     throw new NullPointerException();
   }
-  valueCase_ = 9;
-        value_ = value;
+  dataCase_ = 8;
+        data_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>bytes bytes = 9;</code>
+       * <code>bytes bytes = 8;</code>
        * @return This builder for chaining.
        */
       public Builder clearBytes() {
-        if (valueCase_ == 9) {
-          valueCase_ = 0;
-          value_ = null;
+        if (dataCase_ == 8) {
+          dataCase_ = 0;
+          data_ = null;
           onChanged();
         }
         return this;
       }
 
       /**
-       * <code>string uri = 10;</code>
+       * <code>string uri = 9;</code>
        * @return Whether the uri field is set.
        */
       @java.lang.Override
       public boolean hasUri() {
-        return valueCase_ == 10;
+        return dataCase_ == 9;
       }
       /**
-       * <code>string uri = 10;</code>
+       * <code>string uri = 9;</code>
        * @return The uri.
        */
       @java.lang.Override
       public java.lang.String getUri() {
         java.lang.Object ref = "";
-        if (valueCase_ == 10) {
-          ref = value_;
+        if (dataCase_ == 9) {
+          ref = data_;
         }
         if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
-          if (valueCase_ == 10) {
-            value_ = s;
+          if (dataCase_ == 9) {
+            data_ = s;
           }
           return s;
         } else {
@@ -3204,22 +2911,22 @@ public final class Model {
         }
       }
       /**
-       * <code>string uri = 10;</code>
+       * <code>string uri = 9;</code>
        * @return The bytes for uri.
        */
       @java.lang.Override
       public com.google.protobuf.ByteString
           getUriBytes() {
         java.lang.Object ref = "";
-        if (valueCase_ == 10) {
-          ref = value_;
+        if (dataCase_ == 9) {
+          ref = data_;
         }
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
-          if (valueCase_ == 10) {
-            value_ = b;
+          if (dataCase_ == 9) {
+            data_ = b;
           }
           return b;
         } else {
@@ -3227,7 +2934,7 @@ public final class Model {
         }
       }
       /**
-       * <code>string uri = 10;</code>
+       * <code>string uri = 9;</code>
        * @param value The uri to set.
        * @return This builder for chaining.
        */
@@ -3236,25 +2943,25 @@ public final class Model {
         if (value == null) {
     throw new NullPointerException();
   }
-  valueCase_ = 10;
-        value_ = value;
+  dataCase_ = 9;
+        data_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string uri = 10;</code>
+       * <code>string uri = 9;</code>
        * @return This builder for chaining.
        */
       public Builder clearUri() {
-        if (valueCase_ == 10) {
-          valueCase_ = 0;
-          value_ = null;
+        if (dataCase_ == 9) {
+          dataCase_ = 0;
+          data_ = null;
           onChanged();
         }
         return this;
       }
       /**
-       * <code>string uri = 10;</code>
+       * <code>string uri = 9;</code>
        * @param value The bytes for uri to set.
        * @return This builder for chaining.
        */
@@ -3264,8 +2971,8 @@ public final class Model {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-        valueCase_ = 10;
-        value_ = value;
+        dataCase_ = 9;
+        data_ = value;
         onChanged();
         return this;
       }
@@ -3273,140 +2980,140 @@ public final class Model {
       private com.google.protobuf.SingleFieldBuilderV3<
           io.opencola.model.protobuf.Model.Id, io.opencola.model.protobuf.Model.Id.Builder, io.opencola.model.protobuf.Model.IdOrBuilder> idBuilder_;
       /**
-       * <code>.io.opencola.model.protobuf.Id id = 11;</code>
+       * <code>.io.opencola.model.protobuf.Id id = 10;</code>
        * @return Whether the id field is set.
        */
       @java.lang.Override
       public boolean hasId() {
-        return valueCase_ == 11;
+        return dataCase_ == 10;
       }
       /**
-       * <code>.io.opencola.model.protobuf.Id id = 11;</code>
+       * <code>.io.opencola.model.protobuf.Id id = 10;</code>
        * @return The id.
        */
       @java.lang.Override
       public io.opencola.model.protobuf.Model.Id getId() {
         if (idBuilder_ == null) {
-          if (valueCase_ == 11) {
-            return (io.opencola.model.protobuf.Model.Id) value_;
+          if (dataCase_ == 10) {
+            return (io.opencola.model.protobuf.Model.Id) data_;
           }
           return io.opencola.model.protobuf.Model.Id.getDefaultInstance();
         } else {
-          if (valueCase_ == 11) {
+          if (dataCase_ == 10) {
             return idBuilder_.getMessage();
           }
           return io.opencola.model.protobuf.Model.Id.getDefaultInstance();
         }
       }
       /**
-       * <code>.io.opencola.model.protobuf.Id id = 11;</code>
+       * <code>.io.opencola.model.protobuf.Id id = 10;</code>
        */
       public Builder setId(io.opencola.model.protobuf.Model.Id value) {
         if (idBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          value_ = value;
+          data_ = value;
           onChanged();
         } else {
           idBuilder_.setMessage(value);
         }
-        valueCase_ = 11;
+        dataCase_ = 10;
         return this;
       }
       /**
-       * <code>.io.opencola.model.protobuf.Id id = 11;</code>
+       * <code>.io.opencola.model.protobuf.Id id = 10;</code>
        */
       public Builder setId(
           io.opencola.model.protobuf.Model.Id.Builder builderForValue) {
         if (idBuilder_ == null) {
-          value_ = builderForValue.build();
+          data_ = builderForValue.build();
           onChanged();
         } else {
           idBuilder_.setMessage(builderForValue.build());
         }
-        valueCase_ = 11;
+        dataCase_ = 10;
         return this;
       }
       /**
-       * <code>.io.opencola.model.protobuf.Id id = 11;</code>
+       * <code>.io.opencola.model.protobuf.Id id = 10;</code>
        */
       public Builder mergeId(io.opencola.model.protobuf.Model.Id value) {
         if (idBuilder_ == null) {
-          if (valueCase_ == 11 &&
-              value_ != io.opencola.model.protobuf.Model.Id.getDefaultInstance()) {
-            value_ = io.opencola.model.protobuf.Model.Id.newBuilder((io.opencola.model.protobuf.Model.Id) value_)
+          if (dataCase_ == 10 &&
+              data_ != io.opencola.model.protobuf.Model.Id.getDefaultInstance()) {
+            data_ = io.opencola.model.protobuf.Model.Id.newBuilder((io.opencola.model.protobuf.Model.Id) data_)
                 .mergeFrom(value).buildPartial();
           } else {
-            value_ = value;
+            data_ = value;
           }
           onChanged();
         } else {
-          if (valueCase_ == 11) {
+          if (dataCase_ == 10) {
             idBuilder_.mergeFrom(value);
           }
           idBuilder_.setMessage(value);
         }
-        valueCase_ = 11;
+        dataCase_ = 10;
         return this;
       }
       /**
-       * <code>.io.opencola.model.protobuf.Id id = 11;</code>
+       * <code>.io.opencola.model.protobuf.Id id = 10;</code>
        */
       public Builder clearId() {
         if (idBuilder_ == null) {
-          if (valueCase_ == 11) {
-            valueCase_ = 0;
-            value_ = null;
+          if (dataCase_ == 10) {
+            dataCase_ = 0;
+            data_ = null;
             onChanged();
           }
         } else {
-          if (valueCase_ == 11) {
-            valueCase_ = 0;
-            value_ = null;
+          if (dataCase_ == 10) {
+            dataCase_ = 0;
+            data_ = null;
           }
           idBuilder_.clear();
         }
         return this;
       }
       /**
-       * <code>.io.opencola.model.protobuf.Id id = 11;</code>
+       * <code>.io.opencola.model.protobuf.Id id = 10;</code>
        */
       public io.opencola.model.protobuf.Model.Id.Builder getIdBuilder() {
         return getIdFieldBuilder().getBuilder();
       }
       /**
-       * <code>.io.opencola.model.protobuf.Id id = 11;</code>
+       * <code>.io.opencola.model.protobuf.Id id = 10;</code>
        */
       @java.lang.Override
       public io.opencola.model.protobuf.Model.IdOrBuilder getIdOrBuilder() {
-        if ((valueCase_ == 11) && (idBuilder_ != null)) {
+        if ((dataCase_ == 10) && (idBuilder_ != null)) {
           return idBuilder_.getMessageOrBuilder();
         } else {
-          if (valueCase_ == 11) {
-            return (io.opencola.model.protobuf.Model.Id) value_;
+          if (dataCase_ == 10) {
+            return (io.opencola.model.protobuf.Model.Id) data_;
           }
           return io.opencola.model.protobuf.Model.Id.getDefaultInstance();
         }
       }
       /**
-       * <code>.io.opencola.model.protobuf.Id id = 11;</code>
+       * <code>.io.opencola.model.protobuf.Id id = 10;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
           io.opencola.model.protobuf.Model.Id, io.opencola.model.protobuf.Model.Id.Builder, io.opencola.model.protobuf.Model.IdOrBuilder> 
           getIdFieldBuilder() {
         if (idBuilder_ == null) {
-          if (!(valueCase_ == 11)) {
-            value_ = io.opencola.model.protobuf.Model.Id.getDefaultInstance();
+          if (!(dataCase_ == 10)) {
+            data_ = io.opencola.model.protobuf.Model.Id.getDefaultInstance();
           }
           idBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               io.opencola.model.protobuf.Model.Id, io.opencola.model.protobuf.Model.Id.Builder, io.opencola.model.protobuf.Model.IdOrBuilder>(
-                  (io.opencola.model.protobuf.Model.Id) value_,
+                  (io.opencola.model.protobuf.Model.Id) data_,
                   getParentForChildren(),
                   isClean());
-          value_ = null;
+          data_ = null;
         }
-        valueCase_ = 11;
+        dataCase_ = 10;
         onChanged();;
         return idBuilder_;
       }
@@ -3414,140 +3121,140 @@ public final class Model {
       private com.google.protobuf.SingleFieldBuilderV3<
           io.opencola.security.protobuf.Security.PublicKey, io.opencola.security.protobuf.Security.PublicKey.Builder, io.opencola.security.protobuf.Security.PublicKeyOrBuilder> publicKeyBuilder_;
       /**
-       * <code>.io.opencola.security.protobuf.PublicKey publicKey = 12;</code>
+       * <code>.io.opencola.security.protobuf.PublicKey publicKey = 11;</code>
        * @return Whether the publicKey field is set.
        */
       @java.lang.Override
       public boolean hasPublicKey() {
-        return valueCase_ == 12;
+        return dataCase_ == 11;
       }
       /**
-       * <code>.io.opencola.security.protobuf.PublicKey publicKey = 12;</code>
+       * <code>.io.opencola.security.protobuf.PublicKey publicKey = 11;</code>
        * @return The publicKey.
        */
       @java.lang.Override
       public io.opencola.security.protobuf.Security.PublicKey getPublicKey() {
         if (publicKeyBuilder_ == null) {
-          if (valueCase_ == 12) {
-            return (io.opencola.security.protobuf.Security.PublicKey) value_;
+          if (dataCase_ == 11) {
+            return (io.opencola.security.protobuf.Security.PublicKey) data_;
           }
           return io.opencola.security.protobuf.Security.PublicKey.getDefaultInstance();
         } else {
-          if (valueCase_ == 12) {
+          if (dataCase_ == 11) {
             return publicKeyBuilder_.getMessage();
           }
           return io.opencola.security.protobuf.Security.PublicKey.getDefaultInstance();
         }
       }
       /**
-       * <code>.io.opencola.security.protobuf.PublicKey publicKey = 12;</code>
+       * <code>.io.opencola.security.protobuf.PublicKey publicKey = 11;</code>
        */
       public Builder setPublicKey(io.opencola.security.protobuf.Security.PublicKey value) {
         if (publicKeyBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          value_ = value;
+          data_ = value;
           onChanged();
         } else {
           publicKeyBuilder_.setMessage(value);
         }
-        valueCase_ = 12;
+        dataCase_ = 11;
         return this;
       }
       /**
-       * <code>.io.opencola.security.protobuf.PublicKey publicKey = 12;</code>
+       * <code>.io.opencola.security.protobuf.PublicKey publicKey = 11;</code>
        */
       public Builder setPublicKey(
           io.opencola.security.protobuf.Security.PublicKey.Builder builderForValue) {
         if (publicKeyBuilder_ == null) {
-          value_ = builderForValue.build();
+          data_ = builderForValue.build();
           onChanged();
         } else {
           publicKeyBuilder_.setMessage(builderForValue.build());
         }
-        valueCase_ = 12;
+        dataCase_ = 11;
         return this;
       }
       /**
-       * <code>.io.opencola.security.protobuf.PublicKey publicKey = 12;</code>
+       * <code>.io.opencola.security.protobuf.PublicKey publicKey = 11;</code>
        */
       public Builder mergePublicKey(io.opencola.security.protobuf.Security.PublicKey value) {
         if (publicKeyBuilder_ == null) {
-          if (valueCase_ == 12 &&
-              value_ != io.opencola.security.protobuf.Security.PublicKey.getDefaultInstance()) {
-            value_ = io.opencola.security.protobuf.Security.PublicKey.newBuilder((io.opencola.security.protobuf.Security.PublicKey) value_)
+          if (dataCase_ == 11 &&
+              data_ != io.opencola.security.protobuf.Security.PublicKey.getDefaultInstance()) {
+            data_ = io.opencola.security.protobuf.Security.PublicKey.newBuilder((io.opencola.security.protobuf.Security.PublicKey) data_)
                 .mergeFrom(value).buildPartial();
           } else {
-            value_ = value;
+            data_ = value;
           }
           onChanged();
         } else {
-          if (valueCase_ == 12) {
+          if (dataCase_ == 11) {
             publicKeyBuilder_.mergeFrom(value);
           }
           publicKeyBuilder_.setMessage(value);
         }
-        valueCase_ = 12;
+        dataCase_ = 11;
         return this;
       }
       /**
-       * <code>.io.opencola.security.protobuf.PublicKey publicKey = 12;</code>
+       * <code>.io.opencola.security.protobuf.PublicKey publicKey = 11;</code>
        */
       public Builder clearPublicKey() {
         if (publicKeyBuilder_ == null) {
-          if (valueCase_ == 12) {
-            valueCase_ = 0;
-            value_ = null;
+          if (dataCase_ == 11) {
+            dataCase_ = 0;
+            data_ = null;
             onChanged();
           }
         } else {
-          if (valueCase_ == 12) {
-            valueCase_ = 0;
-            value_ = null;
+          if (dataCase_ == 11) {
+            dataCase_ = 0;
+            data_ = null;
           }
           publicKeyBuilder_.clear();
         }
         return this;
       }
       /**
-       * <code>.io.opencola.security.protobuf.PublicKey publicKey = 12;</code>
+       * <code>.io.opencola.security.protobuf.PublicKey publicKey = 11;</code>
        */
       public io.opencola.security.protobuf.Security.PublicKey.Builder getPublicKeyBuilder() {
         return getPublicKeyFieldBuilder().getBuilder();
       }
       /**
-       * <code>.io.opencola.security.protobuf.PublicKey publicKey = 12;</code>
+       * <code>.io.opencola.security.protobuf.PublicKey publicKey = 11;</code>
        */
       @java.lang.Override
       public io.opencola.security.protobuf.Security.PublicKeyOrBuilder getPublicKeyOrBuilder() {
-        if ((valueCase_ == 12) && (publicKeyBuilder_ != null)) {
+        if ((dataCase_ == 11) && (publicKeyBuilder_ != null)) {
           return publicKeyBuilder_.getMessageOrBuilder();
         } else {
-          if (valueCase_ == 12) {
-            return (io.opencola.security.protobuf.Security.PublicKey) value_;
+          if (dataCase_ == 11) {
+            return (io.opencola.security.protobuf.Security.PublicKey) data_;
           }
           return io.opencola.security.protobuf.Security.PublicKey.getDefaultInstance();
         }
       }
       /**
-       * <code>.io.opencola.security.protobuf.PublicKey publicKey = 12;</code>
+       * <code>.io.opencola.security.protobuf.PublicKey publicKey = 11;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
           io.opencola.security.protobuf.Security.PublicKey, io.opencola.security.protobuf.Security.PublicKey.Builder, io.opencola.security.protobuf.Security.PublicKeyOrBuilder> 
           getPublicKeyFieldBuilder() {
         if (publicKeyBuilder_ == null) {
-          if (!(valueCase_ == 12)) {
-            value_ = io.opencola.security.protobuf.Security.PublicKey.getDefaultInstance();
+          if (!(dataCase_ == 11)) {
+            data_ = io.opencola.security.protobuf.Security.PublicKey.getDefaultInstance();
           }
           publicKeyBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               io.opencola.security.protobuf.Security.PublicKey, io.opencola.security.protobuf.Security.PublicKey.Builder, io.opencola.security.protobuf.Security.PublicKeyOrBuilder>(
-                  (io.opencola.security.protobuf.Security.PublicKey) value_,
+                  (io.opencola.security.protobuf.Security.PublicKey) data_,
                   getParentForChildren(),
                   isClean());
-          value_ = null;
+          data_ = null;
         }
-        valueCase_ = 12;
+        dataCase_ = 11;
         onChanged();;
         return publicKeyBuilder_;
       }
@@ -8424,39 +8131,34 @@ public final class Model {
       "PTION\020\007\022\010\n\004TEXT\020\010\022\r\n\tIMAGE_URI\020\t\022\007\n\003TAG\020" +
       "\n\022\t\n\005TRUST\020\013\022\010\n\004LIKE\020\014\022\n\n\006RATING\020\r\022\r\n\tPA" +
       "RENT_ID\020\016\022\016\n\nCOMMENT_ID\020\017\022\021\n\rNETWORK_TOK" +
-      "EN\020\020\022\021\n\rATTACHMENT_ID\020\021B\007\n\005value\"\336\003\n\005Val" +
-      "ue\0228\n\006ocType\030\001 \001(\0162(.io.opencola.model.p" +
-      "rotobuf.Value.OCType\022\017\n\005empty\030\002 \001(\014H\000\022\021\n" +
-      "\007boolean\030\003 \001(\010H\000\022\r\n\003int\030\004 \001(\005H\000\022\016\n\004long\030" +
-      "\005 \001(\003H\000\022\017\n\005float\030\006 \001(\002H\000\022\020\n\006double\030\007 \001(\001" +
-      "H\000\022\020\n\006string\030\010 \001(\tH\000\022\017\n\005bytes\030\t \001(\014H\000\022\r\n" +
-      "\003uri\030\n \001(\tH\000\022,\n\002id\030\013 \001(\0132\036.io.opencola.m" +
-      "odel.protobuf.IdH\000\022=\n\tpublicKey\030\014 \001(\0132(." +
-      "io.opencola.security.protobuf.PublicKeyH" +
-      "\000\"\214\001\n\006OCType\022\010\n\004NONE\020\000\022\t\n\005EMPTY\020\001\022\013\n\007BOO" +
-      "LEAN\020\002\022\007\n\003INT\020\003\022\010\n\004LONG\020\004\022\t\n\005FLOAT\020\005\022\n\n\006" +
-      "DOUBLE\020\006\022\n\n\006STRING\020\007\022\t\n\005BYTES\020\010\022\007\n\003URI\020\t" +
-      "\022\006\n\002ID\020\n\022\016\n\nPUBLIC_KEY\020\013B\007\n\005value\"\267\001\n\017Tr" +
-      "ansactionFact\0228\n\tattribute\030\001 \001(\0132%.io.op" +
-      "encola.model.protobuf.Attribute\0220\n\005value" +
-      "\030\002 \001(\0132!.io.opencola.model.protobuf.Valu" +
-      "e\0228\n\toperation\030\003 \001(\0162%.io.opencola.model" +
-      ".protobuf.Operation\"\023\n\002Id\022\r\n\005bytes\030\001 \001(\014" +
-      "\"\201\001\n\021TransactionEntity\0220\n\010entityId\030\001 \001(\013" +
-      "2\036.io.opencola.model.protobuf.Id\022:\n\005fact" +
-      "s\030\002 \003(\0132+.io.opencola.model.protobuf.Tra" +
-      "nsactionFact\"\351\001\n\013Transaction\022*\n\002id\030\001 \001(\013" +
-      "2\036.io.opencola.model.protobuf.Id\0223\n\013auth" +
-      "orityId\030\002 \001(\0132\036.io.opencola.model.protob" +
-      "uf.Id\022J\n\023transactionEntities\030\003 \003(\0132-.io." +
-      "opencola.model.protobuf.TransactionEntit" +
-      "y\022-\n\ttimestamp\030\004 \001(\0132\032.google.protobuf.T" +
-      "imestamp\"\233\001\n\021SignedTransaction\022I\n\025compre" +
-      "ssedTransaction\030\001 \001(\0132*.io.opencola.util" +
-      ".protobuf.CompressedBytes\022;\n\tsignature\030\002" +
-      " \001(\0132(.io.opencola.security.protobuf.Sig" +
-      "nature*+\n\tOperation\022\010\n\004NONE\020\000\022\013\n\007RETRACT" +
-      "\020\001\022\007\n\003ADD\020\002b\006proto3"
+      "EN\020\020\022\021\n\rATTACHMENT_ID\020\021B\007\n\005value\"\224\002\n\005Val" +
+      "ue\022\017\n\005empty\030\001 \001(\014H\000\022\021\n\007boolean\030\002 \001(\010H\000\022\r" +
+      "\n\003int\030\003 \001(\005H\000\022\016\n\004long\030\004 \001(\003H\000\022\017\n\005float\030\005" +
+      " \001(\002H\000\022\020\n\006double\030\006 \001(\001H\000\022\020\n\006string\030\007 \001(\t" +
+      "H\000\022\017\n\005bytes\030\010 \001(\014H\000\022\r\n\003uri\030\t \001(\tH\000\022,\n\002id" +
+      "\030\n \001(\0132\036.io.opencola.model.protobuf.IdH\000" +
+      "\022=\n\tpublicKey\030\013 \001(\0132(.io.opencola.securi" +
+      "ty.protobuf.PublicKeyH\000B\006\n\004data\"\267\001\n\017Tran" +
+      "sactionFact\0228\n\tattribute\030\001 \001(\0132%.io.open" +
+      "cola.model.protobuf.Attribute\0220\n\005value\030\002" +
+      " \001(\0132!.io.opencola.model.protobuf.Value\022" +
+      "8\n\toperation\030\003 \001(\0162%.io.opencola.model.p" +
+      "rotobuf.Operation\"\023\n\002Id\022\r\n\005bytes\030\001 \001(\014\"\201" +
+      "\001\n\021TransactionEntity\0220\n\010entityId\030\001 \001(\0132\036" +
+      ".io.opencola.model.protobuf.Id\022:\n\005facts\030" +
+      "\002 \003(\0132+.io.opencola.model.protobuf.Trans" +
+      "actionFact\"\351\001\n\013Transaction\022*\n\002id\030\001 \001(\0132\036" +
+      ".io.opencola.model.protobuf.Id\0223\n\013author" +
+      "ityId\030\002 \001(\0132\036.io.opencola.model.protobuf" +
+      ".Id\022J\n\023transactionEntities\030\003 \003(\0132-.io.op" +
+      "encola.model.protobuf.TransactionEntity\022" +
+      "-\n\ttimestamp\030\004 \001(\0132\032.google.protobuf.Tim" +
+      "estamp\"\233\001\n\021SignedTransaction\022I\n\025compress" +
+      "edTransaction\030\001 \001(\0132*.io.opencola.util.p" +
+      "rotobuf.CompressedBytes\022;\n\tsignature\030\002 \001" +
+      "(\0132(.io.opencola.security.protobuf.Signa" +
+      "ture*+\n\tOperation\022\010\n\004NONE\020\000\022\013\n\007RETRACT\020\001" +
+      "\022\007\n\003ADD\020\002b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -8476,7 +8178,7 @@ public final class Model {
     internal_static_io_opencola_model_protobuf_Value_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_opencola_model_protobuf_Value_descriptor,
-        new java.lang.String[] { "OcType", "Empty", "Boolean", "Int", "Long", "Float", "Double", "String", "Bytes", "Uri", "Id", "PublicKey", "Value", });
+        new java.lang.String[] { "Empty", "Boolean", "Int", "Long", "Float", "Double", "String", "Bytes", "Uri", "Id", "PublicKey", "Data", });
     internal_static_io_opencola_model_protobuf_TransactionFact_descriptor =
       getDescriptor().getMessageTypes().get(2);
     internal_static_io_opencola_model_protobuf_TransactionFact_fieldAccessorTable = new

@@ -16,13 +16,12 @@ class BooleanValue(value: Boolean) : Value<Boolean>(value) {
 
         override fun toProto(value: Boolean): Proto.Value {
             return Proto.Value.newBuilder()
-                .setOcType(Proto.Value.OCType.BOOLEAN)
                 .setBoolean(value)
                 .build()
         }
 
         override fun fromProto(value: Proto.Value): Boolean {
-            require(value.ocType == Proto.Value.OCType.BOOLEAN)
+            require(value.dataCase == Proto.Value.DataCase.BOOLEAN)
             return value.boolean
         }
 

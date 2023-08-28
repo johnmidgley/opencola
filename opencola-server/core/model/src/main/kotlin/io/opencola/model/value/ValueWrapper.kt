@@ -38,7 +38,7 @@ interface ValueWrapper<T> : ByteArrayCodec<T>, ProtoSerializable<T, Proto.Value>
 
      fun decodeProtoAny(value: ByteArray) : Value<Any> {
         Proto.Value.parseFrom(value).let {
-            return if(it.ocType == Proto.Value.OCType.EMPTY)
+            return if(it.dataCase == Proto.Value.DataCase.EMPTY)
                 EmptyValue
             else
                 wrap(fromProto(it)) as Value<Any>

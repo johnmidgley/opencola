@@ -52,11 +52,11 @@ data class TransactionFact(val attribute: Attribute, val value: Value<Any>, val 
             val attribute = Attribute.fromProto(value.attribute) ?: return null
 
             val valueWrapper = attribute.valueWrapper
-            if(value.value.ocType == Proto.Value.OCType.NONE)
-                throw IllegalArgumentException("TransactionFact value cannot be NONE")
+            if(value.value.dataCase == Proto.Value.DataCase.DATA_NOT_SET)
+                throw IllegalArgumentException("TransactionFact value is not set")
 
             val wrappedValue =
-                if (value.value.ocType == Proto.Value.OCType.EMPTY)
+                if (value.value.dataCase == Proto.Value.DataCase.EMPTY)
                     EmptyValue
                 else
                     valueWrapper.wrap(valueWrapper.fromProto(value.value))

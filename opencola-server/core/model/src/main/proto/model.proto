@@ -33,34 +33,22 @@ message Attribute {
   }
 }
 
+// Specifying a value this way, vs just using 'oneof' inside TransactionFact (below) is more flexible: It allows for
+// the value to be used more cleanly in other contexts (i.e. outside of transactions) and allows for metadata to be
+// added to values in the future.
 message Value {
-  enum OCType {
-    NONE = 0;
-    EMPTY = 1;
-    BOOLEAN = 2;
-    INT = 3;
-    LONG = 4;
-    FLOAT = 5;
-    DOUBLE = 6;
-    STRING = 7;
-    BYTES = 8;
-    URI = 9;
-    ID = 10;
-    PUBLIC_KEY = 11;
-  }
-  OCType ocType = 1;
-  oneof value {
-    bytes empty = 2;
-    bool boolean = 3;
-    int32 int = 4;
-    int64 long = 5;
-    float float = 6;
-    double double = 7;
-    string string = 8;
-    bytes bytes = 9;
-    string uri = 10;
-    Id id = 11;
-    io.opencola.security.protobuf.PublicKey publicKey = 12;
+  oneof data {
+    bytes empty = 1;
+    bool boolean = 2;
+    int32 int = 3;
+    int64 long = 4;
+    float float = 5;
+    double double = 6;
+    string string = 7;
+    bytes bytes = 8;
+    string uri = 9;
+    Id id = 10;
+    io.opencola.security.protobuf.PublicKey publicKey = 11;
   }
 }
 

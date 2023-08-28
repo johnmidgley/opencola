@@ -27,7 +27,7 @@ class TransactionTest {
 
     @Test
     fun testTransactionStructure() {
-        val stableStructureHash = "45b4b65fa25fea2c392cfef95e9d6473349894fd806eea938531a8c09c84db86"
+        val stableStructureHash = "f35b92f11af39db08467afed821b72234f2676286659c22f54f6ce48606f531c"
         val id = Id.ofData("".toByteArray())
         val fact = Fact(id, id, CoreAttribute.Type.spec, StringValue("value").asAnyValue(), Operation.Add)
         val encodedTransaction = Transaction.fromFacts(id, listOf(fact), 0).encodeProto()

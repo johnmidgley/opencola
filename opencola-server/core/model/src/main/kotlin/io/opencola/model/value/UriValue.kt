@@ -16,14 +16,13 @@ class UriValue(value: URI) : Value<URI>(value) {
 
         override fun toProto(value: URI): Proto.Value {
             return Proto.Value.newBuilder()
-                .setOcType(Proto.Value.OCType.URI)
-                .setString(value.toString())
+                .setUri(value.toString())
                 .build()
         }
 
         override fun fromProto(value: Proto.Value): URI {
-            require(value.ocType == Proto.Value.OCType.URI)
-            return URI.create(value.string)
+            require(value.dataCase == Proto.Value.DataCase.URI)
+            return URI(value.uri)
         }
 
         override fun parseProto(bytes: ByteArray): Proto.Value {

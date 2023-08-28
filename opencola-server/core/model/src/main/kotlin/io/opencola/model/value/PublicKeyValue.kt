@@ -1,7 +1,8 @@
 package io.opencola.model.value
 
-import com.google.protobuf.ByteString
 import io.opencola.security.PublicKeyByteArrayCodec
+import io.opencola.security.toProto
+import io.opencola.security.toPublicKey
 import java.security.PublicKey
 import io.opencola.model.protobuf.Model as Proto
 
@@ -17,14 +18,13 @@ class PublicKeyValue(value: PublicKey) : Value<PublicKey>(value) {
 
         override fun toProto(value: PublicKey): Proto.Value {
             return Proto.Value.newBuilder()
-                .setOcType(Proto.Value.OCType.PUBLIC_KEY)
-                .setBytes(ByteString.copyFrom(encode(value)))
+                .setPublicKey(value.toProto())
                 .build()
         }
 
         override fun fromProto(value: Proto.Value): PublicKey {
-            require(value.ocType == Proto.Value.OCType.PUBLIC_KEY)
-            return decode(value.bytes.toByteArray())
+            require(value.dataCase == Proto.Value.DataCase.PUBLICKEY)
+            return value.publicKey.toPublicKey()
         }
 
         override fun parseProto(bytes: ByteArray): Proto.Value {
