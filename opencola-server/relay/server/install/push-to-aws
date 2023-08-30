@@ -1,5 +1,14 @@
 #!/bin/bash
-# aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 147892678753.dkr.ecr.us-west-2.amazonaws.com
-docker build -t oc-relay .
-docker tag oc-relay:latest 147892678753.dkr.ecr.us-west-2.amazonaws.com/oc-relay:latest
-docker push 147892678753.dkr.ecr.us-west-2.amazonaws.com/oc-relay:latest
+OC_BIN_PATH=../../../../bin/
+
+OC_VERSION=$($OC_BIN_PATH/oc-version)
+echo "OC Version: $OC_VERSION"
+
+# NOTE: Must be logged into AWS ecr for this to work. Login with OC_BIN_PATH/aws/login
+
+echo "Building oc-relay"
+./install
+
+docker build -t oc-relay-v2:"$OC_VERSION" .
+docker tag oc-relay-v2:"$OC_VERSION" 147892678753.dkr.ecr.us-west-2.amazonaws.com/oc-relay-v2:"$OC_VERSION"
+docker push 147892678753.dkr.ecr.us-west-2.amazonaws.com/oc-relay-v2:"$OC_VERSION"

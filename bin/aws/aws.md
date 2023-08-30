@@ -42,16 +42,73 @@ A Repository stores versions for a single image.
 
 ### Push a Docker Image to a Repository
 
+Example for pushing oc-relay :
+> Using ```:latest``` tag. NOT recommended - should have explicit version
+
 ```
-docker build -t oc-relay .
-docker tag oc-relay:latest 147892678753.dkr.ecr.us-west-2.amazonaws.com/oc-relay:latest
-docker push 147892678753.dkr.ecr.us-west-2.amazonaws.com/oc-relay:latest
+docker build -t oc-relay-v2 .
+docker tag oc-relay:latest 147892678753.dkr.ecr.us-west-2.amazonaws.com/oc-relay-v2:latest
+docker push 147892678753.dkr.ecr.us-west-2.amazonaws.com/oc-relay-v2:latest
 ```
 
-## [Create a Cluster](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ecs/create-cluster.html)
+### List images in repository
+
+```
+aws ecr describe-images --repository-name oc-relay-v2
+```
+
+## Clusters
+
+### [Create a Cluster](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ecs/create-cluster.html)
 
 ```
 ./create-cluster CLUSTER-NAME
 ```
 
-## [Create a Service]()
+or 
+
+```
+aws ecs create-cluster --cluster-name opencola
+```
+
+### List CLusters
+
+```
+aws ecs list-clusters
+```
+
+## Services
+
+### [Create a Service]()
+
+### List Services (in a cluster)
+
+```
+aws ecs list-services --cluster opencola
+```
+
+### Describe services
+
+```
+aws ecs describe-services --cluster opencola --services oc-relay-service
+```
+
+## Tasks
+
+### List Task Definitions
+
+```
+aws ecs list-task-definitions
+```
+
+### List tasks
+
+```
+aws ecs list-tasks --cluster opencola
+```
+
+### Describe tasks
+
+```
+aws ecs describe-tasks --cluster opencola --tasks 2cc64c7681964e208baa18c2f9d1c1d7
+```

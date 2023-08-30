@@ -4,12 +4,13 @@ rm -rf oc-relay
 mkdir oc-relay
 
 echo "Running gradle installDist"
-pushd ../../
-./gradlew installDist
-popd
+pushd ../
+../../gradlew installDist
+popd || exit
 
 echo "Copying distribution"
-cp -r ../../relay/build/install/relay/* oc-relay
+rm -rf oc-relay
+cp -r ../../install/oc-relay .
 
 echo "Done."
 
