@@ -31,11 +31,21 @@ Login, required before using other commands:
 ./login
 ```
 
-## [Create a Repository](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ecr/create-repository.html)
+## Repository
+
+### [Create a Repository](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ecr/create-repository.html)
 A Repository stores versions for a single image.
 
 ```
 ./create-repo REPO-NAME
+```
+
+### Push a Docker Image to a Repository
+
+```
+docker build -t oc-relay .
+docker tag oc-relay:latest 147892678753.dkr.ecr.us-west-2.amazonaws.com/oc-relay:latest
+docker push 147892678753.dkr.ecr.us-west-2.amazonaws.com/oc-relay:latest
 ```
 
 ## [Create a Cluster](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ecs/create-cluster.html)

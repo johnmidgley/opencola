@@ -1,0 +1,4 @@
+#!/bin/bash
+LINK=$(readlink -f "$0")
+LOCATION=$(dirname "$LINK")
+sed -n '/opencola/,$p' "$LOCATION"/../opencola-server/build.gradle.kts | head -n 2 | tail -n 1 | cut -f 2 -d = | cut -f2 -d \"
