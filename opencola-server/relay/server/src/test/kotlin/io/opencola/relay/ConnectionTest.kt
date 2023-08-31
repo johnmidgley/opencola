@@ -28,11 +28,6 @@ class ConnectionTest {
     private val localRelayServerUri = URI("ocr://0.0.0.0")
     private val prodRelayServerUri = URI("ocr://relay.opencola.net")
 
-    private enum class ClientType {
-        V1,
-        V2
-    }
-
     private fun getClient(
         clientType: ClientType,
         name: String,
@@ -300,10 +295,10 @@ class ConnectionTest {
                     it.waitUntil("Closed - client1")
                 }
 
-                if (relayServerUri == localRelayServerUri) {
-                    println("Verifying partition")
-                    StdoutMonitor(readTimeoutMilliseconds = 3000).use {
-                        client0.sendMessage(client1.publicKey, MessageStorageKey.unique(), "hello".toByteArray())
+                println("Sending \"missed\" message")
+                StdoutMonitor(readTimeoutMilliseconds = 3000).use {
+                    client0.sendMessage(client1.publicKey, MessageStorageKey.unique(), "hello".toByteArray())
+                    if (relayServerUri == localRelayServerUri) {
                         it.waitUntil("no connection to receiver")
                     }
                 }
@@ -513,7 +508,7 @@ class ConnectionTest {
         testSendSingleMessageToMultipleRecipients(localRelayServerUri)
     }
 
-    // @Test
+    //@Test
     fun testProd() {
         println("testSendResponseV1($prodRelayServerUri)")
         testSendResponse(ClientType.V1, prodRelayServerUri)
