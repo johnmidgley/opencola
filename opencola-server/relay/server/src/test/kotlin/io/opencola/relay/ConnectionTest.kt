@@ -140,12 +140,6 @@ class ConnectionTest {
         testSendResponse(ClientType.V2)
     }
 
-    @Test
-    fun testSendResponseProd() {
-        testSendResponse(ClientType.V1, prodRelayServerUri)
-        // testSendResponse(ClientType.V2, prodRelayServerUri)
-    }
-
     private fun testClientConnectBeforeServer(clientType: ClientType) {
         runBlocking {
             var server: RelayServer? = null
@@ -267,8 +261,8 @@ class ConnectionTest {
         testServerPartition(ClientType.V2)
     }
 
-    @Test
-    fun testClientPartitionV1() {
+    private fun testClientPartition(clientType: ClientType, relayServerUri: URI = localRelayServerUri) {
+        println("testClientPartition($clientType)")
         runBlocking {
             var server: RelayServer? = null
             var client0: AbstractClient? = null
@@ -277,15 +271,16 @@ class ConnectionTest {
 
             try {
                 println("Starting server and clients")
-                server = RelayServer().also { it.start() }
+                server = if (relayServerUri == localRelayServerUri) RelayServer().also { it.start() } else null
                 val results = Channel<ByteArray>()
                 client0 = getClient(
-                    ClientType.V1,
+                    clientType,
                     "client0",
-                    requestTimeoutInMilliseconds = 500
+                    requestTimeoutInMilliseconds = 500,
+                    relayServerUri = relayServerUri
                 ).also { launch { open(it) }; it.waitUntilOpen() }
                 val client1KeyPair = generateKeyPair()
-                client1 = getClient(ClientType.V1, "client1", client1KeyPair)
+                client1 = getClient(clientType, "client1", client1KeyPair, relayServerUri = relayServerUri)
                     .also {
                         launch {
                             it.open { _, message ->
@@ -300,81 +295,21 @@ class ConnectionTest {
                 withTimeout(1000) { assertEquals("hello1 client1", String(results.receive())) }
 
                 println("Partitioning client")
-                client1.close()
-
-                println("Verifying partition")
                 StdoutMonitor(readTimeoutMilliseconds = 3000).use {
-                    client0.sendMessage(client1.publicKey, MessageStorageKey.unique(), "hello".toByteArray())
-                    it.waitUntil("no connection to receiver")
+                    client1.close()
+                    it.waitUntil("Closed - client1")
+                }
+
+                if (relayServerUri == localRelayServerUri) {
+                    println("Verifying partition")
+                    StdoutMonitor(readTimeoutMilliseconds = 3000).use {
+                        client0.sendMessage(client1.publicKey, MessageStorageKey.unique(), "hello".toByteArray())
+                        it.waitUntil("no connection to receiver")
+                    }
                 }
 
                 println("Rejoining client")
-                client1Rejoin = getClient(ClientType.V1, "client1", client1KeyPair)
-                    .also {
-                        launch {
-                            it.open { _, message ->
-                                results.send(message.append(" client1".toByteArray()))
-                            }
-                        }
-                        it.waitUntilOpen()
-                    }
-
-                println("Verifying rejoin")
-                client0.sendMessage(client1.publicKey, MessageStorageKey.unique(), "hello2".toByteArray())
-                assertEquals("hello2 client1", String(results.receive()))
-            } finally {
-                println("Closing resources")
-                client0?.close()
-                client1?.close()
-                client1Rejoin?.close()
-                server?.stop()
-            }
-        }
-    }
-
-    @Test
-    fun testClientPartitionV2() {
-        runBlocking {
-            var server: RelayServer? = null
-            var client0: AbstractClient? = null
-            var client1: AbstractClient? = null
-            var client1Rejoin: AbstractClient? = null
-
-            try {
-                println("Starting server and clients")
-                server = RelayServer().also { it.start() }
-                val results = Channel<ByteArray>()
-                client0 = getClient(
-                    ClientType.V2,
-                    "client0",
-                    requestTimeoutInMilliseconds = 500
-                ).also { launch { open(it) }; it.waitUntilOpen() }
-                val client1KeyPair = generateKeyPair()
-                client1 = getClient(ClientType.V2, "client1", client1KeyPair)
-                    .also {
-                        launch {
-                            it.open { _, message ->
-                                results.send(message.append(" client1".toByteArray()))
-                            }
-                        }
-                        it.waitUntilOpen()
-                    }
-
-                println("Sending message")
-                client0.sendMessage(client1.publicKey, MessageStorageKey.unique(), "hello1".toByteArray())
-                withTimeout(1000) { assertEquals("hello1 client1", String(results.receive())) }
-
-                println("Partitioning client")
-                client1.close()
-
-                println("Verifying partition")
-                StdoutMonitor(readTimeoutMilliseconds = 3000).use {
-                    client0.sendMessage(client1.publicKey, MessageStorageKey.unique(), "hello".toByteArray())
-                    it.waitUntil("no connection to receiver")
-                }
-
-                println("Rejoining client")
-                client1Rejoin = getClient(ClientType.V2, "client1", client1KeyPair)
+                client1Rejoin = getClient(clientType, "client1", client1KeyPair, relayServerUri = relayServerUri)
                     .also {
                         launch {
                             it.open { _, message ->
@@ -386,7 +321,11 @@ class ConnectionTest {
 
                 println("Verifying rejoin (stored message + new one)")
                 client0.sendMessage(client1.publicKey, MessageStorageKey.unique(), "hello2".toByteArray())
-                assertEquals("hello client1", String(results.receive()))
+
+                // V2 Supports storage, so check that first message is available
+                if (clientType == ClientType.V2)
+                    assertEquals("hello client1", String(results.receive()))
+
                 assertEquals("hello2 client1", String(results.receive()))
             } finally {
                 println("Closing resources")
@@ -398,6 +337,15 @@ class ConnectionTest {
         }
     }
 
+    @Test
+    fun testClientPartitionV1() {
+        testClientPartition(ClientType.V1)
+    }
+
+    @Test
+    fun testClientPartitionV2() {
+        testClientPartition(ClientType.V2)
+    }
 
     private fun testRandomClientsCalls(clientType: ClientType) {
         runBlocking {
@@ -523,14 +471,11 @@ class ConnectionTest {
         }
     }
 
-
-
-    fun testSendSingleMessageToMultipleRecipients(relayServerUri: URI = localRelayServerUri) {
+    private fun testSendSingleMessageToMultipleRecipients(relayServerUri: URI) {
         runBlocking {
             var server: RelayServer? = null
             var clients: List<AbstractClient>? = null
             val results = Channel<String>()
-
 
             try {
                 StdoutMonitor(readTimeoutMilliseconds = 3000).use { monitor ->
@@ -549,20 +494,37 @@ class ConnectionTest {
                     val receivers = clients!!.subList(1, clients!!.size).map { it.publicKey }
                     println("Sending multi-recipient message")
                     sender.sendMessage(receivers, MessageStorageKey.none, "hello".toByteArray())
-                    monitor.waitUntil("Handling message from: .* to 2 recipients")
-                    assertEquals(setOf("1:hello", "2:hello"),  setOf(results.receive(), results.receive()))
+
+                    if (relayServerUri == localRelayServerUri)
+                        monitor.waitUntil("Handling message from: .* to 2 recipients")
+
+                    assertEquals(setOf("1:hello", "2:hello"), setOf(results.receive(), results.receive()))
                 }
             } finally {
                 println("Closing resources")
                 server?.stop()
-                clients?.forEach{ it.close() }
+                clients?.forEach { it.close() }
             }
         }
     }
 
     @Test
-    fun testSendSingleMessageToMultipleRecipientsLocal() {
+    fun testSendSingleMessageToMultipleRecipients() {
         testSendSingleMessageToMultipleRecipients(localRelayServerUri)
+    }
+
+    // @Test
+    fun testProd() {
+        println("testSendResponseV1($prodRelayServerUri)")
+        testSendResponse(ClientType.V1, prodRelayServerUri)
+        println("testSendResponseV2($prodRelayServerUri)")
+        testSendResponse(ClientType.V2, prodRelayServerUri)
+        println("testClientConnectBeforeServerV1($prodRelayServerUri)")
+        testClientPartition(ClientType.V1, prodRelayServerUri)
+        println("testClientConnectBeforeServerV2($prodRelayServerUri)")
+        testClientPartition(ClientType.V2, prodRelayServerUri)
+        println("testServerPartitionV1($prodRelayServerUri)")
+        testSendSingleMessageToMultipleRecipients(prodRelayServerUri)
     }
 
 }
