@@ -102,8 +102,10 @@ body {
     max-width: 80px;
     max-height: 80px;
     float: left;
-    margin-top: 10px;
+    margin-top: 16px;
+    margin-left: 10px;
     margin-right: 10px;
+    margin-bottom: 10px;
     /* padding-right: 10px; */
     /* border-right: #EEEEEE solid 1px; */
 }
