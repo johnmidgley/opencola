@@ -205,13 +205,14 @@
 
 (defn item-image [summary]
   (let [item-uri (:uri summary)
-        image-uri (or (:imageUri summary) (and (not item-uri) (:postedByImageUri summary)))
+        image-uri (:imageUri summary) 
         img [:img.item-img {:src image-uri}]]
-    (when image-uri
+    (if image-uri
       [:div.item-img-box
        (if (empty? item-uri)
          img
-         [:a {:href item-uri :target "_blank"} img])])))
+         [:a {:href item-uri :target "_blank"} img])]
+      [:img.posted-by-img {:src (:postedByImageUri summary)}])))
 
 (defn display-feed-item [persona-id! personas! feed! item editing?!]
   (let [summary (:summary item)]

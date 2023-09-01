@@ -97,7 +97,15 @@ body {
     max-width: 95%;
     align-content: center;
     text-align: center;
+}
 
+.posted-by-img {
+    max-width: 80px;
+    max-height: 80px;
+    float: left;
+    margin-right: 10px;
+    /* padding-right: 10px; */
+    /* border-right: #EEEEEE solid 1px; */
 }
 
 .activities-summary {
