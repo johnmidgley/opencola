@@ -2,7 +2,6 @@ body {
     font-family: Arial, Helvetica, sans-serif;
 }
 
-
 .search-header {
     margin-bottom: 20px;
 }
@@ -103,6 +102,7 @@ body {
     max-width: 80px;
     max-height: 80px;
     float: left;
+    margin-top: 10px;
     margin-right: 10px;
     /* padding-right: 10px; */
     /* border-right: #EEEEEE solid 1px; */

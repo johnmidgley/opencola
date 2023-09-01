@@ -61,7 +61,6 @@
 
 (defn md->component [attributes md-text]
   (let [hiccup (->> md-text (md2hic/md->hiccup) (md2hic/component))]
-    (println hiccup)
     (assoc hiccup 1 attributes)))
 
 (defn hidden-file-input [id on-change]
