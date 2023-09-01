@@ -16,7 +16,7 @@
 
 (defn delete-peer [persona-id peer on-success on-error]
   (ajax/DELETE 
-   (str "peers/" (:id peer))
+   (str "peers/" (:id peer) "?personaId=" persona-id)
    #(get-peers persona-id on-success on-error)
    #(on-error (error/error-result->str %))))
 
