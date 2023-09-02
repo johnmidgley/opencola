@@ -20,7 +20,11 @@ private val logger = KotlinLogging.logger("Feed")
 @Serializable
 // TODO: Make context: String? constructor private?
 data class FeedResult(val context: String?, val pagingToken: String?, val results: List<EntityResult>) {
-    constructor(context: Context, pagingToken: String?, results: List<EntityResult>) : this(context.toString(), pagingToken, results)
+    constructor(context: Context, pagingToken: String?, results: List<EntityResult>) : this(
+        context.toString(),
+        pagingToken,
+        results
+    )
 }
 
 fun entityAttributeAsString(entity: Entity, attribute: Attribute): String? {
@@ -62,7 +66,13 @@ fun factToAction(children: Children, fact: Fact): Action? {
 
         AttachmentIds.spec -> {
             val attachmentId = fact.unwrapValue<Id>()
-            Action(ActionType.Attach, attachmentId, children.attachments.getValue(attachmentId).name)
+            val attachment = children.attachments[attachmentId]
+
+            if (attachment == null) {
+                logger.warn { "Attachment $attachmentId not found" }
+                null
+            } else
+                Action(ActionType.Attach, attachmentId, attachment.name)
         }
 
         else -> null
@@ -188,19 +198,19 @@ fun getAuthoritiesById(addressBook: AddressBook, personaIds: Set<Id>): Map<Id, A
     return addressBook.getEntries()
         .filter { it.personaId in personaIds }
         .map {
-        if (it is PersonaAddressBookEntry)
-            AddressBookEntry(
-                it.personaId,
-                it.entityId,
-                "You (${it.name})",
-                it.publicKey,
-                it.address,
-                it.imageUri,
-                it.isActive
-            )
-        else
-            it
-    }.associateBy { it.entityId }
+            if (it is PersonaAddressBookEntry)
+                AddressBookEntry(
+                    it.personaId,
+                    it.entityId,
+                    "You (${it.name})",
+                    it.publicKey,
+                    it.address,
+                    it.imageUri,
+                    it.isActive
+                )
+            else
+                it
+        }.associateBy { it.entityId }
 }
 
 fun getPersonaId(addressBook: AddressBook, activities: List<Activity>): Id {
@@ -216,7 +226,7 @@ fun requestMissingAttachmentIds(
     entities: Iterable<Entity>,
 ) {
     val allAttachmentIds = getChildIds(entities) { it.attachmentIds.toSet() }
-    val missingAttachmentIds = allAttachmentIds.filter { !fileStore.exists(it)  }
+    val missingAttachmentIds = allAttachmentIds.filter { !fileStore.exists(it) }
     for (id in missingAttachmentIds) {
         logger.info { "Requesting missing attachment $id" }
         eventBus.sendMessage(Events.DataMissing.toString(), id.encodeProto())
@@ -287,5 +297,9 @@ fun handleGetFeed(
     val authorityIds = addressBook.getEntries().filter { it.personaId in personaIds }.map { it.entityId }.toSet()
     val entityIds = getEntityIds(entityStore, authorityIds, searchIndex, query)
     val context = Context(personaIds)
-    return FeedResult(context, null, getEntityResults(authorityIds, entityStore, addressBook, fileStore, eventBus, entityIds))
+    return FeedResult(
+        context,
+        null,
+        getEntityResults(authorityIds, entityStore, addressBook, fileStore, eventBus, entityIds)
+    )
 }
