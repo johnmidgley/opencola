@@ -18,8 +18,7 @@
 (secretary/set-config! :prefix "#")
 
 (defroute "/" []
-  (state/set-page! :feed)
-  (location/set-state-from-query-params nil))
+  (state/set-page! :feed))
 
 (defroute "/feed" [query-params]
   (state/set-page! :feed)
@@ -90,7 +89,8 @@
    (personas!)
    (fn []
      (location/set-location-from-state)
-     (feed/get-feed @(persona!) @(query!) (feed!))
+     (when (empty @(feed!))
+       (feed/get-feed @(persona!) @(query!) (feed!)))
      (when-let [persona @(persona!)]
        (peer/get-peers persona (peers!))))
    #(error/set-error! (error!) %)))

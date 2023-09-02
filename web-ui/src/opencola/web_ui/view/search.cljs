@@ -37,7 +37,7 @@
    [:table
     [:tbody
      [:tr
-      [:td [:img {:src "../img/pull-tab.png" :width 50 :height 50 :on-click #(location/set-location "") }]]
+      [:td [:a {:href "#/feed"} [:img {:src "../img/pull-tab.png" :width 50 :height 50}]]]
       [persona-select page personas! persona! on-persona-select]
       [:td [search-box query! on-enter]]]]]])
 
