@@ -1,19 +1,16 @@
 #!/bin/bash
 
-if [ $# -ne 1 ]
-then
-  echo "Usage: $0 version"
-  exit 1
-fi
+OC_BIN_PATH=../../bin/
 
+OC_VERSION=$($OC_BIN_PATH/oc-version)
 
-echo "Packaging for MacOS"
+echo "Packaging version $OC_VERSION for MacOS"
 # https://docs.oracle.com/en/java/javase/14/docs/specs/man/jpackage.html
 jpackage --input ../opencola/server/lib/ \
   --name OpenCola \
   --vendor OpenCola \
-  --app-version "$1" \
-  --main-jar "opencola-server-$1.jar" \
+  --app-version "$OC_VERSION" \
+  --main-jar "opencola-server-$OC_VERSION.jar" \
   --main-class opencola.server.ApplicationKt \
   --java-options '--enable-preview' \
   --arguments --desktop \
