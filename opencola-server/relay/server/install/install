@@ -10,7 +10,7 @@ popd || exit
 
 echo "Copying distribution"
 rm -rf oc-relay
-cp -r ../../install/oc-relay .
+cp -r ../build/install/server/ oc-relay
 
 echo "Done."
 

@@ -12,5 +12,5 @@
 FROM openjdk:17
 COPY ./oc-relay/ /oc-relay
 WORKDIR /oc-relay
-CMD ["sh", "bin/relay"]
+CMD ["sh", "bin/server"]
 EXPOSE 2652
