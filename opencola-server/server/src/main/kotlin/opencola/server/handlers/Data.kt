@@ -34,6 +34,7 @@ suspend fun handleGetDataCall(call: ApplicationCall, entityStore: EntityStore, f
         call.respondText(status = HttpStatusCode.NoContent) { "No data for id: $entityId" }
     } else {
         call.response.headers.append("content-type", dataEntity.mimeType ?: "application/octet-stream")
+        call.response.headers.append("content-disposition", "inline; filename=\"${dataEntity.name}\"")
         call.respondBytes(data)
     }
 }
