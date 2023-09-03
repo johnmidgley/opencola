@@ -1,5 +1,5 @@
-# Requires jpackage to be in path
-# Which needs https://wixtoolset.org installed and in path
+# Requires jpackage to be in path (Need JDK 17+ installed)
+# Which needs https://wixtoolset.org installed and in path (or https://github.com/wixtoolset/wix3/releases/tag/wix3112rtm)
 # Which needs https://dotnet.microsoft.com/en-us/download/dotnet-framework/thank-you/net35-sp1-web-installer
 
 if ($Args.count -ne 1) {
