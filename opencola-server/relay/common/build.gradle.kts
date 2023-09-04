@@ -18,7 +18,7 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("stdlib"))
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
     implementation(project(":core:util"))
     implementation(project(":core:serialization"))
     implementation(project(":core:security"))
