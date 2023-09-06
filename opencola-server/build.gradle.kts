@@ -29,7 +29,7 @@ plugins {
 // TODO: Pull allProjects properties out of sub projects
 allprojects {
     group = "opencola"
-    version = "1.3.0"
+    version = "1.3.1"
 
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         kotlinOptions.jvmTarget = "17"
