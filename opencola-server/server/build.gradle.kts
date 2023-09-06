@@ -10,21 +10,15 @@ val kotlinLoggingVersion:String by project
 val slf4jVersion: String by project
 val mime4jVersion: String by project
 val bcprovVersion: String by project
-val hopliteVersion: String by project
 val kodeinVersion: String by project
 val kotlinxCliVersion: String by project
 val protobufVersion: String by project
-
 
 plugins {
     application
     kotlin("jvm") version "1.7.20"
     kotlin("plugin.serialization") version "1.6.0"
     id("org.jetbrains.compose") version "1.2.2"
-}
-
-apply {
-    plugin("java")
 }
 
 application {
@@ -35,13 +29,12 @@ application {
 //  https://docs.gradle.org/7.4.1/userguide/java_plugin.html
 archivesName.set("opencola-server")
 
-
-// TODO: Move this application to a separate project. This level should be for all projects.
 application {
     mainClass.set("opencola.server.ApplicationKt")
 }
 
 dependencies {
+    implementation(compose.desktop.currentOs)
     implementation(project(":core:util"))
     implementation(project(":core:io"))
     implementation(project(":core:serialization"))
@@ -54,24 +47,18 @@ dependencies {
     implementation(project(":core:storage"))
     implementation(project(":core:network"))
     implementation(project(":core:application"))
-
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
-
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
-
-    // Logging: https://www.kotlinresources.com/library/kotlin-logging/
     implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation("org.apache.james:apache-mime4j-core:$mime4jVersion")
     implementation("org.apache.james:apache-mime4j-dom:$mime4jVersion")
-
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("ch.qos.logback:logback-core:$logbackVersion")
     implementation("org.bouncycastle:bcprov-jdk15on:$bcprovVersion")
     implementation("org.kodein.di:kodein-di:$kodeinVersion")
     implementation("org.kodein.di:kodein-di-framework-ktor-server-jvm:$kodeinVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-cli:$kotlinxCliVersion")
-
     implementation("io.ktor:ktor-server-core-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-netty-jvm:$ktorVersion")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
@@ -97,8 +84,6 @@ dependencies {
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
     testImplementation("com.google.protobuf:protobuf-java:$protobufVersion")
-
-    implementation(compose.desktop.currentOs)
 }
 
 fun getTarget(): TargetFormat {

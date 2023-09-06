@@ -5,14 +5,8 @@ val slf4jVersion: String by project
 val ktorVersion: String by project
 val exposedVersion: String by project
 
-
-// TODO: jvm version should be set as project property
 plugins {
     kotlin("jvm") version "1.7.20"
-}
-
-repositories {
-    mavenCentral()
 }
 
 dependencies {
@@ -33,5 +27,6 @@ dependencies {
     implementation("org.kodein.di:kodein-di:$kodeinVersion")
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
     implementation("io.ktor:ktor-server-netty-jvm:$ktorVersion")
+
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
 }
