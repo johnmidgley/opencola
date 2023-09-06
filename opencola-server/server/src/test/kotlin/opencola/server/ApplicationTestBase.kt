@@ -25,8 +25,9 @@ abstract class ApplicationTestBase(name: String = "ApplicationTest") {
 
     protected fun configure(app: Application) {
         app.install(Authentication) {
-            session<UserSession>("auth-session") {
-                validate { session -> session }
+            basic("auth-session") {
+                // No auth needed for current tests, so ignore auth
+                skipWhen { true }
             }
         }
         app.configureRouting(application, generateAesKey())

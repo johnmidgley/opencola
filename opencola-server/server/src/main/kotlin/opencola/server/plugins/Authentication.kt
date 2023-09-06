@@ -17,8 +17,8 @@ fun Application.configureAuthentication(loginConfig: LoginConfig, authSecretKey:
                 }
             }
 
-            if (loginConfig.authenticationRequired) {
-                challenge {
+            challenge {
+                if (loginConfig.authenticationRequired) {
                     call.respondRedirect("/login")
                 }
             }
