@@ -6,6 +6,7 @@ val logbackVersion: String by project
 
 plugins {
     kotlin("jvm") version "1.7.20"
+    kotlin("plugin.serialization") version "1.6.0"
 }
 
 dependencies {
@@ -14,15 +15,16 @@ dependencies {
     implementation(project(":core:serialization"))
     implementation(project(":core:security"))
     implementation(project(":core:model"))
+
     implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
     implementation("org.apache.lucene:lucene-core:$luceneVersion")
     implementation("org.apache.lucene:lucene-queryparser:$luceneVersion")
     implementation("org.apache.lucene:lucene-backward-codecs:$luceneVersion")
     implementation("org.apache.lucene:lucene-analysis-common:$luceneVersion")
 
-    testImplementation(project(":test"))
-    testImplementation(project(":core:content"))
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
+    testImplementation(project(":test"))
+    testImplementation(project(":core:content"))
     testImplementation("org.apache.james:apache-mime4j-dom:$mime4jVersion")
 }

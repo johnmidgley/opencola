@@ -19,12 +19,14 @@ dependencies {
     implementation(project(":core:search"))
     implementation(project(":core:storage"))
     implementation(project(":relay:common"))
+
     implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
     implementation("com.sksamuel.hoplite:hoplite-core:$hopliteVersion")
     implementation("com.sksamuel.hoplite:hoplite-yaml:$hopliteVersion")
     implementation("org.kodein.di:kodein-di:$kodeinVersion")
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
     implementation("com.google.protobuf:protobuf-java:$protobufVersion")
+
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
     testImplementation(project(":test"))

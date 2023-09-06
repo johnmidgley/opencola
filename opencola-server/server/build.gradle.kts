@@ -1,3 +1,4 @@
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.archivesName
 
 val ktorVersion: String by project
@@ -9,6 +10,7 @@ val kotlinLoggingVersion:String by project
 val slf4jVersion: String by project
 val mime4jVersion: String by project
 val bcprovVersion: String by project
+val hopliteVersion: String by project
 val kodeinVersion: String by project
 val kotlinxCliVersion: String by project
 val protobufVersion: String by project
@@ -16,6 +18,9 @@ val protobufVersion: String by project
 
 plugins {
     application
+    kotlin("jvm") version "1.7.20"
+    kotlin("plugin.serialization") version "1.6.0"
+    id("org.jetbrains.compose") version "1.2.2"
 }
 
 apply {
@@ -49,18 +54,24 @@ dependencies {
     implementation(project(":core:storage"))
     implementation(project(":core:network"))
     implementation(project(":core:application"))
+
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
+
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
+
+    // Logging: https://www.kotlinresources.com/library/kotlin-logging/
     implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation("org.apache.james:apache-mime4j-core:$mime4jVersion")
     implementation("org.apache.james:apache-mime4j-dom:$mime4jVersion")
+
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("ch.qos.logback:logback-core:$logbackVersion")
     implementation("org.bouncycastle:bcprov-jdk15on:$bcprovVersion")
     implementation("org.kodein.di:kodein-di:$kodeinVersion")
     implementation("org.kodein.di:kodein-di-framework-ktor-server-jvm:$kodeinVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-cli:$kotlinxCliVersion")
+
     implementation("io.ktor:ktor-server-core-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-netty-jvm:$ktorVersion")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
@@ -82,9 +93,39 @@ dependencies {
     testImplementation(project(":relay:client"))
     testImplementation(project(":relay:server"))
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
+    testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVersion")
+    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
     testImplementation("com.google.protobuf:protobuf-java:$protobufVersion")
+
+    implementation(compose.desktop.currentOs)
 }
 
+fun getTarget(): TargetFormat {
+    val os = System.getProperty("os.name").toLowerCase()
 
+    return  if(os.contains("mac"))
+        TargetFormat.Dmg
+    else if(os.contains("win"))
+        TargetFormat.Msi
+    else if(os.contains("nux"))
+        TargetFormat.Pkg
+    else
+        TargetFormat.AppImage
+}
 
+compose.desktop {
+//    application {
+//        mainClass = "opencola.server.ApplicationKt"
+//
+//        nativeDistributions {
+//            macOS {
+//                iconFile.set(File("src/main/resources/icons/opencola.icns"))
+//            }
+//            packageName = "OpenCola"
+//            args += listOf("--desktop")
+//            includeAllModules = true
+//            targetFormats(getTarget())
+//        }
+//    }
+}

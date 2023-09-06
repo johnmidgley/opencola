@@ -5,6 +5,7 @@ val protobufVersion: String by project
 
 plugins {
     kotlin("jvm") version "1.7.20"
+    kotlin("plugin.serialization") version "1.6.0"
 }
 
 dependencies {
@@ -14,6 +15,7 @@ dependencies {
     implementation("org.bouncycastle:bcprov-jdk15on:$bcprovVersion")
     implementation("org.bouncycastle:bcpkix-jdk15on:$bcprovVersion")
     implementation("com.google.protobuf:protobuf-java:$protobufVersion")
+
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
 }
