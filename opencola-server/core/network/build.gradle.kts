@@ -9,13 +9,9 @@ val exposedVersion: String by project
 
 plugins {
     kotlin("jvm") version "1.7.20"
-    kotlin("plugin.serialization") version "1.6.0"
 }
 
 dependencies {
-    implementation("ch.qos.logback:logback-classic:$logbackVersion")
-
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
     implementation(project(":core:util"))
     implementation(project(":core:serialization"))
     implementation(project(":core:security"))
@@ -25,6 +21,7 @@ dependencies {
     implementation(project(":relay:client"))
     implementation(project(":relay:common"))
 
+    implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:$kotlinxSerializationVersion")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
