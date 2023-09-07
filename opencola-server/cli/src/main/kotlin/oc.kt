@@ -2,8 +2,6 @@ package io.opencola.cli
 
 import io.opencola.storage.getStoragePath
 import kotlinx.cli.*
-import java.util.*
-
 
 @ExperimentalCli
 class SearchCommand: Subcommand("search", "Perform search operations") {
@@ -63,7 +61,7 @@ fun main(args: Array<String>) {
     var actualPassword: String? = null
     val getPassword = {
         if(actualPassword == null) {
-            actualPassword = password.ifEmpty { readPassword() }
+            actualPassword = password.ifEmpty { readPassword().also { println() } }
         }
         actualPassword!!
     }

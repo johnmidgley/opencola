@@ -17,6 +17,7 @@ application {
 }
 
 dependencies {
+    implementation(project(":core:util"))
     implementation(project(":core:io"))
     implementation(project(":core:serialization"))
     implementation(project(":core:security"))
@@ -24,12 +25,13 @@ dependencies {
     implementation(project(":core:storage"))
     implementation(project(":core:search"))
     implementation(project(":core:application"))
+    implementation(project(":test"))
     // This avoids "No SLF4J providers were found" warning (also lets background logging work)
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("org.kodein.di:kodein-di:$kodeinVersion")
     implementation("org.kodein.di:kodein-di-framework-ktor-server-jvm:$kodeinVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-cli:$kotlinxCliVersion")
-    implementation(project(":test"))
+
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
 }
