@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.archivesName
+
 val ktorVersion: String by project
 val kotlinVersion: String by project
 val logbackVersion: String by project
@@ -8,6 +10,8 @@ plugins {
     application
     kotlin("jvm") version "1.7.20"
 }
+
+archivesName.set("relay-server")
 
 group = "io.opencola"
 version = "1.0-SNAPSHOT"
