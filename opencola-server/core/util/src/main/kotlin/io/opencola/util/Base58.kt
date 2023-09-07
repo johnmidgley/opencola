@@ -139,3 +139,5 @@ object Base58 {
         }
     }
 }
+
+fun ByteArray.toBase58(): String = Base58.encode(this)
