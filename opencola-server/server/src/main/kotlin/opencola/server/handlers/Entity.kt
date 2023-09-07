@@ -310,12 +310,14 @@ fun newPost(
     contentTypeDetector: ContentTypeDetector,
     context: Context,
     persona: PersonaAddressBookEntry,
-    entityPayload: EntityPayload
+    entityPayload: EntityPayload,
+    ocServerPorts: Set<Int>,
 ): EntityResult? {
     val url = entityPayload.description?.trim()
 
     if (url != null && urlRegex.matchEntire(url) != null) {
-        val result = newResourceFromUri(persona, entityStore, eventBus, addressBook, fileStore, contentTypeDetector, URI(url))
+        val uri = URI(url).also { requireNotLocalOCAddress(it, ocServerPorts) }
+        val result = newResourceFromUri(persona, entityStore, eventBus, addressBook, fileStore, contentTypeDetector, uri)
         // TODO: Handle comment and other fields
         if (result != null)
             return result

@@ -17,7 +17,7 @@ class PostTest {
     fun testNewPost() {
         val persona = app.getPersonas().first()
         val entityPayload = EntityPayload("", "Name", "https://image.com", "description", true, "tag", "comment")
-        val result = newPost(app.inject(), app.inject(), app.inject(), app.inject(), app.inject(), Context(""), persona, entityPayload)
+        val result = newPost(app.inject(), app.inject(), app.inject(), app.inject(), app.inject(), Context(""), persona, entityPayload, emptySet())
 
         assertNotNull(result)
 

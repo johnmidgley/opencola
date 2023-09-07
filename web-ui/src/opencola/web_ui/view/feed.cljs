@@ -286,7 +286,6 @@
             deletable? (some #(= @persona-id! (:authorityId %)) (-> item :activities :save))]
         [:div.feed 
          [:div.feed-item
-          [:div.error (:error @edit-item!)]
           (when name-expanded?
             [name-edit-control (:name @edit-item!) (on-change :name)])
           [item-tags-summary-from-string (:tags @edit-item!)] 
