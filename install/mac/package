@@ -20,3 +20,5 @@ jpackage --input ../opencola/server/lib/ \
   --mac-package-name OpenCola \
   --mac-sign \
   --mac-signing-key-user-name "Developer ID Application: John Midgley (95W32CY3BR)"
+
+  mv "OpenCola-$OC_VERSION.dmg" "OpenCola-MacOS-$OC_VERSION"
