@@ -44,6 +44,7 @@ fun readPassword() : String {
 }
 
 @ExperimentalCli
+// TODO: Kotlin CLI is obsolete - try https://github.com/ajalt/clikt
 fun main(args: Array<String>) {
     val parser = ArgParser("oc", strictSubcommandOptionsOrder = true)
     val path by parser.option(ArgType.String, shortName = "s", description = "Storage path").default("")
