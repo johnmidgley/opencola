@@ -194,6 +194,7 @@ fun Application.configureBootstrapRouting(
 fun Application.configureRouting(app: app, authSecretKey: SecretKey) {
     // TODO: Make and user general opencola.server
     val logger = KotlinLogging.logger("opencola.init")
+    val ocServerPorts = listOfNotNull(app.config.server.port, app.config.server.ssl?.port).toSet()
 
     routing {
         // Authentication from https://ktor.io/docs/session-auth.html
@@ -394,7 +395,8 @@ fun Application.configureRouting(app: app, authSecretKey: SecretKey) {
                     app.inject(),
                     getContext(call),
                     expectPersona(call),
-                    call.receive()
+                    call.receive(),
+                    ocServerPorts
                 )?.also {
                     call.respond(it)
                 }
@@ -467,7 +469,7 @@ fun Application.configureRouting(app: app, authSecretKey: SecretKey) {
             }
 
             post("/action") {
-                handlePostActionCall(call, expectPersona(call).personaId, app.inject(), app.inject())
+                handlePostActionCall(call, expectPersona(call).personaId, app.inject(), app.inject(), ocServerPorts)
             }
 
             post("/personas") {

@@ -10,10 +10,10 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.opencola.content.*
-import io.opencola.util.nullOrElse
 import io.opencola.model.*
 import io.opencola.storage.entitystore.EntityStore
 import io.opencola.storage.filestore.ContentBasedFileStore
+import io.opencola.util.nullOrElse
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import java.net.URI
@@ -171,10 +171,8 @@ fun handleAction(
     fileStore: ContentBasedFileStore,
     action: String,
     value: String?,
-    mhtml: ByteArray
+    mhtmlPage: MhtmlPage,
 ) {
-    val mhtmlPage = mhtml.inputStream().use { parseMhtml(it) ?: throw RuntimeException("Unable to parse mhtml") }
-
     val actions = when (action) {
         "save" -> Actions(save = true)
         "like" -> Actions(like = value?.toBooleanStrict() ?: throw RuntimeException("No value specified for like"))
@@ -190,6 +188,7 @@ suspend fun handlePostActionCall(
     authorityId: Id,
     entityStore: EntityStore,
     fileStore: ContentBasedFileStore,
+    ocServerPorts: Set<Int>
 ) {
     val multipart = call.receiveMultipart()
     var action: String? = null
@@ -227,7 +226,9 @@ suspend fun handlePostActionCall(
         throw IllegalArgumentException("No mhtml specified for request")
     }
 
-    handleAction(authorityId, entityStore, fileStore, action as String, value, mhtml as ByteArray)
+    val mhtmlPage = mhtml!!.inputStream().use { parseMhtml(it) ?: throw RuntimeException("Unable to parse mhtml") }
+    requireNotLocalOCAddress(mhtmlPage.uri, ocServerPorts)
+    handleAction(authorityId, entityStore, fileStore, action as String, value, mhtmlPage)
     call.respond(HttpStatusCode.Accepted)
 }
 
