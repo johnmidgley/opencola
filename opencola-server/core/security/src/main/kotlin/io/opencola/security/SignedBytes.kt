@@ -3,7 +3,6 @@ package io.opencola.security
 import com.google.protobuf.ByteString
 import io.opencola.security.protobuf.Security as Proto
 import io.opencola.serialization.protobuf.ProtoSerializable
-import io.opencola.util.Base58
 import java.security.PublicKey
 
 class SignedBytes(val signature: Signature, val bytes: ByteArray) {
@@ -32,10 +31,6 @@ class SignedBytes(val signature: Signature, val bytes: ByteArray) {
 
     fun encodeProto(): ByteArray {
         return encodeProto(this)
-    }
-
-    fun encode(bytes: ByteArray): String {
-        return Base58.encode(sha256(bytes))
     }
 
     fun validate(publicKey: PublicKey): Boolean {

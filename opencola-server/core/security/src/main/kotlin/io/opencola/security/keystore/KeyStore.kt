@@ -1,5 +1,6 @@
-package io.opencola.security
+package io.opencola.security.keystore
 
+import io.opencola.security.PublicKeyProvider
 import java.security.KeyPair
 
 interface KeyStore : PublicKeyProvider<String> {

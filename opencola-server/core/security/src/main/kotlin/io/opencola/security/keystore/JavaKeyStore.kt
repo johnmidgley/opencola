@@ -1,7 +1,9 @@
-package io.opencola.security
+package io.opencola.security.keystore
 
+import io.opencola.security.SecurityProviderDependent
+import io.opencola.security.hash.Sha256Hash
+import io.opencola.security.certificate.createCertificate
 import mu.KotlinLogging
-import io.opencola.util.toHexString
 import java.nio.file.Path
 import java.security.KeyPair
 import java.security.KeyStore as javaKeyStore
@@ -24,18 +26,15 @@ class JavaKeyStore(val path: Path, password: String) : SecurityProviderDependent
     private lateinit var protectionParameter: javaKeyStore.PasswordProtection// = KeyStore.PasswordProtection(passwordHash)
 
     private fun setPassword(password: String) {
-        passwordHash = sha256(password).toHexString().toCharArray()
+        passwordHash = Sha256Hash.ofString(password).toHexString().toCharArray()
         protectionParameter = javaKeyStore.PasswordProtection(passwordHash)
     }
 
     init{
         setPassword(password)
-        if(path.exists()){
-            path.inputStream().use {
-                store.load(it, passwordHash)
-            }
-        } else
-            store.load(null, passwordHash)
+        (if(path.exists()) path.inputStream() else null).let {
+            store.load(it, passwordHash)
+        }
     }
 
     private fun saveStore() {
@@ -71,7 +70,7 @@ class JavaKeyStore(val path: Path, password: String) : SecurityProviderDependent
     }
 
     override fun changePassword(newPassword: String) {
-        val newPasswordHash = sha256(newPassword).toHexString().toCharArray()
+        val newPasswordHash = Sha256Hash.ofString(newPassword).toHexString().toCharArray()
         changePassword(path, String(passwordHash), String(newPasswordHash))
     }
 }

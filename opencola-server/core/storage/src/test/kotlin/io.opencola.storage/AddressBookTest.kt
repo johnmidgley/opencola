@@ -2,8 +2,8 @@ package io.opencola.storage
 
 import io.opencola.application.TestApplication
 import io.opencola.model.Id
-import io.opencola.security.JavaKeyStore
-import io.opencola.security.KeyStore
+import io.opencola.security.keystore.JavaKeyStore
+import io.opencola.security.keystore.KeyStore
 import io.opencola.security.MockKeyStore
 import io.opencola.security.generateKeyPair
 import io.opencola.storage.AddressBookTest.Action.*

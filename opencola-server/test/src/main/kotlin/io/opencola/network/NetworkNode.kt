@@ -6,7 +6,7 @@ import io.opencola.model.Id
 import io.opencola.network.NetworkNode.*
 import io.opencola.network.message.Message
 import io.opencola.network.providers.MockNetworkProvider
-import io.opencola.security.KeyStore
+import io.opencola.security.keystore.KeyStore
 import io.opencola.security.MockKeyStore
 import io.opencola.security.Signator
 import io.opencola.security.generateKeyPair

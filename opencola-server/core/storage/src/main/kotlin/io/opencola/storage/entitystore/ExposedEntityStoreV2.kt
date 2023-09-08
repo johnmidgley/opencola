@@ -42,8 +42,8 @@ class ExposedEntityStoreV2(
     }
 
     private object Facts : LongIdTable("Facts") {
-        val authorityId = binary("authorityId", Id.lengthInBytes).index()
-        val entityId = binary("entityId", Id.lengthInBytes).index()
+        val authorityId = binary("authorityId", Id.LENGTH_IN_BYTES).index()
+        val entityId = binary("entityId", Id.LENGTH_IN_BYTES).index()
         val attribute = long("attribute").references(Attributes.id)
         val value = blob("value")
         val operation = enumeration("operation", Operation::class)

@@ -1,7 +1,7 @@
 package io.opencola.storage
 
 import io.opencola.model.Id
-import io.opencola.security.KeyStore
+import io.opencola.security.keystore.KeyStore
 import io.opencola.security.MockKeyStore
 import io.opencola.storage.addressbook.AbstractAddressBook
 import io.opencola.storage.addressbook.AddressBookEntry

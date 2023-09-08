@@ -3,11 +3,10 @@ package opencola.core.model
 import io.opencola.model.*
 import io.opencola.application.TestApplication
 import io.opencola.model.value.StringValue
-import io.opencola.util.toHexString
 import io.opencola.security.DEFAULT_SIGNATURE_ALGO
+import io.opencola.security.hash.Sha256Hash
 import io.opencola.security.Signator
 import io.opencola.security.Signature
-import io.opencola.security.sha256
 import io.opencola.serialization.EncodingFormat
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
@@ -34,7 +33,7 @@ class TransactionTest {
         val compressedTransaction = CompressedBytes(CompressionFormat.NONE, encodedTransaction)
         val signedTransaction =
             SignedTransaction(EncodingFormat.PROTOBUF, compressedTransaction, Signature(DEFAULT_SIGNATURE_ALGO, "".toByteArray()))
-        val hash = sha256(signedTransaction.encodeProto()).toHexString()
+        val hash = Sha256Hash.ofBytes(signedTransaction.encodeProto()).toHexString()
 
         assertEquals(stableStructureHash, hash, "Serialization change in Transaction - likely a breaking change")
     }

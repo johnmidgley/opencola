@@ -1,7 +1,7 @@
 package io.opencola.network.providers
 
 import io.opencola.network.message.Message
-import io.opencola.security.KeyStore
+import io.opencola.security.keystore.KeyStore
 import io.opencola.security.Signator
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.AddressBookEntry

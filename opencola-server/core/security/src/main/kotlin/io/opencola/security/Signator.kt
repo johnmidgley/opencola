@@ -1,5 +1,7 @@
 package io.opencola.security
 
+import io.opencola.security.keystore.KeyStore
+
 // TODO: Get rid of this and pass around address book?
 class Signator(private val keystore: KeyStore) {
     fun signBytes(alias: String, bytes: ByteArray): Signature {

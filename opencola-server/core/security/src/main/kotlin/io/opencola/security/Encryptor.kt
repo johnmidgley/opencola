@@ -1,5 +1,6 @@
 package io.opencola.security
 
+import io.opencola.security.keystore.KeyStore
 import java.security.PublicKey
 
 class Encryptor(private val keystore: KeyStore) {

@@ -1,9 +1,9 @@
 package io.opencola.model
 
 import com.google.protobuf.ByteString
+import io.opencola.security.hash.Sha256Hash
 import io.opencola.model.protobuf.Model as Proto
 import kotlinx.serialization.Serializable
-import io.opencola.security.sha256
 import io.opencola.serialization.ByteArrayCodec
 import io.opencola.serialization.StreamSerializer
 import io.opencola.serialization.protobuf.ProtoSerializable
@@ -17,7 +17,7 @@ import java.util.*
 @Serializable
 data class Id(private val bytes: ByteArray) : Comparable<Id> {
     init{
-        assert(bytes.size == lengthInBytes) { "Invalid id - size = ${bytes.size} but should be $lengthInBytes" }
+        require(bytes.size == LENGTH_IN_BYTES) { "Invalid id - size = ${bytes.size} but should be $LENGTH_IN_BYTES" }
     }
 
     fun encoded(): ByteArray {
@@ -57,7 +57,7 @@ data class Id(private val bytes: ByteArray) : Comparable<Id> {
     }
 
     companion object Factory : ByteArrayCodec<Id>, StreamSerializer<Id>, ProtoSerializable<Id, Proto.Id> {
-        val lengthInBytes = sha256("").size
+        const val LENGTH_IN_BYTES = 32
 
         // TODO: Should return Id? - empty string is not valid.
         fun decode(value: String): Id {
@@ -69,22 +69,19 @@ data class Id(private val bytes: ByteArray) : Comparable<Id> {
             )
         }
 
-        // IMPORTANT: If ids change, then data cannot be joined together properly. If any new of* methods are added,
-        // make sure to add corresponding stability tests.
-
-        // TODO: Convert of* methods to extension methods?
-        fun ofPublicKey(publicKey: PublicKey) : Id {
-            return Id(sha256(publicKey.encoded))
-        }
-
-        fun ofUri(uri: URI) : Id {
-             return Id(sha256(uri.toString().toByteArray()))
-        }
-
         // TODO: Add constructor that takes stream so whole file doesn't need to be loaded
         // TODO: Think about a data object rather than ByteArray
         fun ofData(data: ByteArray) : Id {
-            return Id(sha256(data))
+            return Id(Sha256Hash.ofBytes(data).bytes)
+        }
+
+        // TODO: Convert of* methods to extension methods?
+        fun ofPublicKey(publicKey: PublicKey) : Id {
+            return ofData(publicKey.encoded)
+        }
+
+        fun ofUri(uri: URI) : Id {
+             return ofData(uri.toString().toByteArray())
         }
 
         fun new() : Id {
@@ -104,7 +101,7 @@ data class Id(private val bytes: ByteArray) : Comparable<Id> {
         }
 
         override fun decode(stream: InputStream): Id {
-            return Id(stream.readNBytes(lengthInBytes))
+            return Id(stream.readNBytes(LENGTH_IN_BYTES))
         }
 
         override fun toProto(value: Id): Proto.Id {

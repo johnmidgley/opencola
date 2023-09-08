@@ -2,7 +2,7 @@ package io.opencola.storage.addressbook
 
 import io.opencola.model.*
 import io.opencola.model.value.StringValue
-import io.opencola.security.KeyStore
+import io.opencola.security.keystore.KeyStore
 import io.opencola.security.Signator
 import io.opencola.storage.entitystore.*
 import io.opencola.util.blankToNull

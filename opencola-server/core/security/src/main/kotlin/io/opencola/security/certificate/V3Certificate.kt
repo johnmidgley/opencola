@@ -1,4 +1,4 @@
-package io.opencola.security
+package io.opencola.security.certificate
 
 import org.bouncycastle.asn1.ASN1Encodable
 import org.bouncycastle.asn1.x500.X500Name

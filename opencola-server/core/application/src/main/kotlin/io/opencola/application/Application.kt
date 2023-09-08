@@ -17,6 +17,8 @@ import io.opencola.network.providers.relay.OCRelayNetworkProvider
 import io.opencola.search.LuceneSearchIndex
 import io.opencola.security.*
 import io.opencola.security.Encryptor
+import io.opencola.security.keystore.JavaKeyStore
+import io.opencola.security.keystore.KeyStore
 import io.opencola.storage.addressbook.*
 import io.opencola.storage.addressbook.EntityStoreAddressBook.Version
 import io.opencola.storage.cache.MhtCache

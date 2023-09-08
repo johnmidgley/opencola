@@ -169,7 +169,7 @@ class OCRelayNetworkProviderTest {
                             getBadPutDataMessageBytes(app0.getPersonas().single().entityId)
                         )
                         // Check that receiver gets the message and ignores it
-                        it.waitUntil("Error handling message: java.lang.AssertionError: Invalid id")
+                        it.waitUntil("Error handling message: java.lang.IllegalArgumentException: Invalid id")
                     }
                 }
             } finally {

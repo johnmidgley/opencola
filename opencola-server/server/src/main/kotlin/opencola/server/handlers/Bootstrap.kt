@@ -2,7 +2,7 @@ package opencola.server.handlers
 
 import io.opencola.application.Application
 import io.opencola.application.SSLConfig
-import io.opencola.security.JavaKeyStore
+import io.opencola.security.keystore.JavaKeyStore
 import mu.KotlinLogging
 import opencola.server.getSSLCertificateStore
 import java.nio.file.Path

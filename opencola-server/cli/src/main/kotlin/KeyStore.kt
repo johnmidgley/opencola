@@ -1,6 +1,6 @@
 package io.opencola.cli
 
-import io.opencola.security.JavaKeyStore
+import io.opencola.security.keystore.JavaKeyStore
 import io.opencola.util.toBase58
 import java.nio.file.Path
 

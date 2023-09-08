@@ -7,6 +7,7 @@ import java.net.URI
 import kotlin.io.path.createTempDirectory
 import kotlin.test.assertNotNull
 import io.opencola.application.TestApplication
+import io.opencola.security.keystore.JavaKeyStore
 import kotlin.test.assertEquals
 
 class KeyStoreTest {

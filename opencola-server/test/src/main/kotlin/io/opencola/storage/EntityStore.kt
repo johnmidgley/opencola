@@ -1,8 +1,8 @@
 package io.opencola.storage
 
 import io.opencola.model.ResourceEntity
-import io.opencola.security.JavaKeyStore
-import io.opencola.security.KeyStore
+import io.opencola.security.keystore.JavaKeyStore
+import io.opencola.security.keystore.KeyStore
 import io.opencola.security.MockKeyStore
 import io.opencola.security.Signator
 import io.opencola.storage.addressbook.AddressBook
