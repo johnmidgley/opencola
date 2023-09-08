@@ -1,11 +1,11 @@
 package io.opencola.search
 
-import mu.KotlinLogging
 import io.opencola.io.recursiveDelete
 import io.opencola.model.CoreAttribute.values
 import io.opencola.model.Entity
 import io.opencola.model.Id
 import io.opencola.util.Base58
+import mu.KotlinLogging
 import org.apache.lucene.analysis.core.KeywordAnalyzer
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper
 import org.apache.lucene.analysis.standard.StandardAnalyzer
@@ -141,7 +141,7 @@ class LuceneSearchIndex(private val storagePath: Path) : AbstractSearchIndex(), 
 
             logger.info{ "Found ${scoreDocs.size} results"}
             val results = scoreDocs.map {
-                val document = indexSearcher.doc(it.doc)
+                val document = indexSearcher.storedFields().document(it.doc)
                 val authorityId = Id.decode(document.get("authorityId"))
                 val entityId = Id.decode(document.get("entityId"))
                 val name = document.get("name")
