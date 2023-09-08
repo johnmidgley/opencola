@@ -69,6 +69,9 @@ data class Id(private val bytes: ByteArray) : Comparable<Id> {
             )
         }
 
+        // IMPORTANT: If ids change, then data cannot be joined together properly. If any new of* methods are added,
+        // make sure to add corresponding stability tests.
+
         // TODO: Convert of* methods to extension methods?
         fun ofPublicKey(publicKey: PublicKey) : Id {
             return Id(sha256(publicKey.encoded))
