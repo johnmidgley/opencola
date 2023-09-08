@@ -63,7 +63,6 @@ class NetworkNode(
     //  not sure if that's needed anymore
     private fun updatePeerStatus(
         peerId: Id,
-        suppressNotifications: Boolean = false,
         update: (PeerStatus) -> PeerStatus
     ): PeerStatus? {
         val peer = addressBook.getEntries().firstOrNull { it.entityId == peerId }

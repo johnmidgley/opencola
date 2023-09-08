@@ -149,7 +149,6 @@ class OCRelayNetworkProviderTest {
 
             println("Starting network node0")
             app0.open(true)
-            val networkNode0 = app0.inject<NetworkNode>()
 
             println("Starting network node1")
             app1.open()
