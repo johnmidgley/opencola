@@ -185,9 +185,7 @@ fun Application.configureBootstrapRouting(
             }
         }
 
-        static("") {
-            resources("bootstrap/${getOS().toString().lowercase()}")
-        }
+        staticResources("", "bootstrap/${getOS().toString().lowercase()}")
     }
 }
 
@@ -508,25 +506,14 @@ fun Application.configureRouting(app: app, authSecretKey: SecretKey) {
                 )
             }
 
-            static {
-                val resourcePath = getResourceFilePath(
-                    "web",
-                    app.storagePath.resolve("resources"),
-                    !app.config.resources.allowEdit
-                )
-                file("/", resourcePath.resolve("index.html").toString())
-            }
-        }
-
-        static {
-            // TODO: Resources don't need to be extracted - can serve right from resources - FIX
-            val resourcePath = getResourceFilePath(
+            getResourceFilePath(
                 "web",
                 app.storagePath.resolve("resources"),
                 !app.config.resources.allowEdit
-            )
-            logger.info("Initializing static resources from $resourcePath")
-            files(resourcePath.toString())
+            ).let {
+                logger.info("Initializing static resources from $it")
+                staticFiles("/", it.toFile())
+            }
         }
 
         post("/networkNode") {
