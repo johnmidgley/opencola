@@ -20,6 +20,7 @@ dependencies {
     implementation(project(":core:network"))
     implementation(project(":core:application"))
     implementation(project(":relay:common"))
+    implementation(project(":relay:server"))
     implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
     implementation("org.kodein.di:kodein-di:$kodeinVersion")
