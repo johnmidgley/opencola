@@ -2,8 +2,6 @@ package io.opencola.cli
 
 import io.opencola.storage.getStoragePath
 import kotlinx.cli.*
-import java.util.*
-
 
 @ExperimentalCli
 class SearchCommand: Subcommand("search", "Perform search operations") {
@@ -46,6 +44,7 @@ fun readPassword() : String {
 }
 
 @ExperimentalCli
+// TODO: Kotlin CLI is obsolete - try https://github.com/ajalt/clikt
 fun main(args: Array<String>) {
     val parser = ArgParser("oc", strictSubcommandOptionsOrder = true)
     val path by parser.option(ArgType.String, shortName = "s", description = "Storage path").default("")
@@ -63,7 +62,7 @@ fun main(args: Array<String>) {
     var actualPassword: String? = null
     val getPassword = {
         if(actualPassword == null) {
-            actualPassword = password.ifEmpty { readPassword() }
+            actualPassword = password.ifEmpty { readPassword().also { println() } }
         }
         actualPassword!!
     }
