@@ -31,7 +31,7 @@ suspend fun startupForm(call: ApplicationCall, message: String? = null) {
                     submitInput { value = "Start" }
                 }
             }
-            script { unsafe { raw("addPasswordHasher(document.querySelector('form'))") } }
+            script { unsafe { raw("onSubmitHashFormFields(document.querySelector('form'), ['password'])") } }
             p {
                 a {
                     href = "/changePassword"
@@ -54,6 +54,7 @@ suspend fun newUserForm(call: ApplicationCall, message: String? = null) {
                 rel = "stylesheet"
                 href = "css/main.css"
             }
+            script { src = "js/main.js" }
         }
         body {
             form(action = "/newUser", encType = FormEncType.applicationXWwwFormUrlEncoded, method = FormMethod.post) {
@@ -102,10 +103,10 @@ suspend fun newUserForm(call: ApplicationCall, message: String? = null) {
                         }
                     }
                 }
-
                 p {
                     submitInput { value = "Start" }
                 }
+                script { unsafe { raw("onSubmitHashFormFields(document.querySelector('form'), ['password', 'passwordConfirm'])") } }
             }
         }
     }
@@ -118,6 +119,7 @@ suspend fun changePasswordForm(call: ApplicationCall, message: String? = null) {
                 rel = "stylesheet"
                 href = "css/main.css"
             }
+            script { src = "js/main.js" }
         }
         body {
             form(
@@ -133,10 +135,10 @@ suspend fun changePasswordForm(call: ApplicationCall, message: String? = null) {
                 table {
                     tr {
                         td {
-                            +"Old Password:"
+                            +"Current Password:"
                         }
                         td {
-                            passwordInput(name = "oldPassword")
+                            passwordInput(name = "password")
                         }
                     }
                     tr {
@@ -159,6 +161,7 @@ suspend fun changePasswordForm(call: ApplicationCall, message: String? = null) {
                 p {
                     submitInput() { value = "Change Password" }
                 }
+                script { unsafe { raw("onSubmitHashFormFields(document.querySelector('form'), ['password', 'newPassword', 'newPasswordConfirm'])") } }
             }
         }
     }

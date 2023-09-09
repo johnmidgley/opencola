@@ -32,33 +32,22 @@ async function sha256(text) {
     return hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
-function addPasswordHasher(form) {
+function onSubmitHashFormFields(form, fields) {
     form.addEventListener('submit', async function (event) {
         event.preventDefault();
 
-        const password = form.elements['password'].value;
-        const passwordHash = await sha256(password);
+        // Clone node to visibly hide the fact that fields are being altered
+        const hiddenForm = form.cloneNode(true);
+        hiddenForm.hidden = true;
 
-        // Create a hidden form field for the hashed password
-        const hiddenForm = document.createElement("form");
-        hiddenForm.style.display = "none"; // Hide the form
-        hiddenForm.method = "post";
-        hiddenForm.action = form.action;
+        // Hash the specified fields
+        for(const field of fields) {
+            const fieldElement = hiddenForm.elements[field];
+            fieldElement.value = await sha256(fieldElement.value);
+        }
 
-        const hiddenInput = document.createElement("input");
-        hiddenInput.type = "hidden";
-        hiddenInput.name = "passwordHash";
-        hiddenInput.value = passwordHash;
-
-        // Append the hidden input to the hidden form
-        hiddenForm.appendChild(hiddenInput);
-
-        // Append the hidden form to the document body
+        // Submit the altered form
         document.body.appendChild(hiddenForm);
-
-        // Submit the hidden form
-        hiddenForm.submit();
-
         hiddenForm.submit();
     });
 }

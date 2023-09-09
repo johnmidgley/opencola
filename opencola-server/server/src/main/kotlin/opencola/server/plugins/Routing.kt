@@ -72,12 +72,12 @@ fun Application.configureBootstrapRouting(
             // TODO: User should be able to choose username for higher (external) security.
             //  This needs to be stored in the keystore, and a change username flow needs to be implemented.
             val username = DEFAULT_USERNAME
-            val passwordHashString = formParameters["passwordHash"]
+            val password = formParameters["password"]
 
-            if (passwordHashString.isNullOrBlank()) {
+            if (password.isNullOrBlank()) {
                 startupForm(call, "Please enter a password")
             } else {
-                val passwordHash = Sha256Hash.fromHexString(passwordHashString)
+                val passwordHash = Sha256Hash.fromHexString(password)
                 if (validateAuthorityKeyStorePassword(storagePath, passwordHash)) {
                     startingPage(call, AuthToken(username).encode(authSecretKey), migratingData)
                     loginCredentials.complete(LoginCredentials(username, passwordHash))
@@ -107,16 +107,15 @@ fun Application.configureBootstrapRouting(
 
             val formParameters = call.receiveParameters()
             val username = DEFAULT_USERNAME
-            val passwordHashString = formParameters["password"]?.let { Sha256Hash.ofString(it).toHexString() }
-            val passwordHashConfirmString =
-                formParameters["passwordConfirm"]?.let { Sha256Hash.ofString(it).toHexString() }
+            val password = formParameters["password"]
+            val passwordConfirm = formParameters["passwordConfirm"]
             val autoStart = formParameters["autoStart"]?.toBoolean() ?: false
 
-            val error = if (passwordHashString.isNullOrBlank() || passwordHashConfirmString.isNullOrBlank())
+            val error = if (password.isNullOrBlank() || passwordConfirm.isNullOrBlank())
                 "You must include a new password and confirm it."
-            else if (passwordHashString == defaultPasswordHash.toHexString())
+            else if (password == defaultPasswordHash.toHexString())
                 "Your password cannot be 'password'"
-            else if (passwordHashString != passwordHashConfirmString)
+            else if (password != passwordConfirm)
                 "Passwords don't match."
             else
                 null
@@ -124,7 +123,7 @@ fun Application.configureBootstrapRouting(
             if (error != null) {
                 newUserForm(call, error)
             } else {
-                val passwordHash = Sha256Hash.fromHexString(passwordHashString!!)
+                val passwordHash = Sha256Hash.fromHexString(password!!)
                 changeAuthorityKeyStorePassword(storagePath, defaultPasswordHash, passwordHash)
                 if (autoStart) {
                     autoStart()
@@ -163,21 +162,20 @@ fun Application.configureBootstrapRouting(
 
         post("/changePassword") {
             val formParameters = call.receiveParameters()
-            val oldPasswordHashString = formParameters["oldPassword"]?.let { Sha256Hash.ofString(it).toHexString() }
-            val passwordHashString = formParameters["newPassword"]?.let { Sha256Hash.ofString(it).toHexString() }
-            val passwordHashConfirmString =
-                formParameters["newPasswordConfirm"]?.let { Sha256Hash.ofString(it).toHexString() }
-            val oldPasswordHash = oldPasswordHashString?.let { Sha256Hash.fromHexString(it) }
+            val oldPassword = formParameters["password"]
+            val newPassword = formParameters["newPassword"]
+            val newPasswordConfirm = formParameters["newPasswordConfirm"]
+            val passwordHash = oldPassword?.let { Sha256Hash.fromHexString(it) }
 
-            val error = if (oldPasswordHashString.isNullOrBlank())
+            val error = if (oldPassword.isNullOrBlank())
                 "Old password is required"
-            else if (passwordHashString.isNullOrBlank() || passwordHashConfirmString.isNullOrBlank())
+            else if (newPassword.isNullOrBlank() || newPasswordConfirm.isNullOrBlank())
                 "You must include a new password and confirm it."
-            else if (passwordHashString == "password")
+            else if (newPassword == "password")
                 "Your password cannot be 'password'"
-            else if (passwordHashString != passwordHashConfirmString)
+            else if (newPassword != newPasswordConfirm)
                 "Passwords don't match."
-            else if (!validateAuthorityKeyStorePassword(storagePath, oldPasswordHash!!))
+            else if (!validateAuthorityKeyStorePassword(storagePath, passwordHash!!))
                 "Old password is incorrect."
             else
                 null
@@ -187,8 +185,8 @@ fun Application.configureBootstrapRouting(
             } else {
                 changeAuthorityKeyStorePassword(
                     storagePath,
-                    oldPasswordHash!!,
-                    Sha256Hash.fromHexString(passwordHashString!!)
+                    passwordHash!!,
+                    Sha256Hash.fromHexString(newPassword!!)
                 )
                 call.respondRedirect("/")
             }
@@ -248,7 +246,7 @@ fun Application.configureRouting(app: app, authSecretKey: SecretKey) {
 
             val formParameters = call.receiveParameters()
             val username = DEFAULT_USERNAME
-            val passwordHashString = formParameters["password"]?.let { Sha256Hash.ofString(it).toHexString() }
+            val passwordHashString = formParameters["password"]
 
             if (passwordHashString.isNullOrBlank()) {
                 loginPage(call, "Please enter a password")
@@ -530,6 +528,9 @@ fun Application.configureRouting(app: app, authSecretKey: SecretKey) {
                 staticFiles("/", it.toFile())
             }
         }
+
+        // Needed for login, when user is not authenticated
+        staticResources("js", "web/js")
 
         post("/networkNode") {
             app.inject<HttpNetworkProvider>().handleMessage(call.receive<ByteArray>())

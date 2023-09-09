@@ -11,6 +11,7 @@ suspend fun loginPage(call: ApplicationCall, message: String? = null) {
                 rel = "stylesheet"
                 href = "css/main.css"
             }
+            script { src = "js/main.js" }
         }
         body {
             form(action = "/login", encType = FormEncType.applicationXWwwFormUrlEncoded, method = FormMethod.post) {
@@ -27,6 +28,7 @@ suspend fun loginPage(call: ApplicationCall, message: String? = null) {
                     submitInput { value = "Login" }
                 }
             }
+            script { unsafe { raw("onSubmitHashFormFields(document.querySelector('form'), ['password'])") } }
         }
     }
 }
