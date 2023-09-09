@@ -16,7 +16,9 @@ import java.util.*
 
 @Serializable
 data class Id(private val bytes: ByteArray) : Comparable<Id> {
-    init{
+    init {
+        if (bytes.size != LENGTH_IN_BYTES)
+            println("Invalid id - size = ${bytes.size} but should be $LENGTH_IN_BYTES")
         require(bytes.size == LENGTH_IN_BYTES) { "Invalid id - size = ${bytes.size} but should be $LENGTH_IN_BYTES" }
     }
 
@@ -24,7 +26,7 @@ data class Id(private val bytes: ByteArray) : Comparable<Id> {
         return bytes
     }
 
-    fun legacyEncodeToString() : String {
+    fun legacyEncodeToString(): String {
         return bytes.toHexString()
     }
 
@@ -42,17 +44,17 @@ data class Id(private val bytes: ByteArray) : Comparable<Id> {
     }
 
     override fun equals(other: Any?): Boolean {
-        return if(other is Id)
+        return if (other is Id)
             return bytes.contentEquals(other.bytes)
         else
             false
     }
 
-    fun toProto() : Proto.Id {
+    fun toProto(): Proto.Id {
         return Factory.toProto(this)
     }
 
-    fun encodeProto() : ByteArray {
+    fun encodeProto(): ByteArray {
         return toProto().toByteArray()
     }
 
@@ -69,31 +71,35 @@ data class Id(private val bytes: ByteArray) : Comparable<Id> {
             )
         }
 
+        fun tryDecode(value: String?): Id? {
+            return if (value.isNullOrBlank()) null else decode(value)
+        }
+
         // TODO: Add constructor that takes stream so whole file doesn't need to be loaded
         // TODO: Think about a data object rather than ByteArray
-        fun ofData(data: ByteArray) : Id {
+        fun ofData(data: ByteArray): Id {
             return Id(Sha256Hash.ofBytes(data).bytes)
         }
 
         // TODO: Convert of* methods to extension methods?
-        fun ofPublicKey(publicKey: PublicKey) : Id {
+        fun ofPublicKey(publicKey: PublicKey): Id {
             return ofData(publicKey.encoded)
         }
 
-        fun ofUri(uri: URI) : Id {
-             return ofData(uri.toString().toByteArray())
+        fun ofUri(uri: URI): Id {
+            return ofData(uri.toString().toByteArray())
         }
 
-        fun new() : Id {
+        fun new(): Id {
             return ofData(UUID.randomUUID().toByteArray())
         }
 
         override fun encode(value: Id): ByteArray {
-             return value.bytes
+            return value.bytes
         }
 
         override fun decode(value: ByteArray): Id {
-             return Id(value)
+            return Id(value)
         }
 
         override fun encode(stream: OutputStream, value: Id) {
@@ -120,6 +126,6 @@ data class Id(private val bytes: ByteArray) : Comparable<Id> {
     }
 }
 
-fun Proto.Id.toId() : Id {
+fun Proto.Id.toId(): Id {
     return Id.fromProto(this)
 }

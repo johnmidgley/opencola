@@ -1,5 +1,7 @@
 package io.opencola.cli
 
+import io.opencola.security.hash.Hash
+import io.opencola.security.hash.Sha256Hash
 import io.opencola.storage.getStoragePath
 import kotlinx.cli.*
 
@@ -59,10 +61,10 @@ fun main(args: Array<String>) {
     val actualStoragePath = getStoragePath(path)
     println("Storage path: $actualStoragePath")
 
-    var actualPassword: String? = null
+    var actualPassword: Hash? = null
     val getPassword = {
         if(actualPassword == null) {
-            actualPassword = password.ifEmpty { readPassword().also { println() } }
+            actualPassword = Sha256Hash.ofString(password.ifEmpty { readPassword().also { println() } })
         }
         actualPassword!!
     }

@@ -1,5 +1,6 @@
 package io.opencola.security
 
+import io.opencola.security.hash.Hash
 import io.opencola.security.keystore.KeyStore
 import java.security.KeyPair
 import java.security.PublicKey
@@ -23,7 +24,7 @@ class MockKeyStore : KeyStore {
         return keyPairs.keys.toList()
     }
 
-    override fun changePassword(newPassword: String) {
+    override fun changePassword(newPasswordHash: Hash) {
         return
     }
 

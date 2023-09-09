@@ -12,6 +12,8 @@ import io.opencola.event.Events
 import io.opencola.network.NetworkNode
 import io.opencola.security.encode
 import io.opencola.security.generateAesKey
+import io.opencola.security.hash.Hash
+import io.opencola.security.hash.Sha256Hash
 import io.opencola.security.initProvider
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
@@ -31,6 +33,7 @@ import java.net.Inet4Address
 import java.net.URI
 import java.nio.file.Path
 import javax.crypto.SecretKey
+import kotlin.text.toCharArray
 
 private val logger = KotlinLogging.logger("opencola")
 private const val sslCertStorePassword = "password"
@@ -42,8 +45,9 @@ fun getApplication(
     loginCredentials: LoginCredentials
 ): Application {
     // TODO: Is getOrCreateRootKeyPair needed outside of App.instance()?
-    val keyPairs = Application.getOrCreateRootKeyPair(storagePath, loginCredentials.password)
-    val application = Application.instance(storagePath, config, keyPairs, loginCredentials.password)
+    val hashedPassword = loginCredentials.passwordHash
+    val keyPairs = Application.getOrCreateRootKeyPair(storagePath, hashedPassword)
+    val application = Application.instance(storagePath, config, keyPairs, hashedPassword)
     val addressBook = application.inject<AddressBook>()
 
     addressBook.getEntries()
@@ -123,7 +127,7 @@ fun getServer(application: Application, authSecretKey: SecretKey): NettyApplicat
     return embeddedServer(Netty, environment)
 }
 
-data class LoginCredentials(val username: String, val password: String)
+data class LoginCredentials(val username: String, val passwordHash: Hash)
 
 suspend fun getLoginCredentials(
     storagePath: Path,
@@ -134,7 +138,7 @@ suspend fun getLoginCredentials(
     val loginCredentials = CompletableDeferred<LoginCredentials>()
 
     if (loginConfig.password != null) {
-        return LoginCredentials(loginConfig.username, loginConfig.password!!)
+        return LoginCredentials(loginConfig.username, Sha256Hash.ofString(loginConfig.password!!))
     }
 
     val environment = applicationEngineEnvironment {

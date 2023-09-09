@@ -1,8 +1,9 @@
 package io.opencola.security.keystore
 
 import io.opencola.security.SecurityProviderDependent
-import io.opencola.security.hash.Sha256Hash
 import io.opencola.security.certificate.createCertificate
+import io.opencola.security.hash.Hash
+import io.opencola.security.hash.Sha256Hash
 import mu.KotlinLogging
 import java.nio.file.Path
 import java.security.KeyPair
@@ -12,34 +13,30 @@ import kotlin.io.path.exists
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 
+val defaultPasswordHash = Sha256Hash.ofString("password")
+
 // TODO: Add logging
 // TODO: Think about an appropriate HSM
 // TODO: Investigate secure strings
 // TODO: Make abstract keystore that is base for cert store and authority store
 // TODO: Make AuthorityKeyStore, that has encrypt and sign methods
-class JavaKeyStore(val path: Path, password: String) : SecurityProviderDependent(), KeyStore {
+class JavaKeyStore(val path: Path, private val passwordHash: Hash) : SecurityProviderDependent(), KeyStore {
     val logger = KotlinLogging.logger(this.javaClass.simpleName)
 
     // TODO: Move parameters to config
     private var store: javaKeyStore = javaKeyStore.getInstance("PKCS12","BC")
-    private lateinit var passwordHash: CharArray//  = sha256(password).toHexString().toCharArray()
-    private lateinit var protectionParameter: javaKeyStore.PasswordProtection// = KeyStore.PasswordProtection(passwordHash)
-
-    private fun setPassword(password: String) {
-        passwordHash = Sha256Hash.ofString(password).toHexString().toCharArray()
-        protectionParameter = javaKeyStore.PasswordProtection(passwordHash)
-    }
+    private var passwordHashCharArray = passwordHash.toHexString().toCharArray()
+    private var protectionParameter = javaKeyStore.PasswordProtection(passwordHashCharArray)
 
     init{
-        setPassword(password)
         (if(path.exists()) path.inputStream() else null).let {
-            store.load(it, passwordHash)
+            store.load(it, passwordHashCharArray)
         }
     }
 
     private fun saveStore() {
         path.outputStream().use {
-            store.store(it, passwordHash)
+            store.store(it, passwordHashCharArray)
         }
     }
 
@@ -69,9 +66,8 @@ class JavaKeyStore(val path: Path, password: String) : SecurityProviderDependent
         return store.aliases().toList()
     }
 
-    override fun changePassword(newPassword: String) {
-        val newPasswordHash = Sha256Hash.ofString(newPassword).toHexString().toCharArray()
-        changePassword(path, String(passwordHash), String(newPasswordHash))
+    override fun changePassword(newPasswordHash: Hash) {
+        changePassword(path, passwordHash, newPasswordHash)
     }
 }
 
@@ -88,14 +84,14 @@ fun isPasswordValid(keyStorePath: Path, password: String): Boolean {
     return true
 }
 
-fun changePassword(keyStorePath: Path, oldPassword: String, newPassword: String) {
+fun changePassword(keyStorePath: Path, oldPasswordHash: Hash, newPasswordHash: Hash) {
     val store = javaKeyStore.getInstance("PKCS12", "BC")
 
     keyStorePath.inputStream().use { inputStream ->
-        store.load(inputStream, oldPassword.toCharArray())
+        store.load(inputStream, oldPasswordHash.toHexString().toCharArray())
 
         keyStorePath.outputStream().use {
-            store.store(it, newPassword.toCharArray())
+            store.store(it, newPasswordHash.toHexString().toCharArray())
         }
     }
 }

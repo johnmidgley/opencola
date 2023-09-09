@@ -2,7 +2,9 @@ package opencola.server.handlers
 
 import io.opencola.application.Application
 import io.opencola.application.SSLConfig
+import io.opencola.security.hash.Hash
 import io.opencola.security.keystore.JavaKeyStore
+import io.opencola.security.keystore.defaultPasswordHash
 import mu.KotlinLogging
 import opencola.server.getSSLCertificateStore
 import java.nio.file.Path
@@ -20,14 +22,14 @@ fun getAuthorityStorePath(storagePath: Path): Path {
     return storagePath.resolve("keystore.pks")
 }
 
-fun validateAuthorityKeyStorePassword(storagePath: Path, password: String): Boolean {
+fun validateAuthorityKeyStorePassword(storagePath: Path, passwordHash: Hash): Boolean {
     try {
         val keyStorePath = getAuthorityStorePath(storagePath)
         if(keyStorePath.exists()) {
-            JavaKeyStore(keyStorePath, password)
+            JavaKeyStore(keyStorePath, passwordHash)
         }
     } catch (e: Exception) {
-        if(password != "password")
+        if(passwordHash != defaultPasswordHash)
             logger.error { "Bad keystore password: ${e.message }" }
         return false
     }
@@ -36,13 +38,13 @@ fun validateAuthorityKeyStorePassword(storagePath: Path, password: String): Bool
 }
 
 // TODO: Move to authority store specific place
-fun changeAuthorityKeyStorePassword(storagePath: Path, oldPassword: String, newPassword: String) {
-    JavaKeyStore(getAuthorityStorePath(storagePath), oldPassword).changePassword(newPassword)
+fun changeAuthorityKeyStorePassword(storagePath: Path, oldPasswordHash: Hash, newPasswordHash: Hash) {
+    JavaKeyStore(getAuthorityStorePath(storagePath), oldPasswordHash).changePassword(newPasswordHash)
 }
 
 fun isNewUser(storagePath: Path): Boolean {
     val authorityStorePath = getAuthorityStorePath(storagePath)
-    return !authorityStorePath.exists() || validateAuthorityKeyStorePassword(storagePath, "password")
+    return !authorityStorePath.exists() || validateAuthorityKeyStorePassword(storagePath, defaultPasswordHash)
 }
 
 fun bootstrapInit(storagePath: Path, sslConfig: SSLConfig) {
@@ -51,7 +53,7 @@ fun bootstrapInit(storagePath: Path, sslConfig: SSLConfig) {
 
     if(isNewUser(storagePath)) {
         if(!authorityStorePath.exists())
-            Application.getOrCreateRootKeyPair(storagePath, "password")
+            Application.getOrCreateRootKeyPair(storagePath, defaultPasswordHash)
 
         if(!certStorePath.exists())
             getSSLCertificateStore(storagePath, "password", sslConfig)

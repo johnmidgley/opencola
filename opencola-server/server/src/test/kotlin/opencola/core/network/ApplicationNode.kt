@@ -5,6 +5,7 @@ import io.opencola.application.*
 import io.opencola.application.TestApplication
 import io.opencola.network.NetworkConfig
 import io.opencola.security.generateAesKey
+import io.opencola.security.keystore.defaultPasswordHash
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import opencola.server.getServer
@@ -113,7 +114,7 @@ class ApplicationNode(val application: Application) : Node {
                     )
             }
 
-            val instance = Application.instance(storagePath, "password", configToUse)
+            val instance = Application.instance(storagePath, defaultPasswordHash, configToUse)
             setRootAuthorityName(instance, name)
 
             return ApplicationNode(instance)

@@ -2,6 +2,7 @@ package io.opencola.application
 
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.model.Id
+import io.opencola.security.keystore.defaultPasswordHash
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import java.net.URI
@@ -27,13 +28,13 @@ fun getApplications(
                     baseAppConfig
                         .setName(name)
                         .setServer(ServerConfig(baseAppConfig.server.host, basePortNumber + serverNum, null))
-                val keyPairs = Application.getOrCreateRootKeyPair(storagePath, "password")
+                val keyPairs = Application.getOrCreateRootKeyPair(storagePath, defaultPasswordHash)
                 val address = personaAddress ?: URI("http://${config.server.host}:${config.server.port}")
             }
         }
 
     val applications = instanceConfigs.map { ic ->
-        Application.instance(ic.storagePath, ic.config, ic.keyPairs,"password").also { application ->
+        Application.instance(ic.storagePath, ic.config, ic.keyPairs,defaultPasswordHash).also { application ->
             // Connect to peers
             val addressBook = application.inject<AddressBook>()
             val persona = addressBook.getEntries().filterIsInstance<PersonaAddressBookEntry>().single()

@@ -5,6 +5,7 @@ import io.opencola.search.SearchIndex
 import io.opencola.security.keystore.JavaKeyStore
 import io.opencola.security.decodePrivateKey
 import io.opencola.security.decodePublicKey
+import io.opencola.security.keystore.defaultPasswordHash
 import org.kodein.di.instance
 import java.net.URI
 import java.nio.file.Path
@@ -40,10 +41,10 @@ object TestApplication {
 
     val instance by lazy {
         val authority = Authority(authorityPublicKey, URI("http://test"), "Test Authority")
-        val keyStore = JavaKeyStore(storagePath.resolve("keystore.pks"),"password")
+        val keyStore = JavaKeyStore(storagePath.resolve("keystore.pks"), defaultPasswordHash)
         val keyPair = KeyPair(authorityPublicKey, authorityPrivateKey)
         keyStore.addKeyPair(authority.authorityId.toString(), keyPair)
-        val instance =  Application.instance(storagePath, config, listOf(keyPair), "password")
+        val instance =  Application.instance(storagePath, config, listOf(keyPair), defaultPasswordHash)
         val index by instance.injector.instance<SearchIndex>()
 
         // Clear out any existing index
@@ -68,7 +69,7 @@ object TestApplication {
 
     fun newApplication(): Application {
         val applicationStoragePath = getTmpDirectory(".storage")
-        val publicKey = Application.getOrCreateRootKeyPair(applicationStoragePath, "password")
-        return Application.instance(applicationStoragePath, config, publicKey, "password")
+        val publicKey = Application.getOrCreateRootKeyPair(applicationStoragePath, defaultPasswordHash)
+        return Application.instance(applicationStoragePath, config, publicKey, defaultPasswordHash)
     }
 }

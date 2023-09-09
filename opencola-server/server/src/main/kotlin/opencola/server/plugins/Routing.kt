@@ -15,6 +15,8 @@ import io.opencola.application.ServerConfig
 import io.opencola.application.getResourceFilePath
 import io.opencola.model.Id
 import io.opencola.network.providers.http.HttpNetworkProvider
+import io.opencola.security.hash.Sha256Hash
+import io.opencola.security.keystore.defaultPasswordHash
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import io.opencola.system.*
@@ -70,14 +72,15 @@ fun Application.configureBootstrapRouting(
             // TODO: User should be able to choose username for higher (external) security.
             //  This needs to be stored in the keystore, and a change username flow needs to be implemented.
             val username = DEFAULT_USERNAME
-            val password = formParameters["password"]
+            val passwordHashString = formParameters["password"]?.let { Sha256Hash.ofString(it).toHexString() }
 
-            if (password.isNullOrBlank()) {
+            if (passwordHashString.isNullOrBlank()) {
                 startupForm(call, "Please enter a password")
             } else {
-                if (validateAuthorityKeyStorePassword(storagePath, password)) {
+                val passwordHash = Sha256Hash.fromHexString(passwordHashString)
+                if (validateAuthorityKeyStorePassword(storagePath, passwordHash)) {
                     startingPage(call, AuthToken(username).encode(authSecretKey), migratingData)
-                    loginCredentials.complete(LoginCredentials(username, password.toString()))
+                    loginCredentials.complete(LoginCredentials(username, passwordHash))
                 } else
                     startupForm(call, "Bad password")
             }
@@ -104,15 +107,16 @@ fun Application.configureBootstrapRouting(
 
             val formParameters = call.receiveParameters()
             val username = DEFAULT_USERNAME
-            val password = formParameters["password"]
-            val passwordConfirm = formParameters["passwordConfirm"]
+            val passwordHashString = formParameters["password"]?.let { Sha256Hash.ofString(it).toHexString() }
+            val passwordHashConfirmString =
+                formParameters["passwordConfirm"]?.let { Sha256Hash.ofString(it).toHexString() }
             val autoStart = formParameters["autoStart"]?.toBoolean() ?: false
 
-            val error = if (password.isNullOrBlank() || passwordConfirm.isNullOrBlank())
+            val error = if (passwordHashString.isNullOrBlank() || passwordHashConfirmString.isNullOrBlank())
                 "You must include a new password and confirm it."
-            else if (password == "password")
+            else if (passwordHashString == defaultPasswordHash.toHexString())
                 "Your password cannot be 'password'"
-            else if (password != passwordConfirm)
+            else if (passwordHashString != passwordHashConfirmString)
                 "Passwords don't match."
             else
                 null
@@ -120,13 +124,14 @@ fun Application.configureBootstrapRouting(
             if (error != null) {
                 newUserForm(call, error)
             } else {
-                changeAuthorityKeyStorePassword(storagePath, "password", password!!)
+                val passwordHash = Sha256Hash.fromHexString(passwordHashString!!)
+                changeAuthorityKeyStorePassword(storagePath, defaultPasswordHash, passwordHash)
                 if (autoStart) {
                     autoStart()
                 }
                 startingPage(call, AuthToken(username).encode(authSecretKey), migratingData)
                 delay(1000)
-                loginCredentials.complete(LoginCredentials(username, password.toString()))
+                loginCredentials.complete(LoginCredentials(username, passwordHash))
             }
         }
 
@@ -158,21 +163,21 @@ fun Application.configureBootstrapRouting(
 
         post("/changePassword") {
             val formParameters = call.receiveParameters()
-            val oldPassword = formParameters["oldPassword"]
-            val password = formParameters["newPassword"]
-            val passwordConfirm = formParameters["newPasswordConfirm"]
+            val oldPasswordHashString = formParameters["oldPassword"]?.let { Sha256Hash.ofString(it).toHexString() }
+            val passwordHashString = formParameters["newPassword"]?.let { Sha256Hash.ofString(it).toHexString() }
+            val passwordHashConfirmString =
+                formParameters["newPasswordConfirm"]?.let { Sha256Hash.ofString(it).toHexString() }
+            val oldPasswordHash = oldPasswordHashString?.let { Sha256Hash.fromHexString(it) }
 
-            val error = if (oldPassword == null || oldPassword.isBlank())
+            val error = if (oldPasswordHashString.isNullOrBlank())
                 "Old password is required"
-            else if (password == null || password.isBlank()
-                || passwordConfirm == null || passwordConfirm.isBlank()
-            )
+            else if (passwordHashString.isNullOrBlank() || passwordHashConfirmString.isNullOrBlank())
                 "You must include a new password and confirm it."
-            else if (password == "password")
+            else if (passwordHashString == "password")
                 "Your password cannot be 'password'"
-            else if (password != passwordConfirm)
+            else if (passwordHashString != passwordHashConfirmString)
                 "Passwords don't match."
-            else if (!validateAuthorityKeyStorePassword(storagePath, oldPassword))
+            else if (!validateAuthorityKeyStorePassword(storagePath, oldPasswordHash!!))
                 "Old password is incorrect."
             else
                 null
@@ -180,7 +185,11 @@ fun Application.configureBootstrapRouting(
             if (error != null) {
                 changePasswordForm(call, error)
             } else {
-                changeAuthorityKeyStorePassword(storagePath, oldPassword!!, password!!)
+                changeAuthorityKeyStorePassword(
+                    storagePath,
+                    oldPasswordHash!!,
+                    Sha256Hash.fromHexString(passwordHashString!!)
+                )
                 call.respondRedirect("/")
             }
         }
@@ -204,8 +213,9 @@ fun Application.configureRouting(app: app, authSecretKey: SecretKey) {
         }
 
         fun getPersona(call: ApplicationCall): PersonaAddressBookEntry? {
-            val personaId = call.parameters["personaId"]?.let { Id.decode(it) } ?: return null
-            return app.inject<AddressBook>().getEntry(personaId, personaId) as? PersonaAddressBookEntry
+            return call.parameters["personaId"]
+                ?.let { Id.tryDecode(it) }
+                ?.let { app.inject<AddressBook>().getEntry(it, it) as? PersonaAddressBookEntry }
         }
 
         fun getContext(call: ApplicationCall): Context {
@@ -237,11 +247,15 @@ fun Application.configureRouting(app: app, authSecretKey: SecretKey) {
 
             val formParameters = call.receiveParameters()
             val username = DEFAULT_USERNAME
-            val password = formParameters["password"]
+            val passwordHashString = formParameters["password"]?.let { Sha256Hash.ofString(it).toHexString() }
 
-            if (password.isNullOrBlank()) {
+            if (passwordHashString.isNullOrBlank()) {
                 loginPage(call, "Please enter a password")
-            } else if (validateAuthorityKeyStorePassword(app.storagePath, password)) {
+            } else if (validateAuthorityKeyStorePassword(
+                    app.storagePath,
+                    Sha256Hash.fromHexString(passwordHashString)
+                )
+            ) {
                 val authToken = AuthToken(username).encode(authSecretKey)
                 call.sessions.set(UserSession(authToken))
                 call.respondRedirect("/")

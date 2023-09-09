@@ -17,6 +17,7 @@ import io.opencola.network.providers.relay.OCRelayNetworkProvider
 import io.opencola.search.LuceneSearchIndex
 import io.opencola.security.*
 import io.opencola.security.Encryptor
+import io.opencola.security.hash.Hash
 import io.opencola.security.keystore.JavaKeyStore
 import io.opencola.security.keystore.KeyStore
 import io.opencola.storage.addressbook.*
@@ -58,8 +59,8 @@ working properly, you can delete entity-store.db and address-book.db.
 """.trimIndent()
 
         // TODO: Rename - not single keypair anymore. Maybe getOrCreateRootKeyPairs, but doesn't seem right.
-        fun getOrCreateRootKeyPair(storagePath: Path, password: String): List<KeyPair> {
-            val keyStore = JavaKeyStore(storagePath.resolve("keystore.pks"), password)
+        fun getOrCreateRootKeyPair(storagePath: Path, passwordHash: Hash): List<KeyPair> {
+            val keyStore = JavaKeyStore(storagePath.resolve("keystore.pks"), passwordHash)
 
             if (keyStore.getAliases().isEmpty()) {
                 generateKeyPair().also { keyStore.addKeyPair(Id.ofPublicKey(it.public).toString(), it) }
@@ -134,12 +135,12 @@ working properly, you can delete entity-store.db and address-book.db.
         }
 
         // TODO: Should probably pass in keyStore vs. personaKeyPairs. The keyStore should be able to get the personaKeyPairs
-        fun instance(storagePath: Path, config: Config, personaKeyPairs: List<KeyPair>, password: String): Application {
+        fun instance(storagePath: Path, config: Config, personaKeyPairs: List<KeyPair>, passwordHash: Hash): Application {
             if (!storagePath.exists()) {
                 File(storagePath.toString()).mkdirs()
             }
 
-            val keyStore = JavaKeyStore(storagePath.resolve("keystore.pks"), password)
+            val keyStore = JavaKeyStore(storagePath.resolve("keystore.pks"), passwordHash)
             val fileStore = LocalContentBasedFileStore(storagePath.resolve("filestore"))
 
             migrateEntityStoreV1ToV2(storagePath, keyStore)
@@ -193,10 +194,10 @@ working properly, you can delete entity-store.db and address-book.db.
             }
         }
 
-        fun instance(storagePath: Path, password: String, config: Config? = null): Application {
+        fun instance(storagePath: Path, passwordHash: Hash, config: Config? = null): Application {
             val appConfig = config ?: loadConfig(storagePath.resolve("opencola-server.yaml"))
-            val personaKeyPairs = getOrCreateRootKeyPair(storagePath, password)
-            return instance(storagePath, appConfig, personaKeyPairs, password)
+            val personaKeyPairs = getOrCreateRootKeyPair(storagePath, passwordHash)
+            return instance(storagePath, appConfig, personaKeyPairs, passwordHash)
         }
     }
 

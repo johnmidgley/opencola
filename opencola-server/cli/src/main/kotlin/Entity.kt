@@ -2,22 +2,23 @@ package io.opencola.cli
 
 import io.opencola.model.Id
 import io.opencola.security.MockKeyStore
+import io.opencola.security.hash.Hash
 import io.opencola.storage.entitystore.EntityStore
 import io.opencola.storage.ExposedEntityStoreContext
 import java.nio.file.Path
 import kotlin.io.path.createDirectory
 
-fun entityStoreContext(storagePath: Path, password: String? = null): ExposedEntityStoreContext {
-    return if(password != null)
-        ExposedEntityStoreContext(storagePath, password)
+fun entityStoreContext(storagePath: Path, passwordHash: Hash? = null): ExposedEntityStoreContext {
+    return if(passwordHash != null)
+        ExposedEntityStoreContext(storagePath, passwordHash)
     else
-        ExposedEntityStoreContext(storagePath, "password", MockKeyStore())
+        ExposedEntityStoreContext(storagePath, keyStore =  MockKeyStore())
 }
 
-fun rebuildEntityStore(sourcePath: Path, password: String, destPath: Path) {
+fun rebuildEntityStore(sourcePath: Path, passwordHash: Hash, destPath: Path) {
     if(!destPath.toFile().exists()) { destPath.createDirectory() }
 
-    val sourceContext = ExposedEntityStoreContext(sourcePath, password)
+    val sourceContext = ExposedEntityStoreContext(sourcePath, passwordHash)
     val destContext = ExposedEntityStoreContext(
         destPath,
         sourceContext.password,
@@ -77,13 +78,13 @@ fun ls(storagePath: Path) {
     }
 }
 
-fun entity(storagePath: Path, entityCommand: EntityCommand, getPassword: () -> String) {
+fun entity(storagePath: Path, entityCommand: EntityCommand, getPasswordHash: () -> Hash) {
     if(entityCommand.cat != null) {
         cat(storagePath, entityCommand.cat!!)
     } else if (entityCommand.ls == true) {
         ls(storagePath)
     } else if(entityCommand.rebuild != null) {
-        rebuildEntityStore(storagePath, getPassword(), storagePath.resolve("entity-rebuild-${System.currentTimeMillis()}"))
+        rebuildEntityStore(storagePath, getPasswordHash(), storagePath.resolve("entity-rebuild-${System.currentTimeMillis()}"))
     } else if(entityCommand.cmp != null) {
         val entityStore1 = entityStoreContext(storagePath).entityStore
         val entityStore2 = entityStoreContext(Path.of(entityCommand.cmp!!)).entityStore

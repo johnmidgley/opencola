@@ -7,21 +7,23 @@ import java.net.URI
 import kotlin.io.path.createTempDirectory
 import kotlin.test.assertNotNull
 import io.opencola.application.TestApplication
+import io.opencola.security.hash.Sha256Hash
 import io.opencola.security.keystore.JavaKeyStore
+import io.opencola.security.keystore.defaultPasswordHash
 import kotlin.test.assertEquals
 
 class KeyStoreTest {
     @Test
     fun testAddKey(){
         val keyStorePath = createTempDirectory().resolve("keystore.fks")
-        val password = "password"
+        val passwordHash = defaultPasswordHash
 
-        val keyStore = JavaKeyStore(keyStorePath, password)
+        val keyStore = JavaKeyStore(keyStorePath, passwordHash)
         val keyPair = generateKeyPair()
         val authority = Authority(keyPair.public, URI(""), "Test Authority")
         keyStore.addKeyPair(authority.authorityId.toString(), keyPair)
 
-        val keyStore1 = JavaKeyStore(keyStorePath, password)
+        val keyStore1 = JavaKeyStore(keyStorePath, passwordHash)
 
         val privateKey1 = keyStore1.getKeyPair(authority.entityId.toString())?.private
         val publicKey1 = keyStore1.getPublicKey(authority.entityId.toString())
@@ -46,19 +48,19 @@ class KeyStoreTest {
     @Test
     fun testChangePassword() {
         val keyStorePath = TestApplication.getTmpFilePath("pks")
-        val password = "password"
-        val newPassword = "newPassword"
+        val passwordHash = defaultPasswordHash
+        val newPasswordHash = Sha256Hash.ofString("newPassword")
 
-        val keyStore = JavaKeyStore(keyStorePath, password)
+        val keyStore = JavaKeyStore(keyStorePath, passwordHash)
         val keyPair = generateKeyPair()
         val authority = Authority(keyPair.public, URI(""), "Test Authority")
         keyStore.addKeyPair(authority.authorityId.toString(), keyPair)
         assertNotNull(keyStore.getPublicKey(authority.authorityId.toString()))
-        keyStore.changePassword(newPassword)
+        keyStore.changePassword(newPasswordHash)
         val pubKey = keyStore.getPublicKey(authority.authorityId.toString())
         assertNotNull(pubKey)
 
-        val keyStore1 = JavaKeyStore(keyStorePath, newPassword)
+        val keyStore1 = JavaKeyStore(keyStorePath, newPasswordHash)
         val pubKey1 = keyStore1.getPublicKey(authority.authorityId.toString())
         assertNotNull(pubKey1)
         assertEquals(pubKey, pubKey1)

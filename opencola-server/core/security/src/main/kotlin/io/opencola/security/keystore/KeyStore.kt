@@ -1,6 +1,7 @@
 package io.opencola.security.keystore
 
 import io.opencola.security.PublicKeyProvider
+import io.opencola.security.hash.Hash
 import java.security.KeyPair
 
 interface KeyStore : PublicKeyProvider<String> {
@@ -8,5 +9,5 @@ interface KeyStore : PublicKeyProvider<String> {
     fun getKeyPair(alias: String) : KeyPair?
     fun deleteKeyPair(alias: String)
     fun getAliases(): List<String>
-    fun changePassword(newPassword: String)
+    fun changePassword(newPasswordHash: Hash)
 }

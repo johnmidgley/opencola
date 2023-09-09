@@ -13,6 +13,7 @@ import io.opencola.relay.client.v2.WebSocketClient
 import io.opencola.relay.common.defaultOCRPort
 import io.opencola.relay.common.message.v2.MessageStorageKey
 import io.opencola.relay.server.startWebServer
+import io.opencola.security.keystore.defaultPasswordHash
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import io.opencola.util.toProto
@@ -154,7 +155,7 @@ class OCRelayNetworkProviderTest {
             app1.open()
 
             println("Creating relay client")
-            val app0KeyPair = Application.getOrCreateRootKeyPair(app0.storagePath, "password").single()
+            val app0KeyPair = Application.getOrCreateRootKeyPair(app0.storagePath, defaultPasswordHash).single()
             val relayClient = WebSocketClient(URI("ocr://0.0.0.0"), app0KeyPair, "client", 5000)
             launch { relayClient.open { _, _ -> "nothing".toByteArray() } }
             relayClient.waitUntilOpen()
