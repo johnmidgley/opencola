@@ -17,8 +17,6 @@ import java.util.*
 @Serializable
 data class Id(private val bytes: ByteArray) : Comparable<Id> {
     init {
-        if (bytes.size != LENGTH_IN_BYTES)
-            println("Invalid id - size = ${bytes.size} but should be $LENGTH_IN_BYTES")
         require(bytes.size == LENGTH_IN_BYTES) { "Invalid id - size = ${bytes.size} but should be $LENGTH_IN_BYTES" }
     }
 

@@ -14,6 +14,7 @@ suspend fun startupForm(call: ApplicationCall, message: String? = null) {
                 rel = "stylesheet"
                 href = "css/main.css"
             }
+            script { src = "js/main.js" }
         }
         body {
             form(action = "/", encType = FormEncType.applicationXWwwFormUrlEncoded, method = FormMethod.post) {
@@ -30,6 +31,7 @@ suspend fun startupForm(call: ApplicationCall, message: String? = null) {
                     submitInput { value = "Start" }
                 }
             }
+            script { unsafe { raw("addPasswordHasher(document.querySelector('form'))") } }
             p {
                 a {
                     href = "/changePassword"
@@ -170,6 +172,7 @@ suspend fun startingPage(call: ApplicationCall, authToken: String, migratingData
                 rel = "stylesheet"
                 href = "css/main.css"
             }
+            script { src = "js/main.js" }
         }
         body {
             +"OpenCola is carbonating..."
@@ -179,30 +182,7 @@ suspend fun startingPage(call: ApplicationCall, authToken: String, migratingData
                     text("Your data is being migrated to a new storage format. This may take a few minutes...")
                 }
             script {
-                unsafe {
-                    raw(
-                        """
-                        function onImageAvailable( src, onSuccess ) {
-                            console.log("Trying")
-                    
-                            let img = new Image();
-                            img.onload = function () {
-                                onSuccess();
-                            };
-                    
-                            img.onerror = function () {
-                                setTimeout(onImageAvailable, 1000, src, onSuccess);
-                            };
-                    
-                            img.src = src;
-                        }
-                    
-                        onImageAvailable("img/pull-tab.png", function () {
-                            window.location = '/';
-                        });
-                        """
-                    )
-                }
+                unsafe { raw("waitForServerStart();") }
             }
         }
     }

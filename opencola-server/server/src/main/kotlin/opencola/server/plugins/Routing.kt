@@ -72,7 +72,7 @@ fun Application.configureBootstrapRouting(
             // TODO: User should be able to choose username for higher (external) security.
             //  This needs to be stored in the keystore, and a change username flow needs to be implemented.
             val username = DEFAULT_USERNAME
-            val passwordHashString = formParameters["password"]?.let { Sha256Hash.ofString(it).toHexString() }
+            val passwordHashString = formParameters["passwordHash"]
 
             if (passwordHashString.isNullOrBlank()) {
                 startupForm(call, "Please enter a password")
@@ -195,6 +195,7 @@ fun Application.configureBootstrapRouting(
         }
 
         staticResources("", "bootstrap/${getOS().toString().lowercase()}")
+        staticResources("js", "web/js")
     }
 }
 
