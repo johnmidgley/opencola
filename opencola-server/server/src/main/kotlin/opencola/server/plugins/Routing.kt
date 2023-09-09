@@ -246,15 +246,11 @@ fun Application.configureRouting(app: app, authSecretKey: SecretKey) {
 
             val formParameters = call.receiveParameters()
             val username = DEFAULT_USERNAME
-            val passwordHashString = formParameters["password"]
+            val password = formParameters["password"]
 
-            if (passwordHashString.isNullOrBlank()) {
+            if (password.isNullOrBlank()) {
                 loginPage(call, "Please enter a password")
-            } else if (validateAuthorityKeyStorePassword(
-                    app.storagePath,
-                    Sha256Hash.fromHexString(passwordHashString)
-                )
-            ) {
+            } else if (validateAuthorityKeyStorePassword(app.storagePath, Sha256Hash.fromHexString(password))) {
                 val authToken = AuthToken(username).encode(authSecretKey)
                 call.sessions.set(UserSession(authToken))
                 call.respondRedirect("/")
