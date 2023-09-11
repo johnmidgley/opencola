@@ -19,14 +19,14 @@
 (defn comment-control [context persona-id! item comment-id text expanded?! on-update]
   (let [entity-id (:entityId item)
         state! (atom text)
-        error! (atom {})
-        on-error #(error/set-error! error! %)]
+        error! (atom nil)
+        on-error #(reset! error! %)]
     (fn []
       (when @expanded?!
         [:div.item-comment
          [:div.item-comment-edit 
           [comment-edit-control (:entity-id item) text state!]
-          [error/error-control @error!]
+          [error/error error!]
           [:button {:on-click #(model/update-comment context @persona-id! entity-id comment-id (.value @state!) on-update on-error)}
            "Save"] " "
           [:button {:on-click #(reset! expanded?! false)} "Cancel"]
