@@ -98,10 +98,6 @@
 ;; conditionally start your application based on the presence of an "app" element
 ;; this is particularly helpful for testing this ns without launching the app
 #_(mount-app-element)
-(config/get-config 
- #(do (mount-app-element)
-      (init-personas)) 
- #(error/set-error! (error!) %))
 
 ;; specify reload hook with ^:after-load metadata
 (defn ^:after-load on-reload []
@@ -114,6 +110,11 @@
 (doto (History.)
   (events/listen EventType.NAVIGATE #(secretary/dispatch! (.-token %)))
   (.setEnabled true))
+
+(config/get-config
+ #(do (mount-app-element)
+      (init-personas))
+ #(location/set-location "config-error.html"))
 
 
 
