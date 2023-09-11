@@ -1,7 +1,7 @@
 (ns opencola.web-ui.view.comments
   (:require
    [reagent.core :as reagent :refer [atom]]
-   [opencola.web-ui.model.error :as error]
+   [opencola.web-ui.view.common :refer [error-control]]
    [opencola.web-ui.model.feed :as model]
    [opencola.web-ui.time :refer [format-time]]
    [opencola.web-ui.view.common :refer [action-img md->component simple-mde]]))
@@ -26,7 +26,7 @@
         [:div.item-comment
          [:div.item-comment-edit 
           [comment-edit-control (:entity-id item) text state!]
-          [error/error error!]
+          [error-control error!]
           [:button {:on-click #(model/update-comment context @persona-id! entity-id comment-id (.value @state!) on-update on-error)}
            "Save"] " "
           [:button {:on-click #(reset! expanded?! false)} "Cancel"]

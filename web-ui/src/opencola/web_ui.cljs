@@ -3,11 +3,10 @@
    [goog.dom :as gdom]
    [reagent.dom :as rdom]
    [opencola.web-ui.config :as config]
-   [opencola.web-ui.app-state :as state :refer [personas! persona! query! feed! peers! error!]]
+   [opencola.web-ui.app-state :as state :refer [app-state personas! persona! query! feed! peers! error!]]
    [opencola.web-ui.view.feed :as feed]
    [opencola.web-ui.view.persona :as persona]
    [opencola.web-ui.view.peer :as peer]
-   [opencola.web-ui.model.error :as error]
    [opencola.web-ui.location :as location]
    [secretary.core :as secretary :refer-macros [defroute]]
    [goog.events :as events])
@@ -25,7 +24,7 @@
   (location/set-state-from-query-params query-params)
   (let [query (or (:q query-params) "")]
     (when @config/config ; Needed when overriding host-url for dev
-      (feed/get-feed @(persona!) query (feed!)))))
+      (feed/get-feed @(persona!) query (feed!) #(error! %)))))
 
 (defroute "/peers" [query-params]
   (state/set-page! :peers)
@@ -35,11 +34,11 @@
       (persona! (-> @(personas!) :items first :id))
       (location/set-location-from-state))
     (when @config/config
-      (peer/get-peers @(persona!) (peers!)))))
+      (peer/get-peers @(persona!) (peers!) #(error! %)))))
 
 (defroute "/personas" []
   (when @config/config
-    (persona/get-personas (personas!)))
+    (persona/get-personas (personas!) #(error! %)))
   (state/set-page! :personas)
   (persona! nil))
 
@@ -65,7 +64,7 @@
 
 (defn app []
   (fn []
-    [:div.app
+    [:div.app 
      (when (state/page-visible? :feed)
        [feed/feed-page (feed!) (personas!) (persona!) on-persona-select (query!)  on-search])
      (when (state/page-visible? :peers)
@@ -73,8 +72,7 @@
      (when (state/page-visible? :personas)
        [persona/personas-page (personas!) (persona!) on-persona-select (query!) on-search])
      (when (state/page-visible? :error)
-       [:div.settings "404"])
-     [error/error-control @(error!)]]))
+       [:div.settings "404"])]))
 
 
 (defn mount [el]
@@ -90,10 +88,10 @@
    (fn []
      (location/set-location-from-state)
      (when (empty @(feed!))
-       (feed/get-feed @(persona!) @(query!) (feed!)))
+       (feed/get-feed @(persona!) @(query!) (feed!) #(error! %)))
      (when-let [persona @(persona!)]
-       (peer/get-peers persona (peers!))))
-   #(error/set-error! (error!) %)))
+       (peer/get-peers persona (peers!) #(error! %))))
+   #(error! %)))
 
 ;; conditionally start your application based on the presence of an "app" element
 ;; this is particularly helpful for testing this ns without launching the app

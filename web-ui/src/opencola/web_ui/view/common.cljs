@@ -4,6 +4,10 @@
             [markdown-to-hiccup.core :as md2hic]
             [reagent.core :as reagent]))
 
+(defn error-control [e!]
+  (when @e!
+    [:div.error [:p @e!]]))
+
 (defn item-key []
   (let [new-key (random-uuid)]
     new-key))

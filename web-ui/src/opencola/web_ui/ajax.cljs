@@ -3,7 +3,6 @@
    [ajax.core :as ajax] ; https://github.com/JulianBirch/cljs-ajax
    [opencola.web-ui.config :as config]))
 
-
 (defn resolve-service-url [path]
   ;; TODO: Use url construction methods
   (str (config/get-service-url) path))

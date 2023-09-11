@@ -12,7 +12,7 @@
    :query! (atom "")
    :feed! (atom {})
    :peers! (atom {})
-   :error! (atom {})
+   :error! (atom "")
    })
 
 (defn get-page-visible-atoms []
@@ -59,5 +59,8 @@
   ([peers]
    (reset! (peers!) peers)))
 
-(defn error! []
-  (:error! app-state))
+(defn error!
+  ([]
+   (:error! app-state))
+  ([error]
+   (reset! (error!) error)))

@@ -1,33 +1,33 @@
 (ns opencola.web-ui.view.peer 
   (:require 
    [reagent.core :as reagent :refer [atom]]
-   [opencola.web-ui.view.common :refer [action-img image-divider input-text input-checkbox]]
+   [opencola.web-ui.app-state :as state]
+   [opencola.web-ui.view.common :refer [action-img image-divider input-text input-checkbox error-control]]
    [opencola.web-ui.model.peer :as model]
    [opencola.web-ui.view.search :as search]
-   [opencola.web-ui.model.error :as error]
    [opencola.web-ui.location :as location]))
 
 
 ;; These methods are not really view. They are more binders.
-(defn get-peers [persona-id peers!]
+(defn get-peers [persona-id peers! on-error]
   (model/get-peers
    persona-id
    #(reset! peers! %)
-   #(error/set-error! peers! %)))
+   #(on-error %)))
 
-(defn update-peer [persona-id peers! peer!]
+(defn update-peer [persona-id peers! peer! on-error]
   (model/update-peer
    persona-id
    (dissoc @peer! :error)
    #(reset! peers! %)
-   #(error/set-error! peer! %)))
+   #(on-error %)))
 
-(defn delete-peer [persona-id peers! peer!]
+(defn delete-peer [persona-id peers! peer! on-error]
   (model/delete-peer
    persona-id
    @peer!
    #(reset! peers! %)
-   #(error/set-error! peer! %)))
+   #(on-error %)))
 
 (defn header-actions [adding-peer?!]
   [:div.header-actions 
@@ -41,7 +41,8 @@
 (defn peer-item [persona-id peers! peer adding-peer?!]
   (let [creating? adding-peer?! ;; TODO - looks like not needed
         editing?! (atom creating?)
-        p! (atom peer)]
+        p! (atom peer)
+        error! (atom nil)]
     (fn []
       (let [image-uri (:imageUri @p!)]
         [:div.peer-item
@@ -71,33 +72,33 @@
              [:td [input-checkbox p! :isActive @editing?!]]]]]]
          (if @editing?!
            [:div
-            [error/error-control @p!]
+            [error-control error!]
             [:button
              {:disabled (and (not adding-peer?!) (= @p! peer)) 
-              :on-click #(do
-                           (update-peer persona-id peers! p!)
+              :on-click (fn []
+                           (update-peer persona-id peers! p! #(do (println "ERRORO") (reset! error! %)))
                            (when adding-peer?! (reset! adding-peer?! false)))} "Save"] " "
             [:button {:on-click  #(do
                                     (reset! p! peer)
                                     (when adding-peer?! (reset! adding-peer?! false))
                                     (reset! editing?! false))} "Cancel"] " "
             (when (not creating?)
-              [:button.delete-button {:on-click #(delete-peer persona-id peers! p!)} "Delete"])]
+              [:button.delete-button {:on-click (fn [] ( delete-peer persona-id peers! p! #(reset! error! %)))} "Delete"])]
            [:div.edit-peer
             [:button {:on-click #(reset! editing?! true)} "Edit"]])]))))
 
-(defn get-invite-token [persona-id token! add-error!]
+(defn get-invite-token [persona-id token! on-error]
   (model/get-invite-token
    persona-id
    #(reset! token! %)
-   #(error/set-error! add-error! %)))
+   #(on-error %)))
 
 (defn add-peer-item [persona-id peers! adding-peer?!]
   (let [send-token! (atom "Loading...")
         receive-token! (atom "")
         peer! (atom nil)
-        add-error! (atom {})]
-    (get-invite-token persona-id send-token! add-error!)
+        error! (atom nil)]
+    (get-invite-token persona-id send-token! #(reset! error! %))
     (fn []
       (if @peer!
         [peer-item persona-id peers! @peer! adding-peer?!]
@@ -129,10 +130,10 @@
                           (model/token-to-peer 
                            @receive-token! 
                            #(reset! peer! %) 
-                           #(error/set-error! add-error! %)))} 
+                           #(reset! error! %)))} 
                "Add"]]
              [:td
-              [error/error-control @add-error!]]]]]]]))))
+              [error-control error!]]]]]]]))))
 
 (defn peer-list [persona-id peers! adding-peer?!]
   (when @peers!
@@ -155,7 +156,7 @@
         query! 
         on-search! 
         (partial header-actions adding-peer?!)]
-       [error/error-control @peers!]
+       [error-control (state/error!)]
        [:h2 "Peers (" (:name (personas @persona!)) ")"]
        [peer-list @persona! peers! adding-peer?!]]))))
 

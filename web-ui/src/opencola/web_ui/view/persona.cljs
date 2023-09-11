@@ -1,10 +1,10 @@
 (ns opencola.web-ui.view.persona
   (:require
    [reagent.core :as reagent :refer [atom]]
+   [opencola.web-ui.app-state :as state]
    [opencola.web-ui.model.persona :as model]
-   [opencola.web-ui.view.common :refer [action-img input-text input-checkbox]]
-   [opencola.web-ui.view.search :as search]
-   [opencola.web-ui.model.error :as error]))
+   [opencola.web-ui.view.common :refer [action-img input-text input-checkbox error-control]]
+   [opencola.web-ui.view.search :as search]))
 
 (defn init-personas [personas! on-success on-error]
   (model/get-personas
@@ -13,30 +13,30 @@
      (on-success))
    #(on-error %)))
 
-(defn create-persona [personas! persona! on-success]
+(defn create-persona [personas! persona! on-success on-error]
   (model/create-persona
    (dissoc @persona! :error)                          ; Switch to non-atom
    #(do 
       (reset! personas! %)
       (on-success))
-   #(error/set-error! persona! %)))
+   #(on-error %)))
 
-(defn get-personas [personas!]
+(defn get-personas [personas! on-error]
   (model/get-personas
    #(reset! personas! %)
-   #(error/set-error! personas! %)))
+   #(on-error %)))
 
-(defn update-persona [personas! persona!]
+(defn update-persona [personas! persona! on-error]
   (model/update-persona
-   (dissoc @persona! :error)
+   @persona!
    #(reset! personas! %)
-   #(error/set-error! persona! %)))
+   #(on-error %)))
 
-(defn delete-persona [personas! persona!]
+(defn delete-persona [personas! persona! on-error]
   (model/delete-persona
    @persona!
    #(reset! personas! %)
-   #(error/set-error! persona! %)))
+   #(on-error %)))
 
 (defn persona-select [personas! persona-id!]
   [:select {:id "persona-select"
@@ -51,7 +51,9 @@
 
 (defn persona-item [personas! persona]
   (let [editing?! (atom false)
-        p! (atom persona)]
+        p! (atom persona)
+        error! (atom nil)
+        on-error #(reset! error! %)]
     (fn []
       (let [image-uri (:imageUri @p!)]
         [:div.peer-item
@@ -81,16 +83,15 @@
              [:td [input-checkbox p! :isActive @editing?!]]]]]]
          (if @editing?!
            [:div
-            [error/error-control @p!]
+            [error-control error!]
             [:button
              {:disabled (= @p! persona)
-              :on-click #(do
-                           (update-persona personas! p!)
-                           )} "Save"] " "
+              :on-click (fn [] (update-persona personas! p! on-error))}
+             "Save"] " "
             [:button {:on-click  #(do
                                     (reset! p! persona)
                                     (reset! editing?! false))} "Cancel"] " "
-            [:button.delete-button {:on-click #(delete-persona personas! p!)} "Delete"]]
+            [:button.delete-button {:on-click #(delete-persona personas! p! on-error)} "Delete"]]
            [:div.edit-peer
             [:button {:on-click #(reset! editing?! true)} "Edit"]])]))))
 
@@ -103,7 +104,8 @@
    :isActive true})
 
 (defn add-persona-item [personas! adding-persona?!]
-  (let [persona! (atom empty-persona )]
+  (let [persona! (atom empty-persona)
+        error! (atom nil)]
     (fn []
       (let [image-uri (:imageUri @persona!)]
         [:div.peer-item
@@ -126,10 +128,10 @@
              [:td.peer-field [action-img "refresh"]] 
              [:td [input-checkbox persona! :isActive true]]]]]]
          [:div
-          [error/error-control @persona!]
+          [error-control error!]
           [:button
            {:disabled (= empty-persona @persona!)
-            :on-click #(create-persona personas! persona! (fn [] (reset! adding-persona?! false)))} 
+            :on-click (fn [] (create-persona personas! persona! #(reset! adding-persona?! false) #(reset! error! %)))} 
            "Save"] " "
           [:button {:on-click  #(reset! adding-persona?! false)} "Cancel"] " "]]))))
 
@@ -153,6 +155,6 @@
         query! 
         on-search! 
         (partial header-actions adding-persona?!)]
-       [error/error-control @personas!] 
+       [error-control (state/error!)] 
        [:h2 "Personas"]
        [persona-list  personas! adding-persona?!]])))
