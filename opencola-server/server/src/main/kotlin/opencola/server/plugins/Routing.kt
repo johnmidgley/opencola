@@ -77,7 +77,7 @@ fun Application.configureBootstrapRouting(
             if (password.isNullOrBlank()) {
                 startupForm(call, "Please enter a password")
             } else {
-                val passwordHash = Sha256Hash.fromHexString(password)
+                val passwordHash = Sha256Hash.ofString(password)
                 if (validateAuthorityKeyStorePassword(storagePath, passwordHash)) {
                     startingPage(call, AuthToken(username).encode(authSecretKey), migratingData)
                     loginCredentials.complete(LoginCredentials(username, passwordHash))
@@ -123,7 +123,7 @@ fun Application.configureBootstrapRouting(
             if (error != null) {
                 newUserForm(call, error)
             } else {
-                val passwordHash = Sha256Hash.fromHexString(password!!)
+                val passwordHash = Sha256Hash.ofString(password!!)
                 changeAuthorityKeyStorePassword(storagePath, defaultPasswordHash, passwordHash)
                 if (autoStart) {
                     autoStart()
@@ -165,7 +165,7 @@ fun Application.configureBootstrapRouting(
             val oldPassword = formParameters["password"]
             val newPassword = formParameters["newPassword"]
             val newPasswordConfirm = formParameters["newPasswordConfirm"]
-            val passwordHash = oldPassword?.let { Sha256Hash.fromHexString(it) }
+            val passwordHash = oldPassword?.let { Sha256Hash.ofString(it) }
 
             val error = if (oldPassword.isNullOrBlank())
                 "Old password is required"
@@ -186,7 +186,7 @@ fun Application.configureBootstrapRouting(
                 changeAuthorityKeyStorePassword(
                     storagePath,
                     passwordHash!!,
-                    Sha256Hash.fromHexString(newPassword!!)
+                    Sha256Hash.ofString(newPassword!!)
                 )
                 call.respondRedirect("/")
             }
@@ -250,7 +250,7 @@ fun Application.configureRouting(app: app, authSecretKey: SecretKey) {
 
             if (password.isNullOrBlank()) {
                 loginPage(call, "Please enter a password")
-            } else if (validateAuthorityKeyStorePassword(app.storagePath, Sha256Hash.fromHexString(password))) {
+            } else if (validateAuthorityKeyStorePassword(app.storagePath, Sha256Hash.ofString(password))) {
                 val authToken = AuthToken(username).encode(authSecretKey)
                 call.sessions.set(UserSession(authToken))
                 call.respondRedirect("/")
