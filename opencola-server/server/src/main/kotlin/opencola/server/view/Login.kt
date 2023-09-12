@@ -28,7 +28,7 @@ suspend fun loginPage(call: ApplicationCall, message: String? = null) {
                     submitInput { value = "Login" }
                 }
             }
-            script { unsafe { raw("onSubmitHashFormFields(document.querySelector('form'), ['password'])") } }
+            // script { unsafe { raw("onSubmitHashFormFields(document.querySelector('form'), ['password'])") } }
         }
     }
 }

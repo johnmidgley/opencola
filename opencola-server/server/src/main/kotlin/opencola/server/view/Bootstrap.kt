@@ -31,7 +31,7 @@ suspend fun startupForm(call: ApplicationCall, message: String? = null) {
                     submitInput { value = "Start" }
                 }
             }
-            script { unsafe { raw("onSubmitHashFormFields(document.querySelector('form'), ['password'])") } }
+            // script { unsafe { raw("onSubmitHashFormFields(document.querySelector('form'), ['password'])") } }
             p {
                 a {
                     href = "/changePassword"
@@ -106,7 +106,7 @@ suspend fun newUserForm(call: ApplicationCall, message: String? = null) {
                 p {
                     submitInput { value = "Start" }
                 }
-                script { unsafe { raw("onSubmitHashFormFields(document.querySelector('form'), ['password', 'passwordConfirm'])") } }
+                // script { unsafe { raw("onSubmitHashFormFields(document.querySelector('form'), ['password', 'passwordConfirm'])") } }
             }
         }
     }
@@ -161,7 +161,7 @@ suspend fun changePasswordForm(call: ApplicationCall, message: String? = null) {
                 p {
                     submitInput() { value = "Change Password" }
                 }
-                script { unsafe { raw("onSubmitHashFormFields(document.querySelector('form'), ['password', 'newPassword', 'newPasswordConfirm'])") } }
+                // script { unsafe { raw("onSubmitHashFormFields(document.querySelector('form'), ['password', 'newPassword', 'newPasswordConfirm'])") } }
             }
         }
     }
