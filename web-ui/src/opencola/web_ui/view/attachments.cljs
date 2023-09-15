@@ -1,8 +1,8 @@
 (ns opencola.web-ui.view.attachments
-  (:require [opencola.web-ui.ajax :as ajax]
+  (:require [opencola.web-ui.util :refer [distinct-by]]
+            [opencola.web-ui.ajax :as ajax]
             [opencola.web-ui.time :refer [format-time]]
-            [opencola.web-ui.view.common :refer [action-img img image?
-                                                 keyed-divider]]))
+            [opencola.web-ui.view.common :refer [action-img image? keyed-divider]]))
 
 (defn item-attachment [action on-delete]
   (let [{authority-name :authorityName
@@ -13,16 +13,32 @@
      [:td authority-name]
      [:td (format-time epoch-second)]
      [:td [:a {:href (ajax/resolve-service-url (str "data/" id)) :target "blank"} value]]
-     [:td [:span {:on-click #(on-delete id)} (action-img "delete")]]]))
+     (when on-delete
+       [:td [:span {:on-click #(on-delete id)} (action-img "delete")]])]))
 
-(defn item-attachments [expanded?! attach-actions on-delete]
+
+(defn select-attachment [persona-id! attachments]
+  (let [persona-id @persona-id!
+        by-persona (first (filter #(= persona-id (:authorityId %)) attachments))
+        oldest (first (sort-by :epochSecond attachments))] 
+    (or by-persona oldest)))
+
+(defn distinct-attachments [persona-id! attach-actions]
+  (let [by-id (group-by :id attach-actions)]
+    (for [[_ attachments] by-id] 
+      (select-attachment persona-id! attachments))))
+
+(defn item-attachments [persona-id! expanded?! attach-actions on-delete] 
   (when @expanded?!
-    [:div.item-attachments
-     [:div.list-header "Attachments:"]
-     [:table
-      [:tbody
-       (doall (for [action attach-actions]
-                ^{:key action} [item-attachment action on-delete]))]]]))
+    (let [actions (distinct-attachments persona-id! attach-actions)]
+      [:div.item-attachments
+       [:div.list-header "Attachments:"]
+       [:table
+        [:tbody
+         (doall (for [action (->> actions (sort-by :epochSecond) (distinct-by :id))]
+                  (let [action-authority-id (:authorityId action)
+                        on-delete (when (= action-authority-id @persona-id!) on-delete)]
+                    ^{:key action} [item-attachment action on-delete])))]]])))
 
 (defn attachment-is-image? [attachment]
   (let [{:keys [value]} attachment]
@@ -40,7 +56,7 @@
 
 (defn attachments-preview [attachments show-other?]
   ;; Partition attachments into images and other
-  (let [groups (group-by attachment-is-image? attachments)
+  (let [groups (group-by attachment-is-image? (distinct-by :id attachments))
         images (get groups true)
         other (get groups false)] 
     [:div.attachments-preview

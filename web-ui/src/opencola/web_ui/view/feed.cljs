@@ -8,8 +8,7 @@
             [opencola.web-ui.location :as location]
             [opencola.web-ui.model.feed :as model :refer [upload-files
                                                           upload-result-to-attachments]]
-            [opencola.web-ui.view.attachments :refer [attachments-preview
-                                                      item-attachments]]
+            [opencola.web-ui.view.attachments :refer [attachments-preview item-attachments distinct-attachments]]
             [opencola.web-ui.view.comments :refer [comment-control
                                                    comment-edit-control
                                                    item-comments]]
@@ -90,10 +89,11 @@
       (action-img (if @expanded? "hide" "show"))]]))
 
 (defn attachment-summary [persona-id! action-expanded? activities on-change]
-  (let [input-id (str (random-uuid))]
+  (let [input-id (str (random-uuid))
+        distinct-activities {:attach (distinct-attachments persona-id! (:attach activities))}]
     [:span
      [hidden-file-input input-id on-change]
-     [action-summary persona-id! :attach action-expanded? activities #(.click (js/document.getElementById input-id))]]))
+     [action-summary persona-id! :attach action-expanded? distinct-activities #(.click (js/document.getElementById input-id))]]))
 
 (defn update-display-entity [persona-id feed! edit-item on-error]
   (model/update-entity
@@ -186,7 +186,8 @@
            (:comment activities) preview-fn?
            (:comment action-expanded?)
            update-feed-item]
-          [item-attachments
+          [item-attachments 
+           persona-id!
            (:attach action-expanded?)
            (:attach activities)
            (fn [data-id]
@@ -207,13 +208,15 @@
 (defn item-image [summary]
   (let [item-uri (:uri summary)
         image-uri (:imageUri summary) 
-        img [:img.item-img {:src image-uri}]]
-    (if image-uri
+        img [:img.item-img {:src image-uri}]
+        posted-by-image-uri ( :postedByImageUri summary)]
+    (if (not-empty image-uri)
       [:div.item-img-box
        (if (empty? item-uri)
          img
          [:a {:href item-uri :target "_blank"} img])]
-      [:img.posted-by-img {:src (:postedByImageUri summary)}])))
+      (when (not-empty posted-by-image-uri)
+        [:img.posted-by-img {:src posted-by-image-uri}]))))
 
 (defn display-feed-item [persona-id! personas! feed! item editing?!]
   (let [summary (:summary item)]
