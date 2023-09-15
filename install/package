@@ -1,15 +1,17 @@
 #!/bin/bash
 
-if [ $# -ne 1 ]
-then
-  echo "Usage: $0 archive-name"
-  exit 1
-fi
+OC_BIN_PATH=../bin/
+OC_VERSION=$($OC_BIN_PATH/oc-version)
 
-./package
-mkdir OpenCola-Docker-"$1"
-cp -r Dockerfile opencola OpenCola-Docker-"$1"
-pushd OpenCola-Docker-"$1"
+echo "Packaging version $OC_VERSION for Docker and Chrome"
+
+# Update manifest version to match current version
+sed -i 's/"version": "[^"]*"/"version": "'"$OC_VERSION"'"/' ../extension/chrome/manifest.json
+
+./install
+mkdir OpenCola-Docker-"$OC_VERSION"
+cp -r Dockerfile opencola OpenCola-Docker-"$OC_VERSION"
+pushd OpenCola-Docker-"$OC_VERSION"
 mkdir mac
 cp ../mac/docker-compose.yml ../mac/start ../mac/stop mac
 mkdir windows
@@ -17,10 +19,5 @@ cp ../windows/docker-compose.yml ../windows/start.ps1 ../windows/stop.ps1 window
 mkdir linux
 cp ../linux/docker-compose.yml ../linux/start ../linux/stop linux
 popd
-zip -r OpenCola-Docker-"$1".zip OpenCola-Docker-"$1"
-rm -rf OpenCola-Docker-"$1"
-
-mkdir OpenCola-Chrome-"$1"
-cp -r opencola/chrome/* OpenCola-Chrome-"$1"
-zip -r OpenCola-Chrome-"$1".zip OpenCola-Chrome-"$1"
-rm -rf OpenCola-Chrome-"$1"
+zip -r OpenCola-Docker-"$OC_VERSION".zip OpenCola-Docker-"$OC_VERSION"
+rm -rf OpenCola-Docker-"$OC_VERSION"

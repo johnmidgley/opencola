@@ -1,20 +1,18 @@
 #!/bin/bash
 
-if [ $# -ne 1 ]
-then
-  echo "Usage: $0 version"
-  exit 1
-fi
+OC_BIN_PATH=../../bin/
+OC_VERSION=$($OC_BIN_PATH/oc-version)
+
+echo "Packaging version $OC_VERSION for Linux"
 
 rm -rf opencola
 
-echo "Packaging for Linux"
 # https://docs.oracle.com/en/java/javase/14/docs/specs/man/jpackage.html
 jpackage --input ../opencola/server/lib/ \
   --name opencola \
   --vendor OpenCola \
-  --app-version "$1" \
-  --main-jar "opencola-server-$1.jar" \
+  --app-version "$OC_VERSION" \
+  --main-jar "opencola-server-$OC_VERSION.jar" \
   --main-class opencola.server.ApplicationKt \
   --java-options '--enable-preview' \
   --arguments --desktop \
@@ -22,4 +20,4 @@ jpackage --input ../opencola/server/lib/ \
   --type app-image \
   --icon pull-tab.png
 
-tar -cvzf "OpenCola-Linux-$1.tgz" opencola
+tar -cvzf "OpenCola-Linux-$OC_VERSION.tgz" opencola
