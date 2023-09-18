@@ -3,10 +3,9 @@ package opencola.server.plugins
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
-import io.opencola.application.LoginConfig
 import javax.crypto.SecretKey
 
-fun Application.configureAuthentication(loginConfig: LoginConfig, authSecretKey: SecretKey) {
+fun Application.configureAuthentication(authenticationEnabled: Boolean, authSecretKey: SecretKey) {
     install(Authentication) {
         session<UserSession>("auth-session") {
             validate { session ->
@@ -18,7 +17,7 @@ fun Application.configureAuthentication(loginConfig: LoginConfig, authSecretKey:
             }
 
             challenge {
-                if (loginConfig.authenticationRequired) {
+                if (authenticationEnabled) {
                     call.respondRedirect("/login")
                 }
             }

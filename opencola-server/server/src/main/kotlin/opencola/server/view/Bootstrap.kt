@@ -17,7 +17,7 @@ suspend fun startupForm(call: ApplicationCall, message: String? = null) {
             script { src = "js/main.js" }
         }
         body {
-            form(action = "/", encType = FormEncType.applicationXWwwFormUrlEncoded, method = FormMethod.post) {
+            form(action = "/start", encType = FormEncType.applicationXWwwFormUrlEncoded, method = FormMethod.post) {
                 if (message != null) {
                     p {
                         +message
