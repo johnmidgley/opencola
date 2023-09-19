@@ -67,7 +67,7 @@ echo "Waiting for server to start..."
 for i in {1..30}
 do
   sleep 1
-  curl --output /dev/null --silent --fail "http://localhost:5795/"
+  curl --output /dev/null --silent --fail "http://localhost:5795/start"
   if [ $? -eq 0 ]
   then
     STARTED=true
@@ -84,17 +84,17 @@ fi
 echo "Server started"
 echo
 echo "Insecure URLS:"
-echo "http://localhost:5795 (Local only)"
-hostname -I | tr -s ' ' '\n' | grep -v 127.0.0.1 | awk '{print "http://" $1 ":5795"}'
+echo "http://localhost:5795/start (Local only)"
+hostname -I | tr -s ' ' '\n' | grep -v 127.0.0.1 | awk '{print "http://" $1 ":5795/start"}'
 echo
 echo "Secure URLs (Recommended):"
 echo "https://localhost:5796 (Local only)"
-hostname -I | tr -s ' ' '\n' | grep -v 127.0.0.1 | awk '{print "https://" $1 ":5796"}'
+hostname -I | tr -s ' ' '\n' | grep -v 127.0.0.1 | awk '{print "https://" $1 ":5796/start"}'
 echo
 
-xdg-open "http://localhost:5795" 1>/dev/null 2>/dev/null
+xdg-open "http://localhost:5795/start" 1>/dev/null 2>/dev/null
 
 if [ $? -ne 0 ]
 then
-  echo "Don't know how to open a browser window on this distribution. Please open a browser and go to http://localhost:5795"
+  echo "Don't know how to open a browser window on this distribution. Please open a browser and go to http://localhost:5795/start"
 fi

@@ -98,7 +98,7 @@ $started = $false
 Write-Host -NoNewline "Waiting for server to start."
 
 for($i = 0; $i -lt 10; $i++){
-    $status = (Invoke-WebRequest "http://localhost:5795").statusCode
+    $status = (Invoke-WebRequest "http://localhost:5795/start").statusCode
 
     if($status -eq "200") {
         $started = $true
@@ -119,16 +119,16 @@ if(!$started) {
 Write-Host -ForegroundColor Green "Server Started"
 ""
 "Insecure URLs:"
-"http://localhost:5795"
+"http://localhost:5795/start"
 foreach($ip in $ips) {
-    "http://$($ip.ipAddress):5795"
+    "http://$($ip.ipAddress):5795/start"
 }
 
 ""
 "Secure URLs:"
 "https://localhost:5796"
 foreach($ip in $ips) {
-     "https://$($ip.ipAddress):5796"
+     "https://$($ip.ipAddress):5796/start"
 }
 
-Start-Process https://localhost:5796
+Start-Process https://localhost:5796/start
