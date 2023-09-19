@@ -78,7 +78,7 @@ fun Application.configureBootstrapRouting(
                     startingPage(call, AuthToken(username).encode(authSecretKey), migratingData)
                     loginCredentials.complete(LoginCredentials(username, passwordHash))
                 } else
-                    startupForm(call, "Bad password")
+                    startupForm(call, "Incorrect password")
             }
         }
 
@@ -167,6 +167,8 @@ fun Application.configureBootstrapRouting(
         }
 
         staticResources("init", "bootstrap/${getOS().toString().lowercase()}")
+        staticResources("img", "web/img/")
+        staticResources("css", "web/css/")
         staticResources("js", "web/js")
     }
 }

@@ -13,8 +13,23 @@ function onImageAvailable( src, onSuccess ) {
     img.src = src;
 }
 
+function onPageAvailable( url, onSuccess ) {
+    let xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200)
+                onSuccess();
+            else
+                setTimeout(onPageAvailable, 1000, url, onSuccess);
+        }
+    };
+
+    xhr.open("GET", url, true);
+    xhr.send();
+}
+
 function waitForServerStart() {
-    onImageAvailable("img/pull-tab.png", function () {
+    onPageAvailable("index.html", function () {
         window.location = '/';
     });
 }
