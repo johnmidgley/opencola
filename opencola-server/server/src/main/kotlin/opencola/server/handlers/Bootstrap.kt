@@ -10,7 +10,7 @@ import opencola.server.getSSLCertificateStore
 import java.nio.file.Path
 import kotlin.io.path.exists
 
-private val logger = KotlinLogging.logger("bootstrap")
+private val logger = KotlinLogging.logger("web/init")
 
 // TODO: These look like they could live elsewhere
 

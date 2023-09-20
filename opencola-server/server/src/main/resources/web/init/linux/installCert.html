@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../css/init.css">
+    <title>Install Certificate</title>
+</head>
+<body>
+<div class="init-container">
+    <img src="../../img/pull-tab.png" class="logo" alt="OpenCola">
+    <h2>Welcome to OpenCola!</h2>
+
+    <p>
+    In order to access OpenCola over a secure connection, you need to install an SSL certificate. On linux, this is a
+    manual process. To start the process, click <strong>Download Certificate</strong> and then follow the instructions
+    below.
+    </p>
+
+    <p>
+    <form action="/installCert" method="get">
+        <input type="submit" value="Download Certificate"/>
+    </form>
+    </p>
+
+    <h3>Instructions (for Chrome based browsers)</h3>
+
+    <p> 1. Copy the link <a href="chrome://settings/certificates">chrome://settings/certificates</a>
+        (<a href="brave://settings/certificates">brave://settings/certificates</a> for Brave)
+    <p>
+        <strong>** You can't click this link - it's not allowed for security reasons) ** </strong>
+    </p>
+    Open a new window (Ctrl + N) and paste into the location bar. Alternatively, you can go to the browser settings,
+    search for <i>certificates</i> and click through to the certificates page.
+    </p>
+
+    <img src="img/certificateSettings.png" alt="Certificate Settings" width="600" class="center">
+
+    <p> 2. Select the <strong>Authorities</strong> tab</p>
+
+    <img src="img/authoritiesTab.png" alt="Authorities Tab" width="600" class="center">
+
+    <p> 3. Click the 'Import' button' and select <strong>Downloads</strong></p>
+
+    <img src="img/importDialog.png" alt="Authorities Tab" width="600" class="center">
+
+    <p> 4. Double click <strong>opencola-ssl.pem</strong> your <strong>Downloads</strong> directory </p>
+
+    <img src="img/certificateAuthority.png" alt="Authorities Tab" width="600" class="center">
+
+    <p> 5. Check 'Trust this certificate for identifying websites' </p>
+
+    <img src="img/trustForWebsites.png" alt="Authorities Tab" width="600" class="center">
+
+    <p> 6. Click 'OK' </p>
+
+    <p>
+    <form action="/certInstalled" method="post">
+        <input type="submit" value="Continue">
+    </form>
+    </p>
+</div>
+</body>
+</html>

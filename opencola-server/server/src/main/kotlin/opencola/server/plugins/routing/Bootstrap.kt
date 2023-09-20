@@ -166,7 +166,7 @@ fun Application.configureBootstrapRouting(
             }
         }
 
-        staticResources("init", "bootstrap/${getOS().toString().lowercase()}")
+        staticResources("init", "web/init/${getOS().toString().lowercase()}")
         staticResources("img", "web/img/")
         staticResources("css", "web/css/")
         staticResources("js", "web/js")

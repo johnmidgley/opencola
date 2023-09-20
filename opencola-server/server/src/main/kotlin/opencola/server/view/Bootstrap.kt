@@ -76,7 +76,7 @@ suspend fun newUserForm(call: ApplicationCall, message: String? = null) {
                 ) {
                     span {
                         style = "font-weight: bold;"
-                        +"Welcome to OpenCola!"
+                        +"Create a Password"
                     }
                     p {
                         +"Please set a password to protect your private keys (be sure to not lose this - it can't be recovered!)"
