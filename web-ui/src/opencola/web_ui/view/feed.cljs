@@ -414,6 +414,17 @@
       (reset! creating-post!? false))
    #(on-error %)))
 
+(defn feed-instructions []
+  [:div.feed-item 
+   [:div
+    [:img.nola-img {:src "img/nola.png"}]
+    [:div.item-name  "Snap! Your feed is empty!"]
+    [:div
+     [:ul.instruction-items
+      [:li "Add posts by clicking the new post icon (" [:img.header-icon {:src  "../img/new-post.png"}] ") on the top right"] 
+      [:li "Add peers by clicking the peers icon (" [:img.header-icon {:src  "../img/peers.png"}] ") on the top right"]
+      [:li "Add posts using the browser extension"]]]]])
+
 ;; TODO: Make parameter ordering consistent. Some places have persona-id then personas, others
 ;; are the other way around.
 ;; TODO: Only pass atoms when necessary. There are some cases where the personas! is passed, when @personas! 
@@ -444,4 +455,6 @@
              (fn [persona-id] (new-post persona-id feed! creating-post?! edit-item! #(reset! error! %)))
              #(reset! creating-post?! false) nil]
        [error-control error!]]))
-       [feed-list persona-id! personas! feed!]])))
+       (if (or (= @feed! {}) (not-empty (:results @feed!)) (not-empty @query!))
+         [feed-list persona-id! personas! feed!]
+         [feed-instructions])])))

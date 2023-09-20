@@ -1,0 +1,12 @@
+.instruction-items li {
+    display: flex;
+    align-items: center; 
+    height: 25px;
+    min-width: 500px;
+}
+
+.nola-img {
+    float: left;
+    width: 100px;
+    margin-right: 5px;
+}
