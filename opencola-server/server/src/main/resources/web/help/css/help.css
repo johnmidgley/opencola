@@ -1,0 +1,119 @@
+/* Global styles */
+body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+/* Header styles */
+header {
+    background-color: #ffffff;
+    color: red;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+    display: flex; /* Use Flexbox for layout */
+    align-items: center; /* Vertically center the logo and text */
+    justify-content: center; /* Horizontally center the logo and text */
+}
+
+.header img {
+    max-width: 100px; /* Set a maximum width for the logo */
+    margin-right: 10px; /* Add some space between the logo and text */
+}
+
+header h1 {
+    font-size: 32px;
+    margin: 0;
+}
+
+/* Navigation bar styles */
+nav {
+    background-color: white;
+    text-align: center;
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
+    height: 30px;
+}
+
+nav a {
+    color: red;
+    text-decoration: none;
+    padding: 15px 20px;
+    font-weight: bold;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+nav a:hover {
+    background-color: #fff;
+    color: red;
+}
+
+/* Content styles */
+.content {
+    background-color: #fff;
+    padding: 20px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    margin: 20px;
+    max-width: 800px;
+}
+
+.content section {
+    /* display: none; */
+}
+
+.content h2 {
+    font-size: 24px;
+    color: red;
+    margin-top: 0;
+}
+
+.content p {
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+table {
+    border-collapse: collapse;
+    width: 80%;
+    margin: 20px auto;
+}
+
+th, td {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+tr:hover {
+    background-color: #dddddd;
+}
+
+.centered {
+    display: flex;
+    justify-content: center;
+}
+
+.example-img {
+    max-width: 600px;
+}
+
+.inline-icon {
+    width: 15px;
+}
+
+.icon {
+    width: 20px;
+}

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/help.css" rel="stylesheet" type="text/css">
+    <title>Help Page</title>
+</head>
+<body>
+<header>
+    <div class="header">
+        <img class="logo-img" src="../img/nola.png" alt="Nola"/>
+        <h1>OpenCola Help</h1>
+    </div>
+</header>
+<nav>
+    <a href="#personas">Personas</a>
+    <a href="#feed">Feed</a>
+    <a href="#peers">Peers</a>
+    <a href="#mobile">Mobile</a>
+    <a href="#certificates">Certificates</a>
+</nav>
+<div class="centered">
+    <div class="content">
+        <section id="personas">
+            <h2>Personas</h2>
+            <p>
+                Personas give you ways to organize your conversations with Peers. Each persona can have a unique set of
+                Peers to connect with. It's like having separate identities you can share with people for different
+                purposes.
+            </p>
+
+            <p>
+                The main Persona selector can be found at the top of most pages of OpenCola. Use it to quickly switch
+                between your feeds and peers. This is how you tell which Persona is currently active.
+            </p>
+
+            <p>
+                On your feed when "All" personas is selected, there's also a Persona selector in the action bar below
+                each
+                post. This one lets you quickly take action as a Persona when you save, comment, tag, etc. It's most
+                useful
+                for transferring posts between Personas. If you wanted to save a post from your Work persona to your
+                Crochet
+                Clan persona you would just find the post, choose "Crochet Clan" in the selector and click the "Save"
+                icon.
+            </p>
+
+            <div class="centered">
+                <img class="example-img" src="img/persona-selector.png" alt="Persona Selector"/>
+            </div>
+
+            <p>
+                To add or edit a persona use the Persona selector and choose <strong>Manage</strong>. This will take you
+                to the Persona page.
+            </p>
+
+            <p>
+                You can use the "+" icon at the top right of the page to add a persona or choose <strong>Edit</strong>
+                below
+                any of your personas to change details.
+            </p>
+
+            <div class="centered">
+                <img class="example-img" src="img/set-info.png" alt="Set Info">
+            </div>
+
+            <p>
+                Each Persona has its own set of <strong>Peers</strong>. To start adding people to your Personas network
+                just use the Persona selector at the top of the page and navigate to your <strong>Peers</strong> with
+                <img class="inline-icon" src="../img/peers.png" alt="Peers">
+            </p>
+
+            <div class="centered">
+                <img class="example-img" src="img/manage-peers-arrow.png" alt="Manage Peers">
+            </div>
+
+            <p>
+                If you would like to have a private Persona, for taking notes, etc., simply uncheck the sync option
+                <img class="inline-icon" src="../img/refresh.png" alt="Refresh"/> for the persona. This will ensure that
+                no
+                data is sent / received
+                to any peer for this persona.
+            </p>
+
+        </section>
+        <section id="feed">
+            <h2>Feed</h2>
+
+            <p>
+                You can add items to your feed by using the toolbar or creating organic (not tied to a url) posts using
+                the
+                <img class="inline-icon" src="../img/new-post.png" alt="New Post"/> button at the top right of the feed
+                page.
+            </p>
+
+            <p>
+                TIP: When you create an item using the <img class="inline-icon" src="../img/new-post.png"
+                                                            alt="New Post"/>
+                button, if the only thing you enter is a link in the description field, it will automatically extract
+                the
+                title, image and description from the page, similar to how the toolbar saves pages. This is especially
+                useful
+                on mobile, where there isn't
+                a toolbar.
+            </p>
+
+            <p>
+                Once you've added to your feed, it will look something like (annotations in red):
+            </p>
+
+            <div class="centered">
+                <img class="example-img" src="img/annotated-post.png" alt="Annotated Post"/>
+            </div>
+
+            <p>
+                You can see activity for the post as well as take action by using the action bar at the bottom. If you
+                click
+                the action icon, the corresponding action will be taken. Underlined (with a grey bar) action icons
+                indicate
+                actions that you have taken yourself. The number beside the icon indicates how many actions of that type
+                have occured. You can see the individual actions by clicking expand
+                (<img class="inline-icon" src="../img/show.png" alt="Show More"/>) icon.
+            </p>
+
+            <table>
+                <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Description</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><img class="icon" src="../img/save.png" alt="Save"/></td>
+                    <td>Save the post. This essentially copies the post and allows any of your peers to see it as if it
+                        came
+                        from you.
+                    </td>
+                </tr>
+                <tr>
+                    <td><img class="icon" src="../img/like.png" alt="Like"/></td>
+                    <td>Like the post (save post implicitly)</td>
+                </tr>
+                <tr>
+                    <td><img class="icon" src="../img/tag.png" alt="Tag"/></td>
+                    <td>Add tags to the post</td>
+                </tr>
+                <tr>
+                    <td><img class="icon" src="../img/attach.png" alt="Attach"/></td>
+                    <td>Attach files to the post. These files will be propagated to peers. If images are attached, they
+                        are
+                        rendered as part of the post body. Other file types are rendered as links.
+                    </td>
+                </tr>
+                <tr>
+                    <td><img class="icon" src="../img/comment.png" alt="Comment"/></td>
+                    <td>Comment on the post (save post implicitly)</td>
+                </tr>
+                <tr>
+                    <td><img class="icon" src="../img/edit.png" alt="Edit"/></td>
+                    <td>Edit the post. Gives you an option to delete the post (if it was yours)</td>
+                </tr>
+                </tbody>
+            </table>
+
+            <p>
+                You can search your feed by entering a query in the search box. Currently, search is exact match only,
+                but
+                will be improved in the future.
+            </p>
+
+        </section>
+        <section id="peers">
+            <h2>Peers</h2>
+
+            <p>
+                To add a peer, click the <img class="inline-icon" src="../img/peers.png" alt="Peers"/> icon at the top
+                right
+                of your feed and
+                then click the <img class="inline-icon" src="../img/add-peer.png" alt="Add Peer"/> icon.
+            </p>
+
+            <div class="centered">
+                <img class="example-img" src="img/adding-peer.png" alt="Adding Peer"/>
+            </div>
+
+            <p>
+                Copy the token beside "Give this token to your peer:" and give it to a peer (via Signal, email, sms,
+                etc).
+                Enter the token you receive from the peer in the other box. Click "Add" - edit the name and image url if
+                desired, and then click "Save". You don't need to keep your browser open while waiting for a token from
+                your
+                peer - you can whenever you get the token.
+            </p>
+
+            <p>
+                By default, you will be using the OpenCola Relay server (ocr://relay.opencola.net) to communicate with
+                peers. Communication is end to end encrypted, but does travel through a central server. There are more
+                advanced options (Tor, ZeroTier VPN) that will be documented, but are not for the faint of heart, so we
+                default to the relay server as a "batteries included" solution.
+            </p>
+
+            <p>
+                You can "disconnect" from a peer without losing any of the posts your have accumulated by unchecking the
+                box
+                beside the <img class="inline-icon" src="../img/refresh.png" alt="Refresh"/> icon for the peer. If you
+                want
+                to completely
+                disconnect, edit the peer and click "Delete".
+            </p>
+        </section>
+        <section id="mobile">
+            <h2>Mobile</h2>
+            <p>
+                We currently do not have native mobile apps, but we are working on them. In the meantime, to access
+                OpenCola
+                on a mobile device, simply navigate to one of the (non-local) urls listed at startup (if you want to use
+                https, see [Installing Certificates](#installing-certificates) below). This works when on the same LAN
+                as
+                your server. To access anywhere, see the next section.
+            </p>
+        </section>
+        <section id="certificates">
+            <h2>Certificates</h2>
+            <p>
+                The first time you start OpenCola, it will generate certificates so that you can access the application
+                over
+                https without security warnings. These certificates will be placed in your storage/cert (in
+                ~/Library/Application Support/OpenCola on Mac, $home\AppData\Local\OpenCola on Windows, or
+                ~/.opencola/storage/cert on Linux). If you ever need to generate new ones, delete the generated files
+                (opencola-ssl*) and restart your server. This will create new certificates and prompt you to install on
+                the
+                local machine.
+            </p>
+
+            <p>
+                For any other device, you will need to copy and add the certificates manually (in the future, with
+                mobile
+                apps, this won't be required). If you're not concerned about security (e.g. if you're on your local
+                network
+                or using ZeroTier), you can just use the http access links and skip the install steps below.
+            </p>
+        </section>
+    </div>
+</div>
+<!-- <script src="js/help.js" type="text/javascript"></script> -->
+</body>
+</html>
