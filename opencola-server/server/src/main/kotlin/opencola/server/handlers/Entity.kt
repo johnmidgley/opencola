@@ -32,7 +32,8 @@ suspend fun getEntity(
     // TODO: Authority should be passed (and authenticated) in header
     val stringId = call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified")
     val entityId = Id.decode(stringId)
-    val entityResult = getEntityResult(entityStore, addressBook,  eventBus, fileStore, Context(""), persona.personaId, entityId)
+    val entityResult =
+        getEntityResult(entityStore, addressBook, eventBus, fileStore, Context(""), persona.personaId, entityId)
 
     if (entityResult != null)
         call.respond(entityResult)
@@ -238,13 +239,15 @@ fun saveEntity(
 
     // TODO: Should DB enforce that data id exists? Seems valid to point to data that isn't available locally, but think on it
     val attachmentEntities = entity.attachmentIds.map {
-        getOrCopyEntity(persona.personaId, entityStore, it) ?: throw IllegalArgumentException("Unable to save unknown attachment: $it")
+        getOrCopyEntity(persona.personaId, entityStore, it)
+            ?: throw IllegalArgumentException("Unable to save unknown attachment: $it")
     }
 
     entityStore.updateEntities(entity, *attachmentEntities.toTypedArray())
     return getEntityResult(entityStore, addressBook, eventBus, fileStore, context, persona.entityId, entityId)
 }
 
+// TODO: Abstract out ContentParser interface and collapse these two methods
 fun updateEntityFromHtmlContent(resource: Entity, uri: URI, content: ByteArray): Entity {
     val parser = HtmlContentParser(content, uri)
     resource.name = parser.parseTitle()
@@ -263,6 +266,30 @@ fun updateEntityFromPdfContent(resource: Entity, uri: URI, content: ByteArray): 
     return resource
 }
 
+fun updateResourceFromSource(contentTypeDetector: ContentTypeDetector, resourceEntity: ResourceEntity): Boolean {
+    val uri = resourceEntity.uri
+
+    try {
+        require(uri != null) { "ResourceEntity must have uri" }
+        val content = httpClient.getContent(uri.toString())
+
+        // TODO: Make a ContentParser registry
+        when (val contentType = contentTypeDetector.getType(content)) {
+            "text/html" -> updateEntityFromHtmlContent(resourceEntity, uri, content)
+            "application/pdf" -> updateEntityFromPdfContent(resourceEntity, uri, content)
+            else -> {
+                throw IllegalArgumentException("Unhandled Content type: $contentType for $uri")
+            }
+        }
+
+        return true
+    } catch (e: Exception) {
+        logger.error { e }
+    }
+
+    return false
+}
+
 fun newResourceFromUri(
     persona: PersonaAddressBookEntry,
     entityStore: EntityStore,
@@ -272,34 +299,26 @@ fun newResourceFromUri(
     contentTypeDetector: ContentTypeDetector,
     uri: URI
 ): EntityResult? {
-    try {
-        val resource = entityStore.getEntity(persona.personaId, Id.ofUri(uri))
-            ?: ResourceEntity(persona.personaId, uri)
-        val content = httpClient.getContent(uri.toString())
-        val contentType = contentTypeDetector.getType(content)
+    val resource = entityStore.getEntity(persona.personaId, Id.ofUri(uri)) as? ResourceEntity
+        ?: ResourceEntity(persona.personaId, uri)
 
-        // TODO: If parsing fails, could call getOrCopyEntity(persona.personaId, entityStore, Id.ofUri(URI(url)))
-        //  (i.e. copy from any existing resource, from any persona/peer
-        // TODO: Just grab appropriate parser from contentParserRegistry based on content type
-        when (contentType) {
-            "text/html" -> updateEntityFromHtmlContent(resource, uri, content)
-            "application/pdf" -> updateEntityFromPdfContent(resource, uri, content)
-            else -> {
-                throw IllegalArgumentException("Unable to parse resource from url: $uri: Content type: $contentType")
-            }
-        }
-
-        if (resource.name == null && resource.description == null && resource.imageUri == null)
-            throw IllegalArgumentException("Unable to parse resource from url: $uri: No title, description or image found")
-
-        entityStore.updateEntities(resource)
-
-        return getEntityResult(entityStore, addressBook, eventBus, fileStore, Context(""), persona.personaId, resource.entityId)
-    } catch (e: Exception) {
-        logger.error { e }
+    if (!updateResourceFromSource(contentTypeDetector, resource)) {
+        if (resource.name == null)
+            // Couldn't parse anything, so just use the url as the name
+            resource.name = uri.toString()
     }
 
-    return null
+    entityStore.updateEntities(resource)
+
+    return getEntityResult(
+        entityStore,
+        addressBook,
+        eventBus,
+        fileStore,
+        Context(""),
+        persona.personaId,
+        resource.entityId
+    )
 }
 
 fun newPost(
@@ -317,13 +336,23 @@ fun newPost(
 
     if (url != null && urlRegex.matchEntire(url) != null) {
         val uri = URI(url).also { requireNotLocalOCAddress(it, ocServerPorts) }
-        val result = newResourceFromUri(persona, entityStore, eventBus, addressBook, fileStore, contentTypeDetector, uri)
+        val result =
+            newResourceFromUri(persona, entityStore, eventBus, addressBook, fileStore, contentTypeDetector, uri)
         // TODO: Handle comment and other fields
         if (result != null)
             return result
     }
 
-    return updateEntity(entityStore, addressBook, eventBus, fileStore, context, persona, PostEntity(persona.personaId), entityPayload)
+    return updateEntity(
+        entityStore,
+        addressBook,
+        eventBus,
+        fileStore,
+        context,
+        persona,
+        PostEntity(persona.personaId),
+        entityPayload
+    )
 }
 
 suspend fun addAttachment(
