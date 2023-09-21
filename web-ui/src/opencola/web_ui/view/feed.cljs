@@ -457,6 +457,6 @@
              (fn [persona-id] (new-post persona-id feed! creating-post?! edit-item! #(reset! error! %)))
              #(reset! creating-post?! false) nil]
        [error-control error!]]))
-       (if (or (= @feed! {}) (not-empty (:results @feed!)) (not-empty @query!))
+       (if (or @creating-post?! (= @feed! {}) (not-empty (:results @feed!)) (not-empty @query!))
          [feed-list persona-id! personas! feed!]
          [feed-instructions])])))

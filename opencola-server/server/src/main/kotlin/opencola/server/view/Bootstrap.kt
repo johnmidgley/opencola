@@ -3,6 +3,8 @@ package opencola.server.view
 import io.ktor.server.application.*
 import io.ktor.server.html.*
 import io.ktor.server.sessions.*
+import io.opencola.system.OS
+import io.opencola.system.getOS
 import io.opencola.system.runningInDocker
 import kotlinx.html.*
 import opencola.server.plugins.UserSession
@@ -79,15 +81,18 @@ suspend fun newUserForm(call: ApplicationCall, message: String? = null) {
                         +"Create a Password"
                     }
                     p {
-                        +"Please set a password to protect your private keys (be sure to not lose this - it can't be recovered!)"
+                        +"Please set a password to protect your private keys."
+                        b { +"Be sure to not lose this - it can't be recovered!" }
                     }
-                    p {
+
+                    div {
                         passwordInput(name = "password") {
                             placeholder = "Password"
                         }
                         passwordInput(name = "passwordConfirm") {
                             placeholder = "Confirm Password"
                         }
+
                         if (!runningInDocker()) {
                             span {
                                 +"Auto-Start:"
@@ -97,17 +102,26 @@ suspend fun newUserForm(call: ApplicationCall, message: String? = null) {
                                     checked = true
                                 }
                             }
+                            if (getOS() == OS.Mac) {
+                                p {
+                                    b { +"Note: " }
+                                    +"On MacOS, if autostart is enabled, a security message will be displayed "
+                                    +"asking for permission to control System Events. Click "
+                                    b { +"OK" }
+                                    +" to allow OpenCola to start on login."
+                                }
+                            }
                         }
                     }
+
                     if (message != null) {
                         p {
                             classes = setOf("error")
                             +message
                         }
                     }
-                    p {
-                        submitInput { value = "Start" }
-                    }
+
+                    submitInput { value = "Start" }
                 }
                 // script { unsafe { raw("onSubmitHashFormFields(document.querySelector('form'), ['password', 'passwordConfirm'])") } }
             }
