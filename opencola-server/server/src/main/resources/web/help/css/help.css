@@ -109,3 +109,7 @@ tr:hover {
 .icon {
     width: 20px;
 }
+
+.center-text {
+    text-align: center;
+}

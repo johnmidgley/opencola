@@ -423,9 +423,9 @@
     [:div.item-name  "Snap! Your feed is empty!"]
     [:div
      [:ul.instruction-items
-      [:li "Add posts by clicking the new post icon (" [:img.header-icon {:src  "../img/new-post.png"}] ") on the top right"] 
+      [:li [:span "Add posts using the " [:a {:class "item-link" :href "help/help.html#extension"} "browser extension "] " or by clicking the new post icon ("] [:img.header-icon {:src  "../img/new-post.png"}] ") on the top right"]
       [:li "Add peers by clicking the peers icon (" [:img.header-icon {:src  "../img/peers.png"}] ") on the top right"]
-      [:li "Add posts using the browser extension"]]]]])
+      [:li "Browse help by clicking the help icon (" [:img.header-icon {:src  "../img/help.png"}] ") on the top right"]]]]])
 
 ;; TODO: Make parameter ordering consistent. Some places have persona-id then personas, others
 ;; are the other way around.

@@ -144,6 +144,16 @@
      (doall (for [peer (:results @peers!)]
               ^{:key peer} [peer-item persona-id peers! peer]))]))
 
+(defn peer-instructions []
+  [:div.feed-item
+   [:div
+    [:img.nola-img {:src "img/nola.png"}]
+    [:div.item-name  "Snap! Your have no peers!"]
+    [:div
+     [:ul.instruction-items
+      [:li "Add peers by clicking the add peer icon (" [:img.header-icon {:src  "../img/add-peer.png"}] ") on the top right"]
+      [:li "Browse help by clicking the help icon (" [:img.header-icon {:src  "../img/help.png"}] ") on the top right"]]]]])
+
 
 (defn peer-page [peers! personas! persona! on-persona-select query! on-search!]
   (let [adding-peer?! (atom false)]
@@ -152,13 +162,15 @@
       [:div.settings-page
        [search/search-header
         :peers
-        personas! 
-        persona! 
-        on-persona-select 
-        query! 
-        on-search! 
+        personas!
+        persona!
+        on-persona-select
+        query!
+        on-search!
         (partial header-actions adding-peer?!)]
        [error-control (state/error!)]
-       [:h2 "Peers (" (:name (personas @persona!)) ")"]
-       [peer-list @persona! peers! adding-peer?!]]))))
+       [:h2 "Peers of " (:name (personas @persona!))] 
+       [peer-list @persona! peers! adding-peer?!]
+       (when (and (not (= @peers! {})) (not @adding-peer?!) (empty? (:results @peers!)))
+         [peer-instructions])]))))
 
