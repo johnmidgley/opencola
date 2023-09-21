@@ -37,7 +37,7 @@ nav {
     background-color: white;
     text-align: center;
     box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
-    height: 30px;
+    height: 50px;
 }
 
 nav a {
@@ -45,13 +45,8 @@ nav a {
     text-decoration: none;
     padding: 15px 20px;
     font-weight: bold;
-    transition: background-color 0.3s, color 0.3s;
 }
 
-nav a:hover {
-    background-color: #fff;
-    color: red;
-}
 
 /* Content styles */
 .content {
@@ -60,10 +55,6 @@ nav a:hover {
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
     margin: 20px;
     max-width: 800px;
-}
-
-.content section {
-    /* display: none; */
 }
 
 .content h2 {
@@ -104,10 +95,11 @@ tr:hover {
 .centered {
     display: flex;
     justify-content: center;
+    align-content: center;
 }
 
 .example-img {
-    max-width: 600px;
+    max-width: 100%;
 }
 
 .inline-icon {
