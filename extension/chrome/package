@@ -6,7 +6,11 @@ OC_VERSION=$($OC_BIN_PATH/oc-version)
 echo "Packaging version $OC_VERSION for Docker"
 
 # Update manifest version to match current version
-sed -i 's/"version": "[^"]*"/"version": "'"$OC_VERSION"'"/' manifest.json
+if [ "$(uname)" == "Darwin" ]; then
+    sed -i '' "s/\"version\": \".*\"/\"version\": \"$OC_VERSION\"/" manifest.json
+else
+    sed -i 's/"version": "[^"]*"/"version": "'"$OC_VERSION"'"/' manifest.json
+fi
 
 mkdir OpenCola-Chrome-"$OC_VERSION"
 cp -r *.js *.html *.css *.json images OpenCola-Chrome-"$OC_VERSION"
