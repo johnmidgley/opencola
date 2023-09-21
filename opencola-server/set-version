@@ -1,0 +1,26 @@
+#!/bin/bash
+
+if [ "$#" -eq 1 ]; then
+    VERSION="$1"
+else
+    echo "Usage: $0 VERSION"
+    exit 1
+fi
+
+echo "Setting version to $VERSION"
+
+
+echo "Updating build.gradle.kts"
+
+if [ "$(uname)" == "Darwin" ]; then
+    sed -i '' "s/version = .*/version = \"$VERSION\"/" build.gradle.kts
+else
+    sed -i "s/version = .*/version = \"$VERSION\"/" build.gradle.kts
+fi
+
+echo "Updating extension"
+
+pushd ../extension/chrome/
+./deploy
+popd
+
