@@ -17,8 +17,10 @@
     <a href="#personas">Personas</a>
     <a href="#feed">Feed</a>
     <a href="#peers">Peers</a>
+    <a href="#extension">Browser Extension</a>
     <a href="#mobile">Mobile</a>
     <a href="#certificates">Certificates</a>
+    <a href="#access">Anywhere Access</a>
 </nav>
 <div class="centered">
     <div class="content">
@@ -56,14 +58,52 @@
             </p>
 
             <p>
-                You can use the "+" icon at the top right of the page to add a persona or choose <strong>Edit</strong>
-                below
-                any of your personas to change details.
+                You can use the <img class="inline-icon" src="../img/add-peer.png" alt="Peers"> icon at the top right of
+                the page to add a persona or choose <strong>Edit</strong>
+                below any of your personas to change details.
             </p>
 
             <div class="centered">
                 <img class="example-img" src="img/set-info.png" alt="Set Info">
             </div>
+
+            <table>
+                <thead>
+                <tr>
+                    <th>Field</th>
+                    <th>Description</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><img class="icon" src="../img/user.png" alt="User"/></td>
+                    <td>Name that shows up persona controls</td>
+                </tr>
+                <tr>
+                    <td><img class="icon" src="../img/id.png" alt="Id"/></td>
+                    <td>Globally unique OpenCola user id - not changeable</td>
+                </tr>
+                <tr>
+                    <td><img class="icon" src="../img/key.png" alt="Key"/></td>
+                    <td>A cryptographic public key used to encrypt and sign data - not changeable yet</td>
+                </tr>
+                <tr>
+                    <td><img class="icon" src="../img/link.png" alt="Address"/></td>
+                    <td>
+                        The address at which peers can request data from you. Default is to use the OpenCola relay
+                        server (see [Managing Peers](#managing-peers) for more details)
+                    </td>
+                </tr>
+                <tr>
+                    <td><img class="icon" src="../img/photo.png" alt="Image"/></td>
+                    <td>Url of image for your picture. This has to be a web link right now.</td>
+                </tr>
+                <tr>
+                    <td><img class="icon" src="../img/refresh.png" alt="Synchronize"/></td>
+                    <td>Whether or not the user is actively being synchronized (more later)</td>
+                </tr>
+                </tbody>
+            </table>
 
             <p>
                 Each Persona has its own set of <strong>Peers</strong>. To start adding people to your Personas network
@@ -203,12 +243,79 @@
 
             <p>
                 You can "disconnect" from a peer without losing any of the posts your have accumulated by unchecking the
-                box
-                beside the <img class="inline-icon" src="../img/refresh.png" alt="Refresh"/> icon for the peer. If you
-                want
-                to completely
-                disconnect, edit the peer and click "Delete".
+                box beside the <img class="inline-icon" src="../img/refresh.png" alt="Refresh"/> icon for the peer. If
+                you want to completely disconnect, edit the peer and click "Delete".
             </p>
+        </section>
+        <section id="extension">
+            <h2>Browser Extension</h2>
+            <p>
+                OpenCola has a browser extension that makes it easier to interact with web pages. It currenlty only
+                works with Chrome based browsers (e.g. Chrome, Chromium, Brave, Edge). We will provide other extnsions
+                in the future. As well, the extension is a manual install and we will provide the extension in the Web
+                Store in a future release.
+            </p>
+
+            <p>
+                To start,
+                <a href="../extension/OpenCola-Chrome.zip">download the extension</a> and place it in your home direcory (or anywhere you
+                prefer). Then go to your browsers extensions page, by clicking the menu icon on the far right of the url
+                bar (the icon with 3 horizontal lines or 3 dots), and selecting extensions:
+            </p>
+
+            <div class="centered">
+                <img class="example-img" src="img/chrome-customize-menu.png" alt="Customize Chrome"/>
+            </div>
+
+            <p>
+                In Brave, this looks like (other browser will be very similar):
+            </p>
+
+            <div class="centered">
+                <img class="example-img" src="img/manageExtensions.png" alt="Manage Extensions"/>
+            </div>
+
+            <p>
+                Click the "Developer mode" slider near the top right:
+            </p>
+
+            <div class="centered">
+                <img class="example-img" src="img/enableDeveloperMode.png" alt="Enable Developer Mode"/>
+            </div>
+
+            <p>
+                Click "Load Unpacked" and select the folder $OPENCOLA/chrome.
+            </p>
+
+            <div class="centered">
+                <img class="example-img"  src="img/openColaExtensionEnabled.png" alt="Enable Extension"/>
+            </div>
+
+            <p>
+                Lastly, pin the extension to your toolbar (so it's always visible) by clicking the extension icon (the
+                puzzle piece) and click the pin beside OpenCola:
+            </p>
+
+            <div class="centered">
+                <img class="example-img" src="img/pinExtension.png" alt="Pin Extension"/>
+            </div>
+
+            <p>
+                If you would like to use the extension on a different computer than where the server is running, install
+                the
+                extension and then set the service url in the extension's options to point to the server:
+            </p>
+
+            <ol>
+                <li>Right-click the extension</li>
+                <li>Select "Options" </li>
+                <li>Edit the "Service Host" field</li>
+                <li>Hit "Return" or click the "Save Button"</li>
+            </ol>
+
+            <div class="centered">
+                <img class="example-img" src="img/extension-options.png" alt="Extension Options"/>
+            </div>
         </section>
         <section id="mobile">
             <h2>Mobile</h2>
@@ -216,7 +323,7 @@
                 We currently do not have native mobile apps, but we are working on them. In the meantime, to access
                 OpenCola
                 on a mobile device, simply navigate to one of the (non-local) urls listed at startup (if you want to use
-                https, see [Installing Certificates](#installing-certificates) below). This works when on the same LAN
+                https, see <a href="#certificates">certificates</a> below). This works when on the same LAN
                 as
                 your server. To access anywhere, see the next section.
             </p>
@@ -240,6 +347,96 @@
                 apps, this won't be required). If you're not concerned about security (e.g. if you're on your local
                 network
                 or using ZeroTier), you can just use the http access links and skip the install steps below.
+            </p>
+        </section>
+        <section id="access">
+            <h2>Accessing OpenCola From Anywhere</h2>
+            <p>
+                We currently have not built any services that allow you to access you OpenCola server from anywhere
+                (i.e. outside the LAN it's running on). For the time being, we rely on ZeroTier, an open source project
+                that allows you to create private VPNs. We recognize that this is not for the faint of heart, and will
+                provide a more seamless solution in the future.
+            </p>
+
+            <p>
+                In order to use ZeroTier, you must create an account, set up a network, and run the client on any
+                devices
+                that are running or would like to access OpenCola.
+            </p>
+
+            <p>
+                To create an account, go to [ZeroTier](https://www.zerotier.com/) and sign up. Once signed, up, navigate
+                to
+                your [networks](https://my.zerotier.com/network), which should look something like:
+            </p>
+
+            <div class="centered">
+                <img class="example-img" src="img/zt-create-network.png" alt="Create Network"/>
+            </div>
+
+
+            <p>
+                Click "Create A Network". A network with a random name will be created, something like:
+            </p>
+
+            <div class="centered">
+                <img class="example-img" src="img/zt-network-created.png" alt="Network Created"/>
+            </div>
+
+            <p>
+                Click on the network to edit it. While there are many settings on the page, you can just use the
+                defaults.
+                It is helpful to give the network a meaningful name (e.g. opencola):
+            </p>
+
+            <div class="centered">
+                <img class="example-img" src="img/zt-edit-network.png" alt="Edit Network"/>
+            </div>
+
+            <p>
+                Take note of the network id (in this case, 632ea290854c7435). For each device you would like to add to
+                the network, [download](https://www.zerotier.com/download/) and install the client. Once installed, you
+                need to join the network. To do this, open ZeroTier on your device and add your network:
+            </p>
+
+            <ul>
+                <li>
+                    On Mac, click the ZeroTier icon in your menu bar, "Open Control Panel", and enter the network id in
+                    the box beside "Join Network" at the bottom.
+                </li>
+                <li>
+                    On iOS, open the app, click + at the top right, Accept the terms and then enter the NetworkId
+                </li>
+                <li>
+                    Other OSs we haven't tried yet, but the process will be similar.
+                </li>
+            </ul>
+
+            <p>
+                Once your devices have been added, return to the network and scroll to the "Members" section and check
+                the "Auth?" box beside the addresses you've added.
+            </p>
+
+            <div class="centered">
+                <img class="example-img" src="img/zt-edit-members.png" alt="Edit Members"/>
+            </div>
+
+            <p>
+                Each device will now have an additional ip address assigned, which will be in the range set for the
+                network (scroll to IPv4 Auto-Assign in the network config):
+            </p>
+
+            <div class="centered">
+                <img class="example-img" src="img/zt-ip-address.png" alt="Ip Address"/>
+            </div>
+
+            <p>
+                Go to go the machine running opencola (that you should have installed ZeroTier on) and restart the
+                server. If you check the logs, there will you'll notice new access urls that with a new ip address. You
+                can use these addresses to access OpenCola from anywhere. The VPN is private and secure (traffic is
+                encrypted), so you can use http if you like, or https to be extra safe. If you decide to use https, make
+                sure to regenerate new certificates (that will include the ZeroTier ip address), as described
+                <a href="#certificates">here</a>.
             </p>
         </section>
     </div>

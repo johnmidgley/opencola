@@ -13,7 +13,7 @@
                                                    comment-edit-control
                                                    item-comments]]
             [opencola.web-ui.view.common :refer [action-img hidden-file-input upload-progress
-                                                 image-divider inline-divider error-control
+                                                 image-divider inline-divider error-control help-control
                                                  md->component select-files-control simple-mde text-input]]
             [opencola.web-ui.view.likes :refer [item-likes like-edit-control]]
             [opencola.web-ui.view.persona :refer [persona-select]]
@@ -394,11 +394,13 @@
 
 (defn header-actions [creating-post?!]
   [:div.header-actions
-   [:img.header-icon {:src  "../img/new-post.png" :on-click #(swap! creating-post?! not)}]
-   (when true ;@persona!
-     [:span
-      image-divider
-      [:img.header-icon {:src  "../img/peers.png" :on-click #(location/set-page! :peers)}]])])
+   [:img.header-icon {:src  "../img/new-post.png" :on-click #(swap! creating-post?! not)}] 
+   image-divider
+   [:img.header-icon {:src  "../img/peers.png" :on-click #(location/set-page! :peers)}]
+   image-divider
+   [help-control]])
+
+
 
 
 (defn prepend-feed-item [feed! view-item]

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+./package
+mv OpenCola-Chrome-*.zip ../../opencola-server/server/src/main/resources/web/extension/OpenCola-Chrome.zip

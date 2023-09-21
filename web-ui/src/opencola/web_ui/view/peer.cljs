@@ -2,7 +2,7 @@
   (:require 
    [reagent.core :as reagent :refer [atom]]
    [opencola.web-ui.app-state :as state]
-   [opencola.web-ui.view.common :refer [action-img image-divider input-text input-checkbox error-control]]
+   [opencola.web-ui.view.common :refer [action-img image-divider input-text input-checkbox error-control help-control]]
    [opencola.web-ui.model.peer :as model]
    [opencola.web-ui.view.search :as search]
    [opencola.web-ui.location :as location]))
@@ -33,7 +33,9 @@
   [:div.header-actions 
    [:img.header-icon {:src  "../img/add-peer.png" :on-click #(swap! adding-peer?! not)}]
    image-divider
-   [:img.header-icon {:src  "../img/feed.png" :on-click #(location/set-page! :feed)}]])
+   [:img.header-icon {:src  "../img/feed.png" :on-click #(location/set-page! :feed)}]
+   image-divider
+   [help-control]])
 
 (defn map-to-token [m]
   (->> m (map (fn [[k v]] (str (name k) "=" v))) (interpose \|) (apply str)))

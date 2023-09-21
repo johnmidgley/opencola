@@ -2,7 +2,8 @@
   (:require [clojure.string :as string]
             [goog.string :as gstring]
             [markdown-to-hiccup.core :as md2hic]
-            [reagent.core :as reagent]))
+            [reagent.core :as reagent]
+            [opencola.web-ui.location :as location]))
 
 (defn error-control [e!]
   (when @e!
@@ -122,3 +123,5 @@
    (when (= @progress! 100) " processing...")]))
 
 
+(defn help-control []
+  [:a {:href "help/help.html" :target "_blank"} [:img.header-icon {:src  "../img/help.png" :on-click #(location/set-page! :peers)}]])

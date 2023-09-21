@@ -3,8 +3,9 @@
    [reagent.core :as reagent :refer [atom]]
    [opencola.web-ui.app-state :as state]
    [opencola.web-ui.model.persona :as model]
-   [opencola.web-ui.view.common :refer [action-img input-text input-checkbox error-control]]
-   [opencola.web-ui.view.search :as search]))
+   [opencola.web-ui.view.common :refer [action-img input-text input-checkbox error-control help-control image-divider]]
+   [opencola.web-ui.view.search :as search]
+   [opencola.web-ui.location :as location]))
 
 (defn init-personas [personas! on-success on-error]
   (model/get-personas
@@ -47,7 +48,11 @@
 
 (defn header-actions [adding-persona?!]
   [:div.header-actions 
-   [:img.header-icon {:src  "../img/add-peer.png" :on-click #(swap! adding-persona?! not)}]])
+   [:img.header-icon {:src  "../img/add-peer.png" :on-click #(swap! adding-persona?! not)}]
+   image-divider
+   [:img.header-icon {:src  "../img/feed.png" :on-click #(location/set-page! :feed)}]
+   image-divider
+   [help-control]])
 
 (defn persona-item [personas! persona]
   (let [editing?! (atom false)
