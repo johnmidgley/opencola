@@ -113,3 +113,24 @@ tr:hover {
 .center-text {
     text-align: center;
 }
+
+details {
+    margin: 15px 0;
+}
+
+pre {
+    font-family: "Courier New", monospace;
+    background-color: #f6f8fa; /* Light gray background similar to GitHub */
+    padding: 5px;
+    border: 1px solid #e1e4e8;
+    border-radius: 5px;
+}
+
+/* Define styles for syntax highlighting */
+.keyword {
+    color: #d73a49; /* Red color for keywords */
+}
+
+.comment {
+    color: #6a737d; /* Gray color for comments */
+}

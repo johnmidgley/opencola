@@ -400,6 +400,56 @@
                 network
                 or using ZeroTier), you can just use the http access links and skip the install steps below.
             </p>
+
+            The sections below describe how to install the certificate on various devices:
+
+            <details>
+                <summary>Computer</summary>
+                <p>
+                    To access OpenCola over https from another computer, copy the `install-cert` (or `install-cert.ps1`
+                    on
+                    Windows) and `opencola-ssl.der` to the same directory on the computer and run:
+                </p>
+                <pre>./install-cert</pre>
+            </details>
+            <details>
+                <summary>iOS</summary>
+                <ol>
+                    <li>From ~/.opencola/storage/cert, copy `opencola-ssl.pem` to your device. The simplest way to do
+                        this is just to mail it to your device as an attachment and then save it to your local files.
+                    </li>
+                    <li>Open "Files" (Swipe down on your main menu, type files into the search and then open the app)
+                    </li>
+                    <li>In Locations, select "On My iPhone", then "Downloads"</li>
+                    <li>Tap `opencola-ssl.pem`. A dialog will tell you that the profile has been downloaded</li>
+                    <li>Open "Settings". Under your name, tap the "Profile Downloaded" section</li>
+                    <li>Click "install" at the top right of the resulting "Install Profile" page</li>
+                    <li>Enter your passcode (if needed)</li>
+                    <li>Click "Install" at the top right (and in the next dialog)</li>
+                    <li>Go back to the "Settings" homepage, then to "General" -> "About"</li>
+                    <li>Scroll to the bottom and tap "Certificate and Trust Settings"</li>
+                    <li>Tap the slider next to "OpenCola" and click "Continue"</li>
+                </ol>
+            </details>
+            <details>
+                <summary>Android</summary>
+                <ol>
+                    <li>From ~/.opencola/storage/cert, copy `opencola-ssl.der` to `opencola-ssl.crt` and then transfer
+                        it to your device. The simplest way to do this is just to mail it to your device as an
+                        attachment and then save it to your local files.
+                    </li>
+                    <li>On your Android admin dashboard go to Settings > Security</li>
+                    <li>
+                        Under Credential Storage click on Install from Phone Storage/Install from SD Card
+                        <b>Note: if you don’t have this option, navigate to Advanced Settings > Security or Advanced
+                            Settings > Privacy and click on Install from Phone Storage/Install from SD Card.</b>
+                    </li>
+                    <li>The File Storage Manager will appear. Locate your SSL Certificate from your device</li>
+                    <li>In the Certificate Name field, enter a friendly name for your certificate</li>
+                    <li>Under Credential Use select VPN and Apps or Wi-Fi based on your security requirements.</li>
+                </ol>
+
+            </details>
         </section>
         <section id="access">
             <h2>Accessing OpenCola From Anywhere</h2>
