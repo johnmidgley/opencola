@@ -116,7 +116,7 @@ class PeerTransactionTest {
             // Now start up the first server again. This will trigger call get transactions to server 1, which should trigger
             // it to grab the missing transaction
             println("Re-starting ${application0.config.name}")
-            waitForStdout("LuceneSearchIndex: Indexed") { startServer(server0restart) }
+            waitForStdout("SearchIndex: Indexed") { startServer(server0restart) }
 
             println("Searching ${application1.config.name}")
             val results0 = handleSearch(application1.inject(), application1.inject(), emptySet(), "stuff")

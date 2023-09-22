@@ -27,7 +27,7 @@
 
 
 (defn get-feed [context persona-id query on-success on-error]
-  (ajax/GET (str "feed?context=" context  "&personaId=" persona-id  "&q=" query "") 
+  (ajax/GET (str "feed?context=" context  "&personaId=" persona-id  "&q=" (js/encodeURIComponent query) "") 
             #(on-success (feed-to-view-model % query))
             #(on-error (error-result->str %)))) 
 

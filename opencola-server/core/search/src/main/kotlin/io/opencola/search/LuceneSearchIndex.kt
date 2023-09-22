@@ -5,7 +5,6 @@ import io.opencola.model.CoreAttribute.values
 import io.opencola.model.Entity
 import io.opencola.model.Id
 import io.opencola.util.Base58
-import mu.KotlinLogging
 import org.apache.lucene.analysis.core.KeywordAnalyzer
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper
 import org.apache.lucene.analysis.standard.StandardAnalyzer
@@ -26,7 +25,6 @@ import java.nio.file.Path
 import java.util.*
 
 class LuceneSearchIndex(private val storagePath: Path) : AbstractSearchIndex(), Closeable {
-    private val logger = KotlinLogging.logger("LuceneSearchIndex")
     private val analyzer = KeywordAnalyzer().let {
         PerFieldAnalyzerWrapper(StandardAnalyzer(), mapOf("authorityId" to it, "entityId" to it, "id" to it))
     }
@@ -131,7 +129,7 @@ class LuceneSearchIndex(private val storagePath: Path) : AbstractSearchIndex(), 
         DirectoryReader.open(directory).use { directoryReader ->
             val indexSearcher = IndexSearcher(directoryReader)
             val parser = QueryParser("text", analyzer)
-            val luceneQuery: Query = parser.parse(getLuceneQueryString(authorityIds, query))
+            val luceneQuery: Query = parser.parse(getLuceneQueryString(authorityIds, parseQuery(query)))
             val scoreDocs =
                 (if (pagingToken == null)
                     indexSearcher.search(luceneQuery, maxResults)

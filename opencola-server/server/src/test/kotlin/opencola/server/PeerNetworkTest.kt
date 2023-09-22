@@ -75,8 +75,8 @@ fun testConnectAndReplicate(application0: ApplicationNode, application1: Applica
 
         // Connection should trigger two index operations from transaction sharing
         println("Waiting for index operations to complete")
-        stdoutMonitor.waitUntil("LuceneSearchIndex: Indexing")
-        stdoutMonitor.waitUntil("LuceneSearchIndex: Indexing")
+        stdoutMonitor.waitUntil("SearchIndex: Indexing")
+        stdoutMonitor.waitUntil("SearchIndex: Indexing")
 
         println("Verifying replication")
         assertEquals(resource1.name, entityStore0.getEntity(resource1.authorityId, resource1.entityId)?.name)
