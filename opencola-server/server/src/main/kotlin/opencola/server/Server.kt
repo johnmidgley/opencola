@@ -196,12 +196,10 @@ fun startServer(storagePath: Path, config: Config) {
         }
 
         bootstrapInit(storagePath, config.server.ssl!!)
-        // TODO: Allow server to be stopped by OC application
-        val stop = CompletableDeferred<Unit>()
         val loginConfig = config.security.login
         val deferredLoginCredentials = CompletableDeferred<LoginCredentials>()
         val environment = getBootstrapEnvironment(storagePath, config.server, loginConfig, deferredLoginCredentials)
-        val server = embeddedServer(Netty, environment).also { it.start(wait = false) }
+        embeddedServer(Netty, environment).also { it.start() }
 
         if (loginConfig.password != null)
             deferredLoginCredentials.complete(
@@ -211,8 +209,5 @@ fun startServer(storagePath: Path, config: Config) {
         val application = getApplication(storagePath, config, deferredLoginCredentials.await())
         environment.application.configureRouting(application)
         enableResumeDetection(application)
-
-        stop.await()
-        server.stop(1000, 10000)
     }
 }
