@@ -19,6 +19,7 @@ dependencies {
     implementation("org.apache.lucene:lucene-queryparser:$luceneVersion")
     implementation("org.apache.lucene:lucene-backward-codecs:$luceneVersion")
     implementation("org.apache.lucene:lucene-analysis-common:$luceneVersion")
+    implementation(project(mapOf("path" to ":core:storage")))
 
     testImplementation(project(":test"))
     testImplementation(project(":core:content"))

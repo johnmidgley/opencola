@@ -164,7 +164,7 @@ working properly, you can delete entity-store.db and address-book.db.
                 bindSingleton { HttpNetworkProvider(instance(), instance(), config.network) }
                 bindSingleton { OCRelayNetworkProvider(instance(), instance(), config.network) }
                 bindSingleton { NetworkNode(config.network, instance(), instance(), instance()) }
-                bindSingleton { LuceneSearchIndex(storagePath.resolve("lucene")) }
+                bindSingleton { LuceneSearchIndex(storagePath.resolve("lucene"), instance()) }
                 bindSingleton {
                     ExposedEntityStoreV2(
                         entityStoreName,

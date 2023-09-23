@@ -4,6 +4,7 @@ import io.opencola.io.recursiveDelete
 import io.opencola.model.CoreAttribute.values
 import io.opencola.model.Entity
 import io.opencola.model.Id
+import io.opencola.storage.addressbook.AddressBook
 import io.opencola.util.Base58
 import org.apache.lucene.analysis.core.KeywordAnalyzer
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper
@@ -24,7 +25,7 @@ import java.io.Closeable
 import java.nio.file.Path
 import java.util.*
 
-class LuceneSearchIndex(private val storagePath: Path) : AbstractSearchIndex(), Closeable {
+class LuceneSearchIndex(private val storagePath: Path, addressBook: AddressBook) : AbstractSearchIndex(addressBook), Closeable {
     private val analyzer = KeywordAnalyzer().let {
         PerFieldAnalyzerWrapper(StandardAnalyzer(), mapOf("authorityId" to it, "entityId" to it, "id" to it))
     }
@@ -129,7 +130,7 @@ class LuceneSearchIndex(private val storagePath: Path) : AbstractSearchIndex(), 
         DirectoryReader.open(directory).use { directoryReader ->
             val indexSearcher = IndexSearcher(directoryReader)
             val parser = QueryParser("text", analyzer)
-            val luceneQuery: Query = parser.parse(getLuceneQueryString(authorityIds, parseQuery(query)))
+            val luceneQuery: Query = parser.parse(getLuceneQueryString(parseQuery(authorityIds, query)))
             val scoreDocs =
                 (if (pagingToken == null)
                     indexSearcher.search(luceneQuery, maxResults)

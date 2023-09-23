@@ -4,21 +4,41 @@ import io.opencola.model.CoreAttribute
 import io.opencola.model.Id
 import io.opencola.model.value.StringValue
 
+fun getAuthorityIdsQuery(authorityIds: Set<Id>): String {
+    return authorityIds.joinToString(" OR ") { "authorityId:\"$it\"" }
+}
+
 /**
  * Return a lucene query string for the given [query].
  */
 fun getLuceneQueryString(query: ParsedQuery): String {
-    val tagsQuery = query.tagsAsString().let { if(it.isEmpty()) "" else "tags:\"$it\""}
-    val termsQuery =  CoreAttribute.values()
+    val luceneQuery = StringBuilder()
+
+    val authorityIdsQuery = getAuthorityIdsQuery(query.authorityIds)
+    if(authorityIdsQuery.isNotEmpty())
+        luceneQuery.append("($authorityIdsQuery)")
+
+    val tagsQuery = query.tagsAsString().let { if (it.isEmpty()) "" else "tags:\"$it\"" }
+    if (tagsQuery.isNotEmpty()) {
+        if (luceneQuery.isNotEmpty()) {
+            luceneQuery.append(" AND ")
+        }
+        luceneQuery.append(tagsQuery)
+    }
+
+    val termsQuery = CoreAttribute.values()
         .map { it.spec }
         // TODO: Fix this hack that identifies text search fields
         .filter { it.isIndexable && it.valueWrapper.javaClass == StringValue.Wrapper::class.java }
         .joinToString(" ") { "${it.name}:\"${query.termsAsString()}\"~10000" }
+    luceneQuery.append(
+        if (luceneQuery.isEmpty())
+            termsQuery
+        else
+            " AND ($termsQuery)"
+    )
 
-    return if(tagsQuery.isEmpty())
-        termsQuery
-    else
-        "$tagsQuery AND ($termsQuery)"
+    return luceneQuery.toString()
 }
 
 /**

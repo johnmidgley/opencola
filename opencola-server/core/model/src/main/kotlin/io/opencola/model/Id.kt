@@ -58,6 +58,7 @@ data class Id(private val bytes: ByteArray) : Comparable<Id> {
 
     companion object Factory : ByteArrayCodec<Id>, StreamSerializer<Id>, ProtoSerializable<Id, Proto.Id> {
         const val LENGTH_IN_BYTES = 32
+        val EMPTY = Id(ByteArray(LENGTH_IN_BYTES))
 
         // TODO: Should return Id? - empty string is not valid.
         fun decode(value: String): Id {
