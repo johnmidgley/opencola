@@ -27,4 +27,9 @@ class LuceneSearchIndexTest {
     fun testLucenePaging(){
         testPaging(luceneSearchIndex)
     }
+
+    @Test
+    fun testLuceneComponentSearch(){
+        testComponentSearch(luceneSearchIndex)
+    }
 }
