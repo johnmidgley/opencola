@@ -99,10 +99,10 @@ class AttachmentsTest {
             fileStore1.delete(dataEntity0.entityId)
             assertNull(fileStore1.read(dataEntity0.entityId))
 
-
             StdoutMonitor(readTimeoutMilliseconds = 5000).use {
                 println("Requesting feed - should fault fill attachment in file store")
-                handleGetFeed(application1, emptySet())
+
+                application1.handleGetFeed()
                 it.waitUntil("putData: Wrote")
             }
 

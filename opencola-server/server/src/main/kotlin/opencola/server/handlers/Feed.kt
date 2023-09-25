@@ -1,5 +1,6 @@
 package opencola.server.handlers
 
+import io.opencola.application.Application
 import io.opencola.event.EventBus
 import io.opencola.event.Events
 import io.opencola.model.*
@@ -152,21 +153,23 @@ fun isEntityIsVisible(entity: Entity): Boolean {
     }
 }
 
-fun getEntityIds(entityStore: EntityStore, authorityIds: Set<Id>, searchIndex: SearchIndex, query: Query?): Set<Id> {
+fun getEntityIds(entityStore: EntityStore, searchIndex: SearchIndex, query: Query): Set<Id> {
     // TODO: This will generally result in an unpredictable number of entities, as single actions (like, comment, etc.)
     //  take a transaction. Fix this by requesting transaction batches until no more or 100 entities have been reached
-    val entityIds = if (query == null) {
-        val signedTransactions = entityStore.getSignedTransactions(
-            authorityIds,
-            null,
-            EntityStore.TransactionOrder.TimeDescending,
-            100
-        ) // TODO: Config limit
-        signedTransactions.flatMap { tx -> tx.transaction.transactionEntities.map { it.entityId } }
-    } else {
-        // TODO: Get add peers of personas to id list
-        searchIndex.getResults(query, 100, null).items.map { it.entityId }
-    }
+    val authorityOnlyQuery = query.tags.isEmpty() && query.terms.isEmpty()
+    val entityIds =
+        if (authorityOnlyQuery) {
+            entityStore.getSignedTransactions(
+                query.authorityIds,
+                null,
+                EntityStore.TransactionOrder.TimeDescending,
+                100
+            ) // TODO: Config limit
+            .flatMap { tx -> tx.transaction.transactionEntities.map { it.entityId } }
+        } else {
+            // TODO: Get add peers of personas to id list
+            searchIndex.getResults(query, 100, null).items.map { it.entityId }
+        }
 
     return entityIds.toSet()
 }
@@ -286,24 +289,38 @@ fun getEntityResult(
 }
 
 fun handleGetFeed(
-    personaIds: Set<Id>,
     entityStore: EntityStore,
     queryParser: QueryParser,
     searchIndex: SearchIndex,
     addressBook: AddressBook,
     eventBus: EventBus,
     fileStore: ContentBasedFileStore,
+    personaIds: Set<Id>,
     queryString: String?
 ): FeedResult {
     logger.info { "Getting feed for ${personaIds.joinToString { it.toString() }}" }
     // TODO: This could be tightened up. We're accessing the address book multiple times. Could pass entries around instead
     val authorityIds = addressBook.getEntries().filter { it.personaId in personaIds }.map { it.entityId }.toSet()
-    val query = queryString.let { if (queryString.isNullOrBlank()) null else queryParser.parse(queryString) }
-    val entityIds = getEntityIds(entityStore, authorityIds, searchIndex, query)
+    val query = queryParser.parse(queryString ?: "", authorityIds)
+    val entityIds = getEntityIds(entityStore, searchIndex, query)
     val context = Context(personaIds)
     return FeedResult(
         context,
         null,
         getEntityResults(authorityIds, entityStore, addressBook, fileStore, eventBus, entityIds)
+    )
+}
+
+// TODO: Move to this pattern for all calls - cleans up calling code.
+fun Application.handleGetFeed(personaIds: Set<Id> = emptySet(), queryString: String? = null): FeedResult {
+    return handleGetFeed(
+        inject(),
+        inject(),
+        inject(),
+        inject(),
+        inject(),
+        inject(),
+        personaIds,
+        queryString
     )
 }

@@ -1,8 +1,6 @@
 package opencola.server.handlers
 
-import io.opencola.application.Application
 import io.opencola.application.TestApplication
-import io.opencola.model.Id
 import io.opencola.model.ResourceEntity
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.entitystore.EntityStore
@@ -12,25 +10,12 @@ import java.net.URI
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-fun handleGetFeed(application: Application, personaIds: Set<Id>, queryString: String? = null): FeedResult {
-    return handleGetFeed(
-        personaIds,
-        application.inject(),
-        application.inject(),
-        application.inject(),
-        application.inject(),
-        application.inject(),
-        application.inject(),
-        queryString
-    )
-}
-
 class FeedTest {
     @Test
     fun testFeedWithNoResults(){
         val app = TestApplication.instance
         val persona = app.inject<AddressBook>().addPersona("Empty Persona")
-        val results =  handleGetFeed(app, setOf(persona.entityId),"")
+        val results =  app.handleGetFeed(setOf(persona.entityId))
         assertEquals(0, results.results.size)
     }
 
@@ -52,20 +37,20 @@ class FeedTest {
         entityStore.updateEntities(person1Resource0)
 
         // Check that Persona 0's feed contains both and only the expected resources
-        handleGetFeed(app, setOf(persona0.personaId)). let { result ->
+        app.handleGetFeed(setOf(persona0.personaId)). let { result ->
             assertEquals(2, result.results.size)
             assertNotNull(result.results.singleOrNull { it.entityId == person0Resource0.entityId.toString() })
             assertNotNull(result.results.singleOrNull { it.entityId == person0Resource1.entityId.toString() })
         }
 
         // Check that Persona 0's feed contains only the expected resource
-        handleGetFeed(app, setOf(persona1.personaId)).let { result ->
+        app.handleGetFeed(setOf(persona1.personaId)).let { result ->
             assertEquals(1, result.results.size)
             assertNotNull(result.results.singleOrNull { it.entityId == person1Resource0.entityId.toString() })
         }
 
         // Check that "All" feed contains all results
-        handleGetFeed(app, setOf(persona0.personaId, persona1.personaId)).let { result ->
+        app.handleGetFeed(setOf(persona0.personaId, persona1.personaId)).let { result ->
             assertEquals(3, result.results.size)
             assertNotNull(result.results.singleOrNull { it.entityId == person0Resource0.entityId.toString() })
             assertNotNull(result.results.singleOrNull { it.entityId == person0Resource1.entityId.toString() })
@@ -86,7 +71,7 @@ class FeedTest {
         }
 
         // Persona1 should now have 2 results
-        handleGetFeed(app, setOf(persona1.personaId)).let { result ->
+        app.handleGetFeed(setOf(persona1.personaId)).let { result ->
             assertEquals(2, result.results.size)
             assertNotNull(result.results.singleOrNull { it.entityId == person1Resource0.entityId.toString() })
             assertNotNull(result.results.singleOrNull { it.entityId == person0Resource0.entityId.toString() })
@@ -102,7 +87,7 @@ class FeedTest {
         }
 
         // Persona1 should now have 3 results
-        handleGetFeed(app, setOf(persona1.personaId)).let { result ->
+        app.handleGetFeed(setOf(persona1.personaId)).let { result ->
             assertEquals(3, result.results.size)
             assertNotNull(result.results.singleOrNull { it.entityId == person1Resource0.entityId.toString() })
             assertNotNull(result.results.singleOrNull { it.entityId == person0Resource0.entityId.toString() })
@@ -110,12 +95,12 @@ class FeedTest {
         }
 
         // Check that Persona 0's feed only contains activity for Persona 0
-        assert(!handleGetFeed(app, setOf(persona0.personaId)).results.flatMap {
+        assert(!app.handleGetFeed(setOf(persona0.personaId)).results.flatMap {
             it.activities.filter { activity -> activity.authorityId != persona0.personaId.toString() }
         }.any())
 
         // Check that Persona 1's feed only contains activity for Persona 1
-        assert(!handleGetFeed(app, setOf(persona1.personaId)).results.flatMap {
+        assert(!app.handleGetFeed(setOf(persona1.personaId)).results.flatMap {
             it.activities.filter { activity -> activity.authorityId != persona1.personaId.toString() }
         }.any())
     }

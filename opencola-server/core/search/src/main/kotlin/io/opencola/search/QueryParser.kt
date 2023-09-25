@@ -5,7 +5,7 @@ import io.opencola.storage.addressbook.AddressBook
 
 class QueryParser(val addressBook: AddressBook) {
     private fun getAuthorityIds(names: Set<String>): Set<Id> {
-        if(names.isEmpty()) return emptySet()
+        if (names.isEmpty()) return emptySet()
 
         val matches = addressBook.getEntries()
             .flatMap { entry ->
@@ -19,15 +19,15 @@ class QueryParser(val addressBook: AddressBook) {
 
     fun parse(query: String, defaultAuthorityIds: Set<Id> = emptySet()): Query {
         val components = query
-            .trim()
             .split(" ")
+            .filter { it.isNotBlank() }
             .groupBy {
-            when (it.first()) {
-                '@' -> "authorities"
-                '#' -> "tags"
-                else -> "terms"
+                when (it.first()) {
+                    '@' -> "authorities"
+                    '#' -> "tags"
+                    else -> "terms"
+                }
             }
-        }
 
         val authorities = components["authorities"]?.map { it.substring(1) }?.toSet() ?: emptySet()
         val queryAuthorityIds = getAuthorityIds(authorities).let { it.ifEmpty { defaultAuthorityIds } }

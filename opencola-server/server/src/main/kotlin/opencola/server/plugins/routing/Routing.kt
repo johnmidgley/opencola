@@ -203,18 +203,7 @@ fun Application.configureRouting(app: app) {
                         .filterIsInstance<PersonaAddressBookEntry>()
                         .map { it.personaId }.toSet()
                 val query = call.request.queryParameters["q"]
-                call.respond(
-                    handleGetFeed(
-                        personaIds,
-                        app.inject(),
-                        app.inject(),
-                        app.inject(),
-                        app.inject(),
-                        app.inject(),
-                        app.inject(),
-                        query
-                    )
-                )
+                call.respond(app.handleGetFeed(personaIds, query))
             }
 
             get("/peers") {
