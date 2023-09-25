@@ -15,6 +15,7 @@ import io.opencola.network.getDefaultRoutes
 import io.opencola.network.providers.http.HttpNetworkProvider
 import io.opencola.network.providers.relay.OCRelayNetworkProvider
 import io.opencola.search.LuceneSearchIndex
+import io.opencola.search.QueryParser
 import io.opencola.security.*
 import io.opencola.security.Encryptor
 import io.opencola.security.hash.Hash
@@ -164,7 +165,8 @@ working properly, you can delete entity-store.db and address-book.db.
                 bindSingleton { HttpNetworkProvider(instance(), instance(), config.network) }
                 bindSingleton { OCRelayNetworkProvider(instance(), instance(), config.network) }
                 bindSingleton { NetworkNode(config.network, instance(), instance(), instance()) }
-                bindSingleton { LuceneSearchIndex(storagePath.resolve("lucene"), instance()) }
+                bindSingleton { QueryParser(instance()) }
+                bindSingleton { LuceneSearchIndex(storagePath.resolve("lucene")) }
                 bindSingleton {
                     ExposedEntityStoreV2(
                         entityStoreName,

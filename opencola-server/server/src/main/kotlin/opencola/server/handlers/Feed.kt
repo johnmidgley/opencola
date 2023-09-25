@@ -6,6 +6,8 @@ import io.opencola.model.*
 import kotlinx.serialization.Serializable
 import io.opencola.util.nullOrElse
 import io.opencola.model.CoreAttribute.*
+import io.opencola.search.Query
+import io.opencola.search.QueryParser
 import io.opencola.search.SearchIndex
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.AddressBookEntry
@@ -150,10 +152,10 @@ fun isEntityIsVisible(entity: Entity): Boolean {
     }
 }
 
-fun getEntityIds(entityStore: EntityStore, authorityIds: Set<Id>, searchIndex: SearchIndex, query: String?): Set<Id> {
+fun getEntityIds(entityStore: EntityStore, authorityIds: Set<Id>, searchIndex: SearchIndex, query: Query?): Set<Id> {
     // TODO: This will generally result in an unpredictable number of entities, as single actions (like, comment, etc.)
     //  take a transaction. Fix this by requesting transaction batches until no more or 100 entities have been reached
-    val entityIds = if (query == null || query.trim().isEmpty()) {
+    val entityIds = if (query == null) {
         val signedTransactions = entityStore.getSignedTransactions(
             authorityIds,
             null,
@@ -163,7 +165,7 @@ fun getEntityIds(entityStore: EntityStore, authorityIds: Set<Id>, searchIndex: S
         signedTransactions.flatMap { tx -> tx.transaction.transactionEntities.map { it.entityId } }
     } else {
         // TODO: Get add peers of personas to id list
-        searchIndex.getResults(query, 100, authorityIds, null).items.map { it.entityId }
+        searchIndex.getResults(query, 100, null).items.map { it.entityId }
     }
 
     return entityIds.toSet()
@@ -286,15 +288,17 @@ fun getEntityResult(
 fun handleGetFeed(
     personaIds: Set<Id>,
     entityStore: EntityStore,
+    queryParser: QueryParser,
     searchIndex: SearchIndex,
     addressBook: AddressBook,
     eventBus: EventBus,
     fileStore: ContentBasedFileStore,
-    query: String?
+    queryString: String?
 ): FeedResult {
     logger.info { "Getting feed for ${personaIds.joinToString { it.toString() }}" }
     // TODO: This could be tightened up. We're accessing the address book multiple times. Could pass entries around instead
     val authorityIds = addressBook.getEntries().filter { it.personaId in personaIds }.map { it.entityId }.toSet()
+    val query = queryString.let { if (queryString.isNullOrBlank()) null else queryParser.parse(queryString) }
     val entityIds = getEntityIds(entityStore, authorityIds, searchIndex, query)
     val context = Context(personaIds)
     return FeedResult(

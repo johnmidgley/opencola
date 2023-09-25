@@ -12,16 +12,15 @@ interface SearchIndex {
     fun addEntities(vararg entities: Entity)
     fun deleteEntities(authorityId: Id, vararg entityIds: Id)
     fun getResults(
-        query: String,
+        query: Query,
         maxResults: Int,
-        authorityIds: Set<Id> = emptySet(),
         pagingToken: String? = null
     ): SearchResults
 
-    fun getAllResults(query: String, resultBlockSize: Int = 100, authorityIds: Set<Id> = emptySet()) = sequence {
+    fun getAllResults(query: Query, resultBlockSize: Int = 100) = sequence {
         var token: String? = null
         do {
-            val results = getResults(query, resultBlockSize, authorityIds, token)
+            val results = getResults(query, resultBlockSize, token)
             results.items.forEach { yield(it) }
             token = results.pagingToken
         } while (token != null)

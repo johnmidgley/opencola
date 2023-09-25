@@ -102,15 +102,7 @@ class AttachmentsTest {
 
             StdoutMonitor(readTimeoutMilliseconds = 5000).use {
                 println("Requesting feed - should fault fill attachment in file store")
-                handleGetFeed(
-                    emptySet(),
-                    application1.inject(),
-                    application1.inject(),
-                    application1.inject(),
-                    application1.inject(),
-                    application1.inject(),
-                    null
-                )
+                handleGetFeed(application1, emptySet())
                 it.waitUntil("putData: Wrote")
             }
 

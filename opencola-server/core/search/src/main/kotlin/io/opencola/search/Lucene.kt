@@ -11,14 +11,15 @@ fun getAuthorityIdsQuery(authorityIds: Set<Id>): String {
 /**
  * Return a lucene query string for the given [query].
  */
-fun getLuceneQueryString(query: ParsedQuery): String {
+fun getLuceneQueryString(query: Query): String {
+    // TODO: Find / build and use a proper lucene query builder
     val luceneQuery = StringBuilder()
 
     val authorityIdsQuery = getAuthorityIdsQuery(query.authorityIds)
     if(authorityIdsQuery.isNotEmpty())
         luceneQuery.append("($authorityIdsQuery)")
 
-    val tagsQuery = query.tagsAsString().let { if (it.isEmpty()) "" else "tags:\"$it\"" }
+    val tagsQuery = query.tags.joinToString(" ").let { if (it.isEmpty()) "" else "tags:\"$it\"" }
     if (tagsQuery.isNotEmpty()) {
         if (luceneQuery.isNotEmpty()) {
             luceneQuery.append(" AND ")
@@ -30,7 +31,7 @@ fun getLuceneQueryString(query: ParsedQuery): String {
         .map { it.spec }
         // TODO: Fix this hack that identifies text search fields
         .filter { it.isIndexable && it.valueWrapper.javaClass == StringValue.Wrapper::class.java }
-        .joinToString(" ") { "${it.name}:\"${query.termsAsString()}\"~10000" }
+        .joinToString(" ") { "${it.name}:\"${query.terms.joinToString(" ")}\"~10000" }
     luceneQuery.append(
         if (luceneQuery.isEmpty())
             termsQuery
@@ -39,21 +40,4 @@ fun getLuceneQueryString(query: ParsedQuery): String {
     )
 
     return luceneQuery.toString()
-}
-
-/**
- * Return a lucene query string for the given [authorityIds].
- */
-fun getLuceneQueryString(authorityIds: Set<Id>): String {
-    return authorityIds.joinToString(" OR ") { "authorityId:\"$it\"" }
-}
-
-/**
- * Returns a lucene query string for the given [query] and [authorityIds].
- * The query string is used to search the lucene index.
- */
-fun getLuceneQueryString(authorityIds: Set<Id>, query: ParsedQuery): String {
-    // https://www.lucenetutorial.com/lucene-query-syntax.html
-    val baseQuery = if (authorityIds.isEmpty()) "" else "(${getLuceneQueryString(authorityIds)}) AND"
-    return "$baseQuery (${getLuceneQueryString(query)})".also { println("Lucene Query: $it") }
 }

@@ -4,6 +4,7 @@ import io.opencola.application.indexTransaction
 import io.opencola.model.Entity
 import io.opencola.model.Id
 import io.opencola.search.LuceneSearchIndex
+import io.opencola.search.Query
 import io.opencola.search.SearchIndex
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.entitystore.EntityStore
@@ -19,9 +20,13 @@ fun search(entities: List<Entity>, query: String): List<Entity> {
     }
 }
 
-fun diffEntityStoreAndSearchIndex(entityStore: EntityStore, searchIndex: SearchIndex, authority: AddressBookEntry): Set<Id> {
+fun diffEntityStoreAndSearchIndex(
+    entityStore: EntityStore,
+    searchIndex: SearchIndex,
+    authority: AddressBookEntry
+): Set<Id> {
     val entities = search(entityStore.getEntities(setOf(authority.entityId), emptySet()), "")
-    val searchResults = searchIndex.getAllResults("", 1000, setOf(authority.entityId))
+    val searchResults = searchIndex.getAllResults(Query("", emptyList(), setOf(authority.entityId)), 1000)
     return entities.map { it.entityId }.toSet().minus(searchResults.map { it.entityId }.toSet())
 }
 
@@ -39,7 +44,10 @@ fun compareSearchIndexToEntityStore(storagePath: Path) {
 }
 
 fun rebuildSearchIndex(sourcePath: Path, destPath: Path) {
-    if(!destPath.toFile().exists()) { destPath.createDirectory() }
+    if (!destPath.toFile().exists()) {
+        destPath.createDirectory()
+    }
+
     // TODO: Password not needed for this
     val sourceContext = entityStoreContext(sourcePath)
     println("Rebuilding index from ${sourceContext.storagePath} in $destPath")
@@ -77,13 +85,13 @@ fun optimize(storagePath: Path) {
 @ExperimentalCli
 fun search(storagePath: Path, searchCommand: SearchCommand) {
     // TODO: Validate search command options
-    if(searchCommand.rebuild == true){
+    if (searchCommand.rebuild == true) {
         rebuildSearchIndex(storagePath, storagePath.resolve("search-rebuild-${System.currentTimeMillis()}"))
     } else if (searchCommand.compare == true) {
         compareSearchIndexToEntityStore(storagePath)
     } else if (searchCommand.patch == true) {
         patchIndexFromEntityStore(storagePath)
-    } else if(searchCommand.optimize == true) {
+    } else if (searchCommand.optimize == true) {
         optimize(storagePath)
     } else {
         println("No search command specified")

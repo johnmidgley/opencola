@@ -6,9 +6,8 @@ import io.opencola.model.AttributeType.*
 import io.opencola.model.Entity
 import io.opencola.model.Id
 import io.opencola.security.hash.Sha256Hash
-import io.opencola.storage.addressbook.AddressBook
 
-abstract class AbstractSearchIndex(private val addressBook: AddressBook) : SearchIndex {
+abstract class AbstractSearchIndex : SearchIndex {
     protected val logger = mu.KotlinLogging.logger("SearchIndex")
 
     protected fun getDocId(authorityId: Id, entityId: Id): String {
@@ -29,38 +28,5 @@ abstract class AbstractSearchIndex(private val addressBook: AddressBook) : Searc
                 .ifEmpty { null }
                 ?.joinToString { it.get().toString() }
         }
-    }
-
-    private fun getAuthorityIds(names: Set<String>): Set<Id> {
-        if(names.isEmpty()) return emptySet()
-
-        val matches = addressBook.getEntries()
-            .flatMap { entry ->
-                names.mapNotNull { name ->
-                    if (entry.name.lowercase().contains(name.lowercase())) entry.entityId else null
-                }
-            }
-
-        return if (matches.isEmpty()) setOf(Id.EMPTY) else matches.toSet()
-    }
-
-    fun parseQuery(authorityIds: Set<Id>, query: String): ParsedQuery {
-        val components = query.split(" ").groupBy {
-            when (it.first()) {
-                '@' -> "authorities"
-                '#' -> "tags"
-                else -> "terms"
-            }
-        }
-
-        val authorities = components["authorities"]?.map { it.substring(1) }?.toSet() ?: emptySet()
-        val queryAuthorityIds = getAuthorityIds(authorities)
-        val tags = components["tags"]?.map { it.substring(1) }?.toSet() ?: emptySet()
-        val terms = components["terms"] ?: emptyList()
-
-
-        // val (tags, terms) = query.split(" ").partition { it.startsWith("#") }
-        return ParsedQuery(query, queryAuthorityIds.ifEmpty { authorityIds }, tags, terms)
-            .also { logger.info { "Parsed query: $it" } }
     }
 }

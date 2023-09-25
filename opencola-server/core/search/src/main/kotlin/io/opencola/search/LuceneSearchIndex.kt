@@ -4,7 +4,6 @@ import io.opencola.io.recursiveDelete
 import io.opencola.model.CoreAttribute.values
 import io.opencola.model.Entity
 import io.opencola.model.Id
-import io.opencola.storage.addressbook.AddressBook
 import io.opencola.util.Base58
 import org.apache.lucene.analysis.core.KeywordAnalyzer
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper
@@ -18,14 +17,13 @@ import org.apache.lucene.index.IndexWriter
 import org.apache.lucene.index.IndexWriterConfig
 import org.apache.lucene.queryparser.classic.QueryParser
 import org.apache.lucene.search.IndexSearcher
-import org.apache.lucene.search.Query
 import org.apache.lucene.search.ScoreDoc
 import org.apache.lucene.store.FSDirectory
 import java.io.Closeable
 import java.nio.file.Path
 import java.util.*
 
-class LuceneSearchIndex(private val storagePath: Path, addressBook: AddressBook) : AbstractSearchIndex(addressBook), Closeable {
+class LuceneSearchIndex(private val storagePath: Path) : AbstractSearchIndex(), Closeable {
     private val analyzer = KeywordAnalyzer().let {
         PerFieldAnalyzerWrapper(StandardAnalyzer(), mapOf("authorityId" to it, "entityId" to it, "id" to it))
     }
@@ -123,14 +121,14 @@ class LuceneSearchIndex(private val storagePath: Path, addressBook: AddressBook)
         return ScoreDoc(doc.toInt(), score.toFloat(), shardIndex.toInt())
     }
 
-    override fun getResults(query: String, maxResults: Int, authorityIds: Set<Id>, pagingToken: String?): SearchResults {
+    override fun getResults(query: Query, maxResults: Int, pagingToken: String?): SearchResults {
         logger.info { "Searching: $query" }
 
         // TODO: This should probably be opened just once - also use memory mapped (ask Ivan)
         DirectoryReader.open(directory).use { directoryReader ->
             val indexSearcher = IndexSearcher(directoryReader)
             val parser = QueryParser("text", analyzer)
-            val luceneQuery: Query = parser.parse(getLuceneQueryString(parseQuery(authorityIds, query)))
+            val luceneQuery = parser.parse(getLuceneQueryString(query))
             val scoreDocs =
                 (if (pagingToken == null)
                     indexSearcher.search(luceneQuery, maxResults)

@@ -49,7 +49,7 @@ fun Application.configureRouting(app: app) {
                     ?: throw IllegalArgumentException("No query (q) specified in parameters")
 
                 val personaIds = getPersona(call)?.let { setOf(it.personaId) } ?: setOf()
-                call.respond(handleSearch(app.inject(), app.inject(), personaIds, query))
+                call.respond(handleSearch(app.inject(), app.inject(), app.inject(), personaIds, query))
             }
 
             get("/entity/{entityId}") {
@@ -206,6 +206,7 @@ fun Application.configureRouting(app: app) {
                 call.respond(
                     handleGetFeed(
                         personaIds,
+                        app.inject(),
                         app.inject(),
                         app.inject(),
                         app.inject(),
