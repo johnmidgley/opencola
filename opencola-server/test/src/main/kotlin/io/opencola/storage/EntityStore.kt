@@ -24,10 +24,15 @@ class ExposedEntityStoreContext(
     val password: Hash = defaultPasswordHash,
     val keyStore: KeyStore = JavaKeyStore(storagePath.resolve("keystore.pks"), password),
     val signator: Signator = Signator(keyStore),
-    val addressBook: AddressBook = EntityStoreAddressBook(Version.V2, AddressBookConfig(), storagePath, keyStore),
+    val addressBook: AddressBook = EntityStoreAddressBook(
+        Version.V2,
+        AddressBookConfig(),
+        storagePath.resolve("address-book"),
+        keyStore
+    ),
     val entityStore: EntityStore = ExposedEntityStoreV2(
         "entity-store",
-        storagePath,
+        storagePath.resolve("entity-store"),
         ::getSQLiteDB,
         Attributes.get(),
         signator,

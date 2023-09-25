@@ -1,6 +1,5 @@
 package io.opencola.cli
 
-import io.opencola.model.Id
 import io.opencola.security.MockKeyStore
 import io.opencola.security.hash.Hash
 import io.opencola.storage.entitystore.EntityStore
@@ -58,10 +57,7 @@ fun compareEntityStores(entityStore1: EntityStore, entityStore2: EntityStore) {
 
 fun cat(storagePath: Path, entityIdString: String) {
     val context = entityStoreContext(storagePath)
-    val splits = entityIdString.split(":")
-    val authoritySpecified = splits.size == 2
-    val authorityIds = if (authoritySpecified) setOf(Id.decode(splits[0])) else emptySet()
-    val entityIds = if (authoritySpecified) setOf(Id.decode(splits[1])) else setOf(Id.decode(entityIdString))
+    val (authorityIds, entityIds) = parseEntityIdString(entityIdString)
 
     context.entityStore.getEntities(authorityIds, entityIds).forEach {
         it.getCurrentFacts().forEach { fact ->

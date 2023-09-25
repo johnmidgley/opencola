@@ -48,7 +48,6 @@ fun rebuildSearchIndex(sourcePath: Path, destPath: Path) {
         destPath.createDirectory()
     }
 
-    // TODO: Password not needed for this
     val sourceContext = entityStoreContext(sourcePath)
     println("Rebuilding index from ${sourceContext.storagePath} in $destPath")
 
@@ -82,6 +81,16 @@ fun optimize(storagePath: Path) {
     }
 }
 
+fun query(storagePath: Path, query: String) {
+    println("Search for \"$query\"")
+
+    LuceneSearchIndex(storagePath.resolve("lucene")).use {searchIndex ->
+        searchIndex.getAllResults(Query(query, query.split(" ")), 1000).forEach {
+            println("${it.authorityId} | ${it.entityId} | \"${it.name}\"")
+        }
+    }
+}
+
 @ExperimentalCli
 fun search(storagePath: Path, searchCommand: SearchCommand) {
     // TODO: Validate search command options
@@ -93,6 +102,8 @@ fun search(storagePath: Path, searchCommand: SearchCommand) {
         patchIndexFromEntityStore(storagePath)
     } else if (searchCommand.optimize == true) {
         optimize(storagePath)
+    } else if (searchCommand.query != null) {
+        query(storagePath, searchCommand.query!!)
     } else {
         println("No search command specified")
     }

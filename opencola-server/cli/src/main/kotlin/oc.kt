@@ -1,5 +1,6 @@
 package io.opencola.cli
 
+import io.opencola.model.Id
 import io.opencola.security.hash.Hash
 import io.opencola.security.hash.Sha256Hash
 import io.opencola.storage.getStoragePath
@@ -11,6 +12,7 @@ class SearchCommand: Subcommand("search", "Perform search operations") {
     val compare by option(ArgType.Boolean, shortName = "c", description = "Compare search index with entity store")
     val patch by option(ArgType.Boolean, shortName = "p", description = "Patch search index with entity store")
     val optimize by option(ArgType.Boolean, shortName = "o", description = "Optimize search index")
+    val query by option(ArgType.String, shortName = "q", description = "Query the search index")
 
     override fun execute() { }
 }
@@ -31,6 +33,12 @@ class EntityCommand(): Subcommand("entity", "Manage entities") {
     override fun execute() { }
 }
 
+@OptIn(ExperimentalCli::class)
+class TransactionsCommand(): Subcommand("transactions", "Manage entities") {
+    val grep by option(ArgType.String, shortName = "g", description = "Grep transactions")
+    override fun execute() { }
+}
+
 // TODO: Password should be char array for security
 fun readPassword() : String {
     val console = System.console()
@@ -45,6 +53,14 @@ fun readPassword() : String {
     }
 }
 
+fun parseEntityIdString(entityIdString: String): Pair<Set<Id>, Set<Id>> {
+    val splits = entityIdString.split(":")
+    val authoritySpecified = splits.size == 2
+    val authorityIds = if (authoritySpecified) setOf(Id.decode(splits[0])) else emptySet()
+    val entityIds = if (authoritySpecified) setOf(Id.decode(splits[1])) else setOf(Id.decode(entityIdString))
+    return Pair(authorityIds, entityIds)
+}
+
 @ExperimentalCli
 // TODO: Kotlin CLI is obsolete - try https://github.com/ajalt/clikt
 fun main(args: Array<String>) {
@@ -55,7 +71,8 @@ fun main(args: Array<String>) {
     val searchCommand = SearchCommand()
     val keyStoreCommand = KeyStoreCommand()
     val entityCommand = EntityCommand()
-    parser.subcommands(searchCommand, keyStoreCommand, entityCommand)
+    val transactionsCommand = TransactionsCommand()
+    parser.subcommands(searchCommand, keyStoreCommand, entityCommand, transactionsCommand)
 
     val parserResult = parser.parse(args)
     val actualStoragePath = getStoragePath(path)
@@ -73,6 +90,7 @@ fun main(args: Array<String>) {
         "search" -> search(actualStoragePath, searchCommand)
         "keystore" -> keystore(actualStoragePath, keyStoreCommand, getPassword)
         "entity" -> entity(actualStoragePath, entityCommand, getPassword)
+        "transactions" -> transactions(actualStoragePath, transactionsCommand)
         else -> println("No command specified")
     }
 }

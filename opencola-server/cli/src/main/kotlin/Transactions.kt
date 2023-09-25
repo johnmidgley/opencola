@@ -1,33 +1,42 @@
 package io.opencola.cli
 
-import io.opencola.application.Application
 import io.opencola.model.Id
 import io.opencola.model.SignedTransaction
+import io.opencola.model.TransactionFact
+import io.opencola.model.value.EmptyValue
 import io.opencola.storage.entitystore.EntityStore
-import org.kodein.di.instance
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 
 // TODO: Use EntityStore.getAllTransactions() instead of this (pull this logic inside)
-fun transactionsFromEntityStore(entityStore: EntityStore, authorityIds: Set<Id> = emptySet()) : Sequence<SignedTransaction> {
+fun transactionsFromEntityStore(
+    entityStore: EntityStore,
+    authorityIds: Set<Id> = emptySet()
+): Sequence<SignedTransaction> {
     val batchSize = 50
 
     return sequence {
-        var transactions = entityStore.getSignedTransactions(authorityIds, null, EntityStore.TransactionOrder.IdAscending, batchSize)
+        var transactions =
+            entityStore.getSignedTransactions(authorityIds, null, EntityStore.TransactionOrder.IdAscending, batchSize)
 
         while (true) {
-            transactions.forEach{
+            transactions.forEach {
                 println("Writing ${it.transaction.id}")
                 yield(it)
             }
 
-            if(transactions.count() < batchSize){
+            if (transactions.count() < batchSize) {
                 break
             }
 
-            transactions = entityStore.getSignedTransactions(emptySet(), transactions.last().transaction.id, EntityStore.TransactionOrder.IdAscending, batchSize + 1).drop(1)
+            transactions = entityStore.getSignedTransactions(
+                emptySet(),
+                transactions.last().transaction.id,
+                EntityStore.TransactionOrder.IdAscending,
+                batchSize + 1
+            ).drop(1)
         }
     }
 }
@@ -41,8 +50,8 @@ fun exportTransactions(entityStore: EntityStore, path: Path, authorityIds: Set<I
     }
 }
 
-fun exportTransactions(entityStore: EntityStore, args: List<String>){
-    if(args.count() != 1){
+fun exportTransactions(entityStore: EntityStore, args: List<String>) {
+    if (args.count() != 1) {
         println("export transactions should have exactly 1 argument - filename")
         return
     }
@@ -66,8 +75,8 @@ fun transactionsFromPath(path: Path): Sequence<SignedTransaction> {
     }
 }
 
-fun importTransactions(entityStore: EntityStore, args: List<String>){
-    if(args.count() != 1){
+fun importTransactions(entityStore: EntityStore, args: List<String>) {
+    if (args.count() != 1) {
         println("import transactions should have exactly 1 argument - filename")
         return
     }
@@ -78,14 +87,39 @@ fun importTransactions(entityStore: EntityStore, args: List<String>){
     }
 }
 
-fun transactions(application: Application, args: Iterable<String>){
-    val entityStore by application.injector.instance<EntityStore>()
-    val commandArgs = args.drop(1)
 
-    when(val command = args.first()){
-        "export" -> exportTransactions(entityStore, commandArgs)
-        "import" -> importTransactions(entityStore, commandArgs)
-        else -> println("Unknown transaction command: $command")
+fun factValueToString(fact: TransactionFact): String {
+    return if (fact.value is EmptyValue)
+        ""
+    else
+        fact.attribute.valueWrapper.unwrap(fact.value)
+            .toString()
+            .replace("\n", "\\n")
+            .take(20)
+}
+
+
+fun grep(storagePath: Path, entityIdString: String) {
+    val context = entityStoreContext(storagePath)
+    val (authorityIds, entityIds) = parseEntityIdString(entityIdString)
+
+    context.entityStore.getAllSignedTransactions(authorityIds).forEach { signedTransaction ->
+        signedTransaction.transaction.transactionEntities.forEach { transactionEntity ->
+            if (transactionEntity.entityId in entityIds) {
+                transactionEntity.facts.forEach { fact ->
+                    println(
+                        "${signedTransaction.transaction.authorityId} | ${transactionEntity.entityId} |  ${fact.attribute.name} | " +
+                                factValueToString(fact) + " | ${fact.operation} | ${signedTransaction.transaction.epochSecond}"
+                    )
+                }
+            }
+        }
     }
+}
 
+fun transactions(storagePath: Path, transactionsCommand: TransactionsCommand) {
+    if (transactionsCommand.grep != null) {
+        grep(storagePath, transactionsCommand.grep!!)
+        return
+    }
 }

@@ -43,7 +43,7 @@ class StringValue(value: String) : Value<String>(value) {
         }
 
         override fun unwrap(value: Value<String>): String {
-            require(value is StringValue)
+            require(value is StringValue) { "Cannot unwrap ${value::class.simpleName} as StringValue" }
             return value.get()
         }
     }
