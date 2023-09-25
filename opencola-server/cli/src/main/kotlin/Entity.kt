@@ -63,10 +63,9 @@ fun cat(storagePath: Path, entityIdString: String) {
     val authorityIds = if (authoritySpecified) setOf(Id.decode(splits[0])) else emptySet()
     val entityIds = if (authoritySpecified) setOf(Id.decode(splits[1])) else setOf(Id.decode(entityIdString))
 
-
     context.entityStore.getEntities(authorityIds, entityIds).forEach {
         it.getCurrentFacts().forEach { fact ->
-            println(fact)
+            println(fact.toString().replace("\n", "\\n"))
         }
     }
 }

@@ -71,9 +71,6 @@ class ModelTest {
         val entity1 = ResourceEntity(persona.personaId, URI("mock://entity1"), "entity1", "description1", "text1")
         val signedTransaction = context.entityStore.updateEntities(entity0, entity1)!!
 
-        val encoded = SignedTransaction.encode(signedTransaction)
-        val compressedEncoded = deflate(encoded)
-
         // Encode with protobuf for comparison
         val transaction = signedTransaction.transaction
         val protoEncoded = signedTransaction.transaction.encodeProto()
@@ -86,8 +83,6 @@ class ModelTest {
         val protoUnpacked = SignedTransaction.decodeProto(protoPacked)
         assertEquals(protoSignedTransaction, protoUnpacked)
 
-        println("encoded: ${encoded.size} bytes")
-        println("compressedEncoded: ${compressedEncoded.size} bytes")
         println("protoPacked: ${protoPacked.size} bytes")
         println("protoCompressed: ${protoCompressed.size} bytes")
     }

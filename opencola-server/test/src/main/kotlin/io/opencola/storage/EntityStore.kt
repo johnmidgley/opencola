@@ -1,5 +1,6 @@
 package io.opencola.storage
 
+import io.opencola.model.Attributes
 import io.opencola.model.ResourceEntity
 import io.opencola.security.keystore.JavaKeyStore
 import io.opencola.security.keystore.KeyStore
@@ -13,7 +14,7 @@ import io.opencola.storage.addressbook.EntityStoreAddressBook
 import io.opencola.storage.addressbook.EntityStoreAddressBook.Version
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import io.opencola.storage.entitystore.EntityStore
-import io.opencola.storage.entitystore.ExposedEntityStore
+import io.opencola.storage.entitystore.ExposedEntityStoreV2
 import io.opencola.storage.entitystore.getSQLiteDB
 import java.net.URI
 import java.nio.file.Path
@@ -24,7 +25,14 @@ class ExposedEntityStoreContext(
     val keyStore: KeyStore = JavaKeyStore(storagePath.resolve("keystore.pks"), password),
     val signator: Signator = Signator(keyStore),
     val addressBook: AddressBook = EntityStoreAddressBook(Version.V2, AddressBookConfig(), storagePath, keyStore),
-    val entityStore: EntityStore = ExposedEntityStore("entity-store", storagePath, ::getSQLiteDB, signator, addressBook)
+    val entityStore: EntityStore = ExposedEntityStoreV2(
+        "entity-store",
+        storagePath,
+        ::getSQLiteDB,
+        Attributes.get(),
+        signator,
+        addressBook
+    )
 )
 
 class EntityStoreContext(
