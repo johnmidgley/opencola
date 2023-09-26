@@ -9,7 +9,8 @@
    :page-visible-atoms (apply hash-map (mapcat #(vector % (atom false)) [:feed :peers :error :personas]))
    :persona! (atom nil)
    :personas! (atom [])
-   :query! (atom "")
+   :edit-query! (atom "") ; Query shown in query box, may not have been executed
+   :query! (atom "") ; Actual query that has been executed (and will be consistent with uri)
    :feed! (atom {})
    :peers! (atom {})
    :error! (atom "")
@@ -49,6 +50,17 @@
    (:query! app-state))
   ([query]
    (reset! (query!) query)))
+
+(defn edit-query!
+  ([]
+   (:edit-query! app-state))
+  ([query]
+   (reset! (edit-query!) query)))
+
+(defn set-query! [query]
+  (query! query)
+  (edit-query! query))
+
 
 (defn feed! [] 
   (:feed! app-state))

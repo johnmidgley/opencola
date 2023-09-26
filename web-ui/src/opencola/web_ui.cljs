@@ -3,7 +3,7 @@
    [goog.dom :as gdom]
    [reagent.dom :as rdom]
    [opencola.web-ui.config :as config]
-   [opencola.web-ui.app-state :as state :refer [app-state personas! persona! query! feed! peers! error!]]
+   [opencola.web-ui.app-state :as state :refer [personas! persona! query! edit-query! feed! peers! error! set-page! set-query!]]
    [opencola.web-ui.view.feed :as feed]
    [opencola.web-ui.view.persona :as persona]
    [opencola.web-ui.view.peer :as peer]
@@ -49,13 +49,15 @@
   (gdom/getElement "app"))
 
 (defn on-search [query] 
-  (query! query)
+  (set-query! query)
+  (set-page! :feed)
   (location/set-location-from-state))
 
 (defn on-persona-select [persona]
   (case persona
     "" (location/set-location "/#/feed")
-    "manage" (location/set-location "/#/personas")
+    "manage" (do (location/set-page! :personas) 
+                 (location/set-location-from-state))
     (do
      (when (= :personas (state/get-page))
        (state/set-page! :feed))
@@ -66,11 +68,11 @@
   (fn []
     [:div.app 
      (when (state/page-visible? :feed)
-       [feed/feed-page (feed!) (personas!) (persona!) on-persona-select (query!)  on-search])
+       [feed/feed-page (feed!) (personas!) (persona!) on-persona-select (query!) (edit-query!) on-search])
      (when (state/page-visible? :peers)
-       [peer/peer-page (peers!) (personas!) (persona!) on-persona-select (query!) on-search])
+       [peer/peer-page (peers!) (personas!) (persona!) on-persona-select (edit-query!) on-search])
      (when (state/page-visible? :personas)
-       [persona/personas-page (personas!) (persona!) on-persona-select (query!) on-search])
+       [persona/personas-page (personas!) (persona!) on-persona-select (edit-query!) on-search])
      (when (state/page-visible? :error)
        [:div.settings "404"])]))
 

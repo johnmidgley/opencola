@@ -431,7 +431,7 @@
 ;; are the other way around.
 ;; TODO: Only pass atoms when necessary. There are some cases where the personas! is passed, when @personas! 
 ;; would suffice
-(defn feed-page [feed! personas! persona-id! on-persona-select query! on-search]
+(defn feed-page [feed! personas! persona-id! on-persona-select query! edit-query! on-search]
   (let [creating-post?! (atom false)]
     (fn []
       [:div#opencola.feed-page
@@ -440,7 +440,7 @@
         personas!
         persona-id!
         on-persona-select
-        query!
+        edit-query!
         on-search
         (partial header-actions creating-post?!)]
        [error-control (state/error!)]
