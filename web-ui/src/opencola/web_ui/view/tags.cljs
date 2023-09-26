@@ -2,15 +2,16 @@
   (:require [clojure.string :as str]
             [opencola.web-ui.time :refer [format-time]]))
 
-(defn tag [name]
-  [:span.tag name])
+(defn tag [name on-click]
+  (let [params (if on-click {:on-click #(on-click name)} {})]
+    [:span.tag params name]))
 
-(defn item-tags-summary [actions]
+(defn item-tags-summary [actions on-click]
   (when (not-empty actions)
     [:div.tags
      (interpose " "
                 (doall (for [name (distinct (map :value actions))]
-                         ^{:key name} [tag name])))]))
+                         ^{:key name} [tag name on-click])))]))
 
 (defn item-tags-summary-from-string [tags-string]
   (when (not (str/blank? tags-string))
@@ -20,19 +21,19 @@
                   (doall (for [name (distinct tags)]
                            ^{:key name} [tag name])))])))
 
-(defn item-tag [tag-action]
+(defn item-tag [tag-action on-click]
   (let [{authority-name :authorityName
          epoch-second :epochSecond} tag-action]
     [:tr.item-attribution
      [:td authority-name]
      [:td (format-time epoch-second)]
-     [:td.tag-cell (tag (:value tag-action))]]))
+     [:td.tag-cell (tag (:value tag-action) on-click)]]))
 
-(defn item-tags [expanded?! actions]
+(defn item-tags [expanded?! actions on-click]
   (when @expanded?!
     [:div.item-tags
      [:div.list-header "Tags:"]
      [:table
       [:tbody
        (doall (for [action actions]
-                ^{:key action} [item-tag action]))]]]))
+                ^{:key action} [item-tag action on-click]))]]]))

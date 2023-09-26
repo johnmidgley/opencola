@@ -19,7 +19,7 @@ fun getLuceneQueryString(query: Query): String {
     if(authorityIdsQuery.isNotEmpty())
         luceneQuery.append("($authorityIdsQuery)")
 
-    val tagsQuery = query.tags.joinToString(" ").let { if (it.isEmpty()) "" else "tags:\"$it\"" }
+    val tagsQuery = query.tags.joinToString(" AND ") { "tags:\"$it\"" }
     if (tagsQuery.isNotEmpty()) {
         if (luceneQuery.isNotEmpty()) {
             luceneQuery.append(" AND ")
@@ -27,17 +27,19 @@ fun getLuceneQueryString(query: Query): String {
         luceneQuery.append(tagsQuery)
     }
 
-    val termsQuery = CoreAttribute.values()
-        .map { it.spec }
-        // TODO: Fix this hack that identifies text search fields
-        .filter { it.isIndexable && it.valueWrapper.javaClass == StringValue.Wrapper::class.java }
-        .joinToString(" ") { "${it.name}:\"${query.terms.joinToString(" ")}\"~10000" }
-    luceneQuery.append(
-        if (luceneQuery.isEmpty())
-            termsQuery
-        else
-            " AND ($termsQuery)"
-    )
+    if(query.terms.isNotEmpty()) {
+        val termsQuery = CoreAttribute.values()
+            .map { it.spec }
+            // TODO: Fix this hack that identifies text search fields
+            .filter { it.isIndexable && it.valueWrapper.javaClass == StringValue.Wrapper::class.java }
+            .joinToString(" ") { "${it.name}:\"${query.terms.joinToString(" ")}\"~10000" }
+        luceneQuery.append(
+            if (luceneQuery.isEmpty())
+                termsQuery
+            else
+                " AND ($termsQuery)"
+        )
+    }
 
-    return luceneQuery.toString()
+    return luceneQuery.toString().also { println("Lucene Q: $it") }
 }

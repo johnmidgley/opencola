@@ -139,7 +139,7 @@
            [:button {:on-click #(reset! tagging?! false)} "Cancel"] " "])))))
 
 
-(defn item-activities [persona-id! personas! feed! item editing?!]
+(defn item-activities [persona-id! personas! feed! item editing?! on-click-tag]
   (let [action-expanded? (apply hash-map (mapcat #(vector % (atom false)) [:save :like :tag :comment :attach]))
         tagging? (atom false)
         commenting? (atom false)
@@ -179,7 +179,7 @@
           [comment-control context persona-id! (get-item @feed! entity-id) nil "" commenting? update-feed-item]
           [item-saves (:save action-expanded?) (:save activities)]
           [item-likes (:like action-expanded?) (:like activities)]
-          [item-tags (:tag action-expanded?) (:tag activities)]
+          [item-tags (:tag action-expanded?) (:tag activities) on-click-tag]
           [item-comments
            context persona-id!
            (get-item @feed! entity-id)
@@ -218,18 +218,18 @@
       (when (not-empty posted-by-image-uri)
         [:img.posted-by-img {:src posted-by-image-uri}]))))
 
-(defn display-feed-item [persona-id! personas! feed! item editing?!]
+(defn display-feed-item [persona-id! personas! feed! item editing?! on-click-tag]
   (let [summary (:summary item)]
     (fn []
       [:div.feed-item
        [item-name summary] 
-       [item-tags-summary (-> item :activities :tag)]
+       [item-tags-summary (-> item :activities :tag) on-click-tag]
        [:div.item-body
         [item-image summary]
         [md->component {:class "item-desc"}  (:description summary)]] 
        [attachments-preview (-> item :activities :attach) true] 
        [:div.posted-by "Posted by: " (:postedBy summary)]
-       [item-activities persona-id! personas! feed! item editing?!]])))
+       [item-activities persona-id! personas! feed! item editing?! on-click-tag]])))
 
 (defn on-change [item! key]
   #(swap! item! assoc-in [key] %))
@@ -369,13 +369,13 @@
      (fn [] ( delete-entity @persona-id! feed! editing?! item #(reset! error! %))))))
 
 
-(defn feed-item [persona-id personas! feed! item]
+(defn feed-item [persona-id personas! feed! item on-click-tag]
   (let [editing?! (atom false)
         persona-id! (atom (or persona-id (:personaId item)))]
     (fn []
       (if @editing?!
         [edit-feed-item personas! persona-id! feed! item editing?!]
-        [display-feed-item persona-id! personas! feed! item editing?!]))))
+        [display-feed-item persona-id! personas! feed! item editing?! on-click-tag]))))
 
 
 (defn feed-status [feed!]
@@ -384,13 +384,13 @@
      (when (not-empty query)
        (str (count (:results @feed!)) " results for '" query "'")))])
 
-(defn feed-list [persona-id! personas! feed!]
+(defn feed-list [persona-id! personas! feed! on-click-tag]
   (when @feed!
     [:div.feed
      [feed-status feed!]
      (doall (for [item  (:results @feed!)]
               ^{:key [item @persona-id!]}
-              [feed-item @persona-id! (when (not @persona-id!) personas!) feed! item]))]))
+              [feed-item @persona-id! (when (not @persona-id!) personas!) feed! item on-click-tag]))]))
 
 (defn header-actions [creating-post?!]
   [:div.header-actions
@@ -399,9 +399,6 @@
    [:img.header-icon {:src  "../img/peers.png" :on-click #(location/set-page! :peers)}]
    image-divider
    [help-control]])
-
-
-
 
 (defn prepend-feed-item [feed! view-item]
   (swap! feed! update-in [:results] #(into [view-item] %)))
@@ -427,12 +424,21 @@
       [:li "Add peers by clicking the peers icon (" [:img.header-icon {:src  "../img/peers.png"}] ") on the top right"]
       [:li "Browse help by clicking the help icon (" [:img.header-icon {:src  "../img/help.png"}] ") on the top right"]]]]])
 
+(defn toggle-term [string term] 
+  (if (string/includes? string term)
+    (string/replace string term "") 
+    (str string (if (string/blank? string) "" " ") term)))
+
+(defn on-click-tag [on-search query tag] 
+  (on-search (toggle-term query (str "#" tag))))
+
 ;; TODO: Make parameter ordering consistent. Some places have persona-id then personas, others
 ;; are the other way around.
 ;; TODO: Only pass atoms when necessary. There are some cases where the personas! is passed, when @personas! 
 ;; would suffice
 (defn feed-page [feed! personas! persona-id! on-persona-select query! edit-query! on-search]
-  (let [creating-post?! (atom false)]
+  (let [creating-post?! (atom false)
+        on-click-tag #(on-click-tag on-search @query! %)]
     (fn []
       [:div#opencola.feed-page
        [search/search-header
@@ -458,5 +464,5 @@
              #(reset! creating-post?! false) nil]
        [error-control error!]]))
        (if (or @creating-post?! (= @feed! {}) (not-empty (:results @feed!)) (not-empty @query!))
-         [feed-list persona-id! personas! feed!]
+         [feed-list persona-id! personas! feed! on-click-tag]
          [feed-instructions])])))

@@ -213,7 +213,11 @@ body {
     padding: 3px;
     padding-left: 10px;
     padding-right: 10px;
-    border-radius: 10px;
+    border-radius: 10px;   
+}
+
+.tag:hover {
+    cursor: pointer;
 }
 
 .tag-cell {
