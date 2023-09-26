@@ -50,8 +50,11 @@
   ([query]
    (reset! (query!) query)))
 
-(defn feed! [] 
-  (:feed! app-state))
+(defn feed! 
+  ([] 
+   (:feed! app-state))
+  ([feed]
+   (reset! (feed!) feed)))
 
 (defn peers! 
   ([]
