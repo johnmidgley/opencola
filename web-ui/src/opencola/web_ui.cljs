@@ -55,14 +55,13 @@
 
 (defn on-persona-select [persona]
   (case persona
-    "" (location/set-location "/#/feed")
-    "manage" (do (location/set-page! :personas) 
-                 (location/set-location-from-state))
+    "" (persona! nil) 
+    "manage" (location/set-page! :personas)
     (do
-     (when (= :personas (state/get-page))
-       (state/set-page! :feed))
-     (persona! persona)
-     (location/set-location-from-state))))
+      (when (= :personas (state/get-page))
+        (state/set-page! :feed))
+      (persona! persona)))
+  (location/set-location-from-state))
 
 (defn app []
   (fn []
