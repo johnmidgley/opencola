@@ -139,7 +139,7 @@
            [:button {:on-click #(reset! tagging?! false)} "Cancel"] " "])))))
 
 
-x(defn item-activities [persona-id! personas! feed! item editing?! on-click-authority on-click-tag]
+(defn item-activities [persona-id! personas! feed! item editing?! on-click-authority on-click-tag]
   (let [action-expanded? (apply hash-map (mapcat #(vector % (atom false)) [:save :like :tag :comment :attach]))
         tagging? (atom false)
         commenting? (atom false)
@@ -472,6 +472,6 @@ x(defn item-activities [persona-id! personas! feed! item editing?! on-click-auth
              (fn [persona-id] (new-post persona-id feed! creating-post?! edit-item! #(reset! error! %)))
              #(reset! creating-post?! false) nil]
        [error-control error!]]))
-       (if (or @creating-post?! (= @feed! {}) (not-empty (:results @feed!)) (not-empty @query!))
+       (if (or @creating-post?! (not-empty (:results @feed!)) (not-empty (:query @feed!)))
          [feed-list persona-id! personas! feed! on-click-authority on-click-tag]
          [feed-instructions])])))
