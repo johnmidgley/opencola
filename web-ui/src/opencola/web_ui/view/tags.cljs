@@ -21,19 +21,19 @@
                   (doall (for [name (distinct tags)]
                            ^{:key name} [tag name])))])))
 
-(defn item-tag [tag-action on-click]
+(defn item-tag [tag-action on-click-authority on-click-tag]
   (let [{authority-name :authorityName
          epoch-second :epochSecond} tag-action]
     [:tr.item-attribution
-     [:td authority-name]
+     [:td [:span.authority {:on-click #(on-click-authority authority-name)} authority-name]]
      [:td (format-time epoch-second)]
-     [:td.tag-cell (tag (:value tag-action) on-click)]]))
+     [:td.tag-cell (tag (:value tag-action) on-click-tag)]]))
 
-(defn item-tags [expanded?! actions on-click]
+(defn item-tags [expanded?! actions on-click-authority on-click-tag]
   (when @expanded?!
     [:div.item-tags
      [:div.list-header "Tags:"]
      [:table
       [:tbody
        (doall (for [action actions]
-                ^{:key action} [item-tag action on-click]))]]]))
+                ^{:key action} [item-tag action on-click-authority on-click-tag]))]]]))

@@ -4,13 +4,13 @@
             [opencola.web-ui.time :refer [format-time]]
             [opencola.web-ui.view.common :refer [action-img image? keyed-divider]]))
 
-(defn item-attachment [action on-delete]
+(defn item-attachment [action on-delete on-click-authority]
   (let [{authority-name :authorityName
          epoch-second :epochSecond
          value :value
          id :id} action]
     [:tr.item-attribution
-     [:td authority-name]
+     [:td [:span.authority {:on-click #(on-click-authority authority-name)} authority-name]]
      [:td (format-time epoch-second)]
      [:td [:a {:href (ajax/resolve-service-url (str "data/" id)) :target "blank"} value]]
      (when on-delete
@@ -28,7 +28,7 @@
     (for [[_ attachments] by-id] 
       (select-attachment persona-id! attachments))))
 
-(defn item-attachments [persona-id! expanded?! attach-actions on-delete] 
+(defn item-attachments [persona-id! expanded?! attach-actions on-delete on-click-authority] 
   (when @expanded?!
     (let [actions (distinct-attachments persona-id! attach-actions)]
       [:div.item-attachments
@@ -38,7 +38,7 @@
          (doall (for [action (->> actions (sort-by :epochSecond) (distinct-by :id))]
                   (let [action-authority-id (:authorityId action)
                         on-delete (when (= action-authority-id @persona-id!) on-delete)]
-                    ^{:key action} [item-attachment action on-delete])))]]])))
+                    ^{:key action} [item-attachment action on-delete on-click-authority])))]]])))
 
 (defn attachment-is-image? [attachment]
   (let [{:keys [value]} attachment]

@@ -39,7 +39,7 @@
                           (fn [] (on-update (remove-comment item comment-id)))
                           on-error)} "Delete"])]]))))
 
-(defn item-comment [context persona-id! item comment-action on-update]
+(defn item-comment [context persona-id! item comment-action on-update on-click-authority]
   (let [editing?! (atom false)]
     (fn []
       (let [{authority-id :authorityId
@@ -52,7 +52,7 @@
           (reset! editing?! false))
         [:div.item-comment
          [:div.item-attribution
-          authority-name " " (format-time epoch-second) " "
+          [:span.authority {:on-click #(on-click-authority authority-name)} authority-name] " " (format-time epoch-second) " "
           (when editable?
             [:span {:on-click #(reset! editing?! true)} [action-img "edit"]])
           ":"]
@@ -60,7 +60,7 @@
            [comment-control context persona-id! item comment-id text editing?! on-update]
            [:div.item-comment-container [md->component {:class "item-comment-text"} text]])]))))
 
-(defn item-comments [context persona-id! item comment-actions preview-fn? expanded?! on-update]
+(defn item-comments [context persona-id! item comment-actions preview-fn? expanded?! on-update on-click-authority]
   (let [preview? (preview-fn?)
         more (- (count comment-actions) 3)
         comment-actions (if preview? (take 3 comment-actions) comment-actions)]
@@ -68,7 +68,7 @@
       [:div.item-comments
        [:span {:on-click (fn [] (swap! expanded?! #(not %)))} "Comments:"]
        (doall (for [comment-action comment-actions]
-                ^{:key comment-action} [item-comment context persona-id! item comment-action on-update]))
+                ^{:key comment-action} [item-comment context persona-id! item comment-action on-update on-click-authority]))
        [:div.item-comments-footer {:on-click (fn [] (swap! expanded?! #(not %)))}
         (when (> more 0)
           (if preview?
