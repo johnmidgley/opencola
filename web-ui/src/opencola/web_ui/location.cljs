@@ -1,6 +1,6 @@
 (ns ^:figwheel-hooks opencola.web-ui.location
   (:require
-   [opencola.web-ui.app-state :as state :refer [persona! query! set-query!]]
+   [opencola.web-ui.app-state :as state :refer [persona! query!]]
    [clojure.string :as string]))
 
 (defn set-location [path]
@@ -9,7 +9,7 @@
 (defn set-state-from-query-params [query-params]
   (let [{persona :p query :q} query-params
         q (or query "")] 
-    (set-query! q)
+    (query! q)
     (persona! persona)))
 
 (defn param-to-string [p v]
@@ -31,6 +31,6 @@
 
 (defn set-page! [page]
   (when (not= :feed page)
-    (set-query! ""))
+    (query! ""))
   (state/set-page! page)
   (set-location-from-state))

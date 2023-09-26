@@ -444,7 +444,7 @@
 ;; are the other way around.
 ;; TODO: Only pass atoms when necessary. There are some cases where the personas! is passed, when @personas! 
 ;; would suffice
-(defn feed-page [feed! personas! persona-id! on-persona-select query! edit-query! on-search]
+(defn feed-page [feed! personas! persona-id! on-persona-select query! on-search]
   (let [creating-post?! (atom false)
         on-click-tag #(on-click-tag on-search @query! %)
         on-click-authority #(on-click-authority on-search @query! %)]
@@ -455,7 +455,7 @@
         personas!
         persona-id!
         on-persona-select
-        edit-query!
+        query!
         on-search
         (partial header-actions creating-post?!)]
        [error-control (state/error!)]
