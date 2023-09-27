@@ -41,5 +41,5 @@ fun getLuceneQueryString(query: Query): String {
         )
     }
 
-    return luceneQuery.toString().also { println("Lucene Q: $it") }
+    return luceneQuery.toString()
 }
