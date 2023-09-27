@@ -35,7 +35,9 @@ plugins {
 // TODO: Pull allProjects properties out of sub projects
 allprojects {
     group = "opencola"
-    version = "1.3.3"
+    // NOTE: When this is updated, make sure to re-package and run
+    // opencola/extension/chrome/deploy
+    version = "1.3.4"
 
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         kotlinOptions.jvmTarget = "17"
