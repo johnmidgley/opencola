@@ -435,10 +435,10 @@
 (defn on-click-tag [on-search query tag] 
   (on-search (toggle-term query (str "#" tag))))
 
-(defn on-click-authority [on-search query authority-name]
-  #_(println authority-name)
-  (let [name (first (string/split authority-name #"\s+"))]
+(defn on-click-authority [on-search query authority-name] 
+  (let [name (first (string/split (string/replace authority-name #"You \(|\)" "") #"\s+"))]
     (on-search (toggle-term query (str "@" name)))))
+
 
 ;; TODO: Make parameter ordering consistent. Some places have persona-id then personas, others
 ;; are the other way around.
