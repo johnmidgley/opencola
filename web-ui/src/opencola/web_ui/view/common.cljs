@@ -124,4 +124,4 @@
 
 
 (defn help-control []
-  [:a {:href "help/help.html" :target "_blank"} [:img.header-icon {:src  "../img/help.png" :on-click #(location/set-page! :peers)}]])
+  [:a {:href "help/help.html" :target "_blank"} [:img.header-icon {:src  "../img/help.png"}]])
