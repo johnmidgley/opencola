@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,11 +16,12 @@
 <nav>
     <a href="#personas">Personas</a>
     <a href="#feed">Feed</a>
+    <a href="#search">Search</a>
     <a href="#peers">Peers</a>
-    <a href="#extension">Browser&nbsp;Extension</a>
+    <a href="#extension">Web&nbsp;Extension</a>
     <a href="#mobile">Mobile</a>
     <a href="#certificates">Certificates</a>
-    <a href="#access">Anywhere&nbsp;Access</a>
+    <a href="#access">VPN&nbsp;Access</a>
 </nav>
 <div class="centered">
     <div class="content">
@@ -211,6 +212,64 @@
                 will be improved in the future.
             </p>
 
+        </section>
+        <section id="search">
+            <h2>Search</h2>
+            <p>
+                You can search your feed(s) by entering a query in the search box. There are 3 types of
+                query terms supported which can be in any order:
+            </p>
+
+            <table>
+                <thead>
+                <tr>
+                    <th class="center-text">Type</th>
+                    <th class="center-text">Prefix</th>
+                    <th>Description</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td class="center-text">Text</td>
+                    <td class="center-text">(None)</td>
+                    <td>
+                        A regular text term that is used to match any text field (title, description, text, tags, etc.).
+                        An item needs to match each text term for at least one text field. Currently text fields are
+                        matched exactly, but we will add more advanced search in the future.
+                    </td>
+                </tr>
+                <tr>
+                    <td class="center-text">Authority</td>
+                    <td class="center-text">@</td>
+                    <td>
+                        The name of an authority (persona or peer) used to match the authority field of an item.
+                        Names are partially matched, so you can use any substring of a name. An item needs to match
+                        any one of the authority terms in the query to be returned as a result. This allows you to
+                        view feeds of individual authorities or mix them together arbitrarily.
+                    </td>
+                </tr>
+                <tr>
+                    <td class="center-text">Tag</td>
+                    <td class="center-text">#</td>
+                    <td>
+                        Tags an item must have to be returned as a result. An item must match all tag terms in the query
+                        to be returned.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <p>
+                In addition to searching via the search box, you can also search by clicking on a tags or authorities,
+                which toggles the term in the search box and executes the query.
+            </p>
+            <p>
+                Below is an example of searching for all three types of terms that also shows clickable tags and
+                authorities:
+            </p>
+
+            <div class="centered">
+                <img class="example-img" src="img/search-example.png" alt="Search Example"/>
+            </div>
         </section>
         <section id="peers">
             <h2>Peers</h2>
@@ -452,7 +511,7 @@
             </details>
         </section>
         <section id="access">
-            <h2>Accessing OpenCola From Anywhere</h2>
+            <h2>Accessing OpenCola over VPN</h2>
             <p>
                 We currently have not built any services that allow you to access you OpenCola server from anywhere
                 (i.e. outside the LAN it's running on). For the time being, we rely on ZeroTier, an open source project
