@@ -6,6 +6,7 @@
             [opencola.web-ui.util :refer [distinct-by]]
             [opencola.web-ui.common :refer [toggle-atom]]
             [opencola.web-ui.location :as location]
+            [opencola.web-ui.window :as window]
             [opencola.web-ui.model.feed :as model :refer [upload-files
                                                           upload-result-to-attachments]]
             [opencola.web-ui.view.attachments :refer [attachments-preview item-attachments distinct-attachments]]
@@ -31,7 +32,8 @@
    nil
    persona-id
    query
-   #(reset! feed! %)
+   #(do (reset! feed! %)
+        (window/scroll-to-top))
    #(on-error %)))
 
 (defn authority-actions-of-type [authority-id type item]
@@ -438,7 +440,6 @@
 (defn on-click-authority [on-search query authority-name] 
   (let [name (first (string/split (string/replace authority-name #"You \(|\)" "") #"\s+"))]
     (on-search (toggle-term query (str "@" name)))))
-
 
 ;; TODO: Make parameter ordering consistent. Some places have persona-id then personas, others
 ;; are the other way around.
