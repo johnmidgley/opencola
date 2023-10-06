@@ -69,6 +69,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         this.facts = facts.sortedBy { it.transactionOrdinal }
     }
 
+    // TODO: Move to util
     fun String.limit(maxLength: Int): String {
         return if (length > maxLength) {
             substring(0, maxLength)
