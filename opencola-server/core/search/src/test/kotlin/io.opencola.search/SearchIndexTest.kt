@@ -175,3 +175,23 @@ fun testComponentSearch(searchIndex: SearchIndex) {
     val results9 = searchIndex.getAllResults(getQuery(commonTerm, setOf(authorityId0), setOf(tag1))).toList()
     assertEquals(0, results9.size)
 }
+
+fun testDeleteEntity(searchIndex: SearchIndex) {
+    val authorityId = Id.new()
+    val keyword = "keyword"
+    val resourceEntity =
+        ResourceEntity(authorityId, URI("https://www.site.com/page"), description = "Test description with $keyword")
+    searchIndex.addEntities(resourceEntity)
+
+    val results = searchIndex.getAllResults(getQuery(keyword)).toList()
+    assertEquals(1, results.size)
+    assertEquals(resourceEntity.authorityId, results[0].authorityId)
+    assertEquals(resourceEntity.entityId, results[0].entityId)
+    assertEquals(resourceEntity.name, results[0].name)
+    assertEquals(resourceEntity.description, results[0].description)
+
+    searchIndex.deleteEntities(authorityId, resourceEntity.entityId)
+
+    val results2 = searchIndex.getAllResults(getQuery(keyword)).toList()
+    assertEquals(0, results2.size)
+}

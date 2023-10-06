@@ -21,8 +21,7 @@ import opencola.server.handlers.EntityResult.*
 private val logger = KotlinLogging.logger("Feed")
 
 @Serializable
-// TODO: Make context: String? constructor private?
-data class FeedResult(val context: String?, val pagingToken: String?, val results: List<EntityResult>) {
+data class FeedResult internal constructor(val context: String?, val pagingToken: String?, val results: List<EntityResult>) {
     constructor(context: Context, pagingToken: String?, results: List<EntityResult>) : this(
         context.toString(),
         pagingToken,
@@ -154,20 +153,23 @@ fun isEntityIsVisible(entity: Entity): Boolean {
 }
 
 fun getEntityIds(entityStore: EntityStore, searchIndex: SearchIndex, query: Query): Set<Id> {
-    // TODO: This will generally result in an unpredictable number of entities, as single actions (like, comment, etc.)
-    //  take a transaction. Fix this by requesting transaction batches until no more or 100 entities have been reached
     val authorityOnlyQuery = query.tags.isEmpty() && query.terms.isEmpty()
     val entityIds =
         if (authorityOnlyQuery) {
+            // TODO: This will generally result in an unpredictable number of entities, as single actions (like, comment, etc.)
+            //  take a transaction. Fix this by requesting transaction batches until no more or 100 entities have been reached
+            // TODO: This produces a nice list of the most recent entities, but only returns results in the last
+            //  100 transactions. Move to proper query from search engine, that orders by date.
             entityStore.getSignedTransactions(
                 query.authorityIds,
                 null,
                 EntityStore.TransactionOrder.TimeDescending,
-                100
-            ) // TODO: Config limit
-            .flatMap { tx -> tx.transaction.transactionEntities.map { it.entityId } }
+                100 // TODO: Config limit
+            )
+                .flatMap { tx -> tx.transaction.transactionEntities.map { it.entityId } }
+                .toSet()
+                .filter { entityStore.getEntities(query.authorityIds, setOf(it)).isNotEmpty() }
         } else {
-            // TODO: Get add peers of personas to id list
             searchIndex.getResults(query, 100, null).items.map { it.entityId }
         }
 

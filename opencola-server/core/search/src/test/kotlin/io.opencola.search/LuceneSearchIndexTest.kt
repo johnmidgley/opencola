@@ -32,4 +32,10 @@ class LuceneSearchIndexTest {
     fun testLuceneComponentSearch(){
         testComponentSearch(luceneSearchIndex)
     }
+
+    @Test
+    fun testDeleteEntity() {
+        testDeleteEntity(luceneSearchIndex)
+    }
+
 }
