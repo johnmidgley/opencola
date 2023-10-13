@@ -4,6 +4,7 @@ import io.opencola.model.*
 import io.opencola.model.value.StringValue
 import io.opencola.security.keystore.KeyStore
 import io.opencola.security.Signator
+import io.opencola.storage.db.getSQLiteDB
 import io.opencola.storage.entitystore.*
 import io.opencola.util.blankToNull
 import io.opencola.util.trim

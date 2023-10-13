@@ -15,7 +15,7 @@ import io.opencola.storage.addressbook.EntityStoreAddressBook.Version
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import io.opencola.storage.entitystore.EntityStore
 import io.opencola.storage.entitystore.ExposedEntityStoreV2
-import io.opencola.storage.entitystore.getSQLiteDB
+import io.opencola.storage.db.getSQLiteDB
 import java.net.URI
 import java.nio.file.Path
 

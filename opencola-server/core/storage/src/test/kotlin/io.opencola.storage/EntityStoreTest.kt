@@ -9,6 +9,7 @@ import io.opencola.security.Signator
 import io.opencola.storage.entitystore.EntityStore.TransactionOrder
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
+import io.opencola.storage.db.getSQLiteDB
 import io.opencola.storage.entitystore.*
 import io.opencola.util.CompressionFormat
 import org.kodein.di.instance

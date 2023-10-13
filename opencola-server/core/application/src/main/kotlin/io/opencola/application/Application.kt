@@ -26,7 +26,7 @@ import io.opencola.storage.addressbook.EntityStoreAddressBook.Version
 import io.opencola.storage.cache.MhtCache
 import io.opencola.storage.entitystore.ExposedEntityStoreV2
 import io.opencola.storage.entitystore.convertExposedEntityStoreV1ToV2
-import io.opencola.storage.entitystore.getSQLiteDB
+import io.opencola.storage.db.getSQLiteDB
 import io.opencola.storage.filestore.LocalContentBasedFileStore
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton

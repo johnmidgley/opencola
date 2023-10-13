@@ -7,6 +7,7 @@ import io.opencola.security.isValidSignature
 import io.opencola.serialization.EncodingFormat
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
+import io.opencola.storage.db.getSQLiteDB
 import io.opencola.util.CompressionFormat
 import io.opencola.util.compress
 import mu.KotlinLogging

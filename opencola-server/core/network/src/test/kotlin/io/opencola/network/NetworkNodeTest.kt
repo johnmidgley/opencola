@@ -13,7 +13,7 @@ import io.opencola.storage.*
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import io.opencola.storage.entitystore.ExposedEntityStoreV2
-import io.opencola.storage.entitystore.getSQLiteDB
+import io.opencola.storage.db.getSQLiteDB
 import io.opencola.util.poll
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
