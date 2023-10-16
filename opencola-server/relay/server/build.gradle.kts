@@ -5,6 +5,7 @@ val kotlinVersion: String by project
 val logbackVersion: String by project
 val kotlinLoggingVersion:String by project
 val bcprovVersion: String by project
+val exposedVersion: String by project
 
 plugins {
     application
@@ -39,6 +40,9 @@ dependencies {
     implementation("io.ktor:ktor-client-core-jvm:$ktorVersion")
     implementation("io.ktor:ktor-client-cio-jvm:$ktorVersion")
     implementation("io.ktor:ktor-client-websockets-jvm:$ktorVersion")
+    implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
 
     testImplementation(project(":core:util"))
     testImplementation(project(":core:io"))
