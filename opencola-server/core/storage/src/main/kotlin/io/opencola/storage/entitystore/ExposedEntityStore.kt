@@ -18,10 +18,9 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.ByteArrayInputStream
 import java.nio.file.Path
 
-// TODO: Think about using SQLite - super simple and maybe better fit for local use.
-
 class ExposedEntityStore(
     name: String,
+    // TODO DB should suffice. Can't remember why path was passed in.
     storagePath: Path,
     getDB: (Path) -> Database,
     signator: Signator,
