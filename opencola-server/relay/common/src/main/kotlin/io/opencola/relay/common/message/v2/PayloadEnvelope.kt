@@ -72,8 +72,8 @@ class PayloadEnvelope(val header: SignedBytes, val message: SignedBytes) {
                 .let { Envelope(it.recipients, it.messageStorageKey, PayloadEnvelope.decodeProto(payload).message) }
         }
 
-        // Server uses this to prune down recipients when forwarding to a single recipient
         fun from(from: PrivateKey, to: PublicKey, envelope: Envelope): PayloadEnvelope {
+            // An envelope may contain multiple recipients. Here, we are preparing the payload for a single recipient.
             val recipient = envelope.recipients.single { it.publicKey == to }
             val encryptedHeader = EnvelopeHeader(recipient, envelope.messageStorageKey).encryptAndSign(from, to)
             return PayloadEnvelope(encryptedHeader, envelope.message)

@@ -1,25 +1,27 @@
 package io.opencola.relay.common.message.v2.store
 
-import io.opencola.relay.common.message.Envelope
+import io.opencola.model.Id
+import io.opencola.relay.common.message.Recipient
 import io.opencola.relay.common.message.v2.MessageStorageKey
+import io.opencola.security.SignedBytes
 import java.security.PublicKey
+import java.util.UUID
 
+data class StoredMessage (
+    val id: UUID,
+    val from: PublicKey,
+    val to: Recipient,
+    val messageStorageKey: MessageStorageKey,
+    val message: SignedBytes
+) {
+    constructor(from: PublicKey, to: Recipient, messageStorageKey: MessageStorageKey, message: SignedBytes) : this(
+        UUID.randomUUID(),
+        from,
+        to,
+        messageStorageKey,
+        message)
 
-// Stored messages are used only for transport, and are de-duplicated by the senderSpecificKey. The message in the
-// envelope is encrypted, and the same data encrypted twice will not have the same bytes, so it cannot be used for
-// de-duplication.
-// StoredMessages are considered equal if they have the same senderSpecificKey.
-// senderSpecificKeys are generated from the sender's public key and the message key. This allows
-// for the same message from differing recipients to be distinguished.
-data class StoredMessage(val senderSpecificKey: MessageStorageKey, val to: PublicKey, val envelope: Envelope) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is StoredMessage) return false
-        if (other.to != to) return false
-        return senderSpecificKey == other.senderSpecificKey
-    }
-
-    override fun hashCode(): Int {
-        return senderSpecificKey.hashCode()
+    override fun toString(): String {
+        return "StoredMessage(id=$id, from=${Id.ofPublicKey(from)}, to=$to, messageStorageKey=$messageStorageKey, message=${message.bytes.size} bytes)"
     }
 }

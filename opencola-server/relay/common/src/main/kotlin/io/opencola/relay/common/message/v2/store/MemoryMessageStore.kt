@@ -1,7 +1,8 @@
 package io.opencola.relay.common.message.v2.store
 
-import io.opencola.relay.common.message.Envelope
+import io.opencola.relay.common.message.Recipient
 import io.opencola.relay.common.message.v2.MessageStorageKey
+import io.opencola.security.SignedBytes
 import java.security.PublicKey
 import java.util.concurrent.ConcurrentHashMap
 
@@ -9,15 +10,13 @@ import java.util.concurrent.ConcurrentHashMap
 class MemoryMessageStore(private val maxStoredBytesPerConnection: Int = 1024 * 1024 * 50) : MessageStore {
     private val messageQueues = ConcurrentHashMap<PublicKey, MessageQueue>()
 
-    override fun addMessage(from: PublicKey, to: PublicKey, envelope: Envelope) {
-        val messageStorageKey = envelope.messageStorageKey
-        require(messageStorageKey != null)
+    override fun addMessage(from: PublicKey, to: Recipient, messageStorageKey: MessageStorageKey, message: SignedBytes) {
         require(messageStorageKey != MessageStorageKey.none)
         require(messageStorageKey.value != null)
 
         messageQueues
-            .getOrPut(to) { MessageQueue(to, maxStoredBytesPerConnection) }
-            .apply { addMessage(from, to, envelope) }
+            .getOrPut(to.publicKey) { MessageQueue(to.publicKey, maxStoredBytesPerConnection) }
+            .apply { addMessage(StoredMessage(from, to, messageStorageKey, message)) }
     }
 
     override fun getMessages(to: PublicKey): Sequence<StoredMessage> {
@@ -25,7 +24,7 @@ class MemoryMessageStore(private val maxStoredBytesPerConnection: Int = 1024 * 1
     }
 
     override fun removeMessage(storedMessage: StoredMessage) {
-        messageQueues[storedMessage.to]?.removeMessage(storedMessage.senderSpecificKey)
+        messageQueues[storedMessage.to.publicKey]?.removeMessage(storedMessage.id)
     }
 
     fun getUsage() : Sequence<Usage> {

@@ -73,7 +73,8 @@ abstract class AbstractRelayServer(
 
         while (messageStore != null) {
             val storedMessage = messageStore.getMessages(publicKey).firstOrNull() ?: break
-            connection.writeSizedByteArray(encodePayload(publicKey, storedMessage.envelope))
+            val envelope = Envelope(storedMessage.to, storedMessage.messageStorageKey, storedMessage.message)
+            connection.writeSizedByteArray(encodePayload(publicKey, envelope))
             messageStore.removeMessage(storedMessage)
         }
 
@@ -113,7 +114,6 @@ abstract class AbstractRelayServer(
         val fromId = Id.ofPublicKey(from)
         val toId = Id.ofPublicKey(to)
         val prefix = "from=$fromId, to=$toId:"
-        val messageBytes = encodePayload(to, envelope)
         var messageDelivered = false
 
         try {
@@ -125,15 +125,17 @@ abstract class AbstractRelayServer(
                 logger.info { "$prefix Removing closed connection for receiver" }
             } else {
                 logger.info { "$prefix Delivering ${envelope.message.bytes.size} bytes" }
-                connection.writeSizedByteArray(messageBytes)
+                connection.writeSizedByteArray(encodePayload(to, envelope))
                 messageDelivered = true
             }
         } catch (e: Exception) {
             logger.error { "$prefix Error while handling message: $e" }
         } finally {
             try {
-                if (!messageDelivered && envelope.messageStorageKey != null)
-                    messageStore?.addMessage(from, to, envelope)
+                if (!messageDelivered && envelope.messageStorageKey != null) {
+                    val recipient = envelope.recipients.single { it.publicKey == to }
+                    messageStore?.addMessage(from, recipient, envelope.messageStorageKey!!, envelope.message)
+                }
             } catch (e: Exception) {
                 logger.error { "Error while storing message - from: $fromId to: $toId e: $e" }
             }
