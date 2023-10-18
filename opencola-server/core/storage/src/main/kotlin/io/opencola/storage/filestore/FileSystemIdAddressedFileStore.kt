@@ -6,7 +6,7 @@ import java.io.OutputStream
 import java.nio.file.Path
 import kotlin.io.path.*
 
-class LocalIdBasedFileStore(val root: Path) : IdBasedFileStore {
+class FileSystemIdAddressedFileStore(val root: Path) : IdAddressedFileStore {
     private val directoryPrefixLength = 2
 
     private fun getPath(id: Id, createDirectory: Boolean = false): Path {

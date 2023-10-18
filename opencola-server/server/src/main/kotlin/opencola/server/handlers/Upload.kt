@@ -4,7 +4,7 @@ import io.ktor.http.content.*
 import io.opencola.model.DataEntity
 import io.opencola.model.Id
 import io.opencola.storage.entitystore.EntityStore
-import io.opencola.storage.filestore.ContentBasedFileStore
+import io.opencola.storage.filestore.ContentAddressedFileStore
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 
@@ -18,7 +18,7 @@ class UploadItems(val items: List<UploadItem>)
 
 suspend fun getDataEntities(
     entityStore: EntityStore,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     personaId: Id,
     multipart: MultiPartData
 ): List<DataEntity> {
@@ -42,7 +42,7 @@ suspend fun getDataEntities(
 
 suspend fun handleUpload(
     entityStore: EntityStore,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     personaId: Id,
     multipart: MultiPartData
 ): UploadItems {

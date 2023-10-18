@@ -1,10 +1,10 @@
 package io.opencola.storage
 
 import io.opencola.model.Id
-import io.opencola.storage.filestore.ContentBasedFileStore
+import io.opencola.storage.filestore.ContentAddressedFileStore
 import java.io.InputStream
 
-class MockContentBasedFileStore : ContentBasedFileStore {
+class MockContentAddressedFileStore : ContentAddressedFileStore {
     val files = mutableMapOf<Id, ByteArray>()
 
     override fun exists(dataId: Id): Boolean {

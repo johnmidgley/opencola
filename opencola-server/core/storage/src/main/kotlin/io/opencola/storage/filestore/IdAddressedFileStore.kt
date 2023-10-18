@@ -4,7 +4,7 @@ import io.opencola.model.Id
 import java.io.InputStream
 
 // TODO: Can probably used to back ContentBasedFileStore
-interface IdBasedFileStore {
+interface IdAddressedFileStore {
     fun exists(id: Id) : Boolean
 
     fun getInputStream(id: Id): InputStream?

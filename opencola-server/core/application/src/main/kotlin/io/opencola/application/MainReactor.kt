@@ -17,7 +17,7 @@ import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.entitystore.EntityStore
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
-import io.opencola.storage.filestore.ContentBasedFileStore
+import io.opencola.storage.filestore.ContentAddressedFileStore
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
@@ -60,7 +60,7 @@ class MainReactor(
     private val searchIndex: SearchIndex,
     private val networkNode: NetworkNode,
     private val addressBook: AddressBook,
-    private val fileStore: ContentBasedFileStore,
+    private val fileStore: ContentAddressedFileStore,
 ) : Reactor {
     private fun handleNodeStarted(event: Event) {
         logger.info { event.name }

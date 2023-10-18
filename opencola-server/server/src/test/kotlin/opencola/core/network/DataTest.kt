@@ -9,7 +9,7 @@ import io.opencola.security.generateAesKey
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import io.opencola.storage.entitystore.EntityStore
-import io.opencola.storage.filestore.ContentBasedFileStore
+import io.opencola.storage.filestore.ContentAddressedFileStore
 import opencola.server.getApplications
 import opencola.server.getServer
 import opencola.server.startServer
@@ -35,7 +35,7 @@ class DataTest {
             waitForStdout("Completed requesting transactions") { startServer(server1) }
 
             println("Adding data to app0")
-            val fileStore0 = app0.inject<ContentBasedFileStore>()
+            val fileStore0 = app0.inject<ContentAddressedFileStore>()
             val entityStore0 = app0.inject<EntityStore>()
             val data = "hello".toByteArray()
             val dataId = fileStore0.write(data)
@@ -55,7 +55,7 @@ class DataTest {
             }
 
             assertNotNull(app1.inject<EntityStore>().getEntity(app0Persona.entityId, dataId) as? DataEntity)
-            assertContentEquals(data, app1.inject<ContentBasedFileStore>().read(dataId))
+            assertContentEquals(data, app1.inject<ContentAddressedFileStore>().read(dataId))
         } finally {
             applications.forEach { it.close() }
             server0.stop(1000, 1000)

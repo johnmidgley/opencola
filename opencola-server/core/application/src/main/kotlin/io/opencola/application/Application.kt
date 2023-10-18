@@ -27,7 +27,7 @@ import io.opencola.storage.cache.MhtCache
 import io.opencola.storage.entitystore.ExposedEntityStoreV2
 import io.opencola.storage.entitystore.convertExposedEntityStoreV1ToV2
 import io.opencola.storage.db.getSQLiteDB
-import io.opencola.storage.filestore.LocalContentBasedFileStore
+import io.opencola.storage.filestore.FileSystemContentAddressedFileStore
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
 import org.kodein.di.instance
@@ -142,7 +142,7 @@ working properly, you can delete entity-store.db and address-book.db.
             }
 
             val keyStore = JavaKeyStore(storagePath.resolve("keystore.pks"), passwordHash)
-            val fileStore = LocalContentBasedFileStore(storagePath.resolve("filestore"))
+            val fileStore = FileSystemContentAddressedFileStore(storagePath.resolve("filestore"))
 
             migrateEntityStoreV1ToV2(storagePath, keyStore)
 

@@ -5,14 +5,14 @@ import io.opencola.model.Id
 import io.opencola.network.NetworkNode.*
 import io.opencola.network.message.*
 import io.opencola.storage.entitystore.EntityStore
-import io.opencola.storage.filestore.ContentBasedFileStore
+import io.opencola.storage.filestore.ContentAddressedFileStore
 import mu.KotlinLogging
 import org.kodein.di.DirectDI
 import org.kodein.di.instance
 
 private val logger = KotlinLogging.logger("RequestRouting")
 
-fun handleGetData(fileStore: ContentBasedFileStore, dataId: Id): ByteArray? {
+fun handleGetData(fileStore: ContentAddressedFileStore, dataId: Id): ByteArray? {
     return fileStore.read(dataId)
 }
 
@@ -93,7 +93,7 @@ fun putTransactionRoute(entityStore: EntityStore): Route {
     }
 }
 
-fun getDataRoute(entityStore: EntityStore, fileStore: ContentBasedFileStore): Route {
+fun getDataRoute(entityStore: EntityStore, fileStore: ContentAddressedFileStore): Route {
     return Route(GetDataMessage::class) { from, to, message ->
         val getDataMessage = message as GetDataMessage
         val dataId = getDataMessage.dataId
@@ -106,7 +106,7 @@ fun getDataRoute(entityStore: EntityStore, fileStore: ContentBasedFileStore): Ro
     }
 }
 
-fun putDataRoute(entityStore: EntityStore, fileStore: ContentBasedFileStore): Route {
+fun putDataRoute(entityStore: EntityStore, fileStore: ContentAddressedFileStore): Route {
     return Route(PutDataMessage::class) { from, to, message ->
         val putDataMessage = message as PutDataMessage
         val dataId = putDataMessage.dataId
@@ -122,7 +122,7 @@ fun putDataRoute(entityStore: EntityStore, fileStore: ContentBasedFileStore): Ro
 
 fun getDefaultRoutes(
     entityStore: EntityStore,
-    contentBasedFileStore: ContentBasedFileStore
+    contentBasedFileStore: ContentAddressedFileStore
 ): List<Route> {
     return listOf(
         pingRoute(),

@@ -1,7 +1,7 @@
 package io.opencola.storage
 
 import io.opencola.model.Id
-import io.opencola.storage.filestore.LocalContentBasedFileStore
+import io.opencola.storage.filestore.FileSystemContentAddressedFileStore
 import kotlin.io.path.createTempDirectory
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -9,12 +9,12 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 
-class LocalFileStoreTest{
+class FileSystemFileStoreTest {
     private val tempDirectory = createTempDirectory("local-file-store")
-    private val localFileStore = LocalContentBasedFileStore(tempDirectory)
+    private val localFileStore = FileSystemContentAddressedFileStore(tempDirectory)
 
     @Test
-    fun testExists(){
+    fun testExists() {
         val testString = "Test file data"
         val data = testString.toByteArray()
         val id = Id.ofData(data)
@@ -25,7 +25,7 @@ class LocalFileStoreTest{
     }
 
     @Test
-    fun testWriteByteArray(){
+    fun testWriteByteArray() {
         val testString = "Test file data"
         val data = testString.toByteArray()
         val id = localFileStore.write(data)
@@ -37,11 +37,11 @@ class LocalFileStoreTest{
     }
 
     @Test
-    fun testWriteFromInputStream(){
+    fun testWriteFromInputStream() {
         val testString = "Test file data"
         val data = testString.toByteArray()
 
-        val id = data.inputStream().use{ localFileStore.write(it) }
+        val id = data.inputStream().use { localFileStore.write(it) }
         assertEquals(id, Id.ofData(data))
 
         val data1 = localFileStore.read(id)
@@ -57,7 +57,7 @@ class LocalFileStoreTest{
     }
 
     @Test
-    fun testDelete(){
+    fun testDelete() {
         val testString = "Test file data"
         val data = testString.toByteArray()
         val id = localFileStore.write(data)
