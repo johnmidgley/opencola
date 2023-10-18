@@ -24,7 +24,7 @@ class MemoryMessageStore(private val maxStoredBytesPerConnection: Int = 1024 * 1
     }
 
     override fun removeMessage(storedMessage: StoredMessage) {
-        messageQueues[storedMessage.to.publicKey]?.removeMessage(storedMessage.id)
+        messageQueues[storedMessage.to.publicKey]?.removeMessage(storedMessage)
     }
 
     fun getUsage() : Sequence<Usage> {

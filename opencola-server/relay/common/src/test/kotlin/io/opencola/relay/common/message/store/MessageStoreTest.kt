@@ -161,8 +161,6 @@ class MessageStoreTest : SecurityProviderDependent() {
 
         val storedMessage1 = storedMessages[1]
         assertMatches(fromPublicKey1, toPublicKey, key, message, storedMessage1)
-
-        assertNotEquals(storedMessage0.id, storedMessage1.id)
     }
 
     @Test
