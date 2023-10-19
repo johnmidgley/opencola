@@ -36,6 +36,9 @@ class MessageQueue(private val recipientPublicKey: PublicKey, private val maxSto
                     }
                 }
 
+            // This slightly under-counts usage, as it only counts the bytes inside the signed message, not including
+            // the signature. Fixing this would be inefficient, as we'd need to encode the signed message to get its
+            // size, which isn't worth it.
             val existingMessageSize = matchingMessages.sumOf { it.matchingMessage.message.bytes.size }
 
             if (bytesStored + storedMessage.message.bytes.size - existingMessageSize > maxStoredBytes) {

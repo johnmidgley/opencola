@@ -1,0 +1,62 @@
+package io.opencola.relay.common.message.store
+
+import io.opencola.relay.common.message.v2.MessageStorageKey
+import io.opencola.relay.common.message.v2.store.MemoryMessageStore
+import io.opencola.security.generateKeyPair
+import io.opencola.security.initProvider
+import kotlin.test.Test
+
+class MemoryMessageStoreTest {
+    init {
+        initProvider()
+    }
+
+    @Test
+    fun testBasicAdd() {
+        val messageStore = MemoryMessageStore(32)
+        testBasicAdd(messageStore)
+    }
+
+    @Test
+    fun testAddMultipleMessages() {
+        val messageStore = MemoryMessageStore(32)
+        testAddMultipleMessages(messageStore)
+    }
+
+    @Test
+    fun testAddWithDuplicateMessageStorageKey() {
+        val messageStore = MemoryMessageStore(32)
+        testAddWithDuplicateMessageStorageKey(messageStore)
+    }
+
+    @Test
+    fun testRejectMessageWhenOverQuota() {
+        val messageStore = MemoryMessageStore(32)
+        testRejectMessageWhenOverQuota(messageStore)
+    }
+
+    @Test
+    fun testAddAddSameMessageDifferentFrom() {
+        val messageStore = MemoryMessageStore(32)
+        testAddAddSameMessageDifferentFrom(messageStore)
+    }
+
+    @Test
+    fun testEnvelopeIdentity() {
+        val messageStore = MemoryMessageStore(32)
+        val fromPublicKey = generateKeyPair().public
+        val toPublicKey = generateKeyPair().public
+        val messageStorageKey = MessageStorageKey.of("key")
+        val message = "message".toSignedBytes()
+
+        messageStore.addMessage(fromPublicKey, toPublicKey.toRecipient(), messageStorageKey, message)
+
+        assert(messageStore.getMessages(toPublicKey).single().message === message)
+    }
+
+    @Test
+    fun testNoMessageStorageKey() {
+        val messageStore = MemoryMessageStore(32)
+        testNoMessageStorageKey(messageStore)
+    }
+}

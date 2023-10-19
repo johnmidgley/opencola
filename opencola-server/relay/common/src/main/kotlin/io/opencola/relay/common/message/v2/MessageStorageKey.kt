@@ -23,6 +23,10 @@ class MessageStorageKey private constructor(val value: ByteArray?) {
         return value.contentHashCode()
     }
 
+    fun isEmpty() : Boolean {
+        return value == null
+    }
+
     fun encoded() : ByteArray? {
         return value
     }
