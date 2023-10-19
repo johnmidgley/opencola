@@ -10,43 +10,43 @@ class FileSystemContentAddressedFileStore(private val root: Path) : ContentAddre
     private val directoryPrefixLength = 2
 
     init {
-        if(!root.exists()){
+        if (!root.exists()) {
             root.createDirectory()
         }
     }
 
     private fun getPath(dataIdString: String, createDirectory: Boolean = false): Path {
         // Organize datafiles like git
-        val directory = Path(root.pathString, dataIdString.substring(0,directoryPrefixLength))
+        val directory = Path(root.pathString, dataIdString.substring(0, directoryPrefixLength))
 
-        if(!directory.exists() && createDirectory){
+        if (!directory.exists() && createDirectory) {
             directory.createDirectory()
         }
 
         return Path(directory.pathString, dataIdString.substring(2))
     }
 
-    private fun getPath(dataId: Id, createDirectory: Boolean = false) : Path {
+    private fun getPath(dataId: Id, createDirectory: Boolean = false): Path {
         val dataIdString = dataId.toString()
         val path = getPath(dataIdString, createDirectory)
 
-        if(!createDirectory && !path.exists()){
+        if (!createDirectory && !path.exists()) {
             // This is a read, so check by legacy hex id, and move if exists
             val legacyPath = getPath(dataId.legacyEncodeToString())
-            if(legacyPath.exists())
+            if (legacyPath.exists())
                 legacyPath.moveTo(getPath(dataIdString, true))
         }
 
         return path
     }
 
-    override fun exists(dataId: Id) : Boolean {
+    override fun exists(dataId: Id): Boolean {
         return getPath(dataId).exists()
     }
 
     override fun getInputStream(dataId: Id): InputStream? {
         // TODO: Check options
-        return getPath(dataId).let { if(it.exists()) it.inputStream() else null }
+        return getPath(dataId).let { if (it.exists()) it.inputStream() else null }
     }
 
     override fun read(dataId: Id): ByteArray? {
@@ -55,10 +55,10 @@ class FileSystemContentAddressedFileStore(private val root: Path) : ContentAddre
         }
     }
 
-    override fun write(bytes: ByteArray) : Id {
+    override fun write(bytes: ByteArray): Id {
         val dataId = Id.ofData(bytes)
 
-        if(exists(dataId)){
+        if (exists(dataId)) {
             return dataId
         }
 
@@ -78,5 +78,13 @@ class FileSystemContentAddressedFileStore(private val root: Path) : ContentAddre
 
     override fun delete(dataId: Id) {
         getPath(dataId).deleteIfExists()
+    }
+
+    fun enumerateFileIds(): Sequence<Id> {
+        return root.toFile()
+            .walk()
+            .asSequence()
+            .filter { it.isFile }
+            .map { Id.decode("${it.parentFile.name}${it.name}") }
     }
 }
