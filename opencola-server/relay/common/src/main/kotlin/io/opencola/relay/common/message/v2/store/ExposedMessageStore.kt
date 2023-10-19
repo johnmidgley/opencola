@@ -141,7 +141,7 @@ class ExposedMessageStore(
                         EncryptedBytes.decodeProto(it[messages.messageSecretKey].bytes)
                     ),
                     MessageStorageKey.ofEncoded(it[messages.messageStorageKey]),
-                    getMessageBody(Id.decode(it[messages.messageDataId]))!!
+                    messageBody
                 )
             } else {
                 val rowId = it[messages.id]
