@@ -19,7 +19,7 @@ import kotlin.sequences.Sequence
 class ExposedMessageStore(
     private val database: Database,
     private val fileStore: ContentAddressedFileStore,
-    private val maxStoredBytesPerConnection : Int = 1024 * 1024 * 50
+    private val maxStoredBytesPerConnection: Int = 1024 * 1024 * 50
 ) : MessageStore {
     private val logger = KotlinLogging.logger("ExposedMessageStore")
 
@@ -43,7 +43,7 @@ class ExposedMessageStore(
         }
     }
 
-    private fun getBytesStored(toEncoded: ByteArray) : Long {
+    private fun getBytesStored(toEncoded: ByteArray): Long {
         return transaction(database) {
             messages
                 .slice(messages.sizeBytes.sum())
@@ -52,7 +52,11 @@ class ExposedMessageStore(
         }
     }
 
-    private fun getExistingMessage(fromEncoded: ByteArray, toEncoded: ByteArray, messageStorageKeyEncode: ByteArray) : ResultRow? {
+    private fun getExistingMessage(
+        fromEncoded: ByteArray,
+        toEncoded: ByteArray,
+        messageStorageKeyEncode: ByteArray
+    ): ResultRow? {
         return transaction(database) {
             messages
                 .select { (messages.from eq fromEncoded) and (messages.to eq toEncoded) and (messages.messageStorageKey eq messageStorageKeyEncode) }
@@ -154,16 +158,55 @@ class ExposedMessageStore(
         }.asSequence()
     }
 
-    override fun removeMessage(storedMessage: StoredMessage) {
+    private fun deleteMessageFromDB(storedMessage: StoredMessage) : ByteArray? {
         val encodedMessageStorageKey = storedMessage.messageStorageKey.encoded()
         require(encodedMessageStorageKey != null) { "Attempt to remove message with no messageStorageKey." }
 
-        transaction(database) {
+        // Grab dataId and delete message from DB
+        return transaction(database) {
+            val messageDataId = messages
+                .slice(messages.messageDataId)
+                .select {
+                    (messages.from eq storedMessage.from.encoded) and
+                            (messages.to eq storedMessage.to.publicKey.encoded) and
+                            (messages.messageStorageKey eq encodedMessageStorageKey)
+                }
+                .firstOrNull()?.get(messages.messageDataId)
+
             messages.deleteWhere {
                 (messages.from eq storedMessage.from.encoded) and
                         (messages.to eq storedMessage.to.publicKey.encoded) and
                         (messages.messageStorageKey eq encodedMessageStorageKey)
             }
+
+            messageDataId
         }
+    }
+
+    // Delete a message from the file store if it is not referenced by any other message
+    private fun safeDeleteFromFilestore(dataIdEncoded: ByteArray) {
+        val dataStillReferenced = transaction(database) {
+            messages
+                .slice(messages.id)
+                .select { messages.messageDataId eq dataIdEncoded }
+                .firstOrNull() != null
+        }
+
+        if(!dataStillReferenced) {
+            val dataId = Id.decode(dataIdEncoded)
+            logger.info { "Deleting data: $dataId" }
+            fileStore.delete(dataId)
+        }
+    }
+
+    override fun removeMessage(storedMessage: StoredMessage) {
+        val messageDataIdEncoded = deleteMessageFromDB(storedMessage)
+
+        if(messageDataIdEncoded == null) {
+            logger.warn { "Missing data: ${Id.ofData(storedMessage.message.encodeProto())}" }
+            return
+        }
+
+        safeDeleteFromFilestore(messageDataIdEncoded)
     }
 }
