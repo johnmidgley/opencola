@@ -85,4 +85,23 @@ class ExposedMessageStoreTest {
         messageStore.getMessages(recipient1.publicKey).forEach { messageStore.removeMessage(it) }
         assertEquals(0, fileStore.enumerateFileIds().count())
     }
+
+    @Test
+    fun testUnsafeDeleteFromFileStore() {
+        val fileStore = newFileStore()
+        val messageStore = newExposedMessageStore(fileStore = fileStore)
+        val message = "message".toSignedBytes()
+        val messageStorageKey = MessageStorageKey.of("key")
+        val fromPublicKey = generateKeyPair().public
+        val recipient0 = generateKeyPair().public.toRecipient()
+
+        messageStore.addMessage(fromPublicKey, recipient0, messageStorageKey, message)
+
+        assertEquals(1, fileStore.enumerateFileIds().count())
+        assertEquals(1, messageStore.getMessages(recipient0.publicKey).count())
+        fileStore.enumerateFileIds().forEach { fileStore.delete(it) }
+        assertEquals(0, fileStore.enumerateFileIds().count())
+        assertEquals(0, messageStore.getMessages(recipient0.publicKey).count())
+
+    }
 }
