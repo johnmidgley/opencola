@@ -25,7 +25,7 @@ abstract class AbstractRelayServer(
     protected val numSymmetricKeyBytes: Int = 32,
     private val messageStore: MessageStore? = null
 ) {
-    private val connections = ConcurrentHashMap<PublicKey, Connection>()
+    private val connections = ConcurrentHashMap<Id, Connection>()
     protected val serverKeyPair = generateKeyPair()
     protected val logger = KotlinLogging.logger("RelayServer")
     protected val openMutex = Mutex(true)
@@ -38,7 +38,7 @@ abstract class AbstractRelayServer(
     }
 
     suspend fun connectionStates(): List<Pair<String, Boolean>> {
-        return connections.map { Pair(Id.ofPublicKey(it.key).toString(), it.value.isReady()) }
+        return connections.map { Pair(it.key.toString(), it.value.isReady()) }
     }
 
     fun getUsage(): Sequence<Usage> {
@@ -68,37 +68,41 @@ abstract class AbstractRelayServer(
         return Envelope.from(serverKeyPair.private, to, null, noPendingMessagesMessage)
     }
 
-    private suspend fun sendStoredMessages(publicKey: PublicKey) {
-        val connection = connections[publicKey] ?: return
+    private suspend fun sendStoredMessages(id: Id) {
+        val connection = connections[id] ?: return
 
         while (messageStore != null) {
-            val storedMessage = messageStore.getMessages(publicKey).firstOrNull() ?: break
-            val envelope = Envelope(storedMessage.to, storedMessage.messageStorageKey, storedMessage.message)
-            connection.writeSizedByteArray(encodePayload(publicKey, envelope))
+            val storedMessage = messageStore.getMessages(id).firstOrNull() ?: break
+            val recipient = Recipient(connection.publicKey, storedMessage.messageSecretKey)
+            val envelope = Envelope(recipient, storedMessage.messageStorageKey, storedMessage.message)
+            connection.writeSizedByteArray(encodePayload(connection.publicKey, envelope))
             messageStore.removeMessage(storedMessage)
         }
 
         if (messageStore != null) {
-            logger.info { "Queue empty for: ${Id.ofPublicKey(publicKey)}" }
-            connection.writeSizedByteArray(encodePayload(publicKey, getQueueEmptyEnvelope(publicKey)))
+            logger.info { "Queue empty for: $id" }
+            connection.writeSizedByteArray(
+                encodePayload(connection.publicKey, getQueueEmptyEnvelope(connection.publicKey))
+            )
         }
     }
 
     suspend fun handleSession(socketSession: SocketSession) {
         authenticate(socketSession)?.let { publicKey ->
-            val connection = Connection(socketSession, Id.ofPublicKey(publicKey).toString())
-            logger.info { "Session authenticated for: ${connection.name}" }
-            connections[publicKey] = connection
+            val connection = Connection(publicKey, socketSession)
+            val id = connection.id
+            logger.info { "Session authenticated for: ${id}" }
+            connections[id] = connection
 
             try {
-                sendStoredMessages(publicKey)
+                sendStoredMessages(id)
 
                 // TODO: Add garbage collection on inactive connections?
                 connection.listen { payload -> handleMessage(publicKey, payload) }
             } finally {
                 connection.close()
-                connections.remove(publicKey)
-                logger.info { "Session closed for: ${connection.name}" }
+                connections.remove(id)
+                logger.info { "Session closed for: ${id}" }
             }
         }
     }
@@ -106,14 +110,12 @@ abstract class AbstractRelayServer(
     abstract suspend fun open()
 
     private suspend fun deliverMessage(
-        from: PublicKey,
-        to: PublicKey,
+        from: Id,
+        to: Id,
         envelope: Envelope,
     ) {
         require(from != to) { "Attempt to deliver message to self" }
-        val fromId = Id.ofPublicKey(from)
-        val toId = Id.ofPublicKey(to)
-        val prefix = "from=$fromId, to=$toId:"
+        val prefix = "from=$from, to=$to:"
         var messageDelivered = false
 
         try {
@@ -125,7 +127,7 @@ abstract class AbstractRelayServer(
                 logger.info { "$prefix Removing closed connection for receiver" }
             } else {
                 logger.info { "$prefix Delivering ${envelope.message.bytes.size} bytes" }
-                connection.writeSizedByteArray(encodePayload(to, envelope))
+                connection.writeSizedByteArray(encodePayload(connection.publicKey, envelope))
                 messageDelivered = true
             }
         } catch (e: Exception) {
@@ -133,11 +135,17 @@ abstract class AbstractRelayServer(
         } finally {
             try {
                 if (!messageDelivered && envelope.messageStorageKey != null) {
-                    val recipient = envelope.recipients.single { it.publicKey == to }
-                    messageStore?.addMessage(from, recipient, envelope.messageStorageKey!!, envelope.message)
+                    val recipient = envelope.recipients.single { Id.ofPublicKey(it.publicKey) == to }
+                    messageStore?.addMessage(
+                        from,
+                        to,
+                        envelope.messageStorageKey!!,
+                        recipient.messageSecretKey,
+                        envelope.message
+                    )
                 }
             } catch (e: Exception) {
-                logger.error { "Error while storing message - from: $fromId to: $toId e: $e" }
+                logger.error { "Error while storing message - from: $from to: $to e: $e" }
             }
         }
     }
@@ -149,7 +157,7 @@ abstract class AbstractRelayServer(
                 logger.info { "Handling message from: $fromId to ${envelope.recipients.size} recipients" }
                 envelope.recipients.forEach { recipient ->
                     try {
-                        deliverMessage(from, recipient.publicKey, envelope)
+                        deliverMessage(fromId, Id.ofPublicKey(recipient.publicKey), envelope)
                     } catch (e: Exception) {
                         logger.error { "Error while delivering message from: $fromId to: ${recipient.id()} - $e" }
                     }

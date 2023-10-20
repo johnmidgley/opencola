@@ -1,17 +1,16 @@
 package io.opencola.relay.common.message.store
 
-import io.opencola.relay.common.message.Recipient
+import io.opencola.model.Id
 import io.opencola.relay.common.message.v2.MessageStorageKey
 import io.opencola.relay.common.message.v2.store.MessageStore
 import io.opencola.relay.common.message.v2.store.StoredMessage
 import io.opencola.security.*
-import java.security.PublicKey
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 import kotlin.test.assertNotEquals
 
 private val emptyBytes = ByteArray(0)
-private val dummyMessageSecretKey = encrypt(generateKeyPair().public, emptyBytes)
+val dummyMessageSecretKey = encrypt(generateKeyPair().public, emptyBytes)
 
 fun String.toSignedBytes() : SignedBytes {
     return SignedBytes(
@@ -20,142 +19,140 @@ fun String.toSignedBytes() : SignedBytes {
     )
 }
 
-fun PublicKey.toRecipient() : Recipient {
-    return Recipient(this, dummyMessageSecretKey)
-}
-
 private fun assertMatches(
-    from: PublicKey,
-    to: PublicKey,
+    from: Id,
+    to: Id,
     messageStorageKey: MessageStorageKey,
+    messageSecretKey: EncryptedBytes,
     message: SignedBytes,
     storedMessage: StoredMessage
 ) {
     assertEquals(storedMessage.from, from)
-    assertEquals(storedMessage.to.publicKey, to)
+    assertEquals(storedMessage.to, to)
     assertEquals(storedMessage.messageStorageKey, messageStorageKey)
+    assertEquals(storedMessage.messageSecretKey, messageSecretKey)
     assertEquals(storedMessage.message, message)
 }
 
 fun testBasicAdd(messageStore: MessageStore) {
-    val fromPublicKey = generateKeyPair().public
-    val toPublicKey = generateKeyPair().public
+    val from = Id.new()
+    val to = Id.new()
     val messageStorageKey = MessageStorageKey.of("key")
     val message = "message".toSignedBytes()
 
-    messageStore.addMessage(fromPublicKey, toPublicKey.toRecipient(), messageStorageKey, message)
+    messageStore.addMessage(from, to, messageStorageKey, dummyMessageSecretKey, message)
 
-    val storedMessage0 = messageStore.getMessages(toPublicKey).single()
-    assertMatches(fromPublicKey, toPublicKey, messageStorageKey, message, storedMessage0)
+    val storedMessage0 = messageStore.getMessages(to).single()
+    assertMatches(from, to, messageStorageKey, dummyMessageSecretKey, message, storedMessage0)
 
     messageStore.removeMessage(storedMessage0)
-    assert(messageStore.getMessages(toPublicKey).toList().isEmpty())
+    assert(messageStore.getMessages(to).toList().isEmpty())
 }
 
 fun testAddMultipleMessages(messageStore: MessageStore) {
-    val toPublicKey = generateKeyPair().public
-    val fromPublicKey = generateKeyPair().public
+    val from = Id.new()
+    val to = Id.new()
     val key0 = MessageStorageKey.of("key0")
     val message0 = "message0".toSignedBytes()
-    messageStore.addMessage(fromPublicKey, toPublicKey.toRecipient(), key0, message0)
+    messageStore.addMessage(from, to, key0, dummyMessageSecretKey, message0)
 
     val key1 = MessageStorageKey.of("key1")
     val message1 = "message1".toSignedBytes()
-    messageStore.addMessage(fromPublicKey, toPublicKey.toRecipient(), key1, message1)
+    messageStore.addMessage(from, to, key1, dummyMessageSecretKey, message1)
 
-    val storedMessages = messageStore.getMessages(toPublicKey).toList()
+    val storedMessages = messageStore.getMessages(to).toList()
 
     assert(storedMessages.size == 2)
     val storedMessage0 = storedMessages[0]
-    assertMatches(fromPublicKey, toPublicKey, key0, message0, storedMessage0)
+    assertMatches(from, to, key0, dummyMessageSecretKey, message0, storedMessage0)
 
     val storedMessage1 = storedMessages[1]
-    assertMatches(fromPublicKey, toPublicKey, key1, message1, storedMessage1)
+    assertMatches(from, to, key1, dummyMessageSecretKey, message1, storedMessage1)
 
     messageStore.removeMessage(storedMessage0)
     messageStore.removeMessage(storedMessage1)
-    assert(messageStore.getMessages(toPublicKey).toList().isEmpty())
+    assert(messageStore.getMessages(to).toList().isEmpty())
 }
 
 fun testAddWithDuplicateMessageStorageKey(messageStore: MessageStore) {
-    val toPublicKey = generateKeyPair().public
-    val fromPublicKey = generateKeyPair().public
+    val from = Id.new()
+    val to = Id.new()
 
     val key = MessageStorageKey.of("key")
     val message = "message".toSignedBytes()
-    messageStore.addMessage(fromPublicKey, toPublicKey.toRecipient(), key, message)
+    messageStore.addMessage(from, to, key, dummyMessageSecretKey, message)
 
     val message1 = "message1".toSignedBytes()
-    messageStore.addMessage(fromPublicKey, toPublicKey.toRecipient(), key, message1)
+    messageStore.addMessage(from, to, key, dummyMessageSecretKey, message1)
 
-    val storedMessage0 = messageStore.getMessages(toPublicKey).single()
+    val storedMessage0 = messageStore.getMessages(to).single()
     // Check that only 2nd message is returned (it should overwrite the first)
-    assertMatches(fromPublicKey, toPublicKey, key, message1, storedMessage0)
+    assertMatches(from, to, key, dummyMessageSecretKey, message1, storedMessage0)
 
     messageStore.removeMessage(storedMessage0)
-    assert(messageStore.getMessages(toPublicKey).toList().isEmpty())
+    assert(messageStore.getMessages(to).toList().isEmpty())
 }
 
 fun testRejectMessageWhenOverQuota(messageStore: MessageStore) {
-    val toPublicKey = generateKeyPair().public
-    val fromPublicKey0 = generateKeyPair().public
-    val fromPublicKey1 = generateKeyPair().public
+    val from0 = Id.new()
+    val from1 = Id.new()
+    val to = Id.new()
     val key0 = MessageStorageKey.of("key")
     val message0 = "012345678901234567890123456789".toSignedBytes()
-    messageStore.addMessage(fromPublicKey0, toPublicKey.toRecipient(), key0, message0)
+    messageStore.addMessage(from0, to, key0, dummyMessageSecretKey, message0)
 
     val key1 = MessageStorageKey.of("key1")
     val message1 = "0123456789".toSignedBytes()
-    messageStore.addMessage(fromPublicKey1, toPublicKey.toRecipient(), key1, message1)
+    messageStore.addMessage(from1, to, key1, dummyMessageSecretKey, message1)
 
     // Check only first message is stored - 2nd message should be rejected
-    val storedMessage0 = messageStore.getMessages(toPublicKey).single()
-    assertMatches(fromPublicKey0, toPublicKey, key0, message0, storedMessage0)
+    val storedMessage0 = messageStore.getMessages(to).single()
+    assertMatches(from0, to, key0, dummyMessageSecretKey, message0, storedMessage0)
 
     // Add same message from different sender - it should be rejected too
-    messageStore.addMessage(fromPublicKey1, toPublicKey.toRecipient(), key0, message0)
-    val storedMessage1 = messageStore.getMessages(toPublicKey).single()
-    assertMatches(fromPublicKey0, toPublicKey, key0, message0, storedMessage1)
+    messageStore.addMessage(from1, to, key0, dummyMessageSecretKey, message0)
+    val storedMessage1 = messageStore.getMessages(to).single()
+    assertMatches(from0, to, key0, dummyMessageSecretKey, message0, storedMessage1)
 
     // Remove message
     messageStore.removeMessage(storedMessage0)
-    assert(messageStore.getMessages(toPublicKey).toList().isEmpty())
+    assert(messageStore.getMessages(to).toList().isEmpty())
 
     // Now try adding the 2nd message again - it should be accepted this time
-    messageStore.addMessage(fromPublicKey0, toPublicKey.toRecipient(), key1, message1)
+    messageStore.addMessage(from0, to, key1, dummyMessageSecretKey, message1)
 
-    val storedMessage2 = messageStore.getMessages(toPublicKey).single()
-    assertMatches(fromPublicKey0, toPublicKey, key1, message1, storedMessage2)
+    val storedMessage2 = messageStore.getMessages(to).single()
+    assertMatches(from0, to, key1, dummyMessageSecretKey, message1, storedMessage2)
 }
 
 fun testAddAddSameMessageDifferentFrom(messageStore: MessageStore) {
-    val toPublicKey = generateKeyPair().public
-    val fromPublicKey0 = generateKeyPair().public
-    val fromPublicKey1 = generateKeyPair().public
+    val from0 = Id.new()
+    val from1 = Id.new()
+    val to = Id.new()
     val key = MessageStorageKey.of("key")
     val message = "message".toSignedBytes()
 
-    assertNotEquals(fromPublicKey0, fromPublicKey1)
+    assertNotEquals(from0, from1)
 
     // Even though messages are identical, they should be stored, as they come from different senders
-    messageStore.addMessage(fromPublicKey0, toPublicKey.toRecipient(), key, message)
-    messageStore.addMessage(fromPublicKey1, toPublicKey.toRecipient(), key, message)
+    messageStore.addMessage(from0, to, key, dummyMessageSecretKey, message)
+    messageStore.addMessage(from1, to, key, dummyMessageSecretKey, message)
 
-    val storedMessages = messageStore.getMessages(toPublicKey).toList()
+    val storedMessages = messageStore.getMessages(to).toList()
     assert(storedMessages.size == 2)
 
     val storedMessage0 = storedMessages[0]
-    assertMatches(fromPublicKey0, toPublicKey, key, message, storedMessage0)
+    assertMatches(from0, to, key, dummyMessageSecretKey, message, storedMessage0)
 
     val storedMessage1 = storedMessages[1]
-    assertMatches(fromPublicKey1, toPublicKey, key, message, storedMessage1)
+    assertMatches(from1, to, key, dummyMessageSecretKey, message, storedMessage1)
 }
 
 fun testNoMessageStorageKey(messageStore: MessageStore) {
-    val toPublicKey = generateKeyPair().public
-    val fromPublicKey = generateKeyPair().public
+    val from = Id.new()
+    val to = Id.new()
     val messageStorageKey = MessageStorageKey.none
     val message = "message".toSignedBytes()
 
-    assertFails { messageStore.addMessage(fromPublicKey, toPublicKey.toRecipient(), messageStorageKey, message) }
+    assertFails { messageStore.addMessage(from, to, messageStorageKey, dummyMessageSecretKey, message) }
 }

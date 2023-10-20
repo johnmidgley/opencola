@@ -1,9 +1,9 @@
 package io.opencola.relay.common.message.store
 
 import io.opencola.application.TestApplication
+import io.opencola.model.Id
 import io.opencola.relay.common.message.v2.MessageStorageKey
 import io.opencola.relay.common.message.v2.store.ExposedMessageStore
-import io.opencola.security.generateKeyPair
 import io.opencola.security.initProvider
 import io.opencola.storage.db.getPostgresDB
 import io.opencola.storage.db.getSQLiteDB
@@ -90,17 +90,17 @@ class ExposedMessageStoreTest {
         val messageStore = newExposedMessageStore(fileStore = fileStore)
         val message = "message".toSignedBytes()
         val messageStorageKey = MessageStorageKey.of("key")
-        val fromPublicKey = generateKeyPair().public
-        val recipient0 = generateKeyPair().public.toRecipient()
-        val recipient1 = generateKeyPair().public.toRecipient()
+        val from = Id.new()
+        val to0 = Id.new()
+        val to1 = Id.new()
 
-        messageStore.addMessage(fromPublicKey, recipient0, messageStorageKey, message)
-        messageStore.addMessage(fromPublicKey, recipient1, messageStorageKey, message)
+        messageStore.addMessage(from, to0, messageStorageKey, dummyMessageSecretKey, message)
+        messageStore.addMessage(from, to1, messageStorageKey, dummyMessageSecretKey, message)
 
         assertEquals(1, fileStore.enumerateFileIds().count())
-        messageStore.getMessages(recipient0.publicKey).forEach { messageStore.removeMessage(it) }
+        messageStore.getMessages(to0).forEach { messageStore.removeMessage(it) }
         assertEquals(1, fileStore.enumerateFileIds().count())
-        messageStore.getMessages(recipient1.publicKey).forEach { messageStore.removeMessage(it) }
+        messageStore.getMessages(to1).forEach { messageStore.removeMessage(it) }
         assertEquals(0, fileStore.enumerateFileIds().count())
     }
 
@@ -110,16 +110,16 @@ class ExposedMessageStoreTest {
         val messageStore = newExposedMessageStore(fileStore = fileStore)
         val message = "message".toSignedBytes()
         val messageStorageKey = MessageStorageKey.of("key")
-        val fromPublicKey = generateKeyPair().public
-        val recipient0 = generateKeyPair().public.toRecipient()
+        val from = Id.new()
+        val to = Id.new()
 
-        messageStore.addMessage(fromPublicKey, recipient0, messageStorageKey, message)
+        messageStore.addMessage(from, to, messageStorageKey, dummyMessageSecretKey, message)
 
         assertEquals(1, fileStore.enumerateFileIds().count())
-        assertEquals(1, messageStore.getMessages(recipient0.publicKey).count())
+        assertEquals(1, messageStore.getMessages(to).count())
         fileStore.enumerateFileIds().forEach { fileStore.delete(it) }
         assertEquals(0, fileStore.enumerateFileIds().count())
-        assertEquals(0, messageStore.getMessages(recipient0.publicKey).count())
+        assertEquals(0, messageStore.getMessages(to).count())
 
     }
 }

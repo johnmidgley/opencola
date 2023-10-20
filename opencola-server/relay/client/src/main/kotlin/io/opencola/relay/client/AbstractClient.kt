@@ -104,9 +104,9 @@ abstract class AbstractClient(
                 try {
                     val socketSession = getSocketSession()
                     authenticate(socketSession)
-                    _connection = Connection(socketSession, name)
+                    _connection = Connection(keyPair.public, socketSession)
                     connectionFailures = 0
-                    logger.info { "Connection created to $uri for ${Id.ofPublicKey(keyPair.public)}" }
+                    logger.info { "Connection created to $uri for ${_connection!!.id}" }
                 } catch (e: Exception) {
                     // TODO: Max connectFailures?
                     connectionFailures++

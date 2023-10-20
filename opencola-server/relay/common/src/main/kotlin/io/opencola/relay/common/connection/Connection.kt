@@ -1,15 +1,18 @@
 package io.opencola.relay.common.connection
 
+import io.opencola.model.Id
 import io.opencola.relay.common.State.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import mu.KotlinLogging
+import java.security.PublicKey
 
 typealias MessageHandler = suspend (ByteArray) -> Unit
 
-class Connection(private val socketSession: SocketSession, val name: String? = null, val sessionKey: ByteArray? = null) {
-    private val logger = KotlinLogging.logger("Connection${if(name != null) " ($name)" else ""}")
+class Connection(val publicKey: PublicKey, private val socketSession: SocketSession) {
+    val id = Id.ofPublicKey(publicKey)
+    private val logger = KotlinLogging.logger("Connection[$id]")
     private var state = Initialized
     private var listenJob: Job? = null
 

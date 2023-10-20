@@ -15,6 +15,7 @@ import java.security.PublicKey
 import java.util.*
 
 @Serializable
+// TODO: Change 'bytes' to 'encoded' and make public?
 data class Id(private val bytes: ByteArray) : Comparable<Id> {
     init {
         require(bytes.size == LENGTH_IN_BYTES) { "Invalid id - size = ${bytes.size} but should be $LENGTH_IN_BYTES" }

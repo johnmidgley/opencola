@@ -1,8 +1,8 @@
 package io.opencola.relay.common.message.store
 
+import io.opencola.model.Id
 import io.opencola.relay.common.message.v2.MessageStorageKey
 import io.opencola.relay.common.message.v2.store.MemoryMessageStore
-import io.opencola.security.generateKeyPair
 import io.opencola.security.initProvider
 import kotlin.test.Test
 
@@ -44,14 +44,14 @@ class MemoryMessageStoreTest {
     @Test
     fun testEnvelopeIdentity() {
         val messageStore = MemoryMessageStore(32)
-        val fromPublicKey = generateKeyPair().public
-        val toPublicKey = generateKeyPair().public
+        val from = Id.new()
+        val to = Id.new()
         val messageStorageKey = MessageStorageKey.of("key")
         val message = "message".toSignedBytes()
 
-        messageStore.addMessage(fromPublicKey, toPublicKey.toRecipient(), messageStorageKey, message)
+        messageStore.addMessage(from, to, messageStorageKey, dummyMessageSecretKey, message)
 
-        assert(messageStore.getMessages(toPublicKey).single().message === message)
+        assert(messageStore.getMessages(to).single().message === message)
     }
 
     @Test

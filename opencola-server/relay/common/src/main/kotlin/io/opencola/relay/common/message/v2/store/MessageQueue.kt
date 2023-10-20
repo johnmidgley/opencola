@@ -2,10 +2,9 @@ package io.opencola.relay.common.message.v2.store
 
 import io.opencola.model.Id
 import mu.KotlinLogging
-import java.security.PublicKey
 import java.util.concurrent.locks.ReentrantLock
 
-class MessageQueue(private val recipientPublicKey: PublicKey, private val maxStoredBytes: Int) {
+class MessageQueue(private val recipientId: Id, private val maxStoredBytes: Int) {
     private val logger = KotlinLogging.logger("MessageQueue")
 
     var bytesStored: Int = 0
@@ -21,9 +20,8 @@ class MessageQueue(private val recipientPublicKey: PublicKey, private val maxSto
     fun addMessage(storedMessage: StoredMessage) {
         lock.lock()
         try {
-            require(storedMessage.to.publicKey == recipientPublicKey)
+            require(storedMessage.to == recipientId)
             require(storedMessage.messageStorageKey.value != null)
-            val receiverId = Id.ofPublicKey(storedMessage.to.publicKey)
 
             logger.info { "Adding message: $storedMessage" }
 
@@ -42,12 +40,12 @@ class MessageQueue(private val recipientPublicKey: PublicKey, private val maxSto
             val existingMessageSize = matchingMessages.sumOf { it.matchingMessage.message.bytes.size }
 
             if (bytesStored + storedMessage.message.bytes.size - existingMessageSize > maxStoredBytes) {
-                logger.info { "Message store for $receiverId is full - dropping message" }
+                logger.info { "Message store for $recipientId is full - dropping message" }
                 return
             }
 
             if(matchingMessages.count() > 1) {
-                logger.error { "Multiple messages with the same senderSpecificKey in the message queue for $receiverId" }
+                logger.error { "Multiple messages with the same senderSpecificKey in the message queue for $recipientId" }
             }
 
             // Replace existing message from the same sender. We do this, rather than ignoring the message,

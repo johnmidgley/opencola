@@ -5,7 +5,6 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
-import io.opencola.model.Id
 import io.opencola.relay.common.connection.WebSocketSessionWrapper
 import io.opencola.relay.common.message.v2.store.Usage
 import io.opencola.relay.server.v1.WebSocketRelayServer as WebSocketRelayServerV1
@@ -21,7 +20,7 @@ fun connectionsString(connectionStates: List<Pair<String, Boolean>>): String {
 }
 
 fun usageString(usages: Sequence<Usage>): String {
-    val usage = usages.joinToString("\n") { "${Id.ofPublicKey(it.receiver)} - ${it.bytesStored}" }
+    val usage = usages.joinToString("\n") { "${it.receiver} - ${it.bytesStored}" }
     return "Usage (${usages.count()})\n\n$usage"
 }
 
