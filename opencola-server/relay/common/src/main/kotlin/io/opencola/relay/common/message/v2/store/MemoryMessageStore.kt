@@ -19,8 +19,8 @@ class MemoryMessageStore(private val maxStoredBytesPerConnection: Int = 1024 * 1
             .apply { addMessage(StoredMessage(from, to, messageStorageKey, messageSecretKey, message)) }
     }
 
-    override fun getMessages(to: Id): Sequence<StoredMessage> {
-        return messageQueues[to]?.getMessages() ?: emptySequence()
+    override fun getMessages(to: Id, limit: Int): List<StoredMessage> {
+        return messageQueues[to]?.getMessages()?.take(limit) ?: emptyList()
     }
 
     override fun removeMessage(storedMessage: StoredMessage) {

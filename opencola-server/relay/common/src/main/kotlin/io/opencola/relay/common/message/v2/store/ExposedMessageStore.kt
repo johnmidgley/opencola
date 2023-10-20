@@ -12,7 +12,6 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.statements.api.ExposedBlob
 import org.jetbrains.exposed.sql.transactions.transaction
-import kotlin.sequences.Sequence
 
 class ExposedMessageStore(
     private val database: Database,
@@ -120,12 +119,12 @@ class ExposedMessageStore(
         return "Message(id=${row[messages.id]}, from=$fromId, to=$toId, messageStorageKey=$messageStorageKey, messageDataId=$messageDataId)"
     }
 
-    override fun getMessages(to: Id): Sequence<StoredMessage> {
-        // TODO: Paging
+    override fun getMessages(to: Id, limit: Int): List<StoredMessage> {
         val resultRows = transaction(database) {
             messages
                 .select { messages.to eq to.encoded() }
                 .orderBy(messages.id)
+                .limit(limit)
                 .toList()
         }
 
@@ -149,7 +148,7 @@ class ExposedMessageStore(
                 }
                 null
             }
-        }.asSequence()
+        }
     }
 
     private fun deleteMessageFromDB(storedMessage: StoredMessage): ByteArray? {

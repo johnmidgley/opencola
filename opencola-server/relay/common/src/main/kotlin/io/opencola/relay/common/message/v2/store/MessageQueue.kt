@@ -65,10 +65,10 @@ class MessageQueue(private val recipientId: Id, private val maxStoredBytes: Int)
         }
     }
 
-    fun getMessages(): Sequence<StoredMessage> {
+    fun getMessages(): List<StoredMessage> {
         lock.lock()
         try {
-            return queuedMessages.asSequence()
+            return queuedMessages
         } finally {
             lock.unlock()
         }

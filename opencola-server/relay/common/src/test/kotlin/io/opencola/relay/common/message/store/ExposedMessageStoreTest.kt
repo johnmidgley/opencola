@@ -98,9 +98,9 @@ class ExposedMessageStoreTest {
         messageStore.addMessage(from, to1, messageStorageKey, dummyMessageSecretKey, message)
 
         assertEquals(1, fileStore.enumerateFileIds().count())
-        messageStore.getMessages(to0).forEach { messageStore.removeMessage(it) }
+        messageStore.drainMessages(to0)
         assertEquals(1, fileStore.enumerateFileIds().count())
-        messageStore.getMessages(to1).forEach { messageStore.removeMessage(it) }
+        messageStore.drainMessages(to1)
         assertEquals(0, fileStore.enumerateFileIds().count())
     }
 
@@ -121,5 +121,11 @@ class ExposedMessageStoreTest {
         assertEquals(0, fileStore.enumerateFileIds().count())
         assertEquals(0, messageStore.getMessages(to).count())
 
+    }
+
+    @Test
+    fun testConsumeMessages() {
+        val messageStore = newExposedMessageStore()
+        testConsumeMessages(messageStore)
     }
 }

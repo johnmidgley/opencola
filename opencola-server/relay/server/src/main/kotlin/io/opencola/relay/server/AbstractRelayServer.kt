@@ -69,22 +69,17 @@ abstract class AbstractRelayServer(
     }
 
     private suspend fun sendStoredMessages(id: Id) {
+        if (messageStore == null) return
         val connection = connections[id] ?: return
 
-        while (messageStore != null) {
-            val storedMessage = messageStore.getMessages(id).firstOrNull() ?: break
-            val recipient = Recipient(connection.publicKey, storedMessage.messageSecretKey)
-            val envelope = Envelope(recipient, storedMessage.messageStorageKey, storedMessage.message)
+        messageStore.consumeMessages(id).forEach {
+            val recipient = Recipient(connection.publicKey, it.messageSecretKey)
+            val envelope = Envelope(recipient, it.messageStorageKey, it.message)
             connection.writeSizedByteArray(encodePayload(connection.publicKey, envelope))
-            messageStore.removeMessage(storedMessage)
         }
 
-        if (messageStore != null) {
-            logger.info { "Queue empty for: $id" }
-            connection.writeSizedByteArray(
-                encodePayload(connection.publicKey, getQueueEmptyEnvelope(connection.publicKey))
-            )
-        }
+        logger.info { "Queue empty for: $id" }
+        connection.writeSizedByteArray(encodePayload(connection.publicKey, getQueueEmptyEnvelope(connection.publicKey)))
     }
 
     suspend fun handleSession(socketSession: SocketSession) {

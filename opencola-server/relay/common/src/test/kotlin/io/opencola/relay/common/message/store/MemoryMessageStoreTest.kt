@@ -59,4 +59,10 @@ class MemoryMessageStoreTest {
         val messageStore = MemoryMessageStore(32)
         testNoMessageStorageKey(messageStore)
     }
+
+    @Test
+    fun testConsumeMessages() {
+        val messageStore = MemoryMessageStore()
+        testConsumeMessages(messageStore)
+    }
 }
