@@ -21,7 +21,7 @@ class MessageQueue(private val recipientId: Id, private val maxStoredBytes: Int)
         lock.lock()
         try {
             require(storedMessage.to == recipientId)
-            require(storedMessage.messageStorageKey.value != null)
+            require(storedMessage.storageKey.value != null)
 
             logger.info { "Adding message: $storedMessage" }
 

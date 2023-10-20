@@ -29,8 +29,8 @@ private fun assertMatches(
 ) {
     assertEquals(storedMessage.from, from)
     assertEquals(storedMessage.to, to)
-    assertEquals(storedMessage.messageStorageKey, messageStorageKey)
-    assertEquals(storedMessage.messageSecretKey, messageSecretKey)
+    assertEquals(storedMessage.storageKey, messageStorageKey)
+    assertEquals(storedMessage.secretKey, messageSecretKey)
     assertEquals(storedMessage.message, message)
 }
 
@@ -177,7 +177,7 @@ fun testConsumeMessages(messageStore: MessageStore) {
     }
 
     messages.forEach {
-        messageStore.addMessage(it.from, it.to, it.messageStorageKey, it.messageSecretKey, it.message)
+        messageStore.addMessage(it.from, it.to, it.storageKey, it.secretKey, it.message)
     }
 
     // Consume all messages using (which is forced by .toList())
@@ -187,6 +187,6 @@ fun testConsumeMessages(messageStore: MessageStore) {
     assertEquals(messages.size, consumeMessages.size)
 
     consumeMessages.zip(messages).forEach { (consumed, original) ->
-        assertMatches(original.from, original.to, original.messageStorageKey, original.messageSecretKey, original.message, consumed)
+        assertMatches(original.from, original.to, original.storageKey, original.secretKey, original.message, consumed)
     }
 }

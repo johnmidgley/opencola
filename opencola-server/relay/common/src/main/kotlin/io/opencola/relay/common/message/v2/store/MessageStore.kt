@@ -9,8 +9,8 @@ interface MessageStore {
     fun addMessage(
         from: Id,
         to: Id,
-        messageStorageKey: MessageStorageKey,
-        messageSecretKey: EncryptedBytes,
+        storageKey: MessageStorageKey,
+        secretKey: EncryptedBytes,
         message: SignedBytes
     )
 

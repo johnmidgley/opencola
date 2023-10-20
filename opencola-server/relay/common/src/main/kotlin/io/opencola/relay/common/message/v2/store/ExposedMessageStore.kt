@@ -24,9 +24,9 @@ class ExposedMessageStore(
         LongIdTable(name) {
         val from = binary("from", 32).index()
         val to = binary("to", 32).index()
-        val messageStorageKey = binary("messageStorageKey", 8)
-        val messageSecretKey = blob("messageSecretKey")
-        val messageDataId = binary("messageDataId", 32).index() // TODO: Is index necessary?
+        val storageKey = binary("storageKey", 8).index()
+        val secretKey = blob("secretKey")
+        val dataId = binary("dataId", 32).index()
         val sizeBytes = long("sizeBytes")
         val timeMilliseconds = long("timeMilliseconds").index()
     }
@@ -51,11 +51,11 @@ class ExposedMessageStore(
     private fun getExistingMessage(
         from: Id,
         to: Id,
-        messageStorageKeyEncode: ByteArray
+        storageKeyEncoded: ByteArray
     ): ResultRow? {
         return transaction(database) {
             messages
-                .select { (messages.from eq from.encoded()) and (messages.to eq to.encoded()) and (messages.messageStorageKey eq messageStorageKeyEncode) }
+                .select { (messages.from eq from.encoded()) and (messages.to eq to.encoded()) and (messages.storageKey eq storageKeyEncoded) }
                 .firstOrNull()
         }
     }
@@ -63,11 +63,11 @@ class ExposedMessageStore(
     override fun addMessage(
         from: Id,
         to: Id,
-        messageStorageKey: MessageStorageKey,
-        messageSecretKey: EncryptedBytes,
+        storageKey: MessageStorageKey,
+        secretKey: EncryptedBytes,
         message: SignedBytes
     ) {
-        val messageStorageKeyEncoded = messageStorageKey.encoded()
+        val messageStorageKeyEncoded = storageKey.encoded()
         require(messageStorageKeyEncoded != null) { "Attempt to add message with no messageStorageKey." }
         val messageEncoded = message.encodeProto()
         val messageDataId = fileStore.write(messageEncoded.inputStream())
@@ -86,9 +86,9 @@ class ExposedMessageStore(
                 messages.insertAndGetId {
                     it[this.from] = from.encoded()
                     it[this.to] = to.encoded()
-                    it[this.messageStorageKey] = messageStorageKeyEncoded
-                    it[this.messageSecretKey] = ExposedBlob(messageSecretKey.encodeProto())
-                    it[this.messageDataId] = messageDataId.encoded()
+                    it[this.storageKey] = messageStorageKeyEncoded
+                    it[this.secretKey] = ExposedBlob(secretKey.encodeProto())
+                    it[this.dataId] = messageDataId.encoded()
                     it[this.sizeBytes] = message.bytes.size.toLong()
                     it[this.timeMilliseconds] = System.currentTimeMillis()
                 }
@@ -97,8 +97,8 @@ class ExposedMessageStore(
             // Update stored message
             transaction(database) {
                 messages.update({ messages.id eq existingMessage[messages.id] }) {
-                    it[this.messageSecretKey] = ExposedBlob(messageSecretKey.encodeProto())
-                    it[this.messageDataId] = messageDataId.encoded()
+                    it[this.secretKey] = ExposedBlob(secretKey.encodeProto())
+                    it[this.dataId] = messageDataId.encoded()
                     it[this.sizeBytes] = message.bytes.size.toLong()
                     it[this.timeMilliseconds] = System.currentTimeMillis()
                 }
@@ -113,10 +113,10 @@ class ExposedMessageStore(
     private fun rowToString(row: ResultRow): String {
         val fromId = Id.ofPublicKey(publicKeyFromBytes(row[messages.from]))
         val toId = Id.ofPublicKey(publicKeyFromBytes(row[messages.to]))
-        val messageStorageKey = MessageStorageKey.ofEncoded(row[messages.messageStorageKey])
-        val messageDataId = Id.decode(row[messages.messageDataId])
+        val storageKey = MessageStorageKey.ofEncoded(row[messages.storageKey])
+        val dataId = Id.decode(row[messages.dataId])
 
-        return "Message(id=${row[messages.id]}, from=$fromId, to=$toId, messageStorageKey=$messageStorageKey, messageDataId=$messageDataId)"
+        return "Message(id=${row[messages.id]}, from=$fromId, to=$toId, storageKey=$storageKey, secretKey=ENCRYPTED, dataId=$dataId)"
     }
 
     override fun getMessages(to: Id, limit: Int): List<StoredMessage> {
@@ -129,16 +129,17 @@ class ExposedMessageStore(
         }
 
         return resultRows.mapNotNull {
-            val messageDataId = Id.decode(it[messages.messageDataId])
+            val messageDataId = Id.decode(it[messages.dataId])
             val messageBody = getMessageBody(messageDataId)
 
             if (messageBody != null) {
                 StoredMessage(
                     Id.decode(it[messages.from]),
                     Id.decode(it[messages.to]),
-                    MessageStorageKey.ofEncoded(it[messages.messageStorageKey]),
-                    EncryptedBytes.decodeProto(it[messages.messageSecretKey].bytes),
-                    messageBody
+                    MessageStorageKey.ofEncoded(it[messages.storageKey]),
+                    EncryptedBytes.decodeProto(it[messages.secretKey].bytes),
+                    messageBody,
+                    it[messages.timeMilliseconds]
                 )
             } else {
                 val rowId = it[messages.id]
@@ -152,24 +153,24 @@ class ExposedMessageStore(
     }
 
     private fun deleteMessageFromDB(storedMessage: StoredMessage): ByteArray? {
-        val encodedMessageStorageKey = storedMessage.messageStorageKey.encoded()
+        val encodedMessageStorageKey = storedMessage.storageKey.encoded()
         require(encodedMessageStorageKey != null) { "Attempt to remove message with no messageStorageKey." }
 
         // Grab dataId and delete message from DB
         return transaction(database) {
             val messageDataId = messages
-                .slice(messages.messageDataId)
+                .slice(messages.dataId)
                 .select {
                     (messages.from eq storedMessage.from.encoded()) and
                             (messages.to eq storedMessage.to.encoded()) and
-                            (messages.messageStorageKey eq encodedMessageStorageKey)
+                            (messages.storageKey eq encodedMessageStorageKey)
                 }
-                .firstOrNull()?.get(messages.messageDataId)
+                .firstOrNull()?.get(messages.dataId)
 
             messages.deleteWhere {
                 (messages.from eq storedMessage.from.encoded()) and
                         (messages.to eq storedMessage.to.encoded()) and
-                        (messages.messageStorageKey eq encodedMessageStorageKey)
+                        (messages.storageKey eq encodedMessageStorageKey)
             }
 
             messageDataId
@@ -181,7 +182,7 @@ class ExposedMessageStore(
         val dataStillReferenced = transaction(database) {
             messages
                 .slice(messages.id)
-                .select { messages.messageDataId eq dataIdEncoded }
+                .select { messages.dataId eq dataIdEncoded }
                 .firstOrNull() != null
         }
 

@@ -73,8 +73,8 @@ abstract class AbstractRelayServer(
         val connection = connections[id] ?: return
 
         messageStore.consumeMessages(id).forEach {
-            val recipient = Recipient(connection.publicKey, it.messageSecretKey)
-            val envelope = Envelope(recipient, it.messageStorageKey, it.message)
+            val recipient = Recipient(connection.publicKey, it.secretKey)
+            val envelope = Envelope(recipient, it.storageKey, it.message)
             connection.writeSizedByteArray(encodePayload(connection.publicKey, envelope))
         }
 
