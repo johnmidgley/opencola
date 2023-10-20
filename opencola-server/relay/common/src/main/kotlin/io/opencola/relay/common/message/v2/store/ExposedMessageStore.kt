@@ -23,7 +23,7 @@ class ExposedMessageStore(
 ) : MessageStore {
     private val logger = KotlinLogging.logger("ExposedMessageStore")
 
-    private class Messages(name: String = "Messages") :
+    class Messages(name: String = "Messages") :
         LongIdTable(name) {
         val from =
             binary("from", 128).index() // TODO: Switch to Id instead of public key - would affect whole relay server

@@ -5,10 +5,13 @@ import io.opencola.relay.common.message.v2.MessageStorageKey
 import io.opencola.relay.common.message.v2.store.ExposedMessageStore
 import io.opencola.security.generateKeyPair
 import io.opencola.security.initProvider
+import io.opencola.storage.db.getPostgresDB
 import io.opencola.storage.db.getSQLiteDB
 import io.opencola.storage.filestore.ContentAddressedFileStore
 import io.opencola.storage.filestore.FileSystemContentAddressedFileStore
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.transactions.transaction
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -18,9 +21,24 @@ class ExposedMessageStoreTest {
         initProvider()
     }
 
-    private fun newExposedDB(): Database {
+
+    private fun newSQLiteDB(): Database {
         val dbDirectory = TestApplication.getTmpDirectory("-db")
         return getSQLiteDB(dbDirectory.resolve("test.db"))
+    }
+
+    private fun newPostgresDB(): Database {
+        val db = getPostgresDB("localhost", "opencola", "opencola", "test")
+
+        transaction(db) {
+            SchemaUtils.drop(ExposedMessageStore.Messages())
+        }
+
+        return db
+    }
+
+    private fun newExposedDB(): Database {
+        return newSQLiteDB()
     }
 
     private fun newFileStore(): FileSystemContentAddressedFileStore {

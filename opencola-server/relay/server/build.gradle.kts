@@ -6,6 +6,7 @@ val logbackVersion: String by project
 val kotlinLoggingVersion:String by project
 val bcprovVersion: String by project
 val exposedVersion: String by project
+val postgresqlVersion: String by project
 
 plugins {
     application
@@ -43,6 +44,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
+    implementation("org.postgresql:postgresql:$postgresqlVersion")
 
     testImplementation(project(":core:util"))
     testImplementation(project(":core:io"))

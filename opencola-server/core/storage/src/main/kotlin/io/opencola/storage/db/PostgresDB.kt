@@ -12,3 +12,7 @@ class PostgresDB(val host: String, val database: String, val user: String, val p
         )
     }
 }
+
+fun getPostgresDB(host: String, database: String, user: String, password: String, port: Int = 5432): Database {
+    return PostgresDB(host, database, user, password, port).db
+}
