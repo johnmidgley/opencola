@@ -20,8 +20,7 @@ class ExposedMessageStore(
 ) : MessageStore {
     private val logger = KotlinLogging.logger("ExposedMessageStore")
 
-    class Messages(name: String = "Messages") :
-        LongIdTable(name) {
+    class Messages(name: String = "Messages") : LongIdTable(name) {
         val from = binary("from", 32).index()
         val to = binary("to", 32).index()
         val storageKey = binary("storageKey", 8).index()
