@@ -4,6 +4,7 @@ import io.opencola.model.Id
 import io.opencola.relay.common.connection.Connection
 import io.opencola.relay.common.connection.SocketSession
 import io.opencola.relay.common.State.*
+import io.opencola.relay.common.connection.ConnectionDirectory
 import io.opencola.relay.common.message.*
 import io.opencola.relay.common.message.v2.ControlMessage
 import io.opencola.relay.common.message.v2.ControlMessageType
@@ -18,14 +19,13 @@ import kotlinx.coroutines.sync.withLock
 import mu.KotlinLogging
 import java.security.PublicKey
 import java.security.SecureRandom
-import java.util.concurrent.ConcurrentHashMap
 
 abstract class AbstractRelayServer(
     protected val numChallengeBytes: Int = 32,
     protected val numSymmetricKeyBytes: Int = 32,
     private val messageStore: MessageStore? = null
 ) {
-    private val connections = ConcurrentHashMap<Id, Connection>()
+    private val connectionDirectory = ConnectionDirectory()
     protected val serverKeyPair = generateKeyPair()
     protected val logger = KotlinLogging.logger("RelayServer")
     protected val openMutex = Mutex(true)
@@ -38,7 +38,7 @@ abstract class AbstractRelayServer(
     }
 
     suspend fun connectionStates(): List<Pair<String, Boolean>> {
-        return connections.map { Pair(it.key.toString(), it.value.isReady()) }
+        return connectionDirectory.states()
     }
 
     fun getUsage(): Sequence<Usage> {
@@ -70,7 +70,7 @@ abstract class AbstractRelayServer(
 
     private suspend fun sendStoredMessages(id: Id) {
         if (messageStore == null) return
-        val connection = connections[id] ?: return
+        val connection = connectionDirectory.get(id) ?: return
 
         messageStore.consumeMessages(id).forEach {
             val recipient = Recipient(connection.publicKey, it.secretKey)
@@ -87,7 +87,7 @@ abstract class AbstractRelayServer(
             val connection = Connection(publicKey, socketSession)
             val id = connection.id
             logger.info { "Session authenticated for: ${id}" }
-            connections[id] = connection
+            connectionDirectory.add(connection)
 
             try {
                 sendStoredMessages(id)
@@ -96,7 +96,7 @@ abstract class AbstractRelayServer(
                 connection.listen { payload -> handleMessage(publicKey, payload) }
             } finally {
                 connection.close()
-                connections.remove(id)
+                connectionDirectory.remove(connection)
                 logger.info { "Session closed for: ${id}" }
             }
         }
@@ -114,7 +114,7 @@ abstract class AbstractRelayServer(
         var messageDelivered = false
 
         try {
-            val connection = connections[to]
+            val connection = connectionDirectory.get(to)
 
             if (connection == null) {
                 logger.info { "$prefix no connection to receiver" }
@@ -165,8 +165,7 @@ abstract class AbstractRelayServer(
 
     open suspend fun close() {
         state = Closed
-        connections.values.forEach { it.close() }
-        connections.clear()
+        connectionDirectory.closeAll()
         listenJob?.cancel()
         listenJob = null
     }
