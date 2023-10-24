@@ -4,7 +4,7 @@ import io.opencola.model.Id
 import io.opencola.relay.common.connection.Connection
 import io.opencola.relay.common.connection.SocketSession
 import io.opencola.relay.common.State.*
-import io.opencola.relay.common.connection.ConnectionDirectory
+import io.opencola.relay.common.connection.InMemoryConnectionDirectory
 import io.opencola.relay.common.message.*
 import io.opencola.relay.common.message.v2.ControlMessage
 import io.opencola.relay.common.message.v2.ControlMessageType
@@ -17,21 +17,27 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import mu.KotlinLogging
+import java.net.URI
 import java.security.PublicKey
 import java.security.SecureRandom
 
 abstract class AbstractRelayServer(
+    val address: URI,
     protected val numChallengeBytes: Int = 32,
     protected val numSymmetricKeyBytes: Int = 32,
     private val messageStore: MessageStore? = null
 ) {
-    private val connectionDirectory = ConnectionDirectory()
+    private val connectionDirectory = InMemoryConnectionDirectory(address)
     protected val serverKeyPair = generateKeyPair()
     protected val logger = KotlinLogging.logger("RelayServer")
     protected val openMutex = Mutex(true)
     protected val random = SecureRandom()
     protected var state = Initialized
     protected var listenJob: Job? = null
+
+    init {
+        require(address.scheme == "ocr") { "Invalid scheme: ${address.scheme}" }
+    }
 
     suspend fun waitUntilOpen() {
         openMutex.withLock { }
@@ -70,7 +76,13 @@ abstract class AbstractRelayServer(
 
     private suspend fun sendStoredMessages(id: Id) {
         if (messageStore == null) return
-        val connection = connectionDirectory.get(id) ?: return
+        val connectionEntry = connectionDirectory.get(id) ?: return
+
+        if(connectionEntry.address != address) {
+            TODO("Implement cross server message delivery")
+        }
+
+        val connection = connectionEntry.connection
 
         messageStore.consumeMessages(id).forEach {
             val recipient = Recipient(connection.publicKey, it.secretKey)
@@ -96,7 +108,7 @@ abstract class AbstractRelayServer(
                 connection.listen { payload -> handleMessage(publicKey, payload) }
             } finally {
                 connection.close()
-                connectionDirectory.remove(connection)
+                connectionDirectory.remove(connection.id)
                 logger.info { "Session closed for: ${id}" }
             }
         }
@@ -114,13 +126,14 @@ abstract class AbstractRelayServer(
         var messageDelivered = false
 
         try {
-            val connection = connectionDirectory.get(to)
+            val connectionEntry = connectionDirectory.get(to)
 
-            if (connection == null) {
+            if (connectionEntry == null) {
                 logger.info { "$prefix no connection to receiver" }
-            } else if (!connection.isReady()) {
-                logger.info { "$prefix Removing closed connection for receiver" }
+            } else if(connectionEntry.address != address) {
+                TODO("Implement cross server message delivery")
             } else {
+                val connection = connectionEntry.connection
                 logger.info { "$prefix Delivering ${envelope.message.bytes.size} bytes" }
                 connection.writeSizedByteArray(encodePayload(connection.publicKey, envelope))
                 messageDelivered = true

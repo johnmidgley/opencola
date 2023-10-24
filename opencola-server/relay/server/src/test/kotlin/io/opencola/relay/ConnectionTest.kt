@@ -6,11 +6,9 @@ import io.opencola.security.generateKeyPair
 import io.opencola.relay.client.RelayClient
 import io.opencola.relay.client.v1.WebSocketClient as WebSocketClientV1
 import io.opencola.relay.client.v2.WebSocketClient as WebSocketClientV2
-import io.opencola.relay.common.defaultOCRPort
 import io.opencola.relay.common.State
 import io.opencola.relay.common.message.v2.MessageStorageKey
 import io.opencola.relay.server.RelayServer
-import io.opencola.relay.server.startWebServer
 import io.opencola.util.append
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
@@ -441,7 +439,7 @@ class ConnectionTest {
     // @Test
     private fun testLatency(clientType: ClientType) {
         runBlocking {
-            val server = startWebServer(defaultOCRPort)
+            val server = RelayServer().also { it.start() }
             val client0 = getClient(
                 clientType,
                 "client0",

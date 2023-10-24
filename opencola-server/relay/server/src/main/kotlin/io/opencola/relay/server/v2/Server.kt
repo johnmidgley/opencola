@@ -11,10 +11,11 @@ import io.opencola.relay.server.AbstractRelayServer
 import io.opencola.security.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
+import java.net.URI
 import java.security.PublicKey
 
-abstract class Server(numChallengeBytes: Int = 32, numSymmetricKeyBytes: Int = 32, messageStore: MessageStore = MemoryMessageStore()) :
-    AbstractRelayServer(numChallengeBytes, numSymmetricKeyBytes, messageStore) {
+abstract class Server(address: URI, numChallengeBytes: Int = 32, numSymmetricKeyBytes: Int = 32, messageStore: MessageStore = MemoryMessageStore()) :
+    AbstractRelayServer(address,  numChallengeBytes, numSymmetricKeyBytes, messageStore) {
     override suspend fun authenticate(socketSession: SocketSession): PublicKey?{
         try {
             logger.debug { "Sending server identity" }
