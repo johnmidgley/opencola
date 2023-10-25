@@ -1,11 +1,11 @@
 package io.opencola.relay.server.v2
 
 import io.opencola.model.Id
+import io.opencola.relay.common.connection.ConnectionDirectory
 import io.opencola.relay.common.connection.SocketSession
 import io.opencola.relay.common.message.Envelope
 import io.opencola.relay.common.message.v2.EnvelopeHeader
 import io.opencola.relay.common.message.v2.*
-import io.opencola.relay.common.message.v2.store.MemoryMessageStore
 import io.opencola.relay.common.message.v2.store.MessageStore
 import io.opencola.relay.server.AbstractRelayServer
 import io.opencola.security.*
@@ -14,9 +14,15 @@ import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import java.net.URI
 import java.security.PublicKey
 
-abstract class Server(address: URI, numChallengeBytes: Int = 32, numSymmetricKeyBytes: Int = 32, messageStore: MessageStore = MemoryMessageStore()) :
-    AbstractRelayServer(address,  numChallengeBytes, numSymmetricKeyBytes, messageStore) {
-    override suspend fun authenticate(socketSession: SocketSession): PublicKey?{
+abstract class Server(
+    connectionDirectory: ConnectionDirectory,
+    messageStore: MessageStore?,
+    address: URI,
+    numChallengeBytes: Int = 32,
+    numSymmetricKeyBytes: Int = 32,
+) :
+    AbstractRelayServer(connectionDirectory, messageStore, address, numChallengeBytes, numSymmetricKeyBytes) {
+    override suspend fun authenticate(socketSession: SocketSession): PublicKey? {
         try {
             logger.debug { "Sending server identity" }
             // TODO: Figure out how to publish this key so client can ensure server is trusted
@@ -35,7 +41,7 @@ abstract class Server(address: URI, numChallengeBytes: Int = 32, numSymmetricKey
             val clientPublicKey = clientIdentity.publicKey
             val clientId = Id.ofPublicKey(clientPublicKey)
             logger.info { "Authenticating $clientId" }
-            if(!isAuthorized(clientPublicKey))
+            if (!isAuthorized(clientPublicKey))
                 throw RuntimeException("$clientId is not authorized")
 
             logger.debug { "Writing client challenge" }
@@ -44,7 +50,8 @@ abstract class Server(address: URI, numChallengeBytes: Int = 32, numSymmetricKey
 
             logger.debug { "Reading challenge response" }
             val encryptedChallengeResponse = EncryptedBytes.decodeProto(socketSession.readSizedByteArray())
-            val clientChallengeResponse = ChallengeResponse.decodeProto(decrypt(serverKeyPair.private, encryptedChallengeResponse))
+            val clientChallengeResponse =
+                ChallengeResponse.decodeProto(decrypt(serverKeyPair.private, encryptedChallengeResponse))
 
             val status = if (
                 clientChallengeResponse.signature.algorithm == DEFAULT_SIGNATURE_ALGO &&

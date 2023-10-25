@@ -6,7 +6,7 @@ import mu.KotlinLogging
 import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
 
-class InMemoryConnectionDirectory(val localUri: URI) : ConnectionDirectory {
+class MemoryConnectionDirectory(val localUri: URI) : ConnectionDirectory {
     private val logger = KotlinLogging.logger("InMemoryConnectionDirectory")
     private val connections = ConcurrentHashMap<Id, ConnectionEntry>()
 
@@ -17,7 +17,7 @@ class InMemoryConnectionDirectory(val localUri: URI) : ConnectionDirectory {
     override fun get(id: Id): ConnectionEntry? {
         val entry = connections[id] ?: return null
 
-        if (!runBlocking { entry.connection.isReady() }) {
+        if (!runBlocking { entry.connection!!.isReady() }) {
             logger.info { "Removing not ready connection to $id" }
             connections.remove(id)
             return null
@@ -32,12 +32,12 @@ class InMemoryConnectionDirectory(val localUri: URI) : ConnectionDirectory {
 
     override fun closeAll() {
         runBlocking {
-            connections.values.forEach { it.connection.close() }
+            connections.values.forEach { it.connection!!.close() }
             connections.clear()
         }
     }
 
-    suspend fun states(): List<Pair<String, Boolean>> {
-        return connections.map { Pair(it.key.toString(), it.value.connection.isReady()) }
+    override fun getLocalConnections(): Sequence<ConnectionEntry> {
+        return connections.values.asSequence()
     }
 }

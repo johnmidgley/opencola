@@ -10,10 +10,14 @@ import java.security.PublicKey
 
 typealias MessageHandler = suspend (ByteArray) -> Unit
 
-class Connection(val publicKey: PublicKey, private val socketSession: SocketSession) {
+class Connection(
+    val publicKey: PublicKey,
+    private val socketSession: SocketSession,
+    val onClose: (Connection) -> Unit
+) {
     val id = Id.ofPublicKey(publicKey)
     private val logger = KotlinLogging.logger("Connection[$id]")
-    private var state = Initialized
+    var state = Initialized
     private var listenJob: Job? = null
 
     suspend fun isReady(): Boolean {
@@ -21,12 +25,13 @@ class Connection(val publicKey: PublicKey, private val socketSession: SocketSess
     }
 
     private suspend fun isReadyOrThrow() {
-        if(!isReady()){
+        if (!isReady()) {
+            close()
             throw IllegalStateException("Connection is not ready")
         }
     }
 
-    private suspend fun readSizedByteArray() : ByteArray {
+    private suspend fun readSizedByteArray(): ByteArray {
         isReadyOrThrow()
         return socketSession.readSizedByteArray()
     }
@@ -41,11 +46,13 @@ class Connection(val publicKey: PublicKey, private val socketSession: SocketSess
         socketSession.close()
         listenJob?.cancel()
         listenJob = null
+        onClose(this)
+
         logger.debug { "Closed" }
     }
 
     suspend fun listen(messageHandler: MessageHandler) = coroutineScope {
-        if(state != Initialized)
+        if (state != Initialized)
             throw IllegalStateException("Connection is already listening")
 
         state = Opening
@@ -58,16 +65,16 @@ class Connection(val publicKey: PublicKey, private val socketSession: SocketSess
                     messageHandler(readSizedByteArray())
                 } catch (e: CancellationException) {
                     logger.debug { "Cancelled" }
-                    close()
                     break
                 } catch (e: ClosedReceiveChannelException) {
                     logger.debug { "Socket Closed" }
-                    close()
                     break
                 } catch (e: Exception) {
                     logger.error { "$e" }
                 }
             }
+
+            close()
         }
     }
 }

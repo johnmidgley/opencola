@@ -1,6 +1,7 @@
 package io.opencola.relay.server.v1
 
 import io.opencola.model.Id
+import io.opencola.relay.common.connection.MemoryConnectionDirectory
 import io.opencola.serialization.codecs.IntByteArrayCodec
 import io.opencola.relay.common.connection.SocketSession
 import io.opencola.relay.common.message.Envelope
@@ -13,14 +14,17 @@ import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import java.net.URI
 import java.security.PublicKey
 
-abstract class Server(address: URI, numChallengeBytes: Int = 32) : AbstractRelayServer(address, numChallengeBytes){
+abstract class Server(
+    address: URI,
+    numChallengeBytes: Int = 32
+) : AbstractRelayServer(MemoryConnectionDirectory(address), null, address, numChallengeBytes) {
     override suspend fun authenticate(socketSession: SocketSession): PublicKey? {
         try {
             logger.debug { "Authenticating" }
             val encodedPublicKey = socketSession.readSizedByteArray()
             val publicKey = publicKeyFromBytes(encodedPublicKey)
 
-            logger.debug {"Received public key: ${Id.ofPublicKey(publicKey)}"}
+            logger.debug { "Received public key: ${Id.ofPublicKey(publicKey)}" }
 
             // Send challenge
             logger.debug { "Sending challenge" }
@@ -42,7 +46,7 @@ abstract class Server(address: URI, numChallengeBytes: Int = 32) : AbstractRelay
             // Let job cancellation fall through
         } catch (e: ClosedReceiveChannelException) {
             // Don't bother logging on closed connections
-        }  catch (e: Exception) {
+        } catch (e: Exception) {
             logger.warn { "Client failed to authenticate: $e" }
             socketSession.close()
         }

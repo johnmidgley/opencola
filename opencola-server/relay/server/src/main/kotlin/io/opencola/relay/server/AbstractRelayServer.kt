@@ -1,10 +1,8 @@
 package io.opencola.relay.server
 
 import io.opencola.model.Id
-import io.opencola.relay.common.connection.Connection
-import io.opencola.relay.common.connection.SocketSession
 import io.opencola.relay.common.State.*
-import io.opencola.relay.common.connection.InMemoryConnectionDirectory
+import io.opencola.relay.common.connection.*
 import io.opencola.relay.common.message.*
 import io.opencola.relay.common.message.v2.ControlMessage
 import io.opencola.relay.common.message.v2.ControlMessageType
@@ -22,12 +20,12 @@ import java.security.PublicKey
 import java.security.SecureRandom
 
 abstract class AbstractRelayServer(
+    private val connectionDirectory: ConnectionDirectory,
+    private val messageStore: MessageStore? = null,
     val address: URI,
     protected val numChallengeBytes: Int = 32,
-    protected val numSymmetricKeyBytes: Int = 32,
-    private val messageStore: MessageStore? = null
+    protected val numSymmetricKeyBytes: Int = 32
 ) {
-    private val connectionDirectory = InMemoryConnectionDirectory(address)
     protected val serverKeyPair = generateKeyPair()
     protected val logger = KotlinLogging.logger("RelayServer")
     protected val openMutex = Mutex(true)
@@ -43,8 +41,8 @@ abstract class AbstractRelayServer(
         openMutex.withLock { }
     }
 
-    suspend fun connectionStates(): List<Pair<String, Boolean>> {
-        return connectionDirectory.states()
+    fun localConnections(): Sequence<ConnectionEntry> {
+        return connectionDirectory.getLocalConnections()
     }
 
     fun getUsage(): Sequence<Usage> {
@@ -74,35 +72,28 @@ abstract class AbstractRelayServer(
         return Envelope.from(serverKeyPair.private, to, null, noPendingMessagesMessage)
     }
 
-    private suspend fun sendStoredMessages(id: Id) {
+    private suspend fun sendStoredMessages(connection: Connection) {
         if (messageStore == null) return
-        val connectionEntry = connectionDirectory.get(id) ?: return
 
-        if(connectionEntry.address != address) {
-            TODO("Implement cross server message delivery")
-        }
-
-        val connection = connectionEntry.connection
-
-        messageStore.consumeMessages(id).forEach {
+        messageStore.consumeMessages(connection.id).forEach {
             val recipient = Recipient(connection.publicKey, it.secretKey)
             val envelope = Envelope(recipient, it.storageKey, it.message)
             connection.writeSizedByteArray(encodePayload(connection.publicKey, envelope))
         }
 
-        logger.info { "Queue empty for: $id" }
+        logger.info { "Queue empty for: $connection.id" }
         connection.writeSizedByteArray(encodePayload(connection.publicKey, getQueueEmptyEnvelope(connection.publicKey)))
     }
 
     suspend fun handleSession(socketSession: SocketSession) {
         authenticate(socketSession)?.let { publicKey ->
-            val connection = Connection(publicKey, socketSession)
+            val connection = Connection(publicKey, socketSession) { connectionDirectory.remove(it.id) }
             val id = connection.id
             logger.info { "Session authenticated for: ${id}" }
             connectionDirectory.add(connection)
 
             try {
-                sendStoredMessages(id)
+                sendStoredMessages(connection)
 
                 // TODO: Add garbage collection on inactive connections?
                 connection.listen { payload -> handleMessage(publicKey, payload) }
@@ -130,10 +121,10 @@ abstract class AbstractRelayServer(
 
             if (connectionEntry == null) {
                 logger.info { "$prefix no connection to receiver" }
-            } else if(connectionEntry.address != address) {
+            } else if (connectionEntry.connection == null || connectionEntry.address != address) {
                 TODO("Implement cross server message delivery")
             } else {
-                val connection = connectionEntry.connection
+                val connection = connectionEntry.connection!!
                 logger.info { "$prefix Delivering ${envelope.message.bytes.size} bytes" }
                 connection.writeSizedByteArray(encodePayload(connection.publicKey, envelope))
                 messageDelivered = true

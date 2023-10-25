@@ -4,7 +4,9 @@ import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.websocket.*
+import io.opencola.relay.common.connection.MemoryConnectionDirectory
 import io.opencola.relay.common.defaultOCRPort
+import io.opencola.relay.common.message.v2.store.MemoryMessageStore
 import io.opencola.relay.server.plugins.configureRouting
 import java.net.URI
 import io.opencola.relay.server.v1.WebSocketRelayServer as WebSocketRelayServerV1
@@ -41,5 +43,8 @@ fun startWebServer(
 
 fun main() {
     val address = URI("ocr://0.0.0.0:$defaultOCRPort")
-    startWebServer(WebSocketRelayServerV1(address), WebSocketRelayServerV2(address) , wait = true)
+    startWebServer(
+        WebSocketRelayServerV1(address),
+        WebSocketRelayServerV2(MemoryConnectionDirectory(address), MemoryMessageStore(), address),
+        wait = true)
 }
