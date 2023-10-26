@@ -196,6 +196,11 @@ fun Application.configureRouting(app: app) {
                 handleGetActionsCall(call, expectPersona(call).personaId, app.inject())
             }
 
+            head("/feed") {
+                // Placeholder for feed head request that can be used to poll for updates
+                // Also useful to figure out if the server has started
+            }
+
             get("/feed") {
                 val personaIds = getPersona(call)?.let { setOf(it.personaId) }
                     ?: app.inject<AddressBook>()
