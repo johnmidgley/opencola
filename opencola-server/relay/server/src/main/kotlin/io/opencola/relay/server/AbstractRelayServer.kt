@@ -16,17 +16,17 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import mu.KotlinLogging
 import java.net.URI
+import java.security.KeyPair
 import java.security.PublicKey
 import java.security.SecureRandom
 
 abstract class AbstractRelayServer(
-    private val connectionDirectory: ConnectionDirectory,
-    private val messageStore: MessageStore? = null,
-    val address: URI,
-    protected val numChallengeBytes: Int = 32,
-    protected val numSymmetricKeyBytes: Int = 32
+    protected val config: Config,
+    protected val connectionDirectory: ConnectionDirectory,
+    protected val messageStore: MessageStore? = null,
 ) {
-    protected val serverKeyPair = generateKeyPair()
+    val address = connectionDirectory.localAddress
+    protected val serverKeyPair: KeyPair
     protected val logger = KotlinLogging.logger("RelayServer")
     protected val openMutex = Mutex(true)
     protected val random = SecureRandom()
@@ -35,6 +35,7 @@ abstract class AbstractRelayServer(
 
     init {
         require(address.scheme == "ocr") { "Invalid scheme: ${address.scheme}" }
+        serverKeyPair = config.security.keyPair
     }
 
     suspend fun waitUntilOpen() {
@@ -72,7 +73,7 @@ abstract class AbstractRelayServer(
         return Envelope.from(serverKeyPair.private, to, null, noPendingMessagesMessage)
     }
 
-    private suspend fun sendStoredMessages(connection: Connection) {
+    protected suspend fun sendStoredMessages(connection: Connection) {
         if (messageStore == null) return
 
         messageStore.consumeMessages(connection.id).forEach {
@@ -83,6 +84,18 @@ abstract class AbstractRelayServer(
 
         logger.info { "Queue empty for: $connection.id" }
         connection.writeSizedByteArray(encodePayload(connection.publicKey, getQueueEmptyEnvelope(connection.publicKey)))
+    }
+
+    suspend fun sendStoredMessages(id: Id) {
+        if (messageStore == null) return
+        val connectionEntry = connectionDirectory.get(id)
+
+        if (connectionEntry?.connection == null) {
+            connectionDirectory.remove(id)
+            logger.warn { "Call to sendStoredMessages for non-local id: $id - removed from directory" }
+        } else {
+            sendStoredMessages(connectionEntry.connection!!)
+        }
     }
 
     suspend fun handleSession(socketSession: SocketSession) {
@@ -107,60 +120,115 @@ abstract class AbstractRelayServer(
 
     abstract suspend fun open()
 
-    private suspend fun deliverMessage(
-        from: Id,
-        to: Id,
+    protected fun storeMessage(from: Id, to: Id, envelope: Envelope) {
+        try {
+            if (envelope.messageStorageKey != null) {
+                val recipient = envelope.recipients.single { Id.ofPublicKey(it.publicKey) == to }
+                messageStore?.addMessage(
+                    from,
+                    to,
+                    envelope.messageStorageKey!!,
+                    recipient.messageSecretKey,
+                    envelope.message
+                )
+            }
+        } catch (e: Exception) {
+            logger.error { "Error while storing message - from: $from to: $to e: $e" }
+        }
+    }
+
+    open suspend fun triggerRemoteDelivery(serverAddress: URI, to: Id) {
+        throw NotImplementedError()
+    }
+
+    open suspend fun forwardMessage(
+        serverAddress: URI,
+        from: PublicKey,
+        to: List<Id>,
         envelope: Envelope,
+        payload: ByteArray
     ) {
-        require(from != to) { "Attempt to deliver message to self" }
+        throw NotImplementedError()
+    }
+
+    private suspend fun deliverMessage(from: Id, to: RecipientConnection, envelope: Envelope) {
+        require(from != to.recipient.id()) { "Attempt to deliver message to self" }
         val prefix = "from=$from, to=$to:"
         var messageDelivered = false
+        val connectionEntry = to.connectionEntry
 
         try {
-            val connectionEntry = connectionDirectory.get(to)
-
             if (connectionEntry == null) {
                 logger.info { "$prefix no connection to receiver" }
-            } else if (connectionEntry.connection == null || connectionEntry.address != address) {
-                TODO("Implement cross server message delivery")
-            } else {
+            } else if (connectionEntry.connection != null) {
                 val connection = connectionEntry.connection!!
                 logger.info { "$prefix Delivering ${envelope.message.bytes.size} bytes" }
                 connection.writeSizedByteArray(encodePayload(connection.publicKey, envelope))
                 messageDelivered = true
+            } else {
+                // This shouldn't happen. If there is a connectionEntry but no connection, then
+                // the message should have been delivered remotely.
+                to.recipient.id().let {
+                    connectionDirectory.remove(it)
+                    logger.error { "No connection for id ${it}: Removed connection" }
+                }
             }
         } catch (e: Exception) {
             logger.error { "$prefix Error while handling message: $e" }
         } finally {
-            try {
-                if (!messageDelivered && envelope.messageStorageKey != null) {
-                    val recipient = envelope.recipients.single { Id.ofPublicKey(it.publicKey) == to }
-                    messageStore?.addMessage(
-                        from,
-                        to,
-                        envelope.messageStorageKey!!,
-                        recipient.messageSecretKey,
-                        envelope.message
-                    )
-                }
-            } catch (e: Exception) {
-                logger.error { "Error while storing message - from: $from to: $to e: $e" }
+            if (!messageDelivered) {
+                storeMessage(from, to.recipient.id(), envelope)
             }
         }
     }
 
-    private suspend fun handleMessage(from: PublicKey, payload: ByteArray) {
+    private suspend fun deliverLocalMessages(from: Id, to: List<RecipientConnection>, envelope: Envelope) {
+        to.forEach {
+            try {
+                deliverMessage(from, it, envelope)
+            } catch (e: Exception) {
+                logger.error { "Error while delivering message from: $from to: $it - $e" }
+            }
+        }
+    }
+
+    private class RecipientConnection(val recipient: Recipient, val connectionEntry: ConnectionEntry?)
+
+    private suspend fun deliverRemoteMessages(
+        from: PublicKey,
+        to: List<RecipientConnection>,
+        envelope: Envelope,
+        payload: ByteArray
+    ) {
+        require(to.all { it.connectionEntry?.address != null }) { "[deliverRemoteMessages] Invalid null address" }
+
+        to
+            .groupBy { it.connectionEntry!!.address }
+            .forEach { (uri, recipients) ->
+                forwardMessage(
+                    uri,
+                    from,
+                    recipients.map { it.recipient.id() },
+                    envelope,
+                    payload
+                )
+            }
+    }
+
+    protected suspend fun handleMessage(from: PublicKey, payload: ByteArray, deliverRemoteMessages: Boolean = true) {
         val fromId = Id.ofPublicKey(from)
+
         try {
             decodePayload(from, payload).let { envelope ->
                 logger.info { "Handling message from: $fromId to ${envelope.recipients.size} recipients" }
-                envelope.recipients.forEach { recipient ->
-                    try {
-                        deliverMessage(fromId, Id.ofPublicKey(recipient.publicKey), envelope)
-                    } catch (e: Exception) {
-                        logger.error { "Error while delivering message from: $fromId to: ${recipient.id()} - $e" }
-                    }
-                }
+                val (localRecipients, remoteRecipients) = envelope.recipients
+                    .map { RecipientConnection(it, connectionDirectory.get(it.id())) }
+                    .partition { it.connectionEntry == null || it.connectionEntry.address == address }
+
+                deliverLocalMessages(fromId, localRecipients, envelope)
+
+                if(deliverRemoteMessages)
+                    deliverRemoteMessages(from, remoteRecipients, envelope, payload)
             }
         } catch (e: Exception) {
             logger.error { "Error while handling message from $fromId: $e" }

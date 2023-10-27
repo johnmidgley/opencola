@@ -4,12 +4,12 @@ import io.opencola.model.Id
 import org.jetbrains.exposed.sql.Database
 import java.net.URI
 
-class ExposedConnectionDirectory(database: Database, val localUri: URI) : ConnectionDirectory {
-    private val localDirectory = MemoryConnectionDirectory(localUri)
+class ExposedConnectionDirectory(database: Database, override val localAddress: URI) : ConnectionDirectory {
+    private val localDirectory = MemoryConnectionDirectory(localAddress)
     private val connectionsDB = ConnectionsDB(database)
 
     override fun add(connection: Connection): ConnectionEntry {
-        connectionsDB.addConnection(connection.id, localUri, System.currentTimeMillis())
+        connectionsDB.addConnection(connection.id, localAddress, System.currentTimeMillis())
         return localDirectory.add(connection)
     }
 

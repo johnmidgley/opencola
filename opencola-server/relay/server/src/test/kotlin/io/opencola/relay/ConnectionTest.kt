@@ -4,8 +4,6 @@ import io.opencola.io.StdoutMonitor
 import io.opencola.relay.client.AbstractClient
 import io.opencola.security.generateKeyPair
 import io.opencola.relay.client.RelayClient
-import io.opencola.relay.client.v1.WebSocketClient as WebSocketClientV1
-import io.opencola.relay.client.v2.WebSocketClient as WebSocketClientV2
 import io.opencola.relay.common.State
 import io.opencola.relay.common.message.v2.MessageStorageKey
 import io.opencola.relay.server.RelayServer
@@ -14,7 +12,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import java.net.ConnectException
 import java.net.URI
-import java.security.KeyPair
 import java.security.PublicKey
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -23,22 +20,6 @@ import kotlin.math.abs
 import kotlin.test.*
 
 class ConnectionTest {
-    private val localRelayServerUri = URI("ocr://0.0.0.0")
-    private val prodRelayServerUri = URI("ocr://relay.opencola.net")
-
-    private fun getClient(
-        clientType: ClientType,
-        name: String,
-        keyPair: KeyPair = generateKeyPair(),
-        requestTimeoutInMilliseconds: Long = 5000,
-        relayServerUri: URI = localRelayServerUri,
-    ): AbstractClient {
-        return when (clientType) {
-            ClientType.V1 -> WebSocketClientV1(relayServerUri, keyPair, name, requestTimeoutInMilliseconds)
-            ClientType.V2 -> WebSocketClientV2(relayServerUri, keyPair, name, requestTimeoutInMilliseconds)
-        }
-    }
-
     private suspend fun open(
         client: RelayClient,
         messageHandler: suspend (PublicKey, ByteArray) -> Unit = { _, _ -> println("Unhandled request") }

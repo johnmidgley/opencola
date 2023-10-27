@@ -6,12 +6,12 @@ import mu.KotlinLogging
 import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
 
-class MemoryConnectionDirectory(val localUri: URI) : ConnectionDirectory {
+class MemoryConnectionDirectory(override val localAddress: URI) : ConnectionDirectory {
     private val logger = KotlinLogging.logger("InMemoryConnectionDirectory")
     private val connections = ConcurrentHashMap<Id, ConnectionEntry>()
 
     override fun add(connection: Connection): ConnectionEntry {
-        return ConnectionEntry(localUri, connection).also { connections[connection.id] = it }
+        return ConnectionEntry(localAddress, connection).also { connections[connection.id] = it }
     }
 
     override fun get(id: Id): ConnectionEntry? {

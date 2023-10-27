@@ -8,6 +8,7 @@ import io.opencola.relay.common.message.Envelope
 import io.opencola.relay.common.message.Recipient
 import io.opencola.relay.common.message.v1.PayloadEnvelope
 import io.opencola.relay.server.AbstractRelayServer
+import io.opencola.relay.server.Config
 import io.opencola.security.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
@@ -15,9 +16,9 @@ import java.net.URI
 import java.security.PublicKey
 
 abstract class Server(
+    config: Config,
     address: URI,
-    numChallengeBytes: Int = 32
-) : AbstractRelayServer(MemoryConnectionDirectory(address), null, address, numChallengeBytes) {
+) : AbstractRelayServer(config, MemoryConnectionDirectory(address), null) {
     override suspend fun authenticate(socketSession: SocketSession): PublicKey? {
         try {
             logger.debug { "Authenticating" }
@@ -28,7 +29,7 @@ abstract class Server(
 
             // Send challenge
             logger.debug { "Sending challenge" }
-            val challenge = ByteArray(numChallengeBytes).also { random.nextBytes(it) }
+            val challenge = ByteArray(config.security.numChallengeBytes).also { random.nextBytes(it) }
             socketSession.writeSizedByteArray(challenge)
 
             // Read signed challenge

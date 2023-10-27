@@ -10,6 +10,7 @@ data class ConnectionEntry(
 )
 
 interface ConnectionDirectory {
+    val localAddress: URI
     fun add(connection: Connection): ConnectionEntry
     fun get(id: Id): ConnectionEntry?
     fun getLocalConnections(): Sequence<ConnectionEntry>

@@ -19,6 +19,7 @@ dependencies {
     implementation(project(":core:search"))
     implementation(project(":core:network"))
     implementation(project(":core:application"))
+    implementation(project(":core:util"))
     implementation(project(":relay:common"))
     implementation(project(":relay:server"))
     implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")

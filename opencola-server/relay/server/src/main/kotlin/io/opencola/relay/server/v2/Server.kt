@@ -1,5 +1,8 @@
 package io.opencola.relay.server.v2
 
+import io.ktor.client.*
+import io.ktor.client.request.*
+import io.ktor.http.*
 import io.opencola.model.Id
 import io.opencola.relay.common.connection.ConnectionDirectory
 import io.opencola.relay.common.connection.SocketSession
@@ -8,20 +11,23 @@ import io.opencola.relay.common.message.v2.EnvelopeHeader
 import io.opencola.relay.common.message.v2.*
 import io.opencola.relay.common.message.v2.store.MessageStore
 import io.opencola.relay.server.AbstractRelayServer
+import io.opencola.relay.server.Config
 import io.opencola.security.*
+import io.opencola.util.Base58
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
+import java.net.ConnectException
 import java.net.URI
 import java.security.PublicKey
 
 abstract class Server(
+    config: Config,
     connectionDirectory: ConnectionDirectory,
     messageStore: MessageStore?,
-    address: URI,
-    numChallengeBytes: Int = 32,
-    numSymmetricKeyBytes: Int = 32,
 ) :
-    AbstractRelayServer(connectionDirectory, messageStore, address, numChallengeBytes, numSymmetricKeyBytes) {
+    AbstractRelayServer(config, connectionDirectory, messageStore) {
+    private val httpClient = HttpClient()
+
     override suspend fun authenticate(socketSession: SocketSession): PublicKey? {
         try {
             logger.debug { "Sending server identity" }
@@ -45,7 +51,8 @@ abstract class Server(
                 throw RuntimeException("$clientId is not authorized")
 
             logger.debug { "Writing client challenge" }
-            val clientChallenge = ChallengeMessage(DEFAULT_SIGNATURE_ALGO, random.nextBytes(numChallengeBytes))
+            val clientChallenge =
+                ChallengeMessage(DEFAULT_SIGNATURE_ALGO, random.nextBytes(config.security.numChallengeBytes))
             socketSession.writeSizedByteArray(clientChallenge.encodeProto())
 
             logger.debug { "Reading challenge response" }
@@ -88,5 +95,67 @@ abstract class Server(
         val envelopeV2 = PayloadEnvelope.decodeProto(payload)
         val envelopeHeader = EnvelopeHeader.decryptAndVerifySignature(serverKeyPair.private, from, envelopeV2.header)
         return Envelope(envelopeHeader.recipients, envelopeHeader.messageStorageKey, envelopeV2.message)
+    }
+
+    // TODO: to should be a list of ids
+    // TODO: Does this need to be visible?
+    override suspend fun triggerRemoteDelivery(serverAddress: URI, to: Id) {
+        try {
+            require(serverAddress != address) { "Attempt to trigger remote delivery to self" }
+            httpClient.post(Url("http://${serverAddress.host}:${serverAddress.port}/v2/deliver/$to"))
+        } catch (e: ConnectException) {
+            connectionDirectory.remove(to)
+            logger.warn { "Unable to connect to server $serverAddress: Removed $to from directory" }
+        } catch (e: Exception) {
+            logger.error { "Error while notifying remote server - to: $to e: $e" }
+        }
+    }
+
+    override suspend fun forwardMessage(
+        serverAddress: URI,
+        from: PublicKey,
+        to: List<Id>,
+        envelope: Envelope,
+        payload: ByteArray
+    ) {
+        val fromId = Id.ofPublicKey(from)
+        val storeMessages = {
+            logger.info { "Storing message from: $fromId to: $to" }
+            to.forEach {
+                storeMessage(fromId, it, envelope)
+            }
+        }
+
+        try {
+            require(serverAddress != address) { "Attempt to trigger remote delivery to self" }
+            val fromEncoded = Base58.encode(from.encoded)
+
+            val status =
+                httpClient.post(Url("http://${serverAddress.host}:${serverAddress.port}/v2/forward/$fromEncoded")) {
+                    setBody(payload)
+                }.status
+            if (status != HttpStatusCode.Accepted) {
+                logger.error { "Error while forwarding message from: $fromId to: $to status: $status" }
+                storeMessages()
+            }
+        } catch (e: Exception) {
+            if (e is ConnectException) {
+                // Failed to connect, so assume the server is down and remove recipients from directory
+                to.forEach {
+                    connectionDirectory.remove(it)
+                    logger.warn { "Unable to connect to server $serverAddress: Removed $to from directory" }
+                    // TODO: What if this was a temporary partition?
+                }
+            } else {
+                logger.error { "Error while forwarding message from: $fromId to: $to e: ${e.message}" }
+            }
+
+            // Failed to send, so store the message for later delivery
+            storeMessages()
+        }
+    }
+
+    suspend fun handleForwardedMessage(from: PublicKey, payload: ByteArray) {
+        handleMessage(from, payload, deliverRemoteMessages = false)
     }
 }

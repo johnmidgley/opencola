@@ -29,6 +29,7 @@ dependencies {
     implementation(project(":core:security"))
     implementation(project(":core:serialization"))
     implementation(project(":core:model"))
+    implementation(project(":core:util"))
     implementation(project(":relay:common"))
     implementation(project(":relay:client"))
     implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
@@ -48,6 +49,7 @@ dependencies {
 
     testImplementation(project(":core:util"))
     testImplementation(project(":core:io"))
+    testImplementation(project(":core:storage"))
     testImplementation(project(":test"))
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVersion")

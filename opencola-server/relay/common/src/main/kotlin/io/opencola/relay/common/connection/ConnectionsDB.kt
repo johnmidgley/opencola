@@ -8,11 +8,11 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.net.URI
 
-class ConnectionsDB(val database: Database) {
+class ConnectionsDB(private val database: Database) {
     private val logger = KotlinLogging.logger("ConnectionsDB")
 
     class Connections(name: String = "Connections") : LongIdTable(name) {
-        val connectionId = binary("from", 32).uniqueIndex()
+        val from = binary("from", 32).uniqueIndex()
         val address = varchar("address", 255)
         val connectTimeMilliseconds = long("connectTimeMilliseconds")
     }
@@ -28,7 +28,7 @@ class ConnectionsDB(val database: Database) {
     fun insertConnection(id: Id, address: URI, connectTimeMilliseconds: Long) {
         transaction(database) {
             connections.insert {
-                it[connectionId] = id.encoded()
+                it[from] = id.encoded()
                 it[this.address] = address.toString()
                 it[this.connectTimeMilliseconds] = connectTimeMilliseconds
             }
@@ -37,7 +37,7 @@ class ConnectionsDB(val database: Database) {
 
     fun updateConnection(id: Id, address: URI, connectTimeMilliseconds: Long) {
         transaction(database) {
-            connections.update({ connections.connectionId eq id.encoded() }) {
+            connections.update({ connections.from eq id.encoded() }) {
                 it[this.address] = address.toString()
                 it[this.connectTimeMilliseconds] = connectTimeMilliseconds
             }
@@ -55,7 +55,7 @@ class ConnectionsDB(val database: Database) {
 
     fun getConnection(id: Id): ConnectionEntry? {
         return transaction(database) {
-            connections.select { connections.connectionId eq id.encoded() }.firstOrNull()?.let {
+            connections.select { connections.from eq id.encoded() }.firstOrNull()?.let {
                 ConnectionEntry(
                     URI(it[connections.address]),
                     null,
@@ -67,7 +67,7 @@ class ConnectionsDB(val database: Database) {
 
     fun deleteConnection(id: Id) {
         transaction(database) {
-            connections.deleteWhere { connections.connectionId eq id.encoded() }
+            connections.deleteWhere { connections.from eq id.encoded() }
         }
     }
 }

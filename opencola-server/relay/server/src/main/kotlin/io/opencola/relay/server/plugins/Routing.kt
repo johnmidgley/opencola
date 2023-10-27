@@ -1,13 +1,19 @@
 package io.opencola.relay.server.plugins
 
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
+import io.opencola.model.Id
 import io.opencola.relay.common.connection.ConnectionEntry
 import io.opencola.relay.common.connection.WebSocketSessionWrapper
 import io.opencola.relay.common.message.v2.store.Usage
+import io.opencola.security.publicKeyFromBytes
+import io.opencola.util.Base58
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import io.opencola.relay.server.v1.WebSocketRelayServer as WebSocketRelayServerV1
 import io.opencola.relay.server.v2.WebSocketRelayServer as WebSocketRelayServerV2
 
@@ -25,7 +31,10 @@ fun usageString(usages: Sequence<Usage>): String {
     return "Usage (${usages.count()})\n\n$usage"
 }
 
-fun Application.configureRouting(webSocketRelayServerV1: WebSocketRelayServerV1, webSocketRelayServerV2: WebSocketRelayServerV2) {
+fun Application.configureRouting(
+    webSocketRelayServerV1: WebSocketRelayServerV1,
+    webSocketRelayServerV2: WebSocketRelayServerV2
+) {
     routing {
         get("/") {
             call.respondText("OpenCola Relay Server (v1,v2)")
@@ -41,6 +50,23 @@ fun Application.configureRouting(webSocketRelayServerV1: WebSocketRelayServerV1,
 
         get("/v2/usage") {
             call.respondText(usageString(webSocketRelayServerV2.getUsage()))
+        }
+
+        post("/v2/deliver/{connection-id}") {
+            withContext(Dispatchers.IO) {
+                val id = call.parameters["connection-id"]!!
+                call.respond(HttpStatusCode.Accepted)
+                webSocketRelayServerV2.sendStoredMessages(Id.decode(id))
+            }
+        }
+
+        post("/v2/forward/{fromPublicKey}") {
+            withContext(Dispatchers.IO) {
+                val from = publicKeyFromBytes(Base58.decode(call.parameters["fromPublicKey"]!!))
+                val payload = call.receiveStream().readAllBytes()
+                call.respond(HttpStatusCode.Accepted)
+                webSocketRelayServerV2.handleForwardedMessage(from, payload)
+            }
         }
 
         webSocket("/relay") {
