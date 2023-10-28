@@ -20,6 +20,7 @@ class ExposedMessageStore(
 ) : MessageStore {
     private val logger = KotlinLogging.logger("ExposedMessageStore")
 
+    // TODO: Extract MessageDB
     class Messages(name: String = "Messages") : LongIdTable(name) {
         val from = binary("from", 32).index()
         val to = binary("to", 32).index()
@@ -82,7 +83,7 @@ class ExposedMessageStore(
         if (existingMessage == null) {
             // Add new message
             transaction(database) {
-                messages.insertAndGetId {
+                messages.insert {
                     it[this.from] = from.encoded()
                     it[this.to] = to.encoded()
                     it[this.storageKey] = messageStorageKeyEncoded
