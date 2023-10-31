@@ -10,6 +10,7 @@ import io.opencola.relay.common.message.Envelope
 import io.opencola.relay.common.message.v2.EnvelopeHeader
 import io.opencola.relay.common.message.v2.*
 import io.opencola.relay.common.message.v2.store.MessageStore
+import io.opencola.relay.common.policy.PolicyStore
 import io.opencola.relay.server.AbstractRelayServer
 import io.opencola.relay.server.Config
 import io.opencola.security.*
@@ -22,10 +23,11 @@ import java.security.PublicKey
 
 abstract class Server(
     config: Config,
+    policyStore: PolicyStore,
     connectionDirectory: ConnectionDirectory,
     messageStore: MessageStore?,
 ) :
-    AbstractRelayServer(config, connectionDirectory, messageStore) {
+    AbstractRelayServer(config, policyStore, connectionDirectory, messageStore) {
     private val httpClient = HttpClient()
 
     override suspend fun authenticate(socketSession: SocketSession): PublicKey? {

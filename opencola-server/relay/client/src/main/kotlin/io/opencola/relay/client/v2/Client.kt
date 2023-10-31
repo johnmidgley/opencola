@@ -12,13 +12,15 @@ import java.net.URI
 import java.security.KeyPair
 import java.security.PublicKey
 
+// TODO: Factor out configuration
 abstract class Client(
     uri: URI,
     keyPair: KeyPair,
     name: String? = null,
-    requestTimeoutMilliseconds: Long = 60000, // TODO: Make configurable
+    connectTimeoutMilliseconds: Long = 3000,
+    requestTimeoutMilliseconds: Long = 60000,
     retryPolicy: (Int) -> Long = retryExponentialBackoff(),
-) : AbstractClient(uri, keyPair, "$name", requestTimeoutMilliseconds, retryPolicy) {
+) : AbstractClient(uri, keyPair, "$name", connectTimeoutMilliseconds, requestTimeoutMilliseconds, retryPolicy) {
     override suspend fun authenticate(socketSession: SocketSession) {
         logger.info { "Authenticating" }
 

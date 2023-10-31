@@ -7,6 +7,7 @@ import io.ktor.server.websocket.*
 import io.opencola.relay.common.connection.MemoryConnectionDirectory
 import io.opencola.relay.common.defaultOCRPort
 import io.opencola.relay.common.message.v2.store.MemoryMessageStore
+import io.opencola.relay.common.policy.MemoryPolicyStore
 import io.opencola.relay.server.plugins.configureRouting
 import io.opencola.security.generateKeyPair
 import kotlinx.coroutines.launch
@@ -60,11 +61,15 @@ fun main() {
     // TODO: Pass in keypair
     val config = Config(SecurityConfig(generateKeyPair()))
     val address = URI("ocr://0.0.0.0:$defaultOCRPort")
+
+    // TODO: Add dependency injection
+    val policyStore = MemoryPolicyStore()
     val serverV1 = WebSocketRelayServerV1(config, address)
     val serverV2 = WebSocketRelayServerV2(
         config,
+        policyStore,
         MemoryConnectionDirectory(address),
-        MemoryMessageStore(),
+        MemoryMessageStore(policyStore),
     )
 
     startWebServer(serverV1, serverV2, wait = true)

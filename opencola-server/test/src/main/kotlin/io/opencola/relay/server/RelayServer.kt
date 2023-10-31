@@ -6,6 +6,8 @@ import io.opencola.relay.common.connection.MemoryConnectionDirectory
 import io.opencola.relay.common.defaultOCRPort
 import io.opencola.relay.common.message.v2.store.MemoryMessageStore
 import io.opencola.relay.common.message.v2.store.MessageStore
+import io.opencola.relay.common.policy.MemoryPolicyStore
+import io.opencola.relay.common.policy.PolicyStore
 import io.opencola.security.generateKeyPair
 import kotlinx.coroutines.runBlocking
 import java.net.URI
@@ -14,8 +16,9 @@ import io.opencola.relay.server.v2.WebSocketRelayServer as WebSocketRelayServerV
 
 class RelayServer(
     val address: URI = URI("ocr://0.0.0.0:$defaultOCRPort"),
+    policyStore: PolicyStore = MemoryPolicyStore(),
     connectionDirectory: ConnectionDirectory = MemoryConnectionDirectory(address),
-    messageStore: MessageStore = MemoryMessageStore()
+    messageStore: MessageStore = MemoryMessageStore(policyStore)
 ) {
     companion object {
         // This makes sure all RelayServer instances use the same keypair
@@ -25,7 +28,7 @@ class RelayServer(
 
     private val webSocketRelayServerV1 = WebSocketRelayServerV1(config, address)
     private val webSocketRelayServerV2 =
-        WebSocketRelayServerV2(config, connectionDirectory, messageStore)
+        WebSocketRelayServerV2(config, policyStore, connectionDirectory, messageStore)
     private var nettyApplicationEngine: NettyApplicationEngine? = null
 
     fun start() {
