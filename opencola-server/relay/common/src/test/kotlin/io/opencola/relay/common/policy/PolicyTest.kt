@@ -1,13 +1,34 @@
 package io.opencola.relay.common.policy
 
+import Policies
 import io.opencola.model.Id
+import io.opencola.storage.db.getPostgresDB
 import io.opencola.storage.newSQLiteDB
+import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.transactions.transaction
 import kotlin.test.*
 
 class PolicyTest {
+    private fun getPostgresDB(): Database {
+        val db = getPostgresDB("localhost", "opencola", "opencola", "test")
+
+        transaction(db) {
+            SchemaUtils.drop(UserPolicies) // Drop UserPolicies first because it refers to Policies
+            SchemaUtils.drop(Policies)
+        }
+
+        return db
+    }
+
+    fun getUserPolicyDB(name: String): UserPolicyDB {
+        // return UserPolicyDB(getPostgresDB())
+        return UserPolicyDB(newSQLiteDB("PolicyTest-$name"))
+    }
+
     @Test
     fun testPoliciesCRUD() {
-        val userPolicyDB = UserPolicyDB(newSQLiteDB("testPolicyDbCRUD"))
+        val userPolicyDB = getUserPolicyDB("testPoliciesCRUD")
         val authorityId = Id.new()
         val policyName = "testPolicy"
         val policy = Policy(
@@ -57,7 +78,7 @@ class PolicyTest {
 
     @Test
     fun testUserPoliciesCRUD() {
-        val userPolicyDB = UserPolicyDB(newSQLiteDB("testUserPolicyDbCRUD"))
+        val userPolicyDB = getUserPolicyDB("testUserPolicyDbCRUD")
         val authorityId = Id.new()
         val policyName = "testPolicy"
         val policy = Policy(
