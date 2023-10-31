@@ -7,6 +7,7 @@ import io.opencola.relay.common.connection.SocketSession
 import io.opencola.relay.common.message.Envelope
 import io.opencola.relay.common.message.Recipient
 import io.opencola.relay.common.message.v1.PayloadEnvelope
+import io.opencola.relay.common.policy.MemoryPolicyStore
 import io.opencola.relay.server.AbstractRelayServer
 import io.opencola.relay.server.Config
 import io.opencola.security.*
@@ -18,7 +19,7 @@ import java.security.PublicKey
 abstract class Server(
     config: Config,
     address: URI,
-) : AbstractRelayServer(config, MemoryConnectionDirectory(address), null) {
+) : AbstractRelayServer(config, MemoryPolicyStore(), MemoryConnectionDirectory(address), null) {
     override suspend fun authenticate(socketSession: SocketSession): PublicKey? {
         try {
             logger.debug { "Authenticating" }

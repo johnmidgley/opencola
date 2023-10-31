@@ -24,9 +24,10 @@ abstract class Client(
     uri: URI,
     keyPair: KeyPair,
     name: String? = null,
+    connectTimeoutMilliseconds: Long = 3000, // TODO: Make configurable
     requestTimeoutMilliseconds: Long = 60000, // TODO: Make configurable
     retryPolicy: (Int) -> Long = retryExponentialBackoff(),
-) : AbstractClient(uri, keyPair, name, requestTimeoutMilliseconds, retryPolicy) {
+) : AbstractClient(uri, keyPair, name, connectTimeoutMilliseconds, requestTimeoutMilliseconds, retryPolicy) {
 
     // Should only be called once, right after connection to server
     override suspend fun authenticate(socketSession: SocketSession) {

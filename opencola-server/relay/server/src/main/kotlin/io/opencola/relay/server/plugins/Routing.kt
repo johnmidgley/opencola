@@ -74,6 +74,7 @@ fun Application.configureRouting(
         }
 
         webSocket("/v2/relay") {
+            // TODO: Return proper errors (e.g. 401 when authentication fails)
             webSocketRelayServerV2.handleSession(WebSocketSessionWrapper(this))
         }
 

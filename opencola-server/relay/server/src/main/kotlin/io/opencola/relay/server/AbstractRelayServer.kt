@@ -10,6 +10,7 @@ import io.opencola.relay.common.message.Message
 import io.opencola.relay.common.message.v2.store.MemoryMessageStore
 import io.opencola.relay.common.message.v2.store.MessageStore
 import io.opencola.relay.common.message.v2.store.Usage
+import io.opencola.relay.common.policy.PolicyStore
 import io.opencola.security.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
@@ -22,6 +23,7 @@ import java.security.SecureRandom
 
 abstract class AbstractRelayServer(
     protected val config: Config,
+    protected val policyStore: PolicyStore,
     protected val connectionDirectory: ConnectionDirectory,
     protected val messageStore: MessageStore? = null,
 ) {
@@ -59,9 +61,19 @@ abstract class AbstractRelayServer(
     protected abstract fun encodePayload(to: PublicKey, envelope: Envelope): ByteArray
 
     protected fun isAuthorized(clientPublicKey: PublicKey): Boolean {
-        // TODO: Support client lists
-        logger.debug { "Authorizing client: ${Id.ofPublicKey(clientPublicKey)}" }
-        return true
+        val clientId = Id.ofPublicKey(clientPublicKey)
+        val policy =  policyStore.getUserPolicy(Id.ofPublicKey(clientPublicKey))
+
+        return if(policy == null) {
+            logger.info { "No policy found for client: $clientId" }
+            false
+        } else if(!policy.connectionPolicy.canConnect) {
+            logger.warn { "Client not authorized to connect: $clientId" }
+            false
+        } else {
+            logger.info { "Client authorized: $clientId" }
+            true
+        }
     }
 
     private val noPendingMessagesMessage = Message(
@@ -102,18 +114,25 @@ abstract class AbstractRelayServer(
         authenticate(socketSession)?.let { publicKey ->
             val connection = Connection(publicKey, socketSession) { connectionDirectory.remove(it.id) }
             val id = connection.id
-            logger.info { "Session authenticated for: ${id}" }
-            connectionDirectory.add(connection)
 
             try {
+                logger.info { "Session authenticated for: $id" }
+                connectionDirectory.add(connection)
+                val policy = policyStore.getUserPolicy(id)!!
                 sendStoredMessages(connection)
 
                 // TODO: Add garbage collection on inactive connections?
-                connection.listen { payload -> handleMessage(publicKey, payload) }
+                connection.listen { payload ->
+                    if(payload.size > policy.messagePolicy.maxMessageSize) {
+                        logger.warn { "Message too large from $id: Ignoring ${payload.size} bytes" }
+                    } else {
+                        handleMessage(publicKey, payload)
+                    }
+                }
             } finally {
                 connection.close()
                 connectionDirectory.remove(connection.id)
-                logger.info { "Session closed for: ${id}" }
+                logger.info { "Session closed for: $id" }
             }
         }
     }

@@ -10,6 +10,7 @@ import io.ktor.server.websocket.*
 import io.opencola.relay.common.connection.MemoryConnectionDirectory
 import io.opencola.relay.common.defaultOCRPort
 import io.opencola.relay.common.message.v2.store.MemoryMessageStore
+import io.opencola.relay.common.policy.MemoryPolicyStore
 import io.opencola.relay.server.Config
 import io.opencola.relay.server.SecurityConfig
 import io.opencola.relay.server.v1.WebSocketRelayServer as WebSocketRelayServerV1
@@ -23,11 +24,18 @@ class ApplicationTest {
     fun testRoot() = testApplication {
         val config = Config(SecurityConfig(generateKeyPair()))
         val address = URI("ocr://0.0.0.0:$defaultOCRPort")
+        val policyStore = MemoryPolicyStore()
         application {
             install(WebSockets)
             configureRouting(
                 WebSocketRelayServerV1(config, address),
-                WebSocketRelayServerV2(config, MemoryConnectionDirectory(address), MemoryMessageStore()))
+                WebSocketRelayServerV2(
+                    config,
+                    policyStore,
+                    MemoryConnectionDirectory(address),
+                    MemoryMessageStore(policyStore)
+                )
+            )
         }
 
         val response = client.get("/")

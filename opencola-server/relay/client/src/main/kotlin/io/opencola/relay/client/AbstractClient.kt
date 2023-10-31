@@ -25,6 +25,7 @@ abstract class AbstractClient(
     protected val uri: URI,
     protected val keyPair: KeyPair,
     protected val name: String? = null,
+    protected val connectTimeoutMilliseconds: Long = 3000, // TODO: Make configurable
     protected val requestTimeoutMilliseconds: Long = 60000, // TODO: Make configurable
     private val retryPolicy: (Int) -> Long = retryExponentialBackoff(),
 ) : RelayClient {
@@ -155,7 +156,7 @@ abstract class AbstractClient(
 
     override suspend fun sendMessage(to: List<PublicKey>, key: MessageStorageKey, body: ByteArray) {
         try {
-            val connection = getConnection()
+            val connection = withTimeout(connectTimeoutMilliseconds) { getConnection() }
             val message = Message(keyPair.public, body)
 
             // TODO: Should there be a limit on the size of messages?
