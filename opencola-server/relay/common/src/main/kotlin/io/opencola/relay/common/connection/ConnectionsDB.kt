@@ -53,6 +53,8 @@ class ConnectionsDB(private val database: Database) {
         }
     }
 
+    // TODO: ConnectionEntry is not a DB entity. Should return row (like on UserPolicyDB and wrap
+    //  in ConnectionEntry in ConnectionDirectory
     fun getConnection(id: Id): ConnectionEntry? {
         return transaction(database) {
             connections.select { connections.from eq id.encoded() }.firstOrNull()?.let {
