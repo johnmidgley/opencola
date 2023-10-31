@@ -3,7 +3,7 @@ package io.opencola.relay.common.policy
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class AdminPolicy(val canEditPolicies: Boolean = false, val canEditUsers: Boolean = false)
+data class AdminPolicy(val canEditPolicies: Boolean = false, val canEditUserPolicies: Boolean = false)
 
 @Serializable
 data class ConnectionPolicy(val canConnect: Boolean = true)

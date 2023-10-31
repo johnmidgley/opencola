@@ -18,6 +18,14 @@ class UserPolicyDB(private val database: Database) {
         }
     }
 
+    private fun getUserPolicyJoinByUserId(userId: Id) : ResultRow? {
+        return transaction(database) {
+            UserPolicies.join(Policies, JoinType.INNER, UserPolicies.policyId, Policies.id)
+                .select { UserPolicies.userId eq userId.encoded() }
+                .singleOrNull()
+        }
+    }
+
     fun insertPolicy(
         authorityId: Id,
         name: String,
@@ -34,15 +42,31 @@ class UserPolicyDB(private val database: Database) {
         }
     }
 
-    fun getPolicyRow(
-        name: String
-    ) : PolicyRow? {
+    private fun selectPolicy(op: Op<Boolean>) : PolicyRow? {
         return transaction(database) {
             Policies
-                .select { Policies.name eq name }
+                .select { op }
                 .singleOrNull()
                 ?.let { PolicyRow(it) }
         }
+    }
+
+    fun getPolicyRow(
+        name: String
+    ) : PolicyRow? {
+        return selectPolicy(Policies.name eq name)
+    }
+
+    fun getPolicyRow(
+        id: Long
+    ) : PolicyRow? {
+        return selectPolicy(Policies.id eq id)
+    }
+
+    fun getPolicyRow(
+        userId: Id
+    ): PolicyRow? {
+        return getUserPolicyJoinByUserId(userId)?.let { PolicyRow(it) }
     }
 
     fun updatePolicy(
@@ -67,17 +91,13 @@ class UserPolicyDB(private val database: Database) {
         policy: Policy,
         editTimeMilliseconds: Long = System.currentTimeMillis()
     ) : Long {
-        val existingPolicy = transaction(database) {
-            Policies.select {
-                Policies.name eq name
-            }.singleOrNull()?.let { it[Policies.id] }
-        }
+        val existingPolicyId = getPolicyRow(name)?.id
 
-        return if (existingPolicy == null) {
+        return if (existingPolicyId == null) {
             insertPolicy(authorityId, name, policy, editTimeMilliseconds)
         } else {
             updatePolicy(authorityId, name, policy, editTimeMilliseconds)
-            existingPolicy.value
+            existingPolicyId
         }
     }
 
@@ -85,7 +105,8 @@ class UserPolicyDB(private val database: Database) {
         name: String
     ) {
         transaction(database) {
-            // Check if any user policies reference this policy
+            // Check if any user policies reference this policy - SQLite doesn't seem to
+            // support onDelete = ReferenceOption.RESTRICT, so we do it manually.
             val policyId = Policies.select {
                 Policies.name eq name
             }.single()[Policies.id].value
@@ -123,11 +144,7 @@ class UserPolicyDB(private val database: Database) {
     fun getUserPolicyRow(
         userId: Id
     ): UserPolicyRow? {
-        return transaction(database) {
-            UserPolicies.join(Policies, JoinType.INNER, UserPolicies.policyId, Policies.id)
-                .select { UserPolicies.userId eq userId.encoded() }
-                .singleOrNull()?.let { UserPolicyRow(it) }
-        }
+        return getUserPolicyJoinByUserId(userId)?.let { UserPolicyRow(it) }
     }
 
     fun updateUserPolicy(

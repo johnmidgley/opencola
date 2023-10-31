@@ -9,7 +9,7 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 import kotlin.test.*
 
-class PolicyTest {
+class PolicyDbTest {
     private fun getPostgresDB(): Database {
         val db = getPostgresDB("localhost", "opencola", "opencola", "test")
 
@@ -98,6 +98,15 @@ class PolicyTest {
         assertEquals(userId, userPolicyRow.userId)
         assertEquals(policyId, userPolicyRow.policyId)
         assertEquals(updateTimeMilliseconds, userPolicyRow.editTimeMilliseconds)
+
+        println("Test get policy by userId")
+        val retrievedPolicy = userPolicyDB.getPolicyRow(userId)
+        assertNotNull(retrievedPolicy)
+        assertEquals(policyId, retrievedPolicy.id)
+        assertEquals(authorityId, retrievedPolicy.authorityId)
+        assertEquals(policyName, retrievedPolicy.name)
+        assertEquals(policy, retrievedPolicy.policy)
+
 
         println("Test fail duplicate insert")
         assertFails { userPolicyDB.insertUserPolicy(authorityId, userId, policyId, updateTimeMilliseconds) }
