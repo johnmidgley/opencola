@@ -9,7 +9,7 @@ data class AdminPolicy(val canEditPolicies: Boolean = false, val canEditUserPoli
 data class ConnectionPolicy(val canConnect: Boolean = true)
 
 @Serializable
-data class MessagePolicy(val maxMessageSize: Int = 1024 * 1024 * 50)
+data class MessagePolicy(val maxPayloadSize: Int = 1024 * 1024 * 50)
 
 @Serializable
 data class StoragePolicy(val maxStoredBytes: Int = 1024 * 1024 * 50)

@@ -60,22 +60,6 @@ abstract class AbstractRelayServer(
     // Turn the Envelope into a message that the client will understand
     protected abstract fun encodePayload(to: PublicKey, envelope: Envelope): ByteArray
 
-    protected fun isAuthorized(clientPublicKey: PublicKey): Boolean {
-        val clientId = Id.ofPublicKey(clientPublicKey)
-        val policy =  policyStore.getUserPolicy(Id.ofPublicKey(clientPublicKey))
-
-        return if(policy == null) {
-            logger.info { "No policy found for client: $clientId" }
-            false
-        } else if(!policy.connectionPolicy.canConnect) {
-            logger.warn { "Client not authorized to connect: $clientId" }
-            false
-        } else {
-            logger.info { "Client authorized: $clientId" }
-            true
-        }
-    }
-
     private val noPendingMessagesMessage = Message(
         serverKeyPair.public,
         ControlMessage(ControlMessageType.NO_PENDING_MESSAGES).encodeProto()
@@ -94,7 +78,7 @@ abstract class AbstractRelayServer(
             connection.writeSizedByteArray(encodePayload(connection.publicKey, envelope))
         }
 
-        logger.info { "Queue empty for: $connection.id" }
+        logger.info { "Queue empty for: ${connection.id}" }
         connection.writeSizedByteArray(encodePayload(connection.publicKey, getQueueEmptyEnvelope(connection.publicKey)))
     }
 
@@ -118,13 +102,14 @@ abstract class AbstractRelayServer(
             try {
                 logger.info { "Session authenticated for: $id" }
                 connectionDirectory.add(connection)
+                // TODO: Policy is cached for connection lifetime. Should it expire or be invalidated on change?
                 val policy = policyStore.getUserPolicy(id)!!
                 sendStoredMessages(connection)
 
                 // TODO: Add garbage collection on inactive connections?
                 connection.listen { payload ->
-                    if(payload.size > policy.messagePolicy.maxMessageSize) {
-                        logger.warn { "Message too large from $id: Ignoring ${payload.size} bytes" }
+                    if(payload.size > policy.messagePolicy.maxPayloadSize) {
+                        logger.warn { "Payload too large from $id: Ignoring ${payload.size} bytes" }
                     } else {
                         handleMessage(publicKey, payload)
                     }
@@ -172,7 +157,7 @@ abstract class AbstractRelayServer(
 
     private suspend fun deliverMessage(from: Id, to: RecipientConnection, envelope: Envelope) {
         require(from != to.recipient.id()) { "Attempt to deliver message to self" }
-        val prefix = "from=$from, to=$to:"
+        val prefix = "from=$from, to=${to.recipient.id()}:"
         var messageDelivered = false
         val connectionEntry = to.connectionEntry
 

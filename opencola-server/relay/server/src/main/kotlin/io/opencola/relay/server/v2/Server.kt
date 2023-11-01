@@ -30,6 +30,20 @@ abstract class Server(
     AbstractRelayServer(config, policyStore, connectionDirectory, messageStore) {
     private val httpClient = HttpClient()
 
+    private fun isClientAuthorized(clientId: Id): Boolean {
+        val policy =  policyStore.getUserPolicy(clientId)
+
+        return if(policy == null) {
+            logger.info { "No policy found for client: $clientId" }
+            false
+        } else if(!policy.connectionPolicy.canConnect) {
+            logger.warn { "Client not authorized to connect: $clientId" }
+            false
+        } else {
+            true
+        }
+    }
+
     override suspend fun authenticate(socketSession: SocketSession): PublicKey? {
         try {
             logger.debug { "Sending server identity" }
@@ -49,8 +63,6 @@ abstract class Server(
             val clientPublicKey = clientIdentity.publicKey
             val clientId = Id.ofPublicKey(clientPublicKey)
             logger.info { "Authenticating $clientId" }
-            if (!isAuthorized(clientPublicKey))
-                throw RuntimeException("$clientId is not authorized")
 
             logger.debug { "Writing client challenge" }
             val clientChallenge =
@@ -63,20 +75,21 @@ abstract class Server(
                 ChallengeResponse.decodeProto(decrypt(serverKeyPair.private, encryptedChallengeResponse))
 
             val status = if (
-                clientChallengeResponse.signature.algorithm == DEFAULT_SIGNATURE_ALGO &&
-                isValidSignature(clientPublicKey, clientChallenge.challenge, clientChallengeResponse.signature)
-            ) {
-                AuthenticationStatus.AUTHENTICATED
-            } else
+                clientChallengeResponse.signature.algorithm != DEFAULT_SIGNATURE_ALGO ||
+                !isValidSignature(clientPublicKey, clientChallenge.challenge, clientChallengeResponse.signature)
+            )
                 AuthenticationStatus.FAILED_CHALLENGE
+            else if (!isClientAuthorized(clientId)) {
+                AuthenticationStatus.NOT_AUTHORIZED
+            } else
+                AuthenticationStatus.AUTHENTICATED
 
             socketSession.writeSizedByteArray(AuthenticationResult(status).encodeProto())
 
-            if (status != AuthenticationStatus.AUTHENTICATED)
-                throw RuntimeException("$clientId failed to authenticate: $status")
-
-            logger.debug { "Client authenticated" }
-            return clientPublicKey
+            if (status == AuthenticationStatus.AUTHENTICATED) {
+                logger.debug { "Client authenticated" }
+                return clientPublicKey
+            }
         } catch (e: CancellationException) {
             // Let job cancellation fall through
         } catch (e: ClosedReceiveChannelException) {

@@ -38,7 +38,7 @@ data class StoredMessage (
     }
 
     override fun toString(): String {
-        return "StoredMessage(from=$$from, to=$to, messageStorageKey=$storageKey, messageSecretKey=ENCRYPTED message=${message.bytes.size} bytes)"
+        return "StoredMessage(from=$from, to=$to, messageStorageKey=$storageKey, messageSecretKey=ENCRYPTED message=${message.bytes.size} bytes)"
     }
 
     // Stored messages match if they have the same from, to, and messageStorageKey. This is used to detect and replace

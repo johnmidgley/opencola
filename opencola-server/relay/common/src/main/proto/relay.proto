@@ -21,6 +21,7 @@ enum AuthenticationStatus {
   NONE = 0;
   AUTHENTICATED = 1;
   FAILED_CHALLENGE = 2;
+  NOT_AUTHORIZED = 3;
 }
 
 message AuthenticationResult {

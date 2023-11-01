@@ -31,6 +31,10 @@ public final class Relay {
      * <code>FAILED_CHALLENGE = 2;</code>
      */
     FAILED_CHALLENGE(2),
+    /**
+     * <code>NOT_AUTHORIZED = 3;</code>
+     */
+    NOT_AUTHORIZED(3),
     UNRECOGNIZED(-1),
     ;
 
@@ -46,6 +50,10 @@ public final class Relay {
      * <code>FAILED_CHALLENGE = 2;</code>
      */
     public static final int FAILED_CHALLENGE_VALUE = 2;
+    /**
+     * <code>NOT_AUTHORIZED = 3;</code>
+     */
+    public static final int NOT_AUTHORIZED_VALUE = 3;
 
 
     public final int getNumber() {
@@ -75,6 +83,7 @@ public final class Relay {
         case 0: return NONE;
         case 1: return AUTHENTICATED;
         case 2: return FAILED_CHALLENGE;
+        case 3: return NOT_AUTHORIZED;
         default: return null;
       }
     }
@@ -6921,9 +6930,10 @@ public final class Relay {
       "ype\030\001 \001(\01626.io.opencola.relay.common.pro" +
       "tobuf.ControlMessage.Type\022\024\n\007payload\030\002 \001" +
       "(\014H\000\210\001\001\")\n\004Type\022\010\n\004NONE\020\000\022\027\n\023NO_PENDING_" +
-      "MESSAGES\020\001B\n\n\010_payload*I\n\024Authentication" +
+      "MESSAGES\020\001B\n\n\010_payload*]\n\024Authentication" +
       "Status\022\010\n\004NONE\020\000\022\021\n\rAUTHENTICATED\020\001\022\024\n\020F" +
-      "AILED_CHALLENGE\020\002b\006proto3"
+      "AILED_CHALLENGE\020\002\022\022\n\016NOT_AUTHORIZED\020\003b\006p" +
+      "roto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

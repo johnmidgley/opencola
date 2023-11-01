@@ -21,7 +21,7 @@ abstract class Client(
     requestTimeoutMilliseconds: Long = 60000,
     retryPolicy: (Int) -> Long = retryExponentialBackoff(),
 ) : AbstractClient(uri, keyPair, "$name", connectTimeoutMilliseconds, requestTimeoutMilliseconds, retryPolicy) {
-    override suspend fun authenticate(socketSession: SocketSession) {
+    override suspend fun authenticate(socketSession: SocketSession) : AuthenticationStatus {
         logger.info { "Authenticating" }
 
         logger.debug { "Reading server identity" }
@@ -55,12 +55,12 @@ abstract class Client(
 
         logger.debug { "Reading authentication result" }
         val authenticationResult = AuthenticationResult.decodeProto(socketSession.readSizedByteArray())
-        if (authenticationResult.status != AuthenticationStatus.AUTHENTICATED) {
-            throw RuntimeException("Unable to authenticate connection: $authenticationResult.status")
-        }
+        if (authenticationResult.status == AuthenticationStatus.AUTHENTICATED)
+            this.serverPublicKey = serverPublicKey
 
-        this.serverPublicKey = serverPublicKey
-        logger.debug { "Authenticated" }
+        logger.debug { "AuthenticationStatus: ${authenticationResult.status}" }
+
+        return authenticationResult.status
     }
 
     override fun encodePayload(
@@ -68,7 +68,7 @@ abstract class Client(
         messageStorageKey: MessageStorageKey,
         message: Message
     ): List<ByteArray> {
-        if(serverPublicKey == null) runBlocking { getConnection() }
+        if(serverPublicKey == null) runBlocking { connect() }
         return listOf(PayloadEnvelope.encodePayload(keyPair.private, serverPublicKey!!, to, messageStorageKey, message))
     }
 

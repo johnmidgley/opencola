@@ -3,6 +3,7 @@ package io.opencola.relay.common.message.v2
 import io.opencola.relay.common.protobuf.Relay as Proto
 import io.opencola.serialization.protobuf.ProtoSerializable
 
+// TODO: Include user policy in result so client can know max message sizes, etc.
 class AuthenticationResult(val status: AuthenticationStatus) {
     fun encodeProto() : ByteArray {
         return encodeProto(this)

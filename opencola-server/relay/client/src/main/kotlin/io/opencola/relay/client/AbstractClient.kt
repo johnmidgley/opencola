@@ -10,6 +10,7 @@ import io.opencola.relay.common.message.Envelope
 import io.opencola.relay.common.message.v2.ControlMessage
 import io.opencola.relay.common.message.v2.ControlMessageType
 import io.opencola.relay.common.message.Message
+import io.opencola.relay.common.message.v2.AuthenticationStatus
 import io.opencola.relay.common.message.v2.MessageStorageKey
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
@@ -66,7 +67,7 @@ abstract class AbstractClient(
     ): List<ByteArray>
 
     protected abstract fun decodePayload(payload: ByteArray): Envelope
-    protected abstract suspend fun authenticate(socketSession: SocketSession)
+    protected abstract suspend fun authenticate(socketSession: SocketSession): AuthenticationStatus
 
     fun isAuthorized(serverPublicKey: PublicKey): Boolean {
         logger.info { "Authorizing server: ${Id.ofPublicKey(serverPublicKey)}" }
@@ -83,7 +84,7 @@ abstract class AbstractClient(
         openMutex.withLock { }
     }
 
-    protected suspend fun getConnection(waitForOpen: Boolean = true): Connection {
+    protected suspend fun connect(waitForOpen: Boolean = true): Connection? {
         if (_state == Closed)
             throw IllegalStateException("Can't get connection on a Client that has been closed")
 
@@ -93,9 +94,8 @@ abstract class AbstractClient(
             openMutex.withLock { }
         }
 
-        return connectionMutex.withLock {
+        connectionMutex.withLock {
             if (_state != Closed && _connection == null || !_connection!!.isReady()) {
-
                 if (connectionFailures > 0) {
                     val delayInMilliseconds = retryPolicy(connectionFailures)
                     logger.warn { "Connection failure: Waiting $delayInMilliseconds ms to connect" }
@@ -104,7 +104,16 @@ abstract class AbstractClient(
 
                 try {
                     val socketSession = getSocketSession()
-                    authenticate(socketSession)
+
+                    authenticate(socketSession).let {
+                        if (it != AuthenticationStatus.AUTHENTICATED) {
+                            // Failed to authenticate - this is not retryable
+                            logger.error { "Authentication failed: $it" }
+                            close()
+                            return null
+                        }
+                    }
+
                     _connection = Connection(keyPair.public, socketSession) {}
                     connectionFailures = 0
                     logger.info { "Connection created to $uri for ${_connection!!.id}" }
@@ -115,7 +124,10 @@ abstract class AbstractClient(
                 }
             }
 
-            _connection!!
+            if (_state == Opening)
+                _state = Open
+
+            return _connection
         }
     }
 
@@ -135,8 +147,7 @@ abstract class AbstractClient(
                     if (!openMutex.isLocked)
                         openMutex.lock()
 
-                    getConnection(false).also {
-                        if (_state == Opening) _state = Open
+                    connect(false)?.also {
                         openMutex.unlock()
                         it.listen { payload -> handleMessage(payload, messageHandler) }
                     }
@@ -156,7 +167,8 @@ abstract class AbstractClient(
 
     override suspend fun sendMessage(to: List<PublicKey>, key: MessageStorageKey, body: ByteArray) {
         try {
-            val connection = withTimeout(connectTimeoutMilliseconds) { getConnection() }
+            val connection = withTimeout(connectTimeoutMilliseconds) { connect() }
+                ?: throw ConnectException("Unable to connect to server")
             val message = Message(keyPair.public, body)
 
             // TODO: Should there be a limit on the size of messages?
