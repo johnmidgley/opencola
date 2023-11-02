@@ -69,17 +69,28 @@ abstract class AbstractRelayServer(
         return Envelope.from(serverKeyPair.private, to, null, noPendingMessagesMessage)
     }
 
-    protected suspend fun sendStoredMessages(connection: Connection) {
-        if (messageStore == null) return
+    private suspend fun sendQueueEmptyMessage(connection: Connection) {
+        // Only send queue empty message if there is a message store, since otherwise, there isn't a queue (i.e. V1).
+        if (messageStore != null)
+            connection.writeSizedByteArray(
+                encodePayload(
+                    connection.publicKey,
+                    getQueueEmptyEnvelope(connection.publicKey)
+                )
+            )
+    }
 
-        messageStore.consumeMessages(connection.id).forEach {
+    private suspend fun sendStoredMessages(connection: Connection): Int {
+        var sentMessageCount = 0
+
+        messageStore?.consumeMessages(connection.id)?.forEach {
             val recipient = Recipient(connection.publicKey, it.secretKey)
             val envelope = Envelope(recipient, it.storageKey, it.message)
             connection.writeSizedByteArray(encodePayload(connection.publicKey, envelope))
+            sentMessageCount++
         }
 
-        logger.info { "Queue empty for: ${connection.id}" }
-        connection.writeSizedByteArray(encodePayload(connection.publicKey, getQueueEmptyEnvelope(connection.publicKey)))
+        return sentMessageCount
     }
 
     suspend fun sendStoredMessages(id: Id) {
@@ -105,13 +116,16 @@ abstract class AbstractRelayServer(
                 // TODO: Policy is cached for connection lifetime. Should it expire or be invalidated on change?
                 val policy = policyStore.getUserPolicy(id)!!
                 sendStoredMessages(connection)
+                sendQueueEmptyMessage(connection)
 
                 // TODO: Add garbage collection on inactive connections?
                 connection.listen { payload ->
-                    if(payload.size > policy.messagePolicy.maxPayloadSize) {
+                    if (payload.size > policy.messagePolicy.maxPayloadSize) {
                         logger.warn { "Payload too large from $id: Ignoring ${payload.size} bytes" }
                     } else {
                         handleMessage(publicKey, payload)
+                        if (sendStoredMessages(connection) > 0)
+                            logger.warn { "Stored messages sent on handleMessage to $id" }
                     }
                 }
             } finally {
@@ -140,10 +154,6 @@ abstract class AbstractRelayServer(
         }
     }
 
-    open suspend fun triggerRemoteDelivery(serverAddress: URI, to: Id) {
-        throw NotImplementedError()
-    }
-
     open suspend fun forwardMessage(
         serverAddress: URI,
         from: PublicKey,
@@ -168,6 +178,9 @@ abstract class AbstractRelayServer(
                 logger.info { "$prefix Delivering ${envelope.message.bytes.size} bytes" }
                 connection.writeSizedByteArray(encodePayload(connection.publicKey, envelope))
                 messageDelivered = true
+
+                if (sendStoredMessages(connection) > 0)
+                    logger.warn { "Stored messages sent on deliverMessage to ${to.recipient.id()}" }
             } else {
                 // This shouldn't happen. If there is a connectionEntry but no connection, then
                 // the message should have been delivered remotely.
@@ -230,7 +243,7 @@ abstract class AbstractRelayServer(
 
                 deliverLocalMessages(fromId, localRecipients, envelope)
 
-                if(deliverRemoteMessages)
+                if (deliverRemoteMessages)
                     deliverRemoteMessages(from, remoteRecipients, envelope, payload)
             }
         } catch (e: Exception) {

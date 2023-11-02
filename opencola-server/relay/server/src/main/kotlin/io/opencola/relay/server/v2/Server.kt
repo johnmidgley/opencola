@@ -112,20 +112,6 @@ abstract class Server(
         return Envelope(envelopeHeader.recipients, envelopeHeader.messageStorageKey, envelopeV2.message)
     }
 
-    // TODO: to should be a list of ids
-    // TODO: Does this need to be visible?
-    override suspend fun triggerRemoteDelivery(serverAddress: URI, to: Id) {
-        try {
-            require(serverAddress != address) { "Attempt to trigger remote delivery to self" }
-            httpClient.post(Url("http://${serverAddress.host}:${serverAddress.port}/v2/deliver/$to"))
-        } catch (e: ConnectException) {
-            connectionDirectory.remove(to)
-            logger.warn { "Unable to connect to server $serverAddress: Removed $to from directory" }
-        } catch (e: Exception) {
-            logger.error { "Error while notifying remote server - to: $to e: $e" }
-        }
-    }
-
     override suspend fun forwardMessage(
         serverAddress: URI,
         from: PublicKey,
