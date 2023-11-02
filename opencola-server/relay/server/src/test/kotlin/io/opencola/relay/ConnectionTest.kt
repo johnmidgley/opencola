@@ -1,12 +1,17 @@
 package io.opencola.relay
 
 import io.opencola.io.StdoutMonitor
+import io.opencola.model.Id
 import io.opencola.relay.client.AbstractClient
 import io.opencola.security.generateKeyPair
 import io.opencola.relay.client.RelayClient
 import io.opencola.relay.common.State
+import io.opencola.relay.common.connection.ConnectionsDB
+import io.opencola.relay.common.connection.ExposedConnectionDirectory
 import io.opencola.relay.common.message.v2.MessageStorageKey
+import io.opencola.relay.common.retryExponentialBackoff
 import io.opencola.relay.server.RelayServer
+import io.opencola.storage.newSQLiteDB
 import io.opencola.util.append
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
@@ -43,7 +48,7 @@ class ConnectionTest {
                         it.waitUntilOpen()
                     }
 
-                    monitor.waitUntil("Session authenticated for:")
+                    monitor.waitUntil("Session started:")
                 }
             } finally {
                 println("Closing resources")
@@ -61,6 +66,49 @@ class ConnectionTest {
     @Test
     fun testAuthenticationV2() {
         testAuthentication(ClientType.V2)
+    }
+
+    @Test
+    fun testCloseRemovesFromConnectionDirectoryAndDb() {
+        runBlocking {
+            var server: RelayServer? = null
+            var client: AbstractClient? = null
+
+            try {
+                println("Starting RelayServer")
+                val serverUri = getNewServerUri()
+                val sqlLiteDb = newSQLiteDB("testCloseRemovesFromConnectionDirectory")
+                val connectionsDB = ConnectionsDB(sqlLiteDb)
+                val connectionDirectory = ExposedConnectionDirectory(sqlLiteDb, serverUri)
+                server = RelayServer(serverUri, connectionDirectory = connectionDirectory).also { it.start() }
+                println("Starting client0")
+
+                client = getClient(ClientType.V2, "client0", relayServerUri = serverUri)
+                val clientId = Id.ofPublicKey(client.publicKey)
+
+                StdoutMonitor().use {
+                    it.runCoroutine { client.open { _, _ -> } }
+                    it.waitUntil("Session started: $clientId")
+                }
+
+                assertNotNull(connectionDirectory.get(clientId))
+                assertNotNull(connectionsDB.getConnection(clientId))
+
+                println("Closing client")
+                StdoutMonitor().use {
+                    client.close()
+                    it.waitUntil("Session stopped: $clientId")
+                }
+
+                assertNull(connectionDirectory.get(clientId))
+                assertNull(connectionsDB.getConnection(clientId))
+            } finally {
+                println("Closing resources")
+                client?.close()
+                server?.stop()
+            }
+        }
+
     }
 
     private fun testSendResponse(clientType: ClientType, relayServerUri: URI = localRelayServerUri) {
@@ -173,8 +221,13 @@ class ConnectionTest {
 
             try {
                 server0 = RelayServer().also { it.start() }
-                client0 = getClient(clientType, "client0").also { launch { open(it) }; it.waitUntilOpen() }
-                client1 = getClient(clientType, "client1")
+                val retryPolicy = retryExponentialBackoff(100)
+                client0 = getClient(
+                    clientType,
+                    "client0",
+                    retryPolicy = retryPolicy
+                ).also { launch { open(it) }; it.waitUntilOpen() }
+                client1 = getClient(clientType, "client1", retryPolicy = retryPolicy)
                     .also {
                         launch {
                             it.open { _, message ->
@@ -200,15 +253,11 @@ class ConnectionTest {
                 }
 
                 println("Starting relay server again")
-                StdoutMonitor(readTimeoutMilliseconds = 3000).use { stdoutMonitor ->
-                    server1 = RelayServer().also { it.start() }
-                    // The waitUntil method does not yield to co-routines, so we need to explicitly delay
-                    // to let the server start and the clients reconnect. The proper solution would be to
-                    // implement a delayUntil method on StdoutMonitor that works properly with coroutines.
-                    delay(2000)
-                    // Wait until both clients have connected again
-                    stdoutMonitor.waitUntil("Connection created")
-                    stdoutMonitor.waitUntil("Connection created")
+                StdoutMonitor().use {
+                    server1 = RelayServer().also { server -> server.start() }
+                    delay(200) // Unblock so clients can reconnect
+                    it.waitUntil("Connection created", 3000)
+                    it.waitUntil("Connection created", 3000)
                 }
 
                 println("Sending message to client1")

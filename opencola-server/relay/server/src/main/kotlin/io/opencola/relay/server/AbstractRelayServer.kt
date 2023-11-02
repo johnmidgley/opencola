@@ -100,8 +100,8 @@ abstract class AbstractRelayServer(
             val id = connection.id
 
             try {
-                logger.info { "Session authenticated for: $id" }
                 connectionDirectory.add(connection)
+                logger.info { "Session started: $id" }
                 // TODO: Policy is cached for connection lifetime. Should it expire or be invalidated on change?
                 val policy = policyStore.getUserPolicy(id)!!
                 sendStoredMessages(connection)
@@ -116,8 +116,7 @@ abstract class AbstractRelayServer(
                 }
             } finally {
                 connection.close()
-                connectionDirectory.remove(connection.id)
-                logger.info { "Session closed for: $id" }
+                logger.info { "Session stopped: $id" }
             }
         }
     }

@@ -11,6 +11,7 @@ import io.opencola.relay.common.message.v2.MessageStorageKey
 import io.opencola.relay.common.message.v2.store.ExposedMessageStore
 import io.opencola.relay.common.policy.MemoryPolicyStore
 import io.opencola.relay.getClient
+import io.opencola.relay.getNewServerUri
 import io.opencola.security.generateKeyPair
 import io.opencola.storage.filestore.ContentAddressedFileStore
 import io.opencola.storage.filestore.FileSystemContentAddressedFileStore
@@ -19,17 +20,11 @@ import io.opencola.util.append
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import org.junit.Test
-import java.net.URI
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class MultiServerInstanceTest {
-    private var baseServerPort = 6000
-
-    private fun getServerUri(port: Int) = URI("ocr://0.0.0.0:$port")
-    private fun getNewServerUri() = getServerUri(baseServerPort++)
-
     // TODO: Move to common test library
     private fun newFileStore(): ContentAddressedFileStore {
         val fileStoreDirectory = TestApplication.getTmpDirectory("-filestore")
