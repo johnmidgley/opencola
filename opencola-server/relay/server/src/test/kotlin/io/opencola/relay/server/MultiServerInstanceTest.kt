@@ -116,7 +116,7 @@ class MultiServerInstanceTest {
                 val orphanedId = Id.ofPublicKey(orphanedKeyPair.public)
                 val unavailableServerUri = getNewServerUri()
                 // TODO: Add test for aging out data
-                connectionsDB.addConnection(orphanedId, unavailableServerUri, 0)
+                connectionsDB.upsertConnection(orphanedId, unavailableServerUri, 0)
                 assertNotNull(connectionsDB.getConnection(orphanedId))
 
                 println("Sending message to orphaned client: $orphanedId")
@@ -128,7 +128,7 @@ class MultiServerInstanceTest {
                 assertNull(connectionsDB.getConnection(orphanedId))
 
                 // TODO: Test bad connection entry that points to live server, but no active connection to receive
-                connectionsDB.addConnection(orphanedId, server1Address, 0)
+                connectionsDB.upsertConnection(orphanedId, server1Address, 0)
                 assertNotNull(connectionsDB.getConnection(orphanedId))
                 StdoutMonitor().use {
                     client0.sendMessage(orphanedKeyPair.public, MessageStorageKey.unique(), "hello".toByteArray())

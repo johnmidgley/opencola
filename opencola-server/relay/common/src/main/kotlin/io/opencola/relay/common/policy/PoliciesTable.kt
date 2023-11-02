@@ -13,7 +13,7 @@ object Policies : LongIdTable() {
     val editTimeMilliseconds = long("editTimeMilliseconds")
 }
 
-class PolicyRow(val resultRow: ResultRow) {
+class PolicyRow(private val resultRow: ResultRow) {
     val id: Long
         get() = resultRow[Policies.id].value
 

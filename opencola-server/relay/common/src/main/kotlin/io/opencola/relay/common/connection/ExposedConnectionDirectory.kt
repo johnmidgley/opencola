@@ -9,12 +9,18 @@ class ExposedConnectionDirectory(database: Database, override val localAddress: 
     private val connectionsDB = ConnectionsDB(database)
 
     override fun add(connection: Connection): ConnectionEntry {
-        connectionsDB.addConnection(connection.id, localAddress, System.currentTimeMillis())
+        connectionsDB.upsertConnection(connection.id, localAddress, System.currentTimeMillis())
         return localDirectory.add(connection)
     }
 
     override fun get(id: Id): ConnectionEntry? {
-        return localDirectory.get(id) ?: connectionsDB.getConnection(id)
+        return localDirectory.get(id)
+            ?: connectionsDB.getConnection(id)?.let { connectionRow ->
+            ConnectionEntry(
+                URI(connectionRow.address),
+                null,
+                connectionRow.connectTimeMilliseconds
+            ) }
     }
 
     override fun remove(id: Id) {
