@@ -24,6 +24,7 @@
             <option value="$PROJECT_DIR$/core/system" />
             <option value="$PROJECT_DIR$/core/util" />
             <option value="$PROJECT_DIR$/relay" />
+            <option value="$PROJECT_DIR$/relay/cli" />
             <option value="$PROJECT_DIR$/relay/client" />
             <option value="$PROJECT_DIR$/relay/common" />
             <option value="$PROJECT_DIR$/relay/server" />

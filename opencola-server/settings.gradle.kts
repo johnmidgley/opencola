@@ -18,6 +18,7 @@ include("server")
 include("relay:common")
 include("relay:server")
 include("relay:client")
+include("relay:cli")
 include("cli")
 include("test")
 
