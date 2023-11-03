@@ -3,7 +3,7 @@ val kotlinxSerializationVersion: String by project
 val protobufVersion: String by project
 
 plugins {
-    kotlin("jvm") version "1.7.20"
+    kotlin("jvm") version "1.9.0"
 }
 
 dependencies {

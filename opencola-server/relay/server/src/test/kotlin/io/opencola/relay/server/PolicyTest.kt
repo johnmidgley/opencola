@@ -83,7 +83,6 @@ class PolicyTest {
                 println("Test max stored bytes")
                 val maxStoredBytes = 1024
                 val clientKeyPair = generateKeyPair()
-                val clientId = Id.ofPublicKey(clientKeyPair.public)
 
                 client = getClient(ClientType.V2, "maxMessageSizeClient", clientKeyPair).also {
                     launch { it.open { _, _ -> } }

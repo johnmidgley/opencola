@@ -16,9 +16,9 @@ val protobufVersion: String by project
 
 plugins {
     application
-    kotlin("jvm") version "1.7.20"
+    kotlin("jvm") version "1.9.0"
     kotlin("plugin.serialization") version "1.6.0"
-    id("org.jetbrains.compose") version "1.2.2"
+    id("org.jetbrains.compose") version "1.4.3"
 }
 
 application {
