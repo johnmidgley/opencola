@@ -31,10 +31,10 @@
 
 (defn header-actions [adding-peer?!]
   [:div.header-actions 
-   [:img.header-icon {:src  "../img/add-peer.png" :on-click #(swap! adding-peer?! not)}]
-   image-divider
-   [:img.header-icon {:src  "../img/feed.png" :on-click #(location/set-page! :feed)}]
-   image-divider
+   [:div.header-button [:img.header-icon {:src  "../img/add-peer.png" :on-click #(swap! adding-peer?! not)}]]
+   
+   [:div.header-button [:img.header-icon {:src  "../img/feed.png" :on-click #(location/set-page! :feed)}]]
+   
    [help-control]])
 
 (defn map-to-token [m]

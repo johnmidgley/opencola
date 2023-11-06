@@ -49,10 +49,10 @@
 
 (defn header-actions [adding-persona?!]
   [:div.header-actions 
-   [:img.header-icon {:src  "../img/add-peer.png" :on-click #(swap! adding-persona?! not)}]
-   image-divider
-   [:img.header-icon {:src  "../img/feed.png" :on-click #(location/set-page! :feed)}]
-   image-divider
+   [:div.header-button [:img.header-icon {:src  "../img/add-peer.png" :on-click #(swap! adding-persona?! not)}]]
+   
+   [:div.header-button [:img.header-icon {:src  "../img/feed.png" :on-click #(location/set-page! :feed)}]]
+   
    [help-control]])
 
 (defn persona-item [personas! persona]
