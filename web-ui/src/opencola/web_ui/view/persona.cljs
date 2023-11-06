@@ -40,7 +40,8 @@
    #(on-error %)))
 
 (defn persona-select [personas! persona-id!]
-  [:select {:id "persona-select"
+  [:select.persona-select {
+            :name "feed-persona-select"
             :on-change #(reset! persona-id! (-> % .-target .-value))
             :value @persona-id!}
    (doall (for [persona (:items @personas!)]

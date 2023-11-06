@@ -10,8 +10,9 @@
 
 (defn persona-select [page personas! persona! on-select]
   (fn [] 
-    [:td [:select 
-          {:id "persona-select" 
+    [:div [:select.persona-select 
+          {
+           :name "select-persona"
            :title "Persona"
            :on-change #(on-select (-> % .-target .-value))
            :value (selected-persona page persona!)}
@@ -23,22 +24,24 @@
 
 (defn search-box [query! on-enter]
   (fn []
-    [:div.search-box>input.search-input
+    [:div.search-box
+    [:img.pointer {:src "../img/search.png" :width 20 :height 20 :on-click #(on-enter @query!)}]
+    [:input.search-input.reset
      {:type "text"
+      :name "search-input"
       :value @query!
+      :placeholder "Search..."
       :on-change #(reset! query! (-> % .-target .-value))
       :on-keyUp #(when (= (.-key %) "Enter")
-                   (on-enter @query!))}]))
+                   (on-enter @query!))}]]))
 
 
 (defn search-header [page personas! persona! on-persona-select query! on-enter header-actions]
-  [:div.search-header 
-   [header-actions]
-   [:table
-    [:tbody
-     [:tr
-      [:td [:a {:href "#/feed"} [:img {:src "../img/pull-tab.png" :width 50 :height 50}]]]
-      [persona-select page personas! persona! on-persona-select]
-      [:td [search-box query! on-enter]]]]]])
+  [:div.nav-bar
+   [:div.icon-group
+      [:a.fs-0 {:href "#/feed"} [:img.logo {:src "../img/pull-tab.png"}]]
+      [persona-select page personas! persona! on-persona-select]]
+    [search-box query! on-enter]
+    [header-actions]])
 
 

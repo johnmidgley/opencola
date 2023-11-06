@@ -398,10 +398,8 @@
 
 (defn header-actions [creating-post?!]
   [:div.header-actions
-   [:img.header-icon {:src  "../img/new-post.png" :on-click #(swap! creating-post?! not)}] 
-   image-divider
-   [:img.header-icon {:src  "../img/peers.png" :on-click #(location/set-page! :peers)}]
-   image-divider
+   [:div.header-button [:img.header-icon {:src  "../img/new-post.png" :on-click #(swap! creating-post?! not)}]] 
+   [:div.header-button [:img.header-icon {:src  "../img/peers.png" :on-click #(location/set-page! :peers)}]]
    [help-control]])
 
 (defn prepend-feed-item [feed! view-item]

@@ -1,15 +1,118 @@
 body {
     font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
 }
 
-.search-header {
-    margin-bottom: 20px;
+:root {
+    --bg-color: rgb(248, 248, 248);
+    --feed-item-bg-color: white;
+    --shadow-color: #EEEEEE;
+    --border-color: black;
+    --border-size: .1rem;
 }
 
-.search-header:after {
+/* General */
+
+/* class for removing default styles */
+.reset {
+    all: unset;
+}
+
+.pointer {
+    cursor: pointer;
+}
+
+.fs-0 {
+    font-size: 0;
+}
+
+/* Nav bar styles */
+
+.nav-bar {
+    padding: .5rem;
+    background-color: white;
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.nav-bar:after {
   content: "";
-  display: table;
-  clear: both;
+}
+
+.logo {
+    width: 4rem;
+}
+
+.nav-bar .persona-select {
+    border: var(--border-size) solid black;
+    padding: .2rem 1rem;
+    font-size: 1rem;
+}
+
+.icon-group {
+    display: flex;
+    align-items: center;
+    margin-right: auto;
+    margin-left: 1rem;
+    gap: 1rem;
+}
+
+.search-box {
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    gap: .5rem;
+    padding: .3rem;
+    border: var(--border-size) solid var(--border-color);
+    border-radius: 10rem;
+}
+
+.search-input {
+    width: 12rem;
+    padding: 0rem .3rem;
+    border-left: var(--border-size) solid var(--border-color);
+}
+
+.header-actions {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-left: auto;
+    margin-right: 1rem;
+    gap: 2rem;
+}
+
+.header-button {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    border-radius: 100%;
+    width: 2.5rem;
+    height: 2.5rem;
+    cursor: pointer;
+}
+
+.header-icon {
+    height: 75%;
+}
+
+.header-button:hover {
+    background-color: rgb(230, 230, 230);
+}
+
+.divider {
+    height: 20px
+}
+
+/* Feed styles */
+
+.persona-select {
+    border: dotted 1px grey;
 }
 
 .feed {
@@ -23,8 +126,8 @@ body {
 .feed-item {
    margin-bottom: 20px;
    padding: 10px;
-   box-shadow: 5px 5px 5px 5px #EEEEEE;
-   -webkit-box-shadow: 5px 5px 5px 5px #EEEEEE;
+   box-shadow: 5px 5px 5px 5px var(--shadow-color);
+   -webkit-box-shadow: 5px 5px 5px 5px var(--shadow-color);
 }
 
 .img-box {
@@ -34,7 +137,7 @@ body {
 }
 
 .item-body {
-    background-color: rgb(248, 248, 248);
+    background-color: var(--bg-color);
     padding: 5px;
 }
 
@@ -61,10 +164,6 @@ body {
 }
 
 .text-input {
-    width: 100%;
-}
-
-.text-area {
     width: 100%;
 }
 
@@ -128,7 +227,7 @@ body {
 }
 
 .item-comment-edit {
-   background-color: rgb(248, 248, 248);
+   background-color: var(--bg-color);
    padding: 10px;
    padding-left: 8px;
    padding-right: 14px;
@@ -136,7 +235,7 @@ body {
 }
 
 .item-comment-text {
-   background-color: rgb(248, 248, 248);
+   background-color: var(--bg-color);
    padding: 1px;
    padding-left: 7px;
    padding-right: 7px;
@@ -258,24 +357,11 @@ td {
     margin-top: 10px;
 }
 
-.header-actions {
-    float: right;
-    padding-top: 15px;
-}
-
-.header-icon {
-    height: 20px;
-}
-
-.divider {
-    height: 20px
-}
-
 .peer-item {
    margin-bottom: 20px;
    padding: 10px;
-   box-shadow: 5px 5px 5px 5px #EEEEEE;
-   -webkit-box-shadow: 5px 5px 5px 5px #EEEEEE;
+   box-shadow: 5px 5px 5px 5px var(--shadow-color);
+   -webkit-box-shadow: 5px 5px 5px 5px var(--shadow-color);
    overflow: hidden;
 }
 
@@ -321,14 +407,6 @@ input.input-text {
 .uri {
     font-family: "Lucida Console", "Courier New", monospace;
     font-size: 13px;
-}
-
-.search-input {
-    width: 180px;
-}
-
-#persona-select {
-    border: dotted 1px grey;
 }
 
 .no-wrap {
@@ -382,7 +460,7 @@ input.input-text {
     text-align: center;
     margin-left: auto;
     margin-right: auto;
-    background-color: rgb(248, 248, 248);
+    background-color: var(--bg-color);
 }
 
 .authority:hover {
