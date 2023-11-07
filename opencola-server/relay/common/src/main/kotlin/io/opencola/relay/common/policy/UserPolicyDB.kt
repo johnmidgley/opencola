@@ -69,6 +69,13 @@ class UserPolicyDB(private val database: Database) {
         return getUserPolicyJoinByUserId(userId)?.let { PolicyRow(it) }
     }
 
+    // TODO: Make pageable
+    fun getPolicyRows(): List<PolicyRow> {
+        return transaction(database) {
+            Policies.selectAll().map { PolicyRow(it) }
+        }
+    }
+
     fun updatePolicy(
         authorityId: Id,
         name: String,
@@ -145,6 +152,13 @@ class UserPolicyDB(private val database: Database) {
         userId: Id
     ): UserPolicyRow? {
         return getUserPolicyJoinByUserId(userId)?.let { UserPolicyRow(it) }
+    }
+
+    // TODO: Make pageable
+    fun getUserPolicyRows() : List<UserPolicyRow> {
+        return transaction(database) {
+            UserPolicies.selectAll().map { UserPolicyRow(it) }
+        }
     }
 
     fun updateUserPolicy(

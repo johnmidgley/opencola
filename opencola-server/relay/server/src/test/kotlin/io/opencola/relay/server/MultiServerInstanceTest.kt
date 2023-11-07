@@ -49,7 +49,7 @@ class MultiServerInstanceTest {
 
                 println("Starting server0")
                 val server0Address = getNewServerUri()
-                val policyStore = MemoryPolicyStore()
+                val policyStore = MemoryPolicyStore(RelayServer.config.security.rootId)
                 val server0ConnectionDirectory = ExposedConnectionDirectory(sqlLiteDB, server0Address)
                 val server0MessageStore = ExposedMessageStore(sqlLiteDB, fileStore)
                 server0 = RelayServer(server0Address, policyStore, server0ConnectionDirectory, server0MessageStore).also { it.start() }
@@ -137,6 +137,7 @@ class MultiServerInstanceTest {
 
                 assertNull(connectionsDB.getConnection(orphanedId))
             } finally {
+                println("Closing Resources")
                 client0?.close()
                 client1?.close()
                 client2?.close()

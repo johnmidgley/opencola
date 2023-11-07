@@ -19,7 +19,7 @@ import java.security.PublicKey
 abstract class Server(
     config: Config,
     address: URI,
-) : AbstractRelayServer(config, MemoryPolicyStore(), MemoryConnectionDirectory(address), null) {
+) : AbstractRelayServer(config, MemoryPolicyStore(config.security.rootId), MemoryConnectionDirectory(address), null) {
     override suspend fun authenticate(socketSession: SocketSession): PublicKey? {
         try {
             logger.debug { "Authenticating" }

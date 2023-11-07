@@ -23,8 +23,9 @@ class PolicyTest {
                 println("Test reject connection")
                 client0 = getClient(ClientType.V2, "testCanConnectFalse")
                 val client0Id = Id.ofPublicKey(client0!!.publicKey)
-                policyStore.setPolicy(rootId, "rejectConnect", Policy(connectionPolicy = ConnectionPolicy(false)))
-                policyStore.setUserPolicy(rootId, client0Id, "rejectConnect")
+                val policy = Policy("rejectConnect", connectionPolicy = ConnectionPolicy(false))
+                policyStore.setPolicy(rootId, policy)
+                policyStore.setUserPolicy(rootId, client0Id, policy.name)
 
                 StdoutMonitor().use {
                     it.runCoroutine { client0!!.open { _, _ -> } }
@@ -45,9 +46,10 @@ class PolicyTest {
                 val maxPayloadSize = 1024
                 val clientKeyPair = generateKeyPair()
                 val clientId = Id.ofPublicKey(clientKeyPair.public)
-                policyStore.setPolicy(rootId, "maxMessageSize", Policy(messagePolicy = MessagePolicy(maxPayloadSize)))
-                policyStore.setUserPolicy(rootId, clientId, "maxMessageSize")
-                assertEquals(maxPayloadSize, policyStore.getUserPolicy(clientId)!!.messagePolicy.maxPayloadSize)
+                val policy = Policy("maxMessageSize", messagePolicy = MessagePolicy(maxPayloadSize))
+                policyStore.setPolicy(rootId, policy)
+                policyStore.setUserPolicy(rootId, clientId, policy.name)
+                assertEquals(maxPayloadSize, policyStore.getUserPolicy(rootId, clientId)!!.messagePolicy.maxPayloadSize)
 
                 client = getClient(ClientType.V2, "maxMessageSizeClient", clientKeyPair).also {
                     launch { it.open { _, _ -> } }
@@ -91,9 +93,10 @@ class PolicyTest {
 
                 val receiverPublicKey = generateKeyPair().public
                 val receiverId = Id.ofPublicKey(receiverPublicKey)
-                policyStore.setPolicy(rootId, "maxStoredBytes", Policy(storagePolicy = StoragePolicy(maxStoredBytes)))
+                val policy = Policy("maxStoredBytes", storagePolicy = StoragePolicy(maxStoredBytes))
+                policyStore.setPolicy(rootId, policy)
                 policyStore.setUserPolicy(rootId, receiverId, "maxStoredBytes")
-                assertEquals(maxStoredBytes, policyStore.getUserPolicy(receiverId)!!.storagePolicy.maxStoredBytes)
+                assertEquals(maxStoredBytes, policyStore.getUserPolicy(rootId, receiverId)!!.storagePolicy.maxStoredBytes)
 
                 println("Send small message that should queued")
                 StdoutMonitor().use {
@@ -107,7 +110,6 @@ class PolicyTest {
                     client!!.sendMessage(receiverPublicKey, MessageStorageKey.unique(), bigMessage)
                     it.waitUntil("Message store for $receiverId is full", 3000)
                 }
-
             } finally {
                 client?.close()
             }
@@ -134,5 +136,4 @@ class PolicyTest {
             }
         }
     }
-
 }

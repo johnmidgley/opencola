@@ -26,12 +26,11 @@ abstract class Server(
     policyStore: PolicyStore,
     connectionDirectory: ConnectionDirectory,
     messageStore: MessageStore?,
-) :
-    AbstractRelayServer(config, policyStore, connectionDirectory, messageStore) {
+) : AbstractRelayServer(config, policyStore, connectionDirectory, messageStore) {
     private val httpClient = HttpClient()
 
     private fun isClientAuthorized(clientId: Id): Boolean {
-        val policy =  policyStore.getUserPolicy(clientId)
+        val policy =  policyStore.getUserPolicy(clientId, clientId)
 
         return if(policy == null) {
             logger.info { "No policy found for client: $clientId" }

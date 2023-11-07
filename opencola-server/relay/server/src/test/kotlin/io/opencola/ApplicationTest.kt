@@ -22,9 +22,9 @@ import java.net.URI
 class ApplicationTest {
     @Test
     fun testRoot() = testApplication {
-        val config = Config(SecurityConfig(generateKeyPair()))
+        val config = Config(SecurityConfig(generateKeyPair(), generateKeyPair()))
         val address = URI("ocr://0.0.0.0:$defaultOCRPort")
-        val policyStore = MemoryPolicyStore()
+        val policyStore = MemoryPolicyStore(config.security.rootId)
         application {
             install(WebSockets)
             configureRouting(

@@ -166,30 +166,18 @@ abstract class AbstractClient(
     }
 
     override suspend fun sendMessage(to: List<PublicKey>, key: MessageStorageKey, body: ByteArray) {
-        try {
-            val connection = withTimeout(connectTimeoutMilliseconds) { connect() }
-                ?: throw ConnectException("Unable to connect to server")
-            val message = Message(keyPair.public, body)
+        val connection = withTimeout(connectTimeoutMilliseconds) { connect() }
+            ?: throw ConnectException("Unable to connect to server")
+        val message = Message(keyPair.public, body)
 
-            // TODO: Should there be a limit on the size of messages?
-            logger.info { "Sending message: $message" }
+        // TODO: Should there be a limit on the size of messages?
+        logger.info { "Sending message: $message" }
 
-            // V1 does not support sending to multiple recipients in one payload, so multiple payload need to be supported - remove when V1 is deprecated
-            encodePayload(to, key, message).forEach { payload ->
-                withTimeout(requestTimeoutMilliseconds) {
-                    connection.writeSizedByteArray(payload)
-                }
+        // V1 does not support sending to multiple recipients in one payload, so multiple payload need to be supported - remove when V1 is deprecated
+        encodePayload(to, key, message).forEach { payload ->
+            withTimeout(requestTimeoutMilliseconds) {
+                connection.writeSizedByteArray(payload)
             }
-        } catch (e: ConnectException) {
-            // Pass exception through so caller knows message wasn't sent
-            throw e
-        } catch (e: TimeoutCancellationException) {
-            val toString = to.joinToString { Id.ofPublicKey(it).toString() }
-            logger.warn { "Timeout sending message to: $toString" }
-        } catch (e: CancellationException) {
-            // Let exception flow through
-        } catch (e: Exception) {
-            logger.error { "Unexpected exception when sending message $e" }
         }
     }
 

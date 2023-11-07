@@ -24,7 +24,7 @@ class MemoryMessageStore(private val policyStore: PolicyStore) : MessageStore {
         require(storageKey.value != null)
 
         // TODO: This fetches the policy on every message. Would it be better to cache it for the life of the connection?
-        val storagePolicy = policyStore.getUserPolicy(to)?.storagePolicy
+        val storagePolicy = policyStore.getUserPolicy(to, to)?.storagePolicy
 
         if (storagePolicy == null) {
             logger.warn { "No storage policy for $to - dropping message" }

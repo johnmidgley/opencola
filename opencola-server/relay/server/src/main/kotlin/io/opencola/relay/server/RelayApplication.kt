@@ -59,11 +59,11 @@ fun startWebServer(
 
 fun main() {
     // TODO: Pass in keypair
-    val config = Config(SecurityConfig(generateKeyPair()))
+    val config = Config(SecurityConfig(generateKeyPair(), generateKeyPair()))
     val address = URI("ocr://0.0.0.0:$defaultOCRPort")
 
     // TODO: Add dependency injection
-    val policyStore = MemoryPolicyStore()
+    val policyStore = MemoryPolicyStore(config.security.rootId)
     val serverV1 = WebSocketRelayServerV1(config, address)
     val serverV2 = WebSocketRelayServerV2(
         config,

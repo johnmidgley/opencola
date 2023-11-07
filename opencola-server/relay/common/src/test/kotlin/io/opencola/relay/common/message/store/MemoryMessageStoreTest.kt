@@ -15,8 +15,8 @@ class MemoryMessageStoreTest {
     }
 
     private fun getMemoryMessageStore(maxStoredBytesPerUser: Int) : MemoryMessageStore {
-        val defaultPolicy = Policy(storagePolicy = StoragePolicy(maxStoredBytesPerUser))
-        val policyStore = MemoryPolicyStore(defaultPolicy)
+        val defaultPolicy = Policy("default", storagePolicy = StoragePolicy(maxStoredBytesPerUser))
+        val policyStore = MemoryPolicyStore(Id.new(), defaultPolicy)
         return MemoryMessageStore(policyStore)
     }
 

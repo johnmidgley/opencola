@@ -32,6 +32,7 @@ class PolicyDbTest {
         val authorityId = Id.new()
         val policyName = "testPolicy"
         val policy = Policy(
+            policyName,
             AdminPolicy(true, true),
             ConnectionPolicy(false),
             MessagePolicy(1024),
@@ -54,6 +55,7 @@ class PolicyDbTest {
 
         val authorityId1 = Id.new()
         val policy1 = Policy(
+            policyName,
             AdminPolicy(true, true),
             ConnectionPolicy(true),
             MessagePolicy(1024),
@@ -82,6 +84,7 @@ class PolicyDbTest {
         val authorityId = Id.new()
         val policyName = "testPolicy"
         val policy = Policy(
+            policyName,
             AdminPolicy(true, true),
             ConnectionPolicy(false),
             MessagePolicy(1024),
@@ -118,6 +121,7 @@ class PolicyDbTest {
         println("Test update")
         val authorityId1 = Id.new()
         val policy1 = Policy(
+            policyName,
             AdminPolicy(true, true),
             ConnectionPolicy(true),
             MessagePolicy(1024),

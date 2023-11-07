@@ -3,8 +3,12 @@ package io.opencola.relay.common.policy
 import io.opencola.model.Id
 
 interface PolicyStore {
-    fun setPolicy(authorityId: Id, policyName: String, policy: Policy)
-    fun getPolicy(policyName: String): Policy?
+    val rootId: Id
+    fun setPolicy(authorityId: Id, policy: Policy)
+    fun getPolicy(authorityId: Id, policyName: String): Policy?
+    fun getPolicies(authorityId: Id): Sequence<Policy>
+
     fun setUserPolicy(authorityId: Id, userId: Id, policyName: String)
-    fun getUserPolicy(userId: Id): Policy?
+    fun getUserPolicy(authorityId: Id, userId: Id): Policy?
+    fun getUserPolicies(authorityId: Id): Sequence<Pair<Id, String>>
 }

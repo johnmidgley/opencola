@@ -8,7 +8,6 @@ import io.opencola.serialization.StreamSerializer
 import java.io.InputStream
 import java.io.OutputStream
 
-// @Serializable
 data class TransactionFact(val attribute: Attribute, val value: Value<Any>, val operation: Operation) {
     fun toProto() = Factory.toProto(this)
 

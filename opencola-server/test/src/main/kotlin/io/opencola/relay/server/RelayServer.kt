@@ -16,14 +16,15 @@ import io.opencola.relay.server.v2.WebSocketRelayServer as WebSocketRelayServerV
 
 class RelayServer(
     val address: URI = URI("ocr://0.0.0.0:$defaultOCRPort"),
-    policyStore: PolicyStore = MemoryPolicyStore(),
-    connectionDirectory: ConnectionDirectory = MemoryConnectionDirectory(address),
-    messageStore: MessageStore = MemoryMessageStore(policyStore)
+    val policyStore: PolicyStore = MemoryPolicyStore(config.security.rootId),
+    val connectionDirectory: ConnectionDirectory = MemoryConnectionDirectory(address),
+    val messageStore: MessageStore = MemoryMessageStore(policyStore)
 ) {
     companion object {
         // This makes sure all RelayServer instances use the same keypair
         val keyPair = generateKeyPair()
-        val config = Config(SecurityConfig(keyPair))
+        val rootKeyPair = generateKeyPair()
+        val config = Config(SecurityConfig(keyPair, rootKeyPair))
     }
 
     private val webSocketRelayServerV1 = WebSocketRelayServerV1(config, address)

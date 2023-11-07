@@ -4,9 +4,8 @@ import io.opencola.model.Id
 import io.opencola.relay.common.State.*
 import io.opencola.relay.common.connection.*
 import io.opencola.relay.common.message.*
-import io.opencola.relay.common.message.v2.ControlMessage
-import io.opencola.relay.common.message.v2.ControlMessageType
 import io.opencola.relay.common.message.Message
+import io.opencola.relay.common.message.v2.*
 import io.opencola.relay.common.message.v2.store.MemoryMessageStore
 import io.opencola.relay.common.message.v2.store.MessageStore
 import io.opencola.relay.common.message.v2.store.Usage
@@ -17,7 +16,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import mu.KotlinLogging
 import java.net.URI
-import java.security.KeyPair
 import java.security.PublicKey
 import java.security.SecureRandom
 
@@ -28,7 +26,8 @@ abstract class AbstractRelayServer(
     protected val messageStore: MessageStore? = null,
 ) {
     val address = connectionDirectory.localAddress
-    protected val serverKeyPair: KeyPair
+    protected val serverKeyPair = config.security.keyPair
+    protected val rootKeyPair = config.security.rooKeyPair
     protected val logger = KotlinLogging.logger("RelayServer")
     protected val openMutex = Mutex(true)
     protected val random = SecureRandom()
@@ -37,7 +36,6 @@ abstract class AbstractRelayServer(
 
     init {
         require(address.scheme == "ocr") { "Invalid scheme: ${address.scheme}" }
-        serverKeyPair = config.security.keyPair
     }
 
     suspend fun waitUntilOpen() {
@@ -65,6 +63,7 @@ abstract class AbstractRelayServer(
         ControlMessage(ControlMessageType.NO_PENDING_MESSAGES).encodeProto()
     )
 
+    // TODO: Needed? or unfold into sendQueueEmptyMessage?
     private fun getQueueEmptyEnvelope(to: PublicKey): Envelope {
         return Envelope.from(serverKeyPair.private, to, null, noPendingMessagesMessage)
     }
@@ -114,7 +113,7 @@ abstract class AbstractRelayServer(
                 connectionDirectory.add(connection)
                 logger.info { "Session started: $id" }
                 // TODO: Policy is cached for connection lifetime. Should it expire or be invalidated on change?
-                val policy = policyStore.getUserPolicy(id)!!
+                val policy = policyStore.getUserPolicy(id, id)!!
                 sendStoredMessages(connection)
                 sendQueueEmptyMessage(connection)
 
@@ -231,6 +230,72 @@ abstract class AbstractRelayServer(
             }
     }
 
+    private suspend fun sendCommandMessage(to: Id, commandMessage: CommandMessage) {
+        val connection = connectionDirectory.get(to)?.connection
+            ?: throw IllegalStateException("No connection for $to - can't send command response")
+
+        val message = Message(rootKeyPair.public, commandMessage.toPayload())
+        val envelope = Envelope.from(rootKeyPair.private, connection.publicKey, null, message)
+        connection.writeSizedByteArray(encodePayload(connection.publicKey, envelope))
+    }
+
+    private fun authorizeAdmin(id: Id) {
+        if(id != config.security.rootId) {
+            val policy = policyStore.getUserPolicy(id, id)
+            require(policy != null) { "No policy for $id" }
+            require(policy.adminPolicy.isAdmin) { "$id is not admin" }
+        }
+    }
+
+    private suspend fun handleCommand(fromId: Id, envelope: Envelope) {
+        val recipient = envelope.recipients.singleOrNull()
+        authorizeAdmin(fromId)
+
+        if (recipient == null || recipient.publicKey != rootKeyPair.public) {
+            logger.warn { "Invalid command recipient" }
+            return
+        }
+
+        val command = CommandMessage.fromPayload(envelope.decryptMessage(rootKeyPair).body)
+
+        try {
+            logger.info { "Handling command: $fromId $command" }
+            val response = when (command) {
+                is SetPolicyCommand -> {
+                    policyStore.setPolicy(fromId, command.policy)
+                    CommandResponse(command.id, Status.SUCCESS, State.COMPLETE)
+                }
+                is GetPolicyCommand -> {
+                    GetPolicyResponse(command.id, policyStore.getPolicy(fromId, command.name))
+                }
+                is GetPoliciesCommand -> {
+                    GetPoliciesResponse(command.id, policyStore.getPolicies(fromId).toList())
+                }
+                is SetUserPolicyCommand -> {
+                    policyStore.setUserPolicy(fromId, command.userId, command.policyName)
+                    CommandResponse(command.id, Status.SUCCESS, State.COMPLETE)
+                }
+                is GetUserPolicyCommand -> {
+                    GetUserPolicyResponse(command.id, policyStore.getUserPolicy(fromId, command.userId))
+                }
+                is GetUserPoliciesCommand -> {
+                    GetUserPoliciesResponse(command.id, policyStore.getUserPolicies(fromId).toList())
+                }
+                else -> {
+                    "Unknown command: $command".let {
+                        logger.warn { it }
+                        CommandResponse(command.id, Status.FAILURE, State.COMPLETE, it)
+                    }
+                }
+            }
+
+            sendCommandMessage(fromId, response)
+        } catch (e: Exception) {
+            logger.error { "Error while handling command: $e" }
+            sendCommandMessage(fromId, CommandResponse(command.id, Status.FAILURE, State.COMPLETE, e.toString()))
+        }
+    }
+
     protected suspend fun handleMessage(from: PublicKey, payload: ByteArray, deliverRemoteMessages: Boolean = true) {
         val fromId = Id.ofPublicKey(from)
 
@@ -241,10 +306,14 @@ abstract class AbstractRelayServer(
                     .map { RecipientConnection(it, connectionDirectory.get(it.id())) }
                     .partition { it.connectionEntry == null || it.connectionEntry.address == address }
 
-                deliverLocalMessages(fromId, localRecipients, envelope)
+                if (envelope.recipients.singleOrNull()?.publicKey == rootKeyPair.public) {
+                    handleCommand(fromId, envelope)
+                } else {
+                    deliverLocalMessages(fromId, localRecipients, envelope)
 
-                if (deliverRemoteMessages)
-                    deliverRemoteMessages(from, remoteRecipients, envelope, payload)
+                    if (deliverRemoteMessages)
+                        deliverRemoteMessages(from, remoteRecipients, envelope, payload)
+                }
             }
         } catch (e: Exception) {
             logger.error { "Error while handling message from $fromId: $e" }

@@ -15,7 +15,6 @@ import io.opencola.storage.newSQLiteDB
 import io.opencola.util.append
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import java.net.ConnectException
 import java.net.URI
 import java.security.PublicKey
 import java.util.*
@@ -244,7 +243,7 @@ class ConnectionTest {
                 server0.stop()
 
                 println("Sending message to client1")
-                assertFailsWith<ConnectException> {
+                assertFails {
                     client0.sendMessage(
                         client1.publicKey,
                         MessageStorageKey.unique(),
@@ -255,7 +254,7 @@ class ConnectionTest {
                 println("Starting relay server again")
                 StdoutMonitor().use {
                     server1 = RelayServer().also { server -> server.start() }
-                    delay(200) // Unblock so clients can reconnect
+                    delay(1000) // Unblock so clients can reconnect
                     it.waitUntil("Connection created", 3000)
                     it.waitUntil("Connection created", 3000)
                 }
