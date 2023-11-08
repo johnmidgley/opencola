@@ -13,9 +13,9 @@ interface MessageStore {
         secretKey: EncryptedBytes,
         message: SignedBytes
     )
-
     fun getMessages(to: Id, limit: Int = 10): List<StoredMessage>
     fun removeMessage(storedMessage: StoredMessage)
+    fun getUsage(): Sequence<Usage>
 
     // Convenient way to consume messages that only removes a message when the next one (or end) is accessed
     fun consumeMessages(id: Id, batchSize: Int = 10) : Sequence<StoredMessage> {
@@ -46,7 +46,7 @@ interface MessageStore {
         }
     }
 
-    fun drainMessages(to: Id, batchSize: Int = 10) {
+    fun removeMessages(to: Id, batchSize: Int = 10) {
         consumeMessages(to, batchSize).forEach { _ -> }
     }
 }

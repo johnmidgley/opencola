@@ -4,6 +4,7 @@ import io.opencola.application.TestApplication
 import io.opencola.model.Id
 import io.opencola.relay.common.message.v2.MessageStorageKey
 import io.opencola.relay.common.message.v2.store.ExposedMessageStore
+import io.opencola.relay.common.message.v2.store.Messages
 import io.opencola.security.initProvider
 import io.opencola.storage.db.getPostgresDB
 import io.opencola.storage.db.getSQLiteDB
@@ -31,7 +32,7 @@ class ExposedMessageStoreTest {
         val db = getPostgresDB("localhost", "opencola", "opencola", "test")
 
         transaction(db) {
-            SchemaUtils.drop(ExposedMessageStore.Messages())
+            SchemaUtils.drop(Messages)
         }
 
         return db
@@ -98,9 +99,9 @@ class ExposedMessageStoreTest {
         messageStore.addMessage(from, to1, messageStorageKey, dummyMessageSecretKey, message)
 
         assertEquals(1, fileStore.enumerateFileIds().count())
-        messageStore.drainMessages(to0)
+        messageStore.removeMessages(to0)
         assertEquals(1, fileStore.enumerateFileIds().count())
-        messageStore.drainMessages(to1)
+        messageStore.removeMessages(to1)
         assertEquals(0, fileStore.enumerateFileIds().count())
     }
 

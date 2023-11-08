@@ -14,19 +14,10 @@ object UserPolicies : LongIdTable() {
     val editTimeMilliseconds = long("editTimeMilliseconds")
 }
 
-class UserPolicyRow(val resultRow: ResultRow) {
-    val id: Long
-        get() = resultRow[UserPolicies.id].value
-
-    val authorityId: Id
-        get() = Id.decode(resultRow[UserPolicies.authorityId])
-
-    val userId: Id
-        get() = Id.decode(resultRow[UserPolicies.userId])
-
-    val policyId: Long
-        get() = resultRow[UserPolicies.policyId]
-
-    val editTimeMilliseconds: Long
-        get() = resultRow[UserPolicies.editTimeMilliseconds]
+class UserPolicyRow(private val resultRow: ResultRow) {
+    val id: Long by lazy { resultRow[UserPolicies.id].value }
+    val authorityId: Id by lazy { Id(resultRow[UserPolicies.authorityId]) }
+    val userId: Id by lazy { Id(resultRow[UserPolicies.userId]) }
+    val policyId: Long by lazy { resultRow[UserPolicies.policyId] }
+    val editTimeMilliseconds: Long by lazy { resultRow[UserPolicies.editTimeMilliseconds] }
 }

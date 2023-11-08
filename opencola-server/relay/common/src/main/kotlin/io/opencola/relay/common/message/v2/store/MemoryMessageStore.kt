@@ -44,7 +44,7 @@ class MemoryMessageStore(private val policyStore: PolicyStore) : MessageStore {
         messageQueues[storedMessage.to]?.removeMessage(storedMessage)
     }
 
-    fun getUsage(): Sequence<Usage> {
+    override fun getUsage(): Sequence<Usage> {
         return messageQueues.entries.asSequence().map { Usage(it.key, it.value.bytesStored) }
     }
 }

@@ -14,18 +14,9 @@ object Policies : LongIdTable() {
 }
 
 class PolicyRow(private val resultRow: ResultRow) {
-    val id: Long
-        get() = resultRow[Policies.id].value
-
-    val authorityId: Id
-        get() = Id.decode(resultRow[Policies.authorityId])
-
-    val name: String
-        get() = resultRow[Policies.name]
-
-    val policy: Policy
-         get() = Json.decodeFromString(resultRow[Policies.policy].bytes.toString(Charset.defaultCharset()))
-
-    val editTimeMilliseconds: Long
-        get() = resultRow[Policies.editTimeMilliseconds]
+    val id: Long by lazy { resultRow[Policies.id].value }
+    val authorityId: Id by lazy { Id(resultRow[Policies.authorityId]) }
+    val name: String by lazy { resultRow[Policies.name] }
+    val policy: Policy by lazy { Json.decodeFromString(resultRow[Policies.policy].bytes.toString(Charset.defaultCharset())) }
+    val editTimeMilliseconds: Long by lazy { resultRow[Policies.editTimeMilliseconds] }
 }
