@@ -123,6 +123,7 @@ class PeerTransactionTest {
             assert(results0.matches.size == 1)
             assert(results0.matches[0].name == resource0.name)
         } finally {
+            println("Closing resources")
             apps.forEach { it.close() }
             server0.stop(1000, 1000)
             server1.stop(1000, 1000)

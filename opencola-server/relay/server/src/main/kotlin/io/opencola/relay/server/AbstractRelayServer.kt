@@ -281,6 +281,10 @@ abstract class AbstractRelayServer(
                 is GetUserPoliciesCommand -> {
                     GetUserPoliciesResponse(command.id, policyStore.getUserPolicies(fromId).toList())
                 }
+                is RemoveUserMessagesCommand -> {
+                    messageStore?.removeMessages(command.userId)
+                    CommandResponse(command.id, Status.SUCCESS, State.COMPLETE)
+                }
                 else -> {
                     "Unknown command: $command".let {
                         logger.warn { it }

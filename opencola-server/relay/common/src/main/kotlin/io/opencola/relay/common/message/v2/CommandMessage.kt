@@ -84,3 +84,7 @@ data class GetUserPoliciesCommand(override val id: String = UUID.randomUUID().to
 @Serializable
 @SerialName("GetUserPoliciesResponse")
 data class GetUserPoliciesResponse(override val id: String, val policies: List<Pair<@Contextual Id, String>> = emptyList()) : CommandMessage()
+
+@Serializable
+@SerialName("RemoveUserMessagesCommand")
+data class RemoveUserMessagesCommand(@Contextual val userId: Id, override val id: String = UUID.randomUUID().toString()) : CommandMessage()

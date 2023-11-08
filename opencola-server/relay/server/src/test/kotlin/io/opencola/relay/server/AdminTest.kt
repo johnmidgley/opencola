@@ -10,11 +10,8 @@ import io.opencola.relay.common.policy.Policy
 import io.opencola.relay.getClient
 import io.opencola.relay.getNewServerUri
 import io.opencola.security.generateKeyPair
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
 import org.junit.Test
 import kotlin.test.assertEquals
 
@@ -24,11 +21,15 @@ class AdminTest {
         this.sendMessage(RelayServer.rootKeyPair.public, MessageStorageKey.none, message.toPayload())
     }
 
-    private fun checkResponse(response: CommandMessage) {
+    private fun checkResponse(response: CommandMessage, sourceId: String? = null) {
         println(response)
         (response as? CommandResponse)?.let {
             assertEquals(Status.SUCCESS, it.status)
             assertEquals(State.COMPLETE, it.state)
+
+            if(sourceId != null) {
+                assertEquals(sourceId, it.id)
+            }
         }
     }
 
@@ -56,7 +57,11 @@ class AdminTest {
         }
     }
 
-    private suspend fun testSetUserPolicy(server: RelayServer, rootClient: AbstractClient, responseChannel: Channel<CommandMessage>) {
+    private suspend fun testSetUserPolicy(
+        server: RelayServer,
+        rootClient: AbstractClient,
+        responseChannel: Channel<CommandMessage>
+    ) {
         var client: AbstractClient? = null
 
         coroutineScope {
@@ -101,11 +106,40 @@ class AdminTest {
                         println(it)
                         assertEquals(Pair(clientId, "admin"), it.policies.single())
                     }
-
                 }
             } finally {
                 client?.close()
             }
+        }
+    }
+
+    private suspend fun testManageMessages(
+        server: RelayServer,
+        rootClient: AbstractClient,
+        responseChannel: Channel<CommandMessage>
+    ) {
+        coroutineScope {
+            val toPublicKey = generateKeyPair().public
+            val toId = Id.ofPublicKey(toPublicKey)
+
+            StdoutMonitor().use {
+                rootClient.sendMessage(toPublicKey, MessageStorageKey.unique(), "test".toByteArray())
+                it.waitUntil("Adding message:", 1000)
+                rootClient.sendMessage(toPublicKey, MessageStorageKey.unique(), "test".toByteArray())
+                it.waitUntil("Adding message:", 1000)
+                rootClient.sendMessage(toPublicKey, MessageStorageKey.unique(), "test".toByteArray())
+                it.waitUntil("Adding message:", 1000)
+            }
+
+            println("Checking for stored message")
+            server.messageStore.getMessages(toId).let { assertEquals(3, it.size) }
+
+            RemoveUserMessagesCommand(toId).let {
+                rootClient.sendCommandMessage(it)
+                withTimeout(1000) { checkResponse(responseChannel.receive(), it.id) }
+            }
+            println("Checking for removed message")
+            server.messageStore.getMessages(toId).let { assertEquals(0, it.size) }
         }
     }
 
@@ -134,6 +168,7 @@ class AdminTest {
 
                 testSetPolicy(rootClient!!, responseChannel) // Sets admin policy
                 testSetUserPolicy(server0!!, rootClient!!, responseChannel)
+                testManageMessages(server0!!, rootClient!!, responseChannel)
 
             } finally {
                 rootClient?.close()
