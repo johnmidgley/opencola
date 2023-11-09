@@ -95,8 +95,8 @@ class ExposedMessageStore(
         }
     }
 
-    private fun deleteMessageFromDB(storedMessage: StoredMessage): Id? {
-        return messagesDB.deleteMessage(storedMessage.header.from, storedMessage.header.to, storedMessage.header.storageKey)
+    private fun deleteMessageFromDB(header: StoredMessageHeader): Id? {
+        return messagesDB.deleteMessage(header.from, header.to, header.storageKey)
     }
 
     // Delete a message from the file store if it is not referenced by any other message
@@ -107,15 +107,23 @@ class ExposedMessageStore(
         }
     }
 
-    override fun removeMessage(storedMessage: StoredMessage) {
-        val messageDataId = deleteMessageFromDB(storedMessage)
+    override fun removeMessage(header: StoredMessageHeader) {
+        val messageDataId = deleteMessageFromDB(header)
 
         if (messageDataId == null) {
-            logger.warn { "Missing data: ${Id.ofData(storedMessage.body.encodeProto())}" }
+            logger.warn { "Missing data: $header" }
             return
         }
 
         safeDeleteFromFilestore(messageDataId)
+    }
+
+    override fun removeMessages(maxAgeMilliseconds: Long, limit: Int): List<StoredMessageHeader> {
+        val headers = messagesDB.getMessagesOlderThan(maxAgeMilliseconds, limit).map { it.toHeader() }
+
+        headers.forEach { removeMessage(it) }
+
+        return headers
     }
 
     override fun getUsage(): Sequence<Usage> {

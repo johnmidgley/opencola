@@ -5,7 +5,7 @@ import io.opencola.relay.common.message.v2.MessageStorageKey
 import io.opencola.security.EncryptedBytes
 import io.opencola.security.SignedBytes
 
-data class Header(
+data class StoredMessageHeader(
     val from: Id,
     val to: Id,
     val storageKey: MessageStorageKey,
@@ -18,7 +18,7 @@ data class Header(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is Header) return false
+        if (other !is StoredMessageHeader) return false
 
         if (from != other.from) return false
         if (to != other.to) return false
@@ -38,13 +38,13 @@ data class Header(
         return result
     }
 
-    fun matches(other: Header) : Boolean {
+    fun matches(other: StoredMessageHeader) : Boolean {
         return from == other.from && to == other.to && storageKey == other.storageKey
     }
 }
 
 data class StoredMessage (
-    val header: Header,
+    val header: StoredMessageHeader,
     val body: SignedBytes,
 ) {
     constructor(
@@ -54,7 +54,7 @@ data class StoredMessage (
         secretKey: EncryptedBytes,
         body: SignedBytes,
         timeMilliseconds: Long = System.currentTimeMillis()
-    ) : this(Header(from, to, storageKey, secretKey, timeMilliseconds), body)
+    ) : this(StoredMessageHeader(from, to, storageKey, secretKey, timeMilliseconds), body)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

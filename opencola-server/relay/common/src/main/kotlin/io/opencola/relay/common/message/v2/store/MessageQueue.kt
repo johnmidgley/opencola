@@ -77,20 +77,34 @@ class MessageQueue(private val recipientId: Id, private val maxStoredBytes: Int)
         }
     }
 
-    fun removeMessage(storedMessage: StoredMessage) {
+    fun removeMessage(header: StoredMessageHeader) {
         lock.lock()
         try {
             val matchingMessages =
-                queuedMessages.filter { it.matches(storedMessage) }
+                queuedMessages.filter { it.header.matches(header) }
 
             matchingMessages.forEach {
-                logger.info { "Removing message: ${it}" }
+                logger.info { "Removing message: $it" }
             }
 
             queuedMessages.removeAll(matchingMessages)
 
             // TODO: This currently not accurate for TOTAL memory usage, as a single message to multiple receivers will be referenced multiple times
             bytesStored -= matchingMessages.sumOf { it.body.bytes.size }
+        } finally {
+            lock.unlock()
+        }
+    }
+
+    fun removeMessages(maxAgeMilliseconds: Long, limit: Int) : List<StoredMessageHeader> {
+        lock.lock()
+        return try {
+            queuedMessages
+                .filter { it.header.timeMilliseconds < maxAgeMilliseconds }
+                .take(limit)
+                .map { it.header }
+                .onEach { removeMessage(it) }
+
         } finally {
             lock.unlock()
         }

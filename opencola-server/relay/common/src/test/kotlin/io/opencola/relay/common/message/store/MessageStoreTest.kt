@@ -45,7 +45,7 @@ fun testBasicAdd(messageStore: MessageStore) {
     val storedMessage0 = messageStore.getMessages(to).single()
     assertMatches(from, to, messageStorageKey, dummyMessageSecretKey, message, storedMessage0)
 
-    messageStore.removeMessage(storedMessage0)
+    messageStore.removeMessage(storedMessage0.header)
     assert(messageStore.getMessages(to).isEmpty())
 }
 
@@ -69,8 +69,8 @@ fun testAddMultipleMessages(messageStore: MessageStore) {
     val storedMessage1 = storedMessages[1]
     assertMatches(from, to, key1, dummyMessageSecretKey, message1, storedMessage1)
 
-    messageStore.removeMessage(storedMessage0)
-    messageStore.removeMessage(storedMessage1)
+    messageStore.removeMessage(storedMessage0.header)
+    messageStore.removeMessage(storedMessage1.header)
     assert(messageStore.getMessages(to).isEmpty())
 }
 
@@ -89,7 +89,7 @@ fun testAddWithDuplicateMessageStorageKey(messageStore: MessageStore) {
     // Check that only 2nd message is returned (it should overwrite the first)
     assertMatches(from, to, key, dummyMessageSecretKey, message1, storedMessage0)
 
-    messageStore.removeMessage(storedMessage0)
+    messageStore.removeMessage(storedMessage0.header)
     assert(messageStore.getMessages(to).isEmpty())
 }
 
@@ -115,7 +115,7 @@ fun testRejectMessageWhenOverQuota(messageStore: MessageStore) {
     assertMatches(from0, to, key0, dummyMessageSecretKey, message0, storedMessage1)
 
     // Remove message
-    messageStore.removeMessage(storedMessage0)
+    messageStore.removeMessage(storedMessage0.header)
     assert(messageStore.getMessages(to).isEmpty())
 
     // Now try adding the 2nd message again - it should be accepted this time

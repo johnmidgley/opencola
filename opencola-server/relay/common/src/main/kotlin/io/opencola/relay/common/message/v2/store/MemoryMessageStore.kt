@@ -40,8 +40,12 @@ class MemoryMessageStore(private val policyStore: PolicyStore) : MessageStore {
         return messageQueues[to]?.getMessages()?.take(limit) ?: emptyList()
     }
 
-    override fun removeMessage(storedMessage: StoredMessage) {
-        messageQueues[storedMessage.header.to]?.removeMessage(storedMessage)
+    override fun removeMessage(header: StoredMessageHeader) {
+        messageQueues[header.to]?.removeMessage(header)
+    }
+
+    override fun removeMessages(maxAgeMilliseconds: Long, limit: Int): List<StoredMessageHeader> {
+        return messageQueues.values.flatMap { it.removeMessages(maxAgeMilliseconds, limit) }
     }
 
     override fun getUsage(): Sequence<Usage> {

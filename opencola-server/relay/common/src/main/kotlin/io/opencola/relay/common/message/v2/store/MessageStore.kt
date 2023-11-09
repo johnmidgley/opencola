@@ -14,7 +14,8 @@ interface MessageStore {
         message: SignedBytes
     )
     fun getMessages(to: Id, limit: Int = 10): List<StoredMessage>
-    fun removeMessage(storedMessage: StoredMessage)
+    fun removeMessage(header: StoredMessageHeader)
+    fun removeMessages(maxAgeMilliseconds: Long, limit: Int = 10) : List<StoredMessageHeader>
     fun getUsage(): Sequence<Usage>
 
     // Convenient way to consume messages that only removes a message when the next one (or end) is accessed
@@ -24,7 +25,7 @@ interface MessageStore {
 
             do {
                 if(previousMessage != null) {
-                    removeMessage(previousMessage)
+                    removeMessage(previousMessage.header)
                     previousMessage = null
                 }
 
@@ -32,7 +33,7 @@ interface MessageStore {
 
                 messages.forEach{
                     if(previousMessage != null) {
-                        removeMessage(previousMessage!!)
+                        removeMessage(previousMessage!!.header)
                         previousMessage = null
                     }
                     yield(it)
@@ -41,7 +42,7 @@ interface MessageStore {
             } while (messages.size == batchSize)
 
             if(previousMessage != null) {
-                removeMessage(previousMessage!!)
+                removeMessage(previousMessage!!.header)
             }
         }
     }

@@ -29,4 +29,14 @@ class MessageRow(private val resultRow: ResultRow) {
     val dataId: Id by lazy { Id(resultRow[Messages.dataId]) }
     val sizeBytes: Long by lazy { resultRow[Messages.sizeBytes] }
     val timeMilliseconds: Long by lazy { resultRow[Messages.timeMilliseconds] }
+
+    fun toHeader() : StoredMessageHeader {
+        return StoredMessageHeader(
+            from,
+            to,
+            storageKey,
+            secretKey,
+            timeMilliseconds
+        )
+    }
 }
