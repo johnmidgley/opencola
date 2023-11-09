@@ -50,7 +50,7 @@ abstract class AbstractRelayServer(
         return (messageStore as? MemoryMessageStore)?.getUsage() ?: emptySequence()
     }
 
-    protected abstract suspend fun authenticate(socketSession: SocketSession): PublicKey?
+    protected abstract suspend fun authenticate(socketSession: SocketSession): Connection?
 
     // Decode the envelope into common server format
     protected abstract fun decodePayload(from: PublicKey, payload: ByteArray): Envelope
@@ -105,12 +105,10 @@ abstract class AbstractRelayServer(
     }
 
     suspend fun handleSession(socketSession: SocketSession) {
-        authenticate(socketSession)?.let { publicKey ->
-            val connection = Connection(publicKey, socketSession) { connectionDirectory.remove(it.id) }
+        authenticate(socketSession)?.let { connection ->
             val id = connection.id
 
             try {
-                connectionDirectory.add(connection)
                 logger.info { "Session started: $id" }
                 // TODO: Policy is cached for connection lifetime. Should it expire or be invalidated on change?
                 val policy = policyStore.getUserPolicy(id, id)!!
@@ -122,7 +120,7 @@ abstract class AbstractRelayServer(
                     if (payload.size > policy.messagePolicy.maxPayloadSize) {
                         logger.warn { "Payload too large from $id: Ignoring ${payload.size} bytes" }
                     } else {
-                        handleMessage(publicKey, payload)
+                        handleMessage(connection.publicKey, payload)
                         if (sendStoredMessages(connection) > 0)
                             logger.warn { "Stored messages sent on handleMessage to $id" }
                     }
@@ -284,6 +282,9 @@ abstract class AbstractRelayServer(
                 is RemoveUserMessagesCommand -> {
                     messageStore?.removeMessages(command.userId)
                     CommandResponse(command.id, Status.SUCCESS, State.COMPLETE)
+                }
+                is GetMessageUsageCommand -> {
+                    GetMessageUsageResponse(command.id, messageStore?.getUsage()?.toList() ?: emptyList())
                 }
                 else -> {
                     "Unknown command: $command".let {

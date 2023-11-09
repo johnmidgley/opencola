@@ -130,4 +130,26 @@ class MessagesDB(private val database: Database) {
                 .firstOrNull() != null
         }
     }
+
+    fun getToIds(): List<Id> {
+        return transaction(database) {
+            Messages
+                .slice(Messages.to)
+                .selectAll()
+                .mapNotNull { Id(it[Messages.to]) }
+                .distinct()
+        }
+    }
+
+    fun getToUsage(to: Id): Usage {
+        return transaction(database) {
+            Messages.select { Messages.to eq to.encoded() }
+                .fold(Pair(0, 0L)) { acc, row ->
+                    val size = row[Messages.sizeBytes]
+                    Pair(acc.first + 1, acc.second + size)
+                }.let {
+                    Usage(to, it.first, it.second.toInt())
+                }
+        }
+    }
 }
