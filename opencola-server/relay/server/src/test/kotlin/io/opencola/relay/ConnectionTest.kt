@@ -236,8 +236,9 @@ class ConnectionTest {
                         it.waitUntilOpen()
                     }
 
+                println("Sending message to client1: ${client1.id}")
                 client0.sendMessage(client1.publicKey, MessageStorageKey.unique(), "hello1".toByteArray())
-                assertEquals("hello1 client1", String(results.receive()))
+                assertEquals("hello1 client1", withTimeout(3000) { String(results.receive()) })
 
                 println("Stopping relay server")
                 server0.stop()

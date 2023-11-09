@@ -5,11 +5,15 @@ import io.opencola.model.Id
 import io.opencola.relay.common.message.v2.MessageStorageKey
 import io.opencola.relay.common.message.v2.store.ExposedMessageStore
 import io.opencola.relay.common.message.v2.store.Messages
+import io.opencola.relay.common.policy.ExposedPolicyStore
+import io.opencola.relay.common.policy.Policy
+import io.opencola.relay.common.policy.PolicyStore
+import io.opencola.relay.common.policy.StoragePolicy
 import io.opencola.security.initProvider
 import io.opencola.storage.db.getPostgresDB
-import io.opencola.storage.db.getSQLiteDB
 import io.opencola.storage.filestore.ContentAddressedFileStore
 import io.opencola.storage.filestore.FileSystemContentAddressedFileStore
+import io.opencola.storage.newSQLiteDB
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -20,12 +24,6 @@ import kotlin.test.assertEquals
 class ExposedMessageStoreTest {
     init {
         initProvider()
-    }
-
-
-    private fun newSQLiteDB(): Database {
-        val dbDirectory = TestApplication.getTmpDirectory("-db")
-        return getSQLiteDB(dbDirectory.resolve("test.db"))
     }
 
     private fun newPostgresDB(): Database {
@@ -39,7 +37,7 @@ class ExposedMessageStoreTest {
     }
 
     private fun newExposedDB(): Database {
-        return newSQLiteDB()
+        return newSQLiteDB("test.db")
     }
 
     private fun newFileStore(): FileSystemContentAddressedFileStore {
@@ -48,11 +46,11 @@ class ExposedMessageStoreTest {
     }
 
     private fun newExposedMessageStore(
-        maxStoredBytesPerConnection: Int = 1024 * 1024 * 50,
         exposedDB: Database = newExposedDB(),
-        fileStore: ContentAddressedFileStore = newFileStore()
+        fileStore: ContentAddressedFileStore = newFileStore(),
+        policyStore: PolicyStore = ExposedPolicyStore(exposedDB, Id.new())
     ): ExposedMessageStore {
-        return ExposedMessageStore(exposedDB, fileStore, maxStoredBytesPerConnection)
+        return ExposedMessageStore(exposedDB, fileStore, policyStore)
     }
 
     @Test
@@ -72,7 +70,8 @@ class ExposedMessageStoreTest {
 
     @Test
     fun testRejectMessageWhenOverQuota() {
-        testRejectMessageWhenOverQuota(newExposedMessageStore(34))
+        val policyStore = ExposedPolicyStore(newExposedDB(), Id.new(), Policy("default", storagePolicy = StoragePolicy(34)) )
+        testRejectMessageWhenOverQuota(newExposedMessageStore(policyStore = policyStore))
     }
 
     @Test

@@ -9,7 +9,7 @@ import io.opencola.relay.common.connection.ConnectionsDB
 import io.opencola.relay.common.connection.ExposedConnectionDirectory
 import io.opencola.relay.common.message.v2.MessageStorageKey
 import io.opencola.relay.common.message.v2.store.ExposedMessageStore
-import io.opencola.relay.common.policy.MemoryPolicyStore
+import io.opencola.relay.common.policy.ExposedPolicyStore
 import io.opencola.relay.getClient
 import io.opencola.relay.getNewServerUri
 import io.opencola.security.generateKeyPair
@@ -49,15 +49,15 @@ class MultiServerInstanceTest {
 
                 println("Starting server0")
                 val server0Address = getNewServerUri()
-                val policyStore = MemoryPolicyStore(RelayServer.config.security.rootId)
+                val policyStore =  ExposedPolicyStore(sqlLiteDB, RelayServer.config.security.rootId)
                 val server0ConnectionDirectory = ExposedConnectionDirectory(sqlLiteDB, server0Address)
-                val server0MessageStore = ExposedMessageStore(sqlLiteDB, fileStore)
+                val server0MessageStore = ExposedMessageStore(sqlLiteDB, fileStore, policyStore)
                 server0 = RelayServer(server0Address, policyStore, server0ConnectionDirectory, server0MessageStore).also { it.start() }
 
                 println("Starting server1")
                 val server1Address = getNewServerUri()
                 val server1ConnectionDirectory = ExposedConnectionDirectory(sqlLiteDB, server1Address)
-                val server1MessageStore = ExposedMessageStore(sqlLiteDB, fileStore)
+                val server1MessageStore = ExposedMessageStore(sqlLiteDB, fileStore, policyStore)
                 server1 = RelayServer(server1Address, policyStore, server1ConnectionDirectory, server1MessageStore).also { it.start() }
 
                 val results = Channel<ByteArray>()

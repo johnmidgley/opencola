@@ -77,6 +77,8 @@ abstract class AbstractClient(
     val publicKey: PublicKey
         get() = keyPair.public
 
+    val id: Id by lazy { Id.ofPublicKey(keyPair.public) }
+
     val state: State
         get() = _state
 

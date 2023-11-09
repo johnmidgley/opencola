@@ -2,6 +2,7 @@ package io.opencola.relay.common.message.v2
 
 import io.opencola.model.Id
 import io.opencola.model.IdAsStringSerializer
+import io.opencola.relay.common.message.v2.store.Usage
 import io.opencola.relay.common.policy.Policy
 import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
@@ -88,3 +89,13 @@ data class GetUserPoliciesResponse(override val id: String, val policies: List<P
 @Serializable
 @SerialName("RemoveUserMessagesCommand")
 data class RemoveUserMessagesCommand(@Contextual val userId: Id, override val id: String = UUID.randomUUID().toString()) : CommandMessage()
+
+@Serializable
+@SerialName("GetMessageUsageCommand")
+data class GetMessageUsageCommand(override val id: String = UUID.randomUUID().toString()) : CommandMessage()
+
+@Serializable
+@SerialName("GetMessageUsageResponse")
+data class GetMessageUsageResponse(override val id: String, val usages: List<Usage>) : CommandMessage()
+
+// TODO: Add GetUserMessagesCommand / Response

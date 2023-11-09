@@ -10,6 +10,9 @@ class MessageQueue(private val recipientId: Id, private val maxStoredBytes: Int)
     var bytesStored: Int = 0
         private set
 
+    val numMessages: Int
+        get() = queuedMessages.size
+
     // We want to be able to replace items in the message queue, if a newer message with the same senderSpecificKey.
     // To do this, without having to copy the whole list on change, we simply use a mutable list and lock it when
     // operating on it

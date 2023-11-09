@@ -2,6 +2,7 @@ package io.opencola.relay.common.message.v2.store
 
 import io.opencola.model.Id
 import io.opencola.relay.common.message.v2.MessageStorageKey
+import io.opencola.relay.common.policy.PolicyStore
 import io.opencola.security.EncryptedBytes
 import io.opencola.security.SignedBytes
 import io.opencola.storage.filestore.ContentAddressedFileStore
@@ -12,7 +13,7 @@ import kotlin.sequences.Sequence
 class ExposedMessageStore(
     database: Database,
     private val fileStore: ContentAddressedFileStore,
-    private val maxStoredBytesPerConnection: Int = 1024 * 1024 * 50
+    private val policyStore: PolicyStore,
 ) : MessageStore {
     private val logger = KotlinLogging.logger("ExposedMessageStore")
     private val messagesDB = MessagesDB(database)
@@ -31,7 +32,14 @@ class ExposedMessageStore(
         val existingMessage = messagesDB.getMessage (from, to, storageKey)
         val existingMessageSize = existingMessage?.sizeBytes ?: 0
 
-        if (bytesStored + messageEncoded.size - existingMessageSize > maxStoredBytesPerConnection) {
+        val storagePolicy = policyStore.getUserPolicy(to, to)?.storagePolicy
+
+        if (storagePolicy == null) {
+            logger.warn { "No storage policy for $to - dropping message" }
+            return
+        }
+
+        if (bytesStored + messageEncoded.size - existingMessageSize > storagePolicy.maxStoredBytes) {
             logger.info { "Message store for $to is full - dropping message" }
             return
         }
@@ -46,7 +54,6 @@ class ExposedMessageStore(
                 messageEncoded.size.toLong(),
                 System.currentTimeMillis()
             )
-
         } else {
             messagesDB.updateMessage(
                 existingMessage.id,
@@ -55,6 +62,8 @@ class ExposedMessageStore(
                 messageEncoded.size.toLong()
             )
         }
+
+        logger.info { "Added message: from=$from, to=$to" }
     }
 
     private fun getMessageBody(id: Id): SignedBytes? {
@@ -110,6 +119,6 @@ class ExposedMessageStore(
     }
 
     override fun getUsage(): Sequence<Usage> {
-        TODO("Not yet implemented")
+        return messagesDB.getToIds().asSequence().map { messagesDB.getToUsage(it) }
     }
 }

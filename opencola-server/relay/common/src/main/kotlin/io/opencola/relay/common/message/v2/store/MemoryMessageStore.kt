@@ -45,6 +45,6 @@ class MemoryMessageStore(private val policyStore: PolicyStore) : MessageStore {
     }
 
     override fun getUsage(): Sequence<Usage> {
-        return messageQueues.entries.asSequence().map { Usage(it.key, it.value.bytesStored) }
+        return messageQueues.entries.asSequence().map { Usage(it.key, it.value.numMessages, it.value.bytesStored) }
     }
 }

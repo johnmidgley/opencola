@@ -4,6 +4,7 @@ import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.opencola.model.Id
+import io.opencola.relay.common.connection.Connection
 import io.opencola.relay.common.connection.ConnectionDirectory
 import io.opencola.relay.common.connection.SocketSession
 import io.opencola.relay.common.message.Envelope
@@ -43,7 +44,7 @@ abstract class Server(
         }
     }
 
-    override suspend fun authenticate(socketSession: SocketSession): PublicKey? {
+    override suspend fun authenticate(socketSession: SocketSession): Connection? {
         try {
             logger.debug { "Sending server identity" }
             // TODO: Figure out how to publish this key so client can ensure server is trusted
@@ -80,15 +81,25 @@ abstract class Server(
                 AuthenticationStatus.FAILED_CHALLENGE
             else if (!isClientAuthorized(clientId)) {
                 AuthenticationStatus.NOT_AUTHORIZED
-            } else
+            } else {
                 AuthenticationStatus.AUTHENTICATED
+            }
 
-            socketSession.writeSizedByteArray(AuthenticationResult(status).encodeProto())
+            val authenticationResult = AuthenticationResult(status).encodeProto()
 
             if (status == AuthenticationStatus.AUTHENTICATED) {
                 logger.debug { "Client authenticated" }
-                return clientPublicKey
-            }
+                Connection(clientPublicKey, socketSession) { connectionDirectory.remove(it.id) }.let {
+                    // It is important to add the connection to the directory BEFORE returning the authentication result
+                    // to the client so that the client can't make a request that may result in a response from the
+                    // server, which would fail without an entry in the connection directory.
+                    connectionDirectory.add(it)
+                    socketSession.writeSizedByteArray(authenticationResult)
+                    return it
+                }
+            } else
+                socketSession.writeSizedByteArray(authenticationResult)
+
         } catch (e: CancellationException) {
             // Let job cancellation fall through
         } catch (e: ClosedReceiveChannelException) {

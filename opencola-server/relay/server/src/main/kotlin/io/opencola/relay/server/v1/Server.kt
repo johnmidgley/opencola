@@ -1,6 +1,7 @@
 package io.opencola.relay.server.v1
 
 import io.opencola.model.Id
+import io.opencola.relay.common.connection.Connection
 import io.opencola.relay.common.connection.MemoryConnectionDirectory
 import io.opencola.serialization.codecs.IntByteArrayCodec
 import io.opencola.relay.common.connection.SocketSession
@@ -20,7 +21,7 @@ abstract class Server(
     config: Config,
     address: URI,
 ) : AbstractRelayServer(config, MemoryPolicyStore(config.security.rootId), MemoryConnectionDirectory(address), null) {
-    override suspend fun authenticate(socketSession: SocketSession): PublicKey? {
+    override suspend fun authenticate(socketSession: SocketSession): Connection? {
         try {
             logger.debug { "Authenticating" }
             val encodedPublicKey = socketSession.readSizedByteArray()
@@ -38,12 +39,20 @@ abstract class Server(
             logger.debug { "Received challenge signature" }
 
             val status = if (isValidSignature(publicKey, challenge, challengeSignature)) 0 else -1
-            socketSession.writeSizedByteArray(IntByteArrayCodec.encode(status))
-            if (status != 0)
+            val encodedStatus = IntByteArrayCodec.encode(status)
+
+            if (status != 0) {
+                socketSession.writeSizedByteArray(encodedStatus)
                 throw RuntimeException("Challenge signature is not valid")
+            }
 
             logger.debug { "Client authenticated" }
-            return publicKey
+            Connection(publicKey, socketSession) { connectionDirectory.remove(it.id) }.let { connection ->
+                connectionDirectory.add(connection)
+                socketSession.writeSizedByteArray(encodedStatus)
+                return connection
+            }
+
         } catch (e: CancellationException) {
             // Let job cancellation fall through
         } catch (e: ClosedReceiveChannelException) {
