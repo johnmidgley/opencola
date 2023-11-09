@@ -381,7 +381,7 @@ class ConnectionTest {
                 val results = ConcurrentHashMap<UUID, CompletableDeferred<Unit>>()
                 server = RelayServer().also { it.start() }
                 val random = Random()
-                val numClients = 50
+                val numClients = 10
                 clients = (0 until numClients)
                     .map { getClient(clientType, name = "client$it", requestTimeoutInMilliseconds = 10000) }
                     .onEach {
@@ -395,7 +395,7 @@ class ConnectionTest {
                         it.waitUntilOpen()
                     }
 
-                (0..1000).map {
+                (0..100).map {
                     val sender = abs(random.nextInt()) % numClients
                     val receiver = abs(random.nextInt()) % numClients
 

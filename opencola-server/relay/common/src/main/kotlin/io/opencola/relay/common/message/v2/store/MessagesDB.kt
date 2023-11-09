@@ -152,4 +152,15 @@ class MessagesDB(private val database: Database) {
                 }
         }
     }
+
+    fun getMessagesOlderThan(ageMilliseconds: Long, limit: Int = 100): List<MessageRow> {
+        val timeMilliseconds = System.currentTimeMillis() - ageMilliseconds
+        return transaction(database) {
+            Messages
+                .select { Messages.timeMilliseconds less timeMilliseconds }
+                .limit(limit)
+                .toList()
+                .map { MessageRow(it) }
+        }
+    }
 }

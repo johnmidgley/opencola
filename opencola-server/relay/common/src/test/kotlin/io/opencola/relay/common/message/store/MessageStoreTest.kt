@@ -27,11 +27,11 @@ private fun assertMatches(
     message: SignedBytes,
     storedMessage: StoredMessage
 ) {
-    assertEquals(storedMessage.from, from)
-    assertEquals(storedMessage.to, to)
-    assertEquals(storedMessage.storageKey, messageStorageKey)
-    assertEquals(storedMessage.secretKey, messageSecretKey)
-    assertEquals(storedMessage.message, message)
+    assertEquals(storedMessage.header.from, from)
+    assertEquals(storedMessage.header.to, to)
+    assertEquals(storedMessage.header.storageKey, messageStorageKey)
+    assertEquals(storedMessage.header.secretKey, messageSecretKey)
+    assertEquals(storedMessage.body, message)
 }
 
 fun testBasicAdd(messageStore: MessageStore) {
@@ -177,7 +177,7 @@ fun testConsumeMessages(messageStore: MessageStore) {
     }
 
     messages.forEach {
-        messageStore.addMessage(it.from, it.to, it.storageKey, it.secretKey, it.message)
+        messageStore.addMessage(it.header.from, it.header.to, it.header.storageKey, it.header.secretKey, it.body)
     }
 
     // Consume all messages using (which is forced by .toList())
@@ -187,6 +187,6 @@ fun testConsumeMessages(messageStore: MessageStore) {
     assertEquals(messages.size, consumeMessages.size)
 
     consumeMessages.zip(messages).forEach { (consumed, original) ->
-        assertMatches(original.from, original.to, original.storageKey, original.secretKey, original.message, consumed)
+        assertMatches(original.header.from, original.header.to, original.header.storageKey, original.header.secretKey, original.body, consumed)
     }
 }

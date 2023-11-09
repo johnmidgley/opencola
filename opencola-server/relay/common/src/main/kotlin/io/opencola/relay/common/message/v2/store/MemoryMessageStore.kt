@@ -41,7 +41,7 @@ class MemoryMessageStore(private val policyStore: PolicyStore) : MessageStore {
     }
 
     override fun removeMessage(storedMessage: StoredMessage) {
-        messageQueues[storedMessage.to]?.removeMessage(storedMessage)
+        messageQueues[storedMessage.header.to]?.removeMessage(storedMessage)
     }
 
     override fun getUsage(): Sequence<Usage> {

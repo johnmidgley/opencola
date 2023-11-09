@@ -96,7 +96,7 @@ class ExposedMessageStore(
     }
 
     private fun deleteMessageFromDB(storedMessage: StoredMessage): Id? {
-        return messagesDB.deleteMessage(storedMessage.from, storedMessage.to, storedMessage.storageKey)
+        return messagesDB.deleteMessage(storedMessage.header.from, storedMessage.header.to, storedMessage.header.storageKey)
     }
 
     // Delete a message from the file store if it is not referenced by any other message
@@ -111,7 +111,7 @@ class ExposedMessageStore(
         val messageDataId = deleteMessageFromDB(storedMessage)
 
         if (messageDataId == null) {
-            logger.warn { "Missing data: ${Id.ofData(storedMessage.message.encodeProto())}" }
+            logger.warn { "Missing data: ${Id.ofData(storedMessage.body.encodeProto())}" }
             return
         }
 

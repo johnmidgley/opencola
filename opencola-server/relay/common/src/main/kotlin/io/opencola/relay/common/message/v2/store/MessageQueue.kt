@@ -23,8 +23,8 @@ class MessageQueue(private val recipientId: Id, private val maxStoredBytes: Int)
     fun addMessage(storedMessage: StoredMessage) {
         lock.lock()
         try {
-            require(storedMessage.to == recipientId)
-            require(storedMessage.storageKey.value != null)
+            require(storedMessage.header.to == recipientId)
+            require(storedMessage.header.storageKey.value != null)
 
             logger.info { "Adding message: $storedMessage" }
 
@@ -40,9 +40,9 @@ class MessageQueue(private val recipientId: Id, private val maxStoredBytes: Int)
             // This slightly under-counts usage, as it only counts the bytes inside the signed message, not including
             // the signature. Fixing this would be inefficient, as we'd need to encode the signed message to get its
             // size, which isn't worth it.
-            val existingMessageSize = matchingMessages.sumOf { it.matchingMessage.message.bytes.size }
+            val existingMessageSize = matchingMessages.sumOf { it.matchingMessage.body.bytes.size }
 
-            if (bytesStored + storedMessage.message.bytes.size - existingMessageSize > maxStoredBytes) {
+            if (bytesStored + storedMessage.body.bytes.size - existingMessageSize > maxStoredBytes) {
                 logger.info { "Message store for $recipientId is full - dropping message" }
                 return
             }
@@ -62,7 +62,7 @@ class MessageQueue(private val recipientId: Id, private val maxStoredBytes: Int)
                 this.queuedMessages.add(storedMessage)
 
             // TODO: This is over counting TOTAL memory usage, as a single message to multiple receivers will be referenced multiple times
-            bytesStored += storedMessage.message.bytes.size
+            bytesStored += storedMessage.body.bytes.size
         } finally {
             lock.unlock()
         }
@@ -90,7 +90,7 @@ class MessageQueue(private val recipientId: Id, private val maxStoredBytes: Int)
             queuedMessages.removeAll(matchingMessages)
 
             // TODO: This currently not accurate for TOTAL memory usage, as a single message to multiple receivers will be referenced multiple times
-            bytesStored -= matchingMessages.sumOf { it.message.bytes.size }
+            bytesStored -= matchingMessages.sumOf { it.body.bytes.size }
         } finally {
             lock.unlock()
         }

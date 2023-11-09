@@ -60,7 +60,7 @@ class MemoryMessageStoreTest {
 
         messageStore.addMessage(from, to, messageStorageKey, dummyMessageSecretKey, message)
 
-        assert(messageStore.getMessages(to).single().message === message)
+        assert(messageStore.getMessages(to).single().body === message)
     }
 
     @Test
