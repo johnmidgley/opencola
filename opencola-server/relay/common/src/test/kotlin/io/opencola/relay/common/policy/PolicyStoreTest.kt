@@ -46,8 +46,13 @@ class PolicyStoreTest {
         policyStore.setUserPolicy(userId, user1Id, testPolicy.name)
         assertEquals(testPolicy, policyStore.getUserPolicy(policyStore.rootId, user1Id))
 
-        println("Test default policy")
+        println("Test implicit default policy")
         assertEquals(defaultPolicy, policyStore.getUserPolicy(policyStore.rootId, Id.new()))
+
+        println("Test explicit default policy")
+        val explicitDefaultPolicy = Policy("default", storagePolicy = StoragePolicy(1234))
+        policyStore.setPolicy(policyStore.rootId, explicitDefaultPolicy)
+        assertEquals(explicitDefaultPolicy, policyStore.getUserPolicy(policyStore.rootId, Id.new()))
     }
 
     @Test
