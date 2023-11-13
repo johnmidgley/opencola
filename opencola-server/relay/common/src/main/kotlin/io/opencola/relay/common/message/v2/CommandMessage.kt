@@ -91,11 +91,16 @@ data class GetUserPoliciesResponse(override val id: String, val policies: List<P
 data class RemoveUserMessagesCommand(@Contextual val userId: Id, override val id: String = UUID.randomUUID().toString()) : CommandMessage()
 
 @Serializable
+@SerialName("RemoveMessagesByAgeCommand")
+data class RemoveMessagesByAgeCommand(val maxAgeMilliseconds: Long, override val id: String = UUID.randomUUID().toString()) : CommandMessage()
+
+@Serializable
 @SerialName("GetMessageUsageCommand")
 data class GetMessageUsageCommand(override val id: String = UUID.randomUUID().toString()) : CommandMessage()
 
 @Serializable
 @SerialName("GetMessageUsageResponse")
 data class GetMessageUsageResponse(override val id: String, val usages: List<Usage>) : CommandMessage()
+
 
 // TODO: Add GetUserMessagesCommand / Response

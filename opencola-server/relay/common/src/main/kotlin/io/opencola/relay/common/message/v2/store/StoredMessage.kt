@@ -13,7 +13,7 @@ data class StoredMessageHeader(
     val timeMilliseconds: Long = System.currentTimeMillis()
 ) {
     override fun toString(): String {
-        return "Header(from=$from, to=$to, messageStorageKey=$storageKey, messageSecretKey=ENCRYPTED) time=$timeMilliseconds"
+        return "${javaClass.simpleName}(from=$from, to=$to, messageStorageKey=$storageKey, time=$timeMilliseconds)"
     }
 
     override fun equals(other: Any?): Boolean {

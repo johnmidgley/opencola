@@ -108,6 +108,7 @@ class ExposedMessageStore(
     }
 
     override fun removeMessage(header: StoredMessageHeader) {
+        logger.info { "Removing message: $header" }
         val messageDataId = deleteMessageFromDB(header)
 
         if (messageDataId == null) {

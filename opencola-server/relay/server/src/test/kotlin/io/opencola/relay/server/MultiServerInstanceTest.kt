@@ -49,16 +49,26 @@ class MultiServerInstanceTest {
 
                 println("Starting server0")
                 val server0Address = getNewServerUri()
-                val policyStore =  ExposedPolicyStore(sqlLiteDB, RelayServer.config.security.rootId)
+                val policyStore = ExposedPolicyStore(sqlLiteDB, RelayServer.config.security.rootId)
                 val server0ConnectionDirectory = ExposedConnectionDirectory(sqlLiteDB, server0Address)
                 val server0MessageStore = ExposedMessageStore(sqlLiteDB, fileStore, policyStore)
-                server0 = RelayServer(server0Address, policyStore, server0ConnectionDirectory, server0MessageStore).also { it.start() }
+                server0 = RelayServer(
+                    server0Address,
+                    policyStore = policyStore,
+                    connectionDirectory = server0ConnectionDirectory,
+                    messageStore =  server0MessageStore
+                ).also { it.start() }
 
                 println("Starting server1")
                 val server1Address = getNewServerUri()
                 val server1ConnectionDirectory = ExposedConnectionDirectory(sqlLiteDB, server1Address)
                 val server1MessageStore = ExposedMessageStore(sqlLiteDB, fileStore, policyStore)
-                server1 = RelayServer(server1Address, policyStore, server1ConnectionDirectory, server1MessageStore).also { it.start() }
+                server1 = RelayServer(
+                    server1Address,
+                    policyStore = policyStore,
+                    connectionDirectory = server1ConnectionDirectory,
+                    messageStore =  server1MessageStore
+                ).also { it.start() }
 
                 val results = Channel<ByteArray>()
 

@@ -74,4 +74,10 @@ class MemoryMessageStoreTest {
         val messageStore = getMemoryMessageStore(1024 * 1024)
         testConsumeMessages(messageStore)
     }
+
+    @Test
+    fun testRemoveMessagesByAge() {
+        val messageStore = getMemoryMessageStore(1024 * 1024)
+        testRemoveMessagesByAge(messageStore)
+    }
 }

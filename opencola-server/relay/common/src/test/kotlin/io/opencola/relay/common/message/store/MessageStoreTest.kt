@@ -190,3 +190,27 @@ fun testConsumeMessages(messageStore: MessageStore) {
         assertMatches(original.header.from, original.header.to, original.header.storageKey, original.header.secretKey, original.body, consumed)
     }
 }
+
+fun testRemoveMessagesByAge(messageStore: MessageStore) {
+    val to = Id.new()
+    val message = "message".toSignedBytes()
+
+    println("Adding message and delaying")
+    messageStore.addMessage(Id.new(), to, MessageStorageKey.unique(), dummyMessageSecretKey, message)
+    Thread.sleep(100)
+
+    println("Added 2nd message")
+    val keptStorageKey = MessageStorageKey.of("kept")
+    messageStore.addMessage(Id.new(), to, keptStorageKey, dummyMessageSecretKey, message)
+
+    println("Checking both messages are in the store")
+    assertEquals(2, messageStore.getMessages(to).size)
+
+    println("Removing messages older than 50ms")
+    messageStore.removeMessages(50).forEach { println("Removed message: $it") }
+
+    println("Checking only 1 message is left")
+    val messages = messageStore.getMessages(to)
+    assertEquals(1, messages.size)
+    assertEquals(keptStorageKey, messages[0].header.storageKey)
+}

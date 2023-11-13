@@ -5,11 +5,12 @@ import io.opencola.model.Id
 import io.opencola.relay.ClientType
 import io.opencola.relay.client.AbstractClient
 import io.opencola.relay.common.message.v2.*
+import io.opencola.relay.common.message.v2.store.MessagesDB
 import io.opencola.relay.common.policy.AdminPolicy
 import io.opencola.relay.common.policy.Policy
 import io.opencola.relay.getClient
 import io.opencola.relay.getNewServerUri
-import io.opencola.security.generateKeyPair
+import io.opencola.security.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -155,6 +156,49 @@ class AdminTest {
             }
             println("Checking for removed message")
             server.messageStore.getMessages(toId).let { assertEquals(0, it.size) }
+
+            val messageDB = MessagesDB(server.db)
+            val secretKey = EncryptedBytes(
+                EncryptionTransformation.NONE,
+                EncryptionParameters(EncryptionParameters.Type.NONE, "".toByteArray()),
+                "secretKey".toByteArray()
+            )
+
+            val data = SignedBytes(Signature.none, "data".toByteArray()).encodeProto()
+            val dataId = server.contentAddressedFileStore.write(data)
+            val keptMessageKey = MessageStorageKey.of("kept")
+            messageDB.insertMessage(
+                Id.new(),
+                toId,
+                keptMessageKey,
+                secretKey,
+                dataId,
+                10,
+                System.currentTimeMillis()
+            )
+            messageDB.insertMessage(
+                Id.new(),
+                toId,
+                MessageStorageKey.unique(),
+                secretKey,
+                dataId,
+                10,
+                System.currentTimeMillis() - 1000 * 60
+            )
+
+            assertEquals(2, server.messageStore.getMessages(toId).size)
+            RemoveMessagesByAgeCommand(5000).let {
+                rootClient.sendCommandMessage(it)
+
+                do {
+                    val response =  withTimeout(1000) { responseChannel.receive() } as CommandResponse
+                    println(response.message)
+                } while (response.state != State.COMPLETE)
+            }
+
+            val messages = server.messageStore.getMessages(toId)
+            assertEquals(1, messages.size)
+            assertEquals(keptMessageKey, messages[0].header.storageKey)
         }
     }
 

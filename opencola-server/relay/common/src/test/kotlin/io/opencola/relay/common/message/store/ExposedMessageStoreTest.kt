@@ -128,4 +128,10 @@ class ExposedMessageStoreTest {
         val messageStore = newExposedMessageStore()
         testConsumeMessages(messageStore)
     }
+
+    @Test
+    fun testRemoveMessagesByAge() {
+        val messageStore = newExposedMessageStore()
+        testRemoveMessagesByAge(messageStore)
+    }
 }

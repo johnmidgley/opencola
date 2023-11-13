@@ -238,7 +238,7 @@ abstract class AbstractRelayServer(
     }
 
     private fun authorizeAdmin(id: Id) {
-        if(id != config.security.rootId) {
+        if (id != config.security.rootId) {
             val policy = policyStore.getUserPolicy(id, id)
             require(policy != null) { "No policy for $id" }
             require(policy.adminPolicy.isAdmin) { "$id is not admin" }
@@ -263,32 +263,56 @@ abstract class AbstractRelayServer(
                     policyStore.setPolicy(fromId, command.policy)
                     CommandResponse(command.id, Status.SUCCESS, State.COMPLETE)
                 }
+
                 is GetPolicyCommand -> {
                     GetPolicyResponse(command.id, policyStore.getPolicy(fromId, command.name))
                 }
+
                 is GetPoliciesCommand -> {
                     GetPoliciesResponse(command.id, policyStore.getPolicies(fromId).toList())
                 }
+
                 is SetUserPolicyCommand -> {
                     policyStore.setUserPolicy(fromId, command.userId, command.policyName)
                     CommandResponse(command.id, Status.SUCCESS, State.COMPLETE)
                 }
+
                 is GetUserPolicyCommand -> {
                     GetUserPolicyResponse(command.id, policyStore.getUserPolicy(fromId, command.userId))
                 }
+
                 is GetUserPoliciesCommand -> {
                     GetUserPoliciesResponse(command.id, policyStore.getUserPolicies(fromId).toList())
                 }
+
                 is RemoveUserMessagesCommand -> {
                     messageStore?.removeMessages(command.userId)
                     CommandResponse(command.id, Status.SUCCESS, State.COMPLETE)
                 }
+
+                is RemoveMessagesByAgeCommand -> {
+                    if (messageStore != null) {
+                        val headers = messageStore.removeMessages(command.maxAgeMilliseconds)
+                            headers.forEach {
+                                sendCommandMessage(
+                                    fromId,
+                                    CommandResponse(command.id, Status.SUCCESS, State.PENDING, "Deleted $it")
+                                )
+                            }
+
+                        CommandResponse(command.id, Status.SUCCESS, State.COMPLETE)
+                    } else {
+                        CommandResponse(command.id, Status.FAILURE, State.COMPLETE, "No message store")
+                    }
+                }
+
                 is GetMessageUsageCommand -> {
                     GetMessageUsageResponse(command.id, messageStore?.getUsage()?.toList() ?: emptyList())
                 }
+
                 else -> {
                     "Unknown command: $command".let {
-                        logger.warn { it }
+                        logger.error { it }
                         CommandResponse(command.id, Status.FAILURE, State.COMPLETE, it)
                     }
                 }

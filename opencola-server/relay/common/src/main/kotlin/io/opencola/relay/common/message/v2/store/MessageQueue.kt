@@ -100,7 +100,7 @@ class MessageQueue(private val recipientId: Id, private val maxStoredBytes: Int)
         lock.lock()
         return try {
             queuedMessages
-                .filter { it.header.timeMilliseconds < maxAgeMilliseconds }
+                .filter { it.header.timeMilliseconds < System.currentTimeMillis() - maxAgeMilliseconds }
                 .take(limit)
                 .map { it.header }
                 .onEach { removeMessage(it) }
