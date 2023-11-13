@@ -12,14 +12,9 @@ class ExposedPolicyStore(
     private val logger = KotlinLogging.logger("ExposedPolicyStore")
     private val userPolicyDB = UserPolicyDB(database)
 
-    init {
-        initDefaultPolicy()
-    }
-
     override fun setPolicy(authorityId: Id, policy: Policy) {
         authorizeEditPolicies(authorityId)
-        userPolicyDB.upsertPolicy(authorityId, policy.name, policy)
-        setPolicy(policy)
+        userPolicyDB.upsertPolicy(authorityId, policy)
     }
 
     override fun getPolicy(authorityId: Id, policyName: String): Policy? {
@@ -42,11 +37,7 @@ class ExposedPolicyStore(
     }
     override fun getUserPolicy(authorityId: Id, userId: Id): Policy? {
         authorizeReadUserPolicy(authorityId, userId)
-        return userPolicyDB
-            .getUserPolicyRow(userId)
-            ?.policyId
-            ?.let { userPolicyDB.getPolicyRow(it)?.policy }
-            ?: defaultPolicy
+        return userPolicyDB.getPolicyOrDefaultRow(userId)?.policy ?: defaultPolicy
     }
 
     override fun getUserPolicies(authorityId: Id): Sequence<Pair<Id, String>> {

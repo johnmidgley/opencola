@@ -8,13 +8,15 @@ class MemoryPolicyStore(rootId: Id, defaultPolicy: Policy? = Policy("default")) 
     private val userPolicies = ConcurrentHashMap<Id, Policy>()
 
     init {
-        initDefaultPolicy()
+        this.defaultPolicy = defaultPolicy
     }
 
     override fun setPolicy(authorityId: Id, policy: Policy) {
         authorizeEditPolicies(authorityId)
         policies[policy.name] = policy
-        setPolicy(policy)
+
+        if(policy.name == "default")
+            defaultPolicy = policy
     }
 
     override fun getPolicy(authorityId: Id, policyName: String): Policy? {

@@ -28,14 +28,13 @@ class UserPolicyDB(private val database: Database) {
 
     fun insertPolicy(
         authorityId: Id,
-        name: String,
         policy: Policy,
         editTimeMilliseconds: Long = System.currentTimeMillis()
     ) : Long {
         return transaction(database) {
             Policies.insert {
                 it[Policies.authorityId] = authorityId.encoded()
-                it[Policies.name] = name
+                it[name] = policy.name
                 it[Policies.policy] = ExposedBlob(Json.encodeToString(policy).toByteArray())
                 it[Policies.editTimeMilliseconds] = editTimeMilliseconds
             } [Policies.id].value
@@ -58,15 +57,24 @@ class UserPolicyDB(private val database: Database) {
     }
 
     fun getPolicyRow(
-        id: Long
-    ) : PolicyRow? {
-        return selectPolicy(Policies.id eq id)
-    }
-
-    fun getPolicyRow(
         userId: Id
     ): PolicyRow? {
         return getUserPolicyJoinByUserId(userId)?.let { PolicyRow(it) }
+    }
+
+    fun getPolicyOrDefaultRow(userId: Id) : PolicyRow? {
+        val resultRow = transaction(database) {
+            (UserPolicies innerJoin  Policies)
+                .slice(Policies.policy)
+                .select { UserPolicies.userId eq userId.encoded() }
+                .firstOrNull()
+                ?: run {
+                    Policies.select { Policies.name eq "default" }
+                        .firstOrNull()
+                }
+        }
+
+        return resultRow?.let { PolicyRow(it) }
     }
 
     // TODO: Make pageable
@@ -78,14 +86,13 @@ class UserPolicyDB(private val database: Database) {
 
     fun updatePolicy(
         authorityId: Id,
-        name: String,
         policy: Policy,
         editTimeMilliseconds: Long = System.currentTimeMillis()
     ) {
         transaction(database) {
-            Policies.update({ Policies.name eq name }) {
+            Policies.update({ Policies.name eq policy.name }) {
                 it[Policies.authorityId] = authorityId.encoded()
-                it[Policies.name] = name
+                it[name] = policy.name
                 it[Policies.policy] = ExposedBlob(Json.encodeToString(policy).toByteArray())
                 it[Policies.editTimeMilliseconds] = editTimeMilliseconds
             }
@@ -94,16 +101,15 @@ class UserPolicyDB(private val database: Database) {
 
     fun upsertPolicy(
         authorityId: Id,
-        name: String,
         policy: Policy,
         editTimeMilliseconds: Long = System.currentTimeMillis()
     ) : Long {
-        val existingPolicyId = getPolicyRow(name)?.id
+        val existingPolicyId = getPolicyRow(policy.name)?.id
 
         return if (existingPolicyId == null) {
-            insertPolicy(authorityId, name, policy, editTimeMilliseconds)
+            insertPolicy(authorityId, policy, editTimeMilliseconds)
         } else {
-            updatePolicy(authorityId, name, policy, editTimeMilliseconds)
+            updatePolicy(authorityId, policy, editTimeMilliseconds)
             existingPolicyId
         }
     }
