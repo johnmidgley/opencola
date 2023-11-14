@@ -47,10 +47,11 @@ class ExposedMessageStoreTest {
 
     private fun newExposedMessageStore(
         exposedDB: Database = newExposedDB(),
+        maxBytesStored: Long = 1024 * 1024L,
         fileStore: ContentAddressedFileStore = newFileStore(),
         policyStore: PolicyStore = ExposedPolicyStore(exposedDB, Id.new())
     ): ExposedMessageStore {
-        return ExposedMessageStore(exposedDB, fileStore, policyStore)
+        return ExposedMessageStore(exposedDB, maxBytesStored, fileStore, policyStore)
     }
 
     @Test

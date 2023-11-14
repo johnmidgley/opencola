@@ -148,7 +148,7 @@ class MessagesDB(private val database: Database) {
                     val size = row[Messages.sizeBytes]
                     Pair(acc.first + 1, acc.second + size)
                 }.let {
-                    Usage(to, it.first, it.second.toInt())
+                    Usage(to, it.first, it.second)
                 }
         }
     }
@@ -162,5 +162,18 @@ class MessagesDB(private val database: Database) {
                 .toList()
                 .map { MessageRow(it) }
         }
+    }
+
+    fun getBytesStored() : Long {
+        // TODO: Look into how expensive this is. It could be replaced by an approximation that just sums the sizeBytes column.
+        return transaction(database) {
+            Messages
+                .slice(Messages.dataId, Messages.sizeBytes)
+                .selectAll()
+                .map { Pair(Id(it[Messages.dataId]), it[Messages.sizeBytes]) }
+                .distinctBy { it.first }
+                .fold(0L) { acc, pair -> acc + pair.second }
+        }
+
     }
 }

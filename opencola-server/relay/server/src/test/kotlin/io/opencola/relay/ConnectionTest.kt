@@ -10,6 +10,8 @@ import io.opencola.relay.common.connection.ConnectionsDB
 import io.opencola.relay.common.connection.ExposedConnectionDirectory
 import io.opencola.relay.common.message.v2.MessageStorageKey
 import io.opencola.relay.common.retryExponentialBackoff
+import io.opencola.relay.server.CapacityConfig
+import io.opencola.relay.server.Config
 import io.opencola.relay.server.RelayServer
 import io.opencola.storage.newSQLiteDB
 import io.opencola.util.append
@@ -282,6 +284,151 @@ class ConnectionTest {
     @Test
     fun testServerPartitionV2() {
         testServerPartition(ClientType.V2)
+    }
+
+    private fun testMaxConnections(clientType: ClientType) {
+        runBlocking {
+            var server: RelayServer? = null
+            var client0: AbstractClient? = null
+            var client1: AbstractClient? = null
+
+            try {
+                val config = Config(CapacityConfig(maxConnections = 1), RelayServer.securityConfig)
+                server = RelayServer(baseConfig = config).also { it.start() }
+
+                val result = CompletableDeferred<ByteArray>()
+                client0 = getClient(clientType, "client0").also {
+                    launch {
+                        it.open { _, message ->
+                            result.complete(message)
+                            "".toByteArray()
+                        }
+                    }
+                    it.waitUntilOpen()
+                }
+
+                StdoutMonitor().use {
+                    it.runCoroutine {
+                        client1 = getClient(clientType, "client1")
+                            .also {
+                                launch {
+                                    it.open { from, message ->
+                                        assertEquals(client0.publicKey, from)
+                                        val response = message.append(" client1".toByteArray())
+                                        it.sendMessage(from, MessageStorageKey.unique(), response)
+                                    }
+                                }
+                            }
+                    }
+
+                    it.waitUntil("RelayServer.* Max connections reached: 1", 3000)
+                    it.waitUntil("RelayClient.* Connection failure", 3000)
+                }
+
+            } finally {
+                println("Closing resources")
+                server?.stop()
+                listOf(client0, client1).forEach { it?.close() }
+            }
+        }
+    }
+
+    @Test
+    fun testMaxConnectionsV1() {
+        testMaxConnections(ClientType.V1)
+    }
+
+    @Test
+    fun testMaxConnectionsV2() {
+        testMaxConnections(ClientType.V2)
+    }
+
+    @Test
+    fun testMaxBytesStored() {
+        runBlocking {
+            var server: RelayServer? = null
+            var client0: AbstractClient? = null
+
+            try {
+                val config = Config(CapacityConfig(maxBytesStored = 1024), RelayServer.securityConfig)
+                server = RelayServer(baseConfig = config).also { it.start() }
+                val result = CompletableDeferred<ByteArray>()
+                client0 = getClient(ClientType.V2, "client0").also {
+                    launch {
+                        it.open { _, message ->
+                            result.complete(message)
+                            "".toByteArray()
+                        }
+                    }
+                    it.waitUntilOpen()
+                }
+
+                val client1KeyPair = generateKeyPair()
+                val client1Id = Id.ofPublicKey(client1KeyPair.public)
+                val smallMessageKey = MessageStorageKey.unique()
+
+                StdoutMonitor().use {
+                    client0.sendMessage(
+                        client1KeyPair.public,
+                        smallMessageKey,
+                        "small message".toByteArray()
+                    )
+                    it.waitUntil("Added message", 3000)
+
+                    client0.sendMessage(
+                        client1KeyPair.public,
+                        MessageStorageKey.unique(),
+                        "0".repeat(1025).toByteArray()
+                    )
+                    it.waitUntil("Message store is full", 3000)
+                }
+
+                val messages = server.messageStore.getMessages(client1Id)
+                assertEquals(1, messages.size)
+                assertEquals(smallMessageKey, messages[0].header.storageKey)
+            } finally {
+                println("Closing resources")
+                server?.stop()
+                client0?.close()
+            }
+        }
+    }
+
+    @Test
+    fun testMaxPayloadSize() {
+        runBlocking {
+            var server: RelayServer? = null
+            var client0: AbstractClient? = null
+
+            try {
+                val config = Config(CapacityConfig(maxPayloadSize = 1024), RelayServer.securityConfig)
+                server = RelayServer(baseConfig = config).also { it.start() }
+                val result = CompletableDeferred<ByteArray>()
+                client0 = getClient(ClientType.V2, "client0").also {
+                    launch {
+                        it.open { _, message ->
+                            result.complete(message)
+                            "".toByteArray()
+                        }
+                    }
+                    it.waitUntilOpen()
+                }
+
+                val client1KeyPair = generateKeyPair()
+                StdoutMonitor().use {
+                    client0.sendMessage(
+                        client1KeyPair.public,
+                        MessageStorageKey.unique(),
+                        "0".repeat(2048).toByteArray()
+                    )
+                    it.waitUntil("Frame is too big", 3000)
+                }
+            } finally {
+                println("Closing resources")
+                server?.stop()
+                client0?.close()
+            }
+        }
     }
 
     private fun testClientPartition(clientType: ClientType, relayServerUri: URI = localRelayServerUri) {

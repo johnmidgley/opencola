@@ -4,10 +4,10 @@ import io.opencola.model.Id
 import mu.KotlinLogging
 import java.util.concurrent.locks.ReentrantLock
 
-class MessageQueue(private val recipientId: Id, private val maxStoredBytes: Int) {
+class MessageQueue(private val recipientId: Id, private val maxStoredBytes: Long) {
     private val logger = KotlinLogging.logger("MessageQueue")
 
-    var bytesStored: Int = 0
+    var bytesStored: Long = 0
         private set
 
     val numMessages: Int
@@ -20,7 +20,7 @@ class MessageQueue(private val recipientId: Id, private val maxStoredBytes: Int)
     private val lock = ReentrantLock()
     private val queuedMessages = mutableListOf<StoredMessage>()
 
-    fun addMessage(storedMessage: StoredMessage) {
+    fun addMessage(bytesAvailable: Long, storedMessage: StoredMessage) {
         lock.lock()
         try {
             require(storedMessage.header.to == recipientId)
@@ -42,7 +42,14 @@ class MessageQueue(private val recipientId: Id, private val maxStoredBytes: Int)
             // size, which isn't worth it.
             val existingMessageSize = matchingMessages.sumOf { it.matchingMessage.body.bytes.size }
 
-            if (bytesStored + storedMessage.body.bytes.size - existingMessageSize > maxStoredBytes) {
+            val bytesDelta = storedMessage.body.bytes.size - existingMessageSize
+
+            if(bytesDelta > bytesAvailable) {
+                logger.warn { "Message store is full - dropping message" }
+                return
+            }
+
+            if (bytesStored + bytesDelta > maxStoredBytes) {
                 logger.info { "Message store for $recipientId is full - dropping message" }
                 return
             }

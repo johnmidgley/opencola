@@ -12,6 +12,7 @@ import kotlin.sequences.Sequence
 
 class ExposedMessageStore(
     database: Database,
+    private val maxStoredBytes: Long,
     private val fileStore: ContentAddressedFileStore,
     private val policyStore: PolicyStore,
 ) : MessageStore {
@@ -28,7 +29,6 @@ class ExposedMessageStore(
         require(!storageKey.isEmpty()) { "Attempt to add message with no messageStorageKey." }
         val messageEncoded = message.encodeProto()
         val messageDataId = fileStore.write(messageEncoded.inputStream())
-        val bytesStored = messagesDB.getBytesStored(to)
         val existingMessage = messagesDB.getMessage (from, to, storageKey)
         val existingMessageSize = existingMessage?.sizeBytes ?: 0
 
@@ -39,7 +39,14 @@ class ExposedMessageStore(
             return
         }
 
-        if (bytesStored + messageEncoded.size - existingMessageSize > storagePolicy.maxStoredBytes) {
+        val bytesDelta = messageEncoded.size - existingMessageSize
+
+        if(messagesDB.getBytesStored() + bytesDelta > maxStoredBytes) {
+            logger.warn { "Message store is full - dropping message" }
+            return
+        }
+
+        if (messagesDB.getBytesStored(to) + bytesDelta > storagePolicy.maxStoredBytes) {
             logger.info { "Message store for $to is full - dropping message" }
             return
         }

@@ -20,26 +20,41 @@ import io.opencola.relay.server.v2.WebSocketRelayServer as WebSocketRelayServerV
 
 class RelayServer(
     val address: URI = URI("ocr://0.0.0.0:$defaultOCRPort"),
+    baseConfig: Config? = null,
     val db: Database = newSQLiteDB("RelayServer"),
     val contentAddressedFileStore: ContentAddressedFileStore = newContentAddressedFileStore("MessageStore"),
-    val policyStore: PolicyStore = ExposedPolicyStore(db, config.security.rootId),
+    val policyStore: PolicyStore = ExposedPolicyStore(db, securityConfig.rootId),
     val connectionDirectory: ConnectionDirectory = ExposedConnectionDirectory(db, address),
-    val messageStore: MessageStore = ExposedMessageStore(db,  contentAddressedFileStore, policyStore)
+    val messageStore: MessageStore = ExposedMessageStore(
+        db,
+        baseConfig?.capacityConfig?.maxBytesStored ?: CapacityConfig().maxBytesStored,
+        contentAddressedFileStore,
+        policyStore
+    )
 ) {
     companion object {
         // This makes sure all RelayServer instances use the same keypair
         val keyPair = generateKeyPair()
         val rootKeyPair = generateKeyPair()
-        val config = Config(SecurityConfig(keyPair, rootKeyPair))
+        val securityConfig = SecurityConfig(keyPair, rootKeyPair)
+
+        fun getConfig(config: Config): Config {
+            return Config(
+                config.capacityConfig,
+                SecurityConfig(keyPair, rootKeyPair)
+            )
+
+        }
     }
 
+    private val config = getConfig(baseConfig ?: Config(CapacityConfig(), securityConfig))
     private val webSocketRelayServerV1 = WebSocketRelayServerV1(config, address)
     private val webSocketRelayServerV2 =
         WebSocketRelayServerV2(config, policyStore, connectionDirectory, messageStore)
     private var nettyApplicationEngine: NettyApplicationEngine? = null
 
     fun start() {
-        nettyApplicationEngine = startWebServer(webSocketRelayServerV1, webSocketRelayServerV2)
+        nettyApplicationEngine = startWebServer(config.capacityConfig, webSocketRelayServerV1, webSocketRelayServerV2)
     }
 
     fun stop() {

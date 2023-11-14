@@ -12,13 +12,17 @@ import io.opencola.relay.server.plugins.configureRouting
 import io.opencola.security.generateKeyPair
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import mu.KotlinLogging
 import java.net.URI
 import io.opencola.relay.server.v1.WebSocketRelayServer as WebSocketRelayServerV1
 import io.opencola.relay.server.v2.WebSocketRelayServer as WebSocketRelayServerV2
 import java.util.concurrent.Semaphore
 import kotlin.concurrent.thread
 
+private val logger = KotlinLogging.logger("relay")
+
 fun startWebServer(
+    capacityConfig: CapacityConfig,
     webSocketRelayServerV1: WebSocketRelayServerV1,
     webSocketRelayServerV2: WebSocketRelayServerV2,
     wait: Boolean = false
@@ -32,7 +36,7 @@ fun startWebServer(
             // TODO: Check these values
             // pingPeriod = null
             // timeout = Duration.ofHours(1)
-            maxFrameSize = 1024 * 1024 * 50 // TODO: Config
+            maxFrameSize = capacityConfig.maxPayloadSize
             masking = false
 
         }
@@ -59,8 +63,11 @@ fun startWebServer(
 
 fun main() {
     // TODO: Pass in keypair
-    val config = Config(SecurityConfig(generateKeyPair(), generateKeyPair()))
+    val config = Config(CapacityConfig(), SecurityConfig(generateKeyPair(), generateKeyPair()))
     val address = URI("ocr://0.0.0.0:$defaultOCRPort")
+
+    logger.info { "Starting relay server at $address" }
+    logger.info { "$config" }
 
     // TODO: Add dependency injection
     val policyStore = MemoryPolicyStore(config.security.rootId)
@@ -69,8 +76,8 @@ fun main() {
         config,
         policyStore,
         MemoryConnectionDirectory(address),
-        MemoryMessageStore(policyStore),
+        MemoryMessageStore(config.capacityConfig.maxBytesStored, policyStore),
     )
 
-    startWebServer(serverV1, serverV2, wait = true)
+    startWebServer(config.capacityConfig, serverV1, serverV2, wait = true)
 }

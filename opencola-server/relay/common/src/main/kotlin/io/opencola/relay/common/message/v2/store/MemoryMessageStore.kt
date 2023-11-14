@@ -9,9 +9,13 @@ import mu.KotlinLogging
 import java.util.concurrent.ConcurrentHashMap
 
 // TODO: Add global memory limit
-class MemoryMessageStore(private val policyStore: PolicyStore) : MessageStore {
+class MemoryMessageStore(private val maxBytesStored: Long, private val policyStore: PolicyStore) : MessageStore {
     private val logger = KotlinLogging.logger("MemoryMessageStore")
     private val messageQueues = ConcurrentHashMap<Id, MessageQueue>()
+
+    private fun getBytesStored(): Long {
+        return messageQueues.values.sumOf { it.bytesStored }
+    }
 
     override fun addMessage(
         from: Id,
@@ -31,9 +35,11 @@ class MemoryMessageStore(private val policyStore: PolicyStore) : MessageStore {
             return
         }
 
+        val bytesAvailable = maxBytesStored - getBytesStored()
+
         messageQueues
             .getOrPut(to) { MessageQueue(to, storagePolicy.maxStoredBytes) }
-            .apply { addMessage(StoredMessage(from, to, storageKey, secretKey, message)) }
+            .apply { addMessage(bytesAvailable, StoredMessage(from, to, storageKey, secretKey, message)) }
     }
 
     override fun getMessages(to: Id, limit: Int): List<StoredMessage> {

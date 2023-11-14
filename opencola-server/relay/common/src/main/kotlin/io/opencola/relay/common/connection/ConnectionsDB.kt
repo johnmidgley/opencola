@@ -57,4 +57,10 @@ class ConnectionsDB(private val database: Database) {
             Connections.deleteWhere { from eq id.encoded() }
         }
     }
+
+    fun countConnections() : Long {
+        return transaction(database) {
+            Connections.selectAll().count()
+        }
+    }
 }

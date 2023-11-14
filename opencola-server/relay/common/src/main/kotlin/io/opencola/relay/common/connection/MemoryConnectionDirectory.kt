@@ -30,6 +30,10 @@ class MemoryConnectionDirectory(override val localAddress: URI) : ConnectionDire
         connections.remove(id)
     }
 
+    override fun size(): Long {
+        return connections.size.toLong()
+    }
+
     override fun closeAll() {
         runBlocking {
             connections.values.forEach { it.connection!!.close() }

@@ -15,5 +15,6 @@ interface ConnectionDirectory {
     fun get(id: Id): ConnectionEntry?
     fun getLocalConnections(): Sequence<ConnectionEntry>
     fun remove(id: Id)
+    fun size(): Long
     fun closeAll()
 }

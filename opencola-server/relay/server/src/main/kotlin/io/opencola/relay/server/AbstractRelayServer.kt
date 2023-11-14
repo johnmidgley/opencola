@@ -105,6 +105,12 @@ abstract class AbstractRelayServer(
     }
 
     suspend fun handleSession(socketSession: SocketSession) {
+        if(connectionDirectory.size() >= config.capacityConfig.maxConnections) {
+            logger.warn { "Max connections reached: ${config.capacityConfig.maxConnections}" }
+            socketSession.close()
+            return
+        }
+
         authenticate(socketSession)?.let { connection ->
             val id = connection.id
 

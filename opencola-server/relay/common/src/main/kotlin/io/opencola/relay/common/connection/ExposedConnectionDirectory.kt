@@ -28,6 +28,10 @@ class ExposedConnectionDirectory(database: Database, override val localAddress: 
         connectionsDB.deleteConnection(id)
     }
 
+    override fun size(): Long {
+        return connectionsDB.countConnections()
+    }
+
     override fun closeAll() {
         localDirectory.closeAll()
     }

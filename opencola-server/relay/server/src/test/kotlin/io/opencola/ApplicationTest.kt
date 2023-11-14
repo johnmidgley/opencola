@@ -22,7 +22,7 @@ import java.net.URI
 class ApplicationTest {
     @Test
     fun testRoot() = testApplication {
-        val config = Config(SecurityConfig(generateKeyPair(), generateKeyPair()))
+        val config = Config(security = SecurityConfig(generateKeyPair(), generateKeyPair()))
         val address = URI("ocr://0.0.0.0:$defaultOCRPort")
         val policyStore = MemoryPolicyStore(config.security.rootId)
         application {
@@ -33,7 +33,7 @@ class ApplicationTest {
                     config,
                     policyStore,
                     MemoryConnectionDirectory(address),
-                    MemoryMessageStore(policyStore)
+                    MemoryMessageStore(1024, policyStore)
                 )
             )
         }

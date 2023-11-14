@@ -9,17 +9,23 @@ import java.security.KeyPair
 import java.security.PrivateKey
 import java.security.PublicKey
 
-data class SecurityConfig(val publicKeyBase58: String,
-                          val privateKeyBase58: String,
-                          val rootPublicKeyBase58: String,
-                          val rooPrivateKeyBase58: String,
-                          val numChallengeBytes: Int = 32) {
+data class SecurityConfig(
+    val publicKeyBase58: String,
+    val privateKeyBase58: String,
+    val rootPublicKeyBase58: String,
+    val rooPrivateKeyBase58: String,
+    val numChallengeBytes: Int = 32
+) {
     constructor(keyPair: KeyPair, rootKeyPair: KeyPair) : this(
         keyPair.public.encoded.toBase58(),
         keyPair.private.encoded.toBase58(),
         rootKeyPair.public.encoded.toBase58(),
         rootKeyPair.private.encoded.toBase58()
     )
+
+    override fun toString(): String {
+        return "SecurityConfig(publicKeyBase58='$publicKeyBase58', rootId='$rootId', numChallengeBytes=$numChallengeBytes)"
+    }
 
     val publicKey: PublicKey by lazy {
         publicKeyFromBytes(Base58.decode(publicKeyBase58))
@@ -48,9 +54,15 @@ data class SecurityConfig(val publicKeyBase58: String,
     val rootId: Id by lazy {
         Id.ofPublicKey(rootPublicKey)
     }
-
 }
 
+data class CapacityConfig(
+    val maxConnections: Long = 10000,
+    val maxBytesStored: Long = 1024 * 1024 * 1024 * 10L,
+    val maxPayloadSize: Long = 1024 * 1024 * 50L,
+)
+
 data class Config(
+    val capacityConfig: CapacityConfig = CapacityConfig(),
     val security: SecurityConfig,
 )

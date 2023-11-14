@@ -42,8 +42,8 @@ class PolicyTest {
 
         runBlocking {
             try {
-                println("Test max message size")
-                val maxPayloadSize = 1024
+                println("Test max payload size")
+                val maxPayloadSize = 1024L
                 val clientKeyPair = generateKeyPair()
                 val clientId = Id.ofPublicKey(clientKeyPair.public)
                 val policy = Policy("maxMessageSize", messagePolicy = MessagePolicy(maxPayloadSize))
@@ -66,7 +66,7 @@ class PolicyTest {
                 }
 
                 println("Send larger message that should be rejected")
-                val bigMessage = "0".repeat(maxPayloadSize).toByteArray()
+                val bigMessage = "0".repeat(maxPayloadSize.toInt()).toByteArray()
                 StdoutMonitor().use {
                     client!!.sendMessage(receiverPublicKey, MessageStorageKey.none, bigMessage)
                     it.waitUntil("Payload too large from $clientId", 3000)
@@ -83,7 +83,7 @@ class PolicyTest {
         runBlocking {
             try {
                 println("Test max stored bytes")
-                val maxStoredBytes = 1024
+                val maxStoredBytes = 1024L
                 val clientKeyPair = generateKeyPair()
 
                 client = getClient(ClientType.V2, "maxMessageSizeClient", clientKeyPair).also {
@@ -105,7 +105,7 @@ class PolicyTest {
                 }
 
                 println("Send larger message that should not be stored")
-                val bigMessage = "0".repeat(maxStoredBytes).toByteArray()
+                val bigMessage = "0".repeat(maxStoredBytes.toInt()).toByteArray()
                 StdoutMonitor().use {
                     client!!.sendMessage(receiverPublicKey, MessageStorageKey.unique(), bigMessage)
                     it.waitUntil("Message store for $receiverId is full", 3000)
