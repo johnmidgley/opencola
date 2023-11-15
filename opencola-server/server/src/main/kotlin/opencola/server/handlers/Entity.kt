@@ -4,7 +4,7 @@ import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.opencola.content.*
-import io.opencola.event.EventBus
+import io.opencola.event.bus.EventBus
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import io.opencola.io.HttpClient

@@ -1,8 +1,8 @@
 package io.opencola.application
 
-import io.opencola.event.Event
-import io.opencola.event.Events
-import io.opencola.event.Reactor
+import io.opencola.event.bus.Event
+import io.opencola.event.bus.Events
+import io.opencola.event.bus.Reactor
 import io.opencola.model.*
 import io.opencola.network.NetworkConfig
 import io.opencola.network.NetworkNode

@@ -1,6 +1,6 @@
 package io.opencola.storage.entitystore
 
-import io.opencola.event.EventBus
+import io.opencola.event.bus.EventBus
 import io.opencola.model.*
 import io.opencola.security.PublicKeyProvider
 import io.opencola.security.Signator

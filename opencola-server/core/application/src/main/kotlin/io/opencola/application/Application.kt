@@ -3,9 +3,9 @@ package io.opencola.application
 import mu.KotlinLogging
 import io.opencola.content.TextExtractor
 import io.opencola.content.TikaContentTypeDetector
-import io.opencola.event.EventBus
-import io.opencola.event.ExposedEventBus
-import io.opencola.event.Reactor
+import io.opencola.event.bus.EventBus
+import io.opencola.event.bus.ExposedEventBus
+import io.opencola.event.bus.Reactor
 import io.opencola.model.Attributes
 import io.opencola.model.Authority
 import io.opencola.model.Id

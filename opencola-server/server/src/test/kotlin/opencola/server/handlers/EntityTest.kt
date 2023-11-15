@@ -2,7 +2,7 @@ package opencola.server.handlers
 
 import io.opencola.model.*
 import io.opencola.application.TestApplication
-import io.opencola.event.EventBus
+import io.opencola.event.bus.EventBus
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.entitystore.EntityStore

@@ -1,4 +1,4 @@
-package io.opencola.event
+package io.opencola.event.bus
 
 import mu.KotlinLogging
 import io.opencola.util.nullOrElse

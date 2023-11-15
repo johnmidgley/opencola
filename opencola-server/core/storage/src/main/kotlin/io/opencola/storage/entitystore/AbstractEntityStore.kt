@@ -1,8 +1,8 @@
 package io.opencola.storage.entitystore
 
 import mu.KotlinLogging
-import io.opencola.event.EventBus
-import io.opencola.event.Events
+import io.opencola.event.bus.EventBus
+import io.opencola.event.bus.Events
 import io.opencola.model.*
 import io.opencola.model.value.EmptyValue
 import io.opencola.model.value.Value

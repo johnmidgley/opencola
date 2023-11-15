@@ -1,6 +1,6 @@
 package io.opencola.network
 
-import io.opencola.event.EventBus
+import io.opencola.event.bus.EventBus
 import io.opencola.event.MockEventBus
 import io.opencola.model.Id
 import io.opencola.network.NetworkNode.*

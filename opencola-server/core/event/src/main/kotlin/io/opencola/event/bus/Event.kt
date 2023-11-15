@@ -1,4 +1,4 @@
-package io.opencola.event
+package io.opencola.event.bus
 
 import java.time.Instant
 
