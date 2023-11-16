@@ -63,6 +63,6 @@ data class CapacityConfig(
 )
 
 data class Config(
-    val capacityConfig: CapacityConfig = CapacityConfig(),
+    val capacity: CapacityConfig = CapacityConfig(),
     val security: SecurityConfig,
 )

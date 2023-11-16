@@ -3,6 +3,7 @@ package io.opencola.relay.server.v2
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.http.*
+import io.opencola.event.log.EventLogger
 import io.opencola.model.Id
 import io.opencola.relay.common.connection.Connection
 import io.opencola.relay.common.connection.ConnectionDirectory
@@ -24,20 +25,21 @@ import java.security.PublicKey
 
 abstract class Server(
     config: Config,
+    eventLogger: EventLogger,
     policyStore: PolicyStore,
     connectionDirectory: ConnectionDirectory,
     messageStore: MessageStore?,
-) : AbstractRelayServer(config, policyStore, connectionDirectory, messageStore) {
+) : AbstractRelayServer(config, eventLogger, policyStore, connectionDirectory, messageStore) {
     private val httpClient = HttpClient()
 
     private fun isClientAuthorized(clientId: Id): Boolean {
         val policy =  policyStore.getUserPolicy(clientId, clientId)
 
         return if(policy == null) {
-            logger.info { "No policy found for client: $clientId" }
+            event.info("NoPolicyForClient") { "No policy found for client: $clientId" }
             false
         } else if(!policy.connectionPolicy.canConnect) {
-            logger.warn { "Client not authorized to connect: $clientId" }
+            event.warn("ClientNotAuthorized") { "Client not authorized to connect: $clientId" }
             false
         } else {
             true
@@ -86,7 +88,6 @@ abstract class Server(
             }
 
             val authenticationResult = AuthenticationResult(status).encodeProto()
-
             if (status == AuthenticationStatus.AUTHENTICATED) {
                 logger.debug { "Client authenticated" }
                 Connection(clientPublicKey, socketSession) { connectionDirectory.remove(it.id) }.let {
@@ -97,15 +98,17 @@ abstract class Server(
                     socketSession.writeSizedByteArray(authenticationResult)
                     return it
                 }
-            } else
+            } else {
+                event.warn("AuthenticationFailed") { "Authentication failed for $clientId: $status" }
                 socketSession.writeSizedByteArray(authenticationResult)
+            }
 
         } catch (e: CancellationException) {
             // Let job cancellation fall through
         } catch (e: ClosedReceiveChannelException) {
             // Don't bother logging on closed connections
         } catch (e: Exception) {
-            logger.warn { "$e" }
+            event.warn("AuthenticateError") { "$e" }
             socketSession.close()
         }
 
@@ -146,7 +149,7 @@ abstract class Server(
                     setBody(payload)
                 }.status
             if (status != HttpStatusCode.Accepted) {
-                logger.error { "Error while forwarding message from: $fromId to: $to status: $status" }
+                event.error("ForwardingError") { "Error while forwarding message from: $fromId to: $to status: $status" }
                 storeMessages()
             }
         } catch (e: Exception) {
@@ -154,7 +157,7 @@ abstract class Server(
                 // Failed to connect, so assume the server is down and remove recipients from directory
                 to.forEach {
                     connectionDirectory.remove(it)
-                    logger.warn { "Unable to connect to server $serverAddress: Removed $to from directory" }
+                    event.warn("ServerUnreachable") { "Unable to connect to server $serverAddress: Removed $to from directory" }
                     // TODO: What if this was a temporary partition?
                 }
             } else {

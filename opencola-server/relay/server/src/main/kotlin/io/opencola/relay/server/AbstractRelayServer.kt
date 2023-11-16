@@ -1,5 +1,7 @@
 package io.opencola.relay.server
 
+import io.opencola.event.log.EventLogger
+import io.opencola.event.log.EventLoggerWrapper
 import io.opencola.model.Id
 import io.opencola.relay.common.State.*
 import io.opencola.relay.common.connection.*
@@ -21,6 +23,7 @@ import java.security.SecureRandom
 
 abstract class AbstractRelayServer(
     protected val config: Config,
+    protected val eventLogger: EventLogger,
     protected val policyStore: PolicyStore,
     protected val connectionDirectory: ConnectionDirectory,
     protected val messageStore: MessageStore? = null,
@@ -29,6 +32,7 @@ abstract class AbstractRelayServer(
     protected val serverKeyPair = config.security.keyPair
     protected val rootKeyPair = config.security.rooKeyPair
     protected val logger = KotlinLogging.logger("RelayServer")
+    protected val event = EventLoggerWrapper(eventLogger, logger)
     protected val openMutex = Mutex(true)
     protected val random = SecureRandom()
     protected var state = Initialized
@@ -98,15 +102,15 @@ abstract class AbstractRelayServer(
 
         if (connectionEntry?.connection == null) {
             connectionDirectory.remove(id)
-            logger.warn { "Call to sendStoredMessages for non-local id: $id - removed from directory" }
+            event.warn("SendStoredMessagesForNonLocalId") { "Call to sendStoredMessages for non-local id: $id - removed from directory" }
         } else {
             sendStoredMessages(connectionEntry.connection!!)
         }
     }
 
     suspend fun handleSession(socketSession: SocketSession) {
-        if(connectionDirectory.size() >= config.capacityConfig.maxConnections) {
-            logger.warn { "Max connections reached: ${config.capacityConfig.maxConnections}" }
+        if (connectionDirectory.size() >= config.capacity.maxConnections) {
+            event.warn("MaxConnections") { "Max connections reached: ${config.capacity.maxConnections}" }
             socketSession.close()
             return
         }
@@ -115,7 +119,7 @@ abstract class AbstractRelayServer(
             val id = connection.id
 
             try {
-                logger.info { "Session started: $id" }
+                event.info("SessionStarted") { "Session started: $id" }
                 // TODO: Policy is cached for connection lifetime. Should it expire or be invalidated on change?
                 val policy = policyStore.getUserPolicy(id, id)!!
                 sendStoredMessages(connection)
@@ -124,16 +128,16 @@ abstract class AbstractRelayServer(
                 // TODO: Add garbage collection on inactive connections?
                 connection.listen { payload ->
                     if (payload.size > policy.messagePolicy.maxPayloadSize) {
-                        logger.warn { "Payload too large from $id: Ignoring ${payload.size} bytes" }
+                        event.warn("PayloadTooLarge") { "Payload too large from $id: Ignoring ${payload.size} bytes" }
                     } else {
                         handleMessage(connection.publicKey, payload)
                         if (sendStoredMessages(connection) > 0)
-                            logger.warn { "Stored messages sent on handleMessage to $id" }
+                            event.warn("SentStoredMessagesOnHandleMessage") { "Stored messages sent on handleMessage to $id" }
                     }
                 }
             } finally {
                 connection.close()
-                logger.info { "Session stopped: $id" }
+                event.info("SessionStopped") { "Session stopped: $id" }
             }
         }
     }
@@ -153,7 +157,7 @@ abstract class AbstractRelayServer(
                 )
             }
         } catch (e: Exception) {
-            logger.error { "Error while storing message - from: $from to: $to e: $e" }
+            event.error("StoreMessageError") { "Error while storing message - from: $from to: $to e: $e" }
         }
     }
 
@@ -176,24 +180,25 @@ abstract class AbstractRelayServer(
         try {
             if (connectionEntry == null) {
                 logger.info { "$prefix no connection to receiver" }
-            } else if (connectionEntry.connection != null) {
+
+            } else if (connectionEntry.connection == null) {
+                // This shouldn't happen. If there is a connectionEntry but no connection, then
+                // the message should have been delivered remotely.
+                to.recipient.id().let {
+                    connectionDirectory.remove(it)
+                    event.error("LocalNullConnection") { "No connection for id ${it}: Removed connection" }
+                }
+            } else {
                 val connection = connectionEntry.connection!!
                 logger.info { "$prefix Delivering ${envelope.message.bytes.size} bytes" }
                 connection.writeSizedByteArray(encodePayload(connection.publicKey, envelope))
                 messageDelivered = true
 
                 if (sendStoredMessages(connection) > 0)
-                    logger.warn { "Stored messages sent on deliverMessage to ${to.recipient.id()}" }
-            } else {
-                // This shouldn't happen. If there is a connectionEntry but no connection, then
-                // the message should have been delivered remotely.
-                to.recipient.id().let {
-                    connectionDirectory.remove(it)
-                    logger.error { "No connection for id ${it}: Removed connection" }
-                }
+                    event.warn("SentStoredMessagesOnDeliverMessage") { "Stored messages sent on deliverMessage to ${to.recipient.id()}" }
             }
         } catch (e: Exception) {
-            logger.error { "$prefix Error while handling message: $e" }
+            event.error("DeliverMessageError") { "$prefix Error while delivering message: $e" }
         } finally {
             if (!messageDelivered) {
                 storeMessage(from, to.recipient.id(), envelope)
@@ -206,7 +211,7 @@ abstract class AbstractRelayServer(
             try {
                 deliverMessage(from, it, envelope)
             } catch (e: Exception) {
-                logger.error { "Error while delivering message from: $from to: $it - $e" }
+                event.error("DeliverMessageError") { "Error while delivering message from: $from to: $it - $e" }
             }
         }
     }
@@ -256,7 +261,7 @@ abstract class AbstractRelayServer(
         authorizeAdmin(fromId)
 
         if (recipient == null || recipient.publicKey != rootKeyPair.public) {
-            logger.warn { "Invalid command recipient" }
+            event.warn("InvalidCommandRecipient") { "Invalid command recipient: $recipient" }
             return
         }
 
@@ -299,12 +304,12 @@ abstract class AbstractRelayServer(
                 is RemoveMessagesByAgeCommand -> {
                     if (messageStore != null) {
                         val headers = messageStore.removeMessages(command.maxAgeMilliseconds)
-                            headers.forEach {
-                                sendCommandMessage(
-                                    fromId,
-                                    CommandResponse(command.id, Status.SUCCESS, State.PENDING, "Deleted $it")
-                                )
-                            }
+                        headers.forEach {
+                            sendCommandMessage(
+                                fromId,
+                                CommandResponse(command.id, Status.SUCCESS, State.PENDING, "Deleted $it")
+                            )
+                        }
 
                         CommandResponse(command.id, Status.SUCCESS, State.COMPLETE)
                     } else {
@@ -318,7 +323,7 @@ abstract class AbstractRelayServer(
 
                 else -> {
                     "Unknown command: $command".let {
-                        logger.error { it }
+                        event.error("UnknownCommand") { it }
                         CommandResponse(command.id, Status.FAILURE, State.COMPLETE, it)
                     }
                 }
@@ -326,7 +331,7 @@ abstract class AbstractRelayServer(
 
             sendCommandMessage(fromId, response)
         } catch (e: Exception) {
-            logger.error { "Error while handling command: $e" }
+            event.error("HandleCommandError") { "Error while handling command: $e" }
             sendCommandMessage(fromId, CommandResponse(command.id, Status.FAILURE, State.COMPLETE, e.toString()))
         }
     }
@@ -351,7 +356,7 @@ abstract class AbstractRelayServer(
                 }
             }
         } catch (e: Exception) {
-            logger.error { "Error while handling message from $fromId: $e" }
+            event.error("HandleMessageError") { "Error while handling message from $fromId: $e" }
         }
     }
 

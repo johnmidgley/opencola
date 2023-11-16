@@ -1,5 +1,6 @@
 package io.opencola.relay.server.v1
 
+import io.opencola.event.log.EventLogger
 import io.opencola.model.Id
 import io.opencola.relay.common.connection.Connection
 import io.opencola.relay.common.connection.MemoryConnectionDirectory
@@ -19,8 +20,15 @@ import java.security.PublicKey
 
 abstract class Server(
     config: Config,
+    eventLogger: EventLogger,
     address: URI,
-) : AbstractRelayServer(config, MemoryPolicyStore(config.security.rootId), MemoryConnectionDirectory(address), null) {
+) : AbstractRelayServer(
+    config,
+    eventLogger,
+    MemoryPolicyStore(config.security.rootId),
+    MemoryConnectionDirectory(address),
+    null
+) {
     override suspend fun authenticate(socketSession: SocketSession): Connection? {
         try {
             logger.debug { "Authenticating" }
@@ -58,7 +66,7 @@ abstract class Server(
         } catch (e: ClosedReceiveChannelException) {
             // Don't bother logging on closed connections
         } catch (e: Exception) {
-            logger.warn { "Client failed to authenticate: $e" }
+            event.error("AuthenticationFailed") { "Client failed to authenticate: $e" }
             socketSession.close()
         }
 

@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/event/opencola-server.core.event.test.iml" filepath="$PROJECT_DIR$/.idea/modules/core/event/opencola-server.core.event.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/model/opencola-server.core.model.test.iml" filepath="$PROJECT_DIR$/.idea/modules/core/model/opencola-server.core.model.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/network/opencola-server.core.network.main.iml" filepath="$PROJECT_DIR$/.idea/modules/core/network/opencola-server.core.network.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/network/opencola-server.core.network.test.iml" filepath="$PROJECT_DIR$/.idea/modules/core/network/opencola-server.core.network.test.iml" />

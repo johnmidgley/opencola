@@ -7,6 +7,8 @@ import io.ktor.http.*
 import kotlin.test.*
 import io.ktor.server.testing.*
 import io.ktor.server.websocket.*
+import io.opencola.application.TestApplication.getTmpDirectory
+import io.opencola.event.log.EventLogger
 import io.opencola.relay.common.connection.MemoryConnectionDirectory
 import io.opencola.relay.common.defaultOCRPort
 import io.opencola.relay.common.message.v2.store.MemoryMessageStore
@@ -23,14 +25,16 @@ class ApplicationTest {
     @Test
     fun testRoot() = testApplication {
         val config = Config(security = SecurityConfig(generateKeyPair(), generateKeyPair()))
+        val eventLogger = EventLogger("RelayServer", getTmpDirectory("events"))
         val address = URI("ocr://0.0.0.0:$defaultOCRPort")
         val policyStore = MemoryPolicyStore(config.security.rootId)
         application {
             install(WebSockets)
             configureRouting(
-                WebSocketRelayServerV1(config, address),
+                WebSocketRelayServerV1(config, eventLogger, address),
                 WebSocketRelayServerV2(
                     config,
+                    eventLogger,
                     policyStore,
                     MemoryConnectionDirectory(address),
                     MemoryMessageStore(1024, policyStore)

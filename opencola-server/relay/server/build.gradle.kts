@@ -7,6 +7,7 @@ val kotlinLoggingVersion:String by project
 val bcprovVersion: String by project
 val exposedVersion: String by project
 val postgresqlVersion: String by project
+val kotlinxCliVersion: String by project
 
 plugins {
     application
@@ -26,9 +27,11 @@ application {
 }
 
 dependencies {
+    implementation(project(":core:event"))
     implementation(project(":core:security"))
     implementation(project(":core:serialization"))
     implementation(project(":core:model"))
+    implementation(project(":core:storage"))
     implementation(project(":core:util"))
     implementation(project(":relay:common"))
     implementation(project(":relay:client"))
@@ -36,6 +39,7 @@ dependencies {
     implementation("ch.qos.logback:logback-core:$logbackVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("org.bouncycastle:bcprov-jdk15on:$bcprovVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-cli:$kotlinxCliVersion")
     implementation("io.ktor:ktor-server-core-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-netty-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-websockets-jvm:$ktorVersion")

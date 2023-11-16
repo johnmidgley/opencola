@@ -1,6 +1,8 @@
 package io.opencola.relay.server
 
 import io.ktor.server.netty.*
+import io.opencola.application.TestApplication
+import io.opencola.event.log.EventLogger
 import io.opencola.relay.common.connection.ConnectionDirectory
 import io.opencola.relay.common.connection.ExposedConnectionDirectory
 import io.opencola.relay.common.defaultOCRPort
@@ -27,7 +29,7 @@ class RelayServer(
     val connectionDirectory: ConnectionDirectory = ExposedConnectionDirectory(db, address),
     val messageStore: MessageStore = ExposedMessageStore(
         db,
-        baseConfig?.capacityConfig?.maxBytesStored ?: CapacityConfig().maxBytesStored,
+        baseConfig?.capacity?.maxBytesStored ?: CapacityConfig().maxBytesStored,
         contentAddressedFileStore,
         policyStore
     )
@@ -40,7 +42,7 @@ class RelayServer(
 
         fun getConfig(config: Config): Config {
             return Config(
-                config.capacityConfig,
+                config.capacity,
                 SecurityConfig(keyPair, rootKeyPair)
             )
 
@@ -48,13 +50,19 @@ class RelayServer(
     }
 
     private val config = getConfig(baseConfig ?: Config(CapacityConfig(), securityConfig))
-    private val webSocketRelayServerV1 = WebSocketRelayServerV1(config, address)
+    private val eventLogger = EventLogger("relay", TestApplication.getTmpDirectory("events"))
+    private val webSocketRelayServerV1 = WebSocketRelayServerV1(config, eventLogger, address)
     private val webSocketRelayServerV2 =
-        WebSocketRelayServerV2(config, policyStore, connectionDirectory, messageStore)
+        WebSocketRelayServerV2(config, eventLogger, policyStore, connectionDirectory, messageStore)
     private var nettyApplicationEngine: NettyApplicationEngine? = null
 
     fun start() {
-        nettyApplicationEngine = startWebServer(config.capacityConfig, webSocketRelayServerV1, webSocketRelayServerV2)
+        nettyApplicationEngine = startWebServer(
+            config.capacity,
+            eventLogger,
+            webSocketRelayServerV1,
+            webSocketRelayServerV2
+        )
     }
 
     fun stop() {
