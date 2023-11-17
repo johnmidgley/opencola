@@ -23,6 +23,7 @@ dependencies {
     implementation(project(":core:serialization"))
     implementation(project(":core:storage"))
     implementation(project(":relay:client"))
+    implementation(project(":relay:common"))
 
     implementation("com.github.ajalt.clikt:clikt:4.2.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion")

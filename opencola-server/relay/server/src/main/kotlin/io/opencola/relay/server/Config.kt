@@ -1,10 +1,14 @@
 package io.opencola.relay.server
 
+import com.sksamuel.hoplite.ConfigLoaderBuilder
+import com.sksamuel.hoplite.addEnvironmentSource
+import com.sksamuel.hoplite.addFileSource
 import io.opencola.model.Id
 import io.opencola.security.privateKeyFromBytes
 import io.opencola.security.publicKeyFromBytes
 import io.opencola.util.Base58
 import io.opencola.util.toBase58
+import java.nio.file.Path
 import java.security.KeyPair
 import java.security.PrivateKey
 import java.security.PublicKey
@@ -52,3 +56,11 @@ data class Config(
     val capacity: CapacityConfig = CapacityConfig(),
     val security: SecurityConfig,
 )
+
+fun loadConfig(configPath: Path): Config {
+    return ConfigLoaderBuilder.default()
+        .addEnvironmentSource()
+        .addFileSource(configPath.toFile())
+        .build()
+        .loadConfigOrThrow()
+}

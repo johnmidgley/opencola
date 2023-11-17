@@ -8,6 +8,7 @@ val bcprovVersion: String by project
 val exposedVersion: String by project
 val postgresqlVersion: String by project
 val kotlinxCliVersion: String by project
+val hopliteVersion: String by project
 
 plugins {
     application
@@ -35,6 +36,8 @@ dependencies {
     implementation(project(":core:util"))
     implementation(project(":relay:common"))
     implementation(project(":relay:client"))
+    implementation("com.sksamuel.hoplite:hoplite-core:$hopliteVersion")
+    implementation("com.sksamuel.hoplite:hoplite-yaml:$hopliteVersion")
     implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
     implementation("ch.qos.logback:logback-core:$logbackVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")

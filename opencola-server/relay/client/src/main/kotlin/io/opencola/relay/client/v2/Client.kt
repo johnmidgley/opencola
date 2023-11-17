@@ -1,5 +1,6 @@
 package io.opencola.relay.client.v2
 
+import io.opencola.model.Id
 import io.opencola.relay.client.AbstractClient
 import io.opencola.security.*
 import io.opencola.relay.common.*
@@ -26,7 +27,7 @@ abstract class Client(
 
         logger.debug { "Reading server identity" }
         val serverPublicKey = IdentityMessage.decodeProto(socketSession.readSizedByteArray()).publicKey
-        logger.debug { "Server public key: $serverPublicKey" }
+        logger.debug { "Server public Id: ${Id.ofPublicKey(serverPublicKey)}" }
         if (!isAuthorized(serverPublicKey))
             throw RuntimeException("Server is not authorized: $serverPublicKey")
 

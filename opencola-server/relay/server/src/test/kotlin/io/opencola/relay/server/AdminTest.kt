@@ -21,11 +21,6 @@ import kotlin.test.assertEquals
 
 
 class AdminTest {
-    private suspend fun AbstractClient.sendAdminMessage(message: AdminMessage) {
-        val controlMessage = ControlMessage(ControlMessageType.ADMIN, message.encode())
-        this.sendMessage(RelayServer.keyPair.public, MessageStorageKey.none, controlMessage.encodeProto())
-    }
-
     private fun checkResponse(response: AdminMessage, sourceId: String? = null): AdminMessage {
         println(response)
         (response as? CommandResponse)?.let {
@@ -82,10 +77,8 @@ class AdminTest {
                     clientKeyPair,
                     relayServerUri = server.address
                 ).also {
-                    launch {
-                        it.open { _, message -> responseChannel.send(AdminMessage.decode(message)) }
-                        it.waitUntilOpen()
-                    }
+                    launch { it.open { _, message -> responseChannel.send(AdminMessage.decode(message)) } }
+                    it.waitUntilOpen()
                 }
 
                 StdoutMonitor().use {
@@ -192,7 +185,7 @@ class AdminTest {
                 rootClient.sendAdminMessage(it)
 
                 do {
-                    val response =  withTimeout(1000) { responseChannel.receive() } as CommandResponse
+                    val response = withTimeout(1000) { responseChannel.receive() } as CommandResponse
                     println(response.message)
                 } while (response.state != State.COMPLETE)
             }

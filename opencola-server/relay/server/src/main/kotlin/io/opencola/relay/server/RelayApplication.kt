@@ -5,14 +5,12 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.websocket.*
 import io.opencola.event.log.EventLogger
-import io.opencola.model.Id
 import io.opencola.relay.common.connection.ExposedConnectionDirectory
 import io.opencola.relay.common.defaultOCRPort
 import io.opencola.relay.common.message.v2.store.ExposedMessageStore
 import io.opencola.relay.common.policy.ExposedPolicyStore
 import io.opencola.storage.db.getSQLiteDB
 import io.opencola.relay.server.plugins.configureRouting
-import io.opencola.security.generateKeyPair
 import io.opencola.storage.filestore.FileSystemContentAddressedFileStore
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -96,17 +94,19 @@ fun validateStoragePath(storagePath: String?) : Path {
 }
 
 fun main(args: Array<String>) {
-    // TODO: Pass in keypair
-    val config = Config(CapacityConfig(), SecurityConfig(generateKeyPair(), Id.ofPublicKey(generateKeyPair().public)))
     val address = URI("ocr://0.0.0.0:$defaultOCRPort")
-    val commandLineArgs = CommandLineArgs(args)
-
     logger.info { "Starting relay server at $address" }
+
+    val commandLineArgs = CommandLineArgs(args)
     logger.info { "Args: ${args.joinToString(" ")}" }
-    logger.info { "$config" }
+
+    val storagePath = validateStoragePath(commandLineArgs.storage)
+    logger.info { "Storage path: $storagePath" }
+
+    val config = loadConfig(storagePath.resolve("opencola-relay.yaml"))
+    logger.info { "Config: $config" }
 
     // TODO: Add dependency injection
-    val storagePath = validateStoragePath(commandLineArgs.storage)
     val eventsPath = storagePath.resolve("events").also { Files.createDirectories(it) }
     val eventLogger = EventLogger("relay", eventsPath)
     val relayDB = getSQLiteDB(storagePath.resolve("relay.db"))

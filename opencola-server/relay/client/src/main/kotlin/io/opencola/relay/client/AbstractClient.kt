@@ -3,15 +3,13 @@ package io.opencola.relay.client
 import io.opencola.model.Id
 import io.opencola.security.*
 import io.opencola.relay.common.*
+import io.opencola.relay.common.State
 import io.opencola.relay.common.connection.Connection
 import io.opencola.relay.common.State.*
 import io.opencola.relay.common.connection.SocketSession
 import io.opencola.relay.common.message.Envelope
-import io.opencola.relay.common.message.v2.ControlMessage
-import io.opencola.relay.common.message.v2.ControlMessageType
 import io.opencola.relay.common.message.Message
-import io.opencola.relay.common.message.v2.AuthenticationStatus
-import io.opencola.relay.common.message.v2.MessageStorageKey
+import io.opencola.relay.common.message.v2.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -165,6 +163,11 @@ abstract class AbstractClient(
                 }
             }
         }
+    }
+
+    suspend fun sendAdminMessage(message: AdminMessage) {
+        val body = ControlMessage(ControlMessageType.ADMIN, message.encode()).encodeProto()
+        sendMessage(serverPublicKey!!, MessageStorageKey.none, body)
     }
 
     override suspend fun sendMessage(to: List<PublicKey>, key: MessageStorageKey, body: ByteArray) {
