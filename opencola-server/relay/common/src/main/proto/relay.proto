@@ -56,7 +56,12 @@ message Envelope {
 message ControlMessage {
   enum Type {
     NONE = 0;
+
+    // Sent by server after connection to inform client that all queued messages have been sent
     NO_PENDING_MESSAGES = 1;
+
+    // Sent by server when responding to a CommandMessage issued by the client
+    COMMAND = 2;
   }
 
   Type type = 1;

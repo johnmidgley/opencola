@@ -27,17 +27,17 @@ sealed class CommandMessage {
     companion object {
         val json = Json { serializersModule = SerializersModule { contextual(Id::class, IdAsStringSerializer) } }
 
-        fun toPayload(command: CommandMessage): ByteArray {
+        fun encode(command: CommandMessage): ByteArray {
             return json.encodeToString(command).toByteArray()
         }
 
-        fun fromPayload(payload: ByteArray): CommandMessage {
+        fun decode(payload: ByteArray): CommandMessage {
             return json.decodeFromString<CommandMessage>(payload.toString(Charset.defaultCharset()))
         }
     }
 
-    fun toPayload(): ByteArray {
-        return toPayload(this)
+    fun encode(): ByteArray {
+        return encode(this)
     }
 }
 
@@ -56,7 +56,6 @@ data class GetPolicyCommand(val name: String, override val id: String = UUID.ran
 @Serializable
 @SerialName("GetPolicyResponse")
 data class GetPolicyResponse(override val id: String, val policy: Policy? = null) : CommandMessage()
-
 
 @Serializable
 @SerialName("GetPoliciesCommand")
@@ -101,6 +100,5 @@ data class GetMessageUsageCommand(override val id: String = UUID.randomUUID().to
 @Serializable
 @SerialName("GetMessageUsageResponse")
 data class GetMessageUsageResponse(override val id: String, val usages: List<Usage>) : CommandMessage()
-
 
 // TODO: Add GetUserMessagesCommand / Response

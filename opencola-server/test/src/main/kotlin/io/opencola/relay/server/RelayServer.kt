@@ -3,6 +3,7 @@ package io.opencola.relay.server
 import io.ktor.server.netty.*
 import io.opencola.application.TestApplication
 import io.opencola.event.log.EventLogger
+import io.opencola.model.Id
 import io.opencola.relay.common.connection.ConnectionDirectory
 import io.opencola.relay.common.connection.ExposedConnectionDirectory
 import io.opencola.relay.common.defaultOCRPort
@@ -38,14 +39,10 @@ class RelayServer(
         // This makes sure all RelayServer instances use the same keypair
         val keyPair = generateKeyPair()
         val rootKeyPair = generateKeyPair()
-        val securityConfig = SecurityConfig(keyPair, rootKeyPair)
+        val securityConfig = SecurityConfig(keyPair, Id.ofPublicKey(rootKeyPair.public))
 
         fun getConfig(config: Config): Config {
-            return Config(
-                config.capacity,
-                SecurityConfig(keyPair, rootKeyPair)
-            )
-
+            return Config(config.capacity, securityConfig)
         }
     }
 

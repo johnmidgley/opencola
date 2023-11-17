@@ -9,6 +9,7 @@ import io.ktor.server.testing.*
 import io.ktor.server.websocket.*
 import io.opencola.application.TestApplication.getTmpDirectory
 import io.opencola.event.log.EventLogger
+import io.opencola.model.Id
 import io.opencola.relay.common.connection.MemoryConnectionDirectory
 import io.opencola.relay.common.defaultOCRPort
 import io.opencola.relay.common.message.v2.store.MemoryMessageStore
@@ -24,7 +25,7 @@ import java.net.URI
 class ApplicationTest {
     @Test
     fun testRoot() = testApplication {
-        val config = Config(security = SecurityConfig(generateKeyPair(), generateKeyPair()))
+        val config = Config(security = SecurityConfig(generateKeyPair(), Id.ofPublicKey(generateKeyPair().public)))
         val eventLogger = EventLogger("RelayServer", getTmpDirectory("events"))
         val address = URI("ocr://0.0.0.0:$defaultOCRPort")
         val policyStore = MemoryPolicyStore(config.security.rootId)

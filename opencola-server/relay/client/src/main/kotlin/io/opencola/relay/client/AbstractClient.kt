@@ -151,7 +151,7 @@ abstract class AbstractClient(
 
                     connect(false)?.also {
                         openMutex.unlock()
-                        it.listen { payload -> handleMessage(payload, messageHandler) }
+                        it.listen { payload -> handleMessage(messageHandler, payload) }
                     }
                 } catch (e: CancellationException) {
                     break
@@ -187,7 +187,7 @@ abstract class AbstractClient(
         return message.from == serverPublicKey
     }
 
-    private suspend fun handleControlMessage(message: Message) {
+    private suspend fun handleControlMessage(messageHandler: MessageHandler, message: Message) {
         val controlMessage = ControlMessage.decodeProto(message.body)
 
         when (controlMessage.type) {
@@ -198,16 +198,20 @@ abstract class AbstractClient(
             ControlMessageType.NO_PENDING_MESSAGES -> {
                 eventHandler?.invoke(publicKey, RelayEvent.NO_PENDING_MESSAGES)
             }
+
+            ControlMessageType.COMMAND -> {
+                messageHandler(message.from, controlMessage.payload)
+            }
         }
     }
 
-    private suspend fun handleMessage(payload: ByteArray, messageHandler: MessageHandler) {
+    private suspend fun handleMessage(messageHandler: MessageHandler, payload: ByteArray) {
         try {
             val message = decodePayload(payload).decryptMessage(keyPair)
             logger.info { "Handling message: $message" }
 
             if (isControlMessage(message)) {
-                handleControlMessage(message)
+                handleControlMessage(messageHandler, message)
             } else {
                 messageHandler(message.from, message.body)
             }

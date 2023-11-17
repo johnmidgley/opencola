@@ -22,7 +22,8 @@ import kotlin.test.assertEquals
 
 class AdminTest {
     private suspend fun AbstractClient.sendCommandMessage(message: CommandMessage) {
-        this.sendMessage(RelayServer.rootKeyPair.public, MessageStorageKey.none, message.toPayload())
+        val controlMessage = ControlMessage(ControlMessageType.COMMAND, message.encode())
+        this.sendMessage(RelayServer.keyPair.public, MessageStorageKey.none, controlMessage.encodeProto())
     }
 
     private fun checkResponse(response: CommandMessage, sourceId: String? = null): CommandMessage {
@@ -82,7 +83,7 @@ class AdminTest {
                     relayServerUri = server.address
                 ).also {
                     launch {
-                        it.open { _, message -> responseChannel.send(CommandMessage.fromPayload(message)) }
+                        it.open { _, message -> responseChannel.send(CommandMessage.decode(message)) }
                         it.waitUntilOpen()
                     }
                 }
@@ -220,7 +221,7 @@ class AdminTest {
                     relayServerUri = server0!!.address
                 ).also {
                     launch {
-                        it.open { _, message -> responseChannel.send(CommandMessage.fromPayload(message)) }
+                        it.open { _, message -> responseChannel.send(CommandMessage.decode(message)) }
                     }
                     it.waitUntilOpen()
                 }

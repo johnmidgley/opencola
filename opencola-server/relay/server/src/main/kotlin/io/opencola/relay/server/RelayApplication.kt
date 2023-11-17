@@ -5,6 +5,7 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.websocket.*
 import io.opencola.event.log.EventLogger
+import io.opencola.model.Id
 import io.opencola.relay.common.connection.ExposedConnectionDirectory
 import io.opencola.relay.common.defaultOCRPort
 import io.opencola.relay.common.message.v2.store.ExposedMessageStore
@@ -96,7 +97,7 @@ fun validateStoragePath(storagePath: String?) : Path {
 
 fun main(args: Array<String>) {
     // TODO: Pass in keypair
-    val config = Config(CapacityConfig(), SecurityConfig(generateKeyPair(), generateKeyPair()))
+    val config = Config(CapacityConfig(), SecurityConfig(generateKeyPair(), Id.ofPublicKey(generateKeyPair().public)))
     val address = URI("ocr://0.0.0.0:$defaultOCRPort")
     val commandLineArgs = CommandLineArgs(args)
 

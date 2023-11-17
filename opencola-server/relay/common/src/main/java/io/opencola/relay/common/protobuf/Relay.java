@@ -6234,9 +6234,21 @@ public final class Relay {
        */
       NONE(0),
       /**
+       * <pre>
+       * Sent by server after connection to inform client that all queued messages have been sent
+       * </pre>
+       *
        * <code>NO_PENDING_MESSAGES = 1;</code>
        */
       NO_PENDING_MESSAGES(1),
+      /**
+       * <pre>
+       * Sent by server when responding to a CommandMessage issued by the client
+       * </pre>
+       *
+       * <code>COMMAND = 2;</code>
+       */
+      COMMAND(2),
       UNRECOGNIZED(-1),
       ;
 
@@ -6245,9 +6257,21 @@ public final class Relay {
        */
       public static final int NONE_VALUE = 0;
       /**
+       * <pre>
+       * Sent by server after connection to inform client that all queued messages have been sent
+       * </pre>
+       *
        * <code>NO_PENDING_MESSAGES = 1;</code>
        */
       public static final int NO_PENDING_MESSAGES_VALUE = 1;
+      /**
+       * <pre>
+       * Sent by server when responding to a CommandMessage issued by the client
+       * </pre>
+       *
+       * <code>COMMAND = 2;</code>
+       */
+      public static final int COMMAND_VALUE = 2;
 
 
       public final int getNumber() {
@@ -6276,6 +6300,7 @@ public final class Relay {
         switch (value) {
           case 0: return NONE;
           case 1: return NO_PENDING_MESSAGES;
+          case 2: return COMMAND;
           default: return null;
         }
       }
@@ -6926,14 +6951,14 @@ public final class Relay {
       "(\014\"\203\001\n\010Envelope\022:\n\006header\030\001 \001(\0132*.io.ope" +
       "ncola.security.protobuf.SignedBytes\022;\n\007m" +
       "essage\030\002 \001(\0132*.io.opencola.security.prot" +
-      "obuf.SignedBytes\"\243\001\n\016ControlMessage\022D\n\004t" +
+      "obuf.SignedBytes\"\260\001\n\016ControlMessage\022D\n\004t" +
       "ype\030\001 \001(\01626.io.opencola.relay.common.pro" +
       "tobuf.ControlMessage.Type\022\024\n\007payload\030\002 \001" +
-      "(\014H\000\210\001\001\")\n\004Type\022\010\n\004NONE\020\000\022\027\n\023NO_PENDING_" +
-      "MESSAGES\020\001B\n\n\010_payload*]\n\024Authentication" +
-      "Status\022\010\n\004NONE\020\000\022\021\n\rAUTHENTICATED\020\001\022\024\n\020F" +
-      "AILED_CHALLENGE\020\002\022\022\n\016NOT_AUTHORIZED\020\003b\006p" +
-      "roto3"
+      "(\014H\000\210\001\001\"6\n\004Type\022\010\n\004NONE\020\000\022\027\n\023NO_PENDING_" +
+      "MESSAGES\020\001\022\013\n\007COMMAND\020\002B\n\n\010_payload*]\n\024A" +
+      "uthenticationStatus\022\010\n\004NONE\020\000\022\021\n\rAUTHENT" +
+      "ICATED\020\001\022\024\n\020FAILED_CHALLENGE\020\002\022\022\n\016NOT_AU" +
+      "THORIZED\020\003b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

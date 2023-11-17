@@ -30,7 +30,7 @@ abstract class AbstractRelayServer(
 ) {
     val address = connectionDirectory.localAddress
     protected val serverKeyPair = config.security.keyPair
-    protected val rootKeyPair = config.security.rooKeyPair
+    protected val rootId = config.security.rootId
     protected val logger = KotlinLogging.logger("RelayServer")
     protected val event = EventLoggerWrapper(eventLogger, logger)
     protected val openMutex = Mutex(true)
@@ -243,8 +243,9 @@ abstract class AbstractRelayServer(
         val connection = connectionDirectory.get(to)?.connection
             ?: throw IllegalStateException("No connection for $to - can't send command response")
 
-        val message = Message(rootKeyPair.public, commandMessage.toPayload())
-        val envelope = Envelope.from(rootKeyPair.private, connection.publicKey, null, message)
+        val controlMessage = ControlMessage(ControlMessageType.COMMAND, commandMessage.encode())
+        val message = Message(serverKeyPair.public, controlMessage.encodeProto())
+        val envelope = Envelope.from(serverKeyPair.private, connection.publicKey, null, message)
         connection.writeSizedByteArray(encodePayload(connection.publicKey, envelope))
     }
 
@@ -256,75 +257,65 @@ abstract class AbstractRelayServer(
         }
     }
 
-    private suspend fun handleCommand(fromId: Id, envelope: Envelope) {
-        val recipient = envelope.recipients.singleOrNull()
-        authorizeAdmin(fromId)
-
-        if (recipient == null || recipient.publicKey != rootKeyPair.public) {
-            event.warn("InvalidCommandRecipient") { "Invalid command recipient: $recipient" }
-            return
-        }
-
-        val command = CommandMessage.fromPayload(envelope.decryptMessage(rootKeyPair).body)
-
+    private suspend fun handleCommand(fromId: Id, commandMessage: CommandMessage) {
         try {
-            logger.info { "Handling command: $fromId $command" }
-            val response = when (command) {
+            logger.info { "Handling command: $fromId $commandMessage" }
+            val response = when (commandMessage) {
                 is SetPolicyCommand -> {
-                    policyStore.setPolicy(fromId, command.policy)
-                    CommandResponse(command.id, Status.SUCCESS, State.COMPLETE)
+                    policyStore.setPolicy(fromId, commandMessage.policy)
+                    CommandResponse(commandMessage.id, Status.SUCCESS, State.COMPLETE)
                 }
 
                 is GetPolicyCommand -> {
-                    GetPolicyResponse(command.id, policyStore.getPolicy(fromId, command.name))
+                    GetPolicyResponse(commandMessage.id, policyStore.getPolicy(fromId, commandMessage.name))
                 }
 
                 is GetPoliciesCommand -> {
-                    GetPoliciesResponse(command.id, policyStore.getPolicies(fromId).toList())
+                    GetPoliciesResponse(commandMessage.id, policyStore.getPolicies(fromId).toList())
                 }
 
                 is SetUserPolicyCommand -> {
-                    policyStore.setUserPolicy(fromId, command.userId, command.policyName)
-                    CommandResponse(command.id, Status.SUCCESS, State.COMPLETE)
+                    policyStore.setUserPolicy(fromId, commandMessage.userId, commandMessage.policyName)
+                    CommandResponse(commandMessage.id, Status.SUCCESS, State.COMPLETE)
                 }
 
                 is GetUserPolicyCommand -> {
-                    GetUserPolicyResponse(command.id, policyStore.getUserPolicy(fromId, command.userId))
+                    GetUserPolicyResponse(commandMessage.id, policyStore.getUserPolicy(fromId, commandMessage.userId))
                 }
 
                 is GetUserPoliciesCommand -> {
-                    GetUserPoliciesResponse(command.id, policyStore.getUserPolicies(fromId).toList())
+                    GetUserPoliciesResponse(commandMessage.id, policyStore.getUserPolicies(fromId).toList())
                 }
 
                 is RemoveUserMessagesCommand -> {
-                    messageStore?.removeMessages(command.userId)
-                    CommandResponse(command.id, Status.SUCCESS, State.COMPLETE)
+                    messageStore?.removeMessages(commandMessage.userId)
+                    CommandResponse(commandMessage.id, Status.SUCCESS, State.COMPLETE)
                 }
 
                 is RemoveMessagesByAgeCommand -> {
                     if (messageStore != null) {
-                        val headers = messageStore.removeMessages(command.maxAgeMilliseconds)
+                        val headers = messageStore.removeMessages(commandMessage.maxAgeMilliseconds)
                         headers.forEach {
                             sendCommandMessage(
                                 fromId,
-                                CommandResponse(command.id, Status.SUCCESS, State.PENDING, "Deleted $it")
+                                CommandResponse(commandMessage.id, Status.SUCCESS, State.PENDING, "Deleted $it")
                             )
                         }
 
-                        CommandResponse(command.id, Status.SUCCESS, State.COMPLETE)
+                        CommandResponse(commandMessage.id, Status.SUCCESS, State.COMPLETE)
                     } else {
-                        CommandResponse(command.id, Status.FAILURE, State.COMPLETE, "No message store")
+                        CommandResponse(commandMessage.id, Status.FAILURE, State.COMPLETE, "No message store")
                     }
                 }
 
                 is GetMessageUsageCommand -> {
-                    GetMessageUsageResponse(command.id, messageStore?.getUsage()?.toList() ?: emptyList())
+                    GetMessageUsageResponse(commandMessage.id, messageStore?.getUsage()?.toList() ?: emptyList())
                 }
 
                 else -> {
-                    "Unknown command: $command".let {
+                    "Unknown command: $commandMessage".let {
                         event.error("UnknownCommand") { it }
-                        CommandResponse(command.id, Status.FAILURE, State.COMPLETE, it)
+                        CommandResponse(commandMessage.id, Status.FAILURE, State.COMPLETE, it)
                     }
                 }
             }
@@ -332,7 +323,33 @@ abstract class AbstractRelayServer(
             sendCommandMessage(fromId, response)
         } catch (e: Exception) {
             event.error("HandleCommandError") { "Error while handling command: $e" }
-            sendCommandMessage(fromId, CommandResponse(command.id, Status.FAILURE, State.COMPLETE, e.toString()))
+            sendCommandMessage(fromId, CommandResponse(commandMessage.id, Status.FAILURE, State.COMPLETE, e.toString()))
+        }
+    }
+
+    private suspend fun handleControlMessage(fromId: Id, envelope: Envelope) {
+        authorizeAdmin(fromId)
+
+        val recipient = envelope.recipients.singleOrNull()
+        if (recipient == null || recipient.publicKey != serverKeyPair.public) {
+            event.warn("InvalidCommandRecipient") { "Invalid command recipient: $recipient" }
+            return
+        }
+
+        val controlMessage = ControlMessage.decodeProto(envelope.decryptMessage(serverKeyPair).body)
+
+        when (controlMessage.type) {
+            ControlMessageType.NONE -> {
+                logger.error { "Received control message with type NONE" }
+            }
+
+            ControlMessageType.NO_PENDING_MESSAGES -> {
+                event.error("NoPendingMessages") { "Server received unexpected NO_PENDING_MESSAGES message" }
+            }
+
+            ControlMessageType.COMMAND -> {
+                handleCommand(fromId, CommandMessage.decode(controlMessage.payload))
+            }
         }
     }
 
@@ -346,8 +363,8 @@ abstract class AbstractRelayServer(
                     .map { RecipientConnection(it, connectionDirectory.get(it.id())) }
                     .partition { it.connectionEntry == null || it.connectionEntry.address == address }
 
-                if (envelope.recipients.singleOrNull()?.publicKey == rootKeyPair.public) {
-                    handleCommand(fromId, envelope)
+                if (envelope.recipients.singleOrNull()?.publicKey == serverKeyPair.public) {
+                    handleControlMessage(fromId, envelope)
                 } else {
                     deliverLocalMessages(fromId, localRecipients, envelope)
 
