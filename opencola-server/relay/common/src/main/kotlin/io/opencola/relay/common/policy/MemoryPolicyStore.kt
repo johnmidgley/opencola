@@ -24,6 +24,11 @@ class MemoryPolicyStore(rootId: Id, defaultPolicy: Policy? = Policy("default")) 
         return policies[policyName]
     }
 
+    override fun removePolicy(authorityId: Id, policyName: String) {
+        authorizeEditPolicies(authorityId)
+        policies.remove(policyName)
+    }
+
     override fun getPolicies(authorityId: Id): Sequence<Policy> {
         authorizeReadPolicy(authorityId)
         return policies.values.asSequence()
@@ -38,6 +43,11 @@ class MemoryPolicyStore(rootId: Id, defaultPolicy: Policy? = Policy("default")) 
     override fun getUserPolicy(authorityId: Id, userId: Id): Policy? {
         authorizeReadUserPolicy(authorityId, userId)
         return userPolicies[userId] ?: defaultPolicy
+    }
+
+    override fun removeUserPolicy(authorityId: Id, userId: Id) {
+        authorizeEditUserPolicies(authorityId)
+        userPolicies.remove(userId)
     }
 
     override fun getUserPolicies(authorityId: Id): Sequence<Pair<Id, String>> {

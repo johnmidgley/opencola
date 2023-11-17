@@ -22,6 +22,11 @@ class ExposedPolicyStore(
         return userPolicyDB.getPolicyRow(policyName)?.policy
     }
 
+    override fun removePolicy(authorityId: Id, policyName: String) {
+        authorizeEditPolicies(authorityId)
+        userPolicyDB.deletePolicy(policyName)
+    }
+
     override fun getPolicies(authorityId: Id): Sequence<Policy> {
         authorizeReadPolicy(authorityId)
         return userPolicyDB.getPolicyRows().map { it.policy }.asSequence()
@@ -38,6 +43,11 @@ class ExposedPolicyStore(
     override fun getUserPolicy(authorityId: Id, userId: Id): Policy? {
         authorizeReadUserPolicy(authorityId, userId)
         return userPolicyDB.getPolicyOrDefaultRow(userId)?.policy ?: defaultPolicy
+    }
+
+    override fun removeUserPolicy(authorityId: Id, userId: Id) {
+        authorizeEditUserPolicies(authorityId)
+        userPolicyDB.deleteUserPolicy(userId)
     }
 
     override fun getUserPolicies(authorityId: Id): Sequence<Pair<Id, String>> {

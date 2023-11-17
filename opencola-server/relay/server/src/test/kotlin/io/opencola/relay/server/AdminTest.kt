@@ -57,6 +57,27 @@ class AdminTest {
                 println(it)
             }
         }
+
+        val testPolicy = Policy("test")
+        rootClient.sendAdminMessage(SetPolicyCommand(testPolicy))
+        rootClient.sendAdminMessage(GetPolicyCommand("test"))
+        withTimeout(1000) { checkResponse(responseChannel.receive()) }
+        withTimeout(1000) {
+            (responseChannel.receive() as GetPolicyResponse).let {
+                assertEquals(testPolicy, it.policy)
+                println(it)
+            }
+        }
+
+        rootClient.sendAdminMessage(RemovePolicyCommand("test"))
+        withTimeout(1000) { checkResponse(responseChannel.receive()) }
+        rootClient.sendAdminMessage(GetPolicyCommand("test"))
+        withTimeout(1000) {
+            (responseChannel.receive() as GetPolicyResponse).let {
+                assertEquals(null, it.policy)
+                println(it)
+            }
+        }
     }
 
     private suspend fun testSetUserPolicy(
@@ -81,17 +102,17 @@ class AdminTest {
                     it.waitUntilOpen()
                 }
 
+                println("Sending admin message from non-admin client")
                 StdoutMonitor().use {
                     client!!.sendAdminMessage(SetPolicyCommand(Policy("default")))
                     it.waitUntil("is not admin", 1000)
                 }
 
+                println("Setting admin policy for non-admin client")
                 rootClient.sendAdminMessage(SetUserPolicyCommand(clientId, "admin"))
                 withTimeout(1000) { checkResponse(responseChannel.receive()) }
 
-                client!!.sendAdminMessage(SetPolicyCommand(Policy("default")))
-                withTimeout(1000) { checkResponse(responseChannel.receive()) }
-
+                println("Getting admin policy for  client")
                 rootClient.sendAdminMessage(GetUserPolicyCommand(clientId))
                 withTimeout(1000) {
                     (responseChannel.receive() as GetUserPolicyResponse).let {
@@ -100,11 +121,30 @@ class AdminTest {
                     }
                 }
 
+                println("Getting admin policies")
                 rootClient.sendAdminMessage(GetUserPoliciesCommand())
                 withTimeout(1000) {
                     (responseChannel.receive() as GetUserPoliciesResponse).let {
                         println(it)
                         assertEquals(Pair(clientId, "admin"), it.policies.single())
+                    }
+                }
+
+                println("Setting default policy")
+                val defaultPolicy = Policy("default")
+                client!!.sendAdminMessage(SetPolicyCommand(defaultPolicy))
+                withTimeout(1000) { checkResponse(responseChannel.receive()) }
+
+                println("Removing admin policy for client")
+                rootClient.sendAdminMessage(RemoveUserPolicyCommand(clientId))
+                withTimeout(1000) { checkResponse(responseChannel.receive()) }
+
+                println("Getting policy for client")
+                rootClient.sendAdminMessage(GetUserPolicyCommand(clientId))
+                withTimeout(1000) {
+                    (responseChannel.receive() as GetUserPolicyResponse).let {
+                        println(it)
+                        assertEquals(defaultPolicy, it.policy)
                     }
                 }
             } finally {

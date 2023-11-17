@@ -58,6 +58,10 @@ data class GetPolicyCommand(val name: String, override val id: String = UUID.ran
 data class GetPolicyResponse(override val id: String, val policy: Policy? = null) : AdminMessage()
 
 @Serializable
+@SerialName("RemovePolicyCommand")
+data class RemovePolicyCommand(val name: String, override val id: String = UUID.randomUUID().toString()) : AdminMessage()
+
+@Serializable
 @SerialName("GetPoliciesCommand")
 data class GetPoliciesCommand(override val id: String = UUID.randomUUID().toString()) : AdminMessage()
 
@@ -84,6 +88,11 @@ data class GetUserPoliciesCommand(override val id: String = UUID.randomUUID().to
 @Serializable
 @SerialName("GetUserPoliciesResponse")
 data class GetUserPoliciesResponse(override val id: String, val policies: List<Pair<@Contextual Id, String>> = emptyList()) : AdminMessage()
+
+@Serializable
+@SerialName("RemoveUserPolicyCommand")
+data class RemoveUserPolicyCommand(@Contextual val userId: Id, override val id: String = UUID.randomUUID().toString()) : AdminMessage()
+
 
 @Serializable
 @SerialName("RemoveUserMessagesCommand")

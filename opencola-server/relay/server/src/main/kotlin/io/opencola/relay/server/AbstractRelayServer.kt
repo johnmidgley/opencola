@@ -274,6 +274,11 @@ abstract class AbstractRelayServer(
                     GetPoliciesResponse(adminMessage.id, policyStore.getPolicies(fromId).toList())
                 }
 
+                is RemovePolicyCommand -> {
+                    policyStore.removePolicy(fromId, adminMessage.name)
+                    CommandResponse(adminMessage.id, Status.SUCCESS, State.COMPLETE)
+                }
+
                 is SetUserPolicyCommand -> {
                     policyStore.setUserPolicy(fromId, adminMessage.userId, adminMessage.policyName)
                     CommandResponse(adminMessage.id, Status.SUCCESS, State.COMPLETE)
@@ -285,6 +290,11 @@ abstract class AbstractRelayServer(
 
                 is GetUserPoliciesCommand -> {
                     GetUserPoliciesResponse(adminMessage.id, policyStore.getUserPolicies(fromId).toList())
+                }
+
+                is RemoveUserPolicyCommand -> {
+                    policyStore.removeUserPolicy(fromId, adminMessage.userId)
+                    CommandResponse(adminMessage.id, Status.SUCCESS, State.COMPLETE)
                 }
 
                 is RemoveUserMessagesCommand -> {
