@@ -5,7 +5,7 @@ import io.opencola.relay.common.protobuf.Relay as Proto
 enum class ControlMessageType(val protoType: Proto.ControlMessage.Type) {
     NONE(Proto.ControlMessage.Type.NONE),
     NO_PENDING_MESSAGES(Proto.ControlMessage.Type.NO_PENDING_MESSAGES),
-    COMMAND(Proto.ControlMessage.Type.COMMAND);
+    ADMIN(Proto.ControlMessage.Type.ADMIN);
 
     companion object {
         private val protoToTypeMap = entries.associateBy { it.protoType }

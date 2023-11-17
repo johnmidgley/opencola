@@ -60,8 +60,8 @@ message ControlMessage {
     // Sent by server after connection to inform client that all queued messages have been sent
     NO_PENDING_MESSAGES = 1;
 
-    // Sent by server when responding to a CommandMessage issued by the client
-    COMMAND = 2;
+    // Used by client and server to send admin messages
+    ADMIN = 2;
   }
 
   Type type = 1;

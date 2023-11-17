@@ -199,7 +199,7 @@ abstract class AbstractClient(
                 eventHandler?.invoke(publicKey, RelayEvent.NO_PENDING_MESSAGES)
             }
 
-            ControlMessageType.COMMAND -> {
+            ControlMessageType.ADMIN -> {
                 messageHandler(message.from, controlMessage.payload)
             }
         }

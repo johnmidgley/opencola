@@ -239,11 +239,11 @@ abstract class AbstractRelayServer(
             }
     }
 
-    private suspend fun sendCommandMessage(to: Id, commandMessage: CommandMessage) {
+    private suspend fun sendAdminMessage(to: Id, adminMessage: AdminMessage) {
         val connection = connectionDirectory.get(to)?.connection
             ?: throw IllegalStateException("No connection for $to - can't send command response")
 
-        val controlMessage = ControlMessage(ControlMessageType.COMMAND, commandMessage.encode())
+        val controlMessage = ControlMessage(ControlMessageType.ADMIN, adminMessage.encode())
         val message = Message(serverKeyPair.public, controlMessage.encodeProto())
         val envelope = Envelope.from(serverKeyPair.private, connection.publicKey, null, message)
         connection.writeSizedByteArray(encodePayload(connection.publicKey, envelope))
@@ -257,73 +257,73 @@ abstract class AbstractRelayServer(
         }
     }
 
-    private suspend fun handleCommand(fromId: Id, commandMessage: CommandMessage) {
+    private suspend fun handleAdminMessage(fromId: Id, adminMessage: AdminMessage) {
         try {
-            logger.info { "Handling command: $fromId $commandMessage" }
-            val response = when (commandMessage) {
+            logger.info { "Handling command: $fromId $adminMessage" }
+            val response = when (adminMessage) {
                 is SetPolicyCommand -> {
-                    policyStore.setPolicy(fromId, commandMessage.policy)
-                    CommandResponse(commandMessage.id, Status.SUCCESS, State.COMPLETE)
+                    policyStore.setPolicy(fromId, adminMessage.policy)
+                    CommandResponse(adminMessage.id, Status.SUCCESS, State.COMPLETE)
                 }
 
                 is GetPolicyCommand -> {
-                    GetPolicyResponse(commandMessage.id, policyStore.getPolicy(fromId, commandMessage.name))
+                    GetPolicyResponse(adminMessage.id, policyStore.getPolicy(fromId, adminMessage.name))
                 }
 
                 is GetPoliciesCommand -> {
-                    GetPoliciesResponse(commandMessage.id, policyStore.getPolicies(fromId).toList())
+                    GetPoliciesResponse(adminMessage.id, policyStore.getPolicies(fromId).toList())
                 }
 
                 is SetUserPolicyCommand -> {
-                    policyStore.setUserPolicy(fromId, commandMessage.userId, commandMessage.policyName)
-                    CommandResponse(commandMessage.id, Status.SUCCESS, State.COMPLETE)
+                    policyStore.setUserPolicy(fromId, adminMessage.userId, adminMessage.policyName)
+                    CommandResponse(adminMessage.id, Status.SUCCESS, State.COMPLETE)
                 }
 
                 is GetUserPolicyCommand -> {
-                    GetUserPolicyResponse(commandMessage.id, policyStore.getUserPolicy(fromId, commandMessage.userId))
+                    GetUserPolicyResponse(adminMessage.id, policyStore.getUserPolicy(fromId, adminMessage.userId))
                 }
 
                 is GetUserPoliciesCommand -> {
-                    GetUserPoliciesResponse(commandMessage.id, policyStore.getUserPolicies(fromId).toList())
+                    GetUserPoliciesResponse(adminMessage.id, policyStore.getUserPolicies(fromId).toList())
                 }
 
                 is RemoveUserMessagesCommand -> {
-                    messageStore?.removeMessages(commandMessage.userId)
-                    CommandResponse(commandMessage.id, Status.SUCCESS, State.COMPLETE)
+                    messageStore?.removeMessages(adminMessage.userId)
+                    CommandResponse(adminMessage.id, Status.SUCCESS, State.COMPLETE)
                 }
 
                 is RemoveMessagesByAgeCommand -> {
                     if (messageStore != null) {
-                        val headers = messageStore.removeMessages(commandMessage.maxAgeMilliseconds)
+                        val headers = messageStore.removeMessages(adminMessage.maxAgeMilliseconds)
                         headers.forEach {
-                            sendCommandMessage(
+                            sendAdminMessage(
                                 fromId,
-                                CommandResponse(commandMessage.id, Status.SUCCESS, State.PENDING, "Deleted $it")
+                                CommandResponse(adminMessage.id, Status.SUCCESS, State.PENDING, "Deleted $it")
                             )
                         }
 
-                        CommandResponse(commandMessage.id, Status.SUCCESS, State.COMPLETE)
+                        CommandResponse(adminMessage.id, Status.SUCCESS, State.COMPLETE)
                     } else {
-                        CommandResponse(commandMessage.id, Status.FAILURE, State.COMPLETE, "No message store")
+                        CommandResponse(adminMessage.id, Status.FAILURE, State.COMPLETE, "No message store")
                     }
                 }
 
                 is GetMessageUsageCommand -> {
-                    GetMessageUsageResponse(commandMessage.id, messageStore?.getUsage()?.toList() ?: emptyList())
+                    GetMessageUsageResponse(adminMessage.id, messageStore?.getUsage()?.toList() ?: emptyList())
                 }
 
                 else -> {
-                    "Unknown command: $commandMessage".let {
+                    "Unknown command: $adminMessage".let {
                         event.error("UnknownCommand") { it }
-                        CommandResponse(commandMessage.id, Status.FAILURE, State.COMPLETE, it)
+                        CommandResponse(adminMessage.id, Status.FAILURE, State.COMPLETE, it)
                     }
                 }
             }
 
-            sendCommandMessage(fromId, response)
+            sendAdminMessage(fromId, response)
         } catch (e: Exception) {
             event.error("HandleCommandError") { "Error while handling command: $e" }
-            sendCommandMessage(fromId, CommandResponse(commandMessage.id, Status.FAILURE, State.COMPLETE, e.toString()))
+            sendAdminMessage(fromId, CommandResponse(adminMessage.id, Status.FAILURE, State.COMPLETE, e.toString()))
         }
     }
 
@@ -347,8 +347,8 @@ abstract class AbstractRelayServer(
                 event.error("NoPendingMessages") { "Server received unexpected NO_PENDING_MESSAGES message" }
             }
 
-            ControlMessageType.COMMAND -> {
-                handleCommand(fromId, CommandMessage.decode(controlMessage.payload))
+            ControlMessageType.ADMIN -> {
+                handleAdminMessage(fromId, AdminMessage.decode(controlMessage.payload))
             }
         }
     }

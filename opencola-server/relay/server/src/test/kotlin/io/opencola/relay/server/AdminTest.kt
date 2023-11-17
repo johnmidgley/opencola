@@ -21,12 +21,12 @@ import kotlin.test.assertEquals
 
 
 class AdminTest {
-    private suspend fun AbstractClient.sendCommandMessage(message: CommandMessage) {
-        val controlMessage = ControlMessage(ControlMessageType.COMMAND, message.encode())
+    private suspend fun AbstractClient.sendAdminMessage(message: AdminMessage) {
+        val controlMessage = ControlMessage(ControlMessageType.ADMIN, message.encode())
         this.sendMessage(RelayServer.keyPair.public, MessageStorageKey.none, controlMessage.encodeProto())
     }
 
-    private fun checkResponse(response: CommandMessage, sourceId: String? = null): CommandMessage {
+    private fun checkResponse(response: AdminMessage, sourceId: String? = null): AdminMessage {
         println(response)
         (response as? CommandResponse)?.let {
             assertEquals(Status.SUCCESS, it.status)
@@ -41,13 +41,13 @@ class AdminTest {
     }
 
     // Tests set / get of "admin" policy
-    private suspend fun testSetPolicy(rootClient: AbstractClient, responseChannel: Channel<CommandMessage>) {
+    private suspend fun testSetPolicy(rootClient: AbstractClient, responseChannel: Channel<AdminMessage>) {
         val policy = Policy("admin", AdminPolicy(isAdmin = true, canEditPolicies = true, canEditUserPolicies = true))
 
-        rootClient.sendCommandMessage(SetPolicyCommand(policy))
+        rootClient.sendAdminMessage(SetPolicyCommand(policy))
         withTimeout(1000) { checkResponse(responseChannel.receive()) }
 
-        rootClient.sendCommandMessage(GetPolicyCommand("admin"))
+        rootClient.sendAdminMessage(GetPolicyCommand("admin"))
         withTimeout(1000) {
             (responseChannel.receive() as GetPolicyResponse).let {
                 assertEquals(policy, it.policy)
@@ -55,7 +55,7 @@ class AdminTest {
             }
         }
 
-        rootClient.sendCommandMessage(GetPoliciesCommand())
+        rootClient.sendAdminMessage(GetPoliciesCommand())
         withTimeout(1000) {
             (responseChannel.receive() as GetPoliciesResponse).let {
                 assertEquals(listOf(policy), it.policies)
@@ -67,7 +67,7 @@ class AdminTest {
     private suspend fun testSetUserPolicy(
         server: RelayServer,
         rootClient: AbstractClient,
-        responseChannel: Channel<CommandMessage>
+        responseChannel: Channel<AdminMessage>
     ) {
         var client: AbstractClient? = null
 
@@ -83,23 +83,23 @@ class AdminTest {
                     relayServerUri = server.address
                 ).also {
                     launch {
-                        it.open { _, message -> responseChannel.send(CommandMessage.decode(message)) }
+                        it.open { _, message -> responseChannel.send(AdminMessage.decode(message)) }
                         it.waitUntilOpen()
                     }
                 }
 
                 StdoutMonitor().use {
-                    client!!.sendCommandMessage(SetPolicyCommand(Policy("default")))
+                    client!!.sendAdminMessage(SetPolicyCommand(Policy("default")))
                     it.waitUntil("is not admin", 1000)
                 }
 
-                rootClient.sendCommandMessage(SetUserPolicyCommand(clientId, "admin"))
+                rootClient.sendAdminMessage(SetUserPolicyCommand(clientId, "admin"))
                 withTimeout(1000) { checkResponse(responseChannel.receive()) }
 
-                client!!.sendCommandMessage(SetPolicyCommand(Policy("default")))
+                client!!.sendAdminMessage(SetPolicyCommand(Policy("default")))
                 withTimeout(1000) { checkResponse(responseChannel.receive()) }
 
-                rootClient.sendCommandMessage(GetUserPolicyCommand(clientId))
+                rootClient.sendAdminMessage(GetUserPolicyCommand(clientId))
                 withTimeout(1000) {
                     (responseChannel.receive() as GetUserPolicyResponse).let {
                         println(it)
@@ -107,7 +107,7 @@ class AdminTest {
                     }
                 }
 
-                rootClient.sendCommandMessage(GetUserPoliciesCommand())
+                rootClient.sendAdminMessage(GetUserPoliciesCommand())
                 withTimeout(1000) {
                     (responseChannel.receive() as GetUserPoliciesResponse).let {
                         println(it)
@@ -123,7 +123,7 @@ class AdminTest {
     private suspend fun testManageMessages(
         server: RelayServer,
         rootClient: AbstractClient,
-        responseChannel: Channel<CommandMessage>
+        responseChannel: Channel<AdminMessage>
     ) {
         coroutineScope {
             val toPublicKey = generateKeyPair().public
@@ -142,7 +142,7 @@ class AdminTest {
             server.messageStore.getMessages(toId).let { assertEquals(3, it.size) }
 
             GetMessageUsageCommand().let {
-                rootClient.sendCommandMessage(it)
+                rootClient.sendAdminMessage(it)
                 withTimeout(1000) {
                     val response = checkResponse(responseChannel.receive(), it.id) as GetMessageUsageResponse
                     val usage = response.usages.single()
@@ -152,7 +152,7 @@ class AdminTest {
             }
 
             RemoveUserMessagesCommand(toId).let {
-                rootClient.sendCommandMessage(it)
+                rootClient.sendAdminMessage(it)
                 withTimeout(1000) { checkResponse(responseChannel.receive(), it.id) }
             }
             println("Checking for removed message")
@@ -189,7 +189,7 @@ class AdminTest {
 
             assertEquals(2, server.messageStore.getMessages(toId).size)
             RemoveMessagesByAgeCommand(5000).let {
-                rootClient.sendCommandMessage(it)
+                rootClient.sendAdminMessage(it)
 
                 do {
                     val response =  withTimeout(1000) { responseChannel.receive() } as CommandResponse
@@ -211,7 +211,7 @@ class AdminTest {
         runBlocking {
             try {
                 server0 = RelayServer(getNewServerUri()).also { it.start() }
-                val responseChannel = Channel<CommandMessage>()
+                val responseChannel = Channel<AdminMessage>()
 
                 println("Starting client0")
                 rootClient = getClient(
@@ -221,7 +221,7 @@ class AdminTest {
                     relayServerUri = server0!!.address
                 ).also {
                     launch {
-                        it.open { _, message -> responseChannel.send(CommandMessage.decode(message)) }
+                        it.open { _, message -> responseChannel.send(AdminMessage.decode(message)) }
                     }
                     it.waitUntilOpen()
                 }
