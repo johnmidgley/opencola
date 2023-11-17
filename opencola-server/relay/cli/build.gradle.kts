@@ -3,6 +3,7 @@ val kodeinVersion: String by project
 val kotlinxCliVersion: String by project
 val logbackVersion: String by project
 val kotlinxCoroutinesVersion: String by project
+val kotlinxSerializationVersion: String by project
 
 plugins {
     application
@@ -27,6 +28,7 @@ dependencies {
 
     implementation("com.github.ajalt.clikt:clikt:4.2.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
 
     // This avoids "No SLF4J providers were found" warning (also lets background logging work)
     implementation("ch.qos.logback:logback-classic:$logbackVersion")

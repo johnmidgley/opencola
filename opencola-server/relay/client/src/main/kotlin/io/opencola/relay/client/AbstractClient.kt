@@ -166,6 +166,7 @@ abstract class AbstractClient(
     }
 
     suspend fun sendAdminMessage(message: AdminMessage) {
+        require(_state == Open) { "Client must be open to send an admin message" }
         val body = ControlMessage(ControlMessageType.ADMIN, message.encode()).encodeProto()
         sendMessage(serverPublicKey!!, MessageStorageKey.none, body)
     }
