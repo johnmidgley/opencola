@@ -18,7 +18,7 @@ class UserPolicyDB(private val database: Database) {
         }
     }
 
-    private fun getUserPolicyJoinByUserId(userId: Id) : ResultRow? {
+    private fun getUserPolicyJoinByUserId(userId: Id): ResultRow? {
         return transaction(database) {
             UserPolicies.join(Policies, JoinType.INNER, UserPolicies.policyId, Policies.id)
                 .select { UserPolicies.userId eq userId.encoded() }
@@ -30,18 +30,18 @@ class UserPolicyDB(private val database: Database) {
         authorityId: Id,
         policy: Policy,
         editTimeMilliseconds: Long = System.currentTimeMillis()
-    ) : Long {
+    ): Long {
         return transaction(database) {
             Policies.insert {
                 it[Policies.authorityId] = authorityId.encoded()
                 it[name] = policy.name
                 it[Policies.policy] = ExposedBlob(Json.encodeToString(policy).toByteArray())
                 it[Policies.editTimeMilliseconds] = editTimeMilliseconds
-            } [Policies.id].value
+            }[Policies.id].value
         }
     }
 
-    private fun selectPolicy(op: Op<Boolean>) : PolicyRow? {
+    private fun selectPolicy(op: Op<Boolean>): PolicyRow? {
         return transaction(database) {
             Policies
                 .select { op }
@@ -52,7 +52,7 @@ class UserPolicyDB(private val database: Database) {
 
     fun getPolicyRow(
         name: String
-    ) : PolicyRow? {
+    ): PolicyRow? {
         return selectPolicy(Policies.name eq name)
     }
 
@@ -62,9 +62,9 @@ class UserPolicyDB(private val database: Database) {
         return getUserPolicyJoinByUserId(userId)?.let { PolicyRow(it) }
     }
 
-    fun getPolicyOrDefaultRow(userId: Id) : PolicyRow? {
+    fun getPolicyOrDefaultRow(userId: Id): PolicyRow? {
         val resultRow = transaction(database) {
-            (UserPolicies innerJoin  Policies)
+            (UserPolicies innerJoin Policies)
                 .slice(Policies.policy)
                 .select { UserPolicies.userId eq userId.encoded() }
                 .firstOrNull()
@@ -103,7 +103,7 @@ class UserPolicyDB(private val database: Database) {
         authorityId: Id,
         policy: Policy,
         editTimeMilliseconds: Long = System.currentTimeMillis()
-    ) : Long {
+    ): Long {
         val existingPolicyId = getPolicyRow(policy.name)?.id
 
         return if (existingPolicyId == null) {
@@ -122,14 +122,15 @@ class UserPolicyDB(private val database: Database) {
             // support onDelete = ReferenceOption.RESTRICT, so we do it manually.
             val policyId = Policies.select {
                 Policies.name eq name
-            }.single()[Policies.id].value
+            }.singleOrNull()?.get(Policies.id)?.value
+                ?: throw IllegalStateException("Policy \"$name\" does not exist")
 
             val useCount = UserPolicies.select {
                 UserPolicies.policyId eq policyId
             }.count()
 
-            if(useCount > 0) {
-                throw Exception("Cannot delete policy $name because it is referenced by $useCount user policies")
+            if (useCount > 0) {
+                throw Exception("Cannot delete policy \"$name\" because it is referenced by $useCount user policies")
             }
 
             Policies.deleteWhere {
@@ -143,7 +144,7 @@ class UserPolicyDB(private val database: Database) {
         userId: Id,
         policyId: Long,
         editTimeMilliseconds: Long = System.currentTimeMillis()
-    ) : Long {
+    ): Long {
         return transaction(database) {
             UserPolicies.insert {
                 it[UserPolicies.authorityId] = authorityId.encoded()
@@ -161,7 +162,7 @@ class UserPolicyDB(private val database: Database) {
     }
 
     // TODO: Make pageable
-    fun getUserPolicyRows() : List<UserPolicyRow> {
+    fun getUserPolicyRows(): List<UserPolicyRow> {
         return transaction(database) {
             UserPolicies.selectAll().map { UserPolicyRow(it) }
         }

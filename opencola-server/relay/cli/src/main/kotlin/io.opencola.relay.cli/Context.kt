@@ -1,13 +1,12 @@
 package io.opencola.relay.cli
 
+import com.github.ajalt.clikt.core.CliktError
 import io.opencola.model.Id
 import io.opencola.model.IdAsStringSerializer
 import io.opencola.relay.client.v2.WebSocketClient
 import io.opencola.relay.common.message.v2.AdminMessage
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import java.io.Closeable
@@ -20,7 +19,9 @@ import kotlin.concurrent.thread
 class Context(
     val storagePath: Path,
     val keyPair: KeyPair,
-    relayUri: URI
+    relayUri: URI,
+    private val connectTimeoutMilliseconds: Long = 3000, // TODO: Make configurable
+    private val requestTimeoutMilliseconds: Long = 5000, // TODO: Make configurable
 ) : Closeable {
     private val _client = WebSocketClient(relayUri, keyPair, "OCR CLI")
     private var clientJob: Job? = null
@@ -29,17 +30,43 @@ class Context(
 
     val client by lazy {
         val semaphore = Semaphore(0)
+        var exception: Exception? = null
 
         thread {
             runBlocking {
                 clientJob = launch { _client.open { _, message -> responseChannel.send(AdminMessage.decode(message)) } }
-                _client.waitUntilOpen()
-                semaphore.release()
+
+                try {
+                    withTimeout(connectTimeoutMilliseconds) { _client.waitUntilOpen() }
+                } catch (e: Exception) {
+                    exception = e
+                } finally {
+                    semaphore.release()
+                }
             }
         }
 
         semaphore.acquire()
+
+        if (exception != null)
+            throw CliktError("Error connecting to relay: ${exception!!.message}")
+
         _client
+    }
+
+    fun sendCommandMessage(command: AdminMessage): AdminMessage {
+        return runBlocking {
+            try {
+                withTimeout(requestTimeoutMilliseconds) {
+                    client.sendAdminMessage(command)
+                    responseChannel.receive()
+                }
+            } catch (e: CliktError) {
+                throw e
+            } catch (e: Exception) {
+                throw CliktError("Error sending command: ${e.message}")
+            }
+        }
     }
 
     override fun close() {

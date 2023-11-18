@@ -25,7 +25,7 @@ sealed class AdminMessage {
     abstract val id: String
 
     companion object {
-        val json = Json { serializersModule = SerializersModule { contextual(Id::class, IdAsStringSerializer) } }
+        private val json = Json { serializersModule = SerializersModule { contextual(Id::class, IdAsStringSerializer) } }
 
         fun encode(adminMessage: AdminMessage): ByteArray {
             return json.encodeToString(adminMessage).toByteArray()

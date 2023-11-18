@@ -1,19 +1,16 @@
 package io.opencola.relay.cli
 
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import io.opencola.model.Id
-import io.opencola.relay.common.message.v2.AdminMessage
-import io.opencola.relay.common.message.v2.GetPolicyCommand
-import io.opencola.relay.common.message.v2.GetPolicyResponse
-import io.opencola.relay.common.message.v2.SetPolicyCommand
+import io.opencola.relay.common.message.v2.*
 import io.opencola.relay.common.policy.Policy
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -30,12 +27,10 @@ inline fun <reified T> Json.tryDecodeFromString(jsonString: String): T? {
     }
 }
 
-fun Context.sendCommandMessage(command: AdminMessage): AdminMessage {
-    return runBlocking {
-        client.sendAdminMessage(command)
-        withTimeout(10000) {
-            responseChannel.receive()
-        }
+fun AdminMessage.format(): String {
+    return when (this) {
+        is CommandResponse -> "${if (status != Status.SUCCESS) "$status: " else ""}$message"
+        else -> this.toString()
     }
 }
 
@@ -44,48 +39,59 @@ fun Context.sendCommandMessage(command: AdminMessage): AdminMessage {
 // Escaped for command line use:
 // {\"name\":\"admin\",\"adminPolicy\":{\"isAdmin\":true,\"canEditPolicies\":true,\"canEditUserPolicies\":true}}
 class SetPolicyCliktCommand(val context: Context) : CliktCommand(name = "set") {
-    val json by option(help = "The policy in json format")
-    val file by option(help = "The policy in json format").file()
+    private val json by option(help = "The policy in json format")
+    private val file by option(help = "The policy in json format").file()
     override fun run() {
-        if (json == null && file == null) {
-            println("Must specify either --json or --file")
-            return
-        }
+        if (json == null && file == null)
+            throw CliktError("Must specify either --json or --file")
 
-        if (json != null && file != null) {
-            println("Must specify either --json or --file, not both")
-            return
-        }
+        if (json != null && file != null)
+            throw CliktError("Must specify either --json or --file, not both")
 
-        val jsonString = if (json != null) json else file?.readText()
-
-        if(jsonString == null) {
-            println("No policy specified")
-            return
-        }
-
-        val policy = context.json.tryDecodeFromString<Policy>(jsonString)
-
-        if(policy == null) {
-            println("Invalid policy: $jsonString")
-            return
-        }
-
-        val command = SetPolicyCommand(policy)
-        val response = context.sendCommandMessage(command)
-        println(response)
+        val jsonString = (if (json != null) json else file?.readText()) ?: throw CliktError("No policy specified")
+        val policy =
+            context.json.tryDecodeFromString<Policy>(jsonString) ?: throw CliktError("Invalid policy: $jsonString")
+        val response = context.sendCommandMessage(SetPolicyCommand(policy))
+        println(response.format())
     }
 }
 
 class GetPolicyCliktCommand(private val context: Context) : CliktCommand(name = "get") {
-    private val name: String? by argument(help = "The name of the policy")
+    private val name: String by argument(help = "The name of the policy")
     override fun run() {
-        if (name == null) {
-            println("name: null")
+        val response = context.sendCommandMessage(GetPolicyCommand(name))
+
+        if (response is GetPolicyResponse) {
+            if (response.policy == null)
+                println("Policy \"$name\" does not exist")
+            else
+                println(context.json.encodeToString(response.policy))
         } else {
-            val response = context.sendCommandMessage(GetPolicyCommand(name!!)) as GetPolicyResponse
-            println(context.json.encodeToString(response.policy))
+            println(response.format())
         }
+    }
+}
+
+class GetAllPoliciesCliktCommand(private val context: Context) : CliktCommand(name = "get-all") {
+    override fun run() {
+        val response = context.sendCommandMessage(GetPoliciesCommand())
+
+        if (response is GetPoliciesResponse) {
+            if (response.policies.isEmpty())
+                println("No policies found")
+            else
+                response.policies.forEach { println(context.json.encodeToString(it)) }
+        } else
+            println(response.format())
+    }
+}
+
+class RemovePolicyCliktCommand(val context: Context) : CliktCommand(name = "remove") {
+    private val name: String by argument(help = "The name of the policy")
+
+    override fun run() {
+        val response = context.sendCommandMessage(RemovePolicyCommand(name))
+        println(response.format())
     }
 }
 
@@ -128,7 +134,7 @@ class ConfigCliktCommand(private val context: Context) : CliktCommand(name = "co
     }
 }
 
-class OcrCliktCommand : CliktCommand() {
+class OcrCliktCommand : CliktCommand(name = "ocr") {
     override fun run() = Unit
 }
 
@@ -145,10 +151,16 @@ fun main(args: Array<String>) {
                 .subcommands(
                     IdentityCliktCommand(context),
                     ConfigCliktCommand(context),
-                    PolicyCliktCommand(context).subcommands(SetPolicyCliktCommand(context),
-                        GetPolicyCliktCommand(context)
+                    PolicyCliktCommand(context).subcommands(
+                        SetPolicyCliktCommand(context),
+                        GetPolicyCliktCommand(context),
+                        GetAllPoliciesCliktCommand(context),
+                        RemovePolicyCliktCommand(context)
                     ),
-                    UserPolicyCliktCommand(context).subcommands(SetUserPolicyCliktCommand(context), GetUserPolicyCliktCommand(context))
+                    UserPolicyCliktCommand(context).subcommands(
+                        SetUserPolicyCliktCommand(context),
+                        GetUserPolicyCliktCommand(context)
+                    )
                 )
                 .main(args)
         }

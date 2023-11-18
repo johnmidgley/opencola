@@ -23,7 +23,7 @@ import java.security.SecureRandom
 
 abstract class AbstractRelayServer(
     protected val config: Config,
-    protected val eventLogger: EventLogger,
+    eventLogger: EventLogger,
     protected val policyStore: PolicyStore,
     protected val connectionDirectory: ConnectionDirectory,
     protected val messageStore: MessageStore? = null,
@@ -262,8 +262,9 @@ abstract class AbstractRelayServer(
             logger.info { "Handling command: $fromId $adminMessage" }
             val response = when (adminMessage) {
                 is SetPolicyCommand -> {
-                    policyStore.setPolicy(fromId, adminMessage.policy)
-                    CommandResponse(adminMessage.id, Status.SUCCESS, State.COMPLETE)
+                    val policy = adminMessage.policy
+                    policyStore.setPolicy(fromId, policy)
+                    CommandResponse(adminMessage.id, Status.SUCCESS, State.COMPLETE, "Policy \"${policy.name}\" set")
                 }
 
                 is GetPolicyCommand -> {
@@ -276,7 +277,7 @@ abstract class AbstractRelayServer(
 
                 is RemovePolicyCommand -> {
                     policyStore.removePolicy(fromId, adminMessage.name)
-                    CommandResponse(adminMessage.id, Status.SUCCESS, State.COMPLETE)
+                    CommandResponse(adminMessage.id, Status.SUCCESS, State.COMPLETE, "Policy \"${adminMessage.name}\" removed")
                 }
 
                 is SetUserPolicyCommand -> {
@@ -333,7 +334,7 @@ abstract class AbstractRelayServer(
             sendAdminMessage(fromId, response)
         } catch (e: Exception) {
             event.error("HandleCommandError") { "Error while handling command: $e" }
-            sendAdminMessage(fromId, CommandResponse(adminMessage.id, Status.FAILURE, State.COMPLETE, e.toString()))
+            sendAdminMessage(fromId, CommandResponse(adminMessage.id, Status.FAILURE, State.COMPLETE, e.message))
         }
     }
 
