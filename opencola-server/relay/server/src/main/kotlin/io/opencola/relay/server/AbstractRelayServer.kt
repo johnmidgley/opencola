@@ -295,7 +295,7 @@ abstract class AbstractRelayServer(
 
                 is RemoveUserPolicyCommand -> {
                     policyStore.removeUserPolicy(fromId, adminMessage.userId)
-                    CommandResponse(adminMessage.id, Status.SUCCESS, State.COMPLETE)
+                    CommandResponse(adminMessage.id, Status.SUCCESS, State.COMPLETE, "User ${adminMessage.userId} policy removed")
                 }
 
                 is RemoveUserMessagesCommand -> {

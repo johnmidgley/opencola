@@ -125,6 +125,32 @@ class GetUserPolicyCliktCommand(val context: Context) : CliktCommand(name = "get
     }
 }
 
+class GetAllUserPoliciesCliktCommand(private val context: Context) : CliktCommand(name = "get-all") {
+    override fun run() {
+        val response = context.sendCommandMessage(GetUserPoliciesCommand())
+
+        if (response is GetUserPoliciesResponse) {
+            if (response.policies.isEmpty())
+                println("No user policies found")
+            else
+                response.policies.forEach {
+                    println("${it.first}\t${it.second}")
+                }
+        } else
+            println(response.format())
+    }
+}
+
+class RemoveUserPolicyCliktCommand(val context: Context) : CliktCommand(name = "remove") {
+    private val userId: String by argument(help = "The id of the user")
+
+    override fun run() {
+        val id = Id.tryDecode(userId) ?: throw CliktError("Invalid user id: $userId")
+        val response = context.sendCommandMessage(RemoveUserPolicyCommand(id))
+        println(response.format())
+    }
+}
+
 class UserPolicyCliktCommand() : CliktCommand(name = "user-policy") {
     override fun run() = Unit
 }
@@ -172,7 +198,9 @@ fun main(args: Array<String>) {
                     ),
                     UserPolicyCliktCommand().subcommands(
                         SetUserPolicyCliktCommand(context),
-                        GetUserPolicyCliktCommand(context)
+                        GetUserPolicyCliktCommand(context),
+                        GetAllUserPoliciesCliktCommand(context),
+                        RemoveUserPolicyCliktCommand(context),
                     )
                 )
                 .main(args)
