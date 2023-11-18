@@ -95,7 +95,7 @@ class RemovePolicyCliktCommand(val context: Context) : CliktCommand(name = "remo
     }
 }
 
-class PolicyCliktCommand(val context: Context) : CliktCommand(name = "policy") {
+class PolicyCliktCommand() : CliktCommand(name = "policy") {
     override fun run() = Unit
 }
 
@@ -103,16 +103,29 @@ class SetUserPolicyCliktCommand(val context: Context) : CliktCommand(name = "set
     private val userId: String by argument(help = "The id of the user")
     private val name: String by argument(help = "The name of the policy")
     override fun run() {
-        println("userId: $userId, name: $name")
+        val response = context.sendCommandMessage(SetUserPolicyCommand(Id.decode(userId), name))
+        println(response.format())
     }
 }
 
 class GetUserPolicyCliktCommand(val context: Context) : CliktCommand(name = "get") {
-    // val userId: String by argument(help = "The id of the user")
-    override fun run() = Unit
+    private val userId: String by argument(help = "The id of the user")
+    override fun run() {
+        val id = Id.tryDecode(userId) ?: throw CliktError("Invalid user id: $userId")
+        val response = context.sendCommandMessage(GetUserPolicyCommand(id))
+
+        if (response is GetUserPolicyResponse) {
+            if (response.policy == null)
+                println("User policy for \"$userId\" does not exist")
+            else
+                println(context.json.encodeToString(response.policy))
+        } else {
+            println(response.format())
+        }
+    }
 }
 
-class UserPolicyCliktCommand(val context: Context) : CliktCommand(name = "user-policy") {
+class UserPolicyCliktCommand() : CliktCommand(name = "user-policy") {
     override fun run() = Unit
 }
 
@@ -151,13 +164,13 @@ fun main(args: Array<String>) {
                 .subcommands(
                     IdentityCliktCommand(context),
                     ConfigCliktCommand(context),
-                    PolicyCliktCommand(context).subcommands(
+                    PolicyCliktCommand().subcommands(
                         SetPolicyCliktCommand(context),
                         GetPolicyCliktCommand(context),
                         GetAllPoliciesCliktCommand(context),
                         RemovePolicyCliktCommand(context)
                     ),
-                    UserPolicyCliktCommand(context).subcommands(
+                    UserPolicyCliktCommand().subcommands(
                         SetUserPolicyCliktCommand(context),
                         GetUserPolicyCliktCommand(context)
                     )

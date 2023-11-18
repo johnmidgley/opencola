@@ -282,7 +282,7 @@ abstract class AbstractRelayServer(
 
                 is SetUserPolicyCommand -> {
                     policyStore.setUserPolicy(fromId, adminMessage.userId, adminMessage.policyName)
-                    CommandResponse(adminMessage.id, Status.SUCCESS, State.COMPLETE)
+                    CommandResponse(adminMessage.id, Status.SUCCESS, State.COMPLETE, "User ${adminMessage.userId} policy set to \"${adminMessage.policyName}\"")
                 }
 
                 is GetUserPolicyCommand -> {
