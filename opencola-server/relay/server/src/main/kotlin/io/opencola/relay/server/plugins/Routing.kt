@@ -27,7 +27,7 @@ fun connectionsString(connections: Sequence<ConnectionEntry>): String {
 }
 
 fun usageString(usages: Sequence<Usage>): String {
-    val usage = usages.joinToString("\n") { "${it.to} - ${it.bytesStored}" }
+    val usage = usages.joinToString("\n") { "${it.to} - ${it.numBytes}" }
     return "Usage (${usages.count()})\n\n$usage"
 }
 

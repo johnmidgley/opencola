@@ -5,6 +5,8 @@ import io.opencola.model.Id
 import io.opencola.model.IdAsStringSerializer
 import io.opencola.relay.client.v2.WebSocketClient
 import io.opencola.relay.common.message.v2.AdminMessage
+import io.opencola.relay.common.message.v2.CommandResponse
+import io.opencola.relay.common.message.v2.State
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.serialization.json.Json
@@ -59,7 +61,16 @@ class Context(
             try {
                 withTimeout(requestTimeoutMilliseconds) {
                     client.sendAdminMessage(command)
-                    responseChannel.receive()
+                    var response: AdminMessage
+
+                    while (true) {
+                        response = responseChannel.receive()
+                        if (response is CommandResponse && response.state == State.PENDING)
+                            println(response.format())
+                        else
+                            break
+                    }
+                    response
                 }
             } catch (e: CliktError) {
                 throw e

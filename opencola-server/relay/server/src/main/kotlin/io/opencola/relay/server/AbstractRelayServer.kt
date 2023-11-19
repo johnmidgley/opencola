@@ -299,21 +299,33 @@ abstract class AbstractRelayServer(
                 }
 
                 is RemoveUserMessagesCommand -> {
-                    messageStore?.removeMessages(adminMessage.userId)
-                    CommandResponse(adminMessage.id, Status.SUCCESS, State.COMPLETE)
+                    val headers = messageStore?.removeMessages(adminMessage.userId)
+                    var deletedCount = 0
+
+                    headers?.forEach {
+                        sendAdminMessage(
+                            fromId,
+                            CommandResponse(adminMessage.id, Status.SUCCESS, State.PENDING, "Removed $it")
+                        )
+                        deletedCount++
+                    }
+                    CommandResponse(adminMessage.id, Status.SUCCESS, State.COMPLETE, "Removed $deletedCount messages")
                 }
 
                 is RemoveMessagesByAgeCommand -> {
                     if (messageStore != null) {
                         val headers = messageStore.removeMessages(adminMessage.maxAgeMilliseconds)
+                        var deletedCount = 0
+
                         headers.forEach {
                             sendAdminMessage(
                                 fromId,
-                                CommandResponse(adminMessage.id, Status.SUCCESS, State.PENDING, "Deleted $it")
+                                CommandResponse(adminMessage.id, Status.SUCCESS, State.PENDING, "Removed $it")
                             )
+                            deletedCount++
                         }
 
-                        CommandResponse(adminMessage.id, Status.SUCCESS, State.COMPLETE)
+                        CommandResponse(adminMessage.id, Status.SUCCESS, State.COMPLETE, "Removed $deletedCount messages")
                     } else {
                         CommandResponse(adminMessage.id, Status.FAILURE, State.COMPLETE, "No message store")
                     }
