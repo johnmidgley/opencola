@@ -9,9 +9,8 @@
 (defn item-tags-summary [actions on-click]
   (when (not-empty actions)
     [:div.tags
-     (interpose " "
-                (doall (for [name (distinct (map :value actions))]
-                         ^{:key name} [tag name on-click])))]))
+     (doall (for [name (distinct (map :value actions))]
+              ^{:key name} [tag name on-click]))]))
 
 (defn item-tags-summary-from-string [tags-string]
   (when (not (str/blank? tags-string))

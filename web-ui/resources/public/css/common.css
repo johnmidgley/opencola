@@ -1,0 +1,136 @@
+body {
+    font-family: "Roboto", Helvetica, sans-serif;
+    margin: 0;
+}
+
+:root {
+    --bg-color: rgb(248, 248, 248);
+    --secondary-bg-color: rgb(248, 248, 248);
+    --own-comment-color: rgb(229, 229, 229);
+    --button-hover-bg-color: rgb(230, 230, 230);
+    --accent-color: lightgray;
+    --caution-color: red;
+    --disabled-color: gray;
+    --feed-item-bg-color: white;
+    --shadow-color: #EEEEEE;
+    --border-color: black;
+    --border-size: .1rem;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    vertical-align: middle;
+    font-style: italic;
+    background-repeat: no-repeat;
+    background-size: cover;
+    shape-margin: 1rem;
+}
+
+a {
+    text-decoration: none;
+}
+
+.d-none {
+    display: none;
+}
+
+.toggled-element {
+    display: none;
+
+    &[data-visible=true] {
+        display: block;
+    }
+}
+
+.text-center {
+    text-align: center;
+}
+
+.caution-color {
+    color: var(--caution-color);
+}
+
+/* class for removing default styles */
+.reset {
+    all: unset;
+}
+
+.pointer {
+    cursor: pointer;
+}
+
+.fs-0 {
+    font-size: 0;
+}
+
+.ml-a {
+    margin-left: auto;
+}
+
+.mr-a {
+    margin-right: auto;
+}
+
+.mi-a {
+    margin-inline: auto; 
+}
+
+.icon {
+    height: var(--icon-size, 75%);
+}
+
+.z-top {
+    z-index: 9999;
+}
+
+.icon-persona {
+    -webkit-mask-image: url("../img/user.svg");
+    mask-image: url("../img/user.svg");
+}
+
+.content-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+    gap: 2rem;
+    max-width: 1000px;
+    padding: 0 2rem;
+}
+
+.list-item {
+    padding: 1rem;
+    margin: 0 1rem;
+    border-radius: 1rem;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    box-shadow: 5px 5px 5px 5px var(--shadow-color);
+    -webkit-box-shadow: 5px 5px 5px 5px var(--shadow-color);
+}
+
+button {
+    all: unset;
+    cursor: pointer;
+    border: var(--border-size) solid var(--border-color);
+    border-radius: 10rem;
+    padding: .2rem .8rem;
+    &:hover {
+        background-color: var(--button-hover-bg-color);
+    }
+}
+
+.button {
+    cursor: pointer;
+    &:hover {
+        background-color: var(--button-hover-bg-color);
+    }
+}
+
+.action-img {
+    width: 1.5rem;
+}

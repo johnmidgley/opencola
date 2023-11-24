@@ -3,7 +3,8 @@
             [goog.string :as gstring]
             [markdown-to-hiccup.core :as md2hic]
             [reagent.core :as reagent]
-            [opencola.web-ui.location :as location]))
+            [opencola.web-ui.location :as location]
+            [reagent.core :as r]))
 
 (defn error-control [e!]
   (when @e!
@@ -25,7 +26,7 @@
   [img name "action-img"])
 
 (defn input-text [item! key editing?]
-  [:input.input-text
+  [:input.reset.input-text
    {:type "text"
     :disabled (not editing?)
     :value (key @item!)
@@ -122,6 +123,41 @@
    [progress-bar visible?! progress!]
    (when (= @progress! 100) " processing...")]))
 
+(defn img-button 
+  [class inner-class src on-click!]
 
-(defn help-control []
-  [:a.reset.header-button {:href "help/help.html" :target "_blank"} [:img.header-icon {:src  "../img/help.png"}]])
+  [:div {:class class :on-click on-click!} 
+   [:img {:class inner-class :src src}]]
+  )
+
+(defn anotated-img-button
+  [class img-class text-class text src on-click!]
+
+  [:div {:class class :on-click on-click!}
+   [:img {:class img-class  :src src}]
+   [:span {:class text-class} text]])
+
+(defn icon-button-inner
+  [icon-class text]
+  [:span.button-wrap
+   [:span.icon {:class icon-class}]
+   [:span.button-text text]])
+
+(defn icon-button 
+  [icon-class text on-click!]
+  [:button.reset {:type "button" :on-click on-click!}
+   [icon-button-inner icon-class text]])
+
+(defn text-button 
+  [text on-click!]
+  [:button {:type "button" :on-click on-click!} text])
+
+(defn persona-menu [page personas! persona! on-select]
+  (let [menu-open?! (r/atom false)]
+    (fn []
+      [:div.persona-menu-wrapper
+       [:button.reset {:type "button" :aria-haspopup "menu" :aria-expanded @menu-open?! :on-click #(swap! menu-open?! not)}
+        [icon-button-inner "icon-persona" "Test"]]
+       (when @menu-open?!
+         [:ul.submenu {:aria-labelledby "persona-menu-button"}
+          [:button.button {:type "button" :value ""}]])])))

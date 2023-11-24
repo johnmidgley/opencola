@@ -3,7 +3,7 @@
    [reagent.core :as reagent :refer [atom]]
    [opencola.web-ui.app-state :as state]
    [opencola.web-ui.model.persona :as model]
-   [opencola.web-ui.view.common :refer [action-img input-text input-checkbox error-control help-control image-divider]]
+   [opencola.web-ui.view.common :refer [action-img input-text input-checkbox error-control]]
    [opencola.web-ui.view.search :as search]
    [opencola.web-ui.location :as location]))
 
@@ -48,12 +48,9 @@
             ^{:key persona} [:option  {:value (:id persona)} (:name persona)]))])
 
 (defn header-actions [adding-persona?!]
-  [:div.header-actions 
-   [:div.header-button [:img.header-icon {:src  "../img/add-peer.png" :on-click #(swap! adding-persona?! not)}]]
-   
-   [:div.header-button [:img.header-icon {:src  "../img/feed.png" :on-click #(location/set-page! :feed)}]]
-   
-   [help-control]])
+  [:div.container
+   [:div.button [:img.icon {:src  "../img/add-peer.png" :on-click #(swap! adding-persona?! not)}]] 
+   [:div.button [:img.icon {:src  "../img/feed.png" :on-click #(location/set-page! :feed)}]]]) 
 
 (defn persona-item [personas! persona]
   (let [editing?! (atom false)
@@ -62,7 +59,7 @@
         on-error #(reset! error! %)]
     (fn []
       (let [image-uri (:imageUri @p!)]
-        [:div.peer-item
+        [:div.list-item
          [:div.peer-img-box
           [:img.peer-img 
            {:src (if (seq image-uri) image-uri "../img/user.png")}]]
@@ -114,7 +111,7 @@
         error! (atom nil)]
     (fn []
       (let [image-uri (:imageUri @persona!)]
-        [:div.peer-item
+        [:div.list-item
          [:div.peer-img-box
           [:img.peer-img 
            {:src (if (seq image-uri) image-uri "../img/user.png")}]]
@@ -143,7 +140,7 @@
 
 (defn persona-list [personas! adding-persona?!]
   (when @personas!
-    [:div.peers 
+    [:div.content-list.persona-list 
      (when @adding-persona?! [add-persona-item personas! adding-persona?!])
      (doall (for [persona (:items @personas!)]
               ^{:key persona} [persona-item personas! persona]))]))
@@ -162,5 +159,5 @@
         on-search! 
         (partial header-actions adding-persona?!)]
        [error-control (state/error!)] 
-       [:h2 "Personas"]
+       [:h2.text-center "Personas"]
        [persona-list  personas! adding-persona?!]])))

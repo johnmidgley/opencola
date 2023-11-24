@@ -1,10 +1,9 @@
 (ns opencola.web-ui.view.comments
   (:require
-   [reagent.core :as reagent :refer [atom]]
-   [opencola.web-ui.view.common :refer [error-control]]
+   [reagent.core :as reagent :refer [atom]] 
    [opencola.web-ui.model.feed :as model]
    [opencola.web-ui.time :refer [format-time]]
-   [opencola.web-ui.view.common :refer [action-img md->component simple-mde]]))
+   [opencola.web-ui.view.common :refer [error-control action-img md->component simple-mde]]))
 
 (defn comment-edit-control [id text state!] 
   [:div.comment-edit-control
@@ -54,11 +53,10 @@
          [:div.item-attribution
           [:span.authority {:on-click #(on-click-authority authority-name)} authority-name] " " (format-time epoch-second) " "
           (when editable?
-            [:span {:on-click #(reset! editing?! true)} [action-img "edit"]])
-          ":"]
+            [:span.button.edit-comment-button {:on-click #(reset! editing?! true)} [action-img "edit"]])]
          (if (and editable? @editing?!)
            [comment-control context persona-id! item comment-id text editing?! on-update]
-           [:div.item-comment-container [md->component {:class "item-comment-text"} text]])]))))
+           [:div.item-comment-container [md->component {:class "item-comment-text" :data-is-own-comment editable?} text]])]))))
 
 (defn item-comments [context persona-id! item comment-actions preview-fn? expanded?! on-update on-click-authority]
   (let [preview? (preview-fn?)

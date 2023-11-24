@@ -2,7 +2,7 @@
   (:require 
    [reagent.core :as reagent :refer [atom]]
    [opencola.web-ui.app-state :as state]
-   [opencola.web-ui.view.common :refer [action-img image-divider input-text input-checkbox error-control help-control]]
+   [opencola.web-ui.view.common :refer [action-img input-text input-checkbox error-control img-button]]
    [opencola.web-ui.model.peer :as model]
    [opencola.web-ui.view.search :as search]
    [opencola.web-ui.location :as location]))
@@ -30,12 +30,9 @@
    #(on-error %)))
 
 (defn header-actions [adding-peer?!]
-  [:div.header-actions 
-   [:div.header-button [:img.header-icon {:src  "../img/add-peer.png" :on-click #(swap! adding-peer?! not)}]]
-   
-   [:div.header-button [:img.header-icon {:src  "../img/feed.png" :on-click #(location/set-page! :feed)}]]
-   
-   [help-control]])
+  [:div.container
+   [img-button "button" "icon" "../img/add-peer.png" #(swap! adding-peer?! not)]
+   [img-button "button" "icon" "../img/feed.png" #(location/set-page! :feed)]]) 
 
 (defn map-to-token [m]
   (->> m (map (fn [[k v]] (str (name k) "=" v))) (interpose \|) (apply str)))
@@ -47,7 +44,7 @@
         error! (atom nil)]
     (fn []
       (let [image-uri (:imageUri @p!)]
-        [:div.peer-item
+        [:div.list-item
          [:div.peer-img-box
           [:img.peer-img 
            {:src (if (seq image-uri) image-uri "../img/user.png")}]]
@@ -104,7 +101,7 @@
     (fn []
       (if @peer!
         [peer-item persona-id peers! @peer! adding-peer?!]
-        [:div.peer-item 
+        [:div.list-item 
          [:div.peer-img-box
           [:img.peer-img 
            {:src "../img/user.png"}]]
@@ -139,20 +136,20 @@
 
 (defn peer-list [persona-id peers! adding-peer?!]
   (when @peers!
-    [:div.peers 
+    [:div.content-list.peer-list 
      (when @adding-peer?! [add-peer-item persona-id peers! adding-peer?!])
      (doall (for [peer (:results @peers!)]
               ^{:key peer} [peer-item persona-id peers! peer]))]))
 
 (defn peer-instructions []
-  [:div.feed-item
+  [:div.list-item
    [:div
     [:img.nola-img {:src "img/nola.png"}]
     [:div.item-name  "Snap! Your have no peers!"]
     [:div
      [:ul.instruction-items
-      [:li "Add peers by clicking the add peer icon (" [:img.header-icon {:src  "../img/add-peer.png"}] ") on the top right"]
-      [:li "Browse help by clicking the help icon (" [:img.header-icon {:src  "../img/help.png"}] ") on the top right"]]]]])
+      [:li "Add peers by clicking the add peer icon (" [:img.icon {:src  "../img/add-peer.png"}] ") on the top right"]
+      [:li "Browse help by clicking the help icon (" [:img.icon {:src  "../img/help.png"}] ") on the top right"]]]]])
 
 
 (defn peer-page [peers! personas! persona! on-persona-select query! on-search!]
@@ -169,7 +166,7 @@
         on-search!
         (partial header-actions adding-peer?!)]
        [error-control (state/error!)]
-       [:h2 "Peers of " (:name (personas @persona!))] 
+       [:h2.text-center  "Peers of " (:name (personas @persona!))] 
        [peer-list @persona! peers! adding-peer?!]
        (when (and (not (= @peers! {})) (not @adding-peer?!) (empty? (:results @peers!)))
          [peer-instructions])]))))

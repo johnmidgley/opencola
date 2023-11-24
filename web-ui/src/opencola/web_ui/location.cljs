@@ -31,7 +31,7 @@
 
 (defn set-page! [page]
   (when (not= :feed page)
-    (query! ""))
-  (feed! {})
+    (query! "")
+    (feed! {})) 
   (state/set-page! page)
   (set-location-from-state))

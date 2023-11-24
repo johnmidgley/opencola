@@ -11,7 +11,7 @@
    :personas! (atom [])
    :query! (atom "") 
    :feed! (atom {})
-   :peers! (atom {})
+   :peers! (atom {}) 
    :error! (atom "")
    })
 

@@ -106,9 +106,9 @@
   ;; (swap! app-state update-in [:__figwheel_counter] inc)
 )
 
-(doto (History.)
+(defonce history-initiated (doto (History.)
   (events/listen EventType.NAVIGATE #(secretary/dispatch! (.-token %)))
-  (.setEnabled true))
+  (.setEnabled true)))
 
 (config/get-config
  #(do (mount-app-element)
