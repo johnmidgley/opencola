@@ -2,6 +2,7 @@ package opencola.server.plugins.routing
 
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.opencola.application.ServerConfig
@@ -33,7 +34,7 @@ fun Application.configureCertificateRouting(storagePath: Path, serverConfig: Ser
 
         post("/certInstalled") {
             setCertInstalled(storagePath)
-            call.respondRedirect("https://localhost:${serverConfig.ssl!!.port}/start")
+            call.respondRedirect("https://${call.request.host()}:${serverConfig.ssl!!.port}/start")
         }
 
         get("/cert") {
