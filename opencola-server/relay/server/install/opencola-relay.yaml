@@ -1,6 +1,4 @@
-# This file is for test purposes and should not be used in production
-
-storagePath: .
+storagePath: /var/relay
 
 capacity:
   maxConnections: 10000
@@ -8,6 +6,7 @@ capacity:
   maxPayloadSize: 52428800 # 50MB
 
 security:
+  # Set these via environment variables - DO NOT USE THESE VALUES IN PRODUCTION
   publicKeyBase58: aSq9DsNNvGhYxYyqA9wd2eduEAZ5AXWgJTbTJphuoSKyRxpBes9UaZrDLzhKrnn1EYTXxAssgQx82fDb1DCXqGGkRDGfvnr92PEHy9dQNUzVg8ox7Nj29SubzGKU
   privateKeyBase58: 2RxV4m78RGjpDZ5VV6TTtkSkRKgEC58qoYKq5rA4jkjPUbhn4bTkNfit7LUHN4sYWttAZC9dLHcbyoNCJvTGx47Pr3ho
   rootIdBase58: CXGLUbK48DAPHpW3eUSAiaXCDdj9f8t1BUkcVrHKocd9

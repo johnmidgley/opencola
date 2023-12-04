@@ -53,9 +53,16 @@ data class CapacityConfig(
 )
 
 data class Config(
+    val storagePath: Path,
     val capacity: CapacityConfig = CapacityConfig(),
     val security: SecurityConfig,
-)
+) {
+    constructor(capacity: CapacityConfig = CapacityConfig(), security: SecurityConfig) : this(
+        storagePath = Path.of("storage"),
+        capacity = capacity,
+        security = security
+    )
+}
 
 fun loadConfig(configPath: Path): Config {
     return ConfigLoaderBuilder.default()
