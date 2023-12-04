@@ -21,63 +21,59 @@ import kotlin.test.assertEquals
 
 
 class AdminTest {
-    private fun checkResponse(response: AdminMessage, sourceId: String? = null): AdminMessage {
-        println(response)
-        (response as? CommandResponse)?.let {
-            assertEquals(Status.SUCCESS, it.status)
-            assertEquals(State.COMPLETE, it.state)
-
-            if (sourceId != null) {
-                assertEquals(sourceId, it.id)
+    private inline fun <reified T : AdminMessage> getResponse(
+        responseChannel: Channel<AdminMessage>,
+        sourceId: String? = null
+    ): T {
+        while (true) {
+            val response = runBlocking {
+                withTimeout(1000) { responseChannel.receive() }.also { println(it) }
             }
-        }
 
-        return response
+            if (response is CommandResponse) {
+                assertEquals(Status.SUCCESS, response.status)
+
+                if (sourceId != null) {
+                    assertEquals(sourceId, response.id)
+                }
+
+                when (response.state) {
+                    State.COMPLETE -> return response as T
+                    State.PENDING -> continue
+                    else -> throw Exception("Unexpected state: ${response.state}")
+                }
+            }
+
+            // Any response aside from a command response implies the request is complete
+            return response as T
+        }
     }
 
     // Tests set / get of "admin" policy
     private suspend fun testSetPolicy(rootClient: AbstractClient, responseChannel: Channel<AdminMessage>) {
-        val policy = Policy("admin", AdminPolicy(isAdmin = true, canEditPolicies = true, canEditUserPolicies = true))
+        val policy =
+            Policy("admin", AdminPolicy(isAdmin = true, canEditPolicies = true, canEditUserPolicies = true))
 
         rootClient.sendAdminMessage(SetPolicyCommand(policy))
-        withTimeout(1000) { checkResponse(responseChannel.receive()) }
+        getResponse<AdminMessage>(responseChannel)
 
         rootClient.sendAdminMessage(GetPolicyCommand("admin"))
-        withTimeout(1000) {
-            (responseChannel.receive() as GetPolicyResponse).let {
-                assertEquals(policy, it.policy)
-                println(it)
-            }
-        }
+        assertEquals(policy, getResponse<GetPolicyResponse>(responseChannel).policy)
 
         rootClient.sendAdminMessage(GetPoliciesCommand())
-        withTimeout(1000) {
-            (responseChannel.receive() as GetPoliciesResponse).let {
-                assertEquals(listOf(policy), it.policies)
-                println(it)
-            }
-        }
+        assertEquals(listOf(policy), getResponse<GetPoliciesResponse>(responseChannel).policies)
 
         val testPolicy = Policy("test")
         rootClient.sendAdminMessage(SetPolicyCommand(testPolicy))
+        getResponse<AdminMessage>(responseChannel)
+
         rootClient.sendAdminMessage(GetPolicyCommand("test"))
-        withTimeout(1000) { checkResponse(responseChannel.receive()) }
-        withTimeout(1000) {
-            (responseChannel.receive() as GetPolicyResponse).let {
-                assertEquals(testPolicy, it.policy)
-                println(it)
-            }
-        }
+        assertEquals(testPolicy, getResponse<GetPolicyResponse>(responseChannel).policy)
 
         rootClient.sendAdminMessage(RemovePolicyCommand("test"))
-        withTimeout(1000) { checkResponse(responseChannel.receive()) }
+        getResponse<AdminMessage>(responseChannel)
         rootClient.sendAdminMessage(GetPolicyCommand("test"))
-        withTimeout(1000) {
-            (responseChannel.receive() as GetPolicyResponse).let {
-                assertEquals(null, it.policy)
-                println(it)
-            }
-        }
+        assertEquals(null, getResponse<GetPolicyResponse>(responseChannel).policy)
     }
 
     private suspend fun testSetUserPolicy(
@@ -110,43 +106,31 @@ class AdminTest {
 
                 println("Setting admin policy for non-admin client")
                 rootClient.sendAdminMessage(SetUserPolicyCommand(clientId, "admin"))
-                withTimeout(1000) { checkResponse(responseChannel.receive()) }
+                getResponse<AdminMessage>(responseChannel)
 
                 println("Getting admin policy for  client")
                 rootClient.sendAdminMessage(GetUserPolicyCommand(clientId))
-                withTimeout(1000) {
-                    (responseChannel.receive() as GetUserPolicyResponse).let {
-                        println(it)
-                        assertEquals("admin", it.policy!!.name)
-                    }
-                }
+                assertEquals("admin", getResponse<GetUserPolicyResponse>(responseChannel).policy!!.name)
 
                 println("Getting admin policies")
                 rootClient.sendAdminMessage(GetUserPoliciesCommand())
-                withTimeout(1000) {
-                    (responseChannel.receive() as GetUserPoliciesResponse).let {
-                        println(it)
-                        assertEquals(Pair(clientId, "admin"), it.policies.single())
-                    }
-                }
+                assertEquals(
+                    Pair(clientId, "admin"),
+                    getResponse<GetUserPoliciesResponse>(responseChannel).policies.single()
+                )
 
                 println("Setting default policy")
                 val defaultPolicy = Policy("default")
                 client!!.sendAdminMessage(SetPolicyCommand(defaultPolicy))
-                withTimeout(1000) { checkResponse(responseChannel.receive()) }
+                getResponse<AdminMessage>(responseChannel)
 
                 println("Removing admin policy for client")
                 rootClient.sendAdminMessage(RemoveUserPolicyCommand(clientId))
-                withTimeout(1000) { checkResponse(responseChannel.receive()) }
+                getResponse<AdminMessage>(responseChannel)
 
                 println("Getting policy for client")
                 rootClient.sendAdminMessage(GetUserPolicyCommand(clientId))
-                withTimeout(1000) {
-                    (responseChannel.receive() as GetUserPolicyResponse).let {
-                        println(it)
-                        assertEquals(defaultPolicy, it.policy)
-                    }
-                }
+                assertEquals(defaultPolicy, getResponse<GetUserPolicyResponse>(responseChannel).policy)
             } finally {
                 client?.close()
             }
@@ -174,20 +158,16 @@ class AdminTest {
             println("Checking for stored message")
             server.messageStore.getMessages(toId).let { assertEquals(3, it.size) }
 
-            GetMessageUsageCommand().let {
-                rootClient.sendAdminMessage(it)
-                withTimeout(1000) {
-                    val response = checkResponse(responseChannel.receive(), it.id) as GetMessageUsageResponse
-                    val usage = response.usages.single()
-                    assertEquals(toId, usage.to)
-                    assertEquals(3, usage.numMessages)
-                }
+
+            rootClient.sendAdminMessage(GetMessageUsageCommand())
+            getResponse<GetMessageUsageResponse>(responseChannel).usages.single().let {
+                assertEquals(toId, it.to)
+                assertEquals(3, it.numMessages)
             }
 
-            RemoveUserMessagesCommand(toId).let {
-                rootClient.sendAdminMessage(it)
-                withTimeout(1000) { checkResponse(responseChannel.receive(), it.id) }
-            }
+            rootClient.sendAdminMessage(RemoveUserMessagesCommand(toId))
+            getResponse<AdminMessage>(responseChannel)
+
             println("Checking for removed message")
             server.messageStore.getMessages(toId).let { assertEquals(0, it.size) }
 
@@ -221,14 +201,9 @@ class AdminTest {
             )
 
             assertEquals(2, server.messageStore.getMessages(toId).size)
-            RemoveMessagesByAgeCommand(5000).let {
-                rootClient.sendAdminMessage(it)
 
-                do {
-                    val response = withTimeout(1000) { responseChannel.receive() } as CommandResponse
-                    println(response.message)
-                } while (response.state != State.COMPLETE)
-            }
+            rootClient.sendAdminMessage(RemoveMessagesByAgeCommand(5000))
+            getResponse<AdminMessage>(responseChannel)
 
             val messages = server.messageStore.getMessages(toId)
             assertEquals(1, messages.size)

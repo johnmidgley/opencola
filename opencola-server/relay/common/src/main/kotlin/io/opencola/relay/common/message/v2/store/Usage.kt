@@ -5,4 +5,4 @@ import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Usage(@Contextual val to: Id, val numMessages: Int, val bytesStored: Long)
+data class Usage(@Contextual val to: Id, val numMessages: Int, val numBytes: Long)

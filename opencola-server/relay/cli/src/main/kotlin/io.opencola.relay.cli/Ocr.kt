@@ -7,6 +7,7 @@ import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
+import com.github.ajalt.clikt.parameters.types.long
 import io.opencola.model.Id
 import io.opencola.relay.common.message.v2.*
 import io.opencola.relay.common.policy.Policy
@@ -72,7 +73,7 @@ class GetPolicyCliktCommand(private val context: Context) : CliktCommand(name = 
     }
 }
 
-class GetAllPoliciesCliktCommand(private val context: Context) : CliktCommand(name = "get-all") {
+class GetAllPoliciesCliktCommand(private val context: Context) : CliktCommand(name = "ls") {
     override fun run() {
         val response = context.sendCommandMessage(GetPoliciesCommand())
 
@@ -95,7 +96,7 @@ class RemovePolicyCliktCommand(val context: Context) : CliktCommand(name = "remo
     }
 }
 
-class PolicyCliktCommand(val context: Context) : CliktCommand(name = "policy") {
+class PolicyCliktCommand() : CliktCommand(name = "policy") {
     override fun run() = Unit
 }
 
@@ -103,16 +104,97 @@ class SetUserPolicyCliktCommand(val context: Context) : CliktCommand(name = "set
     private val userId: String by argument(help = "The id of the user")
     private val name: String by argument(help = "The name of the policy")
     override fun run() {
-        println("userId: $userId, name: $name")
+        val response = context.sendCommandMessage(SetUserPolicyCommand(Id.decode(userId), name))
+        println(response.format())
     }
 }
 
 class GetUserPolicyCliktCommand(val context: Context) : CliktCommand(name = "get") {
-    // val userId: String by argument(help = "The id of the user")
+    private val userId: String by argument(help = "The id of the user")
+    override fun run() {
+        val id = Id.tryDecode(userId) ?: throw CliktError("Invalid user id: $userId")
+        val response = context.sendCommandMessage(GetUserPolicyCommand(id))
+
+        if (response is GetUserPolicyResponse) {
+            if (response.policy == null)
+                println("User policy for \"$userId\" does not exist")
+            else
+                println(context.json.encodeToString(response.policy))
+        } else {
+            println(response.format())
+        }
+    }
+}
+
+class GetAllUserPoliciesCliktCommand(private val context: Context) : CliktCommand(name = "ls") {
+    override fun run() {
+        val response = context.sendCommandMessage(GetUserPoliciesCommand())
+
+        if (response is GetUserPoliciesResponse) {
+            if (response.policies.isEmpty())
+                println("No user policies found")
+            else
+                response.policies.forEach {
+                    println("${it.first}\t${it.second}")
+                }
+        } else
+            println(response.format())
+    }
+}
+
+class RemoveUserPolicyCliktCommand(val context: Context) : CliktCommand(name = "remove") {
+    private val userId: String by argument(help = "The id of the user")
+
+    override fun run() {
+        val id = Id.tryDecode(userId) ?: throw CliktError("Invalid user id: $userId")
+        val response = context.sendCommandMessage(RemoveUserPolicyCommand(id))
+        println(response.format())
+    }
+}
+
+class UserPolicyCliktCommand() : CliktCommand(name = "user-policy") {
     override fun run() = Unit
 }
 
-class UserPolicyCliktCommand(val context: Context) : CliktCommand(name = "user-policy") {
+class RemoveUserMessagesCliktCommand(private val context: Context) : CliktCommand(name = "remove") {
+    private val userId: String? by option(help = "The id of the user")
+    private val age: Long? by option(help = "Remove messages older than age in milliseconds").long()
+
+    override fun run() {
+        if (userId == null && age == null)
+            throw CliktError("Must specify either --user-id or --age")
+
+        if (userId != null && age != null)
+            throw CliktError("Must specify either --user-id or --age, not both")
+
+        val response = if (age != null) {
+            context.sendCommandMessage(RemoveMessagesByAgeCommand(age!!))
+        } else {
+            val id = Id.tryDecode(userId!!) ?: throw CliktError("Invalid user id: $userId")
+            context.sendCommandMessage(RemoveUserMessagesCommand(id))
+        }
+
+        println(response.format())
+    }
+}
+
+class GetMessageUsageCliktCommand(private val context: Context) : CliktCommand(name = "usage") {
+    override fun run() {
+        val response = context.sendCommandMessage(GetMessageUsageCommand())
+
+        if (response is GetMessageUsageResponse) {
+            if(response.usages.isEmpty())
+                println("No stored messages")
+            response.usages.forEach {
+                println("${it.to}\t${it.numMessages}\t${it.numBytes}")
+            }
+        } else {
+            println(response.format())
+        }
+    }
+}
+
+class MessagesCliktCommand() : CliktCommand(name = "messages") {
     override fun run() = Unit
 }
 
@@ -151,15 +233,21 @@ fun main(args: Array<String>) {
                 .subcommands(
                     IdentityCliktCommand(context),
                     ConfigCliktCommand(context),
-                    PolicyCliktCommand(context).subcommands(
+                    PolicyCliktCommand().subcommands(
                         SetPolicyCliktCommand(context),
                         GetPolicyCliktCommand(context),
                         GetAllPoliciesCliktCommand(context),
                         RemovePolicyCliktCommand(context)
                     ),
-                    UserPolicyCliktCommand(context).subcommands(
+                    UserPolicyCliktCommand().subcommands(
                         SetUserPolicyCliktCommand(context),
-                        GetUserPolicyCliktCommand(context)
+                        GetUserPolicyCliktCommand(context),
+                        GetAllUserPoliciesCliktCommand(context),
+                        RemoveUserPolicyCliktCommand(context),
+                    ),
+                    MessagesCliktCommand().subcommands(
+                        RemoveUserMessagesCliktCommand(context),
+                        GetMessageUsageCliktCommand(context)
                     )
                 )
                 .main(args)

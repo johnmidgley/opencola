@@ -76,7 +76,11 @@ data class Id(private val bytes: ByteArray) : Comparable<Id> {
         }
 
         fun tryDecode(value: String?): Id? {
-            return if (value.isNullOrBlank()) null else decode(value)
+            return try {
+                if (value == null) null else decode(value)
+            } catch (e: Exception) {
+                null
+            }
         }
 
         // TODO: Add constructor that takes stream so whole file doesn't need to be loaded
