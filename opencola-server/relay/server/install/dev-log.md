@@ -29,12 +29,28 @@ aws-cli/2.4.5 Python/3.8.8 Darwin/18.7.0 botocore/2.4.5
 aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 147892678753.dkr.ecr.us-west-2.amazonaws.com
 ```
 
+# Check out CoPilot
+https://aws.github.io/copilot-cli/docs/manifest/lb-web-service/
+https://aws.github.io/copilot-cli/docs/developing/storage/#managed-efs
+https://aws.github.io/copilot-cli/docs/developing/secrets/
+
+# Repository Management
+
 **Create repo**
 ```
-aws ecr create-repository \
-    --repository-name oc-relay \
-    --image-scanning-configuration scanOnPush=true
+aws ecr create-repository --repository-name oc-relay --image-scanning-configuration scanOnPush=true
 ```
+
+**Check Repo**
+```
+aws ecr describe-repositories --repository-names oc-relay
+```
+
+**Install Cross Compilation tools**
+
+[Cross compilation](https://docs.docker.com/build/building/multi-platform/#cross-compilation) is required to build the Docker image on a Mac. 
+
+Wasn't able to get this to work on linux.
 
 **Create Docker image**
 ```
@@ -57,6 +73,51 @@ Likely to require authentication to default registry (above)
 ```
 docker push 147892678753.dkr.ecr.us-west-2.amazonaws.com/oc-relay:latest
 ```
+
+# Task Management
+
+**Create Task Definition**
+
+```
+aws ecs register-task-definition --cli-input-json file://task-definition.json
+```
+
+**List Task Definitions**
+```
+aws ecs list-task-definitions
+```
+
+**Describe Task Definition**
+```
+aws ecs describe-task-definition --task-definition oc-relay-task-definition
+```
+
+# Service Management
+
+**Create Cluster**
+```
+aws ecs create-cluster --cluster-name opencola
+```
+
+
+**Create Service**
+```
+aws ecs create-service --cli-input-json file://service-definition.json
+```
+
+**List Services**
+```
+aws ecs list-services --cluster opencola
+```
+
+**Describe Service**
+```
+aws ecs describe-services --cluster opencola --services oc-relay-service
+```
+
+# Other
+
+
 
 **Update Service (Live Service)**
 

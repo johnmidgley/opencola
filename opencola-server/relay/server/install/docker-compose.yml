@@ -5,8 +5,13 @@ services:
     build: .
     container_name: oc-relay
     ports:
-      - "2652:80"
+      - "2652:2652"
     restart: unless-stopped
+    environment:
+      server.port: 2652
+      server.callLogging: false
+      security.rootIdBase58: 8jUXhJFJ6ZkfEdmgGsiDunr7HUogWm6XLztLAP2yAjCp
+
 # TODO: These should be used, rather than values in yaml
 #    environment:
 #      security.publicKeyBase58: ${OC_SERVER_PUBLIC_KEY}

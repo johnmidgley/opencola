@@ -3,6 +3,7 @@ package io.opencola.relay.server
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import io.ktor.server.plugins.callloging.*
 import io.ktor.server.websocket.*
 import io.opencola.event.log.EventLogger
 import io.opencola.relay.common.connection.ExposedConnectionDirectory
@@ -14,6 +15,7 @@ import io.opencola.storage.filestore.FileSystemContentAddressedFileStore
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
+import org.slf4j.event.Level
 import java.nio.file.Files
 import java.nio.file.Path
 import io.opencola.relay.server.v1.WebSocketRelayServer as WebSocketRelayServerV1
@@ -24,7 +26,7 @@ import kotlin.concurrent.thread
 private val logger = KotlinLogging.logger("relay")
 
 fun startWebServer(
-    capacityConfig: CapacityConfig,
+    config: Config,
     eventLogger: EventLogger,
     webSocketRelayServerV1: WebSocketRelayServerV1,
     webSocketRelayServerV2: WebSocketRelayServerV2,
@@ -39,15 +41,17 @@ fun startWebServer(
             // TODO: Check these values
             // pingPeriod = null
             // timeout = Duration.ofHours(1)
-            maxFrameSize = capacityConfig.maxPayloadSize
+            maxFrameSize = config.capacity.maxPayloadSize
             masking = false
 
         }
         configureRouting(webSocketRelayServerV1, webSocketRelayServerV2)
 
-//        install(CallLogging) {
-//            level = Level.INFO
-//        }
+        if(config.server.callLogging) {
+            install(CallLogging) {
+                level = Level.INFO
+            }
+        }
 
         this.environment.monitor.subscribe(ApplicationStarted) {
             eventLogger.log("RelayStarted", mapOf("address" to address.toString()))
@@ -66,7 +70,7 @@ fun startWebServer(
         }
     }
 
-    val server = embeddedServer(Netty, port = address.port, host = address.host, module = module).start(wait)
+    val server = embeddedServer(Netty, port = address.port, host = "0.0.0.0", module = module).start(wait)
 
     startSemaphore.acquire()
     return server
@@ -91,5 +95,5 @@ fun main() {
         ExposedMessageStore(relayDB, context.config.capacity.maxBytesStored, fileStore, policyStore),
     )
 
-    startWebServer(context.config.capacity, eventLogger, serverV1, serverV2, wait = true)
+    startWebServer(context.config, eventLogger, serverV1, serverV2, wait = true)
 }

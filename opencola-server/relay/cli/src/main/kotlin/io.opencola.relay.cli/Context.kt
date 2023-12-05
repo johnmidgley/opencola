@@ -51,7 +51,7 @@ class Context(
         semaphore.acquire()
 
         if (exception != null)
-            throw CliktError("Error connecting to relay: ${exception!!.message}")
+            throw CliktError("Error connecting to relay [$relayUri]: ${exception!!.message}")
 
         _client
     }

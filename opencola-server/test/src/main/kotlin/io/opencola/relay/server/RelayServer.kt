@@ -45,11 +45,11 @@ class RelayServer(
         val securityConfig = SecurityConfig(keyPair, Id.ofPublicKey(rootKeyPair.public))
 
         fun getConfig(config: Config): Config {
-            return Config(config.storagePath, config.capacity, securityConfig)
+            return Config(config.storagePath, config.server, config.capacity, securityConfig)
         }
     }
 
-    private val config = getConfig(baseConfig ?: Config(storagePath, CapacityConfig(), securityConfig))
+    private val config = getConfig(baseConfig ?: Config(storagePath, security = securityConfig))
     private val eventLogger = EventLogger("relay", storagePath.resolve("events").createDirectory())
     private val webSocketRelayServerV1 = WebSocketRelayServerV1(config, eventLogger, address)
     private val webSocketRelayServerV2 =
@@ -58,7 +58,7 @@ class RelayServer(
 
     fun start() {
         nettyApplicationEngine = startWebServer(
-            config.capacity,
+            config,
             eventLogger,
             webSocketRelayServerV1,
             webSocketRelayServerV2

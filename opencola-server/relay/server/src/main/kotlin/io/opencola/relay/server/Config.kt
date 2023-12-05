@@ -4,6 +4,7 @@ import com.sksamuel.hoplite.ConfigLoaderBuilder
 import com.sksamuel.hoplite.addEnvironmentSource
 import com.sksamuel.hoplite.addFileSource
 import io.opencola.model.Id
+import io.opencola.relay.common.defaultOCRPort
 import io.opencola.security.privateKeyFromBytes
 import io.opencola.security.publicKeyFromBytes
 import io.opencola.util.Base58
@@ -12,6 +13,18 @@ import java.nio.file.Path
 import java.security.KeyPair
 import java.security.PrivateKey
 import java.security.PublicKey
+import kotlin.io.path.Path
+
+data class ServerConfig(
+    val port: Int = defaultOCRPort,
+    val callLogging: Boolean = false
+)
+
+data class CapacityConfig(
+    val maxConnections: Long = 10000,
+    val maxBytesStored: Long = 1024 * 1024 * 1024 * 10L,
+    val maxPayloadSize: Long = 1024 * 1024 * 50L,
+)
 
 data class SecurityConfig(
     val publicKeyBase58: String,
@@ -46,23 +59,14 @@ data class SecurityConfig(
     }
 }
 
-data class CapacityConfig(
-    val maxConnections: Long = 10000,
-    val maxBytesStored: Long = 1024 * 1024 * 1024 * 10L,
-    val maxPayloadSize: Long = 1024 * 1024 * 50L,
-)
+
 
 data class Config(
-    val storagePath: Path,
+    val storagePath: Path = Path("storage"),
+    val server: ServerConfig = ServerConfig(),
     val capacity: CapacityConfig = CapacityConfig(),
     val security: SecurityConfig,
-) {
-    constructor(capacity: CapacityConfig = CapacityConfig(), security: SecurityConfig) : this(
-        storagePath = Path.of("storage"),
-        capacity = capacity,
-        security = security
-    )
-}
+)
 
 fun loadConfig(configPath: Path): Config {
     return ConfigLoaderBuilder.default()

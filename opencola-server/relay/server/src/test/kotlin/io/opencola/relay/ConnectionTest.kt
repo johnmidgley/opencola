@@ -293,7 +293,7 @@ class ConnectionTest {
             var client1: AbstractClient? = null
 
             try {
-                val config = Config(CapacityConfig(maxConnections = 1), RelayServer.securityConfig)
+                val config = Config(capacity = CapacityConfig(maxConnections = 1), security = RelayServer.securityConfig)
                 server = RelayServer(baseConfig = config).also { it.start() }
 
                 val result = CompletableDeferred<ByteArray>()
@@ -350,7 +350,7 @@ class ConnectionTest {
             var client0: AbstractClient? = null
 
             try {
-                val config = Config(CapacityConfig(maxBytesStored = 1024), RelayServer.securityConfig)
+                val config = Config(capacity = CapacityConfig(maxBytesStored = 1024), security = RelayServer.securityConfig)
                 server = RelayServer(baseConfig = config).also { it.start() }
                 val result = CompletableDeferred<ByteArray>()
                 client0 = getClient(ClientType.V2, "client0").also {
@@ -401,7 +401,7 @@ class ConnectionTest {
             var client0: AbstractClient? = null
 
             try {
-                val config = Config(CapacityConfig(maxPayloadSize = 1024), RelayServer.securityConfig)
+                val config = Config(capacity = CapacityConfig(maxPayloadSize = 1024), security = RelayServer.securityConfig)
                 server = RelayServer(baseConfig = config).also { it.start() }
                 val result = CompletableDeferred<ByteArray>()
                 client0 = getClient(ClientType.V2, "client0").also {
