@@ -20,8 +20,8 @@ fun readPassword(): String {
     }
 }
 
-fun getPasswordHash(): Hash {
-    val password = System.getenv("OCR_PASSWORD")
+fun getPasswordHash(config: Config): Hash {
+    val password = config.ocr.credentials.password
 
     return Sha256Hash.ofString(
         if (password != null)

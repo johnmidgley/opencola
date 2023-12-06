@@ -13,5 +13,7 @@ fun initStorage(): Path {
         storagePath.createDirectories()
     }
 
+    initConfig(storagePath)
+
     return storagePath
 }

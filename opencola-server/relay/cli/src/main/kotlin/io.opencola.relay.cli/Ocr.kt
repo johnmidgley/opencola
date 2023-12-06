@@ -4,6 +4,7 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
@@ -15,7 +16,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.net.URI
 import kotlin.io.path.deleteIfExists
 
 // https://github.com/ajalt/clikt/blob/master/samples/repo/src/main/kotlin/com/github/ajalt/clikt/samples/repo/main.kt
@@ -32,6 +32,24 @@ fun AdminMessage.format(): String {
     return when (this) {
         is CommandResponse -> "${if (status != Status.SUCCESS) "$status: " else ""}$message"
         else -> this.toString()
+    }
+}
+
+class ConfigCliktCommand(private val context: Context) : CliktCommand(name = "config") {
+    override fun run() {
+        println("storagePath: ${context.storagePath}")
+    }
+}
+
+class IdentityCliktCommand(private val context: Context) : CliktCommand(name = "identity") {
+    private val delete: Boolean by option("-r", "--reset", help = "Reset identity").flag()
+
+    override fun run() {
+        if (delete) {
+            context.storagePath.resolve("keystore.pks").deleteIfExists()
+        } else {
+            println("Id: ${Id.ofPublicKey(context.keyPair.public)}")
+        }
     }
 }
 
@@ -183,7 +201,7 @@ class GetMessageUsageCliktCommand(private val context: Context) : CliktCommand(n
         val response = context.sendCommandMessage(GetMessageUsageCommand())
 
         if (response is GetMessageUsageResponse) {
-            if(response.usages.isEmpty())
+            if (response.usages.isEmpty())
                 println("No stored messages")
             response.usages.forEach {
                 println("${it.to}\t${it.numMessages}\t${it.numBytes}")
@@ -198,21 +216,15 @@ class MessagesCliktCommand() : CliktCommand(name = "messages") {
     override fun run() = Unit
 }
 
-class IdentityCliktCommand(private val context: Context) : CliktCommand(name = "identity") {
-    private val delete: Boolean by option("-r", "--reset", help = "Reset identity").flag()
-
-    override fun run() {
-        if (delete) {
-            context.storagePath.resolve("keystore.pks").deleteIfExists()
-        } else {
-            println("Id: ${Id.ofPublicKey(context.keyPair.public)}")
-        }
-    }
+class StorageCliktCommand() : CliktCommand(name = "storage") {
+    override fun run() = Unit
 }
 
-class ConfigCliktCommand(private val context: Context) : CliktCommand(name = "config") {
+class ExecCliktCommand(private val context: Context) : CliktCommand(name = "exec") {
+    private val args by argument(help = "The command to execute").multiple()
+
     override fun run() {
-        println("storagePath: ${context.storagePath}")
+        val cmd = args.joinToString(" ") { if (it.contains(" ")) "\"$it\"" else it }
     }
 }
 
@@ -222,17 +234,18 @@ class OcrCliktCommand : CliktCommand(name = "ocr") {
 
 fun main(args: Array<String>) {
     val storagePath = initStorage()
-    val keyPair = getKeyPair(initStorage(), getPasswordHash())
+    val config = loadConfig(storagePath.resolve(configFileName))
+    val keyPair = getKeyPair(initStorage(), getPasswordHash(config))
         ?: error("KeyPair not found. You may need to delete your identity and try again.")
 
     runBlocking {
-        val context = Context(storagePath, keyPair, URI("ocr://localhost"))
+        val context = Context(storagePath, config, keyPair)
 
         context.use {
             OcrCliktCommand()
                 .subcommands(
-                    IdentityCliktCommand(context),
                     ConfigCliktCommand(context),
+                    IdentityCliktCommand(context),
                     PolicyCliktCommand().subcommands(
                         SetPolicyCliktCommand(context),
                         GetPolicyCliktCommand(context),
@@ -248,7 +261,11 @@ fun main(args: Array<String>) {
                     MessagesCliktCommand().subcommands(
                         RemoveUserMessagesCliktCommand(context),
                         GetMessageUsageCliktCommand(context)
-                    )
+                    ),
+//                    StorageCliktCommand().subcommands(
+//                        GetMessageUsageCliktCommand(context)
+//                    ),
+//                    ExecCliktCommand(context),
                 )
                 .main(args)
         }

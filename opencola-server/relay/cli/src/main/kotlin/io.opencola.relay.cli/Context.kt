@@ -12,7 +12,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import java.io.Closeable
-import java.net.URI
 import java.nio.file.Path
 import java.security.KeyPair
 import java.util.concurrent.Semaphore
@@ -20,12 +19,10 @@ import kotlin.concurrent.thread
 
 class Context(
     val storagePath: Path,
+    val config: Config,
     val keyPair: KeyPair,
-    relayUri: URI,
-    private val connectTimeoutMilliseconds: Long = 3000, // TODO: Make configurable
-    private val requestTimeoutMilliseconds: Long = 5000, // TODO: Make configurable
 ) : Closeable {
-    private val _client = WebSocketClient(relayUri, keyPair, "OCR CLI")
+    private val _client = WebSocketClient(config.ocr.server.uri, keyPair, "OCR CLI")
     private var clientJob: Job? = null
     val responseChannel = Channel<AdminMessage>()
     val json: Json = Json { serializersModule = SerializersModule { contextual(Id::class, IdAsStringSerializer) } }
@@ -39,7 +36,7 @@ class Context(
                 clientJob = launch { _client.open { _, message -> responseChannel.send(AdminMessage.decode(message)) } }
 
                 try {
-                    withTimeout(connectTimeoutMilliseconds) { _client.waitUntilOpen() }
+                    withTimeout(config.ocr.server.connectTimeoutMilliseconds) { _client.waitUntilOpen() }
                 } catch (e: Exception) {
                     exception = e
                 } finally {
@@ -51,7 +48,7 @@ class Context(
         semaphore.acquire()
 
         if (exception != null)
-            throw CliktError("Error connecting to relay [$relayUri]: ${exception!!.message}")
+            throw CliktError("Error connecting to relay [${config.ocr.server.uri}]: ${exception!!.message}")
 
         _client
     }
@@ -59,7 +56,7 @@ class Context(
     fun sendCommandMessage(command: AdminMessage): AdminMessage {
         return runBlocking {
             try {
-                withTimeout(requestTimeoutMilliseconds) {
+                withTimeout(config.ocr.server.requestTimeoutMilliseconds) {
                     client.sendAdminMessage(command)
                     var response: AdminMessage
 
