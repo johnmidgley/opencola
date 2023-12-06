@@ -17,6 +17,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.io.path.deleteIfExists
+import kotlin.io.path.readText
 
 // https://github.com/ajalt/clikt/blob/master/samples/repo/src/main/kotlin/com/github/ajalt/clikt/samples/repo/main.kt
 
@@ -30,7 +31,11 @@ inline fun <reified T> Json.tryDecodeFromString(jsonString: String): T? {
 
 fun AdminMessage.format(): String {
     return when (this) {
-        is CommandResponse -> "${if (status != Status.SUCCESS) "$status: " else ""}$message"
+        is CommandResponse -> {
+            val message = message ?: ""
+            val suffix = if (message.isBlank() || message.endsWith("\n")) "" else "\n"
+            "${if (status != Status.SUCCESS) "$status: " else ""}$message$suffix"
+        }
         else -> this.toString()
     }
 }
@@ -38,6 +43,10 @@ fun AdminMessage.format(): String {
 class ConfigCliktCommand(private val context: Context) : CliktCommand(name = "config") {
     override fun run() {
         println("storagePath: ${context.storagePath}")
+
+        context.storagePath.resolve(configFileName).let {
+            println("\n${it.readText()}")
+        }
     }
 }
 
@@ -221,10 +230,32 @@ class StorageCliktCommand() : CliktCommand(name = "storage") {
 }
 
 class ExecCliktCommand(private val context: Context) : CliktCommand(name = "exec") {
-    private val args by argument(help = "The command to execute").multiple()
+    private val args by argument(help = "The command to execute - must be quoted").multiple()
 
     override fun run() {
-        val cmd = args.joinToString(" ") { if (it.contains(" ")) "\"$it\"" else it }
+        val response = context.sendCommandMessage(ExecCommand(args))
+        println(response.format())
+    }
+}
+
+class ShellCliktCommand(private val context: Context) : CliktCommand(name = "shell") {
+    override fun run() {
+        println("Welcome to the relay shell (${context.config.ocr.server.uri.host})")
+        while (true) {
+            print("$ ")
+
+            val input = readln()
+
+            if(input == "exit" || input == "quit" || input == "q")
+                break
+
+            if(input.isBlank())
+                continue
+
+            val args = input.split(" ").toTypedArray()
+            val response = context.sendCommandMessage(ExecCommand(args.toList()))
+            print(response.format())
+        }
     }
 }
 
@@ -262,10 +293,11 @@ fun main(args: Array<String>) {
                         RemoveUserMessagesCliktCommand(context),
                         GetMessageUsageCliktCommand(context)
                     ),
-//                    StorageCliktCommand().subcommands(
-//                        GetMessageUsageCliktCommand(context)
-//                    ),
-//                    ExecCliktCommand(context),
+                    StorageCliktCommand().subcommands(
+                        GetMessageUsageCliktCommand(context)
+                    ),
+                    ExecCliktCommand(context),
+                    ShellCliktCommand(context),
                 )
                 .main(args)
         }

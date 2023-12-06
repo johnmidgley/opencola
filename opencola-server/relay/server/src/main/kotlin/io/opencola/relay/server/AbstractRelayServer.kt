@@ -20,6 +20,7 @@ import mu.KotlinLogging
 import java.net.URI
 import java.security.PublicKey
 import java.security.SecureRandom
+import kotlin.concurrent.thread
 
 abstract class AbstractRelayServer(
     protected val config: Config,
@@ -277,12 +278,22 @@ abstract class AbstractRelayServer(
 
                 is RemovePolicyCommand -> {
                     policyStore.removePolicy(fromId, adminMessage.name)
-                    CommandResponse(adminMessage.id, Status.SUCCESS, State.COMPLETE, "Policy \"${adminMessage.name}\" removed")
+                    CommandResponse(
+                        adminMessage.id,
+                        Status.SUCCESS,
+                        State.COMPLETE,
+                        "Policy \"${adminMessage.name}\" removed"
+                    )
                 }
 
                 is SetUserPolicyCommand -> {
                     policyStore.setUserPolicy(fromId, adminMessage.userId, adminMessage.policyName)
-                    CommandResponse(adminMessage.id, Status.SUCCESS, State.COMPLETE, "User ${adminMessage.userId} policy set to \"${adminMessage.policyName}\"")
+                    CommandResponse(
+                        adminMessage.id,
+                        Status.SUCCESS,
+                        State.COMPLETE,
+                        "User ${adminMessage.userId} policy set to \"${adminMessage.policyName}\""
+                    )
                 }
 
                 is GetUserPolicyCommand -> {
@@ -295,7 +306,12 @@ abstract class AbstractRelayServer(
 
                 is RemoveUserPolicyCommand -> {
                     policyStore.removeUserPolicy(fromId, adminMessage.userId)
-                    CommandResponse(adminMessage.id, Status.SUCCESS, State.COMPLETE, "User ${adminMessage.userId} policy removed")
+                    CommandResponse(
+                        adminMessage.id,
+                        Status.SUCCESS,
+                        State.COMPLETE,
+                        "User ${adminMessage.userId} policy removed"
+                    )
                 }
 
                 is RemoveUserMessagesCommand -> {
@@ -325,7 +341,12 @@ abstract class AbstractRelayServer(
                             deletedCount++
                         }
 
-                        CommandResponse(adminMessage.id, Status.SUCCESS, State.COMPLETE, "Removed $deletedCount messages")
+                        CommandResponse(
+                            adminMessage.id,
+                            Status.SUCCESS,
+                            State.COMPLETE,
+                            "Removed $deletedCount messages"
+                        )
                     } else {
                         CommandResponse(adminMessage.id, Status.FAILURE, State.COMPLETE, "No message store")
                     }
@@ -333,6 +354,24 @@ abstract class AbstractRelayServer(
 
                 is GetMessageUsageCommand -> {
                     GetMessageUsageResponse(adminMessage.id, messageStore?.getUsage()?.toList() ?: emptyList())
+                }
+
+                is ExecCommand -> {
+                    val response = CompletableDeferred<CommandResponse>()
+                    thread {
+                        // TODO: Factor out
+                        val result = try {
+                            val process = Runtime.getRuntime().exec(adminMessage.args.toTypedArray())
+                            val output = process.inputStream.bufferedReader().readText()
+                            val error = process.errorStream.bufferedReader().readText()
+                            val message = if (output.isNotEmpty() && error.isNotEmpty()) "$output\n$error" else output + error
+                            CommandResponse(adminMessage.id, Status.SUCCESS, State.COMPLETE, message)
+                        } catch (e: Exception) {
+                            CommandResponse(adminMessage.id, Status.FAILURE, State.COMPLETE, e.message)
+                        }
+                        response.complete(result)
+                    }
+                    response.await()
                 }
 
                 else -> {

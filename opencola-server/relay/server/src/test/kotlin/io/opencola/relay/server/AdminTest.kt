@@ -211,6 +211,18 @@ class AdminTest {
         }
     }
 
+    private suspend fun testExecuteCommand(rootClient: AbstractClient, responseChannel: Channel<AdminMessage>) {
+        coroutineScope {
+            rootClient.sendAdminMessage(ExecCommand(listOf("pwd")))
+            getResponse<AdminMessage>(responseChannel)
+
+            rootClient.sendAdminMessage(ExecCommand(listOf("asdf")))
+            val errorResponse = responseChannel.receive()
+            assertEquals(Status.FAILURE, (errorResponse as CommandResponse).status)
+            println(errorResponse)
+        }
+    }
+
     @Test
     fun testAdminCommands() {
         var server0: RelayServer? = null
@@ -237,6 +249,7 @@ class AdminTest {
                 testSetPolicy(rootClient!!, responseChannel) // Sets admin policy
                 testSetUserPolicy(server0!!, rootClient!!, responseChannel)
                 testManageMessages(server0!!, rootClient!!, responseChannel)
+                testExecuteCommand(rootClient!!, responseChannel)
 
             } finally {
                 rootClient?.close()
