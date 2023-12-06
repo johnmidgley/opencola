@@ -689,11 +689,11 @@ class ConnectionTest {
         testSendResponse(ClientType.V1, prodRelayServerUri)
         println("testSendResponseV2($prodRelayServerUri)")
         testSendResponse(ClientType.V2, prodRelayServerUri)
-        println("testClientConnectBeforeServerV1($prodRelayServerUri)")
+        println("testClientPartitionV1($prodRelayServerUri)")
         testClientPartition(ClientType.V1, prodRelayServerUri)
-        println("testClientConnectBeforeServerV2($prodRelayServerUri)")
+        println("testClientPartitionV2($prodRelayServerUri)")
         testClientPartition(ClientType.V2, prodRelayServerUri)
-        println("testServerPartitionV1($prodRelayServerUri)")
+        println("testSendSingleMessageToMultipleRecipients($prodRelayServerUri)")
         testSendSingleMessageToMultipleRecipients(prodRelayServerUri)
     }
 
