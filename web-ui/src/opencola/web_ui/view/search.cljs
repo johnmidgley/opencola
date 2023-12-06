@@ -1,7 +1,7 @@
 (ns ^:figwheel-hooks opencola.web-ui.view.search 
   (:require
    [opencola.web-ui.location :as location] 
-   [opencola.web-ui.view.common :refer [img-button anotated-img-button persona-menu]]
+   [opencola.web-ui.view.common :refer [anotated-img-button, button-component]]
    [reagent.core :as r]))
 
 
@@ -28,7 +28,7 @@
   (fn []
     [:div.search-wrapper
      [:div.form-wrapper
-      [:img.pointer.button {:src "../img/search.png" :width 20 :height 20 :on-click #(on-enter @query!)}]
+      [button-component {:class "search-button" :icon-class "icon-search"} #(on-enter @query!)]
       [:input.reset.text-input
        {:type "text"
         :name "search-input"
@@ -45,21 +45,37 @@
    [:div.toggled-element.container {:data-visible @menu-open?!}
     [:div.menu-control
      [:span.title "Menu"]
-     [img-button "button" "icon" "../img/x.png"
+     [button-component {:class "action-button" :icon-class "icon-close"}
       #(swap! menu-open?! not)]
      ]
-    [anotated-img-button "menu-item" "icon" "" "Feed" "../img/feed.png" #(location/set-page! :feed)]
-    [anotated-img-button "menu-item" "icon" "" "Personas" "../img/user.png" #(location/set-page! :personas)]
-    [anotated-img-button "menu-item" "icon" "" "Peers" "../img/peers.png" #(location/set-page! :peers)] 
-    [anotated-img-button "menu-item" "icon" "" "Settings" "../img/settings.png" #(location/set-page! :feed)]
+    [button-component {:class "menu-item" :text "Feed" :icon-class "icon-feed"}  #(location/set-page! :feed)]
+    [button-component {:class "menu-item" :text "Personas" :icon-class "icon-persona"} #(location/set-page! :personas)]
+    [button-component {:class "menu-item" :text "Peers" :icon-class "icon-peers"} #(location/set-page! :peers)] 
+    [button-component {:class "menu-item" :text "Settings" :icon-class "icon-settings"} #(location/set-page! :feed)]
     [:a.reset.menu-item {:href "help/help.html" :target "_blank"}
-     [:img {:src "../img/help.png" :data-icon-height "75%" :class "icon"}]
+     [:span.button-icon {:class "icon-help"}]
      [:span "Help"]]
-    [anotated-img-button "menu-item caution-color" "icon" "" "Log Out" "../img/logout.svg" #(location/set-page! :feed)]]]
+    [button-component {:class "menu-item caution-color" :text "Log out" :icon-class "icon-logout"} #(location/set-location "/logout")]]]
   )
 
+(defn header-actions [page adding-item?! menu-open?!] 
+  [:div.container.header-actions
+   (when (= page :feed)
+     [:div.container
+      [button-component {:class "action-button" :icon-class "icon-new-post"} #(swap! adding-item?! not)]
+      [button-component {:class "action-button" :icon-class "icon-peers"} #(location/set-page! :peers)]])
+   (when (= page :peers)
+     [:div.container
+      [button-component {:class "action-button" :icon-class "icon-new-peer"} #(swap! adding-item?! not)]
+      [button-component {:class "action-button" :icon-class "icon-feed"} #(location/set-page! :feed)]])
+   (when (= page :personas)
+     [:div.container
+      [button-component {:class "action-button" :icon-class "icon-new-persona"} #(swap! adding-item?! not)]
+      [button-component {:class "action-button" :icon-class "icon-feed"} #(location/set-page! :feed)]])
+   [button-component {:class "action-button" :icon-class "icon-menu"} #(swap! menu-open?! not)]])
 
-(defn search-header [page personas! persona! on-persona-select query! on-enter header-actions] 
+
+(defn search-header [page personas! persona! on-persona-select query! on-enter adding-item?!]
   (let [menu-open?! (r/atom false)]
    (fn []
      [:nav.nav-bar
@@ -67,11 +83,7 @@
        [:a.fs-0 {:href "#/feed"} [:img.logo {:src "../img/pull-tab.png"}]]
        [persona-select page personas! persona! on-persona-select]]
       [search-box query! on-enter]
-      [:div.container.header-actions
-       [header-actions]
-       [img-button "button" "icon" (if @menu-open?! "../img/x.png" "../img/menu.png")
-        #(swap! menu-open?! not)]
-       ]
+      [header-actions page adding-item?! menu-open?!] 
       [header-menu menu-open?!]])))
 
 

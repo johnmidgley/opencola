@@ -2,7 +2,8 @@
   (:require 
    [reagent.core :as reagent :refer [atom]]
    [opencola.web-ui.app-state :as state]
-   [opencola.web-ui.view.common :refer [action-img input-text input-checkbox error-control img-button]]
+   [opencola.web-ui.view.common :refer [input-checkbox error-control text-input-component button-component 
+                                        edit-control-buttons empty-page-instructions swap-atom-data! profile-img]]
    [opencola.web-ui.model.peer :as model]
    [opencola.web-ui.view.search :as search]
    [opencola.web-ui.location :as location]))
@@ -13,6 +14,12 @@
   (model/get-peers
    persona-id
    #(reset! peers! %)
+   #(on-error %)))
+
+(defn get-invite-token [persona-id token! on-error]
+  (model/get-invite-token
+   persona-id
+   #(reset! token! %)
    #(on-error %)))
 
 (defn update-peer [persona-id peers! peer! on-error]
@@ -29,11 +36,6 @@
    #(reset! peers! %)
    #(on-error %)))
 
-(defn header-actions [adding-peer?!]
-  [:div.container
-   [img-button "button" "icon" "../img/add-peer.png" #(swap! adding-peer?! not)]
-   [img-button "button" "icon" "../img/feed.png" #(location/set-page! :feed)]]) 
-
 (defn map-to-token [m]
   (->> m (map (fn [[k v]] (str (name k) "=" v))) (interpose \|) (apply str)))
 
@@ -45,52 +47,26 @@
     (fn []
       (let [image-uri (:imageUri @p!)]
         [:div.list-item
-         [:div.peer-img-box
-          [:img.peer-img 
-           {:src (if (seq image-uri) image-uri "../img/user.png")}]]
+         [profile-img image-uri (:name @p!)]
          [:div.peer-info
-          [:table.peer-info
-           [:tbody
-            [:tr 
-             [:td.peer-field [action-img "user"]] 
-             [:td [input-text p! :name @editing?!]]]
-            [:tr 
-             [:td.peer-field [action-img "id"]] 
-             [:td [:span.id [input-text p! :id creating?]]]]
-            [:tr 
-             [:td.peer-field [action-img "key"]] 
-             [:td [:span.key [input-text p! :publicKey @editing?!]]]]
-            [:tr 
-             [:td.peer-field [action-img "link"]] 
-             [:td [:span.uri [input-text p! :address @editing?!]]]]
-            [:tr 
-             [:td.peer-field [action-img "photo"]] 
-             [:td [:span.uri [input-text p! :imageUri @editing?!]]]]
-            [:tr 
-             [:td.peer-field [action-img "refresh"]] 
-             [:td [input-checkbox p! :isActive @editing?!]]]]]]
+          [text-input-component {:value (:name @p!) :disabled (not @editing?!) :icon-class "icon-persona" :name "peer-name"} #(swap-atom-data! % p! :name)]
+          [text-input-component {:value (:id @p!) :disabled true :icon-class "icon-id" :name "peer-id"} #(swap-atom-data! % p! :id)]
+          [text-input-component {:value (:publicKey @p!) :disabled (not @editing?!) :icon-class "icon-key" :name "peer-key"} #(swap-atom-data! % p! :publicKey)]
+          [text-input-component {:value (:address @p!) :disabled (not @editing?!) :icon-class "icon-link" :name "peer-link"} #(swap-atom-data! % p! :address)]
+          [text-input-component {:value (:imageUri @p!) :disabled (not @editing?!) :icon-class "icon-photo" :name "peer-img"} #(swap-atom-data! % p! :imageUri)]
+          [input-checkbox {:checked (:isActive @p!) :disabled (not @editing?!) :icon-class "icon-refresh" :name "peer-active"} #(swap! p! assoc-in [:isActive] (-> % .-target .-checked))]]
          (if @editing?!
-           [:div
-            [error-control error!]
-            [:button
-             {:disabled (and (not adding-peer?!) (= @p! peer)) 
-              :on-click (fn []
-                           (update-peer persona-id peers! p! #(do (println "ERRORO") (reset! error! %)))
-                           (when adding-peer?! (reset! adding-peer?! false)))} "Save"] " "
-            [:button {:on-click  #(do
-                                    (reset! p! peer)
-                                    (when adding-peer?! (reset! adding-peer?! false))
-                                    (reset! editing?! false))} "Cancel"] " "
-            (when (not creating?)
-              [:button.delete-button {:on-click (fn [] ( delete-peer persona-id peers! p! #(reset! error! %)))} "Delete"])]
-           [:div.edit-peer
-            [:button {:on-click #(reset! editing?! true)} "Edit"]])]))))
-
-(defn get-invite-token [persona-id token! on-error]
-  (model/get-invite-token
-   persona-id
-   #(reset! token! %)
-   #(on-error %)))
+           [edit-control-buttons {:on-save (fn []
+                                             (update-peer persona-id peers! p! #(do (println "ERROR") (reset! error! %)))
+                                             (when adding-peer?! (reset! adding-peer?! false)))
+                                  :save-disabled (and (not adding-peer?!) (= @p! peer))
+                                  :on-cancel #(do
+                                                (reset! p! peer)
+                                                (when adding-peer?! (reset! adding-peer?! false))
+                                                (reset! editing?! false))
+                                  :on-delete (fn [] (delete-peer persona-id peers! p! #(reset! error! %)))} 
+            (not creating?) error!]
+           [button-component {:text "Edit" :class " edit-control-button edit-button"} #(reset! editing?! true)])]))))
 
 (defn add-peer-item [persona-id peers! adding-peer?!]
   (let [send-token! (atom "Loading...")
@@ -106,33 +82,15 @@
           [:img.peer-img 
            {:src "../img/user.png"}]]
          [:div.peer-info
-          [:table.peer-info
-           [:tbody
-            [:tr
-             [:td [:div.no-wrap "Give this token to your peer:"]]
-             [:td {:width "100%"}
-              [:input.input-text
-               {:type "text"
-                :disabled true
-                :value @send-token!}]]]
-            [:tr
-             [:td [:div.no-wrap "Enter token from peer:"]]
-             [:td
-              [:input.input-text
-               {:type "text"
-                :value @receive-token!
-                :on-change #(reset! receive-token! (-> % .-target .-value))}]]]
-            [:tr
-             [:td 
-              [:button {:on-click 
-                        (fn [] 
-                          (model/token-to-peer 
-                           @receive-token! 
-                           #(reset! peer! %) 
-                           #(reset! error! %)))} 
-               "Add"]]
-             [:td
-              [error-control error!]]]]]]]))))
+          [text-input-component {:value @send-token! :title "Your token: " :disabled true :class "no-wrap" :copy-button true :name "your-key"} #()]
+          [text-input-component {:value @receive-token! :title "Thier token:" :class "no-wrap" :name "their-key"} #(reset! receive-token! (-> % .-target .-value))]
+          [edit-control-buttons {:on-save (fn []
+                                            (model/token-to-peer
+                                             @receive-token!
+                                             #(reset! peer! %)
+                                             #(reset! error! %)))
+                                 :on-cancel #(reset! adding-peer?! false)}
+           false error!]]]))))
 
 (defn peer-list [persona-id peers! adding-peer?!]
   (when @peers!
@@ -141,33 +99,23 @@
      (doall (for [peer (:results @peers!)]
               ^{:key peer} [peer-item persona-id peers! peer]))]))
 
-(defn peer-instructions []
-  [:div.list-item
-   [:div
-    [:img.nola-img {:src "img/nola.png"}]
-    [:div.item-name  "Snap! Your have no peers!"]
-    [:div
-     [:ul.instruction-items
-      [:li "Add peers by clicking the add peer icon (" [:img.icon {:src  "../img/add-peer.png"}] ") on the top right"]
-      [:li "Browse help by clicking the help icon (" [:img.icon {:src  "../img/help.png"}] ") on the top right"]]]]])
-
 
 (defn peer-page [peers! personas! persona! on-persona-select query! on-search!]
   (let [adding-peer?! (atom false)]
     (fn []
     (let [personas (into {} (map #(vector (:id %) %) (:items @personas!)))]
-      [:div.settings-page
+      [:div.peers-page
        [search/search-header
         :peers
         personas!
         persona!
         on-persona-select
         query!
-        on-search!
-        (partial header-actions adding-peer?!)]
+        on-search! 
+        adding-peer?!]
        [error-control (state/error!)]
        [:h2.text-center  "Peers of " (:name (personas @persona!))] 
        [peer-list @persona! peers! adding-peer?!]
        (when (and (not (= @peers! {})) (not @adding-peer?!) (empty? (:results @peers!)))
-         [peer-instructions])]))))
+         [empty-page-instructions :peers "This persona has no peers!"])]))))
 

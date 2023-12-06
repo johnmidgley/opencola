@@ -13,8 +13,8 @@
             [opencola.web-ui.view.comments :refer [comment-control
                                                    comment-edit-control
                                                    item-comments]]
-            [opencola.web-ui.view.common :refer [action-img hidden-file-input upload-progress inline-divider error-control
-                                                 md->component select-files-control simple-mde text-input img-button text-button]]
+            [opencola.web-ui.view.common :refer [hidden-file-input upload-progress error-control button-component icon empty-page-instructions profile-img
+                                                 md->component select-files-control simple-mde text-input button-component edit-control-buttons]]
             [opencola.web-ui.view.likes :refer [item-likes like-edit-control]]
             [opencola.web-ui.view.persona :refer [persona-select]]
             [opencola.web-ui.view.saves :refer [item-saves save-item]]
@@ -75,7 +75,7 @@
       :comment ""})))
 
 (defn edit-control [editing?!]
-  [:span.button.edit-button {:on-click #(reset! editing?! true)} (action-img "edit")])
+  [button-component {:class "action-button edit-button" :icon-class "icon-edit"} #(reset! editing?! true)])
 
 (defn get-item [feed entity-id]
   (->> feed :results (some #(when (= entity-id (:entityId %)) %))))
@@ -85,11 +85,14 @@
         expanded? (key action-expanded?)
         highlight (some #(= @persona-id! (:authorityId %)) actions)]
     [:span.action-wrapper
-     [:span.button.action-button {:class (when highlight "action-highlight") :on-click on-click :title key} 
-      (action-img (name key))
-      [:span.action-count (count actions)]]
-     [:span.button.action-toggle-button {:on-click #(toggle-atom (map second action-expanded?) expanded?)}
-      (action-img (if @expanded? "hide" "show"))]]))
+     [button-component {:class (str "action-button " (when highlight "action-highlight")) 
+                        :icon-class (str "icon-" (name key)) 
+                        :text (count actions)} 
+      on-click]
+     [button-component {:class "action-toggle-button" 
+                        :icon-class (str "icon-" (if @expanded? "hide" "show"))} 
+      #(toggle-atom (map second action-expanded?) expanded?)]
+     ]))
 
 (defn attachment-summary [persona-id! action-expanded? activities on-change]
   (let [input-id (str (random-uuid))
@@ -137,9 +140,7 @@
                           27 (reset! tagging?! false)
                           false)
              :on-change #(swap! edit-item! assoc-in [:tags] (-> % .-target .-value))}]
-           [error-control error!]
-           [text-button "Save" on-save] " "
-           [text-button "Cancel" #(reset! tagging?! false)] " "])))))
+           [edit-control-buttons {:on-save on-save :on-cancel #(reset! tagging?! false)} false error!]])))))
 
 
 (defn item-activities [persona-id! personas! feed! item editing?! on-click-authority on-click-tag]
@@ -198,10 +199,8 @@
 (defn posted-by [summary on-click-authority]
   (let [posted-by (:postedBy summary)
         posted-by-image-uri (:postedByImageUri summary)] 
-    
     [:div.posted-by
-     (when (not-empty posted-by-image-uri)
-       [:img.posted-by-img {:src posted-by-image-uri}])
+     [profile-img posted-by-image-uri posted-by]
      [:span.authority {:on-click #(on-click-authority posted-by)} posted-by]]
     ))
 
@@ -306,12 +305,12 @@
          [attachments-preview (:attachments @edit-item!) true]
          [:div.activity-buttons
           (when personas!
-            [:span [persona-select personas! persona-id!]])
-          [:span {:on-click #(swap! expanded?! not)} [action-img "expand"]]
+            [persona-select personas! persona-id!])
+          [button-component {:class "action-button" :icon-class "icon-expand"} #(swap! expanded?! not)] 
           [like-edit-control edit-item!]
-          [:span {:on-click #(swap! tagging?! not)} [action-img "tag"]]
+          [button-component {:class "action-button" :icon-class "icon-tag"} #(swap! tagging?! not)] 
           [select-files-control
-           (action-img "attach")
+           (icon "icon" "icon-attach")
            (fn [fs]
              (reset! uploading?! true)
              (attach-files
@@ -321,7 +320,7 @@
               #(reset! progress! %)
               #(reset! uploading?! false)
               #(reset! error! %)))]
-          [:span {:on-click #(swap! commenting?! not)} [action-img "comment"]]]
+          [button-component {:class "action-button" :icon-class "icon-comment"} #(swap! commenting?! not)]]
          [:div.activity-block
           [upload-progress uploading?! progress!]
           (when @tagging?!
@@ -329,16 +328,14 @@
           (when @commenting?!
             [:div.item-comment-edit
              [comment-edit-control (:entity-id @edit-item!) nil comment-state!]])]
-         [:div.edit-control-buttons
-          [:button {:on-click (fn []
-                                        ; nil check on comment-state! needed, since it may not be opened
-                                (when @comment-state! (swap! edit-item! assoc-in [:comment] (.value @comment-state!)))
-                                (swap! edit-item! assoc-in [:description] (.value @description-state!))
-                                (on-save @persona-id!))} "Save"] " "
-          [:button {:on-click on-cancel} "Cancel"] " "
-          (when deletable?
-            [:button.delete-button {:on-click on-delete} "Delete"])
-          (error-control error!)]]))))
+         [edit-control-buttons {:on-save (fn []
+                                                       ; nil check on comment-state! needed, since it may not be opened
+                                           (when @comment-state! (swap! edit-item! assoc-in [:comment] (.value @comment-state!)))
+                                           (swap! edit-item! assoc-in [:description] (.value @description-state!))
+                                           (on-save @persona-id!))
+                                :on-cancel on-cancel
+                                :on-delete on-delete}
+          deletable? error!]]))))
 
 
 (defn delete-feed-item [feed! entity-id]
@@ -378,7 +375,7 @@
 (defn feed-item [persona-id personas! feed! item on-click-authority on-click-tag]
   (let [editing?! (atom false)
         persona-id! (atom (or persona-id (:personaId item)))]
-    (fn []
+    (fn [] 
       (if @editing?!
         [edit-feed-item personas! persona-id! feed! item editing?!]
         [display-feed-item persona-id! personas! feed! item editing?! on-click-authority on-click-tag]))))
@@ -397,10 +394,6 @@
               ^{:key [item @persona-id!]}
               [feed-item @persona-id! (when (not @persona-id!) personas!) feed! item on-click-authority on-click-tag]))]))
 
-(defn header-actions [creating-post?!]
-  [:div.container
-   [img-button "button" "icon" "../img/new-post.png" #(swap! creating-post?! not)]
-   [img-button "button" "icon" "../img/peers.png" #(location/set-page! :peers)]])
 
 (defn prepend-feed-item [feed! view-item]
   (swap! feed! update-in [:results] #(into [view-item] %)))
@@ -455,8 +448,8 @@
         persona-id!
         on-persona-select
         query!
-        on-search
-        (partial header-actions creating-post?!)]
+        on-search 
+        creating-post?!]
        [error-control (state/error!)]
        (when @creating-post?!
          (let [edit-item! (atom (edit-item))
@@ -473,4 +466,4 @@
        [error-control error!]]))
        (if (or @creating-post?! (= @feed! {}) (not-empty (:results @feed!)) (not-empty (:query @feed!)))
          [feed-list persona-id! personas! feed! on-click-authority on-click-tag]
-         [feed-instructions])])))
+         [empty-page-instructions :feed "This persona has no posts!"])])))

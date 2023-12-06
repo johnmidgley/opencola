@@ -3,7 +3,7 @@
    [reagent.core :as reagent :refer [atom]] 
    [opencola.web-ui.model.feed :as model]
    [opencola.web-ui.time :refer [format-time]]
-   [opencola.web-ui.view.common :refer [error-control action-img md->component simple-mde]]))
+   [opencola.web-ui.view.common :refer [md->component simple-mde button-component edit-control-buttons button-component icon]]))
 
 (defn comment-edit-control [id text state!] 
   [:div.comment-edit-control
@@ -23,20 +23,18 @@
     (fn []
       (when @expanded?!
         [:div.item-comment
-         [:div.item-comment-edit 
+         [:div.item-comment-edit
           [comment-edit-control (:entity-id item) text state!]
-          [error-control error!]
-          [:button {:on-click #(model/update-comment context @persona-id! entity-id comment-id (.value @state!) on-update on-error)}
-           "Save"] " "
-          [:button {:on-click #(reset! expanded?! false)} "Cancel"]
-          (when comment-id
-            [:button.delete-button
-             {:on-click #(model/delete-comment
-                          context
-                          @persona-id!
-                          comment-id
-                          (fn [] (on-update (remove-comment item comment-id)))
-                          on-error)} "Delete"])]]))))
+          [edit-control-buttons {
+                                 :on-save #(model/update-comment context @persona-id! entity-id comment-id (.value @state!) on-update on-error)
+                                 :on-cancel #(reset! expanded?! false)
+                                 :on-delete #(model/delete-comment
+                                              context
+                                              @persona-id!
+                                              comment-id
+                                              (fn [] (on-update (remove-comment item comment-id)))
+                                              on-error)
+          } expanded?! error!]]]))))
 
 (defn item-comment [context persona-id! item comment-action on-update on-click-authority]
   (let [editing?! (atom false)]
@@ -53,10 +51,10 @@
          [:div.item-attribution
           [:span.authority {:on-click #(on-click-authority authority-name)} authority-name] " " (format-time epoch-second) " "
           (when editable?
-            [:span.button.edit-comment-button {:on-click #(reset! editing?! true)} [action-img "edit"]])]
+            [button-component {:class "edit-comment-button" :icon-class "icon-edit"} #(swap! editing?! not)])]
          (if (and editable? @editing?!)
            [comment-control context persona-id! item comment-id text editing?! on-update]
-           [:div.item-comment-container [md->component {:class "item-comment-text" :data-is-own-comment editable?} text]])]))))
+           [:div.item-comment-container [md->component {:class (str "item-comment-text " (when editable? "own-comment"))} text]])]))))
 
 (defn item-comments [context persona-id! item comment-actions preview-fn? expanded?! on-update on-click-authority]
   (let [preview? (preview-fn?)
@@ -67,8 +65,10 @@
        [:span {:on-click (fn [] (swap! expanded?! #(not %)))} "Comments:"]
        (doall (for [comment-action comment-actions]
                 ^{:key comment-action} [item-comment context persona-id! item comment-action on-update on-click-authority]))
-       [:div.item-comments-footer {:on-click (fn [] (swap! expanded?! #(not %)))}
-        (when (> more 0)
-          (if preview?
-            [:span.action "Show more" (action-img "show")]
-            [:span.action "Show less" (action-img "hide")]))]])))
+       (when (> more 0)
+         [button-component {
+                            :class "expand-button "
+                            :text (if preview? "Show more" "Show less")
+                            :icon-class (if preview? "icon-show" "icon-hide")
+                            } 
+          (fn [] (swap! expanded?! #(not %)))])])))

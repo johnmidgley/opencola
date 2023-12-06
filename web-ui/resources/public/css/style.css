@@ -6,6 +6,7 @@
     background-color: var(--feed-item-bg-color);
     position: sticky;
     top: 0;
+    z-index: 1;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -42,7 +43,7 @@
     margin: 0 auto;
     display: flex;
     align-items: center;
-    --pad-value: .5rem;
+    --pad-value: .4rem;
     --radius-value: 2rem;
     width: max(2rem, 30vw + 1rem);
 
@@ -52,7 +53,8 @@
         width: 100%;
     }
 
-    & .button {
+    & .search-button {
+        --icon-size: 1.5rem;
         border: var(--border-size) solid var(--border-color);
         padding: var(--pad-value, .5rem);
         border-top-left-radius: var(--radius-value, 1rem);
@@ -95,7 +97,6 @@
 .menu {
     > .overlay[data-visible=true] {
         position: fixed;
-        z-index: 9997;
         top: 0;
         left: 0;
         width: 100%;
@@ -112,7 +113,6 @@
         gap: .5rem;
         padding: 1rem;
         width: max(200px, 20vw + 2rem);
-        z-index: 9998;
     };
 
     & .menu-control {
@@ -191,14 +191,7 @@
 
 .feed-list {
     > .list-item {
-        padding: 1rem;
-        margin: 0 1rem;
-        border-radius: 1rem;
-        display: flex;
-        flex-direction: column;
-        gap: .75rem;
-        box-shadow: 5px 5px 5px 5px var(--shadow-color);
-        -webkit-box-shadow: 5px 5px 5px 5px var(--shadow-color);
+        gap: 1.5rem;
     }
 }
 
@@ -263,12 +256,14 @@
 
 .persona-select {
     border: solid 1px black;
+    height: fit-content;
 }
 
 .activity-buttons {
     --br-value: 10rem;
     display: flex;
     flex-direction: row;
+    align-items: center;
     flex-wrap: wrap;
     gap: 1rem;
 
@@ -276,7 +271,12 @@
         display: flex;
     }
 
+    > .action-button {
+        --icon-size: 1.5rem;
+    }
+
     > .edit-button {
+        --icon-size: 1.5rem;
         display: flex;
         align-items: center;
         padding: .2rem;
@@ -289,6 +289,7 @@
 }
 
 .action-wrapper {
+    --icon-size: 1.2rem;
     display: flex;
     
     > .action-button {
@@ -300,6 +301,8 @@
         border: 1px solid gray;
         border-top-left-radius: var(--br-value, 1rem);
         border-bottom-left-radius: var(--br-value, 1rem);
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
     }
 
     > .action-toggle-button {
@@ -325,27 +328,33 @@
     display: flex;
     flex-direction: column;
     gap: .8rem;
+
+    & .expand-button {
+        --icon-size: 1.8rem;
+        flex-direction: row-reverse;
+        margin-right: auto;
+        border-radius: 10rem;
+        padding-inline: .5rem;
+    }
 }
 
 .item-comment {
     display: flex;
     flex-direction: column;
-    gap: .2rem;
+    gap: .3rem;
 
     & .edit-comment-button {
+        --icon-size: 1.1rem;
         display: flex;
         align-items: center;
         justify-content: center;
         padding: .1rem;
         border-radius: 10rem;
     }
-
-    & .action-img {
-        width: 1rem;
-    }
 }
 
 .item-attribution {
+    --icon-size: 1.4rem;
     display: flex;
     align-items: center;
     gap: .5rem;
@@ -359,7 +368,7 @@
    border-radius: 1rem;
 }
 
-.item-comment-text[data-is-own-comment=true] {
+.own-comment {
     background-color: var(--own-comment-color);
 }
 
@@ -411,10 +420,6 @@
     padding: 3px;
 }
 
-td {
-    padding-right: 10px;
-}
-
 .item-tag {
     padding-top: 8px;
 }
@@ -436,12 +441,6 @@ td {
 }
 
 /* Peer Styles */
-
-.peer-list {
-   > .list-item {
-    
-   }
-}
 
 .peer-img {
     width: 6rem;
@@ -471,10 +470,6 @@ input.input-text {
     }
 }
 
-.edit-peer{
-    padding-left: 30px;
-}
-
 .no-wrap {
     white-space: nowrap;
 }
@@ -498,6 +493,36 @@ input.input-text {
     margin-left: auto;
     margin-right: auto;
     background-color: var(--bg-color);
+}
+
+/* Peers styles */
+
+.peer-list .list-item {
+    > .peer-info {
+        display: flex;
+        flex-direction: column;
+        gap: .5rem;
+    }
+
+    & .edit-button {
+        margin-top: 10px;
+        margin-right: auto;
+    }
+}
+
+/* Persona styles */
+
+.persona-list .list-item {
+    > .peer-info {
+        display: flex;
+        flex-direction: column;
+        gap: .5rem;
+    }
+
+    & .edit-button {
+        margin-top: 10px;
+        margin-right: auto;
+    }
 }
 
 /* Used by the SimpleMDE component */

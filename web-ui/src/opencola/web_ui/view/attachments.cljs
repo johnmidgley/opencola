@@ -2,19 +2,19 @@
   (:require [opencola.web-ui.util :refer [distinct-by]]
             [opencola.web-ui.ajax :as ajax]
             [opencola.web-ui.time :refer [format-time]]
-            [opencola.web-ui.view.common :refer [action-img image? keyed-divider]]))
+            [opencola.web-ui.view.common :refer [button-component image? keyed-divider]]))
 
 (defn item-attachment [action on-delete on-click-authority]
   (let [{authority-name :authorityName
          epoch-second :epochSecond
          value :value
          id :id} action]
-    [:tr.item-attribution
-     [:td [:span.authority {:on-click #(on-click-authority authority-name)} authority-name]]
-     [:td (format-time epoch-second)]
-     [:td [:a {:href (ajax/resolve-service-url (str "data/" id)) :target "blank"} value]]
+    [:div.item-attribution
+     [:span.authority {:on-click #(on-click-authority authority-name)} authority-name]
+     [:span (format-time epoch-second)]
+     [:a {:href (ajax/resolve-service-url (str "data/" id)) :target "blank"} value]
      (when on-delete
-       [:td [:span {:on-click #(on-delete id)} (action-img "delete")]])]))
+       [button-component {:icon-class "icon-delete" :class "action-button" } #(on-delete id)])]))
 
 
 (defn select-attachment [persona-id! attachments]
@@ -33,12 +33,10 @@
     (let [actions (distinct-attachments persona-id! attach-actions)]
       [:div.item-attachments
        [:div.list-header "Attachments:"]
-       [:table
-        [:tbody
-         (doall (for [action (->> actions (sort-by :epochSecond) (distinct-by :id))]
-                  (let [action-authority-id (:authorityId action)
-                        on-delete (when (= action-authority-id @persona-id!) on-delete)]
-                    ^{:key action} [item-attachment action on-delete on-click-authority])))]]])))
+       (doall (for [action (->> actions (sort-by :epochSecond) (distinct-by :id))]
+                (let [action-authority-id (:authorityId action)
+                      on-delete (when (= action-authority-id @persona-id!) on-delete)]
+                  ^{:key action} [item-attachment action on-delete on-click-authority])))])))
 
 (defn attachment-is-image? [attachment]
   (let [{:keys [value]} attachment]
