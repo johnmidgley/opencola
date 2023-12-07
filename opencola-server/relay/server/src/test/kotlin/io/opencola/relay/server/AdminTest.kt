@@ -213,13 +213,15 @@ class AdminTest {
 
     private suspend fun testExecuteCommand(rootClient: AbstractClient, responseChannel: Channel<AdminMessage>) {
         coroutineScope {
-            rootClient.sendAdminMessage(ExecCommand(listOf("pwd")))
-            getResponse<AdminMessage>(responseChannel)
+            rootClient.sendAdminMessage(ExecCommand(".","pwd"))
+            val pwdResponse = getResponse<AdminMessage>(responseChannel) as ExecCommandResponse
+            assert(pwdResponse.stdout.isNotBlank())
+            assert(pwdResponse.stderr.isBlank())
 
-            rootClient.sendAdminMessage(ExecCommand(listOf("asdf")))
-            val errorResponse = responseChannel.receive()
-            assertEquals(Status.FAILURE, (errorResponse as CommandResponse).status)
-            println(errorResponse)
+            rootClient.sendAdminMessage(ExecCommand(".", "asdf"))
+            val errorResponse = responseChannel.receive() as ExecCommandResponse
+            assert(errorResponse.stdout.isBlank())
+            assert(errorResponse.stderr.isNotBlank())
         }
     }
 

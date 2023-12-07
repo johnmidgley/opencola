@@ -112,6 +112,10 @@ data class GetMessageUsageResponse(override val id: String, val usages: List<Usa
 
 @Serializable
 @SerialName("ExecCommand")
-data class ExecCommand(val args: List<String>, override val id: String = UUID.randomUUID().toString()) : AdminMessage()
+data class ExecCommand(val workingDir: String, val command: String, override val id: String = UUID.randomUUID().toString()) : AdminMessage()
+
+@Serializable
+@SerialName("ExecCommandResponse")
+data class ExecCommandResponse(override val id: String, val workingDir: String, val stdout: String, val stderr: String) : AdminMessage()
 
 // TODO: Add GetUserMessagesCommand / Response

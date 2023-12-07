@@ -33,16 +33,33 @@ abstract class Server(
     private val httpClient = HttpClient()
 
     private fun isClientAuthorized(clientId: Id): Boolean {
-        val policy =  policyStore.getUserPolicy(clientId, clientId)
+        val policy = policyStore.getUserPolicy(clientId, clientId)
 
-        return if(policy == null) {
+        return if (policy == null) {
             event.info("NoPolicyForClient") { "No policy found for client: $clientId" }
             false
-        } else if(!policy.connectionPolicy.canConnect) {
+        } else if (!policy.connectionPolicy.canConnect) {
             event.warn("ClientNotAuthorized") { "Client not authorized to connect: $clientId" }
             false
         } else {
             true
+        }
+    }
+
+    private fun onCloseConnection(connection: Connection) {
+        val entry = connectionDirectory.get(connection.id)
+
+        if (entry != null) {
+            if (entry.connection == null || entry.connection === connection) {
+                logger.info { "Removing connection: ${connection.id}" }
+                connectionDirectory.remove(connection.id)
+            }
+
+            if (entry.connection == null) {
+                event.error("ConnectionAlreadyClosed") { "Attempt to close connection that is already closed: ${connection.id}" }
+            } else if (entry.connection !== connection) {
+                event.error("ConnectionMismatch") { "Attempt to close connection that does not match directory: ${connection.id}" }
+            }
         }
     }
 
@@ -90,19 +107,18 @@ abstract class Server(
             val authenticationResult = AuthenticationResult(status).encodeProto()
             if (status == AuthenticationStatus.AUTHENTICATED) {
                 logger.debug { "Client authenticated" }
-                Connection(clientPublicKey, socketSession) { connectionDirectory.remove(it.id) }.let {
-                    // It is important to add the connection to the directory BEFORE returning the authentication result
-                    // to the client so that the client can't make a request that may result in a response from the
-                    // server, which would fail without an entry in the connection directory.
-                    connectionDirectory.add(it)
-                    socketSession.writeSizedByteArray(authenticationResult)
-                    return it
-                }
+                val connection = Connection(clientPublicKey, socketSession) { onCloseConnection(it) }
+
+                // It is important to add the connection to the directory BEFORE returning the authentication result
+                // to the client so that the client can't make a request that may result in a response from the
+                // server, which would fail without an entry in the connection directory.
+                connectionDirectory.add(connection)
+                socketSession.writeSizedByteArray(authenticationResult)
+                return connection
             } else {
                 event.warn("AuthenticationFailed") { "Authentication failed for $clientId: $status" }
                 socketSession.writeSizedByteArray(authenticationResult)
             }
-
         } catch (e: CancellationException) {
             // Let job cancellation fall through
         } catch (e: ClosedReceiveChannelException) {

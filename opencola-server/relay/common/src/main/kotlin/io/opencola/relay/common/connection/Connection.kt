@@ -42,6 +42,9 @@ class Connection(
     }
 
     suspend fun close() {
+        if(state == Closed)
+            return
+
         state = Closed
         socketSession.close()
         listenJob?.cancel()

@@ -136,6 +136,8 @@ abstract class AbstractRelayServer(
                             event.warn("SentStoredMessagesOnHandleMessage") { "Stored messages sent on handleMessage to $id" }
                     }
                 }
+            } catch (e: Exception) {
+                event.error("SessionError") { "Error while handling session: $e" }
             } finally {
                 connection.close()
                 event.info("SessionStopped") { "Session stopped: $id" }
@@ -258,6 +260,30 @@ abstract class AbstractRelayServer(
         }
     }
 
+    private suspend fun executeCommand(execCommand: ExecCommand): AdminMessage {
+        val response = CompletableDeferred<AdminMessage>()
+
+        thread {
+            // TODO: Handle timeout
+            val result = try {
+                val command = "cd ${execCommand.workingDir};${execCommand.command}; pwd"
+                // TODO: Make shell configurable
+                val process = Runtime.getRuntime().exec(arrayOf("/bin/sh", "-c") + command)
+                val stdout = process.inputStream.bufferedReader().readText().trimEnd{ it == '\n' }
+                val stderr = process.errorStream.bufferedReader().readText().trimEnd{ it == '\n' }
+                val lines = stdout.lines()
+                val workingDir = lines.last() // Last line is always resulting working directory because of ; pwd
+                val cmdOut = lines.take(lines.size - 1).joinToString("\n")
+                ExecCommandResponse(execCommand.id, workingDir, cmdOut, stderr)
+            } catch (e: Exception) {
+                CommandResponse(execCommand.id, Status.FAILURE, State.COMPLETE, e.message)
+            }
+            response.complete(result)
+        }
+
+        return response.await()
+    }
+
     private suspend fun handleAdminMessage(fromId: Id, adminMessage: AdminMessage) {
         try {
             logger.info { "Handling command: $fromId $adminMessage" }
@@ -357,21 +383,7 @@ abstract class AbstractRelayServer(
                 }
 
                 is ExecCommand -> {
-                    val response = CompletableDeferred<CommandResponse>()
-                    thread {
-                        // TODO: Factor out
-                        val result = try {
-                            val process = Runtime.getRuntime().exec(adminMessage.args.toTypedArray())
-                            val output = process.inputStream.bufferedReader().readText()
-                            val error = process.errorStream.bufferedReader().readText()
-                            val message = if (output.isNotEmpty() && error.isNotEmpty()) "$output\n$error" else output + error
-                            CommandResponse(adminMessage.id, Status.SUCCESS, State.COMPLETE, message)
-                        } catch (e: Exception) {
-                            CommandResponse(adminMessage.id, Status.FAILURE, State.COMPLETE, e.message)
-                        }
-                        response.complete(result)
-                    }
-                    response.await()
+                    executeCommand(adminMessage)
                 }
 
                 else -> {

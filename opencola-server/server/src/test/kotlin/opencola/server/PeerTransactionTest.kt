@@ -113,7 +113,7 @@ class PeerTransactionTest {
             println("Starting ${app1.config.name}")
             waitForStdout("appears to be offline.") { startServer(server1) }
 
-            // Now start up the first server again. This will trigger call get transactions to server 1, which should trigger
+            // Now start up the first server a  gain. This will trigger call get transactions to server 1, which should trigger
             // it to grab the missing transaction
             println("Re-starting ${app0.config.name}")
             waitForStdout("SearchIndex: Indexed") { startServer(server0restart) }

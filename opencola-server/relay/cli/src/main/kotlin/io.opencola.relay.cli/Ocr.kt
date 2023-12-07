@@ -4,7 +4,6 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.arguments.argument
-import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
@@ -36,6 +35,13 @@ fun AdminMessage.format(): String {
             val suffix = if (message.isBlank() || message.endsWith("\n")) "" else "\n"
             "${if (status != Status.SUCCESS) "$status: " else ""}$message$suffix"
         }
+
+        is ExecCommandResponse -> {
+            val out = if(stdout.isBlank()) "" else "$stdout\n"
+            val err = if(stderr.isBlank()) "" else "$stderr\n"
+            "$out$err"
+        }
+
         else -> this.toString()
     }
 }
@@ -230,30 +236,38 @@ class StorageCliktCommand() : CliktCommand(name = "storage") {
 }
 
 class ExecCliktCommand(private val context: Context) : CliktCommand(name = "exec") {
-    private val args by argument(help = "The command to execute - must be quoted").multiple()
+    private val command by argument(help = "The command to execute - must be quoted")
 
     override fun run() {
-        val response = context.sendCommandMessage(ExecCommand(args))
-        println(response.format())
+        val response = context.sendCommandMessage(ExecCommand(".", command))
+        print(response.format())
     }
 }
 
 class ShellCliktCommand(private val context: Context) : CliktCommand(name = "shell") {
     override fun run() {
+        var workingDir = "."
+        println("It is recommended to run the relay shell with rlwrap (https://github.com/hanslub42/rlwrap):")
+        println("  alias ocr='rlwrap ocr'\n")
         println("Welcome to the relay shell (${context.config.ocr.server.uri.host})")
+
         while (true) {
             print("$ ")
 
-            val input = readln()
+            val command = readln()
 
-            if(input == "exit" || input == "quit" || input == "q")
+            if (command == "exit" || command == "quit" || command == "q")
                 break
 
-            if(input.isBlank())
+            if (command.isBlank())
                 continue
 
-            val args = input.split(" ").toTypedArray()
-            val response = context.sendCommandMessage(ExecCommand(args.toList()))
+            while(!context.responseChannel.isEmpty) {
+                runBlocking { context.responseChannel.receive() }
+            }
+
+            val response = context.sendCommandMessage(ExecCommand(workingDir, command)) as ExecCommandResponse
+            workingDir = response.workingDir
             print(response.format())
         }
     }
@@ -264,42 +278,46 @@ class OcrCliktCommand : CliktCommand(name = "ocr") {
 }
 
 fun main(args: Array<String>) {
-    val storagePath = initStorage()
-    val config = loadConfig(storagePath.resolve(configFileName))
-    val keyPair = getKeyPair(initStorage(), getPasswordHash(config))
-        ?: error("KeyPair not found. You may need to delete your identity and try again.")
+    try {
+        val storagePath = initStorage()
+        val config = loadConfig(storagePath.resolve(configFileName))
+        val keyPair = getKeyPair(initStorage(), getPasswordHash(config))
+            ?: error("KeyPair not found. You may need to delete your identity and try again.")
 
-    runBlocking {
-        val context = Context(storagePath, config, keyPair)
+        runBlocking {
+            val context = Context(storagePath, config, keyPair)
 
-        context.use {
-            OcrCliktCommand()
-                .subcommands(
-                    ConfigCliktCommand(context),
-                    IdentityCliktCommand(context),
-                    PolicyCliktCommand().subcommands(
-                        SetPolicyCliktCommand(context),
-                        GetPolicyCliktCommand(context),
-                        GetAllPoliciesCliktCommand(context),
-                        RemovePolicyCliktCommand(context)
-                    ),
-                    UserPolicyCliktCommand().subcommands(
-                        SetUserPolicyCliktCommand(context),
-                        GetUserPolicyCliktCommand(context),
-                        GetAllUserPoliciesCliktCommand(context),
-                        RemoveUserPolicyCliktCommand(context),
-                    ),
-                    MessagesCliktCommand().subcommands(
-                        RemoveUserMessagesCliktCommand(context),
-                        GetMessageUsageCliktCommand(context)
-                    ),
-                    StorageCliktCommand().subcommands(
-                        GetMessageUsageCliktCommand(context)
-                    ),
-                    ExecCliktCommand(context),
-                    ShellCliktCommand(context),
-                )
-                .main(args)
+            context.use {
+                OcrCliktCommand()
+                    .subcommands(
+                        ConfigCliktCommand(context),
+                        IdentityCliktCommand(context),
+                        PolicyCliktCommand().subcommands(
+                            SetPolicyCliktCommand(context),
+                            GetPolicyCliktCommand(context),
+                            GetAllPoliciesCliktCommand(context),
+                            RemovePolicyCliktCommand(context)
+                        ),
+                        UserPolicyCliktCommand().subcommands(
+                            SetUserPolicyCliktCommand(context),
+                            GetUserPolicyCliktCommand(context),
+                            GetAllUserPoliciesCliktCommand(context),
+                            RemoveUserPolicyCliktCommand(context),
+                        ),
+                        MessagesCliktCommand().subcommands(
+                            RemoveUserMessagesCliktCommand(context),
+                            GetMessageUsageCliktCommand(context)
+                        ),
+                        StorageCliktCommand().subcommands(
+                            GetMessageUsageCliktCommand(context)
+                        ),
+                        ExecCliktCommand(context),
+                        ShellCliktCommand(context),
+                    )
+                    .main(args)
+            }
         }
+    } catch (e: Exception) {
+        println(e.message)
     }
 }
