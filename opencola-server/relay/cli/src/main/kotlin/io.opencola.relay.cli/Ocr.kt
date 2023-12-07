@@ -37,8 +37,8 @@ fun AdminMessage.format(): String {
         }
 
         is ExecCommandResponse -> {
-            val out = if(stdout.isBlank()) "" else "$stdout\n"
-            val err = if(stderr.isBlank()) "" else "$stderr\n"
+            val out = if (stdout.isBlank()) "" else "$stdout\n"
+            val err = if (stderr.isBlank()) "" else "$stderr\n"
             "$out$err"
         }
 
@@ -85,7 +85,7 @@ class SetPolicyCliktCommand(val context: Context) : CliktCommand(name = "set") {
         val jsonString = (if (json != null) json else file?.readText()) ?: throw CliktError("No policy specified")
         val policy =
             context.json.tryDecodeFromString<Policy>(jsonString) ?: throw CliktError("Invalid policy: $jsonString")
-        val response = context.sendCommandMessage(SetPolicyCommand(policy))
+        val response = context.sendCommandMessage<CommandResponse>(SetPolicyCommand(policy))
         println(response.format())
     }
 }
@@ -93,30 +93,21 @@ class SetPolicyCliktCommand(val context: Context) : CliktCommand(name = "set") {
 class GetPolicyCliktCommand(private val context: Context) : CliktCommand(name = "get") {
     private val name: String by argument(help = "The name of the policy")
     override fun run() {
-        val response = context.sendCommandMessage(GetPolicyCommand(name))
-
-        if (response is GetPolicyResponse) {
-            if (response.policy == null)
-                println("Policy \"$name\" does not exist")
-            else
-                println(context.json.encodeToString(response.policy))
-        } else {
-            println(response.format())
-        }
+        val response = context.sendCommandMessage<GetPolicyResponse>(GetPolicyCommand(name))
+        if (response.policy == null)
+            println("Policy \"$name\" does not exist")
+        else
+            println(context.json.encodeToString(response.policy))
     }
 }
 
 class GetAllPoliciesCliktCommand(private val context: Context) : CliktCommand(name = "ls") {
     override fun run() {
-        val response = context.sendCommandMessage(GetPoliciesCommand())
-
-        if (response is GetPoliciesResponse) {
-            if (response.policies.isEmpty())
-                println("No policies found")
-            else
-                response.policies.forEach { println(context.json.encodeToString(it)) }
-        } else
-            println(response.format())
+        val response = context.sendCommandMessage<GetPoliciesResponse>(GetPoliciesCommand())
+        if (response.policies.isEmpty())
+            println("No policies found")
+        else
+            response.policies.forEach { println(context.json.encodeToString(it)) }
     }
 }
 
@@ -124,7 +115,7 @@ class RemovePolicyCliktCommand(val context: Context) : CliktCommand(name = "remo
     private val name: String by argument(help = "The name of the policy")
 
     override fun run() {
-        val response = context.sendCommandMessage(RemovePolicyCommand(name))
+        val response = context.sendCommandMessage<CommandResponse>(RemovePolicyCommand(name))
         println(response.format())
     }
 }
@@ -137,7 +128,7 @@ class SetUserPolicyCliktCommand(val context: Context) : CliktCommand(name = "set
     private val userId: String by argument(help = "The id of the user")
     private val name: String by argument(help = "The name of the policy")
     override fun run() {
-        val response = context.sendCommandMessage(SetUserPolicyCommand(Id.decode(userId), name))
+        val response = context.sendCommandMessage<CommandResponse>(SetUserPolicyCommand(Id.decode(userId), name))
         println(response.format())
     }
 }
@@ -146,32 +137,24 @@ class GetUserPolicyCliktCommand(val context: Context) : CliktCommand(name = "get
     private val userId: String by argument(help = "The id of the user")
     override fun run() {
         val id = Id.tryDecode(userId) ?: throw CliktError("Invalid user id: $userId")
-        val response = context.sendCommandMessage(GetUserPolicyCommand(id))
+        val response = context.sendCommandMessage<GetUserPolicyResponse>(GetUserPolicyCommand(id))
 
-        if (response is GetUserPolicyResponse) {
-            if (response.policy == null)
-                println("User policy for \"$userId\" does not exist")
-            else
-                println(context.json.encodeToString(response.policy))
-        } else {
-            println(response.format())
-        }
+        if (response.policy == null)
+            println("User policy for \"$userId\" does not exist")
+        else
+            println(context.json.encodeToString(response.policy))
     }
 }
 
 class GetAllUserPoliciesCliktCommand(private val context: Context) : CliktCommand(name = "ls") {
     override fun run() {
-        val response = context.sendCommandMessage(GetUserPoliciesCommand())
-
-        if (response is GetUserPoliciesResponse) {
-            if (response.policies.isEmpty())
-                println("No user policies found")
-            else
-                response.policies.forEach {
-                    println("${it.first}\t${it.second}")
-                }
-        } else
-            println(response.format())
+        val response = context.sendCommandMessage<GetUserPoliciesResponse>(GetUserPoliciesCommand())
+        if (response.policies.isEmpty())
+            println("No user policies found")
+        else
+            response.policies.forEach {
+                println("${it.first}\t${it.second}")
+            }
     }
 }
 
@@ -180,7 +163,7 @@ class RemoveUserPolicyCliktCommand(val context: Context) : CliktCommand(name = "
 
     override fun run() {
         val id = Id.tryDecode(userId) ?: throw CliktError("Invalid user id: $userId")
-        val response = context.sendCommandMessage(RemoveUserPolicyCommand(id))
+        val response = context.sendCommandMessage<CommandResponse>(RemoveUserPolicyCommand(id))
         println(response.format())
     }
 }
@@ -201,10 +184,10 @@ class RemoveUserMessagesCliktCommand(private val context: Context) : CliktComman
             throw CliktError("Must specify either --user-id or --age, not both")
 
         val response = if (age != null) {
-            context.sendCommandMessage(RemoveMessagesByAgeCommand(age!!))
+            context.sendCommandMessage<CommandResponse>(RemoveMessagesByAgeCommand(age!!))
         } else {
             val id = Id.tryDecode(userId!!) ?: throw CliktError("Invalid user id: $userId")
-            context.sendCommandMessage(RemoveUserMessagesCommand(id))
+            context.sendCommandMessage<CommandResponse>(RemoveUserMessagesCommand(id))
         }
 
         println(response.format())
@@ -213,16 +196,11 @@ class RemoveUserMessagesCliktCommand(private val context: Context) : CliktComman
 
 class GetMessageUsageCliktCommand(private val context: Context) : CliktCommand(name = "usage") {
     override fun run() {
-        val response = context.sendCommandMessage(GetMessageUsageCommand())
-
-        if (response is GetMessageUsageResponse) {
-            if (response.usages.isEmpty())
-                println("No stored messages")
-            response.usages.forEach {
-                println("${it.to}\t${it.numMessages}\t${it.numBytes}")
-            }
-        } else {
-            println(response.format())
+        val response = context.sendCommandMessage<GetMessageUsageResponse>(GetMessageUsageCommand())
+        if (response.usages.isEmpty())
+            println("No stored messages")
+        response.usages.forEach {
+            println("${it.to}\t${it.numMessages}\t${it.numBytes}")
         }
     }
 }
@@ -239,7 +217,7 @@ class ExecCliktCommand(private val context: Context) : CliktCommand(name = "exec
     private val command by argument(help = "The command to execute - must be quoted")
 
     override fun run() {
-        val response = context.sendCommandMessage(ExecCommand(".", command))
+        val response = context.sendCommandMessage<ExecCommandResponse>(ExecCommand(".", command))
         print(response.format())
     }
 }

@@ -54,7 +54,7 @@ class Context(
         _client
     }
 
-    fun sendCommandMessage(command: AdminMessage): AdminMessage {
+    inline fun <reified T : AdminMessage> sendCommandMessage(command: AdminMessage): T {
         return runBlocking {
             try {
                 withTimeout(config.ocr.server.requestTimeoutMilliseconds) {
@@ -69,12 +69,18 @@ class Context(
                             continue
                         }
 
-                        if (response is CommandResponse && response.state == State.PENDING)
+                        if (response is CommandResponse && response.state == State.PENDING) {
                             println(response.format())
-                        else
+                            continue
+                        }
+
+                        if(response is T)
                             break
+
+                        printlnErr("Expected ${T::class.simpleName} but received ${response::class.simpleName}")
                     }
-                    response
+
+                    response as T
                 }
             } catch (e: CliktError) {
                 throw e
