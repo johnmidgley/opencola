@@ -20,6 +20,7 @@ application {
 }
 
 dependencies {
+    implementation(project(":core:io"))
     implementation(project(":core:model"))
     implementation(project(":core:security"))
     implementation(project(":core:serialization"))

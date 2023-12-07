@@ -262,10 +262,6 @@ class ShellCliktCommand(private val context: Context) : CliktCommand(name = "she
             if (command.isBlank())
                 continue
 
-            while(!context.responseChannel.isEmpty) {
-                runBlocking { context.responseChannel.receive() }
-            }
-
             val response = context.sendCommandMessage(ExecCommand(workingDir, command)) as ExecCommandResponse
             workingDir = response.workingDir
             print(response.format())

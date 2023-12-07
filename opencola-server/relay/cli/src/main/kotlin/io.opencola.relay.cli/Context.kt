@@ -1,6 +1,7 @@
 package io.opencola.relay.cli
 
 import com.github.ajalt.clikt.core.CliktError
+import io.opencola.io.printlnErr
 import io.opencola.model.Id
 import io.opencola.model.IdAsStringSerializer
 import io.opencola.relay.client.v2.WebSocketClient
@@ -62,6 +63,12 @@ class Context(
 
                     while (true) {
                         response = responseChannel.receive()
+
+                        if(response.id != command.id) {
+                            printlnErr("Received response with unexpected id: ${response.id}")
+                            continue
+                        }
+
                         if (response is CommandResponse && response.state == State.PENDING)
                             println(response.format())
                         else
