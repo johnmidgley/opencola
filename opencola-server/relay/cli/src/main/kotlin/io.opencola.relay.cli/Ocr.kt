@@ -15,6 +15,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.text.SimpleDateFormat
+import java.util.*
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.readText
 
@@ -172,6 +174,21 @@ class UserPolicyCliktCommand() : CliktCommand(name = "user-policy") {
     override fun run() = Unit
 }
 
+class ConnectionsCliktCommand(private val context: Context) : CliktCommand(name = "connections") {
+    private val formatter: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+
+    override fun run() {
+        val response = context.sendCommandMessage<GetConnectionsResponse>(GetConnectionsCommand())
+        if (response.connections.isEmpty())
+            println("No connections")
+        else
+            println(String.format("%-42s\t%-20s\t%s", "ID", "CONNECTED", "ADDRESS",))
+            response.connections.forEach {
+                println("${it.id}\t${formatter.format(Date(it.connectTimeMilliseconds))}\t${it.address}")
+            }
+    }
+}
+
 class RemoveUserMessagesCliktCommand(private val context: Context) : CliktCommand(name = "remove") {
     private val userId: String? by option(help = "The id of the user")
     private val age: Long? by option(help = "Remove messages older than age in milliseconds").long()
@@ -278,6 +295,7 @@ fun main(args: Array<String>) {
                             GetAllUserPoliciesCliktCommand(context),
                             RemoveUserPolicyCliktCommand(context),
                         ),
+                        ConnectionsCliktCommand(context),
                         MessagesCliktCommand().subcommands(
                             RemoveUserMessagesCliktCommand(context),
                             GetMessageUsageCliktCommand(context)

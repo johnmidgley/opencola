@@ -137,6 +137,20 @@ class AdminTest {
         }
     }
 
+    private suspend fun testConnections(
+        server: RelayServer,
+        rootClient: AbstractClient,
+        responseChannel: Channel<AdminMessage>
+    ) {
+        coroutineScope {
+            rootClient.sendAdminMessage(GetConnectionsCommand())
+            getResponse<GetConnectionsResponse>(responseChannel).connections.let {
+                assertEquals(1, it.size)
+                assertEquals("${server.address}*", it[0].address)
+            }
+        }
+    }
+
     private suspend fun testManageMessages(
         server: RelayServer,
         rootClient: AbstractClient,
@@ -250,6 +264,7 @@ class AdminTest {
 
                 testSetPolicy(rootClient!!, responseChannel) // Sets admin policy
                 testSetUserPolicy(server0!!, rootClient!!, responseChannel)
+                testConnections(server0!!, rootClient!!, responseChannel)
                 testManageMessages(server0!!, rootClient!!, responseChannel)
                 testExecuteCommand(rootClient!!, responseChannel)
 

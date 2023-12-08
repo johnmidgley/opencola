@@ -52,6 +52,12 @@ class ConnectionsDB(private val database: Database) {
         }
     }
 
+    fun getConnections(): kotlin.sequences.Sequence<ConnectionRow> {
+        return transaction(database) {
+            Connections.selectAll().map { ConnectionRow(it) }.asSequence()
+        }
+    }
+
     fun deleteConnection(id: Id) {
         transaction(database) {
             Connections.deleteWhere { from eq id.encoded() }

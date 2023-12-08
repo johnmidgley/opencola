@@ -9,7 +9,7 @@ class MemoryConnectionDirectory(override val localAddress: URI) : ConnectionDire
     private val connections = ConcurrentHashMap<Id, ConnectionEntry>()
 
     override fun add(connection: Connection): ConnectionEntry {
-        return ConnectionEntry(localAddress, connection).also { connections[connection.id] = it }
+        return ConnectionEntry(connection.id, localAddress, connection).also { connections[connection.id] = it }
     }
 
     override fun get(id: Id): ConnectionEntry? {
@@ -31,7 +31,7 @@ class MemoryConnectionDirectory(override val localAddress: URI) : ConnectionDire
         }
     }
 
-    override fun getLocalConnections(): Sequence<ConnectionEntry> {
+    override fun getConnections(): Sequence<ConnectionEntry> {
         return connections.values.asSequence()
     }
 }

@@ -16,11 +16,13 @@ class ExposedConnectionDirectory(database: Database, override val localAddress: 
     override fun get(id: Id): ConnectionEntry? {
         return localDirectory.get(id)
             ?: connectionsDB.getConnection(id)?.let { connectionRow ->
-            ConnectionEntry(
-                URI(connectionRow.address),
-                null,
-                connectionRow.connectTimeMilliseconds
-            ) }
+                ConnectionEntry(
+                    id,
+                    URI(connectionRow.address),
+                    null,
+                    connectionRow.connectTimeMilliseconds
+                )
+            }
     }
 
     override fun remove(id: Id) {
@@ -36,7 +38,15 @@ class ExposedConnectionDirectory(database: Database, override val localAddress: 
         localDirectory.closeAll()
     }
 
-    override fun getLocalConnections(): Sequence<ConnectionEntry> {
-        return localDirectory.getLocalConnections()
+    override fun getConnections(): Sequence<ConnectionEntry> {
+        return connectionsDB.getConnections()
+            .map {
+                ConnectionEntry(
+                    it.from,
+                    URI(it.address),
+                    localDirectory.get(it.from)?.connection,
+                    it.connectTimeMilliseconds
+                )
+            }
     }
 }

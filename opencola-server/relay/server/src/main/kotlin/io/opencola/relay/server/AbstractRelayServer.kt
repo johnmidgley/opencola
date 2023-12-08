@@ -48,7 +48,7 @@ abstract class AbstractRelayServer(
     }
 
     fun localConnections(): Sequence<ConnectionEntry> {
-        return connectionDirectory.getLocalConnections()
+        return connectionDirectory.getConnections()
     }
 
     fun getUsage(): Sequence<Usage> {
@@ -269,8 +269,8 @@ abstract class AbstractRelayServer(
                 val command = "cd ${execCommand.workingDir};${execCommand.command}; pwd"
                 // TODO: Make shell configurable
                 val process = Runtime.getRuntime().exec(arrayOf("/bin/sh", "-c") + command)
-                val stdout = process.inputStream.bufferedReader().readText().trimEnd{ it == '\n' }
-                val stderr = process.errorStream.bufferedReader().readText().trimEnd{ it == '\n' }
+                val stdout = process.inputStream.bufferedReader().readText().trimEnd { it == '\n' }
+                val stderr = process.errorStream.bufferedReader().readText().trimEnd { it == '\n' }
                 val lines = stdout.lines()
                 val workingDir = lines.last() // Last line is always resulting working directory because of ; pwd
                 val cmdOut = lines.take(lines.size - 1).joinToString("\n")
@@ -338,6 +338,17 @@ abstract class AbstractRelayServer(
                         State.COMPLETE,
                         "User ${adminMessage.userId} policy removed"
                     )
+                }
+
+                is GetConnectionsCommand -> {
+                    val connectionInfos = connectionDirectory.getConnections()
+                        .map {
+                            // Indicate whether there's an active connection from this server with a *
+                            val addressSuffix = it.connection?.let { "*" } ?: ""
+                            ConnectionInfo(it.id, it.address.toString() + addressSuffix, it.connectTimeMilliseconds)
+                        }
+                        .toList()
+                    GetConnectionsResponse(adminMessage.id, connectionInfos)
                 }
 
                 is RemoveUserMessagesCommand -> {

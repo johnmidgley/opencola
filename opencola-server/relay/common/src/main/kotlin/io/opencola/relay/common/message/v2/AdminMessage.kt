@@ -94,6 +94,17 @@ data class GetUserPoliciesResponse(override val id: String, val policies: List<P
 data class RemoveUserPolicyCommand(@Contextual val userId: Id, override val id: String = UUID.randomUUID().toString()) : AdminMessage()
 
 @Serializable
+@SerialName("GetConnectionsCommand")
+data class GetConnectionsCommand(override val id: String = UUID.randomUUID().toString()) : AdminMessage()
+
+@Serializable
+data class ConnectionInfo(@Contextual val id: Id, val address: String, val connectTimeMilliseconds: Long)
+
+@Serializable
+@SerialName("GetConnectionsResponse")
+data class GetConnectionsResponse(override val id: String, val connections: List<ConnectionInfo> = emptyList()) : AdminMessage()
+
+@Serializable
 @SerialName("RemoveUserMessagesCommand")
 data class RemoveUserMessagesCommand(@Contextual val userId: Id, override val id: String = UUID.randomUUID().toString()) : AdminMessage()
 
