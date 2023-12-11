@@ -11,6 +11,8 @@ import com.github.ajalt.clikt.parameters.types.long
 import io.opencola.model.Id
 import io.opencola.relay.common.message.v2.*
 import io.opencola.relay.common.policy.Policy
+import io.opencola.security.generateKeyPair
+import io.opencola.util.Base58
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -59,13 +61,23 @@ class ConfigCliktCommand(private val context: Context) : CliktCommand(name = "co
 }
 
 class IdentityCliktCommand(private val context: Context) : CliktCommand(name = "identity") {
-    private val delete: Boolean by option("-r", "--reset", help = "Reset identity").flag()
+    private val delete: Boolean by option("-d", "--delete", help = "Delete client identity (a new one will be created on next run").flag()
+    private val server: Boolean by option("-s", "--server", help = "Generate server identity").flag()
 
     override fun run() {
-        if (delete) {
+        if(delete && server)
+            throw CliktError("Cannot specify both --delete and --server")
+        if(server) {
+            val keyPair = generateKeyPair()
+            val id = Id.ofPublicKey(keyPair.public)
+            println("Generated server identity:\n")
+            println("serverId: $id")
+            println("publicKeyBase58: ${Base58.encode(keyPair.public.encoded)}")
+            println("privateKeyBase58: ${Base58.encode(keyPair.private.encoded)}")
+        } else if (delete) {
             context.storagePath.resolve("keystore.pks").deleteIfExists()
         } else {
-            println("Id: ${Id.ofPublicKey(context.keyPair.public)}")
+            println("${Id.ofPublicKey(context.keyPair.public)}")
         }
     }
 }

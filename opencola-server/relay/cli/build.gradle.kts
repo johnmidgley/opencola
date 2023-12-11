@@ -25,6 +25,7 @@ dependencies {
     implementation(project(":core:security"))
     implementation(project(":core:serialization"))
     implementation(project(":core:storage"))
+    implementation(project(":core:util"))
     implementation(project(":relay:client"))
     implementation(project(":relay:common"))
 
