@@ -29,7 +29,7 @@ aws-cli/2.4.5 Python/3.8.8 Darwin/18.7.0 botocore/2.4.5
 aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 147892678753.dkr.ecr.us-west-2.amazonaws.com
 ```
 
-# Setting up a relay server
+# Setting Up a Relay Server
 
 ## Create an image repository for the environment
 

@@ -8,41 +8,14 @@ services:
       - "2652:2652"
     restart: unless-stopped
     environment:
-      server.port: 2652
-      server.callLogging: false
-      security.rootIdBase58: 8jUXhJFJ6ZkfEdmgGsiDunr7HUogWm6XLztLAP2yAjCp
+      relay.server.port: 2652
+      relay.server.callLogging: false
+      relay.security.publicKeyBase58: ${OC_SERVER_PUBLIC_KEY}
+      relay.security.privateKeyBase58: ${OC_SERVER_PRIVATE_KEY}
+      relay.security.rootIdBase58: ${OC_ROOT_ID}
 
-# TODO: These should be used, rather than values in yaml
-#    environment:
-#      security.publicKeyBase58: ${OC_SERVER_PUBLIC_KEY}
-#      security.privateKeyBase58: ${OC_SERVER_PRIVATE_KEY}
-#      security.rootIdBase58: ${OC_ROOT_ID}
 # TODO: This volume should be the storage path set in opencola-relay.yaml
     volumes:
       - type: bind
         source: ./storage
         target: /var/relay
-
-#  db:
-#    image: postgres:16.0
-#    restart: always
-#    ports:
-#      - 5432:5432
-#    environment:
-#      POSTGRES_USER: opencola
-#      # !!! Need to set OC_POSTGRES_PASSWORD before starting !!!
-#      POSTGRES_PASSWORD: ${OC_POSTGRES_PASSWORD}
-#    volumes:
-#      - pgdata:/var/lib/postgresql/data
-#      # - ./data/var-postgres:/var/lib/postgresql/data
-#
-#  # Useful for debugging, but not strictly necessary
-#  adminer:
-#    image: adminer
-#    restart: always
-#    ports:
-#      - 8080:8080
-#
-#
-#volumes:
-#  pgdata:

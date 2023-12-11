@@ -1,0 +1,7 @@
+#!/bin/bash
+# Test values for server environment variables. Not to be used in production
+# Run `source set-test-security-env` to set these environment variables before docker-compose up
+# In order to use the ocr command line tool, you will need to replace OC_ROOT_ID with the result of 'ocr identity'
+export OC_SERVER_PUBLIC_KEY="aSq9DsNNvGhYxYyqA9wd2eduEAZ5AXWgJTbTJiuTXEciKw3mLiprfjCK5BxaaHB3CJvDbKAdiJjqfztEceTDKASA7mfv6R82j1oJ3SvxpCem95ctMbWpi9q5uQew"
+export OC_SERVER_PRIVATE_KEY="2RxV4m78RGjpDZ5VV6TTtkSkRKgEC58qoYKq5rA4jkjPUbhn6sTQSQNgfzy3FLN3w91ZeqgvbUEj3hRT6ZG6kDZxA1ax"
+export OC_ROOT_ID="8jUXhJFJ6ZkfEdmgGsiDunr7HUogWm6XLztLAP2yAjCp"

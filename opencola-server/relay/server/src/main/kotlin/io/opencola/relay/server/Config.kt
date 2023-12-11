@@ -43,10 +43,12 @@ data class SecurityConfig(
     }
 
     val publicKey: PublicKey by lazy {
+        require(publicKeyBase58.isNotEmpty()) { "publicKeyBase58 must not be empty" }
         publicKeyFromBytes(Base58.decode(publicKeyBase58))
     }
 
     val privateKey: PrivateKey by lazy {
+        require(privateKeyBase58.isNotEmpty()) { "privateKeyBase58 must not be empty" }
         privateKeyFromBytes(Base58.decode(privateKeyBase58))
     }
 
@@ -55,6 +57,7 @@ data class SecurityConfig(
     }
 
     val rootId: Id by lazy {
+        require(rootIdBase58.isNotEmpty()) { "rootIdBase58 must not be empty" }
         Id.decode(rootIdBase58)
     }
 }
