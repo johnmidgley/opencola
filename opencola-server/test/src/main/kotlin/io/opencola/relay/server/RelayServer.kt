@@ -26,7 +26,7 @@ import io.opencola.relay.server.v2.WebSocketRelayServer as WebSocketRelayServerV
 class RelayServer(
     val address: URI = URI("ocr://0.0.0.0:$defaultOCRPort"),
     val storagePath: Path = TestApplication.getTmpDirectory("relay-storage"),
-    baseConfig: Config? = null,
+    baseConfig: RelayConfig? = null,
     val db: Database = getSQLiteDB(storagePath.resolve("relay.db")),
     val contentAddressedFileStore: ContentAddressedFileStore = FileSystemContentAddressedFileStore(storagePath.resolve("messages")),
     val policyStore: PolicyStore = ExposedPolicyStore(db, securityConfig.rootId),
@@ -44,12 +44,12 @@ class RelayServer(
         val rootKeyPair = generateKeyPair()
         val securityConfig = SecurityConfig(keyPair, Id.ofPublicKey(rootKeyPair.public))
 
-        fun getConfig(config: Config): Config {
-            return Config(config.storagePath, config.server, config.capacity, securityConfig)
+        fun getConfig(config: RelayConfig): RelayConfig {
+            return RelayConfig(config.storagePath, config.server, config.capacity, securityConfig)
         }
     }
 
-    private val config = getConfig(baseConfig ?: Config(storagePath, security = securityConfig))
+    private val config = getConfig(baseConfig ?: RelayConfig(storagePath, security = securityConfig))
     private val eventLogger = EventLogger("relay", storagePath.resolve("events").createDirectory())
     private val webSocketRelayServerV1 = WebSocketRelayServerV1(config, eventLogger, address)
     private val webSocketRelayServerV2 =

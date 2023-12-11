@@ -26,7 +26,7 @@ import kotlin.concurrent.thread
 private val logger = KotlinLogging.logger("relay")
 
 fun startWebServer(
-    config: Config,
+    config: RelayConfig,
     eventLogger: EventLogger,
     webSocketRelayServerV1: WebSocketRelayServerV1,
     webSocketRelayServerV2: WebSocketRelayServerV2,

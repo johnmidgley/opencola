@@ -14,7 +14,7 @@ import io.opencola.relay.common.message.v2.*
 import io.opencola.relay.common.message.v2.store.MessageStore
 import io.opencola.relay.common.policy.PolicyStore
 import io.opencola.relay.server.AbstractRelayServer
-import io.opencola.relay.server.Config
+import io.opencola.relay.server.RelayConfig
 import io.opencola.security.*
 import io.opencola.util.Base58
 import kotlinx.coroutines.*
@@ -24,7 +24,7 @@ import java.net.URI
 import java.security.PublicKey
 
 abstract class Server(
-    config: Config,
+    config: RelayConfig,
     eventLogger: EventLogger,
     policyStore: PolicyStore,
     connectionDirectory: ConnectionDirectory,

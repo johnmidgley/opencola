@@ -23,7 +23,7 @@ import java.security.SecureRandom
 import kotlin.concurrent.thread
 
 abstract class AbstractRelayServer(
-    protected val config: Config,
+    protected val config: RelayConfig,
     eventLogger: EventLogger,
     protected val policyStore: PolicyStore,
     protected val connectionDirectory: ConnectionDirectory,

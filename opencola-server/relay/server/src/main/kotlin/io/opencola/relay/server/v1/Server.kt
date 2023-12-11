@@ -11,7 +11,7 @@ import io.opencola.relay.common.message.Recipient
 import io.opencola.relay.common.message.v1.PayloadEnvelope
 import io.opencola.relay.common.policy.MemoryPolicyStore
 import io.opencola.relay.server.AbstractRelayServer
-import io.opencola.relay.server.Config
+import io.opencola.relay.server.RelayConfig
 import io.opencola.security.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
@@ -19,7 +19,7 @@ import java.net.URI
 import java.security.PublicKey
 
 abstract class Server(
-    config: Config,
+    config: RelayConfig,
     eventLogger: EventLogger,
     address: URI,
 ) : AbstractRelayServer(

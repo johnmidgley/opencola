@@ -5,11 +5,11 @@ import io.opencola.relay.common.State.*
 import io.opencola.relay.common.connection.ConnectionDirectory
 import io.opencola.relay.common.message.v2.store.MessageStore
 import io.opencola.relay.common.policy.PolicyStore
-import io.opencola.relay.server.Config
+import io.opencola.relay.server.RelayConfig
 
 // TODO: Remove?
 class WebSocketRelayServer(
-    config: Config,
+    config: RelayConfig,
     eventLogger: EventLogger,
     policyStore: PolicyStore,
     connectionDirectory: ConnectionDirectory,

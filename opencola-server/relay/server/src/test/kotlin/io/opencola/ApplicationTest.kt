@@ -14,7 +14,7 @@ import io.opencola.relay.common.connection.MemoryConnectionDirectory
 import io.opencola.relay.common.defaultOCRPort
 import io.opencola.relay.common.message.v2.store.MemoryMessageStore
 import io.opencola.relay.common.policy.MemoryPolicyStore
-import io.opencola.relay.server.Config
+import io.opencola.relay.server.RelayConfig
 import io.opencola.relay.server.SecurityConfig
 import io.opencola.relay.server.v1.WebSocketRelayServer as WebSocketRelayServerV1
 import io.opencola.relay.server.v2.WebSocketRelayServer as WebSocketRelayServerV2
@@ -25,7 +25,7 @@ import java.net.URI
 class ApplicationTest {
     @Test
     fun testRoot() = testApplication {
-        val config = Config(security = SecurityConfig(generateKeyPair(), Id.ofPublicKey(generateKeyPair().public)))
+        val config = RelayConfig(security = SecurityConfig(generateKeyPair(), Id.ofPublicKey(generateKeyPair().public)))
         val eventLogger = EventLogger("RelayServer", getTmpDirectory("events"))
         val address = URI("ocr://0.0.0.0:$defaultOCRPort")
         val policyStore = MemoryPolicyStore(config.security.rootId)

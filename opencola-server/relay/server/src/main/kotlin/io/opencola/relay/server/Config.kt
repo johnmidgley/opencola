@@ -59,14 +59,14 @@ data class SecurityConfig(
     }
 }
 
-
-
-data class Config(
+data class RelayConfig(
     val storagePath: Path = Path("storage"),
     val server: ServerConfig = ServerConfig(),
     val capacity: CapacityConfig = CapacityConfig(),
     val security: SecurityConfig,
 )
+
+data class Config(val relay: RelayConfig)
 
 fun loadConfig(configPath: Path): Config {
     return ConfigLoaderBuilder.default()

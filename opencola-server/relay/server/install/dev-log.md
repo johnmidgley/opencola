@@ -29,12 +29,30 @@ aws-cli/2.4.5 Python/3.8.8 Darwin/18.7.0 botocore/2.4.5
 aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 147892678753.dkr.ecr.us-west-2.amazonaws.com
 ```
 
+# Setting up a relay server
+
+## Create an image repository for the environment
+
+* Got to [ECS Console](https://us-west-2.console.aws.amazon.com/ecr/repositories?region=us-west-2) and create a repository for the environment. Make sure to select the region you want to deploy to.
+* Name the repository something like oc-relay-ENV, where ENV is the environment name (e.g. dev, prod, etc.) 
+* Note the repository URI. You will need it later.
+
+## Create a task definition
+
+* Got to [ECS Console](https://us-west-2.console.aws.amazon.com/ecs/home?region=us-west-2#/taskDefinitions) and create a new task definition.
+
+
 # Check out CoPilot
 https://aws.github.io/copilot-cli/docs/manifest/lb-web-service/
 https://aws.github.io/copilot-cli/docs/developing/storage/#managed-efs
 https://aws.github.io/copilot-cli/docs/developing/secrets/
 
-# Repository Management
+Does not seem to work on anything but port 80
+
+
+# Appendix
+
+## Repository Management
 
 **Create repo**
 ```
@@ -74,7 +92,7 @@ Likely to require authentication to default registry (above)
 docker push 147892678753.dkr.ecr.us-west-2.amazonaws.com/oc-relay:latest
 ```
 
-# Task Management
+## Task Management
 
 **Create Task Definition**
 
@@ -92,7 +110,7 @@ aws ecs list-task-definitions
 aws ecs describe-task-definition --task-definition oc-relay-task-definition
 ```
 
-# Service Management
+## Service Management
 
 **Create Cluster**
 ```
@@ -115,7 +133,7 @@ aws ecs list-services --cluster opencola
 aws ecs describe-services --cluster opencola --services oc-relay-service
 ```
 
-# Other
+## Other
 
 
 

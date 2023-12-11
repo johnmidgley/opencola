@@ -11,7 +11,7 @@ import io.opencola.relay.common.connection.ExposedConnectionDirectory
 import io.opencola.relay.common.message.v2.MessageStorageKey
 import io.opencola.relay.common.retryExponentialBackoff
 import io.opencola.relay.server.CapacityConfig
-import io.opencola.relay.server.Config
+import io.opencola.relay.server.RelayConfig
 import io.opencola.relay.server.RelayServer
 import io.opencola.storage.newSQLiteDB
 import io.opencola.util.append
@@ -293,7 +293,7 @@ class ConnectionTest {
             var client1: AbstractClient? = null
 
             try {
-                val config = Config(capacity = CapacityConfig(maxConnections = 1), security = RelayServer.securityConfig)
+                val config = RelayConfig(capacity = CapacityConfig(maxConnections = 1), security = RelayServer.securityConfig)
                 server = RelayServer(baseConfig = config).also { it.start() }
 
                 val result = CompletableDeferred<ByteArray>()
@@ -350,7 +350,7 @@ class ConnectionTest {
             var client0: AbstractClient? = null
 
             try {
-                val config = Config(capacity = CapacityConfig(maxBytesStored = 1024), security = RelayServer.securityConfig)
+                val config = RelayConfig(capacity = CapacityConfig(maxBytesStored = 1024), security = RelayServer.securityConfig)
                 server = RelayServer(baseConfig = config).also { it.start() }
                 val result = CompletableDeferred<ByteArray>()
                 client0 = getClient(ClientType.V2, "client0").also {
@@ -401,7 +401,7 @@ class ConnectionTest {
             var client0: AbstractClient? = null
 
             try {
-                val config = Config(capacity = CapacityConfig(maxPayloadSize = 1024), security = RelayServer.securityConfig)
+                val config = RelayConfig(capacity = CapacityConfig(maxPayloadSize = 1024), security = RelayServer.securityConfig)
                 server = RelayServer(baseConfig = config).also { it.start() }
                 val result = CompletableDeferred<ByteArray>()
                 client0 = getClient(ClientType.V2, "client0").also {
