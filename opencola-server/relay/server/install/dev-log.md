@@ -29,18 +29,103 @@ aws-cli/2.4.5 Python/3.8.8 Darwin/18.7.0 botocore/2.4.5
 aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 147892678753.dkr.ecr.us-west-2.amazonaws.com
 ```
 
-# Setting Up a Relay Server
+# Setting Up a Relay Server on AWS
+
+NOTE: The goal is to automate all of this using AWS Copilot. It currently doesn't seem to work for
+anything but port 80, so can't be used yet. For now, follow the manual instructions below that use
+the AWS Management Console.
 
 ## Create an image repository for the environment
 
-* Got to [ECS Console](https://us-west-2.console.aws.amazon.com/ecr/repositories?region=us-west-2) and create a repository for the environment. Make sure to select the region you want to deploy to.
-* Name the repository something like oc-relay-ENV, where ENV is the environment name (e.g. dev, prod, etc.) 
-* Note the repository URI. You will need it later.
+* Got to [ECR Console](https://us-west-2.console.aws.amazon.com/ecr/repositories?region=us-west-2) 
+* Make sure you are in the region you want to deploy to.
+* Create a repository for the environment, with a name something like oc-relay-ENV, where ENV is the environment name (e.g. dev, prod, etc.)
+* All other settings can be left as default.
+* Note the repository URI.
 
-## Create a task definition
+## Push the image to the repository
+
+You will need to be logged in to the repository (change region as needed):
+
+```
+aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin ECR_BASE_URI
+```
+
+Then run the following commands to build and push the image:
+
+```
+./install
+docker build -t oc-relay-ENV .
+docker tag oc-relay-ENV:latest REPOSITORY_URI:latest
+docker push REPOSITORY_URI:latest
+```
+
+## Create an EFS file system
+
+* Got to [EFS Console](https://us-west-2.console.aws.amazon.com/efs/home?region=us-west-2#/file-systems) and create a repository for the environment. Make sure to select the region you want to deploy to.
+* Create a new file system with a name like oc-relay-ENV, where ENV is the environment name (e.g. dev, prod, etc.) 
+* Note the EFS Id.
+
+
+## Create a Task Definition
 
 * Got to [ECS Console](https://us-west-2.console.aws.amazon.com/ecs/home?region=us-west-2#/taskDefinitions) and create a new task definition.
+* Choose "Create new Task Definition", then "Create new Task Definition JSON"
+* Use the contents of```task-definition-template.json``` and edit ENV, IMAGE_URI, SERVER_PUBLIC_KEY_BASE58, SERVER_PRIVATE_KEY_BASE58, ROOT_ID_BASE58, REGION, and EFS_ID as appropriate.
 
+# Create a Cluster
+
+* Got to [ECS Console](https://us-west-2.console.aws.amazon.com/ecs/home?region=us-west-2#/clusters) 
+* Click Create Cluster
+* Name it something like oc-ENV, where ENV is the environment name (e.g. dev, prod, etc.)
+* Make sure AWS Fargate (serverless) is checked
+
+# Create a Service
+
+* Got to [ECS Console](https://us-west-2.console.aws.amazon.com/ecs/home?region=us-west-2#/clusters)
+* Click on the cluster you created above
+* Click create
+
+You will see a form that aligns with the following structure. Fill it out as follows:
+
+```
+Environment:
+    Compute Configuration:
+        Compute Options: Select "Launch Type"
+        Launch type: FARGATE
+        Platform version: LATEST
+Deployment Configuration:
+    Application Type: Service
+    Family: oc-relay-ENV
+    Service Name: oc-relay-prod-svc
+    Service Type: Replica
+    Number of tasks: 1
+Networking:
+    VPC: If you want to use a custom vpc, create it in the VPC section and select here.
+    Security Group: 
+        Select "Create new security group"
+        Security group name: oc-relay-ENV-sg
+        Security group description: oc-relay-ENV-sg
+    Inbound rules for security groups:
+        Type: Custom TCP
+        Protocol: TCP
+        Port range: 2652
+        Source: Anywhere 
+Load Balancing:
+    Load Balancer:
+        Load Balancer Type: Application Load Balancer
+        Application Load Balancer: Create a new load balancer
+        Load Balancer Name: oc-relay-ENV-lb
+    Container:
+        Listener Port:
+            Select "Create new listener"
+            Port: 2652
+            Protocol: HTTP
+        Target Group:
+            Select "Create new target group"
+            Target group name: oc-relay-ENV-tg
+
+```
 
 # Check out CoPilot
 https://aws.github.io/copilot-cli/docs/manifest/lb-web-service/
