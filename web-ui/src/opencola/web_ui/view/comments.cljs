@@ -3,7 +3,7 @@
    [reagent.core :as reagent :refer [atom]] 
    [opencola.web-ui.model.feed :as model]
    [opencola.web-ui.time :refer [format-time]]
-   [opencola.web-ui.view.common :refer [md->component simple-mde button-component edit-control-buttons button-component icon]]))
+   [opencola.web-ui.view.common :refer [md->component simple-mde button-component edit-control-buttons]]))
 
 (defn comment-edit-control [id text state!] 
   [:div.comment-edit-control

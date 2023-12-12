@@ -6,7 +6,7 @@
 ;; TODO: Merge all state into single atom?
 (defonce app-state 
   {
-   :page-visible-atoms (apply hash-map (mapcat #(vector % (atom false)) [:feed :peers :error :personas]))
+   :page-visible-atoms (apply hash-map (mapcat #(vector % (atom false)) [:feed :peers :error :personas :settings]))
    :persona! (atom nil)
    :personas! (atom [])
    :query! (atom "") 

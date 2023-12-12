@@ -3,7 +3,7 @@
 .nav-bar {
     --gap: .5rem;
     padding: .5rem;
-    background-color: var(--feed-item-bg-color);
+    background-color: var(--app-background-color);
     position: sticky;
     top: 0;
     z-index: 1;
@@ -107,7 +107,7 @@
     > .container[data-visible=true] {
         position: fixed;
         inset: 0 0 0 auto;
-        background-color: var(--feed-item-bg-color);
+        background-color: var(--app-background-color);
         display: flex;
         flex-direction: column;
         gap: .5rem;
@@ -156,37 +156,6 @@
     }
 }
 
-.persona-menu-wrapper {
-    position: relative;
-
-    > .submenu {
-        position: absolute;
-        border: 1px solid black;
-        height: 100px;
-        width: 100px;
-    }
-
-    & .button-wrap {
-        display: flex;
-        align-items: center;
-        border: 1px solid black
-    }
-
-    & .icon {
-        --size: 2rem;
-        background-color: black;
-        display: inline-block;
-        flex-shrink: 0;
-        width: var(--size);
-        height: var(--size);
-        -webkit-mask-position: center;
-        mask-position: center;
-        -webkit-mask-repeat: no-repeat;
-        mask-repeat: no-repeat;
-        vertical-align: middle;
-    }
-}
-
 /* Feed styles */
 
 .feed-list {
@@ -214,12 +183,12 @@
     font-size: 1.3rem;
 
     > .item-link {
-        color: darkblue;
+        color: var(--link-color);
     }
 
     > .item-host {
         font-size: 1rem;
-        color: grey;
+        color: var(--item-attribution-color);
     }
 }
 
@@ -231,15 +200,15 @@
 
 .tag {
     font-size: .7rem;
-    color: grey;
-    background-color: #EAEBE0;
+    color: var(--text-color);
+    background-color: var(--tag-bg-color);
     border-radius: 10px;
     padding: .2rem .5rem;
     cursor: pointer;
 }
 
 .item-body {
-    background-color: var(--bg-color);
+    background-color: var(--item-body-bg-color);
     border-radius: .5rem;
     padding: .3rem;
 
@@ -252,11 +221,6 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-}
-
-.persona-select {
-    border: solid 1px black;
-    height: fit-content;
 }
 
 .activity-buttons {
@@ -298,7 +262,7 @@
         justify-content: center;
         gap: .2rem;
         padding: .2rem .5rem;
-        border: 1px solid gray;
+        border: var(--border-size) solid var(--border-color);
         border-top-left-radius: var(--br-value, 1rem);
         border-bottom-left-radius: var(--br-value, 1rem);
         border-top-right-radius: 0;
@@ -309,7 +273,7 @@
         display: flex;
         align-items: center;
         padding: .2rem .2rem;
-        border: 1px solid gray;
+        border: var(--border-size) solid var(--border-color);
         border-left: none;
         border-top-right-radius: var(--br-value, 1rem);
         border-bottom-right-radius: var(--br-value, 1rem);
@@ -321,7 +285,8 @@
 }
 
 .action-highlight {
-    background-color: lightgray;
+    background-color: var(--action-highlight-color);
+    color: var(--text-color-alternate);
 }
 
 .item-comments {
@@ -359,11 +324,11 @@
     align-items: center;
     gap: .5rem;
     font-size: .9rem;
-    color: grey;
+    color: var(--item-attribution-color);
 }
 
 .item-comment-text {
-   background-color: var(--bg-color);
+   background-color: var(--comment-color);
    padding: .1rem .5rem;
    border-radius: 1rem;
 }
@@ -373,7 +338,7 @@
 }
 
 .action {
-    color: darkblue;
+    color: var(--link-color);
 }
 
 .item-desc-edit {

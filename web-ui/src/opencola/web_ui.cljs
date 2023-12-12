@@ -7,6 +7,7 @@
    [opencola.web-ui.view.feed :as feed]
    [opencola.web-ui.view.persona :as persona]
    [opencola.web-ui.view.peer :as peer]
+   [opencola.web-ui.view.settings :as settings]
    [opencola.web-ui.location :as location]
    [secretary.core :as secretary :refer-macros [defroute]]
    [goog.events :as events])
@@ -42,6 +43,10 @@
   (state/set-page! :personas)
   (persona! nil))
 
+(defroute "/settings" [] 
+  (state/set-page! :settings)
+  (persona! nil))
+
 (defroute "*" []
   (state/set-page! :error))
 
@@ -53,14 +58,14 @@
   (set-page! :feed)
   (location/set-location-from-state))
 
-(defn on-persona-select [persona]
-  (case persona
+(defn on-persona-select [persona-id] 
+  (case persona-id
     "" (do (persona! nil) (state/set-page! :feed)) 
     "manage" (location/set-page! :personas)
     (do
       (when (= :personas (state/get-page))
         (state/set-page! :feed))
-      (persona! persona)))
+      (persona! persona-id)))
   (location/set-location-from-state))
 
 (defn app []
@@ -72,6 +77,8 @@
        [peer/peer-page (peers!) (personas!) (persona!) on-persona-select (query!) on-search])
      (when (state/page-visible? :personas)
        [persona/personas-page (personas!) (persona!) on-persona-select (query!) on-search])
+     (when (state/page-visible? :settings)
+       [settings/settings-page (personas!) (persona!) on-persona-select (query!) on-search])
      (when (state/page-visible? :error)
        [:div.settings "404"])]))
 

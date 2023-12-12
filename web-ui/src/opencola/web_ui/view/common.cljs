@@ -199,34 +199,40 @@
    [progress-bar visible?! progress!]
    (when (= @progress! 100) " processing...")]))
 
-(defn anotated-img-button
-  [class img-class text-class text src on-click!]
+(defn popout-menu [config menu-open?! on-click! menu-content]
+  (let [{class :class} config]
+    (when @menu-open?!
+      [:div.popout-menu-content {:on-click on-click! :class class}
+       menu-content])))
 
-  [:div {:class class :on-click on-click!}
-   [:img {:class img-class  :src src}]
-   [:span {:class text-class} text]])
+(defn select-menu-content [item-collection name-key id-key selected-item! on-click!]
+  [:div.select-menu-content 
+   (doall (for [item item-collection]
+            (when (not= item @selected-item!)
+              ^{:key (id-key item)} [button-component
+                                     {:class "select-button" :text (name-key item)}
+                                     #(do (on-click! (id-key item)) (reset! selected-item! item))])))])
 
-(defn icon-button-inner
-  [icon-class text]
-  [:span.button-wrap
-   [:span.icon {:class icon-class}]
-   [:span.button-text text]])
-
-(defn persona-menu [page personas! persona! on-select]
-  (let [menu-open?! (r/atom false)]
+(defn select-menu [config item-collection current-item name-key id-key on-select!]
+  (let [{class :class
+         popout-class :popout-class} config
+        menu-open?! (r/atom false) 
+        selected-item! (r/atom (first (filter #(= (id-key %) (id-key current-item)) item-collection)))
+        content [select-menu-content item-collection name-key id-key selected-item! on-select!]]
     (fn []
-      [:div.persona-menu-wrapper
-       [:button.reset {:type "button" :aria-haspopup "menu" :aria-expanded @menu-open?! :on-click #(swap! menu-open?! not)}
-        [icon-button-inner "icon-persona" "Test"]]
-       (when @menu-open?!
-         [:ul.submenu {:aria-labelledby "persona-menu-button"}
-          [:button.button {:type "button" :value ""}]])])))
+      [:div.select-menu-wrapper {:class class}
+       [:div.select-menu-toggle {:on-click #(swap! menu-open?! not) :aria-expanded @menu-open?!}
+        [:span.current-item (name-key @selected-item!)]
+        [icon "icon" (if @menu-open?! "icon-hide" "icon-show")]]
+       [popout-menu
+        {:class popout-class}
+        menu-open?!
+        #(swap! menu-open?! not)
+        content]])))
+
 
 (defn string-to-range [s range-max]
-  (let [code-str (str (hash s))
-        code-int (js/parseInt code-str)
-        scaler (js/parseInt (str "1" (string/replace code-str #"." "0")))]
-    (-> (/ code-int scaler) (* range-max) (int) (Math/abs))))
+  (mod (hash s) range-max))
 
 (defn create-hsl [s saturation lightness] 
   (str "hsl("
@@ -238,8 +244,7 @@
   (->> (string/split s #"\s+") (map first) (take 2) (apply str)))
 
 (defn profile-img [image-uri name on-click!]
-  (let [name (string/replace name #"\)|You \(" "")]
-    
+  (let [name (string/replace name #"\)|You \(" "")] 
     [:div.profile-img-wrapper {:on-click on-click!}
      (if (seq image-uri)
        [:img.profile-img {:src image-uri :alt name}]

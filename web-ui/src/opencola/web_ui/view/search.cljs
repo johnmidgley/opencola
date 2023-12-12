@@ -1,28 +1,8 @@
 (ns ^:figwheel-hooks opencola.web-ui.view.search 
   (:require
    [opencola.web-ui.location :as location] 
-   [opencola.web-ui.view.common :refer [anotated-img-button, button-component]]
+   [opencola.web-ui.view.common :refer [button-component select-menu]]
    [reagent.core :as r]))
-
-
-(defn selected-persona [page persona!]
-  (case page
-    :personas "manage"
-    (if @persona! @persona! "all")))
-
-(defn persona-select [page personas! persona! on-select]
-  (fn [] 
-    [:div [:select.persona-select
-          {
-           :name "select-persona"
-           :title "Persona"
-           :on-change #(on-select (-> % .-target .-value))
-           :value (selected-persona page persona!)}
-          ^{:key "all"} [:option {:value "" :disabled (= page :peers)} "All"]
-          (doall (for [persona (:items @personas!)]
-                   ^{:key persona} [:option  {:value (:id persona)} (:name persona)]))
-          (when (not-empty @personas!) ;; Avoid flicker on init
-            ^{:key "manage"} [:option {:value "manage"} "Manage..."])]]))
 
 (defn search-box [query! on-enter]
   (fn []
@@ -38,6 +18,11 @@
         :on-keyUp #(when (= (.-key %) "Enter")
                      (on-enter @query!))}]]]))
 
+(defn persona-select-menu [config page personas! persona! on-select!]
+  (let [persona-list (cons {:name "All" :id ""} (:items @personas!))
+        current-persona (if @persona! {:id @persona!} {:id "" :name "All"})] 
+    [select-menu {:class "persona-select-menu"} persona-list current-persona :name :id on-select!]))
+
 (defn header-menu 
   [menu-open?!] 
   [:div.menu
@@ -51,8 +36,8 @@
     [button-component {:class "menu-item" :text "Feed" :icon-class "icon-feed"}  #(location/set-page! :feed)]
     [button-component {:class "menu-item" :text "Personas" :icon-class "icon-persona"} #(location/set-page! :personas)]
     [button-component {:class "menu-item" :text "Peers" :icon-class "icon-peers"} #(location/set-page! :peers)] 
-    [button-component {:class "menu-item" :text "Settings" :icon-class "icon-settings"} #(location/set-page! :feed)]
-    [:a.reset.menu-item {:href "help/help.html" :target "_blank"}
+    [button-component {:class "menu-item" :text "Settings" :icon-class "icon-settings"} #(location/set-page! :settings)]
+    [:a.reset.menu-item.button-component {:href "help/help.html" :target "_blank"}
      [:span.button-icon {:class "icon-help"}]
      [:span "Help"]]
     [button-component {:class "menu-item caution-color" :text "Log out" :icon-class "icon-logout"} #(location/set-location "/logout")]]]
@@ -80,8 +65,9 @@
    (fn []
      [:nav.nav-bar
       [:div.container.mr-a
-       [:a.fs-0 {:href "#/feed"} [:img.logo {:src "../img/pull-tab.png"}]]
-       [persona-select page personas! persona! on-persona-select]]
+       [:a.fs-0 {:href "#/feed"} [:img.logo {:src "../img/pull-tab.png"}]] 
+       [persona-select-menu {:show-all? true :show-manage? true} page personas! persona! on-persona-select]
+       ]
       [search-box query! on-enter]
       [header-actions page adding-item?! menu-open?!] 
       [header-menu menu-open?!]])))

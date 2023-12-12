@@ -3,7 +3,7 @@
    [reagent.core :as reagent :refer [atom]]
    [opencola.web-ui.app-state :as state]
    [opencola.web-ui.model.persona :as model]
-   [opencola.web-ui.view.common :refer [input-checkbox error-control edit-control-buttons button-component text-input-component swap-atom-data! profile-img]]
+   [opencola.web-ui.view.common :refer [input-checkbox error-control edit-control-buttons button-component text-input-component swap-atom-data! profile-img select-menu]]
    [opencola.web-ui.view.search :as search]
    [opencola.web-ui.location :as location]))
 
@@ -40,13 +40,9 @@
    #(on-error %)))
 
 (defn persona-select [personas! persona-id!]
-  [:select.persona-select {
-            :name "feed-persona-select"
-            :on-change #(reset! persona-id! (-> % .-target .-value))
-            :value @persona-id!}
-   (doall (for [persona (:items @personas!)]
-            ^{:key persona} [:option  {:value (:id persona)} (:name persona)]))])
-
+  (let [persona-list (:items @personas!)
+        current-persona {:id @persona-id!}]
+    [select-menu {:class "persona-select-menu"} persona-list current-persona :name :id #(reset! persona-id! %)]))
 
 (defn persona-item [personas! persona]
   (let [editing?! (atom false)
