@@ -29,7 +29,7 @@ class ExposedMessageStore(
         require(!storageKey.isEmpty()) { "Attempt to add message with no messageStorageKey." }
         val messageEncoded = message.encodeProto()
         val messageDataId = fileStore.write(messageEncoded.inputStream())
-        val existingMessage = messagesDB.getMessage (from, to, storageKey)
+        val existingMessage = messagesDB.getMessage(from, to, storageKey)
         val existingMessageSize = existingMessage?.sizeBytes ?: 0
 
         val storagePolicy = policyStore.getUserPolicy(to, to)?.storagePolicy
@@ -41,7 +41,7 @@ class ExposedMessageStore(
 
         val bytesDelta = messageEncoded.size - existingMessageSize
 
-        if(messagesDB.getBytesStored() + bytesDelta > maxStoredBytes) {
+        if (messagesDB.getBytesStored() + bytesDelta > maxStoredBytes) {
             logger.warn { "Message store is full - dropping message" }
             return
         }
@@ -68,6 +68,7 @@ class ExposedMessageStore(
                 messageDataId,
                 messageEncoded.size.toLong()
             )
+            safeDeleteFromFilestore(existingMessage.dataId)
         }
 
         logger.info { "Added message: from=$from, to=$to" }
@@ -77,27 +78,28 @@ class ExposedMessageStore(
         return fileStore.read(id)?.let { SignedBytes.decodeProto(it) }
     }
 
-    override fun getMessages(to: Id, limit: Int): List<StoredMessage> {
-        val messageRows = messagesDB.getMessages(to, limit)
+    override fun getMessages(to: Id?): Sequence<StoredMessage> {
+        val messageRows = messagesDB.getMessages(to)
 
-        return messageRows.mapNotNull {
-            val messageDataId = it.dataId
-            val messageBody = getMessageBody(messageDataId)
+        return sequence {
+            messageRows.forEach {
+                val messageDataId = it.dataId
+                val messageBody = getMessageBody(messageDataId)
 
-            if (messageBody != null) {
-                StoredMessage(
-                    it.from,
-                    it.to,
-                    it.storageKey,
-                    it.secretKey,
-                    messageBody,
-                    it.timeMilliseconds
-                )
-            } else {
-                val rowId = it.id
-                logger.error { "Message data not found for message: $it" }
-                messagesDB.deleteMessage(rowId)
-                null
+                if (messageBody != null) {
+                    yield(StoredMessage(
+                        it.from,
+                        it.to,
+                        it.storageKey,
+                        it.secretKey,
+                        messageBody,
+                        it.timeMilliseconds
+                    ))
+                } else {
+                    val rowId = it.id
+                    logger.error { "Message data not found for message: $it" }
+                    messagesDB.deleteMessage(rowId)
+                }
             }
         }
     }

@@ -135,4 +135,22 @@ class ExposedMessageStoreTest {
         val messageStore = newExposedMessageStore()
         testRemoveMessagesByAge(messageStore)
     }
+
+    @Test
+    fun testFileCleanupAfterReplaceMessageByStorageKey() {
+        val fileStore = newFileStore()
+        val messageStore = newExposedMessageStore(fileStore = fileStore)
+
+        val from = Id.new()
+        val to = Id.new()
+        val messageStorageKey = MessageStorageKey.of("key")
+        val message = "message".toSignedBytes()
+
+        messageStore.addMessage(from, to, messageStorageKey, dummyMessageSecretKey, message)
+        assertEquals(1, fileStore.enumerateFileIds().count())
+
+        val message2 = "message2".toSignedBytes()
+        messageStore.addMessage(from, to, messageStorageKey, dummyMessageSecretKey, message2)
+        assertEquals(1, fileStore.enumerateFileIds().count())
+    }
 }

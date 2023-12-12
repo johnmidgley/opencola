@@ -2,6 +2,7 @@ package io.opencola.relay.common.message.v2
 
 import io.opencola.model.Id
 import io.opencola.model.IdAsStringSerializer
+import io.opencola.relay.common.message.v2.store.StoredMessage
 import io.opencola.relay.common.message.v2.store.Usage
 import io.opencola.relay.common.policy.Policy
 import kotlinx.serialization.*
@@ -25,7 +26,8 @@ sealed class AdminMessage {
     abstract val id: String
 
     companion object {
-        private val json = Json { serializersModule = SerializersModule { contextual(Id::class, IdAsStringSerializer) } }
+        private val json =
+            Json { serializersModule = SerializersModule { contextual(Id::class, IdAsStringSerializer) } }
 
         fun encode(adminMessage: AdminMessage): ByteArray {
             return json.encodeToString(adminMessage).toByteArray()
@@ -43,7 +45,8 @@ sealed class AdminMessage {
 
 @Serializable
 @SerialName("CommandResponse")
-data class CommandResponse(override val id: String, val status: Status, val state: State, val message: String? = null) : AdminMessage()
+data class CommandResponse(override val id: String, val status: Status, val state: State, val message: String? = null) :
+    AdminMessage()
 
 @Serializable
 @SerialName("SetPolicyCommand")
@@ -59,7 +62,8 @@ data class GetPolicyResponse(override val id: String, val policy: Policy? = null
 
 @Serializable
 @SerialName("RemovePolicyCommand")
-data class RemovePolicyCommand(val name: String, override val id: String = UUID.randomUUID().toString()) : AdminMessage()
+data class RemovePolicyCommand(val name: String, override val id: String = UUID.randomUUID().toString()) :
+    AdminMessage()
 
 @Serializable
 @SerialName("GetPoliciesCommand")
@@ -71,11 +75,16 @@ data class GetPoliciesResponse(override val id: String, val policies: List<Polic
 
 @Serializable
 @SerialName("SetUserPolicyCommand")
-data class SetUserPolicyCommand(@Contextual val userId: Id, val policyName: String, override val id: String = UUID.randomUUID().toString()) : AdminMessage()
+data class SetUserPolicyCommand(
+    @Contextual val userId: Id,
+    val policyName: String,
+    override val id: String = UUID.randomUUID().toString()
+) : AdminMessage()
 
 @Serializable
 @SerialName("GetUserPolicyCommand")
-data class GetUserPolicyCommand(@Contextual val userId: Id, override val id: String = UUID.randomUUID().toString()) : AdminMessage()
+data class GetUserPolicyCommand(@Contextual val userId: Id, override val id: String = UUID.randomUUID().toString()) :
+    AdminMessage()
 
 @Serializable
 @SerialName("GetUserPolicyResponse")
@@ -87,11 +96,15 @@ data class GetUserPoliciesCommand(override val id: String = UUID.randomUUID().to
 
 @Serializable
 @SerialName("GetUserPoliciesResponse")
-data class GetUserPoliciesResponse(override val id: String, val policies: List<Pair<@Contextual Id, String>> = emptyList()) : AdminMessage()
+data class GetUserPoliciesResponse(
+    override val id: String,
+    val policies: List<Pair<@Contextual Id, String>> = emptyList()
+) : AdminMessage()
 
 @Serializable
 @SerialName("RemoveUserPolicyCommand")
-data class RemoveUserPolicyCommand(@Contextual val userId: Id, override val id: String = UUID.randomUUID().toString()) : AdminMessage()
+data class RemoveUserPolicyCommand(@Contextual val userId: Id, override val id: String = UUID.randomUUID().toString()) :
+    AdminMessage()
 
 @Serializable
 @SerialName("GetConnectionsCommand")
@@ -102,15 +115,45 @@ data class ConnectionInfo(@Contextual val id: Id, val address: String, val conne
 
 @Serializable
 @SerialName("GetConnectionsResponse")
-data class GetConnectionsResponse(override val id: String, val connections: List<ConnectionInfo> = emptyList()) : AdminMessage()
+data class GetConnectionsResponse(override val id: String, val connections: List<ConnectionInfo> = emptyList()) :
+    AdminMessage()
+
+@Serializable
+@SerialName("GetMessagesCommand")
+data class GetMessagesCommand(override val id: String = UUID.randomUUID().toString()) : AdminMessage()
+
+@Serializable
+data class MessageInfo(
+    @Contextual val from: Id,
+    @Contextual val to: Id,
+    val sizeInBytes: Int,
+    val timeMilliseconds: Long
+) {
+    constructor(storedMessage: StoredMessage) : this(
+        storedMessage.header.from,
+        storedMessage.header.to,
+        storedMessage.body.bytes.count(),
+        storedMessage.header.timeMilliseconds
+    )
+}
+
+@Serializable
+@SerialName("GetMessagesResponse")
+data class GetMessagesResponse(override val id: String, val messages: List<MessageInfo> = emptyList()) : AdminMessage()
 
 @Serializable
 @SerialName("RemoveUserMessagesCommand")
-data class RemoveUserMessagesCommand(@Contextual val userId: Id, override val id: String = UUID.randomUUID().toString()) : AdminMessage()
+data class RemoveUserMessagesCommand(
+    @Contextual val userId: Id,
+    override val id: String = UUID.randomUUID().toString()
+) : AdminMessage()
 
 @Serializable
 @SerialName("RemoveMessagesByAgeCommand")
-data class RemoveMessagesByAgeCommand(val maxAgeMilliseconds: Long, override val id: String = UUID.randomUUID().toString()) : AdminMessage()
+data class RemoveMessagesByAgeCommand(
+    val maxAgeMilliseconds: Long,
+    override val id: String = UUID.randomUUID().toString()
+) : AdminMessage()
 
 @Serializable
 @SerialName("GetMessageUsageCommand")
@@ -122,10 +165,19 @@ data class GetMessageUsageResponse(override val id: String, val usages: List<Usa
 
 @Serializable
 @SerialName("ExecCommand")
-data class ExecCommand(val workingDir: String, val command: String, override val id: String = UUID.randomUUID().toString()) : AdminMessage()
+data class ExecCommand(
+    val workingDir: String,
+    val command: String,
+    override val id: String = UUID.randomUUID().toString()
+) : AdminMessage()
 
 @Serializable
 @SerialName("ExecCommandResponse")
-data class ExecCommandResponse(override val id: String, val workingDir: String, val stdout: String, val stderr: String) : AdminMessage()
+data class ExecCommandResponse(
+    override val id: String,
+    val workingDir: String,
+    val stdout: String,
+    val stderr: String
+) : AdminMessage()
 
 // TODO: Add GetUserMessagesCommand / Response

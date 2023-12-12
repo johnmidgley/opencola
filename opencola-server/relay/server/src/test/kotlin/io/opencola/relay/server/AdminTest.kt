@@ -170,8 +170,7 @@ class AdminTest {
             }
 
             println("Checking for stored message")
-            server.messageStore.getMessages(toId).let { assertEquals(3, it.size) }
-
+            server.messageStore.getMessages(toId).let { assertEquals(3, it.count()) }
 
             rootClient.sendAdminMessage(GetMessageUsageCommand())
             getResponse<GetMessageUsageResponse>(responseChannel).usages.single().let {
@@ -183,7 +182,7 @@ class AdminTest {
             getResponse<AdminMessage>(responseChannel)
 
             println("Checking for removed message")
-            server.messageStore.getMessages(toId).let { assertEquals(0, it.size) }
+            server.messageStore.getMessages(toId).let { assertEquals(0, it.count()) }
 
             val messageDB = MessagesDB(server.db)
             val secretKey = EncryptedBytes(
@@ -214,12 +213,12 @@ class AdminTest {
                 System.currentTimeMillis() - 1000 * 60
             )
 
-            assertEquals(2, server.messageStore.getMessages(toId).size)
+            assertEquals(2, server.messageStore.getMessages(toId).count())
 
             rootClient.sendAdminMessage(RemoveMessagesByAgeCommand(5000))
             getResponse<AdminMessage>(responseChannel)
 
-            val messages = server.messageStore.getMessages(toId)
+            val messages = server.messageStore.getMessages(toId).toList()
             assertEquals(1, messages.size)
             assertEquals(keptMessageKey, messages[0].header.storageKey)
         }

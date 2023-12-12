@@ -23,7 +23,7 @@ class FileSystemContentAddressedFileStore(private val root: Path) : ContentAddre
             directory.createDirectory()
         }
 
-        return Path(directory.pathString, dataIdString.substring(2))
+        return Path(directory.pathString, dataIdString.substring(directoryPrefixLength))
     }
 
     private fun getPath(dataId: Id, createDirectory: Boolean = false): Path {
@@ -52,6 +52,22 @@ class FileSystemContentAddressedFileStore(private val root: Path) : ContentAddre
     override fun read(dataId: Id): ByteArray? {
         getInputStream(dataId).use {
             return it?.readAllBytes()
+        }
+    }
+
+    override fun getDataIds(): Sequence<Id> {
+        return sequence {
+            root.forEachDirectoryEntry { entry ->
+                if (entry.isDirectory()) {
+                    entry.forEachDirectoryEntry {
+                        if (it.isRegularFile()) {
+                            Id.tryDecode("${entry.name}${it.name}")?.let { id ->
+                                yield(id)
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 

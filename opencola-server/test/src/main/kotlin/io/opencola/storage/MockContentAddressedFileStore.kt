@@ -4,8 +4,9 @@ import io.opencola.model.Id
 import io.opencola.storage.filestore.ContentAddressedFileStore
 import java.io.InputStream
 
+// TODO: Move to MemoryContentAddressedFileStore and out of test
 class MockContentAddressedFileStore : ContentAddressedFileStore {
-    val files = mutableMapOf<Id, ByteArray>()
+    private val files = mutableMapOf<Id, ByteArray>()
 
     override fun exists(dataId: Id): Boolean {
         return files.containsKey(dataId)
@@ -13,6 +14,10 @@ class MockContentAddressedFileStore : ContentAddressedFileStore {
 
     override fun read(dataId: Id): ByteArray? {
         return files[dataId]
+    }
+
+    override fun getDataIds(): Sequence<Id> {
+        return files.keys.asSequence()
     }
 
     override fun getInputStream(dataId: Id): InputStream? {

@@ -351,6 +351,11 @@ abstract class AbstractRelayServer(
                     GetConnectionsResponse(adminMessage.id, connectionInfos)
                 }
 
+                is GetMessagesCommand -> {
+                    val messages = messageStore?.getMessages(null)?.map { MessageInfo(it) }?.toList() ?: emptyList()
+                    GetMessagesResponse(adminMessage.id, messages)
+                }
+
                 is RemoveUserMessagesCommand -> {
                     val headers = messageStore?.removeMessages(adminMessage.userId)
                     var deletedCount = 0

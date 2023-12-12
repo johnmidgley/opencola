@@ -19,7 +19,7 @@ fun String.toSignedBytes(): SignedBytes {
     )
 }
 
-private fun assertMatches(
+fun assertMatches(
     from: Id,
     to: Id,
     messageStorageKey: MessageStorageKey,
@@ -46,7 +46,7 @@ fun testBasicAdd(messageStore: MessageStore) {
     assertMatches(from, to, messageStorageKey, dummyMessageSecretKey, message, storedMessage0)
 
     messageStore.removeMessage(storedMessage0.header)
-    assert(messageStore.getMessages(to).isEmpty())
+    assert(messageStore.getMessages(to).toList().isEmpty())
 }
 
 fun testAddMultipleMessages(messageStore: MessageStore) {
@@ -60,7 +60,7 @@ fun testAddMultipleMessages(messageStore: MessageStore) {
     val message1 = "message1".toSignedBytes()
     messageStore.addMessage(from, to, key1, dummyMessageSecretKey, message1)
 
-    val storedMessages = messageStore.getMessages(to)
+    val storedMessages = messageStore.getMessages(to).toList()
 
     assert(storedMessages.size == 2)
     val storedMessage0 = storedMessages[0]
@@ -71,7 +71,7 @@ fun testAddMultipleMessages(messageStore: MessageStore) {
 
     messageStore.removeMessage(storedMessage0.header)
     messageStore.removeMessage(storedMessage1.header)
-    assert(messageStore.getMessages(to).isEmpty())
+    assert(messageStore.getMessages(to).toList().isEmpty())
 }
 
 fun testAddWithDuplicateMessageStorageKey(messageStore: MessageStore) {
@@ -90,7 +90,7 @@ fun testAddWithDuplicateMessageStorageKey(messageStore: MessageStore) {
     assertMatches(from, to, key, dummyMessageSecretKey, message1, storedMessage0)
 
     messageStore.removeMessage(storedMessage0.header)
-    assert(messageStore.getMessages(to).isEmpty())
+    assert(messageStore.getMessages(to).toList().isEmpty())
 }
 
 fun testRejectMessageWhenOverQuota(messageStore: MessageStore) {
@@ -116,7 +116,7 @@ fun testRejectMessageWhenOverQuota(messageStore: MessageStore) {
 
     // Remove message
     messageStore.removeMessage(storedMessage0.header)
-    assert(messageStore.getMessages(to).isEmpty())
+    assert(messageStore.getMessages(to).toList().isEmpty())
 
     // Now try adding the 2nd message again - it should be accepted this time
     messageStore.addMessage(from0, to, key1, dummyMessageSecretKey, message1)
@@ -138,7 +138,7 @@ fun testAddAddSameMessageDifferentFrom(messageStore: MessageStore) {
     messageStore.addMessage(from0, to, key, dummyMessageSecretKey, message)
     messageStore.addMessage(from1, to, key, dummyMessageSecretKey, message)
 
-    val storedMessages = messageStore.getMessages(to)
+    val storedMessages = messageStore.getMessages(to).toList()
     assert(storedMessages.size == 2)
 
     val storedMessage0 = storedMessages[0]
@@ -164,12 +164,12 @@ fun testConsumeMessages(messageStore: MessageStore) {
     messageStore.addMessage(Id.new(), to, MessageStorageKey.unique(), dummyMessageSecretKey, "message".toSignedBytes())
     val peekedMessage = messageStore.getMessages(to).first()
     println("peekedMessage: $peekedMessage")
-    assertEquals(1, messageStore.getMessages(to).size)
+    assertEquals(1, messageStore.getMessages(to).toList().size)
 
     // Make sure that accessing the end of the list removes it
     val consumedMessage = messageStore.consumeMessages(to).single()
     println("consumedMessage: $consumedMessage")
-    assertEquals(0, messageStore.getMessages(to).size)
+    assertEquals(0, messageStore.getMessages(to).toList().size)
 
     // Test a bunch of messages that requires multiple batches to be consumed
     val messages = (0..101).map {
@@ -183,7 +183,7 @@ fun testConsumeMessages(messageStore: MessageStore) {
     // Consume all messages using (which is forced by .toList())
     val consumeMessages = messageStore.consumeMessages(to).toList()
 
-    assert(messageStore.getMessages(to).isEmpty())
+    assert(messageStore.getMessages(to).toList().isEmpty())
     assertEquals(messages.size, consumeMessages.size)
 
     consumeMessages.zip(messages).forEach { (consumed, original) ->
@@ -204,13 +204,13 @@ fun testRemoveMessagesByAge(messageStore: MessageStore) {
     messageStore.addMessage(Id.new(), to, keptStorageKey, dummyMessageSecretKey, message)
 
     println("Checking both messages are in the store")
-    assertEquals(2, messageStore.getMessages(to).size)
+    assertEquals(2, messageStore.getMessages(to).toList().size)
 
     println("Removing messages older than 50ms")
     messageStore.removeMessages(50).forEach { println("Removed message: $it") }
 
     println("Checking only 1 message is left")
-    val messages = messageStore.getMessages(to)
+    val messages = messageStore.getMessages(to).toList()
     assertEquals(1, messages.size)
     assertEquals(keptStorageKey, messages[0].header.storageKey)
 }

@@ -78,7 +78,7 @@ class MessageQueue(private val recipientId: Id, private val maxStoredBytes: Long
     fun getMessages(): List<StoredMessage> {
         lock.lock()
         try {
-            return queuedMessages
+            return queuedMessages.toList()
         } finally {
             lock.unlock()
         }

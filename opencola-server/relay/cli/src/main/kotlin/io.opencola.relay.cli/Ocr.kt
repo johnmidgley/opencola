@@ -61,13 +61,17 @@ class ConfigCliktCommand(private val context: Context) : CliktCommand(name = "co
 }
 
 class IdentityCliktCommand(private val context: Context) : CliktCommand(name = "identity") {
-    private val delete: Boolean by option("-d", "--delete", help = "Delete client identity (a new one will be created on next run").flag()
+    private val delete: Boolean by option(
+        "-d",
+        "--delete",
+        help = "Delete client identity (a new one will be created on next run)"
+    ).flag()
     private val server: Boolean by option("-s", "--server", help = "Generate server identity").flag()
 
     override fun run() {
-        if(delete && server)
+        if (delete && server)
             throw CliktError("Cannot specify both --delete and --server")
-        if(server) {
+        if (server) {
             val keyPair = generateKeyPair()
             val id = Id.ofPublicKey(keyPair.public)
             println("Generated server identity:\n")
@@ -194,10 +198,20 @@ class ConnectionsCliktCommand(private val context: Context) : CliktCommand(name 
         if (response.connections.isEmpty())
             println("No connections")
         else
-            println(String.format("%-42s\t%-20s\t%s", "ID", "CONNECTED", "ADDRESS",))
-            response.connections.forEach {
-                println("${it.id}\t${formatter.format(Date(it.connectTimeMilliseconds))}\t${it.address}")
-            }
+            println(String.format("%-42s\t%-20s\t%s", "ID", "CONNECTED", "ADDRESS"))
+        response.connections.forEach {
+            println("${it.id}\t${formatter.format(Date(it.connectTimeMilliseconds))}\t${it.address}")
+        }
+    }
+}
+
+class ListMessagesCliktCommand(private val context: Context) : CliktCommand(name = "ls") {
+    override fun run() {
+        val response = context.sendCommandMessage<GetMessagesResponse>(GetMessagesCommand())
+        if (response.messages.isEmpty())
+            println("No stored messages")
+        else
+            response.messages.forEach { println(it) }
     }
 }
 
@@ -309,6 +323,7 @@ fun main(args: Array<String>) {
                         ),
                         ConnectionsCliktCommand(context),
                         MessagesCliktCommand().subcommands(
+                            ListMessagesCliktCommand(context),
                             RemoveUserMessagesCliktCommand(context),
                             GetMessageUsageCliktCommand(context)
                         ),

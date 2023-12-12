@@ -383,7 +383,7 @@ class ConnectionTest {
                     it.waitUntil("Message store is full", 3000)
                 }
 
-                val messages = server.messageStore.getMessages(client1Id)
+                val messages = server.messageStore.getMessages(client1Id).toList()
                 assertEquals(1, messages.size)
                 assertEquals(smallMessageKey, messages[0].header.storageKey)
             } finally {

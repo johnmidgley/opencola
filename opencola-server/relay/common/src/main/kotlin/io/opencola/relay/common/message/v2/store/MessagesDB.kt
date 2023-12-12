@@ -73,15 +73,15 @@ class MessagesDB(private val database: Database) {
         }
     }
 
-    fun getMessages(
-        to: Id,
-        limit: Int
-    ): List<MessageRow> {
+    fun getMessages(to: Id?): List<MessageRow> {
         return transaction(database) {
-            Messages
-                .select { Messages.to eq to.encoded() }
+            val messages = if (to == null)
+                Messages.selectAll()
+            else
+                Messages.select { Messages.to eq to.encoded() }
+
+            messages
                 .orderBy(Messages.id)
-                .limit(limit)
                 .toList()
                 .map { MessageRow(it) }
         }
@@ -164,7 +164,7 @@ class MessagesDB(private val database: Database) {
         }
     }
 
-    fun getBytesStored() : Long {
+    fun getBytesStored(): Long {
         // TODO: Look into how expensive this is. It could be replaced by an approximation that just sums the sizeBytes column.
         return transaction(database) {
             Messages

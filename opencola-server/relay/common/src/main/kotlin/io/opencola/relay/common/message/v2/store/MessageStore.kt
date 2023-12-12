@@ -14,7 +14,8 @@ interface MessageStore {
         message: SignedBytes
     )
 
-    fun getMessages(to: Id, limit: Int = 10): List<StoredMessage>
+    // TODO: Make this pageable.
+    fun getMessages(to: Id?): Sequence<StoredMessage>
     fun removeMessage(header: StoredMessageHeader)
 
     // TODO: This doesn't look quite right. It's a maintenance function, so maybe it should be in a different interface?
@@ -23,17 +24,18 @@ interface MessageStore {
     fun getUsage(): Sequence<Usage>
 
     // Convenient way to consume messages that only removes a message when the next one (or end) is accessed
-    fun consumeMessages(id: Id, batchSize: Int = 10): Sequence<StoredMessage> {
+    fun consumeMessages(id: Id): Sequence<StoredMessage> {
         return sequence {
             var previousMessage: StoredMessage? = null
 
-            do {
-                if (previousMessage != null) {
-                    removeMessage(previousMessage.header)
-                    previousMessage = null
-                }
+            // The commented out do loopl handles batching (if getMessages were pagable)
+//            do {
+//                if (previousMessage != null) {
+//                    removeMessage(previousMessage.header)
+//                    previousMessage = null
+//                }
 
-                val messages = getMessages(id, batchSize)
+                val messages = getMessages(id)
 
                 messages.forEach {
                     if (previousMessage != null) {
@@ -43,7 +45,7 @@ interface MessageStore {
                     yield(it)
                     previousMessage = it
                 }
-            } while (messages.size == batchSize)
+//            } while (messages.size == batchSize)
 
             if (previousMessage != null) {
                 removeMessage(previousMessage!!.header)
@@ -51,8 +53,8 @@ interface MessageStore {
         }
     }
 
-    fun removeMessages(to: Id, batchSize: Int = 10): List<StoredMessageHeader> {
-        return consumeMessages(to, batchSize).toList().map { it.header }
+    fun removeMessages(to: Id): List<StoredMessageHeader> {
+        return consumeMessages(to).toList().map { it.header }
     }
 
     // IMPORTANT: This method hides the underlying removeMessages batch calls behind a sequence. As such, you need to
