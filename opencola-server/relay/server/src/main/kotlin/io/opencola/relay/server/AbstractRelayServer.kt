@@ -448,7 +448,7 @@ abstract class AbstractRelayServer(
 
         when (controlMessage.type) {
             ControlMessageType.NONE -> {
-                logger.error { "Received control message with type NONE" }
+                event.error("ControlMessageTypeNone") { "Received control message with type NONE" }
             }
 
             ControlMessageType.NO_PENDING_MESSAGES -> {
