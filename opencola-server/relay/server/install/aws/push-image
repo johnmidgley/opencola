@@ -1,0 +1,29 @@
+#!/bin/bash
+
+ENV="test" # E.g. "test", "prod", etc..
+AWS_ACCOUNT_ID="REPLACE"
+AWS_REGION="REPLACE"
+
+echo "This is a template. Please copy and customize for you deployment"
+exit 1
+
+if [ ! -e "docker-compose.yml" ]; then
+  echo "This script must be run from the relay install directory that contains docker-compose.yml"
+  exit 1
+fi
+
+echo "Building oc-relay"
+./install
+
+echo "Building docker image"
+docker build -t oc-relay .
+
+echo "Tagging image"
+docker tag oc-relay:latest "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/oc-relay-${ENV}:latest"
+
+#echo "Logging in to ECR"
+#aws ecr get-login-password --region "${AWS_REGION}" | docker login --username AWS --password-stdin "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+
+echo "Pushing to AWS repository"
+docker push "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/oc-relay-${ENV}:latest"
+
