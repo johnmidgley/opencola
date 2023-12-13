@@ -31,6 +31,7 @@ dependencies {
     implementation(project(":core:event"))
     implementation(project(":core:security"))
     implementation(project(":core:serialization"))
+    implementation(project(":core:io"))
     implementation(project(":core:model"))
     implementation(project(":core:storage"))
     implementation(project(":core:util"))

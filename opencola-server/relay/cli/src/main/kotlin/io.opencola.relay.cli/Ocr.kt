@@ -4,10 +4,13 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.arguments.optional
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.long
+import io.opencola.io.Color
+import io.opencola.io.colorize
 import io.opencola.model.Id
 import io.opencola.relay.common.message.v2.*
 import io.opencola.relay.common.policy.Policy
@@ -17,10 +20,11 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.io.File
+import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.io.path.deleteIfExists
-import kotlin.io.path.readText
+import kotlin.io.path.*
 
 // https://github.com/ajalt/clikt/blob/master/samples/repo/src/main/kotlin/com/github/ajalt/clikt/samples/repo/main.kt
 
@@ -37,7 +41,7 @@ fun AdminMessage.format(): String {
         is CommandResponse -> {
             val message = message ?: ""
             val suffix = if (message.isBlank() || message.endsWith("\n")) "" else "\n"
-            "${if (status != Status.SUCCESS) "$status: " else ""}$message$suffix"
+            "${if (status != Status.SUCCESS) colorize(Color.RED, "$status: ") else ""}$message$suffix"
         }
 
         is ExecCommandResponse -> {
@@ -290,6 +294,62 @@ class ShellCliktCommand(private val context: Context) : CliktCommand(name = "she
     }
 }
 
+fun getFile(context: Context, remotePath: String, localPath: String?) {
+    runBlocking {
+        val command = GetFileCommand(remotePath)
+        val localFile = File(localPath ?: Path(remotePath).name)
+
+        if(localFile.exists())
+            throw CliktError(colorize(Color.RED,"Local file already exists: $localFile"))
+
+        context.client.sendAdminMessage(command)
+
+        FileOutputStream(localFile).use { outputStream ->
+            do {
+                val response = context.responseChannel.receive()
+
+                if(response.id != command.id) {
+                    println(colorize(Color.RED,"Received response with unexpected id: ${response.id}"))
+                    continue
+                }
+
+                when (response) {
+                    is GetFileBlockResponse -> {
+                        outputStream.write(response.block)
+                        print(".")
+                    }
+
+                    is CommandResponse -> {
+                        println()
+                        if(response.status != Status.SUCCESS) {
+                            print(response.format())
+                            localFile.delete()
+                        }
+                        break
+                    }
+
+                    else -> {
+                        error("Unexpected response: $response")
+                    }
+                }
+            } while (true)
+        }
+    }
+}
+
+class GetFileCliktCommand(private val context: Context) : CliktCommand(name = "get") {
+    private val remotePath by argument(help = "Path of remote file to get")
+    private val localPath by argument(help = "Path where retrieved fill should be written").optional()
+
+    override fun run() {
+        getFile(context, remotePath, localPath)
+    }
+}
+
+class FileCliktCommand : CliktCommand(name = "file") {
+    override fun run() = Unit
+}
+
 class OcrCliktCommand : CliktCommand(name = "ocr") {
     override fun run() = Unit
 }
@@ -332,6 +392,9 @@ fun main(args: Array<String>) {
                         ),
                         ExecCliktCommand(context),
                         ShellCliktCommand(context),
+                        FileCliktCommand().subcommands(
+                            GetFileCliktCommand(context)
+                        )
                     )
                     .main(args)
             }

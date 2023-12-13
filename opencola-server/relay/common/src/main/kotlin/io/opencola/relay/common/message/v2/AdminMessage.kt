@@ -5,6 +5,7 @@ import io.opencola.model.IdAsStringSerializer
 import io.opencola.relay.common.message.v2.store.StoredMessage
 import io.opencola.relay.common.message.v2.store.Usage
 import io.opencola.relay.common.policy.Policy
+import io.opencola.serialization.ByteArrayAsStringSerializer
 import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
@@ -27,7 +28,12 @@ sealed class AdminMessage {
 
     companion object {
         private val json =
-            Json { serializersModule = SerializersModule { contextual(Id::class, IdAsStringSerializer) } }
+            Json {
+                serializersModule = SerializersModule {
+                    contextual(Id::class, IdAsStringSerializer)
+                    contextual(ByteArray::class, ByteArrayAsStringSerializer)
+                }
+            }
 
         fun encode(adminMessage: AdminMessage): ByteArray {
             return json.encodeToString(adminMessage).toByteArray()
@@ -180,4 +186,36 @@ data class ExecCommandResponse(
     val stderr: String
 ) : AdminMessage()
 
-// TODO: Add GetUserMessagesCommand / Response
+@Serializable
+@SerialName("GetFileCommand")
+data class GetFileCommand(val path: String, override val id: String = UUID.randomUUID().toString()) : AdminMessage()
+
+@Serializable
+@SerialName("GetFileBlockResponse")
+data class GetFileBlockResponse(
+    override val id: String,
+    @Contextual
+    val block: ByteArray
+) : AdminMessage() {
+    override fun toString(): String {
+        return "GetFileBlockResponse(id='$id', block=${block.size} bytes)"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as GetFileBlockResponse
+
+        if (id != other.id) return false
+        if (!block.contentEquals(other.block)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + block.contentHashCode()
+        return result
+    }
+}

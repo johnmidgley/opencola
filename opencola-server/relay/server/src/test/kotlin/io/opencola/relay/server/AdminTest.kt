@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.junit.Test
+import java.io.File
 import kotlin.test.assertEquals
 
 
@@ -226,7 +227,7 @@ class AdminTest {
 
     private suspend fun testExecuteCommand(rootClient: AbstractClient, responseChannel: Channel<AdminMessage>) {
         coroutineScope {
-            rootClient.sendAdminMessage(ExecCommand(".","pwd"))
+            rootClient.sendAdminMessage(ExecCommand(".", "pwd"))
             val pwdResponse = getResponse<AdminMessage>(responseChannel) as ExecCommandResponse
             assert(pwdResponse.stdout.isNotBlank())
             assert(pwdResponse.stderr.isBlank())
@@ -235,6 +236,25 @@ class AdminTest {
             val errorResponse = responseChannel.receive() as ExecCommandResponse
             assert(errorResponse.stdout.isBlank())
             assert(errorResponse.stderr.isNotBlank())
+        }
+    }
+
+    private suspend fun testGetFileCommand(rootClient: AbstractClient, responseChannel: Channel<AdminMessage>) {
+        coroutineScope {
+            val blockBuilder = StringBuilder()
+            rootClient.sendAdminMessage(GetFileCommand("build.gradle.kts"))
+
+            do {
+                when (val response = getResponse<AdminMessage>(responseChannel)) {
+                    is GetFileBlockResponse -> blockBuilder.append(String(response.block))
+                    is CommandResponse -> {
+                        assertEquals(Status.SUCCESS, response.status)
+                        assertEquals(File("build.gradle.kts").readText(), blockBuilder.toString())
+                        break
+                    }
+                    else -> throw Exception("Unexpected response: $response")
+                }
+            } while (true)
         }
     }
 
@@ -266,6 +286,7 @@ class AdminTest {
                 testConnections(server0!!, rootClient!!, responseChannel)
                 testManageMessages(server0!!, rootClient!!, responseChannel)
                 testExecuteCommand(rootClient!!, responseChannel)
+                testGetFileCommand(rootClient!!, responseChannel)
 
             } finally {
                 rootClient?.close()

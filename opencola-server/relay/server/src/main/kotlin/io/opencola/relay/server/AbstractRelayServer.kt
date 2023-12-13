@@ -2,11 +2,11 @@ package io.opencola.relay.server
 
 import io.opencola.event.log.EventLogger
 import io.opencola.event.log.EventLoggerWrapper
+import io.opencola.io.readFileBlocks
 import io.opencola.model.Id
 import io.opencola.relay.common.State.*
 import io.opencola.relay.common.connection.*
 import io.opencola.relay.common.message.*
-import io.opencola.relay.common.message.Message
 import io.opencola.relay.common.message.v2.*
 import io.opencola.relay.common.message.v2.store.MemoryMessageStore
 import io.opencola.relay.common.message.v2.store.MessageStore
@@ -284,6 +284,20 @@ abstract class AbstractRelayServer(
         return response.await()
     }
 
+    private suspend fun sendFile(from: Id, getFileCommand: GetFileCommand) : AdminMessage {
+        try {
+            withContext(Dispatchers.IO) {
+                readFileBlocks(getFileCommand.path).forEach {
+                    sendAdminMessage(from, GetFileBlockResponse(getFileCommand.id, it))
+                }
+            }
+        } catch (e: Exception) {
+            return CommandResponse(getFileCommand.id, Status.FAILURE, State.COMPLETE, e.message)
+        }
+
+        return CommandResponse(getFileCommand.id, Status.SUCCESS, State.COMPLETE, "File sent")
+    }
+
     private suspend fun handleAdminMessage(fromId: Id, adminMessage: AdminMessage) {
         try {
             logger.info { "Handling command: $fromId $adminMessage" }
@@ -400,6 +414,10 @@ abstract class AbstractRelayServer(
 
                 is ExecCommand -> {
                     executeCommand(adminMessage)
+                }
+
+                is GetFileCommand -> {
+                    sendFile(fromId, adminMessage)
                 }
 
                 else -> {
