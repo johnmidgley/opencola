@@ -43,7 +43,7 @@
         "logDriver": "awslogs",
         "options": {
           "awslogs-create-group": "true",
-          "awslogs-group": "/ecs/",
+          "awslogs-group": "/ecs/oc-relay-ENV",
           "awslogs-region": "REGION",
           "awslogs-stream-prefix": "ecs"
         },
