@@ -1,6 +1,7 @@
 package io.opencola.storage
 
 import io.opencola.application.TestApplication
+import io.opencola.io.isDirectoryEmpty
 import io.opencola.model.Id
 import io.opencola.storage.filestore.FileSystemContentAddressedFileStore
 import kotlin.test.*
@@ -59,14 +60,17 @@ class FileSystemFileStoreTest {
 
     @Test
     fun testDelete() {
-        val fileStore = getLocalFileStore("testDelete")
+        val path = TestApplication.getTmpFilePath("testDelete")
+        val fileStore = FileSystemContentAddressedFileStore(path)
         val testString = "Test file data"
         val data = testString.toByteArray()
         val id = fileStore.write(data)
 
+        assertFalse(isDirectoryEmpty(path))
         assertTrue(fileStore.exists(id))
         fileStore.delete(id)
         assertFalse(fileStore.exists(id))
+        assertTrue(isDirectoryEmpty(path))
     }
 
     @Test

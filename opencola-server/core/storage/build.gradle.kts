@@ -13,6 +13,7 @@ dependencies {
     implementation(project(":core:system"))
     implementation(project(":core:util"))
     implementation(project(":core:serialization"))
+    implementation(project(":core:io"))
     implementation(project(":core:model"))
     implementation(project(":core:event"))
     implementation(project(":core:security"))

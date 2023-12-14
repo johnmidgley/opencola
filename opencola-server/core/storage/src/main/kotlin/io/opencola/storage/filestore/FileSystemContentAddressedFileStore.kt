@@ -1,5 +1,6 @@
 package io.opencola.storage.filestore
 
+import io.opencola.io.isDirectoryEmpty
 import io.opencola.model.Id
 import java.io.InputStream
 import java.nio.file.Path
@@ -93,7 +94,14 @@ class FileSystemContentAddressedFileStore(private val root: Path) : ContentAddre
     }
 
     override fun delete(dataId: Id) {
-        getPath(dataId).deleteIfExists()
+        val path = getPath(dataId)
+        path.deleteIfExists()
+
+        // Delete parent directory if empty
+        path.parent.let {
+            if (isDirectoryEmpty(it))
+                it.deleteIfExists()
+        }
     }
 
     fun enumerateFileIds(): Sequence<Id> {

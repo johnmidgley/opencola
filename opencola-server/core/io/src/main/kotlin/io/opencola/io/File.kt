@@ -1,7 +1,8 @@
 package io.opencola.io
 
 import java.io.FileInputStream
-import java.nio.file.Path
+import java.nio.file.*
+import kotlin.io.path.isDirectory
 
 fun copyDirectory(source: Path, target: Path) {
     source.toFile().walkTopDown().forEach {
@@ -30,3 +31,11 @@ fun readFileBlocks(path: String, blockSize: Int = 1024): Sequence<ByteArray> {
         }
     }
 }
+
+fun isDirectoryEmpty(path: Path): Boolean {
+    if (!path.isDirectory())
+        return false
+
+    Files.newDirectoryStream(path).use { return !it.iterator().hasNext() }
+}
+
