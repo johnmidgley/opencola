@@ -39,7 +39,7 @@ fun getTransactionsMessage(entityStore: EntityStore, peer: Id, peerCurrentTransa
 fun getTransactionsRoute(entityStore: EntityStore): Route {
     return Route(GetTransactionsMessage::class) { from, to, message ->
         val getTransactionsMessage = message as GetTransactionsMessage
-        logger.info { "from=$from, to=$to, message=$getTransactionsMessage" }
+        logger.info { "getTransactionsRoute - from=$from, to=$to, message=$getTransactionsMessage" }
 
         val extra = (if (getTransactionsMessage.receiverCurrentTransactionId == null) 0 else 1)
         // TODO: Add local limit on max transactions
@@ -64,7 +64,7 @@ fun getTransactionsRoute(entityStore: EntityStore): Route {
                 it,
                 if (pendingTransactions == 0 && it.transaction.id != lastTransactionId) lastTransactionId else null
             )
-        }.plus(getTransactionsMessage(entityStore, from, getTransactionsMessage.receiverCurrentTransactionId))
+        }.plus(getTransactionsMessage(entityStore, from, getTransactionsMessage.senderCurrentTransactionId))
     }
 }
 

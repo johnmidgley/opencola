@@ -95,7 +95,7 @@ class MainReactor(
 
         val senderCurrentTransactionId = entityStore.getLastTransactionId(peer.personaId)
         val receiverCurrentTransactionId = entityStore.getLastTransactionId(peer.entityId)
-        logger.info { "Requesting transactions from: ${peer.name} - most recent transaction: $receiverCurrentTransactionId" }
+
         networkNode.sendMessage(
             peer.personaId,
             peer.entityId,

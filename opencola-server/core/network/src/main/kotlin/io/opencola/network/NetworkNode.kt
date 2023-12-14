@@ -230,6 +230,8 @@ class NetworkNode(
     private fun sendMessage(from: PersonaAddressBookEntry, to: Set<AddressBookEntry>, message: Message) {
         require(from.isActive) { "Attempt to send request from inactive persona: $from" }
 
+        logger.info { "Sending message - from: ${from.entityId} to: ${to.joinToString { it.entityId.toString() }} message: $message" }
+
         to.forEach {
             require(it !is PersonaAddressBookEntry) { "Attempt to send request to local persona: $it" }
             require(it.personaId == from.personaId) { "Attempt to send request to unknown peer: $it" }
