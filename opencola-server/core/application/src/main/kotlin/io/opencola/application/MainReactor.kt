@@ -1,8 +1,8 @@
 package io.opencola.application
 
-import io.opencola.event.Event
-import io.opencola.event.Events
-import io.opencola.event.Reactor
+import io.opencola.event.bus.Event
+import io.opencola.event.bus.Events
+import io.opencola.event.bus.Reactor
 import io.opencola.model.*
 import io.opencola.network.NetworkConfig
 import io.opencola.network.NetworkNode
@@ -17,7 +17,7 @@ import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.entitystore.EntityStore
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
-import io.opencola.storage.filestore.ContentBasedFileStore
+import io.opencola.storage.filestore.ContentAddressedFileStore
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
@@ -60,7 +60,7 @@ class MainReactor(
     private val searchIndex: SearchIndex,
     private val networkNode: NetworkNode,
     private val addressBook: AddressBook,
-    private val fileStore: ContentBasedFileStore,
+    private val fileStore: ContentAddressedFileStore,
 ) : Reactor {
     private fun handleNodeStarted(event: Event) {
         logger.info { event.name }
@@ -95,7 +95,7 @@ class MainReactor(
 
         val senderCurrentTransactionId = entityStore.getLastTransactionId(peer.personaId)
         val receiverCurrentTransactionId = entityStore.getLastTransactionId(peer.entityId)
-        logger.info { "Requesting transactions from: ${peer.name} - most recent transaction: $receiverCurrentTransactionId" }
+
         networkNode.sendMessage(
             peer.personaId,
             peer.entityId,

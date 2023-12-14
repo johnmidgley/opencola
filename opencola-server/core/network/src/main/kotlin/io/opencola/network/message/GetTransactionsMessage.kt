@@ -21,7 +21,7 @@ class GetTransactionsMessage(
             return Proto.GetTransactionsMessage.newBuilder()
                 .also {
                     if (value.senderCurrentTransactionId != null)
-                        it.setReceiverCurrentTransactionId(value.senderCurrentTransactionId.toProto())
+                        it.setSenderCurrentTransactionId(value.senderCurrentTransactionId.toProto())
                     if (value.receiverCurrentTransactionId != null)
                         it.setReceiverCurrentTransactionId(value.receiverCurrentTransactionId.toProto())
                     it.maxTransactions = value.maxTransactions

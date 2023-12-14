@@ -3,7 +3,7 @@ package io.opencola.application
 import com.sksamuel.hoplite.ConfigLoaderBuilder
 import com.sksamuel.hoplite.addEnvironmentSource
 import com.sksamuel.hoplite.addFileSource
-import io.opencola.event.EventBusConfig
+import io.opencola.event.bus.EventBusConfig
 import io.opencola.network.NetworkConfig
 import io.opencola.storage.addressbook.AddressBookConfig
 import java.nio.file.Path

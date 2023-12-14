@@ -1,8 +1,8 @@
 package opencola.server.handlers
 
 import io.opencola.application.Application
-import io.opencola.event.EventBus
-import io.opencola.event.Events
+import io.opencola.event.bus.EventBus
+import io.opencola.event.bus.Events
 import io.opencola.model.*
 import kotlinx.serialization.Serializable
 import io.opencola.util.nullOrElse
@@ -14,7 +14,7 @@ import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.entitystore.EntityStore
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
-import io.opencola.storage.filestore.ContentBasedFileStore
+import io.opencola.storage.filestore.ContentAddressedFileStore
 import mu.KotlinLogging
 import opencola.server.handlers.EntityResult.*
 
@@ -228,7 +228,7 @@ fun getPersonaId(addressBook: AddressBook, activities: List<Activity>): Id {
 }
 
 fun requestMissingAttachmentIds(
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     eventBus: EventBus,
     entities: Iterable<Entity>,
 ) {
@@ -244,7 +244,7 @@ fun getEntityResults(
     personaIds: Set<Id>,
     entityStore: EntityStore,
     addressBook: AddressBook,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     eventBus: EventBus,
     entityIds: Set<Id>,
 ): List<EntityResult> {
@@ -281,7 +281,7 @@ fun getEntityResult(
     entityStore: EntityStore,
     addressBook: AddressBook,
     eventBus: EventBus,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     context: Context,
     personaId: Id,
     entityId: Id
@@ -296,7 +296,7 @@ fun handleGetFeed(
     searchIndex: SearchIndex,
     addressBook: AddressBook,
     eventBus: EventBus,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     personaIds: Set<Id>,
     queryString: String?
 ): FeedResult {

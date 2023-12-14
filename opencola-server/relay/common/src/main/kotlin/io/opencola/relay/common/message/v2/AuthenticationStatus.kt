@@ -5,7 +5,8 @@ import io.opencola.relay.common.protobuf.Relay as Proto
 
 enum class AuthenticationStatus {
     AUTHENTICATED,
-    FAILED_CHALLENGE;
+    FAILED_CHALLENGE,
+    NOT_AUTHORIZED;
 
     fun toProto(): Relay.AuthenticationStatus {
         return toProto(this)
@@ -16,6 +17,7 @@ enum class AuthenticationStatus {
             return when(value) {
                 AUTHENTICATED -> Proto.AuthenticationStatus.AUTHENTICATED
                 FAILED_CHALLENGE -> Proto.AuthenticationStatus.FAILED_CHALLENGE
+                NOT_AUTHORIZED -> Proto.AuthenticationStatus.NOT_AUTHORIZED
             }
         }
 
@@ -23,6 +25,7 @@ enum class AuthenticationStatus {
             return when (status) {
                 Proto.AuthenticationStatus.AUTHENTICATED -> AUTHENTICATED
                 Proto.AuthenticationStatus.FAILED_CHALLENGE -> FAILED_CHALLENGE
+                Proto.AuthenticationStatus.NOT_AUTHORIZED -> NOT_AUTHORIZED
                 else -> throw IllegalArgumentException("Unknown AuthenticationStatus: $status")
             }
         }

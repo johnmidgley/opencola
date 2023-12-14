@@ -25,6 +25,22 @@ class SignedBytes(val signature: Signature, val bytes: ByteArray) {
 
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is SignedBytes) return false
+
+        if (signature != other.signature) return false
+        if (!bytes.contentEquals(other.bytes)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = signature.hashCode()
+        result = 31 * result + bytes.contentHashCode()
+        return result
+    }
+
     fun toProto(): Proto.SignedBytes {
         return toProto(this)
     }

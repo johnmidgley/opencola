@@ -1,71 +1,119 @@
 package io.opencola.relay.common.message.v2.store
 
 import io.opencola.model.Id
-import io.opencola.relay.common.message.Envelope
-import io.opencola.relay.common.message.v2.MessageStorageKey
 import mu.KotlinLogging
-import java.security.PublicKey
+import java.util.concurrent.locks.ReentrantLock
 
-class MessageQueue(private val recipientPublicKey: PublicKey, private val maxStoredBytes: Int) {
+class MessageQueue(private val recipientId: Id, private val maxStoredBytes: Long) {
     private val logger = KotlinLogging.logger("MessageQueue")
-    var bytesStored: Int = 0
+
+    var bytesStored: Long = 0
         private set
 
-    private val storedMessages = mutableListOf<StoredMessage>()
+    val numMessages: Int
+        get() = queuedMessages.size
 
-    fun addMessage(from: PublicKey, to: PublicKey, envelope: Envelope) {
-        require(to == recipientPublicKey)
-        require(envelope.messageStorageKey != null)
-        require(envelope.messageStorageKey.value != null)
-        val receiverId = Id.ofPublicKey(to)
+    // We want to be able to replace items in the message queue, if a newer message with the same senderSpecificKey.
+    // To do this, without having to copy the whole list on change, we simply use a mutable list and lock it when
+    // operating on it
+    // TODO: Use coroutines equivalent - this will cause unnecessary contention
+    private val lock = ReentrantLock()
+    private val queuedMessages = mutableListOf<StoredMessage>()
 
-        logger.info { "Adding message: Receiver=$receiverId, key=$$envelope.messageStorageKey" }
+    fun addMessage(bytesAvailable: Long, storedMessage: StoredMessage) {
+        lock.lock()
+        try {
+            require(storedMessage.header.to == recipientId)
+            require(storedMessage.header.storageKey.value != null)
 
-        val senderSpecificKey = MessageStorageKey.of(from.encoded.plus(envelope.messageStorageKey.value))
-        val storedMessages = storedMessages
-            .mapIndexed { index, storedMessage ->
-                object {
-                    val index = index
-                    val storedMessage = storedMessage
+            logger.info { "Adding message: $storedMessage" }
+
+            val matchingMessages = queuedMessages
+                .filter { it.matches(storedMessage) }
+                .mapIndexed { index, matchingMessage ->
+                    object {
+                        val index = index
+                        val matchingMessage = matchingMessage
+                    }
                 }
+
+            // This slightly under-counts usage, as it only counts the bytes inside the signed message, not including
+            // the signature. Fixing this would be inefficient, as we'd need to encode the signed message to get its
+            // size, which isn't worth it.
+            val existingMessageSize = matchingMessages.sumOf { it.matchingMessage.body.bytes.size }
+
+            val bytesDelta = storedMessage.body.bytes.size - existingMessageSize
+
+            if(bytesDelta > bytesAvailable) {
+                logger.warn { "Message store is full - dropping message" }
+                return
             }
-            .filter { it.storedMessage.senderSpecificKey == senderSpecificKey }
-        val existingMessageSize = storedMessages.sumOf { it.storedMessage.envelope.message.bytes.size }
 
-        if (bytesStored + envelope.message.bytes.size - existingMessageSize > maxStoredBytes) {
-            logger.info { "Message store for $receiverId is full - dropping message" }
-            return
+            if (bytesStored + bytesDelta > maxStoredBytes) {
+                logger.info { "Message store for $recipientId is full - dropping message" }
+                return
+            }
+
+            if(matchingMessages.count() > 1) {
+                logger.error { "Multiple messages with the same senderSpecificKey in the message queue for $recipientId" }
+            }
+
+            // Replace existing message from the same sender. We do this, rather than ignoring the message,
+            // since newer messages with the same key may contain more recent data.
+            val existingMessage = matchingMessages.firstOrNull()
+
+            if (existingMessage != null) {
+                bytesStored -= existingMessageSize
+                this.queuedMessages[existingMessage.index] = storedMessage
+            } else
+                this.queuedMessages.add(storedMessage)
+
+            // TODO: This is over counting TOTAL memory usage, as a single message to multiple receivers will be referenced multiple times
+            bytesStored += storedMessage.body.bytes.size
+        } finally {
+            lock.unlock()
         }
-
-        // Remove any existing messages from the same sender. We do this, rather than ignoring the message,
-        // since newer messages with the same key may contain more recent data.
-        val existingMessage = storedMessages.firstOrNull()
-        val messageToStore = StoredMessage(senderSpecificKey, to, envelope)
-
-        if (existingMessage != null) {
-            bytesStored -= existingMessageSize
-            this.storedMessages[existingMessage.index] = messageToStore
-        } else
-            this.storedMessages.add(messageToStore)
-
-        // TODO: This is over counting total memory usage, as a single envelope might be store multiple times
-        bytesStored += envelope.message.bytes.size
     }
 
-    fun getMessages(): Sequence<StoredMessage> {
-        return storedMessages.asSequence()
+    fun getMessages(): List<StoredMessage> {
+        lock.lock()
+        try {
+            return queuedMessages.toList()
+        } finally {
+            lock.unlock()
+        }
     }
 
-    fun removeMessage(key: MessageStorageKey) {
-        val matchingMessages = storedMessages.filter { it.senderSpecificKey == key }
+    fun removeMessage(header: StoredMessageHeader) {
+        lock.lock()
+        try {
+            val matchingMessages =
+                queuedMessages.filter { it.header.matches(header) }
 
-        matchingMessages.forEach {
-            val receiverId = Id.ofPublicKey(it.to)
-            logger.info { "Removing message: Receiver=$receiverId, key=$key" }
+            matchingMessages.forEach {
+                logger.info { "Removing message: $it" }
+            }
+
+            queuedMessages.removeAll(matchingMessages)
+
+            // TODO: This currently not accurate for TOTAL memory usage, as a single message to multiple receivers will be referenced multiple times
+            bytesStored -= matchingMessages.sumOf { it.body.bytes.size }
+        } finally {
+            lock.unlock()
         }
+    }
 
-        storedMessages.removeAll(matchingMessages)
-        // TODO: This currently not accurate for total memory usage, as a single envelope might be store multiple times
-        bytesStored -= matchingMessages.sumOf { it.envelope.message.bytes.size }
+    fun removeMessages(maxAgeMilliseconds: Long, limit: Int) : List<StoredMessageHeader> {
+        lock.lock()
+        return try {
+            queuedMessages
+                .filter { it.header.timeMilliseconds < System.currentTimeMillis() - maxAgeMilliseconds }
+                .take(limit)
+                .map { it.header }
+                .onEach { removeMessage(it) }
+
+        } finally {
+            lock.unlock()
+        }
     }
 }

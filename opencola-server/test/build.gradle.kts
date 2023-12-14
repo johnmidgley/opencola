@@ -6,7 +6,7 @@ val ktorVersion: String by project
 val exposedVersion: String by project
 
 plugins {
-    kotlin("jvm") version "1.7.20"
+    kotlin("jvm") version "1.9.0"
 }
 
 dependencies {
@@ -19,6 +19,7 @@ dependencies {
     implementation(project(":core:search"))
     implementation(project(":core:network"))
     implementation(project(":core:application"))
+    implementation(project(":core:util"))
     implementation(project(":relay:common"))
     implementation(project(":relay:server"))
     implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")

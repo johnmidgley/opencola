@@ -5,7 +5,7 @@ import io.opencola.content.MhtmlPage
 import io.opencola.content.parseMime
 import io.opencola.model.Actions
 import io.opencola.storage.entitystore.EntityStore
-import io.opencola.storage.filestore.ContentBasedFileStore
+import io.opencola.storage.filestore.ContentAddressedFileStore
 import io.opencola.storage.cache.MhtCache
 import opencola.server.handlers.updateResource
 import org.junit.Test
@@ -22,7 +22,7 @@ class MhtCacheTest {
         val persona = TestApplication.instance.getPersonas().first()
         val mhtCache by injector.instance<MhtCache>()
         val entityStore by injector.instance<EntityStore>()
-        val fileStore by injector.instance<ContentBasedFileStore>()
+        val fileStore by injector.instance<ContentAddressedFileStore>()
 
         val rootPath = Path(System.getProperty("user.dir"),"../..", "sample-docs").toString()
 

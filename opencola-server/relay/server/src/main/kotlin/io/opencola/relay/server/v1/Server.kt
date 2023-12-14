@@ -1,29 +1,45 @@
 package io.opencola.relay.server.v1
 
+import io.opencola.event.log.EventLogger
 import io.opencola.model.Id
+import io.opencola.relay.common.connection.Connection
+import io.opencola.relay.common.connection.MemoryConnectionDirectory
 import io.opencola.serialization.codecs.IntByteArrayCodec
 import io.opencola.relay.common.connection.SocketSession
 import io.opencola.relay.common.message.Envelope
 import io.opencola.relay.common.message.Recipient
 import io.opencola.relay.common.message.v1.PayloadEnvelope
+import io.opencola.relay.common.policy.MemoryPolicyStore
 import io.opencola.relay.server.AbstractRelayServer
+import io.opencola.relay.server.RelayConfig
 import io.opencola.security.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
+import java.net.URI
 import java.security.PublicKey
 
-abstract class Server(numChallengeBytes: Int = 32) : AbstractRelayServer(numChallengeBytes){
-    override suspend fun authenticate(socketSession: SocketSession): PublicKey? {
+abstract class Server(
+    config: RelayConfig,
+    eventLogger: EventLogger,
+    address: URI,
+) : AbstractRelayServer(
+    config,
+    eventLogger,
+    MemoryPolicyStore(config.security.rootId),
+    MemoryConnectionDirectory(address),
+    null
+) {
+    override suspend fun authenticate(socketSession: SocketSession): Connection? {
         try {
             logger.debug { "Authenticating" }
             val encodedPublicKey = socketSession.readSizedByteArray()
             val publicKey = publicKeyFromBytes(encodedPublicKey)
 
-            logger.debug {"Received public key: ${Id.ofPublicKey(publicKey)}"}
+            logger.debug { "Received public key: ${Id.ofPublicKey(publicKey)}" }
 
             // Send challenge
             logger.debug { "Sending challenge" }
-            val challenge = ByteArray(numChallengeBytes).also { random.nextBytes(it) }
+            val challenge = ByteArray(config.security.numChallengeBytes).also { random.nextBytes(it) }
             socketSession.writeSizedByteArray(challenge)
 
             // Read signed challenge
@@ -31,18 +47,26 @@ abstract class Server(numChallengeBytes: Int = 32) : AbstractRelayServer(numChal
             logger.debug { "Received challenge signature" }
 
             val status = if (isValidSignature(publicKey, challenge, challengeSignature)) 0 else -1
-            socketSession.writeSizedByteArray(IntByteArrayCodec.encode(status))
-            if (status != 0)
+            val encodedStatus = IntByteArrayCodec.encode(status)
+
+            if (status != 0) {
+                socketSession.writeSizedByteArray(encodedStatus)
                 throw RuntimeException("Challenge signature is not valid")
+            }
 
             logger.debug { "Client authenticated" }
-            return publicKey
+            Connection(publicKey, socketSession) { connectionDirectory.remove(it.id) }.let { connection ->
+                connectionDirectory.add(connection)
+                socketSession.writeSizedByteArray(encodedStatus)
+                return connection
+            }
+
         } catch (e: CancellationException) {
             // Let job cancellation fall through
         } catch (e: ClosedReceiveChannelException) {
             // Don't bother logging on closed connections
-        }  catch (e: Exception) {
-            logger.warn { "Client failed to authenticate: $e" }
+        } catch (e: Exception) {
+            event.error("AuthenticationFailed") { "Client failed to authenticate: $e" }
             socketSession.close()
         }
 

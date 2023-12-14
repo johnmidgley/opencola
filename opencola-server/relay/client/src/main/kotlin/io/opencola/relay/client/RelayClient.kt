@@ -8,6 +8,7 @@ typealias EventHandler = suspend (publicKey: PublicKey, event: RelayEvent) -> Un
 
 interface RelayClient {
     suspend fun open(messageHandler: MessageHandler)
+    // TODO: Replace by handling control messages from server?
     suspend fun setEventHandler(eventHandler: EventHandler)
     suspend fun sendMessage(to: List<PublicKey>, key: MessageStorageKey, body: ByteArray)
     suspend fun sendMessage(to: PublicKey, key: MessageStorageKey, body: ByteArray) { sendMessage(listOf(to), key, body) }

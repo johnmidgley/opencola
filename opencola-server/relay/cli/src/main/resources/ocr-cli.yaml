@@ -1,0 +1,9 @@
+ocr:
+  credentials:
+    # It is recommended to use environment variables to specify your password - using this is less secure
+    # password: password
+
+  server:
+    uri: "ocr://localhost:2652"
+    connectTimeoutMilliseconds: 3000
+    requestTimeoutMilliseconds: 5000

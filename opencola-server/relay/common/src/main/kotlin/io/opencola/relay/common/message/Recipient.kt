@@ -11,7 +11,7 @@ import javax.crypto.spec.SecretKeySpec
 
 class Recipient(val publicKey: PublicKey, val messageSecretKey: EncryptedBytes) {
     override fun toString(): String {
-        return "Recipient(to=${Id.ofPublicKey(publicKey)}, messageSecretKey=ENCRYPTED)"
+        return "Recipient(to=${Id.ofPublicKey(publicKey)})"
     }
 
     fun id(): Id {

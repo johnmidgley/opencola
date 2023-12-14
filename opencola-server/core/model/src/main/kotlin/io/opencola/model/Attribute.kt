@@ -3,7 +3,6 @@ package io.opencola.model
 import io.opencola.model.value.ValueWrapper
 import io.opencola.model.protobuf.Model as Proto
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -22,7 +21,6 @@ enum class AttributeType {
     MultiValueList,
 }
 
-@Serializable(with = Attribute.AttributeAsStringSerializer::class)
 // TODO: Make Attribute<T>
 data class Attribute(
     val name: String,

@@ -6,13 +6,14 @@ val protobufVersion: String by project
 val kodeinVersion: String by project
 
 plugins {
-    kotlin("jvm") version "1.7.20"
+    kotlin("jvm") version "1.9.0"
 }
 
 dependencies {
     implementation(project(":core:system"))
     implementation(project(":core:util"))
     implementation(project(":core:serialization"))
+    implementation(project(":core:io"))
     implementation(project(":core:model"))
     implementation(project(":core:event"))
     implementation(project(":core:security"))

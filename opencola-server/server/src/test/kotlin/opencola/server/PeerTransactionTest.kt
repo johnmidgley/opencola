@@ -105,15 +105,17 @@ class PeerTransactionTest {
 
             // Stop the server so the transaction won't be available when the 2nd server starts up
             println("Stopping ${app0.config.name}")
-            server0.stop(1500, 1500)
-            app0.close()
+            waitForStdout("MessageBus: Stopped") {
+                server0.stop(1000, 1000)
+                app0.close()
+            }
 
             // Start the 2nd server and add a doc to it. This should trigger a request for transactions that will fail, since
             // the first server is not running
             println("Starting ${app1.config.name}")
-            waitForStdout("appears to be offline.") { startServer(server1) }
+            waitForStdout("Responding at") { startServer(server1) }
 
-            // Now start up the first server again. This will trigger call get transactions to server 1, which should trigger
+            // Now start up the first server a  gain. This will trigger call get transactions to server 1, which should trigger
             // it to grab the missing transaction
             println("Re-starting ${app0.config.name}")
             waitForStdout("SearchIndex: Indexed") { startServer(server0restart) }
@@ -123,6 +125,7 @@ class PeerTransactionTest {
             assert(results0.matches.size == 1)
             assert(results0.matches[0].name == resource0.name)
         } finally {
+            println("Closing resources")
             apps.forEach { it.close() }
             server0.stop(1000, 1000)
             server1.stop(1000, 1000)

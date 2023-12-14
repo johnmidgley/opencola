@@ -4,7 +4,7 @@ import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.opencola.content.*
-import io.opencola.event.EventBus
+import io.opencola.event.bus.EventBus
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import io.opencola.io.HttpClient
@@ -14,7 +14,7 @@ import io.opencola.util.blankToNull
 import io.opencola.util.nullOrElse
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.entitystore.EntityStore
-import io.opencola.storage.filestore.ContentBasedFileStore
+import io.opencola.storage.filestore.ContentAddressedFileStore
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import java.net.URI
 
@@ -27,7 +27,7 @@ suspend fun getEntity(
     entityStore: EntityStore,
     addressBook: AddressBook,
     eventBus: EventBus,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
 ) {
     // TODO: Authority should be passed (and authenticated) in header
     val stringId = call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified")
@@ -44,7 +44,7 @@ fun deleteEntity(
     entityStore: EntityStore,
     addressBook: AddressBook,
     eventBus: EventBus,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     context: Context,
     persona: PersonaAddressBookEntry,
     entityId: Id,
@@ -70,7 +70,7 @@ fun updateEntity(
     entityStore: EntityStore,
     addressBook: AddressBook,
     eventBus: EventBus,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     context: Context,
     persona: PersonaAddressBookEntry,
     entity: Entity,
@@ -106,7 +106,7 @@ fun updateEntity(
     entityStore: EntityStore,
     addressBook: AddressBook,
     eventBus: EventBus,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     context: Context,
     persona: PersonaAddressBookEntry,
     entityPayload: EntityPayload
@@ -209,7 +209,7 @@ fun updateComment(
     entityStore: EntityStore,
     addressBook: AddressBook,
     eventBus: EventBus,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     context: Context,
     persona: PersonaAddressBookEntry,
     entityId: Id,
@@ -229,7 +229,7 @@ fun saveEntity(
     entityStore: EntityStore,
     addressBook: AddressBook,
     eventBus: EventBus,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     context: Context,
     persona: PersonaAddressBookEntry,
     entityId: Id
@@ -295,7 +295,7 @@ fun newResourceFromUri(
     entityStore: EntityStore,
     eventBus: EventBus,
     addressBook: AddressBook,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     contentTypeDetector: ContentTypeDetector,
     uri: URI
 ): EntityResult? {
@@ -325,7 +325,7 @@ fun newPost(
     entityStore: EntityStore,
     addressBook: AddressBook,
     eventBus: EventBus,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     contentTypeDetector: ContentTypeDetector,
     context: Context,
     persona: PersonaAddressBookEntry,
@@ -359,7 +359,7 @@ suspend fun addAttachment(
     entityStore: EntityStore,
     addressBook: AddressBook,
     eventBus: EventBus,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     context: Context,
     personaId: Id,
     entityId: Id,
@@ -377,7 +377,7 @@ fun deleteAttachment(
     entityStore: EntityStore,
     addressBook: AddressBook,
     eventBus: EventBus,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     context: Context,
     personaId: Id,
     entityId: Id,

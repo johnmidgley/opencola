@@ -1,6 +1,6 @@
 package io.opencola.storage
 
-import io.opencola.event.EventBus
+import io.opencola.event.bus.EventBus
 import io.opencola.model.Fact
 import io.opencola.model.Id
 import io.opencola.model.SignedTransaction

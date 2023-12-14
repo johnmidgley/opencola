@@ -11,7 +11,6 @@ import java.io.OutputStream
 // TODO: Intern ids and attributes
 // TODO: Think about making this only usable from inside the entity store, so that transaction ids can be controlled
 //  SubjectiveFact (add subject), and TransactionFact (add transaction id / epoch) - just one? Transaction fact? Subjective fact with epoch?
-// @Serializable
 data class Fact(
     val authorityId: Id,
     val entityId: Id,

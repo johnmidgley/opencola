@@ -1,6 +1,6 @@
 package io.opencola.network
 
-import io.opencola.event.EventBus
+import io.opencola.event.bus.EventBus
 import io.opencola.event.MockEventBus
 import io.opencola.model.Id
 import io.opencola.network.NetworkNode.*
@@ -14,14 +14,14 @@ import io.opencola.storage.*
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.entitystore.EntityStore
-import io.opencola.storage.filestore.ContentBasedFileStore
+import io.opencola.storage.filestore.ContentAddressedFileStore
 import java.security.KeyPair
 
 // TODO: Make closeable end use .use{ }?
 class NetworkNodeContext(
     val keyStore: KeyStore = MockKeyStore(),
     val eventBus: EventBus = MockEventBus(),
-    val contentBasedFileStore: ContentBasedFileStore = MockContentBasedFileStore(),
+    val contentBasedFileStore: ContentAddressedFileStore = MockContentAddressedFileStore(),
     val signator: Signator = Signator(keyStore),
     val addressBook: AddressBook = MockAddressBook(keyStore),
     val provider: MockNetworkProvider = MockNetworkProvider(addressBook, keyStore),

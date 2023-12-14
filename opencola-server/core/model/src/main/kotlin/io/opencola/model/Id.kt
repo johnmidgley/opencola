@@ -3,18 +3,23 @@ package io.opencola.model
 import com.google.protobuf.ByteString
 import io.opencola.security.hash.Sha256Hash
 import io.opencola.model.protobuf.Model as Proto
-import kotlinx.serialization.Serializable
 import io.opencola.serialization.ByteArrayCodec
 import io.opencola.serialization.StreamSerializer
 import io.opencola.serialization.protobuf.ProtoSerializable
 import io.opencola.util.*
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI
 import java.security.PublicKey
 import java.util.*
 
-@Serializable
+// TODO: Change 'bytes' to 'encoded' and make public?
 data class Id(private val bytes: ByteArray) : Comparable<Id> {
     init {
         require(bytes.size == LENGTH_IN_BYTES) { "Invalid id - size = ${bytes.size} but should be $LENGTH_IN_BYTES" }
@@ -71,7 +76,11 @@ data class Id(private val bytes: ByteArray) : Comparable<Id> {
         }
 
         fun tryDecode(value: String?): Id? {
-            return if (value.isNullOrBlank()) null else decode(value)
+            return try {
+                if (value == null) null else decode(value)
+            } catch (e: Exception) {
+                null
+            }
         }
 
         // TODO: Add constructor that takes stream so whole file doesn't need to be loaded
@@ -127,4 +136,18 @@ data class Id(private val bytes: ByteArray) : Comparable<Id> {
 
 fun Proto.Id.toId(): Id {
     return Id.fromProto(this)
+}
+
+// This is separated out from Id, so that it can be used contextually. If it were defined in the companion object, it would
+// force projects dependent on Id to also depend on the kotlinx serialization library.
+object IdAsStringSerializer : KSerializer<Id> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("id", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: Id) {
+        encoder.encodeString(value.toString())
+    }
+
+    override fun deserialize(decoder: Decoder): Id {
+        return Id.decode(decoder.decodeString())
+    }
 }

@@ -8,8 +8,7 @@ import io.ktor.server.testing.*
 import io.opencola.model.Id
 import io.opencola.model.ResourceEntity
 import io.opencola.storage.entitystore.EntityStore
-import io.opencola.storage.filestore.ContentBasedFileStore
-import kotlinx.serialization.decodeFromString
+import io.opencola.storage.filestore.ContentAddressedFileStore
 import kotlinx.serialization.json.Json
 import opencola.server.ApplicationTestBase
 import org.junit.Test
@@ -48,10 +47,10 @@ class AttachmentsTest : ApplicationTestBase() {
         assertEquals(HttpStatusCode.OK, response.status)
         val uploadItems = Json.decodeFromString<UploadItems>(response.bodyAsText())
         assertEquals(2, uploadItems.items.size)
-        val file1 = application.inject<ContentBasedFileStore>().read(Id.Factory.decode(uploadItems.items[0].id))
+        val file1 = application.inject<ContentAddressedFileStore>().read(Id.Factory.decode(uploadItems.items[0].id))
         assertNotNull(file1)
         assertEquals(file1Contents, file1Contents)
-        val file2 = application.inject<ContentBasedFileStore>().read(Id.Factory.decode(uploadItems.items[1].id))
+        val file2 = application.inject<ContentAddressedFileStore>().read(Id.Factory.decode(uploadItems.items[1].id))
         assertNotNull(file2)
         assertEquals(file2Contents, file2Contents)
     }
@@ -92,10 +91,10 @@ class AttachmentsTest : ApplicationTestBase() {
             .flatMap { it.actions }
             .filter { it.type == "attach" }
         assertEquals(2, attachActions.size)
-        val file1 = application.inject<ContentBasedFileStore>().read(Id.Factory.decode(attachActions[0].id!!))
+        val file1 = application.inject<ContentAddressedFileStore>().read(Id.Factory.decode(attachActions[0].id!!))
         assertNotNull(file1)
         assertEquals(file1Contents, file1Contents)
-        val file2 = application.inject<ContentBasedFileStore>().read(Id.Factory.decode(attachActions[1].id!!))
+        val file2 = application.inject<ContentAddressedFileStore>().read(Id.Factory.decode(attachActions[1].id!!))
         assertNotNull(file2)
         assertEquals(file2Contents, file2Contents)
     }

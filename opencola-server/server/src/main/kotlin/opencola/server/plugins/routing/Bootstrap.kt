@@ -53,7 +53,7 @@ fun Application.configureBootstrapRouting(
                 } else if (isNewUser) {
                     call.respondRedirect("newUser")
                 } else if (call.request.origin.scheme != "https") {
-                    call.respondRedirect("https://localhost:${serverConfig.ssl!!.port}/start")
+                    call.respondRedirect("https://${call.request.host()}:${serverConfig.ssl!!.port}/start")
                 } else {
                     // val username = call.getAuthToken(authEncryptionParams)?.username ?: loginConfig.username
                     startupForm(call)
@@ -86,7 +86,7 @@ fun Application.configureBootstrapRouting(
             require(!loginCredentials.isCompleted)
 
             if (call.request.origin.scheme != "https") {
-                call.respondRedirect("https://localhost:${serverConfig.ssl!!.port}/newUser")
+                call.respondRedirect("https://${call.request.host()}:${serverConfig.ssl!!.port}/newUser")
             } else {
                 newUserForm(call)
             }

@@ -1,6 +1,6 @@
 package io.opencola.storage.entitystore
 
-import io.opencola.event.EventBus
+import io.opencola.event.bus.EventBus
 import io.opencola.model.*
 import io.opencola.model.value.EmptyValue
 import io.opencola.security.PublicKeyProvider
@@ -8,8 +8,8 @@ import io.opencola.security.Signator
 import io.opencola.serialization.EncodingFormat
 import io.opencola.storage.entitystore.EntityStore.TransactionOrder
 import io.opencola.storage.entitystore.EntityStore.TransactionOrder.*
-import io.opencola.storage.filestore.IdBasedFileStore
-import io.opencola.storage.filestore.LocalIdBasedFileStore
+import io.opencola.storage.filestore.IdAddressedFileStore
+import io.opencola.storage.filestore.FileSystemIdAddressedFileStore
 import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -31,7 +31,7 @@ class ExposedEntityStoreV2(
 ) : AbstractEntityStore(signator, publicKeyProvider, eventBus, EncodingFormat.PROTOBUF) {
     private val database: Database
     private val transactionStoragePath: Path
-    private val transactionFileStore: IdBasedFileStore
+    private val transactionFileStore: IdAddressedFileStore
 
     // TODO: Normalize attribute
     // TODO: Break out attribute into separate table
@@ -70,7 +70,7 @@ class ExposedEntityStoreV2(
         database = getDB(storagePath.resolve("${name}.v2.db"))
         logger.info { "Initializing ExposedEntityStoreV2 {${database.url}}" }
         transactionStoragePath = storagePath.resolve("transactions").also { it.toFile().mkdirs() }
-        transactionFileStore = LocalIdBasedFileStore(transactionStoragePath)
+        transactionFileStore = FileSystemIdAddressedFileStore(transactionStoragePath)
         initTables()
         attributeUriToDbIdMap = initDbAttributes(modelAttributes)
         val uriToAttributeMap = modelAttributes.associateBy { it.uri }
