@@ -8,7 +8,6 @@ import io.opencola.relay.common.State.*
 import io.opencola.relay.common.connection.*
 import io.opencola.relay.common.message.*
 import io.opencola.relay.common.message.v2.*
-import io.opencola.relay.common.message.v2.store.MemoryMessageStore
 import io.opencola.relay.common.message.v2.store.MessageStore
 import io.opencola.relay.common.message.v2.store.Usage
 import io.opencola.relay.common.policy.PolicyStore
@@ -52,7 +51,7 @@ abstract class AbstractRelayServer(
     }
 
     fun getUsage(): Sequence<Usage> {
-        return (messageStore as? MemoryMessageStore)?.getUsage() ?: emptySequence()
+        return messageStore?.getUsage() ?: emptySequence()
     }
 
     protected abstract suspend fun authenticate(socketSession: SocketSession): Connection?
