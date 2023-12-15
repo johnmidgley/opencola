@@ -9,8 +9,13 @@ class ExposedConnectionDirectory(database: Database, override val localAddress: 
     private val connectionsDB = ConnectionsDB(database)
 
     override fun add(connection: Connection): ConnectionEntry {
+        // Since this operation is not atomic, we make sure to add to the local directory first, to avoid
+        // any local race condition. In particular, if we were to add to the DB first, it would be possible that
+        // after the connection is written to the DB, but before it is added to the local directory, it could be looked
+        // up by another caller, which would result in a null local connection. This actually happened in a test.
+        val entry = localDirectory.add(connection)
         connectionsDB.upsertConnection(connection.id, localAddress, System.currentTimeMillis())
-        return localDirectory.add(connection)
+        return entry
     }
 
     override fun get(id: Id): ConnectionEntry? {

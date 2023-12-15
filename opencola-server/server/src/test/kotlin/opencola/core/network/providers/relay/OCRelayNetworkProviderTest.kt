@@ -141,16 +141,18 @@ class OCRelayNetworkProviderTest {
             val (app0, app1) = getApplications(2)
 
             println("Setting Relay Addresses")
-            setPeerAddressToRelay(app0.inject(), app1.getPersonas().first().entityId)
-            setPeerAddressToRelay(app1.inject(), app0.getPersonas().first().entityId)
+            val app0Persona = app0.getPersonas().first()
+            val app1Persona = app1.getPersonas().first()
+            setPeerAddressToRelay(app0.inject(), app1Persona.entityId)
+            setPeerAddressToRelay(app1.inject(), app0Persona.entityId)
 
             println("Starting relay server")
             val relayServer = RelayServer().also { it.start() }
 
-            println("Starting network node0")
+            println("Starting network node0: ${app0Persona.personaId}")
             app0.open(true)
 
-            println("Starting network node1")
+            println("Starting network node1 ${app1Persona.personaId}")
             app1.open()
 
             println("Creating relay client")
@@ -173,6 +175,7 @@ class OCRelayNetworkProviderTest {
                     }
                 }
             } finally {
+                println("Closing resources")
                 app0.close()
                 app1.close()
                 println("Closing relay client")

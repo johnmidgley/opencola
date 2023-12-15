@@ -189,7 +189,7 @@ class OCRelayNetworkProvider(
 
         logger.info { "Removing peer: ${peer.entityId}" }
         if (addressBook.getEntries()
-                .filter { it.isActive }
+                .filter { it.isActive && it !is PersonaAddressBookEntry }
                 .none { it.address == peer.address && it.personaId == persona.entityId && it.entityId != peer.entityId }
         ) {
             val connectionParams = ConnectionParams(peer.address, persona.keyPair)

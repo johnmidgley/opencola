@@ -39,7 +39,7 @@ class ConnectionsDB(private val database: Database) {
         if(getConnection(id) == null)
             insertConnection(id, address, connectTimeMilliseconds)
         else {
-            logger.warn { "Orphaned connection found: $id" }
+            // This can happen if a client reconnects and the server wasn't aware the old connection was closed
             updateConnection(id, address, connectTimeMilliseconds)
         }
     }
