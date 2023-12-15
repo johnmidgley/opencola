@@ -59,9 +59,9 @@ class OCRelayNetworkProvider(
 
     private val connections = ConcurrentHashMap<ConnectionParams, ConnectionInfo>()
 
-    private fun handleEvent(publicKey: PublicKey, event: RelayEvent) {
+    private fun handleEvent(address: URI,  publicKey: PublicKey, event: RelayEvent) {
         val providerEvent = when (event) {
-            RelayEvent.NO_PENDING_MESSAGES -> NoPendingMessagesEvent(Id.ofPublicKey(publicKey))
+            RelayEvent.NO_PENDING_MESSAGES -> NoPendingMessagesEvent(Id.ofPublicKey(publicKey), address)
         }
 
         handleEvent(providerEvent)
@@ -88,7 +88,7 @@ class OCRelayNetworkProvider(
                     logger.info { "Opening client: $connectionParams" }
                     client.setEventHandler { publicKey, event ->
                         try {
-                            handleEvent(publicKey, event)
+                            handleEvent(uri, publicKey, event)
                         } catch (e: Throwable) {
                             logger.error { "Error handling event: $e" }
                         }

@@ -95,8 +95,7 @@ class NetworkNode(
         when (event.type) {
             ProviderEventType.NO_PENDING_MESSAGES -> {
                 val noPendingMessagesEvent = event as NoPendingMessagesEvent
-                val personaId = noPendingMessagesEvent.personaId
-                eventBus.sendMessage(Events.NoPendingNetworkMessages.toString(), personaId.encodeProto())
+                eventBus.sendMessage(Events.NoPendingNetworkMessages.toString(), noPendingMessagesEvent.encode())
             }
         }
     }

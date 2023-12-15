@@ -4,10 +4,7 @@ import io.opencola.event.bus.Event
 import io.opencola.event.bus.Events
 import io.opencola.event.bus.Reactor
 import io.opencola.model.*
-import io.opencola.network.NetworkConfig
-import io.opencola.network.NetworkNode
-import io.opencola.network.Notification
-import io.opencola.network.PeerEvent
+import io.opencola.network.*
 import io.opencola.network.message.GetDataMessage
 import io.opencola.network.message.GetTransactionsMessage
 import io.opencola.network.message.PutDataMessage
@@ -178,13 +175,24 @@ class MainReactor(
     }
 
     private fun handleNoPendingNetworkMessages(event: Event) {
-        val id = Id.decodeProto(event.data)
-        logger.info { "Handling no pending network messages for persona: $id" }
+        val noPendingMessagesEvent = NoPendingMessagesEvent.decode(event.data)
+        logger.info { "Handling event: $noPendingMessagesEvent" }
 
-        // The persona has no pending network messages, so it's safe to request transactions from all peers connected
-        // to it without causing redundant requests.
-        addressBook
-            .getEntries().filter { it !is PersonaAddressBookEntry && it.isActive && it.personaId == id }
+        val peers = addressBook.getPeers()
+
+        // Get all peer ids that are connected to the persona and address
+        val peerIds = peers
+            .filter { it.personaId == noPendingMessagesEvent.personaId && it.address == noPendingMessagesEvent.address }
+            .map { it.entityId }
+            .toSet()
+
+        // A peer can be connected with multiple personas. To avoid duplicating transaction requests,
+        // we use the address book ordering to only request from the first persona in address book.
+        // TODO: Add test for this
+        peers
+            .filter { it.entityId in peerIds }
+            .distinctBy { it.entityId } // This ensures that requests are only sent from a single persona
+            .filter { it.personaId == noPendingMessagesEvent.personaId && it.address == noPendingMessagesEvent.address }
             .forEach { requestTransactions(it) }
     }
 

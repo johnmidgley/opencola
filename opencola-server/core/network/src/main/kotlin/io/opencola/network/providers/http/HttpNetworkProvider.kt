@@ -53,7 +53,9 @@ class HttpNetworkProvider(
 
         // There are no queued / buffered messages over http, so we can let the network know that all peers
         // are ready for transaction requests
-        getPersonasForProvider().forEach { persona -> handleEvent(NoPendingMessagesEvent(persona.entityId)) }
+        addressBook.getPeers()
+            .filter { it.address.scheme == getScheme() }
+            .forEach { handleEvent(NoPendingMessagesEvent(it.personaId, it.address)) }
     }
 
     override fun stop() {
@@ -100,13 +102,14 @@ class HttpNetworkProvider(
         return envelope.encodeProto()
     }
 
-    private fun getPersona(id: Id) : PersonaAddressBookEntry {
-        return  addressBook.getEntry(id, id)?.let { it as PersonaAddressBookEntry }
+    private fun getPersona(id: Id): PersonaAddressBookEntry {
+        return addressBook.getEntry(id, id)?.let { it as PersonaAddressBookEntry }
             ?: throw RuntimeException("No persona found for id $id")
     }
 
-    private fun getPeer(personaId : Id,  peerId: Id) : AddressBookEntry {
-        return  addressBook.getEntry(personaId, peerId)  ?: throw RuntimeException("No peer found for persona=$personaId peer=$peerId")
+    private fun getPeer(personaId: Id, peerId: Id): AddressBookEntry {
+        return addressBook.getEntry(personaId, peerId)
+            ?: throw RuntimeException("No peer found for persona=$personaId peer=$peerId")
     }
 
     private class DecodedPayload(
@@ -115,7 +118,7 @@ class HttpNetworkProvider(
         val message: Message,
     )
 
-    private fun decodePayload(payload: ByteArray) : DecodedPayload {
+    private fun decodePayload(payload: ByteArray): DecodedPayload {
         val envelope = Envelope.decodeProto(payload)
         val header = envelope.header.bytes
             .let { EncryptedBytes.decodeProto(it) }
