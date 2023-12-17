@@ -1,6 +1,5 @@
 package io.opencola.model
 
-import mu.KotlinLogging
 import io.opencola.model.AttributeType.*
 import io.opencola.model.value.EmptyValue
 import io.opencola.model.value.MultiValueListItem
