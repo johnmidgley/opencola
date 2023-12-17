@@ -140,7 +140,7 @@ class OCRelayNetworkProviderTest {
             println("Getting applications")
             val (app0, app1) = getApplications(2)
 
-            println("Setting Relay Addresses")
+            println("Set    ting Relay Addresses")
             val app0Persona = app0.getPersonas().first()
             val app1Persona = app1.getPersonas().first()
             setPeerAddressToRelay(app0.inject(), app1Persona.entityId)

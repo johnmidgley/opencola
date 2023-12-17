@@ -6,11 +6,13 @@ import java.net.URI
 
 class CommentEntity : Entity {
     var parentId by nonResettableIdAttributeDelegate
+    var topLevelParentId by nonResettableIdAttributeDelegate
 
     constructor(
         authorityId: Id,
         parentId: Id,
         text: String,
+        topLevelParentId: Id? = null,
         name: String? = null,
         description: String? = null,
         imageUri: URI? = null,
@@ -20,6 +22,7 @@ class CommentEntity : Entity {
         tags: List<String>? = null,
     ) : super(authorityId, Id.new(), name, description, text, imageUri, trust, like, rating, tags) {
         this.parentId = parentId
+        this.topLevelParentId = topLevelParentId
     }
 
     constructor(facts: List<Fact>) : super(facts)
