@@ -85,13 +85,7 @@ fun updateEntity(
     }
     entity.description = entityPayload.description.blankToNull()
     entity.like = entityPayload.like
-    entity.tags = entityPayload.tags
-        ?.let { tags ->
-            tags
-                .split(" ")
-                .filter { it.isNotBlank() }
-        }?.toList() ?: emptyList()
-
+    entity.tags = getTags(entityPayload.tags)
     entity.attachmentIds = entityPayload.attachments?.map { Id.decode(it) } ?: emptyList()
 
     if (entityPayload.comment.isNullOrBlank())

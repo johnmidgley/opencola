@@ -46,6 +46,10 @@ fun AddressBook.addPersona(name: String, isActive: Boolean = true): PersonaAddre
     return createPersona(name, isActive).also { updateEntry(it) }
 }
 
+fun AddressBook.deletePersona(personaId: Id) {
+    deleteEntry(personaId, personaId)
+}
+
 fun AddressBook.addPeer(personaId: Id,
                         name: String,
                         isActive: Boolean = true,
