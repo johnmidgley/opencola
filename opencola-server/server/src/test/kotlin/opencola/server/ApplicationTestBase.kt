@@ -1,17 +1,13 @@
 package opencola.server
 
 import io.opencola.application.TestApplication
-import io.ktor.client.*
 import io.ktor.server.application.*
 import io.ktor.server.application.Application
 import io.ktor.server.auth.*
 import io.ktor.server.sessions.*
-import io.ktor.server.testing.*
 import opencola.server.plugins.UserSession
 import opencola.server.plugins.configureContentNegotiation
 import opencola.server.plugins.routing.configureRouting
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.serialization.kotlinx.json.*
 import mu.KotlinLogging
 
 abstract class ApplicationTestBase(name: String = "ApplicationTest") {
@@ -33,14 +29,6 @@ abstract class ApplicationTestBase(name: String = "ApplicationTest") {
         app.configureContentNegotiation()
         app.install(Sessions) {
             cookie<UserSession>("user_session")
-        }
-    }
-
-    protected fun getClient(builder: ApplicationTestBuilder): HttpClient {
-        return builder.createClient {
-            install(ContentNegotiation) {
-                json()
-            }
         }
     }
 }

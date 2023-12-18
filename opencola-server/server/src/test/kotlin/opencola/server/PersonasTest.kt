@@ -1,7 +1,6 @@
 package opencola.server
 
 import io.ktor.client.call.*
-import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import opencola.server.handlers.PersonasResult
@@ -15,7 +14,7 @@ class PersonasTest : ApplicationTestBase() {
     @Test
     fun testPersonas() = testApplication {
         application { configure(this) }
-        val client = getClient(this)
+        val client = JsonClient(this)
 
         // Check for default Persona
         val persona = application.getPersonas().single()
@@ -25,10 +24,7 @@ class PersonasTest : ApplicationTestBase() {
 
         // Create new Persona
         val newPersona = Persona("", "Test", "", "https://test.com", "https://image", true)
-        val newPersonaResponse = client.post("/personas") {
-            contentType(ContentType.Application.Json)
-            setBody(newPersona)
-        }
+        val newPersonaResponse = client.post("/personas", newPersona)
 
         assertEquals(HttpStatusCode.Created, newPersonaResponse.status)
         val newPersona1: Persona = newPersonaResponse.body()

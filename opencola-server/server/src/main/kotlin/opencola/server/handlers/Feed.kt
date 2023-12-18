@@ -148,6 +148,7 @@ fun isEntityIsVisible(entity: Entity): Boolean {
     return when (entity) {
         is ResourceEntity -> true
         is PostEntity -> true
+        is RawEntity -> true
         else -> false
     }
 }

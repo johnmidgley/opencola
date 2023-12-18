@@ -104,6 +104,24 @@ fun Application.configureRouting(app: app) {
                 } ?: call.respond("{}")
             }
 
+            post("/entity/{entityId}/like") {
+                val likePayload = call.receive<LikePayload>()
+                val entityId =
+                    Id.decode(call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified"))
+                likeEntity(
+                    app.inject(),
+                    app.inject(),
+                    app.inject(),
+                    app.inject(),
+                    getContext(call),
+                    expectPersona(call),
+                    entityId,
+                    likePayload
+                )?.let {
+                    call.respond(it)
+                }
+            }
+
             post("/entity/{entityId}/comment") {
                 val entityId =
                     Id.decode(call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified"))
