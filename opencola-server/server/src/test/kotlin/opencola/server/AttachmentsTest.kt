@@ -10,16 +10,10 @@ import io.opencola.storage.MockContentAddressedFileStore
 import io.opencola.storage.addPersona
 import io.opencola.storage.entitystore.EntityStore
 import io.opencola.storage.filestore.ContentAddressedFileStore
-import opencola.server.handlers.Context
-import opencola.server.handlers.deleteAttachment
-import opencola.server.handlers.handleGetFeed
-import opencola.server.handlers.saveEntity
+import opencola.server.handlers.*
 import org.junit.Test
 import java.net.URI
-import kotlin.test.assertContentEquals
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
+import kotlin.test.*
 
 class AttachmentsTest {
     @Test

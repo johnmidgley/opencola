@@ -40,7 +40,9 @@ fun getPostedById(entities: List<Entity>): Id {
 }
 
 fun getSummary(entities: List<Entity>, authoritiesById: Map<Id, AddressBookEntry>): Summary {
-    val entity = entities.maxByOrNull { e -> e.getCurrentFacts().maxOfOrNull { it.transactionOrdinal!! }!! }!!
+    val entity = entities
+        .filter { it !is RawEntity } // Raw entities cannot be displayed - they just contain activity facts
+        .maxByOrNull { e -> e.getCurrentFacts().maxOfOrNull { it.transactionOrdinal!! }!! }!!
     val postedByAuthority = authoritiesById[getPostedById(entities)]
 
     return Summary(
@@ -265,7 +267,7 @@ fun getEntityResults(
     requestMissingAttachmentIds(fileStore, eventBus, entities)
 
     return entityIds
-        .filter { entitiesByEntityId.containsKey(it) }
+        .filter { id -> entitiesByEntityId[id]?.any { it !is RawEntity } ?: false }
         .map {
             val entitiesForId = entitiesByEntityId[it]!!
             val activities = activitiesByEntityId[it]!!

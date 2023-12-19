@@ -362,7 +362,7 @@ suspend fun addAttachment(
 ): EntityResult? {
     val dataEntities = getDataEntities(entityStore, fileStore, personaId, multipart)
     val entity =
-        entityStore.getEntity(personaId, entityId) ?: throw IllegalArgumentException("Unknown entity: $entityId")
+        entityStore.getEntity(personaId, entityId) ?: RawEntity(personaId, entityId)
     entity.attachmentIds += dataEntities.map { it.entityId }
     entityStore.updateEntities(entity, *dataEntities.toTypedArray())
     return getEntityResult(entityStore, addressBook, eventBus, fileStore, context, personaId, entityId)

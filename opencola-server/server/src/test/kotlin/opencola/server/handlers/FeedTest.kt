@@ -103,12 +103,11 @@ class FeedTest {
             assertNotNull(activities.single { it.actions.singleOrNull { it.type == "comment" }?.value == "Comment from persona 1" })
         }
 
-        // Persona1 should now have 3 results
+        // Persona1 should now have 2 results
         app.handleGetFeed(setOf(persona1.personaId)).let { result ->
-            assertEquals(3, result.results.size)
+            assertEquals(2, result.results.size)
             assertNotNull(result.results.singleOrNull { it.entityId == person1Resource0.entityId.toString() })
             assertNotNull(result.results.singleOrNull { it.entityId == person0Resource0.entityId.toString() })
-            assertNotNull(result.results.singleOrNull { it.entityId == person0Resource1.entityId.toString() })
         }
 
         // Check that Persona 0's feed only contains activity for Persona 0
@@ -147,5 +146,14 @@ class FeedTest {
                 assertNotNull(activities.singleOrNull { activity -> activity.actions.singleOrNull { it.type == "like" } != null })
             }
         }
+
+        app.handleGetFeed(setOf(persona0.personaId)).let { result ->
+            assertEquals(1, result.results.size)
+            val entityResult = result.results.singleOrNull { it.entityId == person0Resource0.entityId.toString() }
+            assertNotNull(entityResult)
+        }
+
+        // Make sure that no results come back for persona1, since no items have been fully saved
+        assertEquals(0, app.handleGetFeed(setOf(persona1.personaId)).results.size)
     }
 }
