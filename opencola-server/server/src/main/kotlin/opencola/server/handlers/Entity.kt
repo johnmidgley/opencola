@@ -180,18 +180,19 @@ fun updateComment(
     logger.info { "Adding comment to $entityId" }
     val personaId = persona.personaId
 
-    val entity = getOrCopyEntity(personaId, entityStore, entityId)
-        ?: throw IllegalArgumentException("Attempt to add comment to unknown entity")
+    require(
+        entityStore.getEntities(emptySet(), setOf(entityId)).isNotEmpty()
+    ) { "Attempt to add comment to unknown entity" }
 
     val commentEntity =
         if (commentId == null)
-            CommentEntity(personaId, entity.entityId, text)
+            CommentEntity(personaId, entityId, text)
         else
             entityStore.getEntity(personaId, commentId) as? CommentEntity
                 ?: throw IllegalArgumentException("Unknown comment: $commentId")
 
     commentEntity.text = text
-    entityStore.updateEntities(entity, commentEntity)
+    entityStore.updateEntities(commentEntity)
 
     return commentEntity
 }
@@ -298,7 +299,7 @@ fun newResourceFromUri(
 
     if (!updateResourceFromSource(contentTypeDetector, resource)) {
         if (resource.name == null)
-            // Couldn't parse anything, so just use the url as the name
+        // Couldn't parse anything, so just use the url as the name
             resource.name = uri.toString()
     }
 

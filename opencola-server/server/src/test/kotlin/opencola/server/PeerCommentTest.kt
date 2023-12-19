@@ -41,18 +41,12 @@ class PeerCommentTest {
             val entityStore1 by application1.injector.instance<EntityStore>()
             startServer(server1)
             Thread.sleep(1500)
-            val comment = updateComment(persona1, entityStore1, resource0.entityId, null, "Comment")
-            val resource1 = entityStore1.getEntity(persona1.personaId, resource0.entityId) as ResourceEntity
+            updateComment(persona1, entityStore1, resource0.entityId, null, "Comment")
+            val resource1 = entityStore1.getEntity(persona1.personaId, resource0.entityId)
 
             assertNotNull(resource1)
             assertEquals(persona1.personaId, resource1.authorityId)
             assertEquals(resource0.entityId, resource1.entityId)
-            assertEquals(resource0.uri, resource1.uri)
-            assertEquals(resource0.name, resource1.name)
-            assertEquals(resource0.description, resource1.description)
-            assertEquals(resource0.text, resource1.text)
-            assertEquals(resource0.imageUri, resource1.imageUri)
-            assertEquals(comment.entityId, resource1.commentIds.single())
         } finally {
             applications.forEach{ it.close() }
             server0.stop(1000, 1000)

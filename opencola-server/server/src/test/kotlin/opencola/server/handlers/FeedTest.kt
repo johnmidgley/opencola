@@ -99,8 +99,7 @@ class FeedTest {
             postCommentPayload
         )!!.let { result ->
             val activities = result.activities.filter { it.authorityId == persona1.personaId.toString() }
-            assertEquals(2, activities.size)
-            assertNotNull(activities.single { it.actions.singleOrNull { it.type == "save" } != null })
+            assertEquals(1, activities.size)
             assertNotNull(activities.single { it.actions.singleOrNull { it.type == "comment" }?.value == "Comment from persona 1" })
         }
 
