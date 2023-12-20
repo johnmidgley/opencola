@@ -36,11 +36,15 @@ val computeEntityCommentIds: (Iterable<Fact>) -> Iterable<Fact> = { facts ->
         .filter { fact ->
             fact.attribute == typeAttribute && fact.value as? StringValue == commentTypeValue
         }
-        .map { fact ->
-            facts.single { it.authorityId == fact.authorityId && it.entityId == fact.entityId && it.attribute == CoreAttribute.ParentId.spec }
+        .flatMap { fact ->
+            listOf(
+                facts.single { it.authorityId == fact.authorityId && it.entityId == fact.entityId && it.attribute == CoreAttribute.ParentId.spec },
+                facts.singleOrNull { it.authorityId == fact.authorityId && it.entityId == fact.entityId && it.attribute == CoreAttribute.TopLevelParentId.spec }
+            )
         }
+        .mapNotNull { it }
         .map {
-            val parentId = CoreAttribute.ParentId.spec.valueWrapper.unwrap(it.value) as Id
+            val parentId = it.attribute.valueWrapper.unwrap(it.value) as Id
             val commentIdValue = IdValue(it.entityId).asAnyValue()
             Fact(it.authorityId, parentId, CoreAttribute.CommentIds.spec, commentIdValue, it.operation)
         }

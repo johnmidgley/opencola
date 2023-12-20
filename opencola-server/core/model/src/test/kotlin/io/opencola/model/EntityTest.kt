@@ -197,6 +197,5 @@ class EntityTest {
         entity1.commitFacts(System.currentTimeMillis(), 0)
         val entity2 = Entity.fromFacts(entity1.getAllFacts()) as RawEntity
         assertEquals(entity1.attachmentIds, entity2.attachmentIds)
-
     }
 }

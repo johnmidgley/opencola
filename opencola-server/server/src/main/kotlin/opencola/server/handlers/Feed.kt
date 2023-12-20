@@ -21,7 +21,11 @@ import opencola.server.handlers.EntityResult.*
 private val logger = KotlinLogging.logger("Feed")
 
 @Serializable
-data class FeedResult internal constructor(val context: String?, val pagingToken: String?, val results: List<EntityResult>) {
+data class FeedResult internal constructor(
+    val context: String?,
+    val pagingToken: String?,
+    val results: List<EntityResult>
+) {
     constructor(context: Context, pagingToken: String?, results: List<EntityResult>) : this(
         context.toString(),
         pagingToken,
@@ -65,7 +69,8 @@ fun factToAction(children: Children, fact: Fact): Action? {
         Tags.spec -> Action(ActionType.Tag, null, fact.unwrapValue())
         CommentIds.spec -> {
             val commentId = fact.unwrapValue<Id>()
-            Action(ActionType.Comment, commentId, children.comments.getValue(commentId).text)
+            // A comment can be missing if the entity is a RawEntity referring to a comment that was deleted
+            children.comments[commentId]?.let { Action(ActionType.Comment, commentId, it.text) }
         }
 
         AttachmentIds.spec -> {
@@ -197,7 +202,16 @@ fun getChildren(
     }
 
     val children = entityStore.getEntities(authorityIds, ids)
-    val comments = children.filterIsInstance<CommentEntity>().associateBy { it.entityId }
+    // "RawEntity"s can't be displayed on their own, so don't include them unless a full version of the entity is present
+    val entityIds = entities.filter { it !is RawEntity }.map { it.entityId }.toSet()
+    val allChildren = children.filter { it !is RawEntity }.map { it.entityId }.toSet()
+    val allEntityIds = entityIds.plus(allChildren)
+
+    val comments = children
+        .filterIsInstance<CommentEntity>()
+        .filter { it.parentId in allEntityIds }
+        .associateBy { it.entityId }
+
     // TODO: Attachments are not necessarily unique. Should select best one
     val attachments = children.filterIsInstance<DataEntity>().associateBy { it.entityId }
 

@@ -180,13 +180,14 @@ fun updateComment(
     logger.info { "Adding comment to $entityId" }
     val personaId = persona.personaId
 
-    require(
-        entityStore.getEntities(emptySet(), setOf(entityId)).isNotEmpty()
-    ) { "Attempt to add comment to unknown entity" }
+    val parent = entityStore.getEntities(emptySet(), setOf(entityId)).firstOrNull()
+    require(parent != null) { "Attempt to add comment to unknown entity" }
+    // If the parent is a comment, then this is a reply, the topLevelParentId should be set
+    val topLevelParentId = (parent as? CommentEntity)?.let { it.topLevelParentId ?: it.parentId }
 
     val commentEntity =
         if (commentId == null)
-            CommentEntity(personaId, entityId, text)
+            CommentEntity(personaId, entityId, text, topLevelParentId)
         else
             entityStore.getEntity(personaId, commentId) as? CommentEntity
                 ?: throw IllegalArgumentException("Unknown comment: $commentId")

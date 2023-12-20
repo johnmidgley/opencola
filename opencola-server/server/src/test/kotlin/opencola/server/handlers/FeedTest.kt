@@ -1,6 +1,7 @@
 package opencola.server.handlers
 
 import io.opencola.application.TestApplication
+import io.opencola.model.CommentEntity
 import io.opencola.model.RawEntity
 import io.opencola.model.ResourceEntity
 import io.opencola.storage.addressbook.AddressBook
@@ -10,6 +11,7 @@ import org.junit.Test
 import java.net.URI
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class FeedTest {
     @Test
@@ -155,5 +157,45 @@ class FeedTest {
 
         // Make sure that no results come back for persona1, since no items have been fully saved
         assertEquals(0, app.handleGetFeed(setOf(persona1.personaId)).results.size)
+    }
+
+    @Test
+    fun testCommentReply() {
+        val app = TestApplication.instance
+        val addressBook = app.inject<AddressBook>()
+        val entityStore = app.inject<EntityStore>()
+
+        val persona0 = addressBook.addPersona("testCommentChain0")
+        val resource = ResourceEntity(persona0.personaId, URI("https://uri0"))
+        entityStore.updateEntities(resource)
+
+        // Added a comment from person1 onto person0's resource
+        val comment = CommentEntity(persona0.personaId, resource.entityId, "comment1")
+        entityStore.updateEntities(comment)
+
+        val persona1 = addressBook.addPersona("testCommentChain0")
+        val commentReply = CommentEntity(persona1.personaId, comment.entityId, "comment1 reply", resource.entityId)
+        entityStore.updateEntities(commentReply)
+
+        app.handleGetFeed(setOf(persona0.personaId, persona1.personaId)).let { result ->
+            assertEquals(1, result.results.size)
+            val entityResult = result.results.singleOrNull { it.entityId == resource.entityId.toString() }
+            assertNotNull(entityResult)
+            val comments = entityResult.activities.flatMap { it.actions.filter { it.type == "comment" } }
+            assertEquals(2, comments.size)
+            assertTrue(comments.any { it.value == "comment1" })
+            assertTrue(comments.any { it.value == "comment1 reply" })
+        }
+
+        entityStore.deleteEntities(comment.authorityId, comment.entityId)
+
+        // Deleting comment should stop the reply from being returned, so we expect 0 comments
+        app.handleGetFeed(setOf(persona0.personaId, persona1.entityId)).let { result ->
+            assertEquals(1, result.results.size)
+            val entityResult = result.results.singleOrNull { it.entityId == resource.entityId.toString() }
+            assertNotNull(entityResult)
+            val comments = entityResult.activities.flatMap { it.actions.filter { it.type == "comment" } }
+            assertEquals(0, comments.size)
+        }
     }
 }
