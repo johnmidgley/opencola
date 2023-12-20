@@ -159,8 +159,8 @@
             activities (:activities item)]
         [:div.activities-summary
          [:div.activity-buttons
-          (when personas!
-            [persona-select personas! persona-id!])
+          
+          [persona-select personas! persona-id!]
           [action-summary persona-id! :save action-expanded? activities #(save-item context @persona-id! item update-feed-item on-error)]
           [action-summary persona-id! :like action-expanded? activities #(like-item @persona-id! feed! item on-error)]
           [action-summary persona-id! :tag action-expanded?  activities #(swap! tagging? not)]
@@ -386,13 +386,13 @@
      (when (not-empty query)
        (str (count (:results @feed!)) " results for '" query "'")))])
 
-(defn feed-list [persona-id! personas! feed! on-click-authority on-click-tag]
+(defn feed-list [persona-id! personas! feed! on-click-authority on-click-tag] 
   (when @feed!
     [:div.content-list.feed-list
      [feed-status feed!]
      (doall (for [item  (:results @feed!)]
               ^{:key [item @persona-id!]}
-              [feed-item @persona-id! (when (not @persona-id!) personas!) feed! item on-click-authority on-click-tag]))]))
+              [feed-item @persona-id! personas! feed! item on-click-authority on-click-tag]))]))
 
 
 (defn prepend-feed-item [feed! view-item]
@@ -441,7 +441,7 @@
         on-click-tag #(on-click-tag on-search @query! %)
         on-click-authority #(on-click-authority on-search @query! %)]
     (fn []
-      [:div#opencola.feed-page
+      [:div#opencola.feed-page 
        [search/search-header
         :feed
         personas!
@@ -457,7 +457,7 @@
            [:div.content-list.feed-list
             [edit-item-control
              (when (not @persona-id!) personas!)
-             (atom (or @persona-id! (-> @personas! :items first :id)))
+             (atom (or @persona-id! (-> @personas! first :id)))
              nil
              edit-item!
              error!

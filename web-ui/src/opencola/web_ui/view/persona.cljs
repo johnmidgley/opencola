@@ -10,7 +10,7 @@
 (defn init-personas [personas! on-success on-error]
   (model/get-personas
    (fn [personas] 
-     (reset! personas! personas)
+     (reset! personas! (:items personas)) 
      (on-success))
    #(on-error %)))
 
@@ -24,7 +24,7 @@
 
 (defn get-personas [personas! on-error]
   (model/get-personas
-   #(reset! personas! %)
+   #(reset! personas! (:items %))
    #(on-error %)))
 
 (defn update-persona [personas! persona! on-error]
@@ -40,7 +40,7 @@
    #(on-error %)))
 
 (defn persona-select [personas! persona-id!]
-  (let [persona-list (:items @personas!)
+  (let [persona-list  @personas!
         current-persona {:id @persona-id!}]
     [select-menu {:class "persona-select-menu"} persona-list current-persona :name :id #(reset! persona-id! %)]))
 
@@ -97,7 +97,7 @@
   (when @personas!
     [:div.content-list.persona-list 
      (when @adding-persona?! [add-persona-item personas! adding-persona?!])
-     (doall (for [persona (:items @personas!)]
+     (doall (for [persona @personas!]
               ^{:key persona} [persona-item personas! persona]))]))
 
 

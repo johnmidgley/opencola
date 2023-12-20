@@ -1,7 +1,7 @@
 (ns ^:figwheel-hooks opencola.web-ui.view.search 
   (:require
    [opencola.web-ui.location :as location] 
-   [opencola.web-ui.view.common :refer [button-component select-menu]]
+   [opencola.web-ui.view.common :refer [button-component select-menu]] 
    [reagent.core :as r]))
 
 (defn search-box [query! on-enter]
@@ -18,10 +18,15 @@
         :on-keyUp #(when (= (.-key %) "Enter")
                      (on-enter @query!))}]]]))
 
-(defn persona-select-menu [config page personas! persona! on-select!]
-  (let [persona-list (cons {:name "All" :id ""} (:items @personas!))
-        current-persona (if @persona! {:id @persona!} {:id "" :name "All"})] 
-    [select-menu {:class "persona-select-menu"} persona-list current-persona :name :id on-select!]))
+(defn persona-select-menu [personas! persona-id! on-select!]
+  (let [persona-list (cons {:name "All" :id ""} @personas!)
+        current-persona (if @persona-id! {:id @persona-id!} {:name "All" :id ""})]
+    (fn [] 
+      [select-menu
+       {:class "persona-select-menu"}
+       persona-list
+       current-persona
+       :name :id on-select!])))
 
 (defn header-menu 
   [menu-open?!] 
@@ -37,7 +42,7 @@
     [button-component {:class "menu-item" :text "Personas" :icon-class "icon-persona"} #(location/set-page! :personas)]
     [button-component {:class "menu-item" :text "Peers" :icon-class "icon-peers"} #(location/set-page! :peers)] 
     [button-component {:class "menu-item" :text "Settings" :icon-class "icon-settings"} #(location/set-page! :settings)]
-    [:a.reset.menu-item.button-component {:href "help/help.html" :target "_blank"}
+    [:a.reset.menu-item..button.button-component {:href "help/help.html" :target "_blank"}
      [:span.button-icon {:class "icon-help"}]
      [:span "Help"]]
     [button-component {:class "menu-item caution-color" :text "Log out" :icon-class "icon-logout"} #(location/set-location "/logout")]]]
@@ -60,16 +65,13 @@
    [button-component {:class "action-button" :icon-class "icon-menu"} #(swap! menu-open?! not)]])
 
 
-(defn search-header [page personas! persona! on-persona-select query! on-enter adding-item?!]
+(defn search-header [page personas! persona-id! on-persona-select query! on-enter adding-item?!]
   (let [menu-open?! (r/atom false)]
-   (fn []
-     [:nav.nav-bar
+   (fn [] 
+     [:nav.nav-bar 
       [:div.container.mr-a
        [:a.fs-0 {:href "#/feed"} [:img.logo {:src "../img/pull-tab.png"}]] 
-       [persona-select-menu {:show-all? true :show-manage? true} page personas! persona! on-persona-select]
-       ]
+       [persona-select-menu personas! persona-id! on-persona-select]]
       [search-box query! on-enter]
       [header-actions page adding-item?! menu-open?!] 
       [header-menu menu-open?!]])))
-
-

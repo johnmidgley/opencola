@@ -200,7 +200,6 @@
 
 .tag {
     font-size: .7rem;
-    color: var(--text-color);
     background-color: var(--tag-bg-color);
     border-radius: 10px;
     padding: .2rem .5rem;
@@ -285,8 +284,7 @@
 }
 
 .action-highlight {
-    background-color: var(--action-highlight-color);
-    color: var(--text-color-alternate);
+    --icon-color: var(--action-highlight-color);
 }
 
 .item-comments {
@@ -308,8 +306,9 @@
     flex-direction: column;
     gap: .3rem;
 
-    & .edit-comment-button {
-        --icon-size: 1.1rem;
+    --icon-size: 1.5rem;
+
+    & .comment-button {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -374,7 +373,6 @@
 
 .activity-item {
     font-size: 14px;
-    color: grey;
 }
 
 .delete-entity {
@@ -457,7 +455,7 @@ input.input-text {
     text-align: center;
     margin-left: auto;
     margin-right: auto;
-    background-color: var(--bg-color);
+    background-color: var(--app-background-color);
 }
 
 /* Peers styles */
@@ -487,6 +485,27 @@ input.input-text {
     & .edit-button {
         margin-top: 10px;
         margin-right: auto;
+    }
+}
+
+/* settings styles */
+
+.settings-categories {
+    display: flex;
+
+    > .settings-category {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    > .category-selector {
+        position: fixed;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1rem;
     }
 }
 

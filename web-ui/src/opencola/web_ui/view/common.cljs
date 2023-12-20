@@ -55,7 +55,7 @@
          class :class} config]
     [:button.button-component {:type "button"
                                :on-click on-click!
-                               :name name
+                               :name name 
                                :disabled (when (not (nil? disabled?)) disabled?)
                                :class (when class class)}
      (when icon-class
@@ -205,30 +205,26 @@
       [:div.popout-menu-content {:on-click on-click! :class class}
        menu-content])))
 
-(defn select-menu-content [item-collection name-key id-key selected-item! on-click!]
-  [:div.select-menu-content 
-   (doall (for [item item-collection]
-            (when (not= item @selected-item!)
-              ^{:key (id-key item)} [button-component
-                                     {:class "select-button" :text (name-key item)}
-                                     #(do (on-click! (id-key item)) (reset! selected-item! item))])))])
-
-(defn select-menu [config item-collection current-item name-key id-key on-select!]
+(defn select-menu [config item-collection current-item name-key id-key on-select]
   (let [{class :class
          popout-class :popout-class} config
         menu-open?! (r/atom false) 
-        selected-item! (r/atom (first (filter #(= (id-key %) (id-key current-item)) item-collection)))
-        content [select-menu-content item-collection name-key id-key selected-item! on-select!]]
-    (fn []
-      [:div.select-menu-wrapper {:class class}
-       [:div.select-menu-toggle {:on-click #(swap! menu-open?! not) :aria-expanded @menu-open?!}
+        selected-item! (r/atom (first (filter #(= (id-key %) (id-key current-item)) item-collection)))] 
+    (fn [] 
+      [:div.select-menu-wrapper {:class class} 
+       [:div.select-menu-toggle.button {:on-click #(swap! menu-open?! not) :aria-expanded @menu-open?!}
         [:span.current-item (name-key @selected-item!)]
         [icon "icon" (if @menu-open?! "icon-hide" "icon-show")]]
        [popout-menu
         {:class popout-class}
         menu-open?!
         #(swap! menu-open?! not)
-        content]])))
+        [:div.select-menu-content
+         (doall (for [item item-collection]
+                  (when (not= item @selected-item!)
+                    ^{:key (id-key item)} [button-component
+                                           {:class "select-button" :text (name-key item)}
+                                           #(do (on-select (id-key item)) (reset! selected-item! item))])))]]])))
 
 
 (defn string-to-range [s range-max]
@@ -244,9 +240,10 @@
   (->> (string/split s #"\s+") (map first) (take 2) (apply str)))
 
 (defn profile-img [image-uri name on-click!]
-  (let [name (string/replace name #"\)|You \(" "")] 
-    [:div.profile-img-wrapper {:on-click on-click!}
-     (if (seq image-uri)
+  (let [name (string/replace name #"\)|You \(" "")
+        img? (some? (seq image-uri))] 
+    [:div.profile-img-wrapper {:on-click on-click! :data-img-present img?}
+     (if img?
        [:img.profile-img {:src image-uri :alt name}]
        [:span.generated-img {:style {:background-color (create-hsl name 65 75)}} (string/upper-case (initials name))])]))
 

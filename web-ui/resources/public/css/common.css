@@ -1,44 +1,46 @@
 
-:root {
-    --primary-color: rgb(0, 0, 0);
-    --secondary-color: rgb(50,50,50);
-    --teritary-color: rgb(100,100,100);
-    --accent-color: lightgray;
-    --highlight-color: orange;
+.app {
+    --primary-color: rgb(12, 11, 11);
+    --secondary-color: rgb(39, 36, 36);
+    --tertiary-color: rgb(114, 114, 114);
+    --accent-color: rgb(221, 221, 221);
+    --highlight-color: rgb(255, 0, 0);
 
     --caution-color: red;
     --disabled-color: gray;
 
     --text-color: var(--accent-color);
-    --text-color-alternate: black;
+    --text-color-alternate: var(--primary-color);
 
     --app-background-color: var(--primary-color);
     --item-background-color: var(--primary-color);
     --item-body-bg-color: var(--secondary-color);
-    --item-attribution-color: var(--teritary-color);
+    --item-attribution-color: var(--tertiary-color);
 
     --comment-color: var(--secondary-color);
-    --own-comment-color: var(--teritary-color);
+    --own-comment-color: var(--secondary-color);
 
-    --tag-bg-color: var(--accent-color);
+    --tag-bg-color: var(--secondary-color);
 
     --link-color: var(--accent-color);
 
-    --action-highlight-color: var(--accent-color);
+    --action-highlight-color: var(--highlight-color);
 
-    --border-color: var(--teritary-color);
+    --border-color: var(--tertiary-color);
     --border-size: 2px;
 
-    --icon-color: var(--teritary-color);
+    --icon-color: var(--tertiary-color);
 
-    --button-hover-bg-color: rgb(230, 230, 230);
+    --button-hover-bg-color: var(--accent-color);
+
+    background-color: var(--app-background-color);
+    color: var(--text-color);
+    min-height: 100vh;
 }
 
 body {
     font-family: "Roboto", Helvetica, sans-serif;
     margin: 0;
-    color: var(--text-color);
-    background-color: var(--app-background-color);
 }
 
 img {
@@ -53,6 +55,10 @@ img {
 
 a {
     text-decoration: none;
+}
+
+button {
+    all: unset;
 }
 
 ul {
@@ -141,13 +147,18 @@ ul {
     gap: .75rem;
     border-bottom: 2px solid var(--border-color);
     background-color: var(--item-background-color);
+    /* box-shadow: 5px 5px 5px 5px var(--shadow-color);
+    --shadow-color: rgb(28, 28, 28); 
+    border-radius: 1rem;
+    -webkit-box-shadow: 5px 5px 5px 5px var(--shadow-color); */
 }
 
 button,
 .button {
-    all: unset;
     cursor: pointer;
     &:hover {
+        color: var(--text-color-alternate);
+        --icon-color: var(--text-color-alternate);
         background-color: var(--button-hover-bg-color);
     }
 }
@@ -155,10 +166,6 @@ button,
 .button-component {
     display: flex;
     align-items: center;
-
-    &:hover {
-        background-color: var(--button-hover-bg-color);
-    }
 }
 
 .text-input-wrapper {
@@ -169,7 +176,7 @@ button,
 
     > .text-input-component {
         border: var(--border-size) solid var(--border-color);
-        border-radius: 1rem;
+        border-radius: .4rem;
         height: fit-content;
         padding: .1rem .3rem;
         width: 100%;
@@ -212,7 +219,11 @@ button,
     height: var(--size, 4rem);
     color: black;
     
-    border-radius: 50%;
+    border-radius: 1rem;
+
+    &[data-img-present=true] {
+        border: none;
+    }
 
     > .profile-img,
     .generated-img {
@@ -398,6 +409,11 @@ button,
     -webkit-mask-image: url("../img/svg/delete.svg");
 }
 
+.icon-reply {
+    mask-image: url("../img/svg/reply.svg");
+    -webkit-mask-image: url("../img/svg/reply.svg");
+}
+
 .instruction-item {
     width: fit-content;
     padding-inline: 2rem;
@@ -432,13 +448,15 @@ button,
     width: var(--content-width, 5rem)
 }
 
-.persona-select-menu {
+.select-menu-wrapper {
     position: relative;
     display: flex;
     justify-content: center;
+    color: var(--text-color);
     --icon-size: 1.5rem;
-    --content-width: 6rem;
+    --content-width: 6.5rem;
     --br-value: .5rem;
+    width: var(--content-width, 5rem);
 
     > .select-menu-toggle {
         position: relative;
@@ -464,22 +482,25 @@ button,
     > .popout-menu-content {
         background-color: var(--app-background-color);
         border: var(--border-size) solid var(--border-color);
+        box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        overflow: hidden;
         border-top: 0;
         position: absolute;
         top: 100%;
-        width: calc(100% - 1px);
+        width: var(--content-width, 5rem);
         border-bottom-left-radius: var(--br-value, 1rem);
         border-bottom-right-radius: var(--br-value, 1rem);
     }
 
     & .current-item {
+        text-wrap: nowrap;
         overflow: hidden;
     }
 
     & .select-button {
         width: 100%;
-        border-radius: 1rem;
-
         > .button-text {
             padding: .2rem .4rem;
             overflow: hidden;

@@ -3,12 +3,13 @@
    [goog.dom :as gdom]
    [reagent.dom :as rdom]
    [opencola.web-ui.config :as config]
-   [opencola.web-ui.app-state :as state :refer [personas! persona! query! feed! peers! error! set-page!]]
+   [opencola.web-ui.app-state :as state :refer [personas! persona! query! feed! peers! error! themes! theme! set-page!]]
    [opencola.web-ui.view.feed :as feed]
    [opencola.web-ui.view.persona :as persona]
    [opencola.web-ui.view.peer :as peer]
    [opencola.web-ui.view.settings :as settings]
    [opencola.web-ui.location :as location]
+   [opencola.web-ui.theme :as theme]
    [secretary.core :as secretary :refer-macros [defroute]]
    [goog.events :as events])
   (:import [goog History]
@@ -32,7 +33,7 @@
   (location/set-state-from-query-params query-params)
   (if (not @(persona!))
     (do
-      (persona! (-> @(personas!) :items first :id))
+      (persona! (-> @(personas!) first :id))
       (location/set-location-from-state))
     (when @config/config
       (peer/get-peers @(persona!) (peers!) #(error! %)))))
@@ -69,31 +70,34 @@
   (location/set-location-from-state))
 
 (defn app []
-  (fn []
-    [:div.app 
+  (fn [] 
+    [:div.app {:style (get @(themes!) @(theme!))}
      (when (state/page-visible? :feed)
        [feed/feed-page (feed!) (personas!) (persona!) on-persona-select (query!) on-search])
      (when (state/page-visible? :peers)
        [peer/peer-page (peers!) (personas!) (persona!) on-persona-select (query!) on-search])
-     (when (state/page-visible? :personas)
+     (when (state/page-visible? :personas) 
        [persona/personas-page (personas!) (persona!) on-persona-select (query!) on-search])
      (when (state/page-visible? :settings)
-       [settings/settings-page (personas!) (persona!) on-persona-select (query!) on-search])
+       [settings/settings-page (personas!) (persona!) (themes!) (theme!) on-persona-select (query!) on-search])
      (when (state/page-visible? :error)
        [:div.settings "404"])]))
 
 
-(defn mount [el]
+(defn mount [el] 
   (rdom/render [app] el))
 
-(defn mount-app-element []
-  (when-let [el (get-app-element)]
+(defn mount-app-element [] 
+  (when-let [el (get-app-element)] 
     (mount el)))
 
-(defn init-personas []
+(defn init [] 
   (persona/init-personas 
-   (personas!)
+   (personas!) 
    (fn []
+     (themes! (theme/get-themes))
+     (theme! "light") 
+     (mount-app-element)
      (location/set-location-from-state)
      (when (empty @(feed!))
        (feed/get-feed @(persona!) @(query!) (feed!) #(error! %)))
@@ -106,7 +110,7 @@
 #_(mount-app-element)
 
 ;; specify reload hook with ^:after-load metadata
-(defn ^:after-load on-reload []
+(defn ^:after-load on-reload [] 
   (mount-app-element)
   ;; optionally touch your app-state to force rerendering depending on
   ;; your application
@@ -118,8 +122,7 @@
   (.setEnabled true)))
 
 (config/get-config
- #(do (mount-app-element)
-      (init-personas))
+ #(init)
  #(location/set-location "config-error.html"))
 
 

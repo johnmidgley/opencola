@@ -101,7 +101,7 @@
 (defn peer-page [peers! personas! persona! on-persona-select query! on-search!]
   (let [adding-peer?! (atom false)]
     (fn []
-    (let [personas (into {} (map #(vector (:id %) %) (:items @personas!)))]
+    (let [personas (into {} (map #(vector (:id %) %) @personas!))]
       [:div.peers-page
        [search/search-header
         :peers
