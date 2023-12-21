@@ -336,6 +336,10 @@ public final class Model {
        * <code>ATTACHMENT_ID = 17;</code>
        */
       ATTACHMENT_ID(17),
+      /**
+       * <code>TOP_LEVEL_PARENT_ID = 18;</code>
+       */
+      TOP_LEVEL_PARENT_ID(18),
       UNRECOGNIZED(-1),
       ;
 
@@ -411,6 +415,10 @@ public final class Model {
        * <code>ATTACHMENT_ID = 17;</code>
        */
       public static final int ATTACHMENT_ID_VALUE = 17;
+      /**
+       * <code>TOP_LEVEL_PARENT_ID = 18;</code>
+       */
+      public static final int TOP_LEVEL_PARENT_ID_VALUE = 18;
 
 
       public final int getNumber() {
@@ -455,6 +463,7 @@ public final class Model {
           case 15: return COMMENT_ID;
           case 16: return NETWORK_TOKEN;
           case 17: return ATTACHMENT_ID;
+          case 18: return TOP_LEVEL_PARENT_ID;
           default: return null;
         }
       }
@@ -1417,33 +1426,33 @@ public final class Model {
               done = true;
               break;
             case 10: {
-              data_ = input.readBytes();
               dataCase_ = 1;
+              data_ = input.readBytes();
               break;
             }
             case 16: {
-              data_ = input.readBool();
               dataCase_ = 2;
+              data_ = input.readBool();
               break;
             }
             case 24: {
-              data_ = input.readInt32();
               dataCase_ = 3;
+              data_ = input.readInt32();
               break;
             }
             case 32: {
-              data_ = input.readInt64();
               dataCase_ = 4;
+              data_ = input.readInt64();
               break;
             }
             case 45: {
-              data_ = input.readFloat();
               dataCase_ = 5;
+              data_ = input.readFloat();
               break;
             }
             case 49: {
-              data_ = input.readDouble();
               dataCase_ = 6;
+              data_ = input.readDouble();
               break;
             }
             case 58: {
@@ -1453,8 +1462,8 @@ public final class Model {
               break;
             }
             case 66: {
-              data_ = input.readBytes();
               dataCase_ = 8;
+              data_ = input.readBytes();
               break;
             }
             case 74: {
@@ -8122,43 +8131,44 @@ public final class Model {
     java.lang.String[] descriptorData = {
       "\n\013model.proto\022\032io.opencola.model.protobu" +
       "f\032\037google/protobuf/timestamp.proto\032\nutil" +
-      ".proto\032\016security.proto\"\357\002\n\tAttribute\022L\n\r" +
+      ".proto\032\016security.proto\"\210\003\n\tAttribute\022L\n\r" +
       "coreAttribute\030\001 \001(\01623.io.opencola.model." +
       "protobuf.Attribute.CoreAttributeH\000\022\r\n\003ur" +
-      "i\030\002 \001(\tH\000\"\373\001\n\rCoreAttribute\022\010\n\004NONE\020\000\022\010\n" +
+      "i\030\002 \001(\tH\000\"\224\002\n\rCoreAttribute\022\010\n\004NONE\020\000\022\010\n" +
       "\004TYPE\020\001\022\r\n\tMIME_TYPE\020\002\022\007\n\003URI\020\003\022\013\n\007DATA_" +
       "ID\020\004\022\016\n\nPUBLIC_KEY\020\005\022\010\n\004NAME\020\006\022\017\n\013DESCRI" +
       "PTION\020\007\022\010\n\004TEXT\020\010\022\r\n\tIMAGE_URI\020\t\022\007\n\003TAG\020" +
       "\n\022\t\n\005TRUST\020\013\022\010\n\004LIKE\020\014\022\n\n\006RATING\020\r\022\r\n\tPA" +
       "RENT_ID\020\016\022\016\n\nCOMMENT_ID\020\017\022\021\n\rNETWORK_TOK" +
-      "EN\020\020\022\021\n\rATTACHMENT_ID\020\021B\007\n\005value\"\224\002\n\005Val" +
-      "ue\022\017\n\005empty\030\001 \001(\014H\000\022\021\n\007boolean\030\002 \001(\010H\000\022\r" +
-      "\n\003int\030\003 \001(\005H\000\022\016\n\004long\030\004 \001(\003H\000\022\017\n\005float\030\005" +
-      " \001(\002H\000\022\020\n\006double\030\006 \001(\001H\000\022\020\n\006string\030\007 \001(\t" +
-      "H\000\022\017\n\005bytes\030\010 \001(\014H\000\022\r\n\003uri\030\t \001(\tH\000\022,\n\002id" +
-      "\030\n \001(\0132\036.io.opencola.model.protobuf.IdH\000" +
-      "\022=\n\tpublicKey\030\013 \001(\0132(.io.opencola.securi" +
-      "ty.protobuf.PublicKeyH\000B\006\n\004data\"\267\001\n\017Tran" +
-      "sactionFact\0228\n\tattribute\030\001 \001(\0132%.io.open" +
-      "cola.model.protobuf.Attribute\0220\n\005value\030\002" +
-      " \001(\0132!.io.opencola.model.protobuf.Value\022" +
-      "8\n\toperation\030\003 \001(\0162%.io.opencola.model.p" +
-      "rotobuf.Operation\"\023\n\002Id\022\r\n\005bytes\030\001 \001(\014\"\201" +
-      "\001\n\021TransactionEntity\0220\n\010entityId\030\001 \001(\0132\036" +
-      ".io.opencola.model.protobuf.Id\022:\n\005facts\030" +
-      "\002 \003(\0132+.io.opencola.model.protobuf.Trans" +
-      "actionFact\"\351\001\n\013Transaction\022*\n\002id\030\001 \001(\0132\036" +
-      ".io.opencola.model.protobuf.Id\0223\n\013author" +
-      "ityId\030\002 \001(\0132\036.io.opencola.model.protobuf" +
-      ".Id\022J\n\023transactionEntities\030\003 \003(\0132-.io.op" +
-      "encola.model.protobuf.TransactionEntity\022" +
-      "-\n\ttimestamp\030\004 \001(\0132\032.google.protobuf.Tim" +
-      "estamp\"\233\001\n\021SignedTransaction\022I\n\025compress" +
-      "edTransaction\030\001 \001(\0132*.io.opencola.util.p" +
-      "rotobuf.CompressedBytes\022;\n\tsignature\030\002 \001" +
-      "(\0132(.io.opencola.security.protobuf.Signa" +
-      "ture*+\n\tOperation\022\010\n\004NONE\020\000\022\013\n\007RETRACT\020\001" +
-      "\022\007\n\003ADD\020\002b\006proto3"
+      "EN\020\020\022\021\n\rATTACHMENT_ID\020\021\022\027\n\023TOP_LEVEL_PAR" +
+      "ENT_ID\020\022B\007\n\005value\"\224\002\n\005Value\022\017\n\005empty\030\001 \001" +
+      "(\014H\000\022\021\n\007boolean\030\002 \001(\010H\000\022\r\n\003int\030\003 \001(\005H\000\022\016" +
+      "\n\004long\030\004 \001(\003H\000\022\017\n\005float\030\005 \001(\002H\000\022\020\n\006doubl" +
+      "e\030\006 \001(\001H\000\022\020\n\006string\030\007 \001(\tH\000\022\017\n\005bytes\030\010 \001" +
+      "(\014H\000\022\r\n\003uri\030\t \001(\tH\000\022,\n\002id\030\n \001(\0132\036.io.ope" +
+      "ncola.model.protobuf.IdH\000\022=\n\tpublicKey\030\013" +
+      " \001(\0132(.io.opencola.security.protobuf.Pub" +
+      "licKeyH\000B\006\n\004data\"\267\001\n\017TransactionFact\0228\n\t" +
+      "attribute\030\001 \001(\0132%.io.opencola.model.prot" +
+      "obuf.Attribute\0220\n\005value\030\002 \001(\0132!.io.openc" +
+      "ola.model.protobuf.Value\0228\n\toperation\030\003 " +
+      "\001(\0162%.io.opencola.model.protobuf.Operati" +
+      "on\"\023\n\002Id\022\r\n\005bytes\030\001 \001(\014\"\201\001\n\021TransactionE" +
+      "ntity\0220\n\010entityId\030\001 \001(\0132\036.io.opencola.mo" +
+      "del.protobuf.Id\022:\n\005facts\030\002 \003(\0132+.io.open" +
+      "cola.model.protobuf.TransactionFact\"\351\001\n\013" +
+      "Transaction\022*\n\002id\030\001 \001(\0132\036.io.opencola.mo" +
+      "del.protobuf.Id\0223\n\013authorityId\030\002 \001(\0132\036.i" +
+      "o.opencola.model.protobuf.Id\022J\n\023transact" +
+      "ionEntities\030\003 \003(\0132-.io.opencola.model.pr" +
+      "otobuf.TransactionEntity\022-\n\ttimestamp\030\004 " +
+      "\001(\0132\032.google.protobuf.Timestamp\"\233\001\n\021Sign" +
+      "edTransaction\022I\n\025compressedTransaction\030\001" +
+      " \001(\0132*.io.opencola.util.protobuf.Compres" +
+      "sedBytes\022;\n\tsignature\030\002 \001(\0132(.io.opencol" +
+      "a.security.protobuf.Signature*+\n\tOperati" +
+      "on\022\010\n\004NONE\020\000\022\013\n\007RETRACT\020\001\022\007\n\003ADD\020\002b\006prot" +
+      "o3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

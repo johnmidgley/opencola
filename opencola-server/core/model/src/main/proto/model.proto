@@ -26,6 +26,7 @@ message Attribute {
     COMMENT_ID = 15;
     NETWORK_TOKEN = 16;
     ATTACHMENT_ID = 17;
+    TOP_LEVEL_PARENT_ID = 18;
   }
   oneof value {
     CoreAttribute coreAttribute = 1;

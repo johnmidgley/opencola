@@ -1,5 +1,6 @@
 package io.opencola.model
 
+import io.opencola.model.value.EmptyValue
 import io.opencola.model.value.Value
 import io.opencola.serialization.StreamSerializer
 import io.opencola.serialization.readLong
@@ -21,7 +22,7 @@ data class Fact(
     val transactionOrdinal: Long? = null,
 ) {
     override fun toString(): String {
-        val unwrappedValue = attribute.valueWrapper.unwrap(value)
+        val unwrappedValue = if (value == EmptyValue) "EmptyValue" else attribute.valueWrapper.unwrap(value)
         return "{ authorityId: $authorityId entityId: $entityId attribute: ${attribute.uri} value: $unwrappedValue operation: $operation transactionOrdinal: $transactionOrdinal }"
     }
 

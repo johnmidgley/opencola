@@ -241,14 +241,21 @@ class EntityStoreTest {
         val comment = CommentEntity(persona.personaId, resource.entityId, "Comment")
         entityStore.updateEntities(comment)
 
-        val comment1 = entityStore.getEntity(persona.personaId, comment.entityId)
+        val commentResponse = CommentEntity(persona.personaId, comment.entityId, "Comment Response", resource.entityId)
+        entityStore.updateEntities(commentResponse)
+
+        val comment1 = entityStore.getEntity(persona.personaId, comment.entityId) as CommentEntity
         assertNotNull(comment1)
-        assertEquals(comment, comment1)
+        assertEquals(comment.authorityId, comment1.authorityId)
+        assertEquals(comment.entityId, comment1.entityId)
+        assertEquals(comment.text, comment1.text)
+        assertEquals(resource.entityId, comment1.parentId)
 
         val resource1 = entityStore.getEntity(persona.personaId, resource.entityId)
         assertNotNull(resource1)
-        assertEquals(1, resource1.commentIds.count())
-        assertEquals(comment.entityId, resource1.commentIds.single())
+        assertEquals(2, resource1.commentIds.count())
+        assertContains(resource1.commentIds, comment.entityId)
+        assertContains(resource1.commentIds, commentResponse.entityId)
 
         entityStore.deleteEntities(persona.personaId, comment.entityId)
         val resource2 = entityStore.getEntity(persona.personaId, resource.entityId)

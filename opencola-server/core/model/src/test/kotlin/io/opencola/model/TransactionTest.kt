@@ -1,6 +1,5 @@
-package opencola.core.model
+package io.opencola.model
 
-import io.opencola.model.*
 import io.opencola.application.TestApplication
 import io.opencola.model.value.StringValue
 import io.opencola.security.DEFAULT_SIGNATURE_ALGO
