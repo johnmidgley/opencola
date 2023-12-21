@@ -31,6 +31,16 @@ class JsonClient(builder: ApplicationTestBuilder) {
         }
     }
 
+    suspend inline fun <reified T> put(
+        path: String,
+        body: T,
+    ): HttpResponse {
+        return httpClient.put(path) {
+            contentType(ContentType.Application.Json)
+            setBody(body)
+        }
+    }
+
     suspend inline fun delete(
         path: String,
     ): HttpResponse {

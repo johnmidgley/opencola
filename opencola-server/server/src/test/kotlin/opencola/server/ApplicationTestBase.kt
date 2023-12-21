@@ -9,6 +9,7 @@ import opencola.server.plugins.UserSession
 import opencola.server.plugins.configureContentNegotiation
 import opencola.server.plugins.routing.configureRouting
 import mu.KotlinLogging
+import opencola.server.plugins.routing.configureStorageRouting
 
 abstract class ApplicationTestBase(name: String = "ApplicationTest") {
     protected val application = TestApplication.instance
@@ -30,5 +31,6 @@ abstract class ApplicationTestBase(name: String = "ApplicationTest") {
         app.install(Sessions) {
             cookie<UserSession>("user_session")
         }
+        app.configureStorageRouting(application.storagePath.resolve("web"))
     }
 }

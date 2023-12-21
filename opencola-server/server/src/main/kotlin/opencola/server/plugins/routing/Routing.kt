@@ -23,6 +23,7 @@ fun Application.configureRouting(app: app) {
     // TODO: Make and user general opencola.server
     val logger = KotlinLogging.logger("opencola.init")
     val ocServerPorts = listOfNotNull(app.config.server.port, app.config.server.ssl?.port).toSet()
+    configureStorageRouting(app.storagePath.resolve("web"))
 
     routing {
         // Authentication from https://ktor.io/docs/session-auth.html
