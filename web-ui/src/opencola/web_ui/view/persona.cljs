@@ -3,7 +3,7 @@
    [reagent.core :as reagent :refer [atom]]
    [opencola.web-ui.app-state :as state]
    [opencola.web-ui.model.persona :as model]
-   [opencola.web-ui.view.common :refer [input-checkbox error-control edit-control-buttons button-component text-input-component swap-atom-data! profile-img select-menu]]
+   [opencola.web-ui.view.common :refer [input-checkbox error-control edit-control-buttons button-component text-input-component swap-atom-data! profile-img select-menu item-divider]]
    [opencola.web-ui.view.search :as search]
    [opencola.web-ui.location :as location]))
 
@@ -68,7 +68,8 @@
                                                 (reset! editing?! false))
                                   :on-delete #(delete-persona personas! persona! on-error)} 
             true error!] 
-           [button-component {:text "Edit" :class " edit-control-button edit-button" :name "edit-button"} #(reset! editing?! true)])]))))
+           [button-component {:text "Edit" :class " edit-control-button edit-button" :name "edit-button"} #(reset! editing?! true)])
+         [item-divider]]))))
 
 (def empty-persona
   {:id ""  
@@ -98,7 +99,8 @@
     [:div.content-list.persona-list 
      (when @adding-persona?! [add-persona-item personas! adding-persona?!])
      (doall (for [persona @personas!]
-              ^{:key persona} [persona-item personas! persona]))]))
+              ^{:key persona} [persona-item personas! persona]
+              ))]))
 
 
 (defn personas-page [personas! persona! on-persona-select query! on-search!]

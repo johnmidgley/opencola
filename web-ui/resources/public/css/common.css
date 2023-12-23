@@ -133,7 +133,8 @@ ul {
     justify-content: center;
     margin-left: auto;
     margin-right: auto;
-    gap: 2rem;
+    --gap: 1rem;
+    gap: var(--gap, 1rem);
     max-width: 60rem;
     padding: 0 2rem;
 }
@@ -145,7 +146,7 @@ ul {
     display: flex;
     flex-direction: column;
     gap: .75rem;
-    border-bottom: 2px solid var(--border-color);
+    /* border-bottom: 2px solid var(--border-color); */
     background-color: var(--item-background-color);
     /* box-shadow: 5px 5px 5px 5px var(--shadow-color);
     --shadow-color: rgb(28, 28, 28); 
@@ -505,5 +506,23 @@ button,
             padding: .2rem .4rem;
             overflow: hidden;
         }
+    }
+}
+
+.item-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: .2rem;
+    height: 2rem;
+    margin-top: var(--gap);
+
+    > .divider-symbol {
+        width: var(--size);
+        height: var(--size);
+        border: var(--border-size) solid var(--border-color);
+        border-radius: 50%;
+        transform: translateY(var(--translation));
     }
 }

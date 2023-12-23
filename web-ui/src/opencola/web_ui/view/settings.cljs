@@ -7,7 +7,7 @@
    [opencola.web-ui.view.search :as search]
    [opencola.web-ui.location :as location]))
 
-(def category-ids (list "General" "Appearance"))
+(def category-ids (list "Appearance"))
 
 (defn category-selector [on-click]
   [:div.category-selector

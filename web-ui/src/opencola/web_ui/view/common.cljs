@@ -176,6 +176,7 @@
   (let [parts (string/split filename #"\.")]
     (last parts)))
 
+
 (defn image? [filename]
   (contains? #{"jpg" "jpeg" "png" "gif" "svg"} (extenstion filename)))
 
@@ -272,3 +273,15 @@
                          :text (if delete-text delete-text "Delete")} 
        on-delete])
      (error-control error!)]))
+
+(defn item-divider []
+  (fn []
+    [:div.item-divider
+     (doall (for [i (range (+ (rand-int 5) 6))]
+              (let [size (rand 3)
+                    translateion (rand 2)]
+                ^{:key i} [:span.divider-symbol {:style 
+                                                 {"--size" (str size "rem") 
+                                                  "--border-size" ".1rem" 
+                                                  "--translation" (str translateion "rem")}
+                                                 } " "])))]))
