@@ -1,29 +1,32 @@
 (ns ^:figwheel-hooks opencola.web-ui.theme
   (:require
-   [opencola.web-ui.ajax :as ajax :refer [GET]]
+   [ajax.core :refer [GET]]
+   [opencola.web-ui.model.error :as error]
    [clojure.string :as string]))
 
-(def themes {"dark" {
-                    "primaryColor" "rgb(12, 11, 11)"
-                    "secondaryColor" "rgb(39, 36, 36)"
-                    "tertiaryColor" "rgb(114, 114, 114)"
-                    "accentColor" "rgb(221, 221, 221)"
-                    "highlightColor" "rgb(255, 0, 0)"
-                } 
-             "light" {
-                    "primaryColor" "rgb(255, 255, 255)"
-                    "secondaryColor" "rgb(228, 228, 228)"
-                    "tertiaryColor" "rgb(0, 0, 0)"
-                    "accentColor" "rgb(0, 0, 0)"
-                    "highlightColor" "rgb(255, 0, 0)"
-                }
-            })
+(defonce themes! (atom nil))
 
 (defn kebabify [s split-regex]
   (string/lower-case (str "--" (string/join "-" (string/split s split-regex)))))
 
-(defn kebabify-key [[k v]]
-  [(kebabify k #"(?=[A-Z])") v])
+(defn parse-themes [theme-data]
+  (map (fn [theme] (update theme "style-attributes"
+                           #(zipmap (map (fn [k] (kebabify k #"(?=[A-Z])")) (keys %)) (vals %)))
+         ) theme-data))
 
-(defn get-themes []
-  (reduce-kv (fn [acc k v] (assoc acc k (into {} (map kebabify-key v)))) {} themes))
+(defn load-themes [on-success on-error]
+  (GET "themes.json" {:handler #(do (reset! themes! (parse-themes %))
+                                    (on-success %))
+                      :response-format :json
+                      :keywords? false
+                      :error-handler #(on-error (error/error-result->str %))}))
+
+(defn theme-names [] 
+  (map #(get % "name") @themes!))
+
+(defn get-themes [on-success]
+  (when (not @themes!) (load-themes #(on-success %) #()))
+  @themes!)
+
+(defn get-theme-attributes [theme-name]
+  (get (first (filter #(= theme-name (get % "name")) @themes!)) "style-attributes"))

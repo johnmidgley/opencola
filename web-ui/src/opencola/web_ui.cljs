@@ -71,7 +71,7 @@
 
 (defn app []
   (fn [] 
-    [:div.app {:style (get @(themes!) @(theme!))}
+    [:div.app {:style (theme/get-theme-attributes @(theme!))}
      (when (state/page-visible? :feed)
        [feed/feed-page (feed!) (personas!) (persona!) on-persona-select (query!) on-search])
      (when (state/page-visible? :peers)
@@ -95,9 +95,8 @@
   (persona/init-personas 
    (personas!) 
    (fn []
-     (themes! (theme/get-themes))
+     (themes! (theme/get-themes #(mount-app-element)))
      (theme! "light") 
-     (mount-app-element)
      (location/set-location-from-state)
      (when (empty @(feed!))
        (feed/get-feed @(persona!) @(query!) (feed!) #(error! %)))

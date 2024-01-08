@@ -498,6 +498,7 @@ input.input-text {
         flex-direction: column;
         align-items: center;
         width: 100%;
+        gap: 1rem;
     }
 
     > .category-selector {
@@ -506,6 +507,16 @@ input.input-text {
         flex-direction: column;
         align-items: center;
         padding: 1rem;
+    }
+}
+
+.setting-row {
+    display: flex;
+    align-items: center;
+    width: 20%;
+    
+    > .setting-title {
+        width: 20rem;
     }
 }
 
