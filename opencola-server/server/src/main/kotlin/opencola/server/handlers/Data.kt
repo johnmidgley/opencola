@@ -6,13 +6,13 @@ import io.ktor.server.response.*
 import io.opencola.model.DataEntity
 import io.opencola.model.Id
 import io.opencola.storage.entitystore.EntityStore
-import io.opencola.storage.filestore.ContentBasedFileStore
+import io.opencola.storage.filestore.ContentAddressedFileStore
 import mu.KotlinLogging
 import io.opencola.storage.cache.MhtCache
 
 private val logger = KotlinLogging.logger("DataHandler")
 
-suspend fun handleGetDataCall(call: ApplicationCall, entityStore: EntityStore, fileStore: ContentBasedFileStore) {
+suspend fun handleGetDataCall(call: ApplicationCall, entityStore: EntityStore, fileStore: ContentAddressedFileStore) {
     val stringId = call.parameters["id"] ?: throw IllegalArgumentException("No id set")
     val entityId = Id.decode(stringId)
 

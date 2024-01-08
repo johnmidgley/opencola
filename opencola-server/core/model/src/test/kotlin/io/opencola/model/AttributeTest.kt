@@ -57,6 +57,9 @@ class AttributeTest {
         assertEquals(16, CoreAttribute.AttachmentIds.ordinal)
         assertEquals(CoreAttribute.AttachmentIds.spec.protoAttribute, CoreAttribute.AttachmentIds.spec.protoAttribute)
 
-        assertEquals(17, CoreAttribute.values().count())
+        assertEquals(17, CoreAttribute.TopLevelParentId.ordinal)
+        assertEquals(CoreAttribute.TopLevelParentId.spec.protoAttribute, CoreAttribute.TopLevelParentId.spec.protoAttribute)
+
+        assertEquals(18, CoreAttribute.entries.toTypedArray().count())
     }
 }

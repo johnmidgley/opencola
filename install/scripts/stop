@@ -1,5 +1,7 @@
-#!/bin/bash
-ps -e | grep opencola | grep -v grep | cut -f1 -d " " | xargs kill
+#!/bin/env sh
+# This seems to work better with my ubuntu machine
+ps -ef |grep -v awk | awk '/opencola/{print $2}' | xargs kill
+
+#ps -e | grep opencola | grep -v grep | cut -f1 -d " " | xargs kill
 # cd oc-network
 # docker-compose down
-

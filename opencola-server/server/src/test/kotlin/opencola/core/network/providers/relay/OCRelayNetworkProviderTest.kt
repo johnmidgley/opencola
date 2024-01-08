@@ -10,9 +10,8 @@ import io.opencola.network.pongRoute
 import io.opencola.network.protobuf.Network as Proto
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.relay.client.v2.WebSocketClient
-import io.opencola.relay.common.defaultOCRPort
 import io.opencola.relay.common.message.v2.MessageStorageKey
-import io.opencola.relay.server.startWebServer
+import io.opencola.relay.server.RelayServer
 import io.opencola.security.keystore.defaultPasswordHash
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
@@ -63,7 +62,7 @@ class OCRelayNetworkProviderTest {
         println("app1AddressBook=\n$app1AddressBook")
 
         println("Starting relay server")
-        val webServer = startWebServer(defaultOCRPort)
+        val relayServer = RelayServer().also { it.start() }
         println("Starting network node0")
         app0.open(true)
         val networkNode0 = app0.inject<NetworkNode>()
@@ -103,7 +102,7 @@ class OCRelayNetworkProviderTest {
             println("Stopping app1")
             app1.close()
             println("Stopping relay server")
-            webServer.stop(200, 200)
+            relayServer.stop()
         }
     }
 
@@ -114,7 +113,7 @@ class OCRelayNetworkProviderTest {
         val app0 = application0.application
         val app1 = application1.application
 
-        val relayServer = startWebServer(defaultOCRPort)
+        val relayServer = RelayServer().also { it.start() }
 
         setPeerAddressToRelay(app0.inject(), app0.getPersonas().single().entityId)
         setPeerAddressToRelay(app1.inject(), app1.getPersonas().single().entityId)
@@ -122,7 +121,7 @@ class OCRelayNetworkProviderTest {
         try {
             testConnectAndReplicate(application0, application1)
         } finally {
-            relayServer.stop(200, 200)
+            relayServer.stop()
         }
     }
 
@@ -141,17 +140,19 @@ class OCRelayNetworkProviderTest {
             println("Getting applications")
             val (app0, app1) = getApplications(2)
 
-            println("Setting Relay Addresses")
-            setPeerAddressToRelay(app0.inject(), app1.getPersonas().first().entityId)
-            setPeerAddressToRelay(app1.inject(), app0.getPersonas().first().entityId)
+            println("Set    ting Relay Addresses")
+            val app0Persona = app0.getPersonas().first()
+            val app1Persona = app1.getPersonas().first()
+            setPeerAddressToRelay(app0.inject(), app1Persona.entityId)
+            setPeerAddressToRelay(app1.inject(), app0Persona.entityId)
 
             println("Starting relay server")
-            val webServer = startWebServer(defaultOCRPort)
+            val relayServer = RelayServer().also { it.start() }
 
-            println("Starting network node0")
+            println("Starting network node0: ${app0Persona.personaId}")
             app0.open(true)
 
-            println("Starting network node1")
+            println("Starting network node1 ${app1Persona.personaId}")
             app1.open()
 
             println("Creating relay client")
@@ -174,12 +175,13 @@ class OCRelayNetworkProviderTest {
                     }
                 }
             } finally {
+                println("Closing resources")
                 app0.close()
                 app1.close()
                 println("Closing relay client")
                 relayClient.close()
                 println("Stopping relay server")
-                webServer.stop(200, 200)
+                relayServer.stop()
             }
         }
     }

@@ -172,6 +172,15 @@ enum class CoreAttribute(val spec: Attribute) {
             null
         )
     ),
+    TopLevelParentId(
+        Attribute(
+            URI("oc://attributes/topLevelParentId"),
+            AttributeType.SingleValue,
+            ProtoAttribute.TOP_LEVEL_PARENT_ID,
+            IdValue as ValueWrapper<Any>,
+            isIndexable = false,
+        )
+    ),
 }
 
 

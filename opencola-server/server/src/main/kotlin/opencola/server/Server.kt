@@ -7,8 +7,8 @@ import io.opencola.application.Application
 import io.opencola.application.Config
 import io.opencola.application.LoginConfig
 import io.opencola.application.ServerConfig
-import io.opencola.event.EventBus
-import io.opencola.event.Events
+import io.opencola.event.bus.EventBus
+import io.opencola.event.bus.Events
 import io.opencola.network.NetworkNode
 import io.opencola.security.encode
 import io.opencola.security.generateAesKey

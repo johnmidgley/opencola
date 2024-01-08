@@ -1,8 +1,8 @@
 package opencola.server.handlers
 
 import io.opencola.application.Application
-import io.opencola.event.EventBus
-import io.opencola.event.Events
+import io.opencola.event.bus.EventBus
+import io.opencola.event.bus.Events
 import io.opencola.model.*
 import kotlinx.serialization.Serializable
 import io.opencola.util.nullOrElse
@@ -14,14 +14,18 @@ import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.entitystore.EntityStore
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
-import io.opencola.storage.filestore.ContentBasedFileStore
+import io.opencola.storage.filestore.ContentAddressedFileStore
 import mu.KotlinLogging
 import opencola.server.handlers.EntityResult.*
 
 private val logger = KotlinLogging.logger("Feed")
 
 @Serializable
-data class FeedResult internal constructor(val context: String?, val pagingToken: String?, val results: List<EntityResult>) {
+data class FeedResult internal constructor(
+    val context: String?,
+    val pagingToken: String?,
+    val results: List<EntityResult>
+) {
     constructor(context: Context, pagingToken: String?, results: List<EntityResult>) : this(
         context.toString(),
         pagingToken,
@@ -40,7 +44,9 @@ fun getPostedById(entities: List<Entity>): Id {
 }
 
 fun getSummary(entities: List<Entity>, authoritiesById: Map<Id, AddressBookEntry>): Summary {
-    val entity = entities.maxByOrNull { e -> e.getCurrentFacts().maxOfOrNull { it.transactionOrdinal!! }!! }!!
+    val entity = entities
+        .filter { it !is RawEntity } // Raw entities cannot be displayed - they just contain activity facts
+        .maxByOrNull { e -> e.getCurrentFacts().maxOfOrNull { it.transactionOrdinal!! }!! }!!
     val postedByAuthority = authoritiesById[getPostedById(entities)]
 
     return Summary(
@@ -63,7 +69,8 @@ fun factToAction(children: Children, fact: Fact): Action? {
         Tags.spec -> Action(ActionType.Tag, null, fact.unwrapValue())
         CommentIds.spec -> {
             val commentId = fact.unwrapValue<Id>()
-            Action(ActionType.Comment, commentId, children.comments.getValue(commentId).text)
+            // A comment can be missing if the entity is a RawEntity referring to a comment that was deleted
+            children.comments[commentId]?.let { Action(ActionType.Comment, commentId, it.text) }
         }
 
         AttachmentIds.spec -> {
@@ -148,6 +155,7 @@ fun isEntityIsVisible(entity: Entity): Boolean {
     return when (entity) {
         is ResourceEntity -> true
         is PostEntity -> true
+        is RawEntity -> true
         else -> false
     }
 }
@@ -194,7 +202,16 @@ fun getChildren(
     }
 
     val children = entityStore.getEntities(authorityIds, ids)
-    val comments = children.filterIsInstance<CommentEntity>().associateBy { it.entityId }
+    // "RawEntity"s can't be displayed on their own, so don't include them unless a full version of the entity is present
+    val entityIds = entities.filter { it !is RawEntity }.map { it.entityId }.toSet()
+    val allChildren = children.filter { it !is RawEntity }.map { it.entityId }.toSet()
+    val allEntityIds = entityIds.plus(allChildren)
+
+    val comments = children
+        .filterIsInstance<CommentEntity>()
+        .filter { it.parentId in allEntityIds }
+        .associateBy { it.entityId }
+
     // TODO: Attachments are not necessarily unique. Should select best one
     val attachments = children.filterIsInstance<DataEntity>().associateBy { it.entityId }
 
@@ -228,7 +245,7 @@ fun getPersonaId(addressBook: AddressBook, activities: List<Activity>): Id {
 }
 
 fun requestMissingAttachmentIds(
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     eventBus: EventBus,
     entities: Iterable<Entity>,
 ) {
@@ -244,7 +261,7 @@ fun getEntityResults(
     personaIds: Set<Id>,
     entityStore: EntityStore,
     addressBook: AddressBook,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     eventBus: EventBus,
     entityIds: Set<Id>,
 ): List<EntityResult> {
@@ -264,7 +281,7 @@ fun getEntityResults(
     requestMissingAttachmentIds(fileStore, eventBus, entities)
 
     return entityIds
-        .filter { entitiesByEntityId.containsKey(it) }
+        .filter { id -> entitiesByEntityId[id]?.any { it !is RawEntity } ?: false }
         .map {
             val entitiesForId = entitiesByEntityId[it]!!
             val activities = activitiesByEntityId[it]!!
@@ -281,7 +298,7 @@ fun getEntityResult(
     entityStore: EntityStore,
     addressBook: AddressBook,
     eventBus: EventBus,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     context: Context,
     personaId: Id,
     entityId: Id
@@ -296,7 +313,7 @@ fun handleGetFeed(
     searchIndex: SearchIndex,
     addressBook: AddressBook,
     eventBus: EventBus,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     personaIds: Set<Id>,
     queryString: String?
 ): FeedResult {

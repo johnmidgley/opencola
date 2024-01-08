@@ -1,6 +1,5 @@
 package io.opencola.model
 
-import mu.KotlinLogging
 import io.opencola.model.AttributeType.*
 import io.opencola.model.value.EmptyValue
 import io.opencola.model.value.MultiValueListItem
@@ -20,20 +19,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
     var tags by tagsAttributeDelegate
     val commentIds by MultiValueSetAttributeDelegate<Id>(CoreAttribute.CommentIds.spec) //  Read only, computed property
     var attachmentIds by MultiValueSetAttributeDelegate<Id>(CoreAttribute.AttachmentIds.spec)
-
     private var facts = emptyList<Fact>()
-    fun getAllFacts(): List<Fact> {
-        return facts
-    }
-
-    fun getCurrentFacts() : List<Fact> {
-        return currentFacts(facts)
-    }
-
-    init {
-        if (type == null)
-            type = this.javaClass.simpleName
-    }
 
     constructor(
         authorityId: Id,
@@ -66,7 +52,20 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
             throw IllegalArgumentException("Attempt to construct an entity with facts with multiple entity ids")
         }
 
-        this.facts = facts.sortedBy { it.transactionOrdinal }
+        this.facts = facts.sortedBy { it.transactionOrdinal ?: Long.MAX_VALUE }
+    }
+
+    init {
+        if (type == null && this::class != RawEntity::class)
+            type = this.javaClass.simpleName
+    }
+
+    fun getAllFacts(): List<Fact> {
+        return facts
+    }
+
+    fun getCurrentFacts(): List<Fact> {
+        return currentFacts(facts)
     }
 
     // TODO: Move to util
@@ -77,11 +76,12 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
             this
         }
     }
+
     override fun toString(): String {
         // build string
         val sb = StringBuilder()
         sb.appendLine("Entity: $authorityId:$entityId")
-        facts.forEach { f->
+        facts.forEach { f ->
             val value = f.value.get().toString()
                 .replace("\n", " ")
                 .limit(80)
@@ -108,7 +108,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
     }
 
     fun diff(other: Entity): Iterable<Pair<Fact?, Fact?>> {
-        fun <T>Iterator<T>.nextOrNull(): T? = if (hasNext()) next() else null
+        fun <T> Iterator<T>.nextOrNull(): T? = if (hasNext()) next() else null
 
         val results = List<Pair<Fact?, Fact?>>(0) { Pair(null, null) }.toMutableList()
         val iterator1 = getAllFacts().iterator()
@@ -116,8 +116,8 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         var fact1 = if (iterator1.hasNext()) iterator1.next() else null
         var fact2 = if (iterator2.hasNext()) iterator2.next() else null
 
-        while(fact1 != null || fact2 != null) {
-            if(fact1 != fact2) {
+        while (fact1 != null || fact2 != null) {
+            if (fact1 != fact2) {
                 if (fact1 == null) {
                     results.add(Pair(null, fact2))
                     fact2 = iterator2.nextOrNull()
@@ -147,53 +147,19 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         return result
     }
 
-     private fun getFact(propertyName: String, key: UUID?, value: Value<Any>?): Pair<Attribute, Fact?> {
+    private fun getFact(propertyName: String, key: UUID?, value: Value<Any>?): Pair<Attribute, Fact?> {
         val attribute = Attributes.getAttributeByName(propertyName)
             ?: throw IllegalArgumentException("Attempt to access unknown property $propertyName")
 
-        when(attribute.type){
-            SingleValue -> if(key != null) throw IllegalArgumentException("Can't getFact for Single valued attribute by key")
-            MultiValueList -> if(key == null) throw IllegalArgumentException("Can't getFact for List attribute without key")
-            MultiValueSet -> if(key != null || value == null) throw IllegalArgumentException("getFact for MultiValueSet attribute must not have a key but have a value specified")
-        }
-
-        val fact = facts
-            .lastOrNull {
-                it.attribute == attribute
-                        && (key == null || (it.value as MultiValueListItem<Any>).key == key)
-                        && (attribute.type != MultiValueSet || value == null || it.value == value)
-            }
-            ?.let { if (it.operation == Operation.Add) it else null }
-            ?.let {
-                if (it.value == EmptyValue) {
-                    // EmptyValue is only meant to be used for deleted facts
-                    null
-                } else it
-            }
-
-        return Pair(attribute, fact)
+        return Pair(attribute, getFact(facts, attribute, key, value))
     }
 
     private fun getCurrentAttributeFacts(propertyName: String): Pair<Attribute, List<Fact>> {
         val attribute = Attributes.getAttributeByName(propertyName)
             ?: throw IllegalArgumentException("Attempt to access unknown property $propertyName")
 
-        val factList = facts
-            .asSequence()
-            .filter { it.attribute == attribute }
-            .groupBy {
-                //  TODO: Could re-use code from entity - getAttributeFacts
-                when(attribute.type){
-                    SingleValue -> throw IllegalArgumentException("Cannot call getFacts for single valued properties (${attribute.name}). Call getFact instead.")
-                    MultiValueSet -> it.value
-                    MultiValueList -> (it.value as MultiValueListItem<Any>).key
-                }
-            }
-            .map { (_, attributeFacts) -> attributeFacts.last() }
-            .filter { it.operation != Operation.Retract }
-            .toList()
-
-        return Pair(attribute, factList)
+        val attributeFacts = getCurrentAttributeFacts(facts, attribute)
+        return Pair(attribute, attributeFacts)
     }
 
     fun getValue(propertyName: String): Value<Any>? {
@@ -201,8 +167,8 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         return fact?.value
     }
 
-     @Suppress("UNCHECKED_CAST")
-     fun <T> getMultiValue(propertyName: String, key: UUID) : MultiValueListItem<T>? {
+    @Suppress("UNCHECKED_CAST")
+    fun <T> getMultiValue(propertyName: String, key: UUID): MultiValueListItem<T>? {
         val (_, fact) = getFact(propertyName, key, null)
         return fact?.let { it.value as MultiValueListItem<T> }
     }
@@ -210,7 +176,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
     fun getListValues(propertyName: String): List<MultiValueListItem<Any>> {
         val (attribute, facts) = getCurrentAttributeFacts(propertyName)
 
-        if(attribute.type != MultiValueList)
+        if (attribute.type != MultiValueList)
             throw IllegalArgumentException("Attempt to getListValues for non list attribute (${attribute.name})")
 
         return facts.map { it.value as MultiValueListItem<Any> }
@@ -219,7 +185,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
     fun getSetValues(propertyName: String): List<Value<Any>> {
         val (attribute, facts) = getCurrentAttributeFacts(propertyName)
 
-        if(attribute.type != MultiValueSet)
+        if (attribute.type != MultiValueSet)
             throw IllegalArgumentException("Attempt to getSetValues for non set attribute (${attribute.name})")
 
         return facts.map { it.value }
@@ -238,12 +204,11 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
     private fun setValue(propertyName: String, key: UUID?, value: Value<Any>?): Fact? {
         val (attribute, currentFact) = getFact(propertyName, key, value)
 
-        if(currentFact == null){
-            if(value == null)
-                // Setting null on a non-existing fact does nothing
+        if (currentFact == null) {
+            if (value == null)
+            // Setting null on a non-existing fact does nothing
                 return null
-        }
-        else {
+        } else {
             if (currentFact.value == value) {
                 // Fact has not changed, so no need to create a new one
                 return currentFact
@@ -266,10 +231,10 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         return newFact
     }
 
-    internal fun deleteValue(propertyName: String, key: UUID?, value: Value<Any>?) : Fact? {
+    internal fun deleteValue(propertyName: String, key: UUID?, value: Value<Any>?): Fact? {
         val (attribute, fact) = getFact(propertyName, key, value)
 
-        if(fact != null && fact.operation != Operation.Retract){
+        if (fact != null && fact.operation != Operation.Retract) {
             val newFact = Fact(
                 authorityId,
                 entityId,
@@ -284,16 +249,16 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         return null
     }
 
-    internal fun setValue(propertyName: String, value: Value<Any>?) : Fact? {
+    internal fun setValue(propertyName: String, value: Value<Any>?): Fact? {
         return setValue(propertyName, null, value)
     }
 
-    internal fun setMultiValue(propertyName: String, key: UUID, value: Value<Any>?) : Fact? {
+    internal fun setMultiValue(propertyName: String, key: UUID, value: Value<Any>?): Fact? {
         return setValue(propertyName, key, value)
     }
 
     // NOT Great. Decoupled from actual facts that were persisted. Take list of facts instead?
-    fun commitFacts(epochSecond: Long, transactionOrdinal: Long) : Iterable<Fact> {
+    fun commitFacts(epochSecond: Long, transactionOrdinal: Long): Iterable<Fact> {
         val (uncommittedFacts, committedFacts) = facts.partition { it.transactionOrdinal == null }
 
         val newCommittedFacts = uncommittedFacts.map {
@@ -305,8 +270,6 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
     }
 
     companion object Factory {
-        private val logger = KotlinLogging.logger("Entity")
-
         private val attributeGroupingKey: (Fact) -> Any? = { fact ->
             when (fact.attribute.type) {
                 SingleValue -> fact.attribute
@@ -316,75 +279,87 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
         }
 
         // Assumes facts have been sorted by transactionOrdinal
-        private fun headAttributeFacts(attribute: Attribute, facts: List<Fact>) : List<Fact> {
+        private fun headAttributeFacts(attribute: Attribute, facts: List<Fact>): List<Fact> {
             return facts
                 .filter { it.attribute == attribute }
                 .groupBy(attributeGroupingKey)
                 .map { it.value.last() }
         }
 
-        // Assumes facts have been sorted by transactionOrdinal
-        fun currentFacts(facts: List<Fact>) : List<Fact> {
-            if(facts.isEmpty()){
-                return emptyList()
+        private fun getFact(facts: Iterable<Fact>, attribute: Attribute, key: UUID?, value: Value<Any>?): Fact? {
+            when (attribute.type) {
+                SingleValue -> if (key != null) throw IllegalArgumentException("Can't getFact for Single valued attribute by key")
+                MultiValueList -> if (key == null) throw IllegalArgumentException("Can't getFact for List attribute without key")
+                MultiValueSet -> if (key != null || value == null) throw IllegalArgumentException("getFact for MultiValueSet attribute must not have a key but have a value specified")
             }
 
-            if(facts.any{ it.transactionOrdinal == null }){
-                throw IllegalArgumentException("Can't compute current facts for facts that have not been committed")
-            }
+            val fact = facts
+                .lastOrNull {
+                    it.attribute == attribute
+                            && (key == null || (it.value as MultiValueListItem<Any>).key == key)
+                            && (attribute.type != MultiValueSet || value == null || it.value == value)
+                }
+                ?.let { if (it.operation == Operation.Add) it else null }
+                ?.let {
+                    if (it.value == EmptyValue) {
+                        // EmptyValue is only meant to be used for deleted facts
+                        null
+                    } else it
+                }
 
-            val startOrdinalFact = facts.lastOrNull { it.attribute == CoreAttribute.Type.spec }
-            if(startOrdinalFact == null){
-                logger.error { "No type fact found for: ${facts.first().entityId}" }
-                return emptyList()
-            }
-
-            if(startOrdinalFact.operation == Operation.Retract){
-                return emptyList()
-            }
-
-            return facts
-                .filter{ it.transactionOrdinal!! >= startOrdinalFact.transactionOrdinal!!}
-                .groupBy { it.attribute }
-                .flatMap { headAttributeFacts(it.key, it.value) }
-                .filter { it.operation != Operation.Retract }
+            return fact
         }
 
-        // Assumes facts have been sorted by transactionOrdinal
-        fun nonRetractedFacts(facts: Iterable<Fact>) : List<Fact> {
+        @Suppress("KotlinConstantConditions")
+        // Assumes facts have been sorted ascending by transactionOrdinal
+        private fun getCurrentAttributeFacts(facts: Iterable<Fact>, attribute: Attribute): List<Fact> {
+            return if (attribute.type == SingleValue)
+                getFact(facts, attribute, null, null)?.let { listOf(it) } ?: return emptyList()
+            else
+                facts
+                    .filter { it.attribute == attribute }
+                    .groupBy {
+                        when (attribute.type) {
+                            SingleValue -> throw IllegalStateException() // Should have returned above
+                            MultiValueSet -> it.value
+                            MultiValueList -> (it.value as MultiValueListItem<Any>).key
+                        }
+                    }
+                    .map { (_, attributeFacts) -> attributeFacts.last() }
+                    .filter { it.operation != Operation.Retract }
+                    .toList()
+        }
+
+        fun currentFacts(facts: Iterable<Fact>): List<Fact> {
             return facts
-                .groupBy(attributeGroupingKey)
-                .flatMap { (_, value) ->
-                    value
-                        .reversed()
-                        .takeWhile { it.operation != Operation.Retract }
-                        .reversed()
-                }
+                .sortedBy { it.transactionOrdinal ?: Long.MAX_VALUE }
+                .groupBy { it.attribute }
+                .flatMap { (attribute, facts) -> getCurrentAttributeFacts(facts, attribute) }
+                .sortedBy { it.transactionOrdinal ?: Long.MAX_VALUE }
         }
 
         // TODO: Iterable<Fact> instead of List<Fact> for any parameters
         fun fromFacts(facts: List<Fact>): Entity? {
-            val sortedFacts = facts.sortedBy { it.transactionOrdinal ?: Long.MAX_VALUE }
-            val currentFacts = currentFacts(sortedFacts)
+            val currentFacts = currentFacts(facts)
             if (currentFacts.isEmpty()) return null
 
-            if(facts.map { it.authorityId }.toSet().count() != 1)
+            if (facts.map { it.authorityId }.toSet().count() != 1)
                 throw IllegalArgumentException("Facts are not all from same authority")
 
-            if(facts.map { it.entityId }.toSet().count() != 1)
+            if (facts.map { it.entityId }.toSet().count() != 1)
                 throw IllegalArgumentException("Facts are not all for the same entity")
 
             // TODO: Should type be mutable? Probably no
             val typeFact = currentFacts.lastOrNull { it.attribute == CoreAttribute.Type.spec }
-                ?: throw IllegalStateException("Entity has no type")
+                ?: return RawEntity(facts)
 
             return when (val type = typeFact.value.get().toString()) {
                 // TODO: Use fully qualified names
-                Authority::class.simpleName -> Authority(sortedFacts)
-                ResourceEntity::class.simpleName -> ResourceEntity(sortedFacts)
-                DataEntity::class.simpleName -> DataEntity(sortedFacts)
-                CommentEntity::class.simpleName -> CommentEntity(sortedFacts)
-                PostEntity::class.simpleName -> PostEntity(sortedFacts)
+                Authority::class.simpleName -> Authority(facts)
+                ResourceEntity::class.simpleName -> ResourceEntity(facts)
+                DataEntity::class.simpleName -> DataEntity(facts)
+                CommentEntity::class.simpleName -> CommentEntity(facts)
+                PostEntity::class.simpleName -> PostEntity(facts)
                 // TODO: Throw if not type? Configure throw on error for debugging?
                 else -> {
                     throw RuntimeException("Found unknown type: $type")

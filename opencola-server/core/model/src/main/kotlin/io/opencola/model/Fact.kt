@@ -1,5 +1,6 @@
 package io.opencola.model
 
+import io.opencola.model.value.EmptyValue
 import io.opencola.model.value.Value
 import io.opencola.serialization.StreamSerializer
 import io.opencola.serialization.readLong
@@ -11,7 +12,6 @@ import java.io.OutputStream
 // TODO: Intern ids and attributes
 // TODO: Think about making this only usable from inside the entity store, so that transaction ids can be controlled
 //  SubjectiveFact (add subject), and TransactionFact (add transaction id / epoch) - just one? Transaction fact? Subjective fact with epoch?
-// @Serializable
 data class Fact(
     val authorityId: Id,
     val entityId: Id,
@@ -22,7 +22,7 @@ data class Fact(
     val transactionOrdinal: Long? = null,
 ) {
     override fun toString(): String {
-        val unwrappedValue = attribute.valueWrapper.unwrap(value)
+        val unwrappedValue = if (value == EmptyValue) "EmptyValue" else attribute.valueWrapper.unwrap(value)
         return "{ authorityId: $authorityId entityId: $entityId attribute: ${attribute.uri} value: $unwrappedValue operation: $operation transactionOrdinal: $transactionOrdinal }"
     }
 

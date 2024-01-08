@@ -1,0 +1,74 @@
+{
+  "family": "oc-relay-ENV",
+  "containerDefinitions": [
+    {
+      "name": "relay",
+      "image": "IMAGE_URI",
+      "cpu": 0,
+      "portMappings": [
+        {
+          "name": "relay-2652-tcp",
+          "containerPort": 2652,
+          "hostPort": 2652,
+          "protocol": "tcp",
+          "appProtocol": "http"
+        }
+      ],
+      "essential": true,
+      "environment": [
+        {
+          "name": "relay.security.publicKeyBase58",
+          "value": "SERVER_PUBLIC_KEY_BASE58"
+        },
+        {
+          "name": "relay.security.privateKeyBase58",
+          "value": "SERVER_PRIVATE_KEY_BASE58"
+        },
+        {
+          "name": "relay.security.rootIdBase58",
+          "value": "ROOT_ID_BASE58"
+        }
+      ],
+      "environmentFiles": [],
+      "mountPoints": [
+        {
+          "sourceVolume": "relay-volume",
+          "containerPath": "/var/relay",
+          "readOnly": false
+        }
+      ],
+      "volumesFrom": [],
+      "ulimits": [],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-create-group": "true",
+          "awslogs-group": "/ecs/oc-relay-ENV",
+          "awslogs-region": "REGION",
+          "awslogs-stream-prefix": "ecs"
+        },
+        "secretOptions": []
+      }
+    }
+  ],
+  "executionRoleArn": "arn:aws:iam::APP_ID:role/ecsTaskExecutionRole",
+  "networkMode": "awsvpc",
+  "volumes": [
+    {
+      "name": "relay-volume",
+      "efsVolumeConfiguration": {
+        "fileSystemId": "EFS_ID",
+        "rootDirectory": "/"
+      }
+    }
+  ],
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "512",
+  "memory": "1024",
+  "runtimePlatform": {
+    "cpuArchitecture": "X86_64",
+    "operatingSystemFamily": "LINUX"
+  }
+}

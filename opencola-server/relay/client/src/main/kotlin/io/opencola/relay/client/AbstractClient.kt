@@ -3,14 +3,13 @@ package io.opencola.relay.client
 import io.opencola.model.Id
 import io.opencola.security.*
 import io.opencola.relay.common.*
+import io.opencola.relay.common.State
 import io.opencola.relay.common.connection.Connection
 import io.opencola.relay.common.State.*
 import io.opencola.relay.common.connection.SocketSession
 import io.opencola.relay.common.message.Envelope
-import io.opencola.relay.common.message.v2.ControlMessage
-import io.opencola.relay.common.message.v2.ControlMessageType
 import io.opencola.relay.common.message.Message
-import io.opencola.relay.common.message.v2.MessageStorageKey
+import io.opencola.relay.common.message.v2.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -25,6 +24,7 @@ abstract class AbstractClient(
     protected val uri: URI,
     protected val keyPair: KeyPair,
     protected val name: String? = null,
+    protected val connectTimeoutMilliseconds: Long = 3000, // TODO: Make configurable
     protected val requestTimeoutMilliseconds: Long = 60000, // TODO: Make configurable
     private val retryPolicy: (Int) -> Long = retryExponentialBackoff(),
 ) : RelayClient {
@@ -65,7 +65,7 @@ abstract class AbstractClient(
     ): List<ByteArray>
 
     protected abstract fun decodePayload(payload: ByteArray): Envelope
-    protected abstract suspend fun authenticate(socketSession: SocketSession)
+    protected abstract suspend fun authenticate(socketSession: SocketSession): AuthenticationStatus
 
     fun isAuthorized(serverPublicKey: PublicKey): Boolean {
         logger.info { "Authorizing server: ${Id.ofPublicKey(serverPublicKey)}" }
@@ -75,6 +75,8 @@ abstract class AbstractClient(
     val publicKey: PublicKey
         get() = keyPair.public
 
+    val id: Id by lazy { Id.ofPublicKey(keyPair.public) }
+
     val state: State
         get() = _state
 
@@ -82,7 +84,7 @@ abstract class AbstractClient(
         openMutex.withLock { }
     }
 
-    protected suspend fun getConnection(waitForOpen: Boolean = true): Connection {
+    protected suspend fun connect(waitForOpen: Boolean = true): Connection? {
         if (_state == Closed)
             throw IllegalStateException("Can't get connection on a Client that has been closed")
 
@@ -92,9 +94,8 @@ abstract class AbstractClient(
             openMutex.withLock { }
         }
 
-        return connectionMutex.withLock {
+        connectionMutex.withLock {
             if (_state != Closed && _connection == null || !_connection!!.isReady()) {
-
                 if (connectionFailures > 0) {
                     val delayInMilliseconds = retryPolicy(connectionFailures)
                     logger.warn { "Connection failure: Waiting $delayInMilliseconds ms to connect" }
@@ -103,10 +104,19 @@ abstract class AbstractClient(
 
                 try {
                     val socketSession = getSocketSession()
-                    authenticate(socketSession)
-                    _connection = Connection(socketSession, name)
+
+                    authenticate(socketSession).let {
+                        if (it != AuthenticationStatus.AUTHENTICATED) {
+                            // Failed to authenticate - this is not retryable
+                            logger.error { "Authentication failed: $it" }
+                            close()
+                            return null
+                        }
+                    }
+
+                    _connection = Connection(keyPair.public, socketSession) {}
                     connectionFailures = 0
-                    logger.info { "Connection created to $uri for ${Id.ofPublicKey(keyPair.public)}" }
+                    logger.info { "Connection created to $uri for ${_connection!!.id}" }
                 } catch (e: Exception) {
                     // TODO: Max connectFailures?
                     connectionFailures++
@@ -114,7 +124,10 @@ abstract class AbstractClient(
                 }
             }
 
-            _connection!!
+            if (_state == Opening)
+                _state = Open
+
+            return _connection
         }
     }
 
@@ -134,10 +147,9 @@ abstract class AbstractClient(
                     if (!openMutex.isLocked)
                         openMutex.lock()
 
-                    getConnection(false).also {
-                        if (_state == Opening) _state = Open
+                    connect(false)?.also {
                         openMutex.unlock()
-                        it.listen { payload -> handleMessage(payload, messageHandler) }
+                        it.listen { payload -> handleMessage(messageHandler, payload) }
                     }
                 } catch (e: CancellationException) {
                     break
@@ -153,30 +165,25 @@ abstract class AbstractClient(
         }
     }
 
+    suspend fun sendAdminMessage(message: AdminMessage) {
+        require(_state == Open) { "Client must be open to send an admin message" }
+        val body = ControlMessage(ControlMessageType.ADMIN, message.encode()).encodeProto()
+        sendMessage(serverPublicKey!!, MessageStorageKey.none, body)
+    }
+
     override suspend fun sendMessage(to: List<PublicKey>, key: MessageStorageKey, body: ByteArray) {
-        try {
-            val connection = getConnection()
-            val message = Message(keyPair.public, body)
+        val connection = withTimeout(connectTimeoutMilliseconds) { connect() }
+            ?: throw ConnectException("Unable to connect to server")
+        val message = Message(keyPair.public, body)
 
-            // TODO: Should there be a limit on the size of messages?
-            logger.info { "Sending message: $message" }
+        // TODO: Should there be a limit on the size of messages?
+        logger.info { "Sending message: $message" }
 
-            // V1 does not support sending to multiple recipients in one payload, so multiple payload need to be supported - remove when V1 is deprecated
-            encodePayload(to, key, message).forEach { payload ->
-                withTimeout(requestTimeoutMilliseconds) {
-                    connection.writeSizedByteArray(payload)
-                }
+        // V1 does not support sending to multiple recipients in one payload, so multiple payload need to be supported - remove when V1 is deprecated
+        encodePayload(to, key, message).forEach { payload ->
+            withTimeout(requestTimeoutMilliseconds) {
+                connection.writeSizedByteArray(payload)
             }
-        } catch (e: ConnectException) {
-            // Pass exception through so caller knows message wasn't sent
-            throw e
-        } catch (e: TimeoutCancellationException) {
-            val toString = to.joinToString { Id.ofPublicKey(it).toString() }
-            logger.warn { "Timeout sending message to: $toString" }
-        } catch (e: CancellationException) {
-            // Let exception flow through
-        } catch (e: Exception) {
-            logger.error { "Unexpected exception when sending message $e" }
         }
     }
 
@@ -184,7 +191,7 @@ abstract class AbstractClient(
         return message.from == serverPublicKey
     }
 
-    private suspend fun handleControlMessage(message: Message) {
+    private suspend fun handleControlMessage(messageHandler: MessageHandler, message: Message) {
         val controlMessage = ControlMessage.decodeProto(message.body)
 
         when (controlMessage.type) {
@@ -195,16 +202,20 @@ abstract class AbstractClient(
             ControlMessageType.NO_PENDING_MESSAGES -> {
                 eventHandler?.invoke(publicKey, RelayEvent.NO_PENDING_MESSAGES)
             }
+
+            ControlMessageType.ADMIN -> {
+                messageHandler(message.from, controlMessage.payload)
+            }
         }
     }
 
-    private suspend fun handleMessage(payload: ByteArray, messageHandler: MessageHandler) {
+    private suspend fun handleMessage(messageHandler: MessageHandler, payload: ByteArray) {
         try {
             val message = decodePayload(payload).decryptMessage(keyPair)
             logger.info { "Handling message: $message" }
 
             if (isControlMessage(message)) {
-                handleControlMessage(message)
+                handleControlMessage(messageHandler, message)
             } else {
                 messageHandler(message.from, message.body)
             }

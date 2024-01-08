@@ -14,9 +14,10 @@ class WebSocketClient(
     uri: URI,
     keyPair: KeyPair,
     name: String? = null,
+    connectTimeoutMilliseconds: Long = 3000,
     requestTimeoutMilliseconds: Long = 20000,
     retryPolicy: (Int) -> Long = retryExponentialBackoff(),
-) : Client(uri, keyPair, name, requestTimeoutMilliseconds, retryPolicy) {
+) : Client(uri, keyPair, name, connectTimeoutMilliseconds, requestTimeoutMilliseconds, retryPolicy) {
     private val client = HttpClient(CIO) {
         install(WebSockets) {
             // Configure WebSockets

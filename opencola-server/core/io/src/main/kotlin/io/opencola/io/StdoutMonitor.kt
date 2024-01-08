@@ -1,7 +1,10 @@
 package io.opencola.io
 
 import io.ktor.utils.io.core.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.runBlocking
 import java.io.PrintStream
+import kotlin.concurrent.thread
 
 class StdoutMonitor(private val echo: Boolean = true, private val readTimeoutMilliseconds: Long? = null) : Closeable {
     private val linePartitionedOutputStream = LinePartitionedOutputStream()
@@ -15,10 +18,10 @@ class StdoutMonitor(private val echo: Boolean = true, private val readTimeoutMil
     fun waitUntil(timeoutMilliseconds: Long? = null, prefix: String = "!", until: (String) -> Boolean) {
         while (true) {
             val line = linePartitionedOutputStream.waitForLine(timeoutMilliseconds ?: readTimeoutMilliseconds)
-            if(echo)
-                // The prefix is used to make it easy to tell what the monitor is processing
+            if (echo)
+            // The prefix is used to make it easy to tell what the monitor is processing
                 stdout.println("$prefix$line")
-            if(until(line))
+            if (until(line))
                 break
         }
     }
@@ -32,6 +35,13 @@ class StdoutMonitor(private val echo: Boolean = true, private val readTimeoutMil
             val line = linePartitionedOutputStream.readLine() ?: break
             if (echo)
                 stdout.println(line)
+        }
+    }
+
+    // Threads and coroutines don't mix well, so we use a thread to run coroutines that needs to run independent of threads
+    fun runCoroutine(block: suspend CoroutineScope.() -> Unit) {
+        thread {
+            runBlocking { block() }
         }
     }
 

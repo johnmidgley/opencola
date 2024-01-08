@@ -1,0 +1,14 @@
+# This file is for test purposes and should not be used in production
+relay:
+  storagePath: .
+
+  capacity:
+    maxConnections: 10000
+    maxBytesStored: 10737418240 # 10GB
+    maxPayloadSize: 52428800 # 50MB
+
+  security:
+    publicKeyBase58: aSq9DsNNvGhYxYyqA9wd2eduEAZ5AXWgJTbTJphuoSKyRxpBes9UaZrDLzhKrnn1EYTXxAssgQx82fDb1DCXqGGkRDGfvnr92PEHy9dQNUzVg8ox7Nj29SubzGKU
+    privateKeyBase58: 2RxV4m78RGjpDZ5VV6TTtkSkRKgEC58qoYKq5rA4jkjPUbhn4bTkNfit7LUHN4sYWttAZC9dLHcbyoNCJvTGx47Pr3ho
+    rootIdBase58: 8jUXhJFJ6ZkfEdmgGsiDunr7HUogWm6XLztLAP2yAjCp
+    numChallengeBytes: 32

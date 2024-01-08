@@ -7,6 +7,7 @@ import io.opencola.relay.common.connection.SocketSession
 import io.opencola.relay.common.message.Envelope
 import io.opencola.relay.common.message.Recipient
 import io.opencola.relay.common.message.v1.MessageV1
+import io.opencola.relay.common.message.v2.AuthenticationStatus
 import io.opencola.relay.common.message.v2.MessageStorageKey
 import io.opencola.security.*
 import io.opencola.serialization.codecs.IntByteArrayCodec
@@ -24,12 +25,13 @@ abstract class Client(
     uri: URI,
     keyPair: KeyPair,
     name: String? = null,
+    connectTimeoutMilliseconds: Long = 3000, // TODO: Make configurable
     requestTimeoutMilliseconds: Long = 60000, // TODO: Make configurable
     retryPolicy: (Int) -> Long = retryExponentialBackoff(),
-) : AbstractClient(uri, keyPair, name, requestTimeoutMilliseconds, retryPolicy) {
+) : AbstractClient(uri, keyPair, name, connectTimeoutMilliseconds, requestTimeoutMilliseconds, retryPolicy) {
 
     // Should only be called once, right after connection to server
-    override suspend fun authenticate(socketSession: SocketSession) {
+    override suspend fun authenticate(socketSession: SocketSession) : AuthenticationStatus {
         // Send public key
         logger.debug { "Sending public key" }
         socketSession.writeSizedByteArray(keyPair.public.encoded)
@@ -48,6 +50,7 @@ abstract class Client(
         }
 
         logger.debug { "Authenticated" }
+        return AuthenticationStatus.AUTHENTICATED
     }
 
     // OLD encryption code, only used in V1 client (doesn't use protobuf encoding)

@@ -4,7 +4,6 @@ import io.opencola.model.Id
 import io.opencola.network.message.Message
 import io.opencola.security.Signator
 import io.opencola.storage.addressbook.AddressBook
-import io.opencola.storage.addressbook.PersonaAddressBookEntry
 
 // TODO: just pass in keystore instead of signator and encryptor? Or maybe even just role into AddressBook?
 abstract class AbstractNetworkProvider(
@@ -14,12 +13,6 @@ abstract class AbstractNetworkProvider(
     private var eventHandler: EventHandler? = null
     private var messageHandler: MessageHandler? = null
     var started = false
-
-    fun getPersonasForProvider() : List<PersonaAddressBookEntry> {
-        return addressBook.getEntries()
-            .filterIsInstance<PersonaAddressBookEntry>()
-            .filter { it.address.scheme == getScheme() }
-    }
 
     override fun setEventHandler(handler: EventHandler) {
         this.eventHandler = handler

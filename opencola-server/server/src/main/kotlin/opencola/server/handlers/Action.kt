@@ -12,7 +12,7 @@ import io.ktor.server.response.*
 import io.opencola.content.*
 import io.opencola.model.*
 import io.opencola.storage.entitystore.EntityStore
-import io.opencola.storage.filestore.ContentBasedFileStore
+import io.opencola.storage.filestore.ContentAddressedFileStore
 import io.opencola.util.nullOrElse
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
@@ -124,7 +124,7 @@ fun updateMultipartResource(resourceEntity: ResourceEntity, mhtmlPage: MhtmlPage
     return emptyList()
 }
 
-fun getDataEntity(authorityId: Id, entityStore: EntityStore, fileStore: ContentBasedFileStore, content: Content): DataEntity {
+fun getDataEntity(authorityId: Id, entityStore: EntityStore, fileStore: ContentAddressedFileStore, content: Content): DataEntity {
     val dataId = fileStore.write(content.data)
     return (entityStore.getEntity(authorityId, dataId) ?: DataEntity(
         authorityId,
@@ -142,7 +142,7 @@ fun updateActions(entity: Entity, actions: Actions) {
 fun updateResource(
     authorityId: Id,
     entityStore: EntityStore,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     mhtmlPage: MhtmlPage,
     actions: Actions
 ): ResourceEntity {
@@ -168,7 +168,7 @@ fun updateResource(
 fun handleAction(
     authorityId: Id,
     entityStore: EntityStore,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     action: String,
     value: String?,
     mhtmlPage: MhtmlPage,
@@ -187,7 +187,7 @@ suspend fun handlePostActionCall(
     call: ApplicationCall,
     authorityId: Id,
     entityStore: EntityStore,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     ocServerPorts: Set<Int>
 ) {
     val multipart = call.receiveMultipart()

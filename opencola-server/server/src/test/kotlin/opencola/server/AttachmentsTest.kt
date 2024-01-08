@@ -6,20 +6,14 @@ import io.opencola.model.DataEntity
 import io.opencola.model.ResourceEntity
 import io.opencola.security.generateAesKey
 import io.opencola.storage.EntityStoreContext
-import io.opencola.storage.MockContentBasedFileStore
+import io.opencola.storage.MockContentAddressedFileStore
 import io.opencola.storage.addPersona
 import io.opencola.storage.entitystore.EntityStore
-import io.opencola.storage.filestore.ContentBasedFileStore
-import opencola.server.handlers.Context
-import opencola.server.handlers.deleteAttachment
-import opencola.server.handlers.handleGetFeed
-import opencola.server.handlers.saveEntity
+import io.opencola.storage.filestore.ContentAddressedFileStore
+import opencola.server.handlers.*
 import org.junit.Test
 import java.net.URI
-import kotlin.test.assertContentEquals
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
+import kotlin.test.*
 
 class AttachmentsTest {
     @Test
@@ -37,7 +31,7 @@ class AttachmentsTest {
             println("Starting ${application1.config.name}")
             startServer(server1)
 
-            val app0FileStore = application0.inject<ContentBasedFileStore>()
+            val app0FileStore = application0.inject<ContentAddressedFileStore>()
             val attachmentData = "This is the attachment data".toByteArray()
             val attachmentId = app0FileStore.write(attachmentData)
 
@@ -90,7 +84,7 @@ class AttachmentsTest {
             assertEquals(resource0.imageUri, resource1.imageUri)
             assertEquals(dataEntity0.entityId, resource1.attachmentIds.single())
 
-            val fileStore1 = application1.inject<ContentBasedFileStore>()
+            val fileStore1 = application1.inject<ContentAddressedFileStore>()
             val attachmentData1 = fileStore1.read(dataEntity0.entityId)
             assertNotNull(attachmentData1)
             assertContentEquals(attachmentData, attachmentData1)
@@ -120,7 +114,7 @@ class AttachmentsTest {
         val entityStoreContext = EntityStoreContext()
         val persona0 = entityStoreContext.addressBook.addPersona("Test Persona")
         val eventBus = MockEventBus()
-        val fileStore = MockContentBasedFileStore()
+        val fileStore = MockContentAddressedFileStore()
 
         val data0 = "data0".toByteArray()
         val dataEntity0 = DataEntity(persona0.entityId, fileStore.write(data0), "text/plain", "dataEntity0")
@@ -157,7 +151,7 @@ class AttachmentsTest {
         val persona0 = entityStoreContext.addressBook.addPersona("Test Persona")
         val persona1 = entityStoreContext.addressBook.addPersona("Test Persona")
         val eventBus = MockEventBus()
-        val fileStore = MockContentBasedFileStore()
+        val fileStore = MockContentAddressedFileStore()
 
         val data0 = "data0".toByteArray()
         val dataEntity0 = DataEntity(persona0.entityId, fileStore.write(data0), "text/plain", "dataEntity0")

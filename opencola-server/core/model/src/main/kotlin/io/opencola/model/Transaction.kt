@@ -8,7 +8,6 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.time.Instant
 
-// @Serializable
 data class Transaction(val id: Id,
                        val authorityId: Id,
                        val transactionEntities: List<TransactionEntity>,

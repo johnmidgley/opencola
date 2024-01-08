@@ -11,6 +11,10 @@ object EmptyValue : Value<Any>(emptyBytes) {
     val proto = toProto()
     val encodedProto: ByteArray = proto.toByteArray()
 
+    override fun toString(): String {
+        return "EmptyValue"
+    }
+
     override fun equals(other: Any?): Boolean {
         return other is EmptyValue
     }

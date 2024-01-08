@@ -1,0 +1,18 @@
+relay:
+  storagePath: /var/relay
+
+  server:
+    port: 2652
+    callLogging: false
+
+  capacity:
+    maxConnections: 10000
+    maxBytesStored: 10737418240 # 10GB
+    maxPayloadSize: 52428800 # 50MB
+
+  security:
+    numChallengeBytes: 32
+    # Set these via environment variables - DO NOT USE THESE VALUES HERE IN PRODUCTION
+    # publicKeyBase58:
+    # privateKeyBase58:
+    # rootIdBase58:

@@ -1,7 +1,7 @@
 package io.opencola.network
 
-import io.opencola.event.EventBus
-import io.opencola.event.Events
+import io.opencola.event.bus.EventBus
+import io.opencola.event.bus.Events
 import io.opencola.model.Id
 import io.opencola.network.message.Message
 import io.opencola.network.providers.EventHandler
@@ -95,8 +95,7 @@ class NetworkNode(
         when (event.type) {
             ProviderEventType.NO_PENDING_MESSAGES -> {
                 val noPendingMessagesEvent = event as NoPendingMessagesEvent
-                val personaId = noPendingMessagesEvent.personaId
-                eventBus.sendMessage(Events.NoPendingNetworkMessages.toString(), personaId.encodeProto())
+                eventBus.sendMessage(Events.NoPendingNetworkMessages.toString(), noPendingMessagesEvent.encode())
             }
         }
     }
@@ -229,6 +228,8 @@ class NetworkNode(
     // @Synchronized
     private fun sendMessage(from: PersonaAddressBookEntry, to: Set<AddressBookEntry>, message: Message) {
         require(from.isActive) { "Attempt to send request from inactive persona: $from" }
+
+        logger.info { "Sending message - from: ${from.entityId} to: ${to.joinToString { it.entityId.toString() }} message: $message" }
 
         to.forEach {
             require(it !is PersonaAddressBookEntry) { "Attempt to send request to local persona: $it" }

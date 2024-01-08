@@ -34,7 +34,7 @@ fun installTrustedCACertMac(storagePath: Path) {
 fun installTrustedCACertWindows(storagePath: Path) {
     val certPath = getCertStorePath(storagePath)
     val command = """
-        certutil -addstore -user root $certPath
+        certutil -addstore -user root "$certPath"
     """.trimIndent()
     val installCertBat = kotlin.io.path.createTempFile(suffix = "installCert.bat").also { it.writeText(command) }
     runCommand(listOf(installCertBat.toString())).joinToString("\n")

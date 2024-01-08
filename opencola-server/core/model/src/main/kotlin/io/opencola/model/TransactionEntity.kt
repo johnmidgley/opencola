@@ -8,7 +8,6 @@ import io.opencola.serialization.writeInt
 import java.io.InputStream
 import java.io.OutputStream
 
-// @Serializable
 data class TransactionEntity(val entityId: Id, val facts: List<TransactionFact>) {
     companion object Factory :
         StreamSerializer<TransactionEntity>,

@@ -15,11 +15,16 @@ class MessageStorageKey private constructor(val value: ByteArray?) {
         if (this === other) return true
         if (other !is MessageStorageKey) return false
         if (value == null && other.value == null) return true
+        if (value != null && other.value == null) return false
         return value.contentEquals(other.value)
     }
 
     override fun hashCode(): Int {
         return value.contentHashCode()
+    }
+
+    fun isEmpty() : Boolean {
+        return value == null
     }
 
     fun encoded() : ByteArray? {

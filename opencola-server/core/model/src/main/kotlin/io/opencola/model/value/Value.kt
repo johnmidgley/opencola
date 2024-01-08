@@ -1,9 +1,5 @@
 package io.opencola.model.value
 
-import kotlinx.serialization.Serializable
-
-// TODO: See if @Serializable can be added back to Transaction et. al
-@Serializable
 // TODO: Make consistent with how Events are modeled (i.e. this is a RawValue and ValueWrapper is just a Value)
 //  Maybe make a ValueConverter that you can register value types with and ValueWrapper would just then be a codec?
 abstract class Value<T>(val value: T) {

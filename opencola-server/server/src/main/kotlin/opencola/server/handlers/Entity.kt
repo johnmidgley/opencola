@@ -4,7 +4,7 @@ import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.opencola.content.*
-import io.opencola.event.EventBus
+import io.opencola.event.bus.EventBus
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import io.opencola.io.HttpClient
@@ -14,7 +14,7 @@ import io.opencola.util.blankToNull
 import io.opencola.util.nullOrElse
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.entitystore.EntityStore
-import io.opencola.storage.filestore.ContentBasedFileStore
+import io.opencola.storage.filestore.ContentAddressedFileStore
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import java.net.URI
 
@@ -27,7 +27,7 @@ suspend fun getEntity(
     entityStore: EntityStore,
     addressBook: AddressBook,
     eventBus: EventBus,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
 ) {
     // TODO: Authority should be passed (and authenticated) in header
     val stringId = call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified")
@@ -44,7 +44,7 @@ fun deleteEntity(
     entityStore: EntityStore,
     addressBook: AddressBook,
     eventBus: EventBus,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     context: Context,
     persona: PersonaAddressBookEntry,
     entityId: Id,
@@ -70,7 +70,7 @@ fun updateEntity(
     entityStore: EntityStore,
     addressBook: AddressBook,
     eventBus: EventBus,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     context: Context,
     persona: PersonaAddressBookEntry,
     entity: Entity,
@@ -85,13 +85,7 @@ fun updateEntity(
     }
     entity.description = entityPayload.description.blankToNull()
     entity.like = entityPayload.like
-    entity.tags = entityPayload.tags
-        ?.let { tags ->
-            tags
-                .split(" ")
-                .filter { it.isNotBlank() }
-        }?.toList() ?: emptyList()
-
+    entity.tags = getTags(entityPayload.tags)
     entity.attachmentIds = entityPayload.attachments?.map { Id.decode(it) } ?: emptyList()
 
     if (entityPayload.comment.isNullOrBlank())
@@ -106,7 +100,7 @@ fun updateEntity(
     entityStore: EntityStore,
     addressBook: AddressBook,
     eventBus: EventBus,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     context: Context,
     persona: PersonaAddressBookEntry,
     entityPayload: EntityPayload
@@ -186,18 +180,20 @@ fun updateComment(
     logger.info { "Adding comment to $entityId" }
     val personaId = persona.personaId
 
-    val entity = getOrCopyEntity(personaId, entityStore, entityId)
-        ?: throw IllegalArgumentException("Attempt to add comment to unknown entity")
+    val parent = entityStore.getEntities(emptySet(), setOf(entityId)).firstOrNull()
+    require(parent != null) { "Attempt to add comment to unknown entity" }
+    // If the parent is a comment, then this is a reply, the topLevelParentId should be set
+    val topLevelParentId = (parent as? CommentEntity)?.let { it.topLevelParentId ?: it.parentId }
 
     val commentEntity =
         if (commentId == null)
-            CommentEntity(personaId, entity.entityId, text)
+            CommentEntity(personaId, entityId, text, topLevelParentId)
         else
             entityStore.getEntity(personaId, commentId) as? CommentEntity
                 ?: throw IllegalArgumentException("Unknown comment: $commentId")
 
     commentEntity.text = text
-    entityStore.updateEntities(entity, commentEntity)
+    entityStore.updateEntities(commentEntity)
 
     return commentEntity
 }
@@ -209,7 +205,7 @@ fun updateComment(
     entityStore: EntityStore,
     addressBook: AddressBook,
     eventBus: EventBus,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     context: Context,
     persona: PersonaAddressBookEntry,
     entityId: Id,
@@ -229,7 +225,7 @@ fun saveEntity(
     entityStore: EntityStore,
     addressBook: AddressBook,
     eventBus: EventBus,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     context: Context,
     persona: PersonaAddressBookEntry,
     entityId: Id
@@ -295,7 +291,7 @@ fun newResourceFromUri(
     entityStore: EntityStore,
     eventBus: EventBus,
     addressBook: AddressBook,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     contentTypeDetector: ContentTypeDetector,
     uri: URI
 ): EntityResult? {
@@ -304,7 +300,7 @@ fun newResourceFromUri(
 
     if (!updateResourceFromSource(contentTypeDetector, resource)) {
         if (resource.name == null)
-            // Couldn't parse anything, so just use the url as the name
+        // Couldn't parse anything, so just use the url as the name
             resource.name = uri.toString()
     }
 
@@ -325,7 +321,7 @@ fun newPost(
     entityStore: EntityStore,
     addressBook: AddressBook,
     eventBus: EventBus,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     contentTypeDetector: ContentTypeDetector,
     context: Context,
     persona: PersonaAddressBookEntry,
@@ -359,7 +355,7 @@ suspend fun addAttachment(
     entityStore: EntityStore,
     addressBook: AddressBook,
     eventBus: EventBus,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     context: Context,
     personaId: Id,
     entityId: Id,
@@ -367,7 +363,7 @@ suspend fun addAttachment(
 ): EntityResult? {
     val dataEntities = getDataEntities(entityStore, fileStore, personaId, multipart)
     val entity =
-        entityStore.getEntity(personaId, entityId) ?: throw IllegalArgumentException("Unknown entity: $entityId")
+        entityStore.getEntity(personaId, entityId) ?: RawEntity(personaId, entityId)
     entity.attachmentIds += dataEntities.map { it.entityId }
     entityStore.updateEntities(entity, *dataEntities.toTypedArray())
     return getEntityResult(entityStore, addressBook, eventBus, fileStore, context, personaId, entityId)
@@ -377,7 +373,7 @@ fun deleteAttachment(
     entityStore: EntityStore,
     addressBook: AddressBook,
     eventBus: EventBus,
-    fileStore: ContentBasedFileStore,
+    fileStore: ContentAddressedFileStore,
     context: Context,
     personaId: Id,
     entityId: Id,

@@ -1,5 +1,8 @@
 package io.opencola.relay.common.message.v2.store
 
-import java.security.PublicKey
+import io.opencola.model.Id
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
-data class Usage(val receiver: PublicKey, val bytesStored: Int)
+@Serializable
+data class Usage(@Contextual val to: Id, val numMessages: Int, val numBytes: Long)

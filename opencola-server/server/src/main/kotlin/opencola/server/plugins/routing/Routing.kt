@@ -23,6 +23,7 @@ fun Application.configureRouting(app: app) {
     // TODO: Make and user general opencola.server
     val logger = KotlinLogging.logger("opencola.init")
     val ocServerPorts = listOfNotNull(app.config.server.port, app.config.server.ssl?.port).toSet()
+    configureStorageRouting(app.storagePath.resolve("web"))
 
     routing {
         // Authentication from https://ktor.io/docs/session-auth.html
@@ -102,6 +103,42 @@ fun Application.configureRouting(app: app) {
                 )?.let {
                     call.respond(it)
                 } ?: call.respond("{}")
+            }
+
+            post("/entity/{entityId}/like") {
+                val likePayload = call.receive<LikePayload>()
+                val entityId =
+                    Id.decode(call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified"))
+                likeEntity(
+                    app.inject(),
+                    app.inject(),
+                    app.inject(),
+                    app.inject(),
+                    getContext(call),
+                    expectPersona(call),
+                    entityId,
+                    likePayload
+                )?.let {
+                    call.respond(it)
+                }
+            }
+
+            post("/entity/{entityId}/tags") {
+                val tagsPayload = call.receive<TagsPayload>()
+                val entityId =
+                    Id.decode(call.parameters["entityId"] ?: throw IllegalArgumentException("No entityId specified"))
+                tagEntity(
+                    app.inject(),
+                    app.inject(),
+                    app.inject(),
+                    app.inject(),
+                    getContext(call),
+                    expectPersona(call),
+                    entityId,
+                    tagsPayload
+                )?.let {
+                    call.respond(it)
+                }
             }
 
             post("/entity/{entityId}/comment") {
@@ -194,6 +231,11 @@ fun Application.configureRouting(app: app) {
 
             get("/actions/{uri}") {
                 handleGetActionsCall(call, expectPersona(call).personaId, app.inject())
+            }
+
+            head("/feed") {
+                // Placeholder for feed head request that can be used to poll for updates
+                // Also useful to figure out if the server has started
             }
 
             get("/feed") {

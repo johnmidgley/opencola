@@ -1,15 +1,69 @@
 package io.opencola.relay.common.message.v2.store
 
-import io.opencola.relay.common.message.Envelope
-import java.security.PublicKey
+import io.opencola.model.Id
+import io.opencola.relay.common.message.v2.MessageStorageKey
+import io.opencola.security.EncryptedBytes
+import io.opencola.security.SignedBytes
 
 interface MessageStore {
-    // The envelope is stored, vs. the encodedMessage, for efficiency reasons. Storing things this way
-    // ensures that the message is not replicated in the store across recipients
-    fun addMessage(from: PublicKey, to: PublicKey, envelope: Envelope)
+    fun addMessage(
+        from: Id,
+        to: Id,
+        storageKey: MessageStorageKey,
+        secretKey: EncryptedBytes,
+        message: SignedBytes
+    )
 
-    // Be careful not to modify the sequence as it is being iterated over. If you want to drain the queue,
-    // iterate in a while loop, getting one message at a time and then remove it.
-    fun getMessages(to: PublicKey): Sequence<StoredMessage>
-    fun removeMessage(storedMessage: StoredMessage)
+    // TODO: Make this pageable.
+    fun getMessages(to: Id?): Sequence<StoredMessage>
+    fun removeMessage(header: StoredMessageHeader)
+
+    // TODO: This doesn't look quite right. It's a maintenance function, so maybe it should be in a different interface?
+    // NOTE: Headers are returned, vs the whole message, since the body is not relevant when cleaning up old messages
+    fun removeMessages(maxAgeMilliseconds: Long, limit: Int = 10): List<StoredMessageHeader>
+    fun getUsage(): Sequence<Usage>
+
+    // Convenient way to consume messages that only removes a message when the next one (or end) is accessed
+    fun consumeMessages(id: Id): Sequence<StoredMessage> {
+        return sequence {
+            var previousMessage: StoredMessage? = null
+
+            // The commented out do loopl handles batching (if getMessages were pagable)
+//            do {
+//                if (previousMessage != null) {
+//                    removeMessage(previousMessage.header)
+//                    previousMessage = null
+//                }
+
+                val messages = getMessages(id)
+
+                messages.forEach {
+                    if (previousMessage != null) {
+                        removeMessage(previousMessage!!.header)
+                        previousMessage = null
+                    }
+                    yield(it)
+                    previousMessage = it
+                }
+//            } while (messages.size == batchSize)
+
+            if (previousMessage != null) {
+                removeMessage(previousMessage!!.header)
+            }
+        }
+    }
+
+    fun removeMessages(to: Id): List<StoredMessageHeader> {
+        return consumeMessages(to).toList().map { it.header }
+    }
+
+    // IMPORTANT: This method hides the underlying removeMessages batch calls behind a sequence. As such, you need to
+    // actually consume elements to trigger the removal. If you don't, the messages will never be removed.
+    fun removeMessages(maxAgeMilliseconds: Long): Sequence<StoredMessageHeader> {
+        return sequence {
+            do {
+                val messages = removeMessages(maxAgeMilliseconds, 10).also { yieldAll(it) }
+            } while (messages.size == 10)
+        }
+    }
 }

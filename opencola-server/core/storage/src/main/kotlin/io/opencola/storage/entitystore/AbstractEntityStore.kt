@@ -1,8 +1,8 @@
 package io.opencola.storage.entitystore
 
 import mu.KotlinLogging
-import io.opencola.event.EventBus
-import io.opencola.event.Events
+import io.opencola.event.bus.EventBus
+import io.opencola.event.bus.Events
 import io.opencola.model.*
 import io.opencola.model.value.EmptyValue
 import io.opencola.model.value.Value
@@ -115,7 +115,7 @@ abstract class AbstractEntityStore(
     }
 
     private fun computedFacts(facts: Iterable<Fact>): List<Fact> {
-        return CoreAttribute.values().flatMap { attribute ->
+        return CoreAttribute.entries.flatMap { attribute ->
             attribute.spec.computeFacts.ifNotNullOrElse({ it(facts) }, { emptyList() })
         }
     }
@@ -241,7 +241,10 @@ abstract class AbstractEntityStore(
     private fun getDeletedValue(fact: Fact): Value<Any> {
         return if (fact.attribute.type != AttributeType.SingleValue
             || fact.attribute == CoreAttribute.Type.spec
+            // ParentId and TopLevelParentId need to be specified on delete, as these values
+            // are used to compute facts for the parent entity
             || fact.attribute == CoreAttribute.ParentId.spec
+            || fact.attribute == CoreAttribute.TopLevelParentId.spec
         )
             fact.value
         else
