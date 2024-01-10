@@ -1,6 +1,7 @@
 (ns opencola.web-ui.app-state
   (:require
    [reagent.core :as r]
+   [opencola.web-ui.ajax :refer [PUT]]
    [opencola.web-ui.common :as common]))
 
 ;; TODO: Merge all state into single atom?
@@ -15,6 +16,7 @@
    :feed! (r/atom {})
    :peers! (r/atom {}) 
    :error! (r/atom "")
+   :settings! (r/atom {})
    })
 
 (defn get-page-visible-atoms []
@@ -49,7 +51,9 @@
 (defn theme!
   ([]
    (:theme! app-state))
-  ([theme] 
+  ([theme]
+   ;; TODO: flesh out settings implementation
+   (PUT "/storage/settings.json" {:theme-name theme} #() #())
    (reset! (theme!) theme)))
 
 (defn themes!
@@ -81,3 +85,10 @@
    (:error! app-state))
   ([error]
    (reset! (error!) error)))
+
+(defn settings!
+  ([]
+   (:settings! app-state))
+  ([settings]
+   (PUT "/storage/settings.json" settings #() #())
+   (reset! (settings!) settings)))

@@ -3,11 +3,12 @@
    [goog.dom :as gdom]
    [reagent.dom :as rdom]
    [opencola.web-ui.config :as config]
-   [opencola.web-ui.app-state :as state :refer [personas! persona! query! feed! peers! error! themes! theme! set-page!]]
+   [opencola.web-ui.app-state :as state :refer [personas! persona! query! feed! peers! error! themes! theme! set-page! settings!]]
    [opencola.web-ui.view.feed :as feed]
    [opencola.web-ui.view.persona :as persona]
    [opencola.web-ui.view.peer :as peer]
    [opencola.web-ui.view.settings :as settings]
+   [opencola.web-ui.settings :refer [get-settings default-settings]]
    [opencola.web-ui.location :as location]
    [opencola.web-ui.theme :as theme]
    [secretary.core :as secretary :refer-macros [defroute]]
@@ -91,25 +92,12 @@
   (when-let [el (get-app-element)] 
     (mount el)))
 
-(defn init [] 
-  (persona/init-personas 
-   (personas!) 
-   (fn []
-     (themes! (theme/get-themes #(mount-app-element)))
-     (theme! "light") 
-     (location/set-location-from-state)
-     (when (empty @(feed!))
-       (feed/get-feed @(persona!) @(query!) (feed!) #(error! %)))
-     (when-let [persona @(persona!)]
-       (peer/get-peers persona (peers!) #(error! %))))
-   #(error! %)))
-
 ;; conditionally start your application based on the presence of an "app" element
 ;; this is particularly helpful for testing this ns without launching the app
 #_(mount-app-element)
 
 ;; specify reload hook with ^:after-load metadata
-(defn ^:after-load on-reload [] 
+(defn ^:after-load on-reload []
   (mount-app-element)
   ;; optionally touch your app-state to force rerendering depending on
   ;; your application
@@ -120,9 +108,47 @@
   (events/listen EventType.NAVIGATE #(secretary/dispatch! (.-token %)))
   (.setEnabled true)))
 
-(config/get-config
- #(init)
- #(location/set-location "config-error.html"))
+(defn init []
+  (persona/init-personas
+   (personas!)
+   (fn []
+     (themes! (theme/get-themes #(mount-app-element) #()))
+     
+     (location/set-location-from-state)
+     (when (empty @(feed!))
+       (feed/get-feed @(persona!) @(query!) (feed!) #(error! %)))
+     (when-let [persona @(persona!)]
+       (peer/get-peers persona (peers!) #(error! %))))
+   #(error! %)))
 
+(defn init-personas [on-done]
+  (persona/init-personas
+   (personas!)
+   on-done
+   #(do (error! %) (on-done))))
 
+(defn init-settings [on-done] 
+  (get-settings 
+   #(do (settings! %) (on-done)) 
+   #(do (error! %) (settings! default-settings) (on-done))))
 
+(defn init-themes [on-done]
+  (theme/get-themes
+   #(do (themes! %) (on-done))
+   #(do (error! %) (themes! theme/default-themes) (on-done))))
+
+(defn init-config [on-success]
+  (config/get-config on-success #(location/set-location "config-error.html")))
+
+; TODO: proper chaining of async operations
+(init-config 
+ (fn [] (init-personas 
+         (fn [] (init-settings 
+                 (fn [] (init-themes
+                         (fn [] (theme! (:theme-name @(settings!)))
+                           (mount-app-element)
+                           (location/set-location-from-state)
+                           (when (empty @(feed!))
+                             (feed/get-feed @(persona!) @(query!) (feed!) #(error! %)))
+                           (when-let [persona @(persona!)]
+                             (peer/get-peers persona (peers!) #(error! %)))))))))))

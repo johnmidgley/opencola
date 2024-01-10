@@ -178,6 +178,12 @@ button,
 .button-component {
     display: flex;
     align-items: center;
+
+    &:disabled {
+        cursor: default;
+        background-color: var(--primary-color);
+        color: var(--text-color);
+    }
 }
 
 .text-input-wrapper {

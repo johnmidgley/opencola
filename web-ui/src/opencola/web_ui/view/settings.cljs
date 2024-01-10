@@ -23,7 +23,7 @@
        [:h3.category-title "Appearance"]
        [:div.setting-row
         [:span.setting-title "Theme:"]
-        [select-menu {} theme-list current-theme :name :id #(reset! theme-id! %)]]])))
+        [select-menu {} theme-list current-theme :name :id #(state/theme! %)]]])))
 
 (defn categories [themes! theme!] 
   (fn [] 

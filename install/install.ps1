@@ -9,7 +9,6 @@ cd ../opencola-server
 
 echo "Copying distribution"
 cd ../install/opencola
-cp ../scripts/* .
 mkdir server
 cp -r ../../opencola-server/server/build/install/opencola-server/* server
 

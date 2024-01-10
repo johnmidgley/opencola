@@ -464,6 +464,7 @@ input.input-text {
 /* Peers styles */
 
 .peer-list .list-item {
+    gap: 2rem;
     > .peer-info {
         display: flex;
         flex-direction: column;
@@ -479,6 +480,7 @@ input.input-text {
 /* Persona styles */
 
 .persona-list .list-item {
+    gap: 2rem;
     > .peer-info {
         display: flex;
         flex-direction: column;
