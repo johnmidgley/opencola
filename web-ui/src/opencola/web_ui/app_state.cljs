@@ -49,7 +49,7 @@
 (defn theme!
   ([]
    (:theme! app-state))
-  ([theme]
+  ([theme] 
    (reset! (theme!) theme)))
 
 (defn themes!

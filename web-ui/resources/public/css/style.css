@@ -160,7 +160,7 @@
 
 .feed-list {
     > .list-item {
-        gap: 1.5rem;
+        gap: 1rem;
     }
 }
 
@@ -209,10 +209,13 @@
 .item-body {
     background-color: var(--item-body-bg-color);
     border-radius: .5rem;
-    padding: .3rem;
 
     & .item-img {
         width: 100%;
+    }
+
+    > .item-desc {
+        padding: .5rem;
     }
 }
 
@@ -523,4 +526,24 @@ input.input-text {
 /* Used by the SimpleMDE component */
 .CodeMirror, .CodeMirror-scroll {
 	min-height: 100px;
+    color: var(--text-color);
+    background-color: var(--item-bg-color);
+}
+
+.CodeMirror {
+    border: var(--border-size) solid var(--border-color);
+}
+
+.editor-toolbar {
+    border-top: var(--border-size) solid var(--border-color);
+    border-right: var(--border-size) solid var(--border-color);
+    border-left: var(--border-size) solid var(--border-color);
+
+    a {
+        color: var(--text-color);
+    }
+
+    a:hover {
+        color: var(--text-color-alternate);
+    }
 }

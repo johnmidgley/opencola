@@ -1,13 +1,15 @@
 
 .app {
-    --primary-color: rgb(12, 11, 11);
-    --secondary-color: rgb(39, 36, 36);
-    --tertiary-color: rgb(114, 114, 114);
-    --accent-color: rgb(221, 221, 221);
+    --primary-color: rgb(255, 255, 255);
+    --secondary-color: rgb(239, 239, 239);
+    --tertiary-color: rgb(0, 0, 0);
+    --accent-color: rgb(0, 0, 0);
     --highlight-color: rgb(255, 0, 0);
 
     --caution-color: red;
-    --disabled-color: gray;
+    --disabled-color: rgb(207, 207, 207);
+
+    --shadow-color: rgb(232, 232, 232);
 
     --text-color: var(--accent-color);
     --text-color-alternate: var(--primary-color);
@@ -23,11 +25,12 @@
     --tag-bg-color: var(--secondary-color);
 
     --link-color: var(--accent-color);
+    --link-color: rgb(51, 94, 204);
 
     --action-highlight-color: var(--highlight-color);
 
     --border-color: var(--tertiary-color);
-    --border-size: 2px;
+    --border-size: 1px;
 
     --icon-color: var(--tertiary-color);
 
@@ -51,6 +54,10 @@ img {
     background-repeat: no-repeat;
     background-size: cover;
     shape-margin: 1rem;
+}
+
+p {
+    margin: 0;
 }
 
 a {
@@ -133,7 +140,7 @@ ul {
     justify-content: center;
     margin-left: auto;
     margin-right: auto;
-    --gap: 1rem;
+    --gap: 5rem;
     gap: var(--gap, 1rem);
     max-width: 60rem;
     padding: 0 2rem;
@@ -148,10 +155,9 @@ ul {
     gap: .75rem;
     /* border-bottom: 2px solid var(--border-color); */
     background-color: var(--item-background-color);
-    /* box-shadow: 5px 5px 5px 5px var(--shadow-color);
-    --shadow-color: rgb(28, 28, 28); 
+    box-shadow: 0px 5px 10px 5px var(--shadow-color); 
     border-radius: 1rem;
-    -webkit-box-shadow: 5px 5px 5px 5px var(--shadow-color); */
+    -webkit-box-shadow: 0px 5px 10px 5px var(--shadow-color);
 }
 
 button,
@@ -161,6 +167,11 @@ button,
         color: var(--text-color-alternate);
         --icon-color: var(--text-color-alternate);
         background-color: var(--button-hover-bg-color);
+    }
+    &:disabled {
+        --icon-color: var(--tertiary-color);
+        background-color: var(--primary-color);
+        cursor: default;
     }
 }
 
@@ -187,6 +198,14 @@ button,
         }
     }
 }
+
+.text-input,
+.item-img-url {
+    border: var(--border-size) solid var(--border-color);
+    background-color: var(--primary-color);
+    color: var(--text-color);
+}
+
 .input-checkbox-wrapper {
     display: flex;
     flex-wrap: wrap;
@@ -524,5 +543,15 @@ button,
         border: var(--border-size) solid var(--border-color);
         border-radius: 50%;
         transform: translateY(var(--translation));
+    }
+}
+
+
+
+.activity-block {
+    display: none;
+    
+    &:has(div) {
+        display: flex;
     }
 }

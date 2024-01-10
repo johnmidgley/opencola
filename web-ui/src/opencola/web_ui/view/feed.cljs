@@ -14,7 +14,7 @@
                                                    comment-edit-control
                                                    item-comments]]
             [opencola.web-ui.view.common :refer [hidden-file-input upload-progress error-control button-component icon empty-page-instructions profile-img
-                                                 md->component select-files-control simple-mde text-input button-component edit-control-buttons]]
+                                                 md->component select-files-control simple-mde text-input button-component edit-control-buttons item-divider]]
             [opencola.web-ui.view.likes :refer [item-likes like-edit-control]]
             [opencola.web-ui.view.persona :refer [persona-select]]
             [opencola.web-ui.view.saves :refer [item-saves save-item]]
@@ -90,7 +90,8 @@
                         :text (count actions)} 
       on-click]
      [button-component {:class "action-toggle-button" 
-                        :icon-class (str "icon-" (if @expanded? "hide" "show"))} 
+                        :icon-class (str "icon-" (if @expanded? "hide" "show"))
+                        :disabled (not (seq actions))} 
       #(toggle-atom (map second action-expanded?) expanded?)]
      ]))
 
@@ -98,7 +99,7 @@
   (let [input-id (str (random-uuid))
         distinct-activities {:attach (distinct-attachments persona-id! (:attach activities))}]
     [:span.attachment-wrapper
-     [hidden-file-input input-id on-change]
+     [hidden-file-input input-id on-change] 
      [action-summary persona-id! :attach action-expanded? distinct-activities #(.click (js/document.getElementById input-id))]]))
 
 (defn update-display-entity [persona-id feed! edit-item on-error]
@@ -234,9 +235,10 @@
        [item-tags-summary (-> item :activities :tag) on-click-tag]
        [:div.item-body
         [item-image summary]
-        [md->component {:class "item-desc"}  (:description summary)]] 
+        [:div.item-desc [md->component {:class "desc"}  (:description summary)]]] 
        [attachments-preview (-> item :activities :attach) true] 
-       [item-activities persona-id! personas! feed! item editing?! on-click-authority on-click-tag]])))
+       [item-activities persona-id! personas! feed! item editing?! on-click-authority on-click-tag]
+       [item-divider]])))
 
 (defn on-change [item! key]
   #(swap! item! assoc-in [key] %))

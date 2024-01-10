@@ -57,11 +57,12 @@
   (let [groups (group-by attachment-is-image? (distinct-by :id attachments))
         images (get groups true)
         other (get groups false)] 
-    [:div.attachments-preview
-     [:div.preview-images
-      (doall (for [attachment images]
-               ^{:key attachment} [image-preview attachment]))]
-     (when show-other?
-       (doall (interpose (keyed-divider)
-               (for [attachment other]
-                 ^{:key attachment} [attachment-preview attachment]))))]))
+    (when (seq? attachments) 
+     [:div.attachments-preview
+           [:div.preview-images
+            (doall (for [attachment images]
+                     ^{:key attachment} [image-preview attachment]))]
+           (when show-other?
+             (doall (interpose (keyed-divider)
+                               (for [attachment other]
+                                 ^{:key attachment} [attachment-preview attachment]))))])))

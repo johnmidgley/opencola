@@ -276,12 +276,14 @@
 
 (defn item-divider []
   (fn []
-    [:div.item-divider
-     (doall (for [i (range (+ (rand-int 10) 10))]
-              (let [size (rand 1.5)
-                    translation (rand 1)]
-                ^{:key i} [:span.divider-symbol {:style 
-                                                 {"--size" (str size "rem") 
-                                                  "--border-size" ".1rem" 
-                                                  "--translation" (str translation "rem")}
-                                                 } " "])))]))
+    ;; [:div.item-divider
+    ;;  (doall (for [i (range (+ (rand-int 10) 10))]
+    ;;           (let [size (rand 1.5)
+    ;;                 translation (rand 1)]
+    ;;             ^{:key i} [:span.divider-symbol {:style 
+    ;;                                              {"--size" (str size "rem") 
+    ;;                                               "--border-size" ".1rem" 
+    ;;                                               "--translation" (str translation "rem")}
+    ;;                                              } " "])))]
+    ;;[:span.item-divider " "]
+    ))
