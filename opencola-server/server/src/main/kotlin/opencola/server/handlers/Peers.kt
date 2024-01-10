@@ -70,6 +70,7 @@ fun getPeers(persona: PersonaAddressBookEntry, addressBook: AddressBook): PeersR
     val peers = addressBook.getEntries()
         .filter{ it !is PersonaAddressBookEntry }
         .filter { it.personaId == persona.personaId }
+        .sortedBy { it.name.lowercase() }
         .map {
         // TODO: Make name, public key and uri required for authority
         Peer(

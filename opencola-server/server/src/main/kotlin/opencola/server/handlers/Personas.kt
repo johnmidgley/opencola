@@ -50,5 +50,11 @@ fun deletePersona(addressBook: AddressBook, personaId: Id) {
 }
 
 fun getPersonas(addressBook: AddressBook) : PersonasResult {
-    return PersonasResult(addressBook.getEntries().filterIsInstance<PersonaAddressBookEntry>().map { Persona(it) })
+    return PersonasResult(
+        addressBook
+            .getEntries()
+            .filterIsInstance<PersonaAddressBookEntry>()
+            .sortedBy { it.name.lowercase() }
+            .map { Persona(it) }
+    )
 }

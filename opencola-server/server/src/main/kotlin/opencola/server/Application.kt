@@ -10,6 +10,7 @@ fun main(args: Array<String>) {
     try {
         logger.info { "Starting..." }
         logger.info { "OS: ${System.getProperty("os.name")} - Detected ${getOS()}" }
+        logger.info { "Version: $OC_VERSION" }
         logger.info { "Args: ${args.joinToString(" ")}" }
         val commandLineArgs = CommandLineArgs(args)
         val storagePath = initStorage(commandLineArgs.storage)
