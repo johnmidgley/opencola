@@ -20,6 +20,7 @@ class AttributeDelegate<T>(val valueWrapper: ValueWrapper<T>, val resettable: Bo
 // TODO - validate all fields (i.e. ratings should be between 0 and 1.0)
 val nonResettableIdAttributeDelegate = AttributeDelegate(IdValue, false)
 val booleanAttributeDelegate = AttributeDelegate(BooleanValue)
+val intAttributeDelegate = AttributeDelegate(IntValue)
 val floatAttributeDelegate = AttributeDelegate(FloatValue)
 val stringAttributeDelegate = AttributeDelegate(StringValue)
 val nonResettableUriAttributeDelegate = AttributeDelegate(UriValue, false)
