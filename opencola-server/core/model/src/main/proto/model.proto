@@ -27,6 +27,7 @@ message Attribute {
     NETWORK_TOKEN = 16;
     ATTACHMENT_ID = 17;
     TOP_LEVEL_PARENT_ID = 18;
+    REPOST_DISTANCE = 19;
   }
   oneof value {
     CoreAttribute coreAttribute = 1;
