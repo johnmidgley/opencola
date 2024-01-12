@@ -8,7 +8,7 @@ import java.net.URI
 import java.util.*
 
 abstract class Entity(val authorityId: Id, val entityId: Id) {
-    private var type by stringAttributeDelegate
+    var type by nonResettableStringValueDelegate
     var name by stringAttributeDelegate
     var description by stringAttributeDelegate
     var text by stringAttributeDelegate
