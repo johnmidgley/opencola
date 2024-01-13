@@ -2,11 +2,15 @@ package opencola.server.handlers
 
 import io.opencola.application.TestApplication
 import io.opencola.model.CommentEntity
+import io.opencola.model.PostEntity
 import io.opencola.model.RawEntity
 import io.opencola.model.ResourceEntity
+import io.opencola.storage.MockAddressBook
+import io.opencola.storage.MockEntityStore
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.entitystore.EntityStore
 import io.opencola.storage.addPersona
+import io.opencola.storage.deletePersona
 import org.junit.Test
 import java.net.URI
 import kotlin.test.assertEquals
@@ -196,6 +200,54 @@ class FeedTest {
             assertNotNull(entityResult)
             val comments = entityResult.activities.flatMap { it.actions.filter { it.type == "comment" } }
             assertEquals(0, comments.size)
+        }
+    }
+
+    @Test
+    fun testFeedOrdering() {
+        // TODO: Think about making a FeedContext that can be used without the test application
+        val app = TestApplication.instance
+        val addressBook = app.inject<AddressBook>()
+        val entityStore = app.inject<EntityStore>()
+
+        val persona = addressBook.addPersona("testFeedOrdering")
+
+        try {
+            val post0 = PostEntity(persona.personaId, "post0").also { entityStore.updateEntities(it) }
+            val post1 = PostEntity(persona.personaId, "post1", like = true).also { entityStore.updateEntities(it) }
+            val post2 = PostEntity(persona.personaId, "post2").also { entityStore.updateEntities(it) }
+
+            // Test that feed is ordered reverse chronologically
+            app.handleGetFeed(setOf(persona.personaId)).let { result ->
+                assertEquals(3, result.results.size)
+                assertEquals(post2.entityId.toString(), result.results[0].entityId)
+                assertEquals(post1.entityId.toString(), result.results[1].entityId)
+                assertEquals(post0.entityId.toString(), result.results[2].entityId)
+            }
+
+            post0.like = true
+            entityStore.updateEntities(post0)
+
+            // Test the liking an item bumps it to the top
+            app.handleGetFeed(setOf(persona.personaId)).let { result ->
+                assertEquals(3, result.results.size)
+                assertEquals(post0.entityId.toString(), result.results[0].entityId)
+                assertEquals(post2.entityId.toString(), result.results[1].entityId)
+                assertEquals(post1.entityId.toString(), result.results[2].entityId)
+            }
+
+            // Test that unliking an item does not move it
+            post1.like = null
+            entityStore.updateEntities(post1)
+
+            app.handleGetFeed(setOf(persona.personaId)).let { result ->
+                assertEquals(3, result.results.size)
+                assertEquals(post0.entityId.toString(), result.results[0].entityId)
+                assertEquals(post2.entityId.toString(), result.results[1].entityId)
+                assertEquals(post1.entityId.toString(), result.results[2].entityId)
+            }
+        } finally {
+            addressBook.deletePersona(persona.personaId)
         }
     }
 }
