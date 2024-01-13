@@ -54,8 +54,7 @@ fun getSummary(entities: List<Entity>, authoritiesById: Map<Id, AddressBookEntry
         entityAttributeAsString(entity, Uri.spec),
         entityAttributeAsString(entity, Description.spec),
         entityAttributeAsString(entity, ImageUri.spec),
-        postedByAuthority?.name,
-        postedByAuthority?.imageUri?.toString()
+        postedByAuthority?.let { EntityResult.Authority(postedByAuthority) }
     )
 }
 
