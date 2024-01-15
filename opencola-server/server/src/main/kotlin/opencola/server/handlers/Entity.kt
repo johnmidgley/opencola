@@ -3,6 +3,7 @@ package opencola.server.handlers
 import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
+import io.opencola.application.Application
 import io.opencola.content.*
 import io.opencola.event.bus.EventBus
 import kotlinx.serialization.Serializable
@@ -222,8 +223,8 @@ fun getOrCopyEntity(authorityId: Id, entityStore: EntityStore, entityId: Id): En
 }
 
 fun updateComment(
-    persona: PersonaAddressBookEntry,
     entityStore: EntityStore,
+    persona: PersonaAddressBookEntry,
     entityId: Id,
     commentId: Id?,
     text: String
@@ -249,6 +250,9 @@ fun updateComment(
     return commentEntity
 }
 
+fun Application.updateComment(persona: PersonaAddressBookEntry, entityId: Id, commentId: Id?, text: String) =
+    updateComment(inject(), persona, entityId, commentId, text)
+
 @Serializable
 data class PostCommentPayload(val commentId: String? = null, val text: String)
 
@@ -262,7 +266,7 @@ fun updateComment(
     entityId: Id,
     comment: PostCommentPayload
 ): EntityResult? {
-    updateComment(persona, entityStore, entityId, comment.commentId.nullOrElse { Id.decode(it) }, comment.text)
+    updateComment(entityStore, persona, entityId, comment.commentId.nullOrElse { Id.decode(it) }, comment.text)
     return getEntityResult(entityStore, addressBook, eventBus, fileStore, context, persona.personaId, entityId)
 }
 

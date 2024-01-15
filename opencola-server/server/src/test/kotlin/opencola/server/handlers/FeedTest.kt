@@ -1,12 +1,9 @@
 package opencola.server.handlers
 
 import io.opencola.application.TestApplication
-import io.opencola.model.CommentEntity
 import io.opencola.model.PostEntity
 import io.opencola.model.RawEntity
 import io.opencola.model.ResourceEntity
-import io.opencola.storage.MockAddressBook
-import io.opencola.storage.MockEntityStore
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.entitystore.EntityStore
 import io.opencola.storage.addPersona
@@ -174,12 +171,10 @@ class FeedTest {
         entityStore.updateEntities(resource)
 
         // Added a comment from person1 onto person0's resource
-        val comment = CommentEntity(persona0.personaId, resource.entityId, "comment1")
-        entityStore.updateEntities(comment)
+        val comment = app.updateComment(persona0, resource.entityId, null, "comment1")
 
         val persona1 = addressBook.addPersona("testCommentChain0")
-        val commentReply = CommentEntity(persona1.personaId, comment.entityId, "comment1 reply", resource.entityId)
-        entityStore.updateEntities(commentReply)
+        app.updateComment(persona1, comment.entityId, null, "comment1 reply")
 
         app.handleGetFeed(setOf(persona0.personaId, persona1.personaId)).let { result ->
             assertEquals(1, result.results.size)

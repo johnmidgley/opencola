@@ -41,7 +41,7 @@ class PeerCommentTest {
             val entityStore1 by application1.injector.instance<EntityStore>()
             startServer(server1)
             Thread.sleep(1500)
-            updateComment(persona1, entityStore1, resource0.entityId, null, "Comment")
+            updateComment(entityStore1, persona1, resource0.entityId, null, "Comment")
             val resource1 = entityStore1.getEntity(persona1.personaId, resource0.entityId)
 
             assertNotNull(resource1)
