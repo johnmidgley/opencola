@@ -60,6 +60,9 @@ class AttributeTest {
         assertEquals(17, CoreAttribute.TopLevelParentId.ordinal)
         assertEquals(CoreAttribute.TopLevelParentId.spec.protoAttribute, CoreAttribute.TopLevelParentId.spec.protoAttribute)
 
-        assertEquals(18, CoreAttribute.entries.toTypedArray().count())
+        assertEquals(18, CoreAttribute.RepostDistance.ordinal)
+        assertEquals(CoreAttribute.RepostDistance.spec.protoAttribute, CoreAttribute.RepostDistance.spec.protoAttribute)
+
+        assertEquals(19, CoreAttribute.entries.toTypedArray().count())
     }
 }

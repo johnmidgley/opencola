@@ -9,13 +9,20 @@ fi
 
 echo "Setting version to $VERSION"
 
-
 echo "Updating build.gradle.kts"
 
 if [ "$(uname)" == "Darwin" ]; then
     sed -i '' "s/version = .*/version = \"$VERSION\"/" build.gradle.kts
 else
     sed -i "s/version = .*/version = \"$VERSION\"/" build.gradle.kts
+fi
+
+echo "Updating core.Version.kt"
+
+if [ "$(uname)" == "Darwin" ]; then
+    sed -i '' "s/OC_VERSION = .*/OC_VERSION = \"$VERSION\"/" core/application/src/main/kotlin/io/opencola/application/Version.kt
+else
+    sed -i "s/OC_VERSION = .*/OC_VERSION = \"$VERSION\"/" core/application/src/main/kotlin/io/opencola/application/Version.kt
 fi
 
 echo "Updating extension"

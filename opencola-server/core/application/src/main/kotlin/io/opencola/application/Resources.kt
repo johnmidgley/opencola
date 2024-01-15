@@ -44,6 +44,8 @@ fun extractResourceDirectory(resourceUrl: URL, destinationPath: Path, overwriteE
     return destinationPath.resolve(resourcePath)
 }
 
+// fileSystemPath: Path to the directory where the resources should be extracted (if necessary). If the resources are
+// already available on the filesystem, this path is ignored.
 fun getResourceFilePath(resourcePath: String, fileSystemPath: Path, overwriteExistingFiles: Boolean) : Path {
      val root = getResourceUrl(resourcePath)
         ?: throw IllegalStateException("Unable to locate root resource: $resourcePath")
@@ -62,6 +64,14 @@ fun getResourceFilePath(resourcePath: String, fileSystemPath: Path, overwriteExi
 }
 
 fun copyResources(resourcePath: String,  destinationPath: Path, overwriteExistingFiles: Boolean) {
-    val path = getResourceFilePath(resourcePath, createTempDirectory("oc-resources"), overwriteExistingFiles).toFile()
-    path.copyRecursively(destinationPath.toFile())
+    val path = getResourceFilePath(resourcePath, destinationPath, overwriteExistingFiles).toFile()
+
+    // Since we don't know whether getResourceFilePath copied any files (in development mode it just returns an
+    // existing path), we do an extra copy to make sure the files end up where they are expected.
+    path.copyRecursively(destinationPath.toFile(), overwriteExistingFiles) { _, e ->
+        when(e) {
+            is FileAlreadyExistsException -> OnErrorAction.SKIP
+            else -> throw e
+        }
+    }
 }

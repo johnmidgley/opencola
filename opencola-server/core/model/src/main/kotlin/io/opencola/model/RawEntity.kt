@@ -4,4 +4,9 @@ package io.opencola.model
 class RawEntity : Entity {
     constructor(authorityId: Id, entityId: Id) : super(authorityId, entityId)
     constructor(facts: List<Fact>) : super(facts)
+
+    fun setType(type: String) : Entity {
+        this.type = type
+        return fromFacts(getAllFacts())!!
+    }
 }

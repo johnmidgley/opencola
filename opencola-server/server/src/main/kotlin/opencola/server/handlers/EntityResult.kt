@@ -22,7 +22,27 @@ data class EntityResult(
     )
 
     @Serializable
-    data class Summary(val name: String?, val uri: String?, val description: String?, val imageUri: String?, val postedBy: String?, val postedByImageUri: String?)
+    data class Authority(
+        val id: String,
+        val name: String,
+        val imageUri: String?
+    ) {
+        constructor(addressBookEntry: AddressBookEntry) : this(
+            addressBookEntry.entityId.toString(),
+            addressBookEntry.name,
+            addressBookEntry.imageUri?.toString()
+        )
+    }
+
+    // TODO: Add a typed constructor to this and other model objects
+    @Serializable
+    data class Summary(
+        val name: String?,
+        val uri: String?,
+        val description: String?,
+        val imageUri: String?,
+        val postedBy: Authority?,
+    )
 
     enum class ActionType() {
         Save,
@@ -35,7 +55,7 @@ data class EntityResult(
     }
 
     @Serializable
-    data class Action(val type: String, val id: String?, val value: String?){
+    data class Action(val type: String, val id: String?, val value: String?) {
         constructor(type: ActionType, id: Id?, value: Any?) :
                 this(type.name.lowercase(), id.nullOrElse { it.toString() }, value.nullOrElse { it.toString() })
     }

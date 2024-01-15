@@ -54,8 +54,7 @@ fun getSummary(entities: List<Entity>, authoritiesById: Map<Id, AddressBookEntry
         entityAttributeAsString(entity, Uri.spec),
         entityAttributeAsString(entity, Description.spec),
         entityAttributeAsString(entity, ImageUri.spec),
-        postedByAuthority?.name,
-        postedByAuthority?.imageUri?.toString()
+        postedByAuthority?.let { EntityResult.Authority(postedByAuthority) }
     )
 }
 
@@ -168,13 +167,31 @@ fun getEntityIds(entityStore: EntityStore, searchIndex: SearchIndex, query: Quer
             //  take a transaction. Fix this by requesting transaction batches until no more or 100 entities have been reached
             // TODO: This produces a nice list of the most recent entities, but only returns results in the last
             //  100 transactions. Move to proper query from search engine, that orders by date.
+            // At a high level, the feed is ordered in reverse chronological order of activity on entities. We have 3
+            // basic choices in how we define activity:
+            //
+            // 1. Order by ANY activity, including both additions and retractions. This implies that unliking an item
+            // that is far down in the feed will bump it to the top, which is a bit surprising, and since activity is
+            // removed, it is not visible to the viewer.
+            //
+            // 2. Order by any visible activity, in particular, activity returned in the feed item that is accessible to
+            // the viewer of the feed. This implies that liking an item bumps it to the top of the feed, while unliking
+            // the item would return it to the position it was in before being liked. While somewhat intuitive,
+            // this means that an item will like "disappear" after a refresh of the page, which is unexpected.
+            //
+            // 3. Order by any ADD activity, whether or not it is visible. This implies that liking an item bumps it
+            // to the top of the feed, but unliking it leaves it there. This seems the most intuitive to the user,
+            // and so is how we do things below.
             entityStore.getSignedTransactions(
                 query.authorityIds,
                 null,
                 EntityStore.TransactionOrder.TimeDescending,
                 100 // TODO: Config limit
             )
-                .flatMap { tx -> tx.transaction.transactionEntities.map { it.entityId } }
+                .flatMap { tx ->
+                    tx.transaction.transactionEntities.filter { e -> e.facts.any { it.operation == Operation.Add } }
+                }
+                .map { it.entityId }
                 .toSet()
                 .filter { entityStore.getEntities(query.authorityIds, setOf(it)).isNotEmpty() }
         } else {
@@ -292,6 +309,7 @@ fun getEntityResults(
                 activities
             )
         }
+    // .sortedByDescending { it.activities.maxOf{ it.epochSecond} }
 }
 
 fun getEntityResult(

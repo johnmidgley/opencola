@@ -1,8 +1,0 @@
-#!/bin/bash
-stop
-pushd server
-touch nohup.out
-nohup bin/opencola-server &
-tail -f nohup.out
-popd
-

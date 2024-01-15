@@ -3,6 +3,7 @@ package opencola.server.handlers
 import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
+import io.opencola.application.Application
 import io.opencola.content.*
 import io.opencola.event.bus.EventBus
 import kotlinx.serialization.Serializable
@@ -116,23 +117,18 @@ fun updateEntity(
     }
 }
 
-fun getOrCopyEntity(authorityId: Id, entityStore: EntityStore, entityId: Id): Entity? {
-    val existingEntity =
-        entityStore.getEntity(authorityId, entityId) ?: entityStore.getEntities(emptySet(), setOf(entityId))
-            .firstOrNull()
-
-    if (existingEntity == null || existingEntity.authorityId == authorityId)
-        return existingEntity
-
-    val newEntity = when (existingEntity) {
+// This is not a full copy, rather a copy of all the fields that need to be copied when an item is bubbled. In particular,
+// It doesn't copy any activities
+fun copyEntity(authorityId: Id, entity: Entity): Entity {
+    val copy = when (entity) {
         is ResourceEntity -> {
             ResourceEntity(
                 authorityId,
-                existingEntity.uri!!, // TODO: Get rid of !! - make non nullable
-                existingEntity.name,
-                existingEntity.description,
-                existingEntity.text,
-                existingEntity.imageUri
+                entity.uri!!, // TODO: Get rid of !! - make non nullable
+                entity.name,
+                entity.description,
+                entity.text,
+                entity.imageUri
             )
 
         }
@@ -140,39 +136,95 @@ fun getOrCopyEntity(authorityId: Id, entityStore: EntityStore, entityId: Id): En
         is PostEntity -> {
             PostEntity(
                 authorityId,
-                existingEntity.entityId,
-                existingEntity.name,
-                existingEntity.description,
-                existingEntity.text,
-                existingEntity.imageUri
+                entity.entityId,
+                entity.name,
+                entity.description,
+                entity.text,
+                entity.imageUri
             )
         }
 
         is DataEntity -> {
             DataEntity(
                 authorityId,
-                existingEntity.entityId,
-                existingEntity.mimeType!!,
-                existingEntity.name,
-                existingEntity.description,
-                existingEntity.text,
-                existingEntity.imageUri
+                entity.entityId,
+                entity.mimeType!!,
+                entity.name,
+                entity.description,
+                entity.text,
+                entity.imageUri
             )
         }
 
-        else -> throw IllegalArgumentException("Don't know how to add ${existingEntity.javaClass.simpleName}")
+        else -> throw IllegalArgumentException("Don't know how to copy ${entity.javaClass.simpleName}")
     }
 
-    newEntity.attachmentIds = existingEntity.attachmentIds
+    copy.attachmentIds = entity.attachmentIds
 
-    // TODO: Remove any calls to update entity after calling this (getOrCopyEntity)
+    return copy
+}
+
+// This is not a full copy, rather a copy of all the fields that need to be copied when an item is saved. In particular,
+// It doesn't copy any activities, EXCEPT attachments, which are part of the content of a post
+fun copyEntity(fromEntity: Entity, toEntity: Entity): Entity {
+    require(fromEntity.javaClass == toEntity.javaClass) { "Source and destination entities must be of the same type" }
+    toEntity.name = fromEntity.name
+    toEntity.description = fromEntity.description
+    toEntity.text = fromEntity.text
+    toEntity.imageUri = fromEntity.imageUri
+    toEntity.attachmentIds += fromEntity.attachmentIds
+
+    when (fromEntity) {
+        is ResourceEntity -> {
+            (toEntity as ResourceEntity).apply {
+                uri = fromEntity.uri
+            }
+        }
+
+        is PostEntity -> toEntity as PostEntity
+
+        is DataEntity -> {
+            (toEntity as DataEntity).apply {
+                mimeType = fromEntity.mimeType
+            }
+        }
+
+        else -> throw IllegalArgumentException("Don't know how to copy ${fromEntity.javaClass.simpleName}")
+    }
+
+    return toEntity
+}
+
+fun getOrCopyEntity(authorityId: Id, entityStore: EntityStore, entityId: Id): Entity? {
+    val entityFromAuthority = entityStore.getEntity(authorityId, entityId)
+
+    if (entityFromAuthority != null && entityFromAuthority !is RawEntity) {
+        // Entity already exists
+        return entityFromAuthority
+    }
+
+    val existingEntity = entityStore.getEntities(emptySet(), setOf(entityId))
+        .filterNot { it is RawEntity }
+        .firstOrNull()
+
+    if (existingEntity == null) {
+        // No entity to copy
+        return null
+    }
+
+    val newEntity =
+        entityFromAuthority
+            ?.let { copyEntity(existingEntity, (it as RawEntity).setType(existingEntity.type!!)) }
+            ?: copyEntity(authorityId, existingEntity)
+
+    // TODO: Remove any calls to update entity after calling this method
     entityStore.updateEntities(newEntity)
     return newEntity
 }
 
 fun updateComment(
-    persona: PersonaAddressBookEntry,
     entityStore: EntityStore,
+    persona: PersonaAddressBookEntry,
     entityId: Id,
     commentId: Id?,
     text: String
@@ -198,6 +250,9 @@ fun updateComment(
     return commentEntity
 }
 
+fun Application.updateComment(persona: PersonaAddressBookEntry, entityId: Id, commentId: Id?, text: String) =
+    updateComment(inject(), persona, entityId, commentId, text)
+
 @Serializable
 data class PostCommentPayload(val commentId: String? = null, val text: String)
 
@@ -211,7 +266,7 @@ fun updateComment(
     entityId: Id,
     comment: PostCommentPayload
 ): EntityResult? {
-    updateComment(persona, entityStore, entityId, comment.commentId.nullOrElse { Id.decode(it) }, comment.text)
+    updateComment(entityStore, persona, entityId, comment.commentId.nullOrElse { Id.decode(it) }, comment.text)
     return getEntityResult(entityStore, addressBook, eventBus, fileStore, context, persona.personaId, entityId)
 }
 

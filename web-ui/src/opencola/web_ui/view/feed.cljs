@@ -213,7 +213,7 @@
   (let [item-uri (:uri summary)
         image-uri (:imageUri summary) 
         img [:img.item-img {:src image-uri}]
-        posted-by-image-uri ( :postedByImageUri summary)]
+        posted-by-image-uri (-> summary :postedBy :imageUri)]
     (if (not-empty image-uri)
       [:div.item-img-box
        (if (empty? item-uri)
@@ -224,7 +224,7 @@
 
 (defn display-feed-item [persona-id! personas! feed! item editing?! on-click-authority on-click-tag]
   (let [summary (:summary item)
-        posted-by (:postedBy summary)]
+        posted-by  (-> summary :postedBy :name)]
     (fn []
       [:div.feed-item
        [item-name summary] 

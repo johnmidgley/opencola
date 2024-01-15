@@ -181,6 +181,15 @@ enum class CoreAttribute(val spec: Attribute) {
             isIndexable = false,
         )
     ),
+    RepostDistance(
+        Attribute(
+            URI("oc://attributes/repostDistance"),
+            AttributeType.SingleValue,
+            ProtoAttribute.REPOST_DISTANCE,
+            IntValue as ValueWrapper<Any>,
+            isIndexable = false,
+        )
+    ),
 }
 
 
