@@ -13,6 +13,7 @@ import java.io.InputStream
 // Think about using solr to do Tika analysis / parsing as it should be able to do this
 
 // TODO: Make interface and TikaContentExtractor implementation
+// TODO: Try Boilerpipe: https://github.com/kohlschutter/boilerpipe
 class TextExtractor {
     private fun getBody(stream: InputStream) : String {
         val handler = BodyContentHandler(-1) // -1 removes default text limit
