@@ -41,6 +41,7 @@ data class EntityResult(
         val uri: String?,
         val description: String?,
         val imageUri: String?,
+        val originDistance: Int?,
         val postedBy: Authority?,
     )
 

@@ -109,7 +109,7 @@ fun updateEntity(
     val entityId =
         Id.decode(entityPayload.entityId ?: throw IllegalArgumentException("No entityId specified for update"))
     logger.info { "Updating: $entityPayload" }
-    return getOrCopyEntity(persona.personaId, entityStore, entityId)?.let { entity ->
+    return getOrCopyEntity(addressBook, entityStore, persona.personaId, entityId)?.let { entity ->
         // TODO: getOrCopy has already copied the entity (if it didn't exist) in a different transaction. Consider
         //  moving the getOrCopyEntity call into the updateEntity call and returning saving + update in a single
         //  transaction
@@ -195,7 +195,17 @@ fun copyEntity(fromEntity: Entity, toEntity: Entity): Entity {
     return toEntity
 }
 
-fun getOrCopyEntity(authorityId: Id, entityStore: EntityStore, entityId: Id): Entity? {
+fun computeOriginDistance(addressBook: AddressBook, entities: Iterable<Entity>): Int? {
+    require(entities.map { it.entityId }.distinct().size <= 1) { "All entities must have the same entityId" }
+    val personaIds = addressBook.getEntries().map { it.personaId }
+
+    if (entities.any { it.authorityId in personaIds })
+        return null // Equivalent to 0
+
+    return entities.minOf { it.originDistance ?: 0 } + 1
+}
+
+fun getOrCopyEntity(addressBook: AddressBook, entityStore: EntityStore, authorityId: Id, entityId: Id): Entity? {
     val entityFromAuthority = entityStore.getEntity(authorityId, entityId)
 
     if (entityFromAuthority != null && entityFromAuthority !is RawEntity) {
@@ -203,7 +213,8 @@ fun getOrCopyEntity(authorityId: Id, entityStore: EntityStore, entityId: Id): En
         return entityFromAuthority
     }
 
-    val existingEntity = entityStore.getEntities(emptySet(), setOf(entityId))
+    val existingEntities = entityStore.getEntities(emptySet(), setOf(entityId))
+    val existingEntity = existingEntities
         .filterNot { it is RawEntity }
         .firstOrNull()
 
@@ -216,6 +227,8 @@ fun getOrCopyEntity(authorityId: Id, entityStore: EntityStore, entityId: Id): En
         entityFromAuthority
             ?.let { copyEntity(existingEntity, (it as RawEntity).setType(existingEntity.type!!)) }
             ?: copyEntity(authorityId, existingEntity)
+
+    newEntity.originDistance = computeOriginDistance(addressBook, existingEntities)
 
     // TODO: Remove any calls to update entity after calling this method
     entityStore.updateEntities(newEntity)
@@ -285,12 +298,12 @@ fun saveEntity(
     persona: PersonaAddressBookEntry,
     entityId: Id
 ): EntityResult? {
-    val entity = getOrCopyEntity(persona.personaId, entityStore, entityId)
+    val entity = getOrCopyEntity(addressBook, entityStore, persona.personaId, entityId)
         ?: throw IllegalArgumentException("Unable to save unknown entity: $entityId")
 
     // TODO: Should DB enforce that data id exists? Seems valid to point to data that isn't available locally, but think on it
     val attachmentEntities = entity.attachmentIds.map {
-        getOrCopyEntity(persona.personaId, entityStore, it)
+        getOrCopyEntity(addressBook, entityStore, persona.personaId, it)
             ?: throw IllegalArgumentException("Unable to save unknown attachment: $it")
     }
 

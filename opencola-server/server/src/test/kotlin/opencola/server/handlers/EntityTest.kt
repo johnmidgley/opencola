@@ -3,6 +3,7 @@ package opencola.server.handlers
 import io.opencola.model.*
 import io.opencola.application.TestApplication
 import io.opencola.event.bus.EventBus
+import io.opencola.storage.addPersona
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.entitystore.EntityStore
@@ -46,7 +47,8 @@ class EntityTest {
         assertNull(localEntityStore.getEntity(localPersona.personaId, peerEntity.entityId))
 
         // Save and check that copy worked
-        val saveEntity = getOrCopyEntity(localPersona.personaId, localEntityStore, peerEntity.entityId)
+        val saveEntity =
+            getOrCopyEntity(localAddressBook, localEntityStore, localPersona.personaId, peerEntity.entityId)
         assertNotNull(saveEntity)
         localEntityStore.updateEntities(saveEntity)
         val localEntity = localEntityStore.getEntity(localPersona.personaId, peerEntity.entityId)
@@ -67,20 +69,58 @@ class EntityTest {
     }
 
     @Test
-    fun testGetOrCopyResource(){
+    fun testGetOrCopyResource() {
         val uri = URI("https://test")
         val localResource = saveEntity { ResourceEntity(it, uri, "name") } as ResourceEntity
         assertEquals(uri, localResource.uri)
     }
 
     @Test
-    fun testGetOrCopyPost(){
+    fun testGetOrCopyPost() {
         saveEntity { PostEntity(it, "name", "description") } as PostEntity
     }
 
     @Test
+    fun testOriginDistance() {
+        // Test that a post from a peer with no origin distance is set to 1
+        val entity0 = saveEntity { PostEntity(it, "name0", "description0") } as PostEntity
+        assertEquals(1, entity0.originDistance)
+
+        // Test that a post from a peer with an origin distance incremented
+        val entity1 = saveEntity { authorityId ->
+            PostEntity(authorityId, "name1", "description1").also { it.originDistance = 2 }
+        } as PostEntity
+        assertEquals(3, entity1.originDistance)
+
+        // Test that saving a post from another peer results in a null origin distance (i.e. equivalent to 0)
+        val app = TestApplication.instance
+        val addressBook = app.inject<AddressBook>()
+        val entityStore = app.inject<EntityStore>()
+        val persona0 = addressBook.addPersona("Persona0")
+        val persona1 = addressBook.addPersona("Persona1")
+        val postEntity = PostEntity(persona0.personaId, "name", "description")
+        entityStore.updateEntities(postEntity)
+        val entity2 = getOrCopyEntity(addressBook, entityStore, persona1.personaId, postEntity.entityId) as PostEntity
+        assertEquals(null, entity2.originDistance)
+
+        val result = newPost(
+            app.inject(),
+            app.inject(),
+            app.inject(),
+            app.inject(),
+            app.inject(),
+            Context(""),
+            persona0,
+            EntityPayload(description = "Test"),
+            emptySet()
+        )!!
+
+        assertNull(result.summary.originDistance)
+    }
+
+    @Test
     fun testDeleteEntityWithDependents() {
-        val app  = TestApplication.instance
+        val app = TestApplication.instance
         val persona = TestApplication.instance.getPersonas().first()
         val entityStore = app.inject<EntityStore>()
         val addressBook = app.inject<AddressBook>()
@@ -94,7 +134,7 @@ class EntityTest {
         assertNotNull(entityStore.getEntity(persona.personaId, comment.entityId))
 
         // Delete the post and check that the comment is gone
-        deleteEntity(entityStore, addressBook, eventBus,app.inject(), Context(""), persona, post.entityId)
+        deleteEntity(entityStore, addressBook, eventBus, app.inject(), Context(""), persona, post.entityId)
         assertNull(entityStore.getEntity(persona.personaId, post.entityId))
         assertNull(entityStore.getEntity(persona.personaId, comment.entityId))
     }

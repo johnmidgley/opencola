@@ -43,10 +43,14 @@ fun getPostedById(entities: List<Entity>): Id {
     }!!.authorityId
 }
 
+fun getOriginDistance(entities: Iterable<Entity>): Int? {
+    return entities.minOf { it.originDistance ?: 0 }.let { if (it == 0) null else it }
+}
+
 fun getSummary(entities: List<Entity>, authoritiesById: Map<Id, AddressBookEntry>): Summary {
     val entity = entities
         .filter { it !is RawEntity } // Raw entities cannot be displayed - they just contain activity facts
-        .maxByOrNull { e -> e.getCurrentFacts().maxOfOrNull { it.transactionOrdinal!! }!! }!!
+        .maxBy { e -> e.getCurrentFacts().maxOf { it.transactionOrdinal!! } }
     val postedByAuthority = authoritiesById[getPostedById(entities)]
 
     return Summary(
@@ -54,6 +58,7 @@ fun getSummary(entities: List<Entity>, authoritiesById: Map<Id, AddressBookEntry
         entityAttributeAsString(entity, Uri.spec),
         entityAttributeAsString(entity, Description.spec),
         entityAttributeAsString(entity, ImageUri.spec),
+        getOriginDistance(entities),
         postedByAuthority?.let { EntityResult.Authority(postedByAuthority) }
     )
 }

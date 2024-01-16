@@ -341,9 +341,9 @@ public final class Model {
        */
       TOP_LEVEL_PARENT_ID(18),
       /**
-       * <code>REPOST_DISTANCE = 19;</code>
+       * <code>ORIGIN_DISTANCE = 19;</code>
        */
-      REPOST_DISTANCE(19),
+      ORIGIN_DISTANCE(19),
       UNRECOGNIZED(-1),
       ;
 
@@ -424,9 +424,9 @@ public final class Model {
        */
       public static final int TOP_LEVEL_PARENT_ID_VALUE = 18;
       /**
-       * <code>REPOST_DISTANCE = 19;</code>
+       * <code>ORIGIN_DISTANCE = 19;</code>
        */
-      public static final int REPOST_DISTANCE_VALUE = 19;
+      public static final int ORIGIN_DISTANCE_VALUE = 19;
 
 
       public final int getNumber() {
@@ -472,7 +472,7 @@ public final class Model {
           case 16: return NETWORK_TOKEN;
           case 17: return ATTACHMENT_ID;
           case 18: return TOP_LEVEL_PARENT_ID;
-          case 19: return REPOST_DISTANCE;
+          case 19: return ORIGIN_DISTANCE;
           default: return null;
         }
       }
@@ -8150,7 +8150,7 @@ public final class Model {
       "\n\022\t\n\005TRUST\020\013\022\010\n\004LIKE\020\014\022\n\n\006RATING\020\r\022\r\n\tPA" +
       "RENT_ID\020\016\022\016\n\nCOMMENT_ID\020\017\022\021\n\rNETWORK_TOK" +
       "EN\020\020\022\021\n\rATTACHMENT_ID\020\021\022\027\n\023TOP_LEVEL_PAR" +
-      "ENT_ID\020\022\022\023\n\017REPOST_DISTANCE\020\023B\007\n\005value\"\224" +
+      "ENT_ID\020\022\022\023\n\017ORIGIN_DISTANCE\020\023B\007\n\005value\"\224" +
       "\002\n\005Value\022\017\n\005empty\030\001 \001(\014H\000\022\021\n\007boolean\030\002 \001" +
       "(\010H\000\022\r\n\003int\030\003 \001(\005H\000\022\016\n\004long\030\004 \001(\003H\000\022\017\n\005f" +
       "loat\030\005 \001(\002H\000\022\020\n\006double\030\006 \001(\001H\000\022\020\n\006string" +
