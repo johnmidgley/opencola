@@ -243,20 +243,7 @@ fun getChildren(
 fun getAuthoritiesById(addressBook: AddressBook, personaIds: Set<Id>): Map<Id, AddressBookEntry> {
     return addressBook.getEntries()
         .filter { it.personaId in personaIds }
-        .map {
-            if (it is PersonaAddressBookEntry)
-                AddressBookEntry(
-                    it.personaId,
-                    it.entityId,
-                    "You (${it.name})",
-                    it.publicKey,
-                    it.address,
-                    it.imageUri,
-                    it.isActive
-                )
-            else
-                it
-        }.associateBy { it.entityId }
+        .associateBy { it.entityId }
 }
 
 fun getPersonaId(addressBook: AddressBook, activities: List<Activity>): Id {

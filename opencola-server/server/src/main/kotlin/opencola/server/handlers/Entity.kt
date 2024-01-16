@@ -279,8 +279,9 @@ fun updateComment(
     entityId: Id,
     comment: PostCommentPayload
 ): EntityResult? {
-    updateComment(entityStore, persona, entityId, comment.commentId.nullOrElse { Id.decode(it) }, comment.text)
-    return getEntityResult(entityStore, addressBook, eventBus, fileStore, context, persona.personaId, entityId)
+    val updatedComment = updateComment(entityStore, persona, entityId, comment.commentId.nullOrElse { Id.decode(it) }, comment.text)
+    val topLevelParentId = updatedComment.topLevelParentId ?: updatedComment.parentId ?: entityId
+    return getEntityResult(entityStore, addressBook, eventBus, fileStore, context, persona.personaId, topLevelParentId)
 }
 
 suspend fun deleteComment(call: ApplicationCall, persona: PersonaAddressBookEntry, entityStore: EntityStore) {
