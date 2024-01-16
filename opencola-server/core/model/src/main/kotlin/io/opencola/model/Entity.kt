@@ -19,7 +19,7 @@ abstract class Entity(val authorityId: Id, val entityId: Id) {
     var tags by tagsAttributeDelegate
     val commentIds by MultiValueSetAttributeDelegate<Id>(CoreAttribute.CommentIds.spec) //  Read only, computed property
     var attachmentIds by MultiValueSetAttributeDelegate<Id>(CoreAttribute.AttachmentIds.spec)
-    var repostDistance by intAttributeDelegate
+    var originDistance by intAttributeDelegate
     private var facts = emptyList<Fact>()
 
     constructor(

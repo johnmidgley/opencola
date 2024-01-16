@@ -181,11 +181,15 @@ enum class CoreAttribute(val spec: Attribute) {
             isIndexable = false,
         )
     ),
-    RepostDistance(
+    // How far an item is from its origin. Set to set null (which should treated as 0) when an item is added directly
+    // (i.e. the item is saved through the browser extension or created as a post). When an item is saved (bubbled),
+    // if the origin is another persona, set to 0 (it was saved by the same person), otherwise 1 + min originDistance
+    // across all instances.
+    OriginDistance(
         Attribute(
-            URI("oc://attributes/repostDistance"),
+            URI("oc://attributes/originDistance"),
             AttributeType.SingleValue,
-            ProtoAttribute.REPOST_DISTANCE,
+            ProtoAttribute.ORIGIN_DISTANCE,
             IntValue as ValueWrapper<Any>,
             isIndexable = false,
         )
