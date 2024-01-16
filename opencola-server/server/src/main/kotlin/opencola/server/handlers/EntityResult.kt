@@ -3,6 +3,7 @@ package opencola.server.handlers
 import io.opencola.util.nullOrElse
 import io.opencola.model.Id
 import io.opencola.storage.addressbook.AddressBookEntry
+import io.opencola.storage.addressbook.PersonaAddressBookEntry
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -25,11 +26,13 @@ data class EntityResult(
     data class Authority(
         val id: String,
         val name: String,
+        val isPersona: Boolean,
         val imageUri: String?
     ) {
         constructor(addressBookEntry: AddressBookEntry) : this(
             addressBookEntry.entityId.toString(),
             addressBookEntry.name,
+            addressBookEntry is PersonaAddressBookEntry,
             addressBookEntry.imageUri?.toString()
         )
     }
