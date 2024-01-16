@@ -47,7 +47,7 @@
     (fn []
       (let [image-uri (:imageUri @p!)]
         [:div.list-item
-         [profile-img image-uri (:name @p!)]
+         [profile-img image-uri (:name @p!) (:id @p!)]
          [:div.peer-info
           [text-input-component {:value (:name @p!) :disabled (not @editing?!) :icon-class "icon-persona" :name "peer-name"} #(swap-atom-data! % p! :name)]
           [text-input-component {:value (:id @p!) :disabled true :icon-class "icon-id" :name "peer-id"} #(swap-atom-data! % p! :id)]

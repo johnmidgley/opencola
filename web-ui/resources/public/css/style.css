@@ -207,6 +207,7 @@
 .item-body {
     background-color: var(--item-body-bg-color);
     border-radius: .5rem;
+    overflow: hidden;
 
     & .item-img {
         width: 100%;

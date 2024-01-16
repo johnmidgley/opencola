@@ -52,7 +52,7 @@
     (fn []
       (let [image-uri (:imageUri @persona!)]
         [:div.list-item
-          [profile-img image-uri (:name @persona!)]
+          [profile-img image-uri (:name @persona!) (:id @persona!)]
          [:div.peer-info
           [text-input-component {:value (:name @persona!) :disabled (not @editing?!) :icon-class "icon-persona" :name "persona-name"} #(swap-atom-data! % persona! :name)]
           [text-input-component {:value (:id @persona!) :disabled true :icon-class "icon-id" :name "persona-id"} #(swap-atom-data! % persona! :id)]
@@ -85,7 +85,7 @@
     (fn []
       (let [image-uri (:imageUri @persona!)]
         [:div.list-item
-         [profile-img image-uri (:name @persona!)]
+         [profile-img image-uri (:name @persona!) (:id @persona!)]
          [:div.peer-info
           [text-input-component {:value (:name @persona!) :icon-class "icon-persona" :name "persona-name"} #(swap-atom-data! % persona! :name)]
           [text-input-component {:value (:address @persona!) :icon-class "icon-link" :name "persona-link"} #(swap-atom-data! % persona! :address)]

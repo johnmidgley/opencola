@@ -223,10 +223,12 @@
 
 (defn posted-by [summary on-click-authority]
   (let [posted-by (:postedBy summary)
-        posted-by-image-uri (:postedByImageUri summary)] 
+        posted-by-image-uri (:imageUri posted-by)
+        name (:name posted-by)
+        id (:id posted-by)] 
     [:div.posted-by
-     [profile-img posted-by-image-uri posted-by]
-     [:span.authority {:on-click #(on-click-authority posted-by)} posted-by]]
+     [profile-img posted-by-image-uri name id #(on-click-authority name)]
+     [:span.authority {:on-click #(on-click-authority name)} name]]
     ))
 
 (defn item-name [summary]

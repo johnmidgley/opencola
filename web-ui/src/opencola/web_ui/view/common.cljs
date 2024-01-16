@@ -258,13 +258,13 @@
 (defn initials [s]
   (->> (string/split s #"\s+") (map first) (take 2) (apply str)))
 
-(defn profile-img [image-uri name on-click!]
+(defn profile-img [image-uri name id on-click!]
   (let [name (if name (string/replace name #"\)|You \(" "") name)
         img? (some? (seq image-uri))] 
     [:div.profile-img-wrapper {:on-click on-click! :data-img-present img?}
      (if img?
        [:img.profile-img {:src image-uri :alt name}]
-       [:span.generated-img {:style {:background-color (create-hsl name 65 75)}} (string/upper-case (initials name))])]))
+       [:span.generated-img {:style {:background-color (create-hsl id 65 75)}} (string/upper-case (initials name))])]))
 
 (defn edit-control-buttons [config deletable? error!]
   (let [{on-save :on-save

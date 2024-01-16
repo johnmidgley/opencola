@@ -546,6 +546,7 @@ button,
     
     &:has(div) {
         display: flex;
+        flex-direction: column;
     }
 }
 
