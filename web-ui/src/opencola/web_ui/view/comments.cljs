@@ -50,12 +50,12 @@
         [:div.item-comment 
          (if (and editable? @editing?!)
            [comment-control context persona-id! item comment-id text editing?! on-update]
-           [:div.item-comment-container [md->component {:class (str "item-comment-text " (when editable? "own-comment"))} text]])
+           [:div.item-comment-container [md->component {:class (str "item-comment-text markdown-text " (when editable? "own-comment"))} text]])
          [:div.item-attribution
           [:span.authority {:on-click #(on-click-authority authority-name)} authority-name] " " (format-time epoch-second) " "
           [button-component {:icon-class "icon-reply" :class "comment-button"} #()]
           (when editable?
-            [button-component {:class "comment-button" :icon-class "icon-edit"} #(swap! editing?! not)])]]))))
+            [button-component {:class "comment-button edit-comment-button" :icon-class "icon-edit"} #(swap! editing?! not)])]]))))
 
 (defn item-comments [context persona-id! item comment-actions preview-fn? expanded?! on-update on-click-authority]
   (let [preview? (preview-fn?)

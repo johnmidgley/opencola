@@ -17,7 +17,7 @@
      [:td
       (when data-id
         [:span.flex
-         [:a.button.action-button {:href (data-url data-id) :target "_blank"} [icon "icon" "icon-archive"]]])]]))
+         [:a.button.action-button {:href (data-url data-id) :target "_blank"} [icon {:icon-class "icon-archive"}]]])]]))
 
 (defn item-saves [expanded?! save-actions on-click-authority]
   (when @expanded?!

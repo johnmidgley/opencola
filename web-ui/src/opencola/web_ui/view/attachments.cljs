@@ -57,7 +57,7 @@
   (let [groups (group-by attachment-is-image? (distinct-by :id attachments))
         images (get groups true)
         other (get groups false)] 
-    (when (seq? attachments) 
+    (when (seq attachments) 
      [:div.attachments-preview
            [:div.preview-images
             (doall (for [attachment images]

@@ -11,21 +11,34 @@
 
 (defn swap-atom-data! [event item! key]
   (swap! item! assoc-in [key] (-> event .-target .-value)))
+
 (defn error-control [e!]
   (when @e!
+    (println @e!)
     [:div.error [:p @e!]]))
 
 (defn item-key []
   (let [new-key (random-uuid)]
     new-key))
 
+(defn tool-tip [config]
+  (let [{text :text
+         tip-position :tip-position} config]
+    [:tool-tip 
+     {:class "tool-tip" 
+      :role "tooltip" 
+      :data-tip-position (if tip-position tip-position "tip-top")} 
+     text]))
+
 (def inline-divider [:span.divider " | "])
 (defn keyed-divider [] ^{:key (item-key)} [:span.divider " | "])
 (def image-divider [:img.divider {:src "../img/divider.png"}])
 (def nbsp (gstring/unescapeEntities "&nbsp;"))
 
-(defn icon [class icon-class]
-  [:span {:class (str class " " icon-class)}])
+(defn icon [config]
+  (let [{class :class
+         icon-class :icon-class} config]
+    [:span.icon {:class (str (when class (str class " ")) icon-class)}]))
 
 (defn empty-page-instructions [page problem-text]
   [:div.content-list
@@ -35,15 +48,15 @@
      [:span.item-name.title "Snap! "problem-text]
      (when (= page :peers)
        [:div.instructions
-        [:span.instruction "Add peers by clicking the add peer icon (" [icon "icon" "icon-new-peer"] ") on the top right!"]])
+        [:span.instruction "Add peers by clicking the add peer icon (" [icon {:icon-class "icon-new-peer"}] ") on the top right!"]])
      (when (= page :feed)
        [:div.instructions
-        [:span.instruction "Add posts by clicking the add post icon (" [icon "icon" "icon-new-post"] ") on the top right!"]
-        [:span.instruction "Add peers by clicking the peers icon (" [icon "icon" "icon-peers"] ") on the top right!"]])
+        [:span.instruction "Add posts by clicking the add post icon (" [icon {:icon-class "icon-new-post"}] ") on the top right!"]
+        [:span.instruction "Add peers by clicking the peers icon (" [icon {:icon-class "icon-peers"}] ") on the top right!"]])
      [:span.instruction "Or browse the help page by clicking the menu icon ("
-      [icon "icon" "icon-menu"]
+      [icon {:icon-class "icon-menu"}]
       ") on the top right and clicking on the help button ("
-      [icon "icon" "icon-help"]
+      [icon {:icon-class "icon-help"}]
       ")"]]]])
 
 (defn button-component [config on-click!]
@@ -52,14 +65,18 @@
          icon-class :icon-class
          disabled? :disabled
          name :name
-         class :class} config]
+         class :class
+         tool-tip-text :tool-tip-text
+         tip-position :tip-position} config]
     [:button.button-component {:type "button"
                                :on-click on-click!
                                :name name 
                                :disabled (when (not (nil? disabled?)) disabled?)
                                :class (when class class)}
+     (when tool-tip-text 
+       [tool-tip {:text tool-tip-text :tip-position tip-position}])
      (when icon-class
-       [icon "button-icon" icon-class])
+       [icon {:class "button-icon" :icon-class icon-class}])
      (when src
        [:img.button-img {:src src}])
      (when text
@@ -94,7 +111,7 @@
          copy-button :copy-button} config]
     [:div.text-input-wrapper {:class (when class class)}
      (when title [:span.text-input-title title])
-     (when icon-class [icon "icon" icon-class])
+     (when icon-class [icon {:icon-class icon-class}])
      [:input.reset.text-input-component
       {:type "text"
        :placeholder (when placeholder placeholder)
@@ -105,7 +122,7 @@
        :on-keyUp (when on-enter 
                    #(when (= (.-key %) "Enter") on-enter))}]
      (when copy-button 
-       [button-component {:icon-class "icon-copy" :class "action-button"} #(copy-to-clipboard value)])]))
+       [button-component {:icon-class "icon-copy" :class "action-button" :tool-tip-text "Copy"} #(copy-to-clipboard value)])]))
 
 (defn input-checkbox [config on-change]
   (let [{checked? :checked
@@ -117,7 +134,7 @@
     [:div.input-checkbox-wrapper {:class (when class class)}
      (when title 
        [:span.input-checkbox-title title])
-     (when icon-class [icon "icon" icon-class])
+     (when icon-class [icon {:icon-class icon-class}])
      [:input.input-checkbox
       {:type "checkbox"
        :disabled disabled?
@@ -165,6 +182,7 @@
 (defn select-files-control [content on-change]
   (let [input-id (str (random-uuid))]
     [:span.button.action-button {:on-click #(.click (js/document.getElementById input-id))}
+     [tool-tip {:text "Attach"}]
      [:input {:type "file"
               :id input-id
               :multiple true
@@ -215,7 +233,7 @@
       [:div.select-menu-wrapper {:class class} 
        [:div.select-menu-toggle.button {:on-click #(swap! menu-open?! not) :aria-expanded @menu-open?!}
         [:span.current-item (name-key @selected-item!)]
-        [icon "icon" (if @menu-open?! "icon-hide" "icon-show")]]
+        [icon {:icon-class (if @menu-open?! "icon-hide" "icon-show")}]]
        [popout-menu
         {:class popout-class}
         menu-open?!
@@ -241,7 +259,7 @@
   (->> (string/split s #"\s+") (map first) (take 2) (apply str)))
 
 (defn profile-img [image-uri name on-click!]
-  (let [name (string/replace name #"\)|You \(" "")
+  (let [name (if name (string/replace name #"\)|You \(" "") name)
         img? (some? (seq image-uri))] 
     [:div.profile-img-wrapper {:on-click on-click! :data-img-present img?}
      (if img?

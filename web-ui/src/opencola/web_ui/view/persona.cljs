@@ -10,21 +10,21 @@
 (defn init-personas [personas! on-success on-error]
   (model/get-personas
    (fn [personas] 
-     (reset! personas! (:items personas)) 
+     (reset! personas! personas) 
      (on-success))
    #(on-error %)))
 
 (defn create-persona [personas! persona! on-success on-error]
   (model/create-persona
    (dissoc @persona! :error)                          ; Switch to non-atom
-   #(do 
-      (reset! personas! %)
+   #(do
+      (reset! personas!  %)
       (on-success))
    #(on-error %)))
 
 (defn get-personas [personas! on-error]
   (model/get-personas
-   #(reset! personas! (:items %))
+   #(reset! personas! %)
    #(on-error %)))
 
 (defn update-persona [personas! persona! on-error]
@@ -40,7 +40,7 @@
    #(on-error %)))
 
 (defn persona-select [personas! persona-id!]
-  (let [persona-list  @personas!
+  (let [persona-list  (:items @personas!)
         current-persona {:id @persona-id!}]
     [select-menu {:class "persona-select-menu"} persona-list current-persona :name :id #(reset! persona-id! %)]))
 
@@ -91,14 +91,17 @@
           [text-input-component {:value (:address @persona!) :icon-class "icon-link" :name "persona-link"} #(swap-atom-data! % persona! :address)]
           [text-input-component {:value (:imageUri @persona!) :icon-class "icon-photo" :name "persona-img"} #(swap-atom-data! % persona! :imageUri)]
           [input-checkbox {:checked (:isActive @persona!) :icon-class "icon-refresh" :name "persona-active"} #(swap! persona! assoc-in [:isActive] (-> % .-target .-checked))]]
-         [edit-control-buttons {:on-save (fn [] (create-persona personas! persona! #(reset! adding-persona?! false) #(reset! error! %)))
+         [edit-control-buttons {:on-save (fn [] 
+                                           (create-persona personas! persona! 
+                                                           #(reset! adding-persona?! false) 
+                                                           #(reset! error! %)))
                                 :on-cancel #(reset! adding-persona?! false)} false error!]]))))
 
 (defn persona-list [personas! adding-persona?!]
   (when @personas!
     [:div.content-list.persona-list 
      (when @adding-persona?! [add-persona-item personas! adding-persona?!])
-     (doall (for [persona @personas!]
+     (doall (for [persona (:items @personas!)]
               ^{:key persona} [persona-item personas! persona]
               ))]))
 

@@ -9,6 +9,8 @@
             [opencola.web-ui.window :as window]
             [opencola.web-ui.model.feed :as model :refer [upload-files
                                                           upload-result-to-attachments]]
+            [opencola.web-ui.model.like :refer [like-entity!]]
+            [opencola.web-ui.model.tag :refer [tag-entity!]]
             [opencola.web-ui.view.attachments :refer [attachments-preview item-attachments distinct-attachments]]
             [opencola.web-ui.view.comments :refer [comment-control
                                                    comment-edit-control
@@ -50,6 +52,10 @@
                       #(map (fn [i] (if (= entity-id (:entityId i)) view-item i)) %))]
     (reset! feed! updated-feed)))
 
+(defn get-like-value [authority-id item]
+  (let [likes (-> item :activities :like)]
+    (some #(when (= authority-id (:authorityId %)) (reader/read-string (:value %))) likes)))
+
 ;; TODO - Use https://clj-commons.org/camel-snake-kebab/
 ;; Be careful with like
 (defn edit-item
@@ -63,19 +69,20 @@
     :tags ""
     :comment ""})
   ([authority-id item]
-   (let [summary (:summary item)
-         likes (-> item :activities :like)]
+   (let [summary (:summary item)]
      {:entityId (:entityId item)
       :name (:name summary)
       :imageUri (:imageUri summary)
       :description (:description summary)
-      :like (some #(when (= authority-id (:authorityId %)) (reader/read-string (:value %))) likes)
+      :like (get-like-value authority-id item)
       :attachments (-> item :activities :attach)
       :tags (tags-as-string authority-id item)
       :comment ""})))
 
+
+
 (defn edit-control [editing?!]
-  [button-component {:class "action-button edit-button" :icon-class "icon-edit"} #(reset! editing?! true)])
+  [button-component {:class "action-button edit-button" :icon-class "icon-edit" :tool-tip-text "Edit"} #(reset! editing?! true)])
 
 (defn get-item [feed entity-id]
   (->> feed :results (some #(when (= entity-id (:entityId %)) %))))
@@ -87,10 +94,12 @@
     [:span.action-wrapper
      [button-component {:class (str "action-button " (when highlight "action-highlight")) 
                         :icon-class (str "icon-" (name key)) 
-                        :text (count actions)} 
+                        :text (count actions)
+                        :tool-tip-text (string/capitalize (name key))} 
       on-click]
      [button-component {:class "action-toggle-button" 
                         :icon-class (str "icon-" (if @expanded? "hide" "show"))
+                        :tool-tip-text (if @expanded? "Hide" "Show")
                         :disabled (not (seq actions))} 
       #(toggle-atom (map second action-expanded?) expanded?)]
      ]))
@@ -120,27 +129,43 @@
      (on-success))
    #(on-error %)))
 
-(defn like-item [persona-id feed! item on-error]
-  (let [edit-item (edit-item persona-id item)]
-    (update-display-entity persona-id feed! (update-in edit-item [:like] #(if % nil true)) on-error)))
+(defn like-item! [persona-id feed! item on-error]
+  (let [value (if (get-like-value persona-id item) nil true)
+        entity-id (:entityId item)]
+    (like-entity!
+     (:context @feed!)
+     persona-id 
+     entity-id 
+     value 
+     #(update-feed-item feed! %) 
+     on-error)))
 
 ;; TODO - Combing with tags-edit-control?
 (defn tags-control [persona-id! feed! item tagging?!]
-  (let [edit-item!  (atom (edit-item @persona-id! item))
+  (let [tags!  (atom (:tags item))
         error! (atom nil)]
     (fn []
-      (let [on-save (fn [] (update-edit-entity @persona-id! feed! edit-item! #(reset! tagging?! false) #(reset! error! %)))]
+      (let [on-save (fn []
+                      (tag-entity!
+                       (:context @feed!)
+                       @persona-id!
+                       (:entityId item)
+                       @tags!
+                       #(do
+                          (reset! tagging?! false)
+                          (update-feed-item feed! %)) 
+                       #(reset! error! %)))]
         (when @tagging?!
           [:div.tags-edit-control
            [:div.field-header "Tags:"]
            [:input.tags-text
             {:type "text"
-             :value (:tags @edit-item!)
+             :value @tags!
              :on-KeyUp #(case (-> % .-keyCode)
                           13 (on-save)
                           27 (reset! tagging?! false)
                           false)
-             :on-change #(swap! edit-item! assoc-in [:tags] (-> % .-target .-value))}]
+             :on-change #(reset! tags! (-> % .-target .-value))}]
            [edit-control-buttons {:on-save on-save :on-cancel #(reset! tagging?! false)} false error!]])))))
 
 
@@ -159,11 +184,10 @@
       (let [entity-id (:entityId item)
             activities (:activities item)]
         [:div.activities-summary
-         [:div.activity-buttons
-          
-          [persona-select personas! persona-id!]
+         [:div.activity-buttons 
+          (when personas! [persona-select personas! persona-id!])
           [action-summary persona-id! :save action-expanded? activities #(save-item context @persona-id! item update-feed-item on-error)]
-          [action-summary persona-id! :like action-expanded? activities #(like-item @persona-id! feed! item on-error)]
+          [action-summary persona-id! :like action-expanded? activities #(like-item! @persona-id! feed! item on-error)]
           [action-summary persona-id! :tag action-expanded?  activities #(swap! tagging? not)]
           [attachment-summary
            persona-id!
@@ -235,7 +259,7 @@
        [item-tags-summary (-> item :activities :tag) on-click-tag]
        [:div.item-body
         [item-image summary]
-        [:div.item-desc [md->component {:class "desc"}  (:description summary)]]] 
+        [:div.item-desc [md->component {:class "desc markdown-text"}  (:description summary)]]] 
        [attachments-preview (-> item :activities :attach) true] 
        [item-activities persona-id! personas! feed! item editing?! on-click-authority on-click-tag]
        [item-divider]])))
@@ -308,11 +332,15 @@
          [:div.activity-buttons
           (when personas!
             [persona-select personas! persona-id!])
-          [button-component {:class "action-button" :icon-class "icon-expand"} #(swap! expanded?! not)] 
+          [button-component 
+           {:class "action-button" :icon-class "icon-expand" :tool-tip-text "Expand"} 
+           #(swap! expanded?! not)] 
           [like-edit-control edit-item!]
-          [button-component {:class "action-button" :icon-class "icon-tag"} #(swap! tagging?! not)] 
+          [button-component 
+           {:class "action-button" :icon-class "icon-tag" :tool-tip-text "Tag"} 
+           #(swap! tagging?! not)] 
           [select-files-control
-           (icon "icon" "icon-attach")
+           [icon {:icon-class "icon-attach"}]
            (fn [fs]
              (reset! uploading?! true)
              (attach-files
@@ -322,7 +350,9 @@
               #(reset! progress! %)
               #(reset! uploading?! false)
               #(reset! error! %)))]
-          [button-component {:class "action-button" :icon-class "icon-comment"} #(swap! commenting?! not)]]
+          [button-component 
+           {:class "action-button" :icon-class "icon-comment" :tool-tip-text "Comment"} 
+           #(swap! commenting?! not)]]
          [:div.activity-block
           [upload-progress uploading?! progress!]
           (when @tagging?!
@@ -376,7 +406,8 @@
 
 (defn feed-item [persona-id personas! feed! item on-click-authority on-click-tag]
   (let [editing?! (atom false)
-        persona-id! (atom (or persona-id (:personaId item)))]
+        persona-id! (atom (or persona-id (:personaId item)))
+        personas! (if persona-id nil personas!)]
     (fn [] 
       (if @editing?!
         [edit-feed-item personas! persona-id! feed! item editing?!]

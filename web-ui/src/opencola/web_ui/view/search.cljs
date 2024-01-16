@@ -19,7 +19,7 @@
                      (on-enter @query!))}]]]))
 
 (defn persona-select-menu [personas! persona-id! on-select!]
-  (let [persona-list (cons {:name "All" :id ""} @personas!)
+  (let [persona-list (cons {:name "All" :id ""} (:items @personas!))
         current-persona (if @persona-id! {:id @persona-id!} {:name "All" :id ""})]
     (fn [] 
       [select-menu
@@ -52,26 +52,26 @@
   [:div.container.header-actions
    (when (= page :feed)
      [:div.container
-      [button-component {:class "action-button" :icon-class "icon-new-post"} #(swap! adding-item?! not)]
-      [button-component {:class "action-button" :icon-class "icon-peers"} #(location/set-page! :peers)]])
+      [button-component {:class "action-button" :icon-class "icon-new-post" :tool-tip-text "Add new post" :tip-position "tip-bottom"} #(swap! adding-item?! not)]
+      [button-component {:class "action-button" :icon-class "icon-peers" :tool-tip-text "Peers page" :tip-position "tip-bottom"} #(location/set-page! :peers)]])
    (when (= page :peers)
      [:div.container
-      [button-component {:class "action-button" :icon-class "icon-new-peer"} #(swap! adding-item?! not)]
-      [button-component {:class "action-button" :icon-class "icon-feed"} #(location/set-page! :feed)]])
+      [button-component {:class "action-button" :icon-class "icon-new-peer" :tool-tip-text "Add new peer" :tip-position "tip-bottom"} #(swap! adding-item?! not)]
+      [button-component {:class "action-button" :icon-class "icon-feed" :tool-tip-text "Feed page" :tip-position "tip-bottom"} #(location/set-page! :feed)]])
    (when (= page :personas)
      [:div.container
-      [button-component {:class "action-button" :icon-class "icon-new-persona"} #(swap! adding-item?! not)]
-      [button-component {:class "action-button" :icon-class "icon-feed"} #(location/set-page! :feed)]])
-   [button-component {:class "action-button" :icon-class "icon-menu"} #(swap! menu-open?! not)]])
+      [button-component {:class "action-button" :icon-class "icon-new-persona" :tool-tip-text "Add new persona" :tip-position "tip-bottom"} #(swap! adding-item?! not)]
+      [button-component {:class "action-button" :icon-class "icon-feed" :tool-tip-text "Feed page" :tip-position "tip-bottom"} #(location/set-page! :feed)]])
+   [button-component {:class "action-button" :icon-class "icon-menu" :tool-tip-text "Menu" :tip-position "tip-bottom"} #(swap! menu-open?! not)]])
 
 
 (defn search-header [page personas! persona-id! on-persona-select query! on-enter adding-item?!]
   (let [menu-open?! (r/atom false)]
    (fn [] 
      [:nav.nav-bar 
-      [:div.container.mr-a
+      [:div.left-nav.container
        [:a.fs-0 {:href "#/feed"} [:img.logo {:src "../img/pull-tab.png"}]] 
-       [persona-select-menu personas! persona-id! on-persona-select]]
+       (when (not= :personas page) [persona-select-menu personas! persona-id! on-persona-select])]
       [search-box query! on-enter]
       [header-actions page adding-item?! menu-open?!] 
       [header-menu menu-open?!]])))

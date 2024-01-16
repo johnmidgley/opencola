@@ -20,6 +20,7 @@
                 ^{:key like-action} [item-like like-action on-click-authority]))]]]))
 
 (defn like-edit-control [edit-item!]
-  [button-component {:class (str "action-button" (when (:like @edit-item!) "highlight")) 
-                     :icon-class "icon-like"} 
+  [button-component {:class (str "action-button" (when (:like @edit-item!) " action-highlight")) 
+                     :icon-class "icon-like"
+                     :tool-tip-text "Like"} 
    (fn [] (swap! edit-item! update-in [:like] #(if % nil true)))])
