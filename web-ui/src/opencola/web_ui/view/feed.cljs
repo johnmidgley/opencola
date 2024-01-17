@@ -223,12 +223,14 @@
 
 (defn posted-by [summary on-click-authority]
   (let [posted-by (:postedBy summary)
-        posted-by-image-uri (:imageUri posted-by)
         name (:name posted-by)
-        id (:id posted-by)] 
+        origin-distance (or (:originDistance posted-by) 0)
+        display-name (if (:isPersona posted-by) (str "You (" name ")") name)] 
     [:div.posted-by
-     [profile-img posted-by-image-uri name id #(on-click-authority name)]
-     [:span.authority {:on-click #(on-click-authority name)} name]]
+     [profile-img (:imageUri posted-by) name (:id posted-by) #(on-click-authority name)]
+     (when (> origin-distance 0) 
+       [:span.origin-distance "Unknown via "])
+     [:span.authority {:on-click #(on-click-authority name)} display-name]]
     ))
 
 (defn item-name [summary]

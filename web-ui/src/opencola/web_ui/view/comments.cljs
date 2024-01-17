@@ -5,9 +5,9 @@
    [opencola.web-ui.time :refer [format-time]]
    [opencola.web-ui.view.common :refer [md->component simple-mde button-component edit-control-buttons]]))
 
-(defn comment-edit-control [id text state!] 
+(defn comment-edit-control [id text state! text-prompt] 
   [:div.comment-edit-control
-   [simple-mde (str id "-cmt") "Enter your comment...." text state!]])
+   [simple-mde (str id "-cmt") (or text-prompt "Enter your comment....") text state!]])
 
 (defn remove-comment [item comment-id]
   (update-in item
@@ -36,8 +36,21 @@
                                               on-error)
           } expanded?! error!]]]))))
 
+(defn create-comment-control [id original-text on-save on-cancel on-delete error! config]
+  (let [state! (atom nil)
+        {text-prompt :text-prompt} config]
+    [:div.item-comment
+     [:div.item-comment-edit
+      [comment-edit-control id original-text state! text-prompt]
+      [edit-control-buttons {:on-save #(on-save (.value @state!))
+                             :on-cancel on-cancel
+                             :on-delete on-delete} on-delete error!]]]))
+
 (defn item-comment [context persona-id! item comment-action on-update on-click-authority]
-  (let [editing?! (atom false)]
+  (let [editing?! (atom false)
+        replying?! (atom false)
+        error! (atom nil)
+        on-error #(reset! error! %)]
     (fn []
       (let [{authority-id :authorityId
              authority-name :authorityName
@@ -47,15 +60,26 @@
             editable? (= authority-id @persona-id!)]
         (when (not editable?)
           (reset! editing?! false))
-        [:div.item-comment 
+        [:div.item-comment
          (if (and editable? @editing?!)
            [comment-control context persona-id! item comment-id text editing?! on-update]
-           [:div.item-comment-container [md->component {:class (str "item-comment-text markdown-text " (when editable? "own-comment"))} text]])
+           [:div.item-comment-container [md->component {:class (str "item-comment-text markdown-text " (when editable? "own-comment"))} text]]) 
          [:div.item-attribution
           [:span.authority {:on-click #(on-click-authority authority-name)} authority-name] " " (format-time epoch-second) " "
-          [button-component {:icon-class "icon-reply" :class "comment-button"} #()]
+          [button-component {:icon-class "icon-reply" :class "comment-button" :tool-tip-text "Reply"} #(swap! replying?! not)]
           (when editable?
-            [button-component {:class "comment-button edit-comment-button" :icon-class "icon-edit"} #(swap! editing?! not)])]]))))
+            [button-component {:class "comment-button edit-comment-button" :icon-class "icon-edit"} #(swap! editing?! not)])]
+         (when @replying?! 
+           [:reply-block
+            [create-comment-control
+             (:entityId item)
+             ""
+             #(model/update-comment context @persona-id! comment-id nil % on-update on-error)
+             #(reset! replying?! false) 
+             nil
+             error!
+             {:text-prompt "Enter your reply..."}
+             ]])]))))
 
 (defn item-comments [context persona-id! item comment-actions preview-fn? expanded?! on-update on-click-authority]
   (let [preview? (preview-fn?)
