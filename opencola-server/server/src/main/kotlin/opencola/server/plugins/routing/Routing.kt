@@ -245,7 +245,9 @@ fun Application.configureRouting(app: app) {
                         .filterIsInstance<PersonaAddressBookEntry>()
                         .map { it.personaId }.toSet()
                 val query = call.request.queryParameters["q"]
-                call.respond(app.handleGetFeed(personaIds, query))
+                val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 25
+                val pagingToken = call.request.queryParameters["pagingToken"]
+                call.respond(app.handleGetFeed(personaIds, limit, pagingToken, query))
             }
 
             get("/peers") {

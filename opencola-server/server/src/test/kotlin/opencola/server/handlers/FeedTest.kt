@@ -8,6 +8,7 @@ import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.entitystore.EntityStore
 import io.opencola.storage.addPersona
 import io.opencola.storage.deletePersona
+import org.junit.Assert.assertNull
 import org.junit.Test
 import java.net.URI
 import kotlin.test.assertEquals
@@ -244,5 +245,41 @@ class FeedTest {
         } finally {
             addressBook.deletePersona(persona.personaId)
         }
+    }
+
+    @Test
+    fun testFeedPaging() {
+        val app = TestApplication.instance
+        val addressBook = app.inject<AddressBook>()
+        val entityStore = app.inject<EntityStore>()
+        val persona = addressBook.addPersona("testFeedPaging")
+
+        val postEntities = (0..8).map { i ->
+            PostEntity(persona.personaId, "post$i").also { entityStore.updateEntities(it) }
+        }
+
+        val results1 = app.handleGetFeed(setOf(persona.entityId), 2, null)
+        assertEquals(2, results1.results.size)
+        val results2 = app.handleGetFeed(setOf(persona.entityId), 2, results1.pagingToken)
+        assertEquals(2, results2.results.size)
+        val results3 = app.handleGetFeed(setOf(persona.entityId), 2, results2.pagingToken)
+        assertEquals(2, results3.results.size)
+        val results4 = app.handleGetFeed(setOf(persona.entityId), 2, results3.pagingToken)
+        assertEquals(2, results4.results.size)
+        val results5 = app.handleGetFeed(setOf(persona.entityId), 2, results4.pagingToken)
+        assertEquals(1, results5.results.size)
+        assertNull(results5.pagingToken)
+
+        val postEntityIds = postEntities.map { it.entityId.toString() }.toSet()
+        val resultEntityIds = results1.results
+            .asSequence()
+            .map { it.entityId }
+            .plus(results2.results.map { it.entityId })
+            .plus(results3.results.map { it.entityId })
+            .plus(results4.results.map { it.entityId })
+            .plus(results5.results.map { it.entityId })
+            .toSet()
+
+        assertEquals(postEntityIds, resultEntityIds)
     }
 }
