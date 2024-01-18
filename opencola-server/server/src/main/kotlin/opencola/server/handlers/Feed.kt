@@ -74,7 +74,10 @@ fun factToAction(children: Children, fact: Fact): Action? {
         CommentIds.spec -> {
             val commentId = fact.unwrapValue<Id>()
             // A comment can be missing if the entity is a RawEntity referring to a comment that was deleted
-            children.comments[commentId]?.let { Action(ActionType.Comment, commentId, it.text) }
+            children.comments[commentId]?.let {
+                val parentId = if (it.topLevelParentId != null) it.parentId else null
+                Action(ActionType.Comment, commentId, it.text, parentId)
+            }
         }
 
         AttachmentIds.spec -> {
@@ -164,46 +167,79 @@ fun isEntityIsVisible(entity: Entity): Boolean {
     }
 }
 
-fun getEntityIds(entityStore: EntityStore, searchIndex: SearchIndex, query: Query): Set<Id> {
-    val authorityOnlyQuery = query.tags.isEmpty() && query.terms.isEmpty()
-    val entityIds =
-        if (authorityOnlyQuery) {
-            // TODO: This will generally result in an unpredictable number of entities, as single actions (like, comment, etc.)
-            //  take a transaction. Fix this by requesting transaction batches until no more or 100 entities have been reached
-            // TODO: This produces a nice list of the most recent entities, but only returns results in the last
-            //  100 transactions. Move to proper query from search engine, that orders by date.
-            // At a high level, the feed is ordered in reverse chronological order of activity on entities. We have 3
-            // basic choices in how we define activity:
-            //
-            // 1. Order by ANY activity, including both additions and retractions. This implies that unliking an item
-            // that is far down in the feed will bump it to the top, which is a bit surprising, and since activity is
-            // removed, it is not visible to the viewer.
-            //
-            // 2. Order by any visible activity, in particular, activity returned in the feed item that is accessible to
-            // the viewer of the feed. This implies that liking an item bumps it to the top of the feed, while unliking
-            // the item would return it to the position it was in before being liked. While somewhat intuitive,
-            // this means that an item will like "disappear" after a refresh of the page, which is unexpected.
-            //
-            // 3. Order by any ADD activity, whether or not it is visible. This implies that liking an item bumps it
-            // to the top of the feed, but unliking it leaves it there. This seems the most intuitive to the user,
-            // and so is how we do things below.
-            entityStore.getSignedTransactions(
-                query.authorityIds,
-                null,
-                EntityStore.TransactionOrder.TimeDescending,
-                100 // TODO: Config limit
-            )
-                .flatMap { tx ->
-                    tx.transaction.transactionEntities.filter { e -> e.facts.any { it.operation == Operation.Add } }
-                }
-                .map { it.entityId }
-                .toSet()
-                .filter { entityStore.getEntities(query.authorityIds, setOf(it)).isNotEmpty() }
-        } else {
-            searchIndex.getResults(query, 100, null).items.map { it.entityId }
-        }
+data class PageableEntityIds(val entityIds: Set<Id>, val pagingToken: String?)
 
-    return entityIds.toSet()
+fun getEntityIdsByTransactionActivity(
+    entityStore: EntityStore,
+    authorityIds: Set<Id>,
+    pagingToken: String?
+): Sequence<Id> = sequence {
+    // At a high level, the feed is ordered in reverse chronological order of activity on entities. We have 3
+    // basic choices in how we define activity:
+    //
+    // 1. Order by ANY activity, including both additions and retractions. This implies that unliking an item
+    // that is far down in the feed will bump it to the top, which is a bit surprising, and since activity is
+    // removed, it is not visible to the viewer.
+    //
+    // 2. Order by any visible activity, in particular, activity returned in the feed item that is accessible to
+    // the viewer of the feed. This implies that liking an item bumps it to the top of the feed, while unliking
+    // the item would return it to the position it was in before being liked. While somewhat intuitive,
+    // this means that an item will like "disappear" after a refresh of the page, which is unexpected.
+    //
+    // 3. Order by any ADD activity, whether or not it is visible. This implies that liking an item bumps it
+    // to the top of the feed, but unliking it leaves it there. This seems the most intuitive to the user,
+    // and so is how we do things below.
+    val signedTransactionSequence = entityStore
+        .getAllSignedTransactions(authorityIds, EntityStore.TransactionOrder.IdDescending)
+        .filter { s -> s.transaction.transactionEntities.any { e -> e.facts.any { it.operation == Operation.Add } } }
+
+    fun SignedTransaction.entityIds(): Set<Id> = transaction.transactionEntities.map { it.entityId }.toSet()
+    val pagingId = pagingToken?.let { Id.decode(pagingToken) }
+    val skippedEntityIds = mutableSetOf<Id>()
+    val iterator = signedTransactionSequence.iterator()
+
+    // Skip any ids up to, and including, the paging id
+    if (pagingId != null) {
+        var foundPagingId = false
+        while (!foundPagingId && iterator.hasNext()) {
+            for (entityId in iterator.next().entityIds()) {
+                skippedEntityIds.add(entityId)
+                if (entityId == pagingId) {
+                    foundPagingId = true
+                    break
+                }
+            }
+        }
+    }
+
+    iterator
+        .asSequence()
+        .flatMap { it.entityIds() }
+        .filter { !skippedEntityIds.contains(it) }
+        .distinct()
+        .filter { id ->
+            entityStore.getEntities(authorityIds, setOf(id)).let { it.isNotEmpty() && isEntityIsVisible(it.first()) }
+        }
+        .forEach { yield(it) }
+}
+
+fun getEntityIds(
+    entityStore: EntityStore,
+    searchIndex: SearchIndex,
+    query: Query,
+    limit: Int,
+    pagingToken: String? = null
+): PageableEntityIds {
+    val authorityOnlyQuery = query.tags.isEmpty() && query.terms.isEmpty()
+    if (authorityOnlyQuery) {
+        val entityIds =
+            getEntityIdsByTransactionActivity(entityStore, query.authorityIds, pagingToken).take(limit).toList()
+        val resultPagingToken = if(entityIds.size < limit) null else entityIds.lastOrNull()?.toString()
+        return PageableEntityIds(entityIds.toSet(), resultPagingToken)
+    } else {
+        val searchResults = searchIndex.getResults(query, limit, pagingToken)
+        return PageableEntityIds(searchResults.items.map { it.entityId }.toSet(), searchResults.pagingToken)
+    }
 }
 
 fun getChildIds(entities: Iterable<Entity>, childSelector: (Entity) -> Iterable<Id>): Set<Id> {
@@ -325,23 +361,30 @@ fun handleGetFeed(
     eventBus: EventBus,
     fileStore: ContentAddressedFileStore,
     personaIds: Set<Id>,
+    limit: Int,
+    pagingToken: String? = null,
     queryString: String?
 ): FeedResult {
     logger.info { "Getting feed for ${personaIds.joinToString { it.toString() }}" }
     // TODO: This could be tightened up. We're accessing the address book multiple times. Could pass entries around instead
     val authorityIds = addressBook.getEntries().filter { it.personaId in personaIds }.map { it.entityId }.toSet()
     val query = queryParser.parse(queryString ?: "", authorityIds)
-    val entityIds = getEntityIds(entityStore, searchIndex, query)
+    val pageableEntityIds = getEntityIds(entityStore, searchIndex, query, limit, pagingToken)
     val context = Context(personaIds)
     return FeedResult(
         context,
-        null,
-        getEntityResults(authorityIds, entityStore, addressBook, fileStore, eventBus, entityIds)
+        pageableEntityIds.pagingToken,
+        getEntityResults(authorityIds, entityStore, addressBook, fileStore, eventBus, pageableEntityIds.entityIds)
     )
 }
 
 // TODO: Move to this pattern for all calls - cleans up calling code.
-fun Application.handleGetFeed(personaIds: Set<Id> = emptySet(), queryString: String? = null): FeedResult {
+fun Application.handleGetFeed(
+    personaIds: Set<Id> = emptySet(),
+    limit: Int = 25,
+    pagingToken: String? = null,
+    queryString: String? = null
+): FeedResult {
     return handleGetFeed(
         inject(),
         inject(),
@@ -350,6 +393,8 @@ fun Application.handleGetFeed(personaIds: Set<Id> = emptySet(), queryString: Str
         inject(),
         inject(),
         personaIds,
+        limit,
+        pagingToken,
         queryString
     )
 }
