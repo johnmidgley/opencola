@@ -13,7 +13,6 @@ import org.junit.Test
 import java.net.URI
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
 class FeedTest {
     @Test
@@ -172,10 +171,10 @@ class FeedTest {
         entityStore.updateEntities(resource)
 
         // Added a comment from person1 onto person0's resource
-        val comment = app.updateComment(persona0, resource.entityId, null, "comment1")
+        val comment = app.updateComment(persona0, resource.entityId, null, "top level comment")
 
         val persona1 = addressBook.addPersona("testCommentChain0")
-        app.updateComment(persona1, comment.entityId, null, "comment1 reply")
+        app.updateComment(persona1, comment.entityId, null, "comment reply")
 
         app.handleGetFeed(setOf(persona0.personaId, persona1.personaId)).let { result ->
             assertEquals(1, result.results.size)
@@ -183,8 +182,13 @@ class FeedTest {
             assertNotNull(entityResult)
             val comments = entityResult.activities.flatMap { it.actions.filter { it.type == "comment" } }
             assertEquals(2, comments.size)
-            assertTrue(comments.any { it.value == "comment1" })
-            assertTrue(comments.any { it.value == "comment1 reply" })
+
+            val comment0 = comments.single { it.value == "top level comment" }
+            // Only comment replies should have a parent id.
+            // When not present, the top level entity is the implied parent
+            assertNull(comment0.parentId)
+            val comment1 = comments.single { it.value == "comment reply" }
+            assertEquals(comment.entityId.toString(), comment1.parentId)
         }
 
         entityStore.deleteEntities(comment.authorityId, comment.entityId)

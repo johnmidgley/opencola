@@ -1,6 +1,5 @@
 package opencola.server.handlers
 
-import io.opencola.util.nullOrElse
 import io.opencola.model.Id
 import io.opencola.storage.addressbook.AddressBookEntry
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
@@ -27,7 +26,7 @@ data class EntityResult(
         val id: String,
         val name: String,
         val isPersona: Boolean,
-        val imageUri: String?
+        val imageUri: String? = null,
     ) {
         constructor(addressBookEntry: AddressBookEntry) : this(
             addressBookEntry.entityId.toString(),
@@ -59,11 +58,10 @@ data class EntityResult(
     }
 
     @Serializable
-    data class Action(val type: String, val id: String?, val value: String?) {
-        constructor(type: ActionType, id: Id?, value: Any?) :
-                this(type.name.lowercase(), id.nullOrElse { it.toString() }, value.nullOrElse { it.toString() })
+    data class Action(val type: String, val id: String? = null, val value: String? = null, val parentId: String? = null) {
+        constructor(type: ActionType, id: Id?, value: Any?, parentId: Id? = null) :
+                this(type.name.lowercase(), id?.toString(), value?.toString(), parentId?.toString())
     }
-
 
     @Serializable
     data class Activity(

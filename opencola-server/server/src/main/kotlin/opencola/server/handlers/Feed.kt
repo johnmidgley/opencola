@@ -74,7 +74,10 @@ fun factToAction(children: Children, fact: Fact): Action? {
         CommentIds.spec -> {
             val commentId = fact.unwrapValue<Id>()
             // A comment can be missing if the entity is a RawEntity referring to a comment that was deleted
-            children.comments[commentId]?.let { Action(ActionType.Comment, commentId, it.text) }
+            children.comments[commentId]?.let {
+                val parentId = if (it.topLevelParentId != null) it.parentId else null
+                Action(ActionType.Comment, commentId, it.text, parentId)
+            }
         }
 
         AttachmentIds.spec -> {
