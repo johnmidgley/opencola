@@ -70,8 +70,21 @@
       (persona! persona-id)))
   (location/set-location-from-state))
 
-(defn app []
-  (fn [] 
+(defn scroll-handler [f]
+  (let [scroll-position (.-scrollY js/window)
+        total-height (- (.-scrollHeight (.-body js/document)) (.-innerHeight js/window))]
+    (when (>= scroll-position total-height)
+      (f))))
+
+(defn add-scroll-listener [f]
+  (js/window.addEventListener "scroll" #(scroll-handler f)))
+
+(defn load-more-items [] 
+  (case (state/get-page)
+    :feed (println "bottom of feed")))
+
+(defn app [] 
+  (fn []
     [:div.app {:style (theme/get-theme-attributes @(theme!))}
      (when (state/page-visible? :feed)
        [feed/feed-page (feed!) (personas!) (persona!) on-persona-select (query!) on-search])
@@ -88,7 +101,7 @@
 (defn mount [el] 
   (rdom/render [app] el))
 
-(defn mount-app-element [] 
+(defn mount-app-element []
   (when-let [el (get-app-element)] 
     (mount el)))
 
@@ -97,7 +110,7 @@
 #_(mount-app-element)
 
 ;; specify reload hook with ^:after-load metadata
-(defn ^:after-load on-reload []
+(defn ^:after-load on-reload [] 
   (mount-app-element)
   ;; optionally touch your app-state to force rerendering depending on
   ;; your application
@@ -107,19 +120,6 @@
 (defonce history-initiated (doto (History.)
   (events/listen EventType.NAVIGATE #(secretary/dispatch! (.-token %)))
   (.setEnabled true)))
-
-(defn init []
-  (persona/init-personas
-   (personas!)
-   (fn []
-     (themes! (theme/get-themes #(mount-app-element) #()))
-     
-     (location/set-location-from-state)
-     (when (empty @(feed!))
-       (feed/get-feed @(persona!) @(query!) (feed!) #(error! %)))
-     (when-let [persona @(persona!)]
-       (peer/get-peers persona (peers!) #(error! %))))
-   #(error! %)))
 
 (defn init-personas [on-done]
   (persona/init-personas
@@ -144,9 +144,10 @@
 (init-config 
  (fn [] (init-personas 
          (fn [] (init-settings 
-                 (fn [] (init-themes
-                         (fn [] (theme! (:theme-name @(settings!)))
+                 (fn [] (init-themes 
+                         (fn [] (theme! (:theme-name @(settings!))) 
                            (mount-app-element)
+                           (add-scroll-listener load-more-items)
                            (location/set-location-from-state)
                            (when (empty @(feed!))
                              (feed/get-feed @(persona!) @(query!) (feed!) #(error! %)))

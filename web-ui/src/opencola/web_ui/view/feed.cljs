@@ -480,7 +480,7 @@
         on-click-tag #(on-click-tag on-search @query! %)
         on-click-authority #(on-click-authority on-search @query! %)]
     (fn []
-      [:div#opencola.feed-page 
+      [:div#opencola.feed-page
        [search/search-header
         :feed
         personas!
