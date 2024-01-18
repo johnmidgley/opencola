@@ -4,7 +4,6 @@ import io.opencola.application.TestApplication
 import io.opencola.content.MhtmlPage
 import io.opencola.content.TextExtractor
 import io.opencola.content.parseMime
-import io.opencola.util.nullOrElse
 import io.opencola.model.Id
 import io.opencola.model.ResourceEntity
 import java.net.URI
@@ -35,7 +34,7 @@ fun indexGameOfLife(authorityId: Id, searchIndex: SearchIndex): ResourceEntity {
     val mhtmlPage = MhtmlPage(message)
 
     val textExtractor = TextExtractor()
-    val text = mhtmlPage.htmlText.nullOrElse { textExtractor.getBody(it.toByteArray()) }
+    val text = mhtmlPage.htmlText?.let { textExtractor.getBody(it.toByteArray()) }
     val resourceEntity = ResourceEntity(authorityId, mhtmlPage.uri, mhtmlPage.title, text = text)
 
     searchIndex.addEntities(resourceEntity)

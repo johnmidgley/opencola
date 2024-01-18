@@ -1,6 +1,5 @@
 package io.opencola.content
 
-import io.opencola.util.nullOrElse
 import org.apache.james.mime4j.codec.DecoderUtil
 import org.apache.james.mime4j.dom.*
 import org.apache.james.mime4j.message.*
@@ -34,16 +33,16 @@ class MhtmlPage {
         // TODO: This is likely specific to Chrome saving. Should probably detect creator and dispatch to correct handler to canonicalize
         contentLocationMap = getContentLocationMap(message)
         this.message = canonicalizeMessage(message)
-        uri = message.header.getField("Snapshot-Content-Location")?.body.nullOrElse { URI(it) }
+        uri = message.header.getField("Snapshot-Content-Location")?.body?.let { URI(it) }
             ?: throw RuntimeException("No URI specified in MHTML message")
         htmlText = parseHtmlText()
 
-        val htmlParser = htmlText.nullOrElse { JsoupHtmlParser(it) }
+        val htmlParser = htmlText?.let { JsoupHtmlParser(it) }
         title = htmlParser?.parseTitle() ?: DecoderUtil.decodeEncodedWords(message.header.getField("Subject")?.body, Charset.defaultCharset())
-        description = htmlParser.nullOrElse { it.parseDescription() }
-        imageUri = htmlParser.nullOrElse { it.parseImageUri() } ?: getImageUri(message)
+        description = htmlParser?.parseDescription()
+        imageUri = htmlParser?.parseImageUri() ?: getImageUri(message)
         embeddedMimeType = htmlParser?.parseEmbeddedType()
-        text = htmlText.nullOrElse { TextExtractor().getBody(it.toByteArray()) }
+        text = htmlText?.let { TextExtractor().getBody(it.toByteArray()) }
     }
 
     private fun parseHtmlText() : String? {

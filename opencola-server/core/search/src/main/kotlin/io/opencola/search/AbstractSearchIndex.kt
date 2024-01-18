@@ -1,6 +1,5 @@
 package io.opencola.search
 
-import io.opencola.util.nullOrElse
 import io.opencola.model.Attribute
 import io.opencola.model.AttributeType.*
 import io.opencola.model.Entity
@@ -17,8 +16,7 @@ abstract class AbstractSearchIndex : SearchIndex {
 
     fun getAttributeAsText(entity: Entity, attribute: Attribute): String? {
         return when (attribute.type) {
-            SingleValue -> entity.getValue(attribute.name)
-                .nullOrElse { it.get().toString() }
+            SingleValue -> entity.getValue(attribute.name)?.get()?.toString()
 
             MultiValueSet -> entity.getSetValues(attribute.name)
                 .ifEmpty { null }

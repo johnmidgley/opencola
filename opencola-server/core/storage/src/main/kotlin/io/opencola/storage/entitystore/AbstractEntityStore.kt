@@ -7,8 +7,6 @@ import io.opencola.model.*
 import io.opencola.model.value.EmptyValue
 import io.opencola.model.value.Value
 import io.opencola.security.PublicKeyProvider
-import io.opencola.util.ifNotNullOrElse
-import io.opencola.util.nullOrElse
 import io.opencola.security.Signator
 import io.opencola.serialization.EncodingFormat
 import io.opencola.storage.entitystore.EntityStore.TransactionOrder
@@ -116,7 +114,7 @@ abstract class AbstractEntityStore(
 
     private fun computedFacts(facts: Iterable<Fact>): List<Fact> {
         return CoreAttribute.entries.flatMap { attribute ->
-            attribute.spec.computeFacts.ifNotNullOrElse({ it(facts) }, { emptyList() })
+            attribute.spec.computeFacts?.let { it(facts) } ?: emptyList()
         }
     }
 
@@ -265,7 +263,7 @@ abstract class AbstractEntityStore(
         val entityIdsWithDependents = entityIds.flatMap { getDependentEntityIds(authorityId, it) }.toSet() + entityIds
 
         val facts = entityIdsWithDependents.flatMap { entityId ->
-            getEntity(authorityId, entityId).nullOrElse { entity ->
+            getEntity(authorityId, entityId)?.let { entity ->
                 entity.getCurrentFacts()
                     .map { Fact(authorityId, it.entityId, it.attribute, getDeletedValue(it), Operation.Retract) }
             } ?: emptyList()

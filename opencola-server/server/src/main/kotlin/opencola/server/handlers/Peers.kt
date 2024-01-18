@@ -4,7 +4,6 @@ import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import io.opencola.event.bus.EventBus
 import io.opencola.event.bus.Events
-import io.opencola.util.nullOrElse
 import io.opencola.model.Authority
 import io.opencola.model.Id
 import io.opencola.network.InviteToken
@@ -50,7 +49,7 @@ data class Peer(
             decodePublicKey(publicKey),
             URI(address),
             name,
-            imageUri = imageUri.nullOrElse { URI(it) },
+            imageUri = imageUri?.let { URI(it) },
         ).also { authority ->
             authority.setActive(isActive)
         }
