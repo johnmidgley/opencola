@@ -72,6 +72,6 @@ class JsoupHtmlParser(html: String) {
     }
 
     fun parseText(): String? {
-        return doc.body().text()
+        return doc.body().text().ifBlank { null }
     }
 }

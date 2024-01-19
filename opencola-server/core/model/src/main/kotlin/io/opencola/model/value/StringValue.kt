@@ -1,20 +1,10 @@
 package io.opencola.model.value
 
 import io.opencola.serialization.codecs.StringByteArrayCodec
-import mu.KotlinLogging
 import io.opencola.model.protobuf.Model as Proto
 
 class StringValue(value: String) : Value<String>(value) {
-    init {
-        if(value.isBlank()) {
-            // Storing / sending a blank string is not harmful, but wastes space, so should be avoided.
-            logger.warn { "Strings should not be blank" }
-        }
-    }
-
     companion object Wrapper : ValueWrapper<String> {
-        private val logger = KotlinLogging.logger("StringValue")
-
         override fun encode(value: String): ByteArray {
             return StringByteArrayCodec.encode(value)
         }
