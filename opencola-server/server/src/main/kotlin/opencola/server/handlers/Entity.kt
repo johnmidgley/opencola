@@ -12,7 +12,6 @@ import io.opencola.io.HttpClient
 import io.opencola.io.urlRegex
 import io.opencola.model.*
 import io.opencola.util.blankToNull
-import io.opencola.util.nullOrElse
 import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.entitystore.EntityStore
 import io.opencola.storage.filestore.ContentAddressedFileStore
@@ -78,7 +77,7 @@ fun updateEntity(
     entityPayload: EntityPayload
 ): EntityResult? {
     entity.name = entityPayload.name.blankToNull()
-    entity.imageUri = entityPayload.imageUri.blankToNull().nullOrElse {
+    entity.imageUri = entityPayload.imageUri.blankToNull()?.let {
         val uri = URI(it)
         if (!uri.isAbsolute)
             throw IllegalArgumentException("Image URI must be absolute")
@@ -279,7 +278,7 @@ fun updateComment(
     entityId: Id,
     comment: PostCommentPayload
 ): EntityResult? {
-    val updatedComment = updateComment(entityStore, persona, entityId, comment.commentId.nullOrElse { Id.decode(it) }, comment.text)
+    val updatedComment = updateComment(entityStore, persona, entityId, comment.commentId?.let { Id.decode(it) }, comment.text)
     val topLevelParentId = updatedComment.topLevelParentId ?: updatedComment.parentId ?: entityId
     return getEntityResult(entityStore, addressBook, eventBus, fileStore, context, persona.personaId, topLevelParentId)
 }

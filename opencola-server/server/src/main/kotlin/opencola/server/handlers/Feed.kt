@@ -5,7 +5,6 @@ import io.opencola.event.bus.EventBus
 import io.opencola.event.bus.Events
 import io.opencola.model.*
 import kotlinx.serialization.Serializable
-import io.opencola.util.nullOrElse
 import io.opencola.model.CoreAttribute.*
 import io.opencola.search.Query
 import io.opencola.search.QueryParser
@@ -34,7 +33,7 @@ data class FeedResult internal constructor(
 }
 
 fun entityAttributeAsString(entity: Entity, attribute: Attribute): String? {
-    return entity.getValue(attribute.name).nullOrElse { it.get().toString() }
+    return entity.getValue(attribute.name)?.get()?.toString()
 }
 
 fun getPostedById(entities: List<Entity>): Id {
@@ -142,7 +141,7 @@ fun activitiesByEntityId(
         .map { (entityId, entities) ->
             val activities = entities
                 .mapNotNull { entity ->
-                    authoritiesById[entity.authorityId].nullOrElse {
+                    authoritiesById[entity.authorityId]?.let {
                         entityActivities(
                             it,
                             entity,

@@ -13,7 +13,6 @@ import io.opencola.content.*
 import io.opencola.model.*
 import io.opencola.storage.entitystore.EntityStore
 import io.opencola.storage.filestore.ContentAddressedFileStore
-import io.opencola.util.nullOrElse
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import java.net.URI
@@ -134,9 +133,9 @@ fun getDataEntity(authorityId: Id, entityStore: EntityStore, fileStore: ContentA
 }
 
 fun updateActions(entity: Entity, actions: Actions) {
-    actions.trust.nullOrElse { entity.trust = it }
-    actions.like.nullOrElse { entity.like = it }
-    actions.rating.nullOrElse { entity.rating = it }
+    actions.trust?.let { entity.trust = it }
+    actions.like?.let { entity.like = it }
+    actions.rating?.let { entity.rating = it }
 }
 
 fun updateResource(

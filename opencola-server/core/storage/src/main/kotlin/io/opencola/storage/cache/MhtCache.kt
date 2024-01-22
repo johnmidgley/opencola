@@ -3,7 +3,6 @@ package io.opencola.storage.cache
 import mu.KotlinLogging
 import io.opencola.content.parseMime
 import io.opencola.content.splitMht
-import io.opencola.util.nullOrElse
 import io.opencola.model.DataEntity
 import io.opencola.model.Id
 import io.opencola.model.ResourceEntity
@@ -31,14 +30,14 @@ class MhtCache(private val cachePath: Path, private val entityStore: EntityStore
 
         return when (entity) {
             // TODO: This grabs an arbitrary dataId. Probably should grab most recent
-            is ResourceEntity -> entity.dataIds.nullOrElse { entityStore.getEntity(authorityId!!, it.first()) }
+            is ResourceEntity -> entity.dataIds.let { entityStore.getEntity(authorityId!!, it.first()) }
             is DataEntity -> entity
             else -> null
         } as DataEntity?
     }
 
     fun getData(entityId: Id, authorityId: Id? = null): ByteArray? {
-        return getDataEntity(entityId, authorityId).nullOrElse { fileStore.read(it.entityId)  }
+        return getDataEntity(entityId, authorityId)?.let { fileStore.read(it.entityId)  }
     }
 
     private fun cachedPartPath(id: Id, partName: String): Path {

@@ -1,7 +1,6 @@
 package io.opencola.event.bus
 
 import mu.KotlinLogging
-import io.opencola.util.nullOrElse
 import io.opencola.util.shutdownWithTimout
 import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.*
@@ -125,7 +124,7 @@ class ExposedEventBus(private val storagePath: Path, config: EventBusConfig) : E
     private fun processMessages() {
         val messages = getMessagesFromStore(2)
 
-        messages.firstOrNull().nullOrElse {
+        messages.firstOrNull()?.let {
             processMessage(it)
 
             // Process remaining messages. We don't loop here, to give the executor a chance to shut down

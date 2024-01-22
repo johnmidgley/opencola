@@ -10,10 +10,25 @@ class AttributeDelegate<T>(val valueWrapper: ValueWrapper<T>, val resettable: Bo
     }
 
     operator fun setValue(thisRef: Entity, property: KProperty<*>, value: T?) {
-        if(!resettable && getValue(thisRef, property) != null)
-             throw IllegalStateException("Attempt to reset a non resettable property: ${property.name}")
+        if (!resettable && getValue(thisRef, property) != null)
+            throw IllegalStateException("Attempt to reset a non resettable property: ${property.name}")
 
         thisRef.setValue(property.name, value?.let { valueWrapper.wrap(it) as Value<Any> })
+    }
+}
+
+@Suppress("UNCHECKED_CAST")
+class StringAttributeDelegate(val resettable: Boolean = true, val convertBlankToNull: Boolean = true) {
+    operator fun getValue(thisRef: Entity, property: KProperty<*>): String? {
+        return thisRef.getValue(property.name)?.let { StringValue.unwrap(it as Value<String>) }
+    }
+
+    operator fun setValue(thisRef: Entity, property: KProperty<*>, value: String?) {
+        if (!resettable && getValue(thisRef, property) != null)
+            throw IllegalStateException("Attempt to reset a non resettable property: ${property.name}")
+
+        val valueToSet = if (value == null || (convertBlankToNull && value.isBlank())) null else value
+        thisRef.setValue(property.name, valueToSet?.let { StringValue.wrap(it) as Value<Any> })
     }
 }
 
@@ -23,7 +38,7 @@ val booleanAttributeDelegate = AttributeDelegate(BooleanValue)
 val intAttributeDelegate = AttributeDelegate(IntValue)
 val floatAttributeDelegate = AttributeDelegate(FloatValue)
 val nonResettableStringValueDelegate = AttributeDelegate(StringValue, false)
-val stringAttributeDelegate = AttributeDelegate(StringValue)
+val stringAttributeDelegate = StringAttributeDelegate()
 val nonResettableUriAttributeDelegate = AttributeDelegate(UriValue, false)
 val uriAttributeDelegate = AttributeDelegate(UriValue)
 val imageUriAttributeDelegate = AttributeDelegate(UriValue)
@@ -32,7 +47,7 @@ val publicKeyAttributeDelegate = AttributeDelegate(PublicKeyValue)
 val byteArrayAttributeDelegate = AttributeDelegate(ByteArrayValue)
 
 @Suppress("UNCHECKED_CAST")
-class MultiValueSetAttributeDelegate<T> (val attribute: Attribute) {
+class MultiValueSetAttributeDelegate<T>(val attribute: Attribute) {
     // Returns a list so that the set can be ordered, but it will not contain duplicates
     operator fun getValue(thisRef: Entity, property: KProperty<*>): List<T> {
         return thisRef
