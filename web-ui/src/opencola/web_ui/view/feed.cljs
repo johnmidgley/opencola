@@ -1,6 +1,7 @@
 (ns opencola.web-ui.view.feed
   (:require [cljs.reader :as reader]
             [clojure.string :as string]
+            [reagent.core :as r]
             [lambdaisland.uri :refer [uri]]
             [opencola.web-ui.app-state :as state]
             [opencola.web-ui.util :refer [distinct-by]]
@@ -28,14 +29,40 @@
 
 ;; TODO: Look at https://github.com/Day8/re-com
 
-(defn get-feed [persona-id query feed! on-error]
+(defn retrieve-feed-items [persona-id context paging-token query on-success on-error] 
   (model/get-feed
-   nil
+   context
+   paging-token
    persona-id
+   query
+   on-success
+   #(on-error %)))
+
+(defn get-feed [persona-id query feed! on-error]
+  (retrieve-feed-items 
+   persona-id
+   (:context @feed!)
+   nil
    query
    #(do (reset! feed! %)
         (window/scroll-to-top))
-   #(on-error %)))
+   on-error))
+
+(def previous-feed-state! (r/atom nil))
+
+(defn paginate-feed [persona-id query feed! on-error]
+  (when (and (:pagingToken @feed!) (not @previous-feed-state!))
+    (reset! previous-feed-state! @feed!)
+    (retrieve-feed-items
+     persona-id
+     (:context @feed!)
+     (:pagingToken @feed!)
+     query
+     #(do
+        (when (identical? @previous-feed-state! @feed!)
+         (reset! feed! (assoc % :results (concat (:results @feed!) (:results %)))))
+        (reset! previous-feed-state! nil))
+     on-error)))
 
 (defn authority-actions-of-type [authority-id type item]
   (filter #(= authority-id (:authorityId %)) (-> item :activities type)))

@@ -70,10 +70,10 @@
          tip-position :tip-position} config]
     [:button.button-component {:type "button"
                                :on-click on-click!
-                               :name name 
+                               :name name
                                :disabled (when (not (nil? disabled?)) disabled?)
                                :class (when class class)}
-     (when tool-tip-text 
+     (when tool-tip-text
        [tool-tip {:text tool-tip-text :tip-position tip-position}])
      (when icon-class
        [icon {:class "button-icon" :icon-class icon-class}])
@@ -141,6 +141,20 @@
        :name name
        :checked checked?
        :on-change on-change}]]))
+
+(defn collapsable-list [items preview-count expand-prompt collapse-prompt collapsed? config]
+  (let [expanded?! (r/atom collapsed?)
+        preview-items (take preview-count items)
+        more (- (count items) preview-count)]
+    [:div.collapsable-list {:class (:class config)}
+     [:div.list-content
+      (doall (for [item (if expanded?! items preview-items)]
+               ^{:key item} item))]
+     (when (> more 0)
+       [button-component {:class "expand-button "
+                          :text (if expanded?! expand-prompt collapse-prompt)
+                          :icon-class (if expanded?! "icon-show" "icon-hide")}
+        (fn [] (swap! expanded?! #(not %)))])]))
 
 ;; https://github.com/reagent-project/reagent/blob/master/doc/CreatingReagentComponents.md
 (defn simple-mde [id placeholder text state!] 

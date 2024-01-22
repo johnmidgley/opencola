@@ -3,7 +3,8 @@
    [reagent.core :as reagent :refer [atom]] 
    [opencola.web-ui.model.feed :as model]
    [opencola.web-ui.time :refer [format-time]]
-   [opencola.web-ui.view.common :refer [md->component simple-mde button-component edit-control-buttons]]))
+   [opencola.web-ui.view.common :refer [md->component simple-mde collapsable-list
+                                        button-component edit-control-buttons]]))
 
 (defn comment-edit-control [id text state! text-prompt] 
   [:div.comment-edit-control
@@ -36,6 +37,7 @@
                                               on-error)
           } expanded?! error!]]]))))
 
+
 (defn create-comment-control [id original-text on-save on-cancel on-delete error! config]
   (let [state! (atom nil)
         {text-prompt :text-prompt} config]
@@ -56,7 +58,8 @@
              authority-name :authorityName
              epoch-second :epochSecond
              text :value
-             comment-id :id} comment-action
+             comment-id :id
+             replies :replies} comment-action
             editable? (= authority-id @persona-id!)]
         (when (not editable?)
           (reset! editing?! false))
@@ -69,26 +72,48 @@
           [button-component {:icon-class "icon-reply" :class "comment-button" :tool-tip-text "Reply"} #(swap! replying?! not)]
           (when editable?
             [button-component {:class "comment-button edit-comment-button" :icon-class "icon-edit"} #(swap! editing?! not)])]
-         (when @replying?! 
+         (when @replying?!
            [:reply-block
             [create-comment-control
              (:entityId item)
              ""
              #(model/update-comment context @persona-id! comment-id nil % on-update on-error)
-             #(reset! replying?! false) 
+             #(reset! replying?! false)
              nil
              error!
-             {:text-prompt "Enter your reply..."}
-             ]])]))))
+             {:text-prompt "Enter your reply..."}]])
+         (when replies
+           [:div.replies
+            (doall (for [comment-action replies]
+                     ^{:key comment-action} [item-comment context persona-id! item comment-action on-update on-click-authority]))])]))))
+
+(defn get-top-level-comment-id [comment-actions comment-action]
+  (if-let [parent-id (:parentId comment-action)]
+    (get-top-level-comment-id 
+     comment-actions 
+     (first (filter #(= parent-id (:id %)) comment-actions)))
+    (:id comment-action)))
+
+(defn get-comment-groups [comment-actions]
+  (let [groups (group-by #(nil? (:parentId %)) comment-actions)
+        top-level (get groups true)
+        replies (get groups false)
+        reply-groups (group-by 
+                      #(get-top-level-comment-id comment-actions %) 
+                      replies)
+        comment-groups (map #(assoc % :replies (get reply-groups (:id %))) top-level)]
+    (sort-by #(- (:epochSecond %)) comment-groups)))
+
 
 (defn item-comments [context persona-id! item comment-actions preview-fn? expanded?! on-update on-click-authority]
   (let [preview? (preview-fn?)
-        more (- (count comment-actions) 3)
-        comment-actions (if preview? (take 3 comment-actions) comment-actions)]
+        comment-groups (get-comment-groups comment-actions)
+        comment-actions (if preview? (take 3 comment-actions) comment-actions) 
+        more (- (count comment-groups) 3)]
     (when (or @expanded?! (and preview? (not-empty comment-actions)))
       [:div.item-comments
        [:span {:on-click (fn [] (swap! expanded?! #(not %)))} "Comments:"]
-       (doall (for [comment-action comment-actions]
+       (doall (for [comment-action comment-groups]
                 ^{:key comment-action} [item-comment context persona-id! item comment-action on-update on-click-authority]))
        (when (> more 0)
          [button-component {

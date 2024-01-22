@@ -339,6 +339,10 @@
     background-color: var(--own-comment-color);
 }
 
+.replies {
+    margin-left: 1rem;
+}
+
 .action {
     color: var(--link-color);
 }

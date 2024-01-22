@@ -71,9 +71,11 @@
   (location/set-location-from-state))
 
 (defn scroll-handler [f]
-  (let [scroll-position (.-scrollY js/window)
-        total-height (- (.-scrollHeight (.-body js/document)) (.-innerHeight js/window))]
-    (when (>= scroll-position total-height)
+  (let [page-y-offset (.-pageYOffset js/window)
+        inner-height (.-innerHeight js/window)
+        magic-offset-number 200 ; will fail at extreemly large document sizes TODO: make that not so.
+        offset-height (.-offsetHeight (.-body js/document))] 
+    (when (>= (+ (Math/ceil page-y-offset) inner-height) (- offset-height magic-offset-number)) 
       (f))))
 
 (defn add-scroll-listener [f]
@@ -81,7 +83,8 @@
 
 (defn load-more-items [] 
   (case (state/get-page)
-    :feed (println "bottom of feed")))
+    :feed (feed/paginate-feed @(persona!) @(query!) (feed!) #(error! %))
+    #())) ; TODO: update cases here when pagination is needed
 
 (defn app [] 
   (fn []
@@ -110,12 +113,12 @@
 #_(mount-app-element)
 
 ;; specify reload hook with ^:after-load metadata
-(defn ^:after-load on-reload [] 
+(defn ^:after-load on-reload []
   (mount-app-element)
   ;; optionally touch your app-state to force rerendering depending on
   ;; your application
   ;; (swap! app-state update-in [:__figwheel_counter] inc)
-)
+  )
 
 (defonce history-initiated (doto (History.)
   (events/listen EventType.NAVIGATE #(secretary/dispatch! (.-token %)))
@@ -146,10 +149,10 @@
          (fn [] (init-settings 
                  (fn [] (init-themes 
                          (fn [] (theme! (:theme-name @(settings!))) 
-                           (mount-app-element)
                            (add-scroll-listener load-more-items)
                            (location/set-location-from-state)
                            (when (empty @(feed!))
                              (feed/get-feed @(persona!) @(query!) (feed!) #(error! %)))
                            (when-let [persona @(persona!)]
-                             (peer/get-peers persona (peers!) #(error! %)))))))))))
+                             (peer/get-peers persona (peers!) #(error! %)))
+                           (mount-app-element)))))))))

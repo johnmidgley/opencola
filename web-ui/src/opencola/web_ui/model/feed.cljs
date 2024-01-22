@@ -25,11 +25,14 @@
       (update :results #(map model-to-view-item %))
       (set-query query)))
 
-
-(defn get-feed [context persona-id query on-success on-error]
-  (ajax/GET (str "feed?context=" context  "&personaId=" persona-id  "&q=" (js/encodeURIComponent query) "") 
+(defn get-feed [context paging-token persona-id query on-success on-error]
+  (ajax/GET (str 
+             "feed?context=" context 
+             "&personaId=" persona-id 
+             "&q=" (js/encodeURIComponent query) 
+             (when paging-token (str "&pagingToken=" paging-token))) 
             #(on-success (feed-to-view-model % query))
-            #(on-error (error-result->str %)))) 
+            #(on-error (error-result->str %))))
 
 (defn delete-entity [context persona-id entity-id on-success on-error]
   (ajax/DELETE 
