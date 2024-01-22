@@ -601,3 +601,18 @@ button,
     margin-bottom: 0;
     }
 }
+
+.origin-distance {
+    display: flex;
+    --icon-size: 1.3rem;
+    gap: .5rem;
+    align-items: center;
+    font-size: .9rem;
+    background-color: var(--secondary-color);
+    padding: .3rem .5rem;
+    border-radius: 1rem;
+
+    > .icon {
+        background-color: var(--highlight-color);
+    }
+}

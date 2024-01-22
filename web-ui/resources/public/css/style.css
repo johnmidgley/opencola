@@ -340,6 +340,10 @@
 }
 
 .replies {
+    margin-top: .5rem;
+    display: flex;
+    flex-direction: column;
+    gap: .7rem;
     margin-left: 1rem;
 }
 
@@ -350,6 +354,12 @@
 .item-desc-edit {
     width: 100%;
     height: 200px;
+}
+
+.expand-replies {
+    margin-top: .2rem;
+    --icon-size: .2rem;
+    font-size: .9rem;
 }
 
 .item-comment-edit {

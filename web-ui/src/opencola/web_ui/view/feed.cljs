@@ -16,7 +16,7 @@
             [opencola.web-ui.view.comments :refer [comment-control
                                                    comment-edit-control
                                                    item-comments]]
-            [opencola.web-ui.view.common :refer [hidden-file-input upload-progress error-control button-component icon empty-page-instructions profile-img
+            [opencola.web-ui.view.common :refer [hidden-file-input upload-progress error-control button-component icon empty-page-instructions profile-img tool-tip
                                                  md->component select-files-control simple-mde text-input button-component edit-control-buttons item-divider]]
             [opencola.web-ui.view.likes :refer [item-likes like-edit-control]]
             [opencola.web-ui.view.persona :refer [persona-select]]
@@ -251,13 +251,17 @@
 (defn posted-by [summary on-click-authority]
   (let [posted-by (:postedBy summary)
         name (:name posted-by)
-        origin-distance (or (:originDistance posted-by) 0)
+        origin-distance (or (:originDistance summary) 0)
         display-name (if (:isPersona posted-by) (str "You (" name ")") name)] 
     [:div.posted-by
      [profile-img (:imageUri posted-by) name (:id posted-by) #(on-click-authority name)]
+     [:span.authority {:on-click #(on-click-authority name)} display-name]
      (when (> origin-distance 0) 
-       [:span.origin-distance "Unknown via "])
-     [:span.authority {:on-click #(on-click-authority name)} display-name]]
+       [:div.origin-distance 
+        [tool-tip {:text (str "Originally posted by a user " origin-distance (if (= origin-distance 1) " degree" " degrees") " away")}]
+        origin-distance
+        [icon
+         {:icon-class "icon-save"}]])]
     ))
 
 (defn item-name [summary]

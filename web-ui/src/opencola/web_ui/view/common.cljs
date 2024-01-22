@@ -142,14 +142,14 @@
        :checked checked?
        :on-change on-change}]]))
 
-(defn collapsable-list [items preview-count expand-prompt collapse-prompt collapsed? config]
-  (let [expanded?! (r/atom collapsed?)
+(defn collapsable-list [items key-fn preview-count expand-prompt collapse-prompt expanded? config]
+  (let [expanded?! (r/atom expanded?)
         preview-items (take preview-count items)
         more (- (count items) preview-count)]
     [:div.collapsable-list {:class (:class config)}
-     [:div.list-content
+     [:div.list-content 
       (doall (for [item (if expanded?! items preview-items)]
-               ^{:key item} item))]
+               ^{:key (key-fn item)} item))]
      (when (> more 0)
        [button-component {:class "expand-button "
                           :text (if expanded?! expand-prompt collapse-prompt)
