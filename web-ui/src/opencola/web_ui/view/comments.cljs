@@ -57,15 +57,20 @@
       (let [{authority-id :authorityId
              authority-name :authorityName
              epoch-second :epochSecond
+             parent-id :parentId
              text :value
              comment-id :id} comment-action
-            editable? (= authority-id @persona-id!)]
+            editable? (= authority-id @persona-id!)
+            parent-comment (when parent-id (first (filter #(= (:id %) parent-id) (-> item :activities :comment))))
+            reply-header (when parent-comment (str "@" (:authorityName parent-comment) ":"))] 
         (when (not editable?)
           (reset! editing?! false))
         [:div.base-comment
+         (when reply-header [:span.reply-header reply-header])
          (if (and editable? @editing?!)
            [comment-control context persona-id! item comment-id text editing?! on-update]
-           [:div.item-comment-container [md->component {:class (str "item-comment-text markdown-text " (when editable? "own-comment"))} text]])
+           [:div.item-comment-container 
+            [md->component {:class (str "item-comment-text markdown-text " (when editable? "own-comment"))} text]])
          [:div.item-attribution
           [:span.authority {:on-click #(on-click-authority authority-name)} authority-name] " " (format-time epoch-second) " "
           [button-component {:icon-class "icon-reply" :class "comment-button" :tool-tip-text "Reply"} #(swap! replying?! not)]
@@ -90,7 +95,7 @@
        [base-comment context persona-id! item comment-action on-update on-click-authority]
        (when-let [replies (:replies comment-action)] 
          (let [more (- (count replies) 3)
-               display-replies (if @expanded?! replies (take 3 replies))]
+               display-replies (if @expanded?! replies (take 3 replies))] 
            [:div.replies 
             (doall (for [comment-action display-replies]
                      ^{:key comment-action} [base-comment context persona-id! item comment-action on-update on-click-authority]))

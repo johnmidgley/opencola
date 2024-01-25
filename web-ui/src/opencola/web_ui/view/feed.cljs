@@ -6,7 +6,7 @@
             [opencola.web-ui.app-state :as state]
             [opencola.web-ui.util :refer [distinct-by]]
             [opencola.web-ui.common :refer [toggle-atom]]
-            [opencola.web-ui.location :as location]
+            [opencola.web-ui.time :refer [format-time]]
             [opencola.web-ui.window :as window]
             [opencola.web-ui.model.feed :as model :refer [upload-files
                                                           upload-result-to-attachments]]
@@ -16,15 +16,14 @@
             [opencola.web-ui.view.comments :refer [comment-control
                                                    comment-edit-control
                                                    item-comments]]
-            [opencola.web-ui.view.common :refer [hidden-file-input upload-progress error-control button-component icon empty-page-instructions profile-img tool-tip
-                                                 md->component select-files-control simple-mde text-input button-component edit-control-buttons item-divider]]
+            [opencola.web-ui.view.common :refer [hidden-file-input upload-progress error-control button-component icon empty-page-instructions profile-img tool-tip swap-atom-data!
+                                                 md->component select-files-control simple-mde text-input-component button-component edit-control-buttons item-divider]]
             [opencola.web-ui.view.likes :refer [item-likes like-edit-control]]
             [opencola.web-ui.view.persona :refer [persona-select]]
             [opencola.web-ui.view.saves :refer [item-saves save-item]]
             [opencola.web-ui.view.search :as search]
             [opencola.web-ui.view.tags :refer [item-tags item-tags-summary
-                                               item-tags-summary-from-string]]
-            [reagent.core :as reagent :refer [atom]]))
+                                               item-tags-summary-from-string]]))
 
 
 ;; TODO: Look at https://github.com/Day8/re-com
@@ -169,8 +168,8 @@
 
 ;; TODO - Combing with tags-edit-control?
 (defn tags-control [persona-id! feed! item tagging?!]
-  (let [tags!  (atom (:tags item))
-        error! (atom nil)]
+  (let [tags!  (r/atom (tags-as-string @persona-id! item))
+        error! (r/atom nil)]
     (fn []
       (let [on-save (fn []
                       (tag-entity!
@@ -181,30 +180,30 @@
                        #(do
                           (reset! tagging?! false)
                           (update-feed-item feed! %)) 
-                       #(reset! error! %)))]
-        (when @tagging?!
+                       #(reset! error! %)))] 
+        (when @tagging?! 
           [:div.tags-edit-control
            [:div.field-header "Tags:"]
-           [:input.tags-text
-            {:type "text"
-             :value @tags!
-             :on-KeyUp #(case (-> % .-keyCode)
-                          13 (on-save)
-                          27 (reset! tagging?! false)
-                          false)
-             :on-change #(reset! tags! (-> % .-target .-value))}]
+           [text-input-component 
+            {:value @tags!
+             :on-key-up #(case (-> % .-keyCode)
+                           13 (on-save)
+                           27 (reset! tagging?! false)
+                           false)
+             } 
+            #(reset! tags! (-> % .-target .-value))]
            [edit-control-buttons {:on-save on-save :on-cancel #(reset! tagging?! false)} false error!]])))))
 
 
 (defn item-activities [persona-id! personas! feed! item editing?! on-click-authority on-click-tag]
-  (let [action-expanded? (apply hash-map (mapcat #(vector % (atom false)) [:save :like :tag :comment :attach]))
-        tagging? (atom false)
-        commenting? (atom false)
-        uploading?! (atom false)
-        progress! (atom 0)
+  (let [action-expanded? (apply hash-map (mapcat #(vector % (r/atom false)) [:save :like :tag :comment :attach]))
+        tagging? (r/atom false)
+        commenting? (r/atom false)
+        uploading?! (r/atom false)
+        progress! (r/atom 0)
         context (:context @feed!)
         update-feed-item #(update-feed-item feed! %)
-        error! (atom nil)
+        error! (r/atom nil)
         on-error #(reset! error! %)
         preview-fn? (fn [] (every? #(not @%) (map second action-expanded?)))]
     (fn []
@@ -248,20 +247,22 @@
            on-click-authority] 
           [error-control error!]]]))))
 
-(defn posted-by [summary on-click-authority]
+(defn posted-by [summary on-click-authority posted-time]
   (let [posted-by (:postedBy summary)
         name (:name posted-by)
         origin-distance (or (:originDistance summary) 0)
         display-name (if (:isPersona posted-by) (str "You (" name ")") name)] 
     [:div.posted-by
      [profile-img (:imageUri posted-by) name (:id posted-by) #(on-click-authority name)]
-     [:span.authority {:on-click #(on-click-authority name)} display-name]
+     [:div.posted-info
+      [:span.authority {:on-click #(on-click-authority name)} display-name]
+      [:span.posted-time posted-time]]
      (when (> origin-distance 0) 
        [:div.origin-distance 
         [tool-tip {:text (str "Originally posted by a user " origin-distance (if (= origin-distance 1) " degree" " degrees") " away")}]
-        origin-distance
         [icon
-         {:icon-class "icon-save"}]])]
+         {:icon-class "icon-save"}]
+        origin-distance])]
     ))
 
 (defn item-name [summary]
@@ -278,8 +279,7 @@
 (defn item-image [summary]
   (let [item-uri (:uri summary)
         image-uri (:imageUri summary) 
-        img [:img.item-img {:src image-uri}]
-        posted-by-image-uri (-> summary :postedBy :imageUri)]
+        img [:img.item-img {:src image-uri}]]
     (when (not-empty image-uri)
       [:div.item-img-box
        (if (empty? item-uri)
@@ -288,10 +288,10 @@
 
 (defn display-feed-item [persona-id! personas! feed! item editing?! on-click-authority on-click-tag]
   (let [summary (:summary item)
-        posted-by-name  (-> summary :postedBy :name)]
-    (fn []
+        posted-time (-> item :activities :save first :epochSecond format-time)]
+    (fn [] 
       [:div.list-item
-       [posted-by summary on-click-authority]
+       [posted-by summary on-click-authority posted-time]
        [item-name summary] 
        [item-tags-summary (-> item :activities :tag) on-click-tag]
        [:div.item-body
@@ -307,7 +307,7 @@
 (defn name-edit-control [name on-change]
   [:div.item-name
    [:div.field-header "Title:"]
-   [text-input name on-change]])
+   [text-input-component {:value name} on-change]])
 
 (defn image-uri-edit-control [edit-item!]
   (let [image-uri (:imageUri @edit-item!)]
@@ -317,15 +317,14 @@
         [:img.item-img {:src image-uri}])]
      [:div.item-image-url
       [:div.field-header "Image URL:"]
-      [:input.item-img-url
-       {:type "text"
-        :value (:imageUri @edit-item!)
-        :on-change #(swap! edit-item! assoc-in [:imageUri] (-> % .-target .-value))}]]]))
+      [text-input-component 
+       {:value (:imageUri @edit-item!)} 
+       #(swap! edit-item! assoc-in [:imageUri] (-> % .-target .-value))]]]))
 
 (defn tags-edit-control [tags on-change]
-  [:div.tags-edit-control
+  [:div.tags-edit-control 
    [:div.field-header "Tags:"]
-   [text-input tags on-change]])
+   [text-input-component {:value tags} on-change]])
 
 (defn description-edit-control [edit-item! state!]
   [:div.description-edit-control
@@ -344,13 +343,13 @@
 
 ;; TODO: Put error in separate variable - then create and manage edit-iten only in here
 (defn edit-item-control [personas! persona-id! item edit-item! error! on-save on-cancel on-delete]
-  (let [description-state! (atom nil)
-        comment-state! (atom nil)
-        expanded?! (atom false)
-        tagging?! (atom false)
-        commenting?! (atom false)
-        uploading?! (atom false)
-        progress! (atom 0)
+  (let [description-state! (r/atom nil)
+        comment-state! (r/atom nil)
+        expanded?! (r/atom false)
+        tagging?! (r/atom false)
+        commenting?! (r/atom false)
+        uploading?! (r/atom false)
+        progress! (r/atom 0)
         on-change (partial on-change edit-item!)]
     (fn []
       (let [name-expanded? (or @expanded?! (seq (:name @edit-item!)))
@@ -358,7 +357,9 @@
             deletable? (some #(= @persona-id! (:authorityId %)) (-> item :activities :save))]
         [:div.list-item
          (when name-expanded?
-           [name-edit-control (:name @edit-item!) (on-change :name)])
+           [name-edit-control 
+            (:name @edit-item!) 
+            #(swap-atom-data! % edit-item! :name)])
          [item-tags-summary-from-string (:tags @edit-item!)]
          (when image-url-expanded?
            [image-uri-edit-control edit-item!])
@@ -393,7 +394,7 @@
          [:div.activity-block
           [upload-progress uploading?! progress!]
           (when @tagging?!
-            [tags-edit-control (:tags @edit-item!) (on-change :tags)])
+            [tags-edit-control (:tags @edit-item!) #(swap! edit-item! assoc-in [:tags] (-> % .-target .-value))])
           (when @commenting?!
             [:div.item-comment-edit
              [comment-edit-control (:entity-id @edit-item!) nil comment-state!]])]
@@ -427,8 +428,8 @@
 
 ;; TODO: Use keys to get 
 (defn edit-feed-item [personas! persona-id! feed! item editing?!]
-  (let [edit-item! (atom (edit-item @persona-id! item))
-        error! (atom nil)]
+  (let [edit-item! (r/atom (edit-item @persona-id! item))
+        error! (r/atom nil)]
     (edit-item-control
      personas!
      persona-id!
@@ -442,8 +443,8 @@
 
 
 (defn feed-item [persona-id personas! feed! item on-click-authority on-click-tag]
-  (let [editing?! (atom false)
-        persona-id! (atom (or persona-id (:personaId item)))
+  (let [editing?! (r/atom false)
+        persona-id! (r/atom (or persona-id (:personaId item)))
         personas! (if persona-id nil personas!)]
     (fn [] 
       (if @editing?!
@@ -507,7 +508,7 @@
 ;; TODO: Only pass atoms when necessary. There are some cases where the personas! is passed, when @personas! 
 ;; would suffice
 (defn feed-page [feed! personas! persona-id! on-persona-select query! on-search]
-  (let [creating-post?! (atom false)
+  (let [creating-post?! (r/atom false)
         on-click-tag #(on-click-tag on-search @query! %)
         on-click-authority #(on-click-authority on-search @query! %)]
     (fn []
@@ -522,12 +523,12 @@
         creating-post?!]
        [error-control (state/error!)]
        (when @creating-post?!
-         (let [edit-item! (atom (edit-item))
-               error! (atom nil)]
+         (let [edit-item! (r/atom (edit-item))
+               error! (r/atom nil)]
            [:div.content-list.feed-list
             [edit-item-control
              (when (not @persona-id!) personas!)
-             (atom (or @persona-id! (-> @personas! first :id)))
+             (r/atom (or @persona-id! (-> @personas! first :id)))
              nil
              edit-item!
              error!

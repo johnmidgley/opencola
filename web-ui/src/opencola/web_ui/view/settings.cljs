@@ -1,12 +1,10 @@
 (ns opencola.web-ui.view.settings
   (:require
    [reagent.core :as r]
-   [opencola.web-ui.app-state :as state]
-   [opencola.web-ui.model.persona :as model]
-   [opencola.web-ui.view.common :refer [error-control edit-control-buttons button-component select-menu]]
+   [opencola.web-ui.app-state :as state] 
+   [opencola.web-ui.view.common :refer [error-control button-component select-menu]]
    [opencola.web-ui.view.search :as search]
-   [opencola.web-ui.theme :refer [theme-names]]
-   [opencola.web-ui.location :as location]))
+   [opencola.web-ui.theme :refer [theme-names]]))
 
 (def category-ids (list "Appearance"))
 

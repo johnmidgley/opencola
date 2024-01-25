@@ -30,9 +30,7 @@
       :data-tip-position (if tip-position tip-position "tip-top")} 
      text]))
 
-(def inline-divider [:span.divider " | "])
 (defn keyed-divider [] ^{:key (item-key)} [:span.divider " | "])
-(def image-divider [:img.divider {:src "../img/divider.png"}])
 (def nbsp (gstring/unescapeEntities "&nbsp;"))
 
 (defn icon [config]
@@ -82,27 +80,10 @@
      (when text
        [:span.button-text text])]))
 
-(defn text-input [text on-change]
-  (let [edit-text! (atom text)]
-    [:input.text-input
-     {:type "text"
-      :value @edit-text!
-      :on-change (fn [e]
-                   (let [val (-> e .-target .-value)]
-                     (reset! edit-text! val)
-                     (on-change val)))}]))
-
-(defn input-text [item! key editing?]
-  [:input.reset.input-text
-   {:type "text"
-    :disabled (not editing?)
-    :value (key @item!)
-    :on-change #(swap! item! assoc-in [key] (-> % .-target .-value))}])
-
 (defn text-input-component [config on-change]
   (let [{value :value
          placeholder :placeholder
-         on-enter :on-enter
+         on-key-up :on-key-up
          disabled? :disabled
          icon-class :icon-class
          title :title
@@ -119,8 +100,7 @@
        :name name
        :value value
        :on-change on-change
-       :on-keyUp (when on-enter 
-                   #(when (= (.-key %) "Enter") on-enter))}]
+       :on-keyUp on-key-up}]
      (when copy-button 
        [button-component {:icon-class "icon-copy" :class "action-button" :tool-tip-text "Copy"} #(copy-to-clipboard value)])]))
 
@@ -244,7 +224,7 @@
         menu-open?! (r/atom false) 
         selected-item! (r/atom (first (filter #(= (id-key %) (id-key current-item)) item-collection)))] 
     (fn [] 
-      [:div.select-menu-wrapper {:class class} 
+      [:div.select-menu-wrapper {:class class :onBlur #(swap! menu-open?! not)} 
        [:div.select-menu-toggle.button {:on-click #(swap! menu-open?! not) :aria-expanded @menu-open?!}
         [:span.current-item (name-key @selected-item!)]
         [icon {:icon-class (if @menu-open?! "icon-hide" "icon-show")}]]

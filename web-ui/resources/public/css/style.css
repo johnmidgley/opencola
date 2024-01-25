@@ -33,6 +33,7 @@
 }
 
 .nav-bar .persona-select {
+    z-index: 0;
     border: var(--border-size) solid var(--border-color);
     cursor: pointer;
     font-size: 1rem;
@@ -93,6 +94,7 @@
 }
 
 .menu {
+    z-index: 2;
     > .overlay[data-visible=true] {
         position: fixed;
         top: 0;
@@ -167,13 +169,23 @@
     align-items: center;
     gap: 1rem;
 
+    > .posted-by-img {
+        width: 2rem;
+    }
+}
+
+.posted-info {
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
     > .authority {
         cursor: pointer;
         font-size: 1rem;
     }
 
-    > .posted-by-img {
-        width: 2rem;
+    > .posted-time {
+        font-size: .8rem;
+        color: var(--item-attribution-color);
     }
 }
 
@@ -199,12 +211,18 @@
 .tag {
     font-size: .7rem;
     background-color: var(--tag-bg-color);
+    color: var(--tag-text-color);
     border-radius: 10px;
     padding: .2rem .5rem;
     cursor: pointer;
 }
 
 .item-body {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-items: center;
+    align-items: center;
     background-color: var(--item-body-bg-color);
     border-radius: .5rem;
     overflow: hidden;
@@ -214,7 +232,9 @@
     }
 
     > .item-desc {
+        width: 100%;
         padding: .5rem;
+        margin-left: 1rem;
     }
 }
 
@@ -320,8 +340,19 @@
     }
 }
 
+.base-comment {
+    display: flex;
+    flex-direction: column;
+    gap: .1rem;
+}
+
+.reply-header {
+    color: var(--muted-color);
+    padding-bottom: .2rem;
+}
+
 .item-attribution {
-    --icon-size: 1.4rem;
+    --icon-size: 1.3rem;
     display: flex;
     align-items: center;
     gap: .5rem;
@@ -330,13 +361,13 @@
 }
 
 .item-comment-text {
-   background-color: var(--comment-color);
+   background-color: var(--comment-bg-color);
    padding: .5rem .5rem;
    border-radius: 1rem;
 }
 
 .own-comment {
-    background-color: var(--own-comment-color);
+    background-color: var(--own-comment-bg-color);
 }
 
 .replies {
@@ -550,6 +581,10 @@ input.input-text {
     border: var(--border-size) solid var(--border-color);
 }
 
+.CodeMirror-cursor {
+    border-left: 1px solid var(--caret-color, black);
+}
+
 .editor-toolbar {
     border-top: var(--border-size) solid var(--border-color);
     border-right: var(--border-size) solid var(--border-color);
@@ -560,6 +595,6 @@ input.input-text {
     }
 
     a:hover {
-        color: var(--text-color-alternate);
+        color: var(--text-color-contrast);
     }
 }

@@ -6,26 +6,32 @@
     --accent-color: rgb(0, 0, 0);
     --highlight-color: rgb(255, 0, 0);
 
+    --contrast-color: rgb(0, 0, 0);
+
+    --muted-color: rgb(170, 170, 170);
+
     --caution-color: red;
     --disabled-color: rgb(207, 207, 207);
 
     --shadow-color: rgb(232, 232, 232);
 
     --text-color: var(--accent-color);
-    --text-color-alternate: var(--primary-color);
+    --text-color-contrast: var(--primary-color);
 
     --app-background-color: var(--primary-color);
+
     --item-background-color: var(--primary-color);
     --item-body-bg-color: var(--secondary-color);
-    --item-attribution-color: var(--tertiary-color);
+    --item-attribution-color: var(--muted-color);
 
-    --comment-color: var(--secondary-color);
-    --own-comment-color: var(--secondary-color);
+    --comment-bg-color: var(--secondary-color);
+    --comment-text-coloe: var(--text-color);
+    --own-comment-bg-color: var(--secondary-color);
 
     --tag-bg-color: var(--secondary-color);
+    --tag-text-color: var(--text-color);
 
-    --link-color: var(--accent-color);
-    --link-color: rgb(51, 94, 204);
+    --link-color: rgb(50, 72, 195);
 
     --action-highlight-color: var(--highlight-color);
 
@@ -34,10 +40,15 @@
 
     --icon-color: var(--tertiary-color);
 
+    --button-bg-color: var(--primary-color);
     --button-hover-bg-color: var(--accent-color);
 
     --tooltip-bg-color: var(--secondary-color);
+    --tooltip-text-color: var(--text-color);
 
+    --caret-color: var(--contrast-color);
+
+    caret-color: var(--caret-color, black);
     background-color: var(--app-background-color);
     color: var(--text-color);
     min-height: 100vh;
@@ -151,9 +162,10 @@ button {
 button,
 .button {
     cursor: pointer;
+    background-color: var(--button-bg-color);
     &:hover {
-        color: var(--text-color-alternate);
-        --icon-color: var(--text-color-alternate);
+        color: var(--text-color-contrast);
+        --icon-color: var(--text-color-contrast);
         background-color: var(--button-hover-bg-color);
     }
     &:disabled {
@@ -464,6 +476,7 @@ button,
 
 .select-menu-wrapper {
     position: relative;
+    z-index: 1;
     display: flex;
     justify-content: center;
     color: var(--text-color);
@@ -581,7 +594,7 @@ button,
 
     &:is([data-tip-position="tip-top"]) {
         inset-inline-start: 50%;
-        inset-block-end: 110%;
+        inset-block-end: 130%;
         --x: -50%;
     }
 
@@ -605,11 +618,12 @@ button,
 .origin-distance {
     display: flex;
     --icon-size: 1.3rem;
-    gap: .5rem;
+    gap: .3rem;
     align-items: center;
     font-size: .9rem;
-    background-color: var(--secondary-color);
-    padding: .3rem .5rem;
+    /* background-color: var(--secondary-color); */
+    border: var(--border-size) solid var(--border-color);
+    padding: .2rem .4rem;
     border-radius: 1rem;
 
     > .icon {
