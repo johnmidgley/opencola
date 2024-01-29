@@ -215,7 +215,7 @@ fun computeOriginDistance(addressBook: AddressBook, entities: Iterable<Entity>):
     require(entities.map { it.entityId }.distinct().size <= 1) { "All entities must have the same entityId" }
     val personaIds = addressBook.getEntries().map { it.personaId }
 
-    if (entities.any { it.authorityId in personaIds })
+    if (entities.any { it !is RawEntity && it.authorityId in personaIds })
         return null // Equivalent to 0
 
     return entities.minOf { it.originDistance ?: 0 } + 1
