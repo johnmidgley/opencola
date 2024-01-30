@@ -3,7 +3,7 @@
    [reagent.core :as reagent :refer [atom]]
    [opencola.web-ui.app-state :as state]
    [opencola.web-ui.view.common :refer [input-checkbox error-control text-input-component button-component 
-                                        edit-control-buttons empty-page-instructions swap-atom-data! profile-img item-divider]]
+                                        edit-control-buttons empty-page-instructions swap-atom-data! profile-img]]
    [opencola.web-ui.model.peer :as model]
    [opencola.web-ui.view.search :as search]
    [opencola.web-ui.location :as location]))
@@ -66,8 +66,7 @@
                                                 (reset! editing?! false))
                                   :on-delete (fn [] (delete-peer persona-id peers! p! #(reset! error! %)))} 
             (not creating?) error!]
-           [button-component {:text "Edit" :class " edit-control-button edit-button"} #(reset! editing?! true)])
-         [item-divider]]))))
+           [button-component {:text "Edit" :class " edit-control-button edit-button"} #(reset! editing?! true)])]))))
 
 (defn add-peer-item [persona-id peers! adding-peer?!]
   (let [send-token! (atom "Loading...")

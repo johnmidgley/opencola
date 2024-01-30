@@ -3,7 +3,7 @@
    [reagent.core :as reagent :refer [atom]]
    [opencola.web-ui.app-state :as state]
    [opencola.web-ui.model.persona :as model]
-   [opencola.web-ui.view.common :refer [input-checkbox error-control edit-control-buttons button-component text-input-component swap-atom-data! profile-img select-menu item-divider]]
+   [opencola.web-ui.view.common :refer [input-checkbox error-control edit-control-buttons button-component text-input-component swap-atom-data! profile-img select-menu]]
    [opencola.web-ui.view.search :as search]
    [opencola.web-ui.location :as location]))
 
@@ -40,9 +40,8 @@
    #(on-error %)))
 
 (defn persona-select [personas! persona-id!]
-  (let [persona-list  (:items @personas!)
-        current-persona {:id @persona-id!}]
-    [select-menu {:class "persona-select-menu"} persona-list current-persona :name :id #(reset! persona-id! %)]))
+  (let [persona-list  (:items @personas!)]
+    [select-menu {:class "persona-select-menu"} persona-list persona-id! :id :name #(reset! persona-id! %)]))
 
 (defn persona-item [personas! persona]
   (let [editing?! (atom false)
@@ -68,8 +67,7 @@
                                                 (reset! editing?! false))
                                   :on-delete #(delete-persona personas! persona! on-error)} 
             true error!] 
-           [button-component {:text "Edit" :class " edit-control-button edit-button" :name "edit-button"} #(reset! editing?! true)])
-         [item-divider]]))))
+           [button-component {:text "Edit" :class " edit-control-button edit-button" :name "edit-button"} #(reset! editing?! true)])]))))
 
 (def empty-persona
   {:id ""  

@@ -23,7 +23,6 @@
        (interpose "&")
        (apply str)))
 
-
 (defn set-location-from-state []
   (let [page (name (state/get-page))
         params (params-from-state)]

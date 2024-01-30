@@ -218,26 +218,26 @@
       [:div.popout-menu-content {:on-click on-click! :class class}
        menu-content])))
 
-(defn select-menu [config item-collection current-item name-key id-key on-select]
+(defn select-menu [config item-collection current-item-id-key! id-key name-key on-select] 
   (let [{class :class
          popout-class :popout-class} config
-        menu-open?! (r/atom false) 
-        selected-item! (r/atom (first (filter #(= (id-key %) (id-key current-item)) item-collection)))] 
-    (fn [] 
-      [:div.select-menu-wrapper {:class class :onBlur #(swap! menu-open?! not)} 
-       [:div.select-menu-toggle.button {:on-click #(swap! menu-open?! not) :aria-expanded @menu-open?!}
-        [:span.current-item (name-key @selected-item!)]
-        [icon {:icon-class (if @menu-open?! "icon-hide" "icon-show")}]]
-       [popout-menu
-        {:class popout-class}
-        menu-open?!
-        #(swap! menu-open?! not)
-        [:div.select-menu-content
-         (doall (for [item item-collection]
-                  (when (not= item @selected-item!)
-                    ^{:key (id-key item)} [button-component
-                                           {:class "select-button" :text (name-key item)}
-                                           #(do (on-select (id-key item)) (reset! selected-item! item))])))]]])))
+        menu-open?! (r/atom false)] 
+    (fn []
+      (let [selected-item (or (first (filter #(= (id-key %) @current-item-id-key!) item-collection)) (first item-collection))]
+       [:div.select-menu-wrapper {:class class :onBlur #(swap! menu-open?! not)} 
+        [:div.select-menu-toggle.button {:on-click #(swap! menu-open?! not) :aria-expanded @menu-open?!}
+         [:span.current-item (name-key selected-item)]
+         [icon {:icon-class (if @menu-open?! "icon-hide" "icon-show")}]]
+        [popout-menu
+         {:class popout-class}
+         menu-open?!
+         #(swap! menu-open?! not)
+         [:div.select-menu-content
+          (doall (for [item item-collection]
+                   (when (not= item selected-item)
+                     ^{:key (or (id-key item) "")} [button-component
+                                            {:class "select-button" :text (name-key item)}
+                                            #(do (on-select (id-key item)) (reset! current-item-id-key! (id-key item)))])))]]]))))
 
 
 (defn string-to-range [s range-max]
@@ -285,17 +285,3 @@
                          :text (if delete-text delete-text "Delete")} 
        on-delete])
      (error-control error!)]))
-
-(defn item-divider []
-  (fn []
-    ;; [:div.item-divider
-    ;;  (doall (for [i (range (+ (rand-int 10) 10))]
-    ;;           (let [size (rand 1.5)
-    ;;                 translation (rand 1)]
-    ;;             ^{:key i} [:span.divider-symbol {:style 
-    ;;                                              {"--size" (str size "rem") 
-    ;;                                               "--border-size" ".1rem" 
-    ;;                                               "--translation" (str translation "rem")}
-    ;;                                              } " "])))]
-    ;;[:span.item-divider " "]
-    ))

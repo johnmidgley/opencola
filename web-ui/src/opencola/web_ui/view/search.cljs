@@ -18,15 +18,14 @@
         :on-keyUp #(when (= (.-key %) "Enter")
                      (on-enter @query!))}]]]))
 
-(defn persona-select-menu [personas! persona-id! on-select!]
-  (let [persona-list (cons {:name "All" :id ""} (:items @personas!))
-        current-persona (if @persona-id! {:id @persona-id!} {:name "All" :id ""})]
-    (fn [] 
+(defn persona-select-menu [personas! persona-id! on-select!] 
+  (fn []
+    (let [persona-list (cons {:name "All" :id nil} (:items @personas!))] 
       [select-menu
        {:class "persona-select-menu"}
        persona-list
-       current-persona
-       :name :id on-select!])))
+       persona-id!
+       :id :name on-select!])))
 
 (defn header-menu 
   [menu-open?!] 
@@ -70,7 +69,7 @@
    (fn [] 
      [:nav.nav-bar 
       [:div.left-nav.container
-       [:a.fs-0 {:href "#/feed"} [:img.logo {:src "../img/pull-tab.png"}]] 
+       [:div.fs-0.brand {:on-click #(do (reset! persona-id! nil) (location/set-page! :feed))} [:img.logo {:src "../img/pull-tab.png"}]] 
        (when (not= :personas page) [persona-select-menu personas! persona-id! on-persona-select])]
       [search-box query! on-enter]
       [header-actions page adding-item?! menu-open?!] 

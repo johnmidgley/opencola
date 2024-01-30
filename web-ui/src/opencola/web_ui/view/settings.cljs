@@ -13,15 +13,15 @@
    (doall (for [item category-ids]
             ^{:key item} [button-component {:class "category-selector-button" :text item} #(on-click item)]))])
 
+;; TODO: themes! will be needed when active customization and creation of themes is implemented
 (defn c-appearance [themes! theme-id!]
-  (let [theme-list (map #(hash-map :id % :name %) (theme-names))
-        current-theme {:id @theme-id! :name @theme-id!}]
+  (let [theme-list (map #(hash-map :id % :name %) (theme-names))]
     (fn [] 
       [:div.settings-category.appearance
        [:h3.category-title "Appearance"]
        [:div.setting-row
         [:span.setting-title "Theme:"]
-        [select-menu {} theme-list current-theme :name :id #(state/theme! %)]]])))
+        [select-menu {} theme-list theme-id! :name :id #(state/theme! %)]]])))
 
 (defn categories [themes! theme!] 
   (fn [] 

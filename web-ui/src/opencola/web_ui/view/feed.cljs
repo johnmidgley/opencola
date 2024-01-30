@@ -17,7 +17,7 @@
                                                    comment-edit-control
                                                    item-comments]]
             [opencola.web-ui.view.common :refer [hidden-file-input upload-progress error-control button-component icon empty-page-instructions profile-img tool-tip swap-atom-data!
-                                                 md->component select-files-control simple-mde text-input-component button-component edit-control-buttons item-divider]]
+                                                 md->component select-files-control simple-mde text-input-component button-component edit-control-buttons]]
             [opencola.web-ui.view.likes :refer [item-likes like-edit-control]]
             [opencola.web-ui.view.persona :refer [persona-select]]
             [opencola.web-ui.view.saves :refer [item-saves save-item]]
@@ -298,8 +298,7 @@
         [item-image summary]
         [:div.item-desc [md->component {:class "desc markdown-text"}  (:description summary)]]] 
        [attachments-preview (-> item :activities :attach) true] 
-       [item-activities persona-id! personas! feed! item editing?! on-click-authority on-click-tag]
-       [item-divider]])))
+       [item-activities persona-id! personas! feed! item editing?! on-click-authority on-click-tag]])))
 
 (defn on-change [item! key]
   #(swap! item! assoc-in [key] %))

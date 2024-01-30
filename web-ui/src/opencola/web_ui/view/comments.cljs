@@ -41,12 +41,13 @@
 (defn create-comment-control [id original-text on-save on-cancel on-delete error! config]
   (let [state! (r/atom nil)
         {text-prompt :text-prompt} config]
-    [:div.item-comment
-     [:div.item-comment-edit
-      [comment-edit-control id original-text state! text-prompt]
-      [edit-control-buttons {:on-save #(on-save (.value @state!))
-                             :on-cancel on-cancel
-                             :on-delete on-delete} on-delete error!]]]))
+    (fn []
+      [:div.item-comment
+       [:div.item-comment-edit
+        [comment-edit-control id original-text state! text-prompt]
+        [edit-control-buttons {:on-save #(on-save (.value @state!))
+                               :on-cancel on-cancel
+                               :on-delete on-delete} on-delete error!]]])))
 
 (defn base-comment [context persona-id! item comment-action on-update on-click-authority]
   (let [editing?! (r/atom false)
@@ -93,9 +94,9 @@
     (fn [] 
       [:div.item-comment
        [base-comment context persona-id! item comment-action on-update on-click-authority]
-       (when-let [replies (:replies comment-action)] 
+       (when-let [replies (sort-by :epochSecond (:replies comment-action))] 
          (let [more (- (count replies) 3)
-               display-replies (if @expanded?! replies (take 3 replies))] 
+               display-replies (if @expanded?! replies (take-last 3 replies))] 
            [:div.replies 
             (doall (for [comment-action display-replies]
                      ^{:key comment-action} [base-comment context persona-id! item comment-action on-update on-click-authority]))
