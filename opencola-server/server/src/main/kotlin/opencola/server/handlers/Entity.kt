@@ -295,15 +295,29 @@ fun updateComment(
     entityId: Id,
     comment: PostCommentPayload
 ): EntityResult? {
-    val updatedComment = updateComment(entityStore, persona, entityId, comment.commentId?.let { Id.decode(it) }, comment.text)
+    val updatedComment =
+        updateComment(entityStore, persona, entityId, comment.commentId?.let { Id.decode(it) }, comment.text)
     val topLevelParentId = updatedComment.topLevelParentId ?: updatedComment.parentId ?: entityId
     return getEntityResult(entityStore, addressBook, eventBus, fileStore, context, persona.personaId, topLevelParentId)
 }
 
-suspend fun deleteComment(call: ApplicationCall, persona: PersonaAddressBookEntry, entityStore: EntityStore) {
-    val commentId = Id.decode(call.parameters["commentId"] ?: throw IllegalArgumentException("No commentId specified"))
+fun deleteComment(
+    entityStore: EntityStore,
+    addressBook: AddressBook,
+    eventBus: EventBus,
+    fileStore: ContentAddressedFileStore,
+    context: Context,
+    persona: PersonaAddressBookEntry,
+    commentId: Id
+): EntityResult? {
+    val comment = entityStore.getEntity(persona.personaId, commentId) as? CommentEntity
+        ?: throw IllegalArgumentException("Unknown comment: $commentId")
+
+    val topLevelParentId =
+        comment.topLevelParentId ?: comment.parentId ?: throw IllegalArgumentException("Comment has no parent")
     entityStore.deleteEntities(persona.personaId, commentId)
-    call.respondText("{}")
+
+    return getEntityResult(entityStore, addressBook, eventBus, fileStore, context, persona.personaId, topLevelParentId)
 }
 
 fun saveEntity(
