@@ -34,9 +34,9 @@ class PostTest {
 
         val actions = activity.actions
         assertEquals(4, actions.size)
-        assertContains(actions, EntityResult.Action(EntityResult.ActionType.Save, null, null))
-        assertContains(actions, EntityResult.Action(EntityResult.ActionType.Like, null, entityPayload.like))
-        assertContains(actions, EntityResult.Action(EntityResult.ActionType.Tag, null, entityPayload.tags))
-        assertEquals(actions.single() { it.type == "comment" }.value, entityPayload.comment)
+        assertContains(actions, EntityResult.Action(EntityResult.ActionType.bubble, null, null))
+        assertContains(actions, EntityResult.Action(EntityResult.ActionType.like, null, entityPayload.like))
+        assertContains(actions, EntityResult.Action(EntityResult.ActionType.tag, null, entityPayload.tags))
+        assertEquals(actions.single() { it.actionType == EntityResult.ActionType.comment }.value, entityPayload.comment)
     }
 }

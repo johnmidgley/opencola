@@ -29,7 +29,7 @@
                 ^{:key save-action} [item-save save-action on-click-authority]))]]]))
 
 (defn save-item [context persona-id item on-success on-error]
-  (let [actions (-> item :activities :save)
+  (let [actions (-> item :activities :bubble)
         saved? (some #(= persona-id (:authorityId %)) actions)]
     (when (not saved?)
       (model/save-entity

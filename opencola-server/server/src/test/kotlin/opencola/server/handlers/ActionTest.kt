@@ -20,7 +20,14 @@ class ActionTest {
             .inputStream()
             .use { parseMhtml(it) ?: throw RuntimeException("Unable to parse mhtml") }
 
-        handleAction(app.getPersonas().first().entityId, app.inject(), app.inject(), "save", "true", mhtmlPage)
+        handleAction(
+            app.getPersonas().first().entityId,
+            app.inject(),
+            app.inject(),
+            EntityResult.ActionType.bubble.toString(),
+            "true",
+            mhtmlPage
+        )
         println("Done")
     }
 

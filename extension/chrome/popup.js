@@ -145,10 +145,10 @@ async function sendAction(tab, action, value) {
   }
 }
 
-document.getElementById("save").addEventListener("click", async () => {
+document.getElementById("bubble").addEventListener("click", async () => {
   // TODO: For some reason, can't move this call inside send action.
   let [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
-  await sendAction(tab, "save", true)
+  await sendAction(tab, "bubble", true)
 });
 
 document.getElementById("like").addEventListener("click", async () => {
@@ -156,12 +156,7 @@ document.getElementById("like").addEventListener("click", async () => {
   await sendAction(tab, "like", true)
 });
 
-document.getElementById("trust").addEventListener("click", async () => {
-  let [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
-  await sendAction(tab, "trust", 1.0)
-});
-
-document.getElementById("search").addEventListener("click", async () => {
+document.getElementById("feed").addEventListener("click", async () => {
   window.open(baseServiceUrl, "_blank")
 });
 
