@@ -9,10 +9,10 @@ import io.ktor.server.testing.*
 import io.opencola.model.*
 import io.opencola.storage.entitystore.EntityStore
 import kotlinx.coroutines.delay
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import opencola.server.handlers.*
+import opencola.server.handlers.EntityResult.*
 import java.io.File
 import java.net.URI
 import java.net.URLEncoder.*
@@ -52,13 +52,13 @@ class ApplicationTest : ApplicationTestBase() {
         val actions = activity.actions
         assertEquals(4, actions.size)
 
-        val trustAction = actions.single { it.type == "trust" }
+        val trustAction = actions.single { it.actionType == ActionType.trust }
         assertEquals(entity.trust.toString(), trustAction.value)
 
-        val likeAction = actions.single { it.type == "like" }
+        val likeAction = actions.single { it.actionType == ActionType.like }
         assertEquals(entity.like.toString(), likeAction.value)
 
-        val ratingAction = actions.single { it.type == "rate" }
+        val ratingAction = actions.single { it.actionType == ActionType.rate }
         assertEquals(entity.rating.toString(), ratingAction.value)
     }
 
@@ -111,7 +111,7 @@ class ApplicationTest : ApplicationTestBase() {
             setBody(
                 MultiPartFormDataContent(
                     formData {
-                        append("action", "save")
+                        append("action", ActionType.bubble.toString())
                         append("value", "true")
                         append("mhtml", fileBytes, Headers.build {
                             append(HttpHeaders.ContentDisposition, "filename=blob")
@@ -145,12 +145,12 @@ class ApplicationTest : ApplicationTestBase() {
 
     }
 
-    private fun getSingleActivity(feedResult: FeedResult, type: String): EntityResult.Activity {
-        return feedResult.results[0].activities.single { it.actions[0].type == type }
+    private fun getSingleActivity(feedResult: FeedResult, actionType: ActionType): Activity {
+        return feedResult.results[0].activities.single { it.actions[0].actionType == actionType }
     }
 
-    private fun getSingleActivityActionValue(feedResult: FeedResult, type: String): String? {
-        return getSingleActivity(feedResult, type).actions[0].value
+    private fun getSingleActivityActionValue(feedResult: FeedResult, actionType: ActionType): String? {
+        return getSingleActivity(feedResult, actionType).actions[0].value
     }
 
     @Test
@@ -187,12 +187,12 @@ class ApplicationTest : ApplicationTestBase() {
         assertEquals(entity.entityId.toString(), feedResult.results[0].entityId)
         assertEquals(5, feedResult.results[0].activities.count())
         assertEquals(uri.toString(), feedResult.results[0].summary.uri)
-        feedResult.results[0].activities.single { it.actions[0].type == "comment" }.actions[0].value
-        assertEquals(entity.dataIds.first().toString(), getSingleActivity(feedResult, "save").actions[0].id)
-        assertEquals(entity.trust.toString(), getSingleActivityActionValue(feedResult, "trust"))
-        assertEquals(entity.like.toString(), getSingleActivityActionValue(feedResult, "like"))
-        assertEquals(entity.rating.toString(), getSingleActivityActionValue(feedResult, "rate"))
-        assertEquals(comment.text, getSingleActivityActionValue(feedResult, "comment"))
+        feedResult.results[0].activities.single { it.actions[0].actionType == ActionType.comment }.actions[0].value
+        assertEquals(entity.dataIds.first().toString(), getSingleActivity(feedResult, ActionType.bubble).actions[0].id)
+        assertEquals(entity.trust.toString(), getSingleActivityActionValue(feedResult, ActionType.trust))
+        assertEquals(entity.like.toString(), getSingleActivityActionValue(feedResult, ActionType.like))
+        assertEquals(entity.rating.toString(), getSingleActivityActionValue(feedResult, ActionType.rate))
+        assertEquals(comment.text, getSingleActivityActionValue(feedResult, ActionType.comment))
     }
 
     @Test

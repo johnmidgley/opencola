@@ -10,6 +10,7 @@ import io.opencola.storage.deletePersona
 import io.opencola.storage.entitystore.EntityStore
 import opencola.server.handlers.Context
 import opencola.server.handlers.EntityResult
+import opencola.server.handlers.EntityResult.ActionType
 import opencola.server.handlers.PostCommentPayload
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -38,11 +39,11 @@ class CommentTest : ApplicationTestBase() {
             val entityResult: EntityResult = client.post(path, commentPayload).body()
 
             assertEquals(2, entityResult.activities.count())
-            val saveAction = entityResult.activities.single { it.actions.first().type == "save" }.actions.single()
+            val saveAction = entityResult.activities.single { it.actions.first().actionType == ActionType.bubble }.actions.single()
             assertEquals(null, saveAction.value)
 
             // Check that the post is liked
-            val commentActions = entityResult.activities.single { it.actions.first().type == "comment" }.actions
+            val commentActions = entityResult.activities.single { it.actions.first().actionType == ActionType.comment }.actions
             assertEquals(1, commentActions.count())
             assertEquals("comment1 testCommentOnPost", commentActions.single().value)
         } finally {

@@ -190,7 +190,7 @@ fun handleAction(
     mhtmlPage: MhtmlPage,
 ) {
     val actions = when (action) {
-        "save" -> Actions(save = true)
+        "bubble" -> Actions(bubble = true)
         "like" -> Actions(like = value?.toBooleanStrict() ?: throw RuntimeException("No value specified for like"))
         "trust" -> Actions(trust = value?.toFloat() ?: throw RuntimeException("No value specified for trust"))
         else -> throw NotImplementedError("No handler for $action")

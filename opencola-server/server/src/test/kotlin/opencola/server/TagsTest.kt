@@ -10,6 +10,7 @@ import io.opencola.storage.deletePersona
 import io.opencola.storage.entitystore.EntityStore
 import opencola.server.handlers.Context
 import opencola.server.handlers.EntityResult
+import opencola.server.handlers.EntityResult.ActionType
 import opencola.server.handlers.TagsPayload
 import kotlin.test.Test
 import kotlin.test.assertContains
@@ -39,11 +40,11 @@ class TagsTest : ApplicationTestBase() {
             val entityResult: EntityResult = client.post(path, tagsPayload).body()
 
             assertEquals(2, entityResult.activities.count())
-            val saveAction = entityResult.activities.single { it.actions.first().type == "save" }.actions.single()
+            val saveAction = entityResult.activities.single { it.actions.first().actionType == ActionType.bubble }.actions.single()
             assertEquals(null, saveAction.value)
 
             // Check that the post is liked
-            val tagsActions = entityResult.activities.single { it.actions.first().type == "tag" }.actions
+            val tagsActions = entityResult.activities.single { it.actions.first().actionType == ActionType.tag }.actions
             assertEquals(2, tagsActions.count())
             val tags = tagsActions.map { it.value }
             assertContains(tags, "tag1")

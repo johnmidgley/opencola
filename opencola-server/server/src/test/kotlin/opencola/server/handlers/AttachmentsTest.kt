@@ -89,7 +89,7 @@ class AttachmentsTest : ApplicationTestBase() {
         val entityResult = Json.decodeFromString<EntityResult>(response.bodyAsText())
         val attachActions = entityResult.activities
             .flatMap { it.actions }
-            .filter { it.type == "attach" }
+            .filter { it.actionType == EntityResult.ActionType.attach }
         assertEquals(2, attachActions.size)
         val file1 = application.inject<ContentAddressedFileStore>().read(Id.Factory.decode(attachActions[0].id!!))
         assertNotNull(file1)

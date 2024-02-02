@@ -64,20 +64,23 @@ data class EntityResult(
         val postedBy: Authority?,
     )
 
-    enum class ActionType() {
-        Save,
-        Trust,
-        Like,
-        Rate,
-        Tag,
-        Comment,
-        Attach,
+    @Suppress("EnumEntryName")
+    enum class ActionType {
+        bubble,
+        trust,
+        like,
+        rate,
+        tag,
+        comment,
+        attach,
     }
 
     @Serializable
     data class Action(val type: String, val id: String? = null, val value: String? = null, val parentId: String? = null) {
         constructor(type: ActionType, id: Id?, value: Any?, parentId: Id? = null) :
-                this(type.name.lowercase(), id?.toString(), value?.toString(), parentId?.toString())
+                this(type.name, id?.toString(), value?.toString(), parentId?.toString())
+
+        val actionType: ActionType by lazy { ActionType.valueOf(type) }
     }
 
     @Serializable

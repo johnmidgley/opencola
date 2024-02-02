@@ -81,18 +81,18 @@ fun getSummary(entities: List<Entity>, authoritiesById: Map<Id, AddressBookEntry
 
 fun factToAction(children: Children, fact: Fact): Action? {
     return when (fact.attribute) {
-        Type.spec -> Action(ActionType.Save, null, null)
-        DataIds.spec -> Action(ActionType.Save, fact.unwrapValue(), null)
-        Trust.spec -> Action(ActionType.Trust, null, fact.unwrapValue())
-        Like.spec -> Action(ActionType.Like, null, fact.unwrapValue())
-        Rating.spec -> Action(ActionType.Rate, null, fact.unwrapValue())
-        Tags.spec -> Action(ActionType.Tag, null, fact.unwrapValue())
+        Type.spec -> Action(ActionType.bubble, null, null)
+        DataIds.spec -> Action(ActionType.bubble, fact.unwrapValue(), null)
+        Trust.spec -> Action(ActionType.trust, null, fact.unwrapValue())
+        Like.spec -> Action(ActionType.like, null, fact.unwrapValue())
+        Rating.spec -> Action(ActionType.rate, null, fact.unwrapValue())
+        Tags.spec -> Action(ActionType.tag, null, fact.unwrapValue())
         CommentIds.spec -> {
             val commentId = fact.unwrapValue<Id>()
             // A comment can be missing if the entity is a RawEntity referring to a comment that was deleted
             children.comments[commentId]?.let {
                 val parentId = if (it.topLevelParentId != null) it.parentId else null
-                Action(ActionType.Comment, commentId, it.text, parentId)
+                Action(ActionType.comment, commentId, it.text, parentId)
             }
         }
 
@@ -104,7 +104,7 @@ fun factToAction(children: Children, fact: Fact): Action? {
                 logger.warn { "Attachment $attachmentId not found" }
                 null
             } else
-                Action(ActionType.Attach, attachmentId, attachment.name)
+                Action(ActionType.attach, attachmentId, attachment.name)
         }
 
         else -> null

@@ -8,6 +8,7 @@ import io.opencola.storage.addressbook.AddressBook
 import io.opencola.storage.entitystore.EntityStore
 import io.opencola.storage.addPersona
 import io.opencola.storage.deletePersona
+import opencola.server.handlers.EntityResult.ActionType
 import org.junit.Assert.assertNull
 import org.junit.Test
 import java.net.URI
@@ -75,8 +76,8 @@ class FeedTest {
         )!!.let { result ->
             val activities = result.activities.filter { it.authorityId == persona1.personaId.toString() }
             assertEquals(2, activities.size)
-            assertNotNull(activities.single { it.actions.singleOrNull { it.type == "save" } != null })
-            assertNotNull(activities.single { it.actions.singleOrNull { it.type == "like" }?.value == "true" })
+            assertNotNull(activities.single { it.actions.singleOrNull { it.actionType == ActionType.bubble } != null })
+            assertNotNull(activities.single { it.actions.singleOrNull { it.actionType == ActionType.like }?.value == "true" })
 
             // Result should also contain Persona 0's activity
             assertNotNull(result.activities.firstOrNull { it.authorityId == persona0.personaId.toString() })
@@ -103,7 +104,7 @@ class FeedTest {
         )!!.let { result ->
             val activities = result.activities.filter { it.authorityId == persona1.personaId.toString() }
             assertEquals(1, activities.size)
-            assertNotNull(activities.single { it.actions.singleOrNull { it.type == "comment" }?.value == "Comment from persona 1" })
+            assertNotNull(activities.single { it.actions.singleOrNull { it.actionType == ActionType.comment }?.value == "Comment from persona 1" })
         }
 
         // Persona1 should now have 2 results
@@ -146,7 +147,7 @@ class FeedTest {
             assertNotNull(entityResult)
             entityResult.activities.filter { it.authorityId == persona1.personaId.toString() }.let { activities ->
                 assertEquals(1, activities.size)
-                assertNotNull(activities.singleOrNull { activity -> activity.actions.singleOrNull { it.type == "like" } != null })
+                assertNotNull(activities.singleOrNull { activity -> activity.actions.singleOrNull { it.actionType == ActionType.like } != null })
             }
         }
 
@@ -180,7 +181,7 @@ class FeedTest {
             assertEquals(1, result.results.size)
             val entityResult = result.results.singleOrNull { it.entityId == resource.entityId.toString() }
             assertNotNull(entityResult)
-            val comments = entityResult.activities.flatMap { it.actions.filter { it.type == "comment" } }
+            val comments = entityResult.activities.flatMap { it.actions.filter { it.actionType == ActionType.comment } }
             assertEquals(2, comments.size)
 
             val comment0 = comments.single { it.value == "top level comment" }
@@ -198,7 +199,7 @@ class FeedTest {
             assertEquals(1, result.results.size)
             val entityResult = result.results.singleOrNull { it.entityId == resource.entityId.toString() }
             assertNotNull(entityResult)
-            val comments = entityResult.activities.flatMap { it.actions.filter { it.type == "comment" } }
+            val comments = entityResult.activities.flatMap { it.actions.filter { it.actionType == ActionType.comment } }
             assertEquals(0, comments.size)
         }
     }

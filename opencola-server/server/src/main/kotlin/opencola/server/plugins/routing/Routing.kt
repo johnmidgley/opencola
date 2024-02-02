@@ -233,8 +233,20 @@ fun Application.configureRouting(app: app) {
             }
 
             delete("/comment/{commentId}") {
-                // TODO: Remove call and parse comment id out here, so handlers don't need to know anything about ktor
-                deleteComment(call, expectPersona(call), app.inject())
+                val commentId =
+                    Id.decode(call.parameters["commentId"] ?: throw IllegalArgumentException("No commentId specified"))
+
+                deleteComment(
+                    app.inject(),
+                    app.inject(),
+                    app.inject(),
+                    app.inject(),
+                    getContext(call),
+                    expectPersona(call),
+                    commentId
+                )?.also {
+                    call.respond(it)
+                }
             }
 
             get("/data/{id}") {

@@ -196,7 +196,7 @@
 
 
 (defn item-activities [persona-id! personas! feed! item editing?! on-click-authority on-click-tag]
-  (let [action-expanded? (apply hash-map (mapcat #(vector % (r/atom false)) [:save :like :tag :comment :attach]))
+  (let [action-expanded? (apply hash-map (mapcat #(vector % (r/atom false)) [:bubble :like :tag :comment :attach]))
         tagging? (r/atom false)
         commenting? (r/atom false)
         uploading?! (r/atom false)
@@ -212,7 +212,7 @@
         [:div.activities-summary
          [:div.activity-buttons 
           (when personas! [persona-select personas! persona-id!])
-          [action-summary persona-id! :save action-expanded? activities #(save-item context @persona-id! item update-feed-item on-error)]
+          [action-summary persona-id! :bubble action-expanded? activities #(save-item context @persona-id! item update-feed-item on-error)]
           [action-summary persona-id! :like action-expanded? activities #(like-item! @persona-id! feed! item on-error)]
           [action-summary persona-id! :tag action-expanded?  activities #(swap! tagging? not)]
           [attachment-summary
@@ -228,7 +228,7 @@
           [upload-progress uploading?! progress!]
           [tags-control persona-id! feed! item tagging?]
           [comment-control context persona-id! (get-item @feed! entity-id) nil "" commenting? update-feed-item]
-          [item-saves (:save action-expanded?) (:save activities) on-click-authority]
+          [item-saves (:bubble action-expanded?) (:bubble activities) on-click-authority]
           [item-likes (:like action-expanded?) (:like activities) on-click-authority]
           [item-tags (:tag action-expanded?) (:tag activities) on-click-authority on-click-tag]
           [item-comments
@@ -288,7 +288,7 @@
 
 (defn display-feed-item [persona-id! personas! feed! item editing?! on-click-authority on-click-tag]
   (let [summary (:summary item)
-        posted-time (-> item :activities :save first :epochSecond format-time)]
+        posted-time (-> item :activities :bubble first :epochSecond format-time)]
     (fn [] 
       [:div.list-item
        [posted-by summary on-click-authority posted-time]
@@ -353,7 +353,7 @@
     (fn []
       (let [name-expanded? (or @expanded?! (seq (:name @edit-item!)))
             image-url-expanded? (or @expanded?! (seq (:imageUri @edit-item!)))
-            deletable? (some #(= @persona-id! (:authorityId %)) (-> item :activities :save))]
+            deletable? (some #(= @persona-id! (:authorityId %)) (-> item :activities :bubble))]
         [:div.list-item.edit-item
          (when name-expanded?
            [name-edit-control 
