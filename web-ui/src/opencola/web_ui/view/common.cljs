@@ -224,8 +224,8 @@
         menu-open?! (r/atom false)] 
     (fn []
       (let [selected-item (or (first (filter #(= (id-key %) @current-item-id-key!) item-collection)) (first item-collection))]
-       [:div.select-menu-wrapper {:class class :onBlur #(swap! menu-open?! not)} 
-        [:div.select-menu-toggle.button {:on-click #(swap! menu-open?! not) :aria-expanded @menu-open?!}
+       [:div.select-menu-wrapper {:class class} 
+        [:button.select-menu-toggle.button {:on-click #(swap! menu-open?! not) :on-blur #(swap! menu-open?! not) :aria-expanded @menu-open?!}
          [:span.current-item (name-key selected-item)]
          [icon {:icon-class (if @menu-open?! "icon-hide" "icon-show")}]]
         [popout-menu
