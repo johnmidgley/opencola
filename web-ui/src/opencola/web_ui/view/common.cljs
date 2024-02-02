@@ -280,8 +280,8 @@
                         :text (if cancel-text cancel-text "Cancel")} 
       on-cancel]
      (when deletable?
-      [button-component {:class "edit-control-button delete-button caution-color"
-                         :name "delete-button"
-                         :text (if delete-text delete-text "Delete")} 
-       on-delete])
-     (error-control error!)]))
+       [button-component {:class "edit-control-button delete-button caution-color"
+                          :name "delete-button"
+                          :text (if delete-text delete-text "Delete")} 
+        on-delete])
+     [error-control error!]]))
