@@ -139,7 +139,6 @@ button {
     justify-content: center;
     margin-left: auto;
     margin-right: auto;
-    width: 100%;
     --gap: 2rem;
     gap: var(--gap, 1rem);
     max-width: 60rem;
@@ -634,17 +633,4 @@ button,
 
 .brand {
     cursor: pointer;
-}
-
-.edit-item {
-    position: relative;
-    z-index: 2;
-
-    & .select-menu-wrapper {
-        z-index: 2;
-    }
-
-    & .popout-menu-content {
-        z-index: 2;
-    }
 }

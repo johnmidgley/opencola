@@ -353,8 +353,8 @@
     (fn []
       (let [name-expanded? (or @expanded?! (seq (:name @edit-item!)))
             image-url-expanded? (or @expanded?! (seq (:imageUri @edit-item!)))
-            deletable? (some #(= @persona-id! (:authorityId %)) (-> item :activities :bubble))]
-        [:div.list-item.edit-item
+            deletable? (some #(= @persona-id! (:authorityId %)) (-> item :activities :save))]
+        [:div.list-item
          (when name-expanded?
            [name-edit-control 
             (:name @edit-item!) 
@@ -456,6 +456,15 @@
      (when (not-empty query)
        (str (count (:results @feed!)) " results for '" query "'")))])
 
+(defn feed-list [persona-id! personas! feed! on-click-authority on-click-tag] 
+  (when @feed!
+    [:div.content-list.feed-list
+     [feed-status feed!]
+     (doall (for [item  (:results @feed!)]
+              ^{:key [item @persona-id!]}
+              [feed-item @persona-id! personas! feed! item on-click-authority on-click-tag]))]))
+
+
 (defn prepend-feed-item [feed! view-item]
   (swap! feed! update-in [:results] #(into [view-item] %)))
 
@@ -468,26 +477,6 @@
       (prepend-feed-item feed! %)
       (reset! creating-post!? false))
    #(on-error %)))
-
-(defn feed-list [persona-id! personas! feed! on-click-authority on-click-tag creating-post?!] 
-  (when @feed!
-    [:div.content-list.feed-list
-     [feed-status feed!]
-     (when @creating-post?!
-       (let [edit-item! (r/atom (edit-item))
-             error! (r/atom nil)]
-         
-         [edit-item-control
-          (when (not @persona-id!) personas!)
-          (r/atom (or @persona-id! (-> @personas! first :id)))
-          nil
-          edit-item!
-          error!
-          (fn [persona-id] (new-post persona-id feed! creating-post?! edit-item! #(reset! error! %)))
-          #(reset! creating-post?! false) nil]))
-     (doall (for [item  (:results @feed!)]
-              ^{:key [item @persona-id!]}
-              [feed-item @persona-id! personas! feed! item on-click-authority on-click-tag]))]))
 
 (defn feed-instructions []
   [:div.list-item 
@@ -531,7 +520,20 @@
         query!
         on-search 
         creating-post?!]
-       [error-control (state/error!)] 
+       [error-control (state/error!)]
+       (when @creating-post?!
+         (let [edit-item! (r/atom (edit-item))
+               error! (r/atom nil)]
+           [:div.content-list.feed-list
+            [edit-item-control
+             (when (not @persona-id!) personas!)
+             (r/atom (or @persona-id! (-> @personas! first :id)))
+             nil
+             edit-item!
+             error!
+             (fn [persona-id] (new-post persona-id feed! creating-post?! edit-item! #(reset! error! %)))
+             #(reset! creating-post?! false) nil]
+       [error-control error!]]))
        (if (or @creating-post?! (= @feed! {}) (not-empty (:results @feed!)) (not-empty (:query @feed!)))
-         [feed-list persona-id! personas! feed! on-click-authority on-click-tag creating-post?!]
+         [feed-list persona-id! personas! feed! on-click-authority on-click-tag]
          [empty-page-instructions :feed "This persona has no posts!"])])))
