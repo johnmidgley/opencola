@@ -61,7 +61,7 @@
 (defn delete-comment [context persona-id comment-id on-success on-error]  
   (ajax/DELETE
    (str "/comment/" comment-id "?context=" context "&personaId=" persona-id)
-   on-success ;; Follow main pattern and just return whole item? Will mess up UI state, but could ignore result
+   #(on-success (model-to-view-item %)) ;; Follow main pattern and just return whole item? Will mess up UI state, but could ignore result
    #(on-error (error-result->str %))))
 
 ;; TODO: Change *-error to *-failure

@@ -6,7 +6,7 @@
     background-color: var(--app-background-color);
     position: sticky;
     top: 0;
-    z-index: 1;
+    z-index: 10;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -470,6 +470,8 @@
     width: 100%;
 }
 
+
+
 input.input-text {
     font-size: 1rem;
     padding: .1rem .5rem;
@@ -510,8 +512,8 @@ input.input-text {
 /* Peers styles */
 
 .peer-list .list-item {
-    gap: 2rem;
-    > .peer-info {
+    gap: 1rem;
+    & .peer-info {
         display: flex;
         flex-direction: column;
         gap: .5rem;
@@ -526,8 +528,8 @@ input.input-text {
 /* Persona styles */
 
 .persona-list .list-item {
-    gap: 2rem;
-    > .peer-info {
+    gap: 1rem;
+    & .peer-info {
         display: flex;
         flex-direction: column;
         gap: .5rem;
@@ -599,3 +601,4 @@ input.input-text {
         color: var(--text-color-contrast);
     }
 }
+

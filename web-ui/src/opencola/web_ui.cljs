@@ -62,7 +62,7 @@
 
 (defn on-persona-select [persona-id] 
   (case persona-id
-    "" (do (persona! nil) (state/set-page! :feed)) 
+    nil (do (persona! nil) (state/set-page! :feed))
     "manage" (location/set-page! :personas)
     (do
       (when (= :personas (state/get-page))

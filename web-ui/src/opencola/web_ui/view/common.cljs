@@ -27,7 +27,7 @@
     [:tool-tip 
      {:class "tool-tip" 
       :role "tooltip" 
-      :data-tip-position (if tip-position tip-position "tip-top")} 
+      :data-tip-position (or tip-position "tip-top")} 
      text]))
 
 (defn keyed-divider [] ^{:key (item-key)} [:span.divider " | "])
@@ -35,8 +35,9 @@
 
 (defn icon [config]
   (let [{class :class
-         icon-class :icon-class} config]
-    [:span.icon {:class (str (when class (str class " ")) icon-class)}]))
+         icon-class :icon-class
+         tool-tip-text :tool-tip-text} config]
+    [:span.icon {:class (str (when class (str class " ")) icon-class)} (when tool-tip-text [tool-tip {:text tool-tip-text}])]))
 
 (defn empty-page-instructions [page problem-text]
   [:div.content-list
@@ -46,16 +47,14 @@
      [:span.item-name.title "Snap! "problem-text]
      (when (= page :peers)
        [:div.instructions
-        [:span.instruction "Add peers by clicking the add peer icon (" [icon {:icon-class "icon-new-peer"}] ") on the top right!"]])
+        [:span.instruction "Click " [:img.example-img {:src "img/svg/new-peer.svg" :width 25 :height 25}] " to add new peers."]])
      (when (= page :feed)
        [:div.instructions
-        [:span.instruction "Add posts by clicking the add post icon (" [icon {:icon-class "icon-new-post"}] ") on the top right!"]
-        [:span.instruction "Add peers by clicking the peers icon (" [icon {:icon-class "icon-peers"}] ") on the top right!"]])
-     [:span.instruction "Or browse the help page by clicking the menu icon ("
-      [icon {:icon-class "icon-menu"}]
-      ") on the top right and clicking on the help button ("
-      [icon {:icon-class "icon-help"}]
-      ")"]]]])
+        [:span.instruction "Click " [:img.example-img {:src "img/svg/new-post.svg" :width 25 :height 25}] " to add a post."]
+        [:span.instruction "Click " [:img.example-img {:src "img/svg/peers.svg" :width 25 :height 25}] " to open the peers page."]])
+     [:span.instruction "Click "[:img.example-img {:src "img/svg/menu.svg" :width 25 :height 25}] " then "
+      [:img.example-img {:src "img/svg/help.svg" :width 25 :height 25}]
+      " to browse the help page!"]]]])
 
 (defn button-component [config on-click!]
   (let [{src :src
@@ -86,13 +85,14 @@
          on-key-up :on-key-up
          disabled? :disabled
          icon-class :icon-class
+         icon-tool-tip-text :icon-tool-tip-text
          title :title
          class :class
          name :name
          copy-button :copy-button} config]
     [:div.text-input-wrapper {:class (when class class)}
      (when title [:span.text-input-title title])
-     (when icon-class [icon {:icon-class icon-class}])
+     (when icon-class [icon {:icon-class icon-class :tool-tip-text icon-tool-tip-text}])
      [:input.reset.text-input-component
       {:type "text"
        :placeholder (when placeholder placeholder)
@@ -258,7 +258,9 @@
     [:div.profile-img-wrapper {:on-click on-click! :data-img-present img?}
      (if img?
        [:img.profile-img {:src image-uri :alt name}]
-       [:span.generated-img {:style {:background-color (create-hsl id 65 75)}} (string/upper-case (initials name))])]))
+       (if (not= name "")
+         [:span.generated-img {:style {:background-color (create-hsl id 65 75)}} (string/upper-case (initials name))]
+         [icon {:icon-class "icon-persona"}]))]))
 
 (defn edit-control-buttons [config deletable? error!]
   (let [{on-save :on-save

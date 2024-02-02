@@ -1,6 +1,6 @@
 (ns opencola.web-ui.view.peer 
   (:require 
-   [reagent.core :as reagent :refer [atom]]
+   [reagent.core :as r]
    [opencola.web-ui.app-state :as state]
    [opencola.web-ui.view.common :refer [input-checkbox error-control text-input-component button-component 
                                         edit-control-buttons empty-page-instructions swap-atom-data! profile-img]]
@@ -41,20 +41,44 @@
 
 (defn peer-item [persona-id peers! peer adding-peer?!]
   (let [creating? adding-peer?! ;; TODO - looks like not needed
-        editing?! (atom creating?)
-        p! (atom peer)
-        error! (atom nil)]
+        editing?! (r/atom creating?)
+        show-advanced?! (r/atom false)
+        p! (r/atom peer)
+        error! (r/atom nil)]
     (fn []
       (let [image-uri (:imageUri @p!)]
         [:div.list-item
          [profile-img image-uri (:name @p!) (:id @p!)]
          [:div.peer-info
-          [text-input-component {:value (:name @p!) :disabled (not @editing?!) :icon-class "icon-persona" :name "peer-name"} #(swap-atom-data! % p! :name)]
-          [text-input-component {:value (:id @p!) :disabled true :icon-class "icon-id" :name "peer-id"} #(swap-atom-data! % p! :id)]
-          [text-input-component {:value (:publicKey @p!) :disabled (not @editing?!) :icon-class "icon-key" :name "peer-key"} #(swap-atom-data! % p! :publicKey)]
-          [text-input-component {:value (:address @p!) :disabled (not @editing?!) :icon-class "icon-link" :name "peer-link"} #(swap-atom-data! % p! :address)]
-          [text-input-component {:value (:imageUri @p!) :disabled (not @editing?!) :icon-class "icon-photo" :name "peer-img"} #(swap-atom-data! % p! :imageUri)]
-          [input-checkbox {:checked (:isActive @p!) :disabled (not @editing?!) :icon-class "icon-refresh" :name "peer-active"} #(swap! p! assoc-in [:isActive] (-> % .-target .-checked))]]
+          [text-input-component 
+           {:value (:name @p!) :disabled (not @editing?!) :icon-class "icon-persona" :name "peer-name" :icon-tool-tip-text "Name"} 
+           #(swap-atom-data! % p! :name)] 
+          
+          [text-input-component
+           {:value (:address @p!) :disabled (not @editing?!) :icon-class "icon-link" :name "peer-link" :icon-tool-tip-text "Link"}
+           #(swap-atom-data! % p! :address)]
+          
+          [text-input-component 
+           {:value (:imageUri @p!) :disabled (not @editing?!) :icon-class "icon-photo" :name "peer-img" :icon-tool-tip-text "Profile Image"} 
+           #(swap-atom-data! % p! :imageUri)] 
+          
+          (when (and @editing?! @show-advanced?!)
+            [:div.peer-info
+             [text-input-component
+              {:value (:publicKey @p!) :disabled (not @editing?!) :icon-class "icon-key" :name "peer-key" :icon-tool-tip-text "Key"}
+              #(swap-atom-data! % p! :publicKey)] 
+             
+             [text-input-component
+              {:value (:id @p!) :disabled true :icon-class "icon-id" :name "peer-id" :icon-tool-tip-text "Name"}
+              #(swap-atom-data! % p! :id)] ])
+          
+          [input-checkbox 
+           {:checked (:isActive @p!) :disabled (not @editing?!) :icon-class "icon-refresh" :name "peer-active" :icon-tool-tip-text "Sync"} 
+           #(swap! p! assoc-in [:isActive] (-> % .-target .-checked))]]
+         
+         (when @editing?!
+           [button-component {:class "show-advanced-button" :text (str (if @show-advanced?! "Hide" "Show") " Advanced Options")} #(swap! show-advanced?! not)])
+         
          (if @editing?!
            [edit-control-buttons {:on-save (fn []
                                              (update-peer persona-id peers! p! #(do (println "ERROR") (reset! error! %)))
@@ -69,10 +93,10 @@
            [button-component {:text "Edit" :class " edit-control-button edit-button"} #(reset! editing?! true)])]))))
 
 (defn add-peer-item [persona-id peers! adding-peer?!]
-  (let [send-token! (atom "Loading...")
-        receive-token! (atom "")
-        peer! (atom nil)
-        error! (atom nil)]
+  (let [send-token! (r/atom "Loading...")
+        receive-token! (r/atom "")
+        peer! (r/atom nil)
+        error! (r/atom nil)]
     (get-invite-token persona-id send-token! #(reset! error! %))
     (fn []
       (if @peer!
@@ -99,7 +123,7 @@
 
 
 (defn peer-page [peers! personas! persona! on-persona-select query! on-search!]
-  (let [adding-peer?! (atom false)]
+  (let [adding-peer?! (r/atom false)]
     (fn []
     (let [personas (into {} (map #(vector (:id %) %) (:items @personas!)))]
       [:div.peers-page

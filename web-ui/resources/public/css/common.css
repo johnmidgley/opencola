@@ -20,7 +20,7 @@
 
     --app-background-color: var(--primary-color);
 
-    --item-background-color: var(--primary-color);
+    --item-bg-color: var(--primary-color);
     --item-body-bg-color: var(--secondary-color);
     --item-attribution-color: var(--muted-color);
 
@@ -49,7 +49,7 @@
     --caret-color: var(--contrast-color);
 
     caret-color: var(--caret-color, black);
-    background-color: var(--app-background-color);
+    background: var(--app-background-color);
     color: var(--text-color);
     min-height: 100vh;
 }
@@ -153,7 +153,7 @@ button {
     flex-direction: column;
     gap: .75rem;
     position: relative;
-    background-color: var(--item-background-color);
+    background: var(--item-bg-color);
     box-shadow: 0px 5px 10px 5px var(--shadow-color); 
     border-radius: 1rem;
     -webkit-box-shadow: 0px 5px 10px 5px var(--shadow-color);
@@ -236,6 +236,7 @@ button,
 
 .profile-img-wrapper {
     --size: 3.5rem;
+    --icon-size: 3rem;
     overflow: hidden;
     align-items: center;
     justify-content: center;
@@ -450,7 +451,7 @@ button,
     flex-direction: column;
     gap: 1rem;
 
-    & img {
+    & .nola-img {
         margin-inline: auto;
     }
 
@@ -633,4 +634,26 @@ button,
 
 .brand {
     cursor: pointer;
+}
+
+.edit-list {
+    position: relative;
+    z-index: 1;
+}
+
+.show-advanced-button {
+    &:hover {
+        background-color: var(--primary-color);
+        color: var(--text-color);
+    }
+
+    > .button-text {
+        text-decoration: underline;
+    }
+}
+
+.example-img {
+    display: inline;
+    vertical-align: baseline;
+    margin-inline: .2rem;
 }

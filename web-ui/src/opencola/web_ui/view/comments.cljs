@@ -33,7 +33,7 @@
                                               context
                                               @persona-id!
                                               comment-id
-                                              (fn [] (on-update (remove-comment item comment-id)))
+                                              (fn [result-item] (on-update result-item))
                                               on-error)
           } expanded?! error!]]]))))
 

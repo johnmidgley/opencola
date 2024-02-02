@@ -261,7 +261,7 @@
        [:div.origin-distance 
         [tool-tip {:text (str "Originally posted by a user " origin-distance (if (= origin-distance 1) " degree" " degrees") " away")}]
         [icon
-         {:icon-class "icon-save"}]
+         {:icon-class "icon-bubble"}]
         origin-distance])]
     ))
 
@@ -340,7 +340,7 @@
      (on-success))
    #(on-error %)))
 
-;; TODO: Put error in separate variable - then create and manage edit-iten only in here
+;; TODO: Put error in separate variable - then create and manage edit-item only in here
 (defn edit-item-control [personas! persona-id! item edit-item! error! on-save on-cancel on-delete]
   (let [description-state! (r/atom nil)
         comment-state! (r/atom nil)
@@ -348,12 +348,11 @@
         tagging?! (r/atom false)
         commenting?! (r/atom false)
         uploading?! (r/atom false)
-        progress! (r/atom 0)
-        on-change (partial on-change edit-item!)]
+        progress! (r/atom 0)]
     (fn []
       (let [name-expanded? (or @expanded?! (seq (:name @edit-item!)))
             image-url-expanded? (or @expanded?! (seq (:imageUri @edit-item!)))
-            deletable? (some #(= @persona-id! (:authorityId %)) (-> item :activities :save))]
+            deletable? (some #(= @persona-id! (:authorityId %)) (-> item :activities :bubble))]
         [:div.list-item
          (when name-expanded?
            [name-edit-control 
@@ -438,7 +437,7 @@
      (fn []
        (update-edit-entity @persona-id! feed! edit-item! #(reset! editing?! false) #(reset! error! %)))
      #(reset! editing?! false)
-     (fn [] ( delete-entity @persona-id! feed! editing?! item #(reset! error! %))))))
+     (fn [] (delete-entity @persona-id! feed! editing?! item #(reset! error! %))))))
 
 
 (defn feed-item [persona-id personas! feed! item on-click-authority on-click-tag]
@@ -524,10 +523,10 @@
        (when @creating-post?!
          (let [edit-item! (r/atom (edit-item))
                error! (r/atom nil)]
-           [:div.content-list.feed-list
+           [:div.content-list.edit-list
             [edit-item-control
              (when (not @persona-id!) personas!)
-             (r/atom (or @persona-id! (-> @personas! first :id)))
+             (r/atom (or @persona-id! (-> @personas! :items first :id)))
              nil
              edit-item!
              error!

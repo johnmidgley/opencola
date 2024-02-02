@@ -1,6 +1,6 @@
 (ns opencola.web-ui.view.persona
   (:require
-   [reagent.core :as reagent :refer [atom]]
+   [reagent.core :as r]
    [opencola.web-ui.app-state :as state]
    [opencola.web-ui.model.persona :as model]
    [opencola.web-ui.view.common :refer [input-checkbox error-control edit-control-buttons button-component text-input-component swap-atom-data! profile-img select-menu]]
@@ -44,21 +44,45 @@
     [select-menu {:class "persona-select-menu"} persona-list persona-id! :id :name #(reset! persona-id! %)]))
 
 (defn persona-item [personas! persona]
-  (let [editing?! (atom false)
-        persona! (atom persona)
-        error! (atom nil)
+  (let [editing?! (r/atom false)
+        show-advanced?! (r/atom false)
+        persona! (r/atom persona)
+        error! (r/atom nil)
         on-error #(reset! error! %)]
     (fn []
       (let [image-uri (:imageUri @persona!)]
         [:div.list-item
           [profile-img image-uri (:name @persona!) (:id @persona!)]
          [:div.peer-info
-          [text-input-component {:value (:name @persona!) :disabled (not @editing?!) :icon-class "icon-persona" :name "persona-name"} #(swap-atom-data! % persona! :name)]
-          [text-input-component {:value (:id @persona!) :disabled true :icon-class "icon-id" :name "persona-id"} #(swap-atom-data! % persona! :id)]
-          [text-input-component {:value (:publicKey @persona!) :disabled (not @editing?!) :icon-class "icon-key" :name "persona-key"} #(swap-atom-data! % persona! :publicKey)]
-          [text-input-component {:value (:address @persona!) :disabled (not @editing?!) :icon-class "icon-link" :name "persona-link"} #(swap-atom-data! % persona! :address)]
-          [text-input-component {:value (:imageUri @persona!) :disabled (not @editing?!) :icon-class "icon-photo" :name "persona-img"} #(swap-atom-data! % persona! :imageUri)]
-          [input-checkbox {:checked (:isActive @persona!) :disabled (not @editing?!) :icon-class "icon-refresh" :name "persona-active"} #(swap! persona! assoc-in [:isActive] (-> % .-target .-checked))]]
+          [text-input-component 
+           {:value (:name @persona!) :disabled (not @editing?!) :icon-class "icon-persona" :name "persona-name" :icon-tool-tip-text "Name"} 
+           #(swap-atom-data! % persona! :name)] 
+          
+          [text-input-component 
+           {:value (:address @persona!) :disabled (not @editing?!) :icon-class "icon-link" :name "persona-link" :icon-tooltip-text "Link"} 
+           #(swap-atom-data! % persona! :address)]
+          
+          [text-input-component 
+           {:value (:imageUri @persona!) :disabled (not @editing?!) :icon-class "icon-photo" :name "persona-img" :icon-tool-tip-text "Profile Image"} 
+           #(swap-atom-data! % persona! :imageUri)]
+          
+          (when (and @show-advanced?! @editing?!) 
+            [:div.peer-info
+             [text-input-component
+              {:value (:id @persona!) :disabled true :icon-class "icon-id" :name "persona-id" :icon-tool-tip-text "Id"}
+              #(swap-atom-data! % persona! :id)]
+             
+             [text-input-component
+              {:value (:publicKey @persona!) :disabled (not @editing?!) :icon-class "icon-key" :name "persona-key" :icon-tool-tip-text "Key"}
+              #(swap-atom-data! % persona! :publicKey)]])
+          
+          [input-checkbox 
+           {:checked (:isActive @persona!) :disabled (not @editing?!) :icon-class "icon-refresh" :name "persona-active" :icon-tool-tip-text "Sync"} 
+           #(swap! persona! assoc-in [:isActive] (-> % .-target .-checked))]]
+         
+         (when @editing?! 
+          [button-component {:class "show-advanced-button" :text (str (if @show-advanced?! "Hide" "Show") " Advanced Options")} #(swap! show-advanced?! not)])
+         
          (if @editing?!
            [edit-control-buttons {:on-save (fn [] (update-persona personas! persona! on-error))
                                   :save-disabled (= @persona! persona)
@@ -78,8 +102,8 @@
    :isActive true})
 
 (defn add-persona-item [personas! adding-persona?!]
-  (let [persona! (atom empty-persona)
-        error! (atom nil)]
+  (let [persona! (r/atom empty-persona)
+        error! (r/atom nil)]
     (fn []
       (let [image-uri (:imageUri @persona!)]
         [:div.list-item
@@ -105,7 +129,7 @@
 
 
 (defn personas-page [personas! persona! on-persona-select query! on-search!]
-  (let [adding-persona?! (atom false)]
+  (let [adding-persona?! (r/atom false)]
     (fn []
       [:div.settings-page
        [search/search-header 
