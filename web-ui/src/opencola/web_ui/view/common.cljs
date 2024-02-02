@@ -225,13 +225,13 @@
     (fn []
       (let [selected-item (or (first (filter #(= (id-key %) @current-item-id-key!) item-collection)) (first item-collection))]
        [:div.select-menu-wrapper {:class class} 
-        [:button.select-menu-toggle.button {:on-click #(swap! menu-open?! not) :on-blur #(swap! menu-open?! not) :aria-expanded @menu-open?!}
+        [:button.select-menu-toggle.button {:on-click #(swap! menu-open?! not) :on-blur (fn [] (js/setTimeout #(reset! menu-open?! false) 100)) :aria-expanded @menu-open?!}
          [:span.current-item (name-key selected-item)]
          [icon {:icon-class (if @menu-open?! "icon-hide" "icon-show")}]]
         [popout-menu
          {:class popout-class}
          menu-open?!
-         #(swap! menu-open?! not)
+         #(reset! menu-open?! false)
          [:div.select-menu-content
           (doall (for [item item-collection]
                    (when (not= item selected-item)
