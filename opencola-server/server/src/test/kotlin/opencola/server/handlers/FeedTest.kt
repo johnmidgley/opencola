@@ -205,6 +205,56 @@ class FeedTest {
     }
 
     @Test
+    fun testCommentReplyToReply() {
+        val app = TestApplication.instance
+        val addressBook = app.inject<AddressBook>()
+        val entityStore = app.inject<EntityStore>()
+
+        val persona0 = addressBook.addPersona("testCommentChain0")
+        val resource = ResourceEntity(persona0.personaId, URI("https://uri0"))
+        entityStore.updateEntities(resource)
+
+        // Added a comment from person1 onto person0's resource
+        val comment = app.updateComment(persona0, resource.entityId, null, "top level comment")
+
+        val persona1 = addressBook.addPersona("testCommentChain1")
+        val reply = app.updateComment(persona1, comment.entityId, null, "comment reply")
+
+        // Reply to comment
+        app.updateComment(persona0, reply.entityId, null, "reply to reply")
+
+        app.handleGetFeed(setOf(persona0.personaId, persona1.personaId)).let { result ->
+            assertEquals(1, result.results.size)
+            val entityResult = result.results.singleOrNull { it.entityId == resource.entityId.toString() }
+            assertNotNull(entityResult)
+            val comments = entityResult.activities.flatMap { it.actions.filter { it.actionType == ActionType.comment } }
+            assertEquals(3, comments.size)
+
+            val comment0 = comments.single { it.value == "top level comment" }
+            // Only comment replies should have a parent id.
+            // When not present, the top level entity is the implied parent
+            assertNull(comment0.parentId)
+
+            val comment1 = comments.single { it.value == "comment reply" }
+            assertEquals(comment.entityId.toString(), comment1.parentId)
+
+            val comment2 = comments.single { it.value == "reply to reply" }
+            assertEquals(reply.entityId.toString(), comment2.parentId)
+        }
+
+        entityStore.deleteEntities(comment.authorityId, comment.entityId)
+
+        // Deleting comment should stop the reply chain from being returned, so we expect 0 comments
+        app.handleGetFeed(setOf(persona0.personaId, persona1.entityId)).let { result ->
+            assertEquals(1, result.results.size)
+            val entityResult = result.results.singleOrNull { it.entityId == resource.entityId.toString() }
+            assertNotNull(entityResult)
+            val comments = entityResult.activities.flatMap { it.actions.filter { it.actionType == ActionType.comment } }
+            assertEquals(0, comments.size)
+        }
+    }
+
+    @Test
     fun testFeedOrdering() {
         // TODO: Think about making a FeedContext that can be used without the test application
         val app = TestApplication.instance

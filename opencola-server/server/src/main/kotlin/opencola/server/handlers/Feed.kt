@@ -264,6 +264,22 @@ fun getChildIds(entities: Iterable<Entity>, childSelector: (Entity) -> Iterable<
 
 data class Children(val comments: Map<Id, CommentEntity>, val attachments: Map<Id, DataEntity>)
 
+fun getTopLevelId(commentsById: Map<Id, CommentEntity>, comment: CommentEntity): Id? {
+    val parentId = comment.parentId
+
+    return if (comment.topLevelParentId == null || comment.topLevelParentId == parentId)
+        parentId
+    else
+        commentsById[parentId]?.let { getTopLevelId(commentsById, it) }
+}
+
+fun getVisibleComments(topLevelEntityIds: Set<Id>, comments: List<CommentEntity>) : Map<Id, CommentEntity> {
+    val commentsById = comments.associateBy { it.entityId }
+    return commentsById.filter {
+        getTopLevelId(commentsById, it.value)?.let { topLevelEntityIds.contains(it) } ?: false
+    }
+}
+
 fun getChildren(
     authorityIds: Set<Id>,
     entityStore: EntityStore,
@@ -278,14 +294,7 @@ fun getChildren(
     val children = entityStore.getEntities(authorityIds, ids)
     // "RawEntity"s can't be displayed on their own, so don't include them unless a full version of the entity is present
     val entityIds = entities.filter { it !is RawEntity }.map { it.entityId }.toSet()
-    val allChildren = children.filter { it !is RawEntity }.map { it.entityId }.toSet()
-    val allEntityIds = entityIds.plus(allChildren)
-
-    val comments = children
-        .filterIsInstance<CommentEntity>()
-        .filter { it.parentId in allEntityIds }
-        .associateBy { it.entityId }
-
+    val comments = getVisibleComments(entityIds, children.filterIsInstance<CommentEntity>())
     // TODO: Attachments are not necessarily unique. Should select best one
     val attachments = children.filterIsInstance<DataEntity>().associateBy { it.entityId }
 
