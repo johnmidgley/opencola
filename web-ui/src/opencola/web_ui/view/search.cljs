@@ -69,7 +69,7 @@
    (fn [] 
      [:nav.nav-bar 
       [:div.left-nav.container
-       [:div.fs-0.brand {:on-click #(do (reset! persona-id! nil) (location/set-page! :feed))} [:img.logo {:src "../img/pull-tab.png"}]] 
+       [:div.fs-0.brand {:on-click #(do (reset! persona-id! nil) (reset! query! "") (location/set-page! :feed))} [:img.logo {:src "../img/pull-tab.png"}]] 
        (when (not= :personas page) [persona-select-menu personas! persona-id! on-persona-select])]
       [search-box query! on-enter]
       [header-actions page adding-item?! menu-open?!] 
