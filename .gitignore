@@ -4,3 +4,5 @@
 /storage/var-solr/data/opencola/data/
 /storage/var-solr/logs/
 /storage/test
+
+.calva/

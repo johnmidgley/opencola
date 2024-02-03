@@ -1,7 +1,7 @@
 (ns opencola.web-ui.view.saves 
   (:require [opencola.web-ui.model.feed :as model]
             [opencola.web-ui.time :refer [format-time]]
-            [opencola.web-ui.view.common :refer [action-img]]))
+            [opencola.web-ui.view.common :refer [icon]]))
 
 (defn data-url [data-id]
   (when data-id
@@ -16,8 +16,8 @@
      [:td (format-time epoch-second)]
      [:td
       (when data-id
-        [:span
-         [:a.action-link  {:href (data-url data-id) :target "_blank"} [action-img "archive"]]])]]))
+        [:span.flex
+         [:a.button.action-button {:href (data-url data-id) :target "_blank"} [icon {:icon-class "icon-archive"}]]])]]))
 
 (defn item-saves [expanded?! save-actions on-click-authority]
   (when @expanded?!

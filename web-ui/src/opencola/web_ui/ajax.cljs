@@ -8,13 +8,16 @@
   (str (config/get-service-url) path))
 
 ;; TODO: Abstract common parameters (keywords?, format, response-format)
-(defn GET [path success-handler error-handler]
-  (ajax/GET 
-   (resolve-service-url path)
-   {:keywords? true
-    :response-format :json
-    :handler success-handler
-    :error-handler error-handler})) 
+(defn GET 
+  ([path success-handler error-handler ajax-parameters]
+   (ajax/GET
+     (resolve-service-url path)
+     (merge {:keywords? true
+             :response-format :json
+             :handler success-handler
+             :error-handler error-handler} ajax-parameters)))
+  ([path success-handler error-handler]
+   (GET path success-handler error-handler nil))) 
 
 
 (defn POST [path body success-handler error-handler] 

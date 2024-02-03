@@ -1,0 +1,59 @@
+(ns ^:figwheel-hooks opencola.web-ui.theme
+  (:require
+   [opencola.web-ui.ajax :refer [GET]]
+   [opencola.web-ui.model.error :as error]
+   [clojure.string :as string]))
+
+(def default-themes [
+                        {
+                            "name" "Light"
+                            "style-attributes" {
+                                "--primary-color" "rgb(255, 255, 255)"
+                                "--secondary-color" "rgb(239, 239, 239)"
+                                "--tertiary-color" "rgb(0, 0, 0)"
+                                "--accent-color" "rgb(0, 0, 0)"
+                                "--highlight-color" "rgb(255, 0, 0)"
+                                "--shadow-color""rgb(232, 232, 232)"
+                                "--link-color" "rgb(50, 72, 195)"
+                            }
+                        }
+                        {
+                            "name" "Dark"
+                            "style-attributes" {
+                                "--primary-color" "rgb(12, 11, 11)"
+                                "--secondary-color" "rgb(39, 36, 36)"
+                                "--tertiary-color" "rgb(114, 114, 114)"
+                                "--accent-color" "rgb(221, 221, 221)"
+                                "--highlight-color" "rgb(255, 0, 0)"
+                                "--shadow-color""rgb(29, 28, 28)"
+                                "--link-color" "rgb(51, 94, 204)"
+                            }
+                        }
+                    ])
+
+(defonce themes! (atom nil))
+
+(defn kebabify [s split-regex]
+  (string/lower-case (str "--" (string/join "-" (string/split s split-regex)))))
+
+(defn parse-themes [theme-data]
+  (map (fn [theme] (update theme "style-attributes"
+                           #(zipmap (map (fn [k] (kebabify k #"(?=[A-Z])")) (keys %)) (vals %)))
+         ) theme-data))
+
+(defn load-themes [on-success on-error]
+  (GET "/storage/themes.json" 
+    #(do (reset! themes! %) (on-success %))
+    #(on-error (error/error-result->str %))
+    {:keywords? false}))
+
+(defn theme-names []
+  (let [theme-names (map #(get % "name") @themes!)]
+    (conj theme-names "Default")))
+
+(defn get-themes [on-success on-error]
+  (when (not @themes!) (load-themes #(on-success %) on-error))
+  @themes!)
+
+(defn get-theme-attributes [theme-name]
+  (get (first (filter #(= theme-name (get % "name")) @themes!)) "style-attributes"))

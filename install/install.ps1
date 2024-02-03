@@ -9,9 +9,15 @@ cd ../opencola-server
 
 echo "Copying distribution"
 cd ../install/opencola
-cp ../scripts/* .
 mkdir server
 cp -r ../../opencola-server/server/build/install/opencola-server/* server
+
+$file = "./server/bin/opencola-server.bat"
+
+echo "Fixing classpath"
+(Get-Content $file) | ForEach-Object {
+    $_ -replace "set CLASSPATH.*", "set CLASSPATH=%APP_HOME%\lib\*"
+} | Set-Content $file
 
 echo "Copying Chrome extension"
 cp -r  ../../extension/chrome .

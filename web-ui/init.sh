@@ -16,8 +16,8 @@ https://clojure.org/guides/getting_started#_installation_on_mac_via_code_brew_co
 #
 
 # Create
-lein new figwheel-main opencola/search-ui -- --reagent 
-cd search-ui
+lein new figwheel-main opencola/web-ui -- --reagent 
+cd web-ui
 
 # To run / edit
 lein fig:build 

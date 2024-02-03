@@ -1,6 +1,6 @@
 (ns opencola.web-ui.view.likes
   (:require [opencola.web-ui.time :refer [format-time]]
-            [opencola.web-ui.view.common :refer [action-img]]))
+            [opencola.web-ui.view.common :refer [button-component]]))
 
 (defn item-like [like-action on-click-authority]
   (let [{authority-name :authorityName
@@ -20,6 +20,7 @@
                 ^{:key like-action} [item-like like-action on-click-authority]))]]]))
 
 (defn like-edit-control [edit-item!]
-  [:span {:class (when (:like @edit-item!) "highlight")
-          :on-click (fn [] (swap! edit-item! update-in [:like] #(if % nil true)))}
-   (action-img "like")])
+  [button-component {:class (str "action-button" (when (:like @edit-item!) " action-highlight")) 
+                     :icon-class "icon-like"
+                     :tool-tip-text "Like"} 
+   (fn [] (swap! edit-item! update-in [:like] #(if % nil true)))])
