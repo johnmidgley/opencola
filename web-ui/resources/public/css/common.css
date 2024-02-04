@@ -253,7 +253,7 @@ button,
 .profile-img-wrapper {
     --size: 3.5rem;
     --icon-size: 3rem;
-    overflow: hidden;
+    /* overflow: hidden; */
     align-items: center;
     justify-content: center;
     display: flex;
@@ -280,6 +280,7 @@ button,
         align-items: center;
         justify-content: center;
         font-size: 2rem;
+        border-radius: 1rem;
     }
 }
 

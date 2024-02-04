@@ -80,22 +80,22 @@
            {:value (:imageUri @persona!) :disabled (not @editing?!) :icon-class "icon-photo" :name "persona-img" :icon-tool-tip-text "Profile Image"} 
            #(swap-atom-data! % persona! :imageUri)]
           
-          (when (and @show-advanced?! @editing?!) 
+          (when (or @show-advanced?! @editing?!) 
             [:div.peer-info
              [text-input-component
               {:value (:id @persona!) :disabled true :icon-class "icon-id" :name "persona-id" :icon-tool-tip-text "Id"}
               #(swap-atom-data! % persona! :id)]
              
              [text-input-component
-              {:value (:publicKey @persona!) :disabled (not @editing?!) :icon-class "icon-key" :name "persona-key" :icon-tool-tip-text "Key"}
+              {:value (:publicKey @persona!) :disabled true :icon-class "icon-key" :name "persona-key" :icon-tool-tip-text "Key"}
               #(swap-atom-data! % persona! :publicKey)]])
           
           [input-checkbox 
            {:checked (:isActive @persona!) :disabled (not @editing?!) :icon-class "icon-refresh" :name "persona-active" :icon-tool-tip-text "Sync"} 
            #(swap! persona! assoc-in [:isActive] (-> % .-target .-checked))]]
          
-         (when @editing?! 
-          [button-component {:class "show-advanced-button" :text (str (if @show-advanced?! "Hide" "Show") " Advanced Options")} #(swap! show-advanced?! not)])
+         (when (not @editing?!) 
+          [button-component {:class "show-advanced-button" :text (str (if @show-advanced?! "Hide" "Show all"))} #(swap! show-advanced?! not)])
          
          (if @editing?!
            [edit-control-buttons {:on-save (fn [] (update-persona personas! persona! on-error))

@@ -273,7 +273,7 @@
       [:span.posted-time posted-time]]
      (when (> origin-distance 0) 
        [:div.origin-distance 
-        [tool-tip {:text (str "Originally posted by a user " origin-distance (if (= origin-distance 1) " degree" " degrees") " away")}]
+        [tool-tip {:text (str "Originally bubbled by a user " origin-distance (if (= origin-distance 1) " degree" " degrees") " away")}]
         [icon
          {:icon-class "icon-bubble"}]
         origin-distance])]
@@ -301,7 +301,7 @@
          [:a {:href item-uri :target "_blank"} img])])))
 
 (defn display-feed-item [persona-id! personas! feed! item editing?! on-click-authority on-click-tag]
-  (let [summary (:summary item)
+  (let [summary (:summary item) 
         posted-time (-> item :activities :bubble first :epochSecond format-time)]
     (fn [] 
       [:div.list-item
@@ -310,7 +310,7 @@
        [item-tags-summary (-> item :activities :tag) on-click-tag]
        [:div.item-body
         [item-image summary]
-        [:div.item-desc [md->component {:class "desc markdown-text"}  (:description summary)]]] 
+        (when (:description summary) [:div.item-desc [md->component {:class "desc markdown-text"}  (:description summary)]])] 
        [attachments-preview (-> item :activities :attach) true] 
        [item-activities persona-id! personas! feed! item editing?! on-click-authority on-click-tag]])))
 
@@ -467,7 +467,7 @@
   [:div.feed-status
    (let [query (:query @feed!)]
      (when (not-empty query)
-       (str (count (:results @feed!)) " results for '" query "'")))])
+       (str "Showing results for '" query "'")))])
 
 (defn feed-list [persona-id! personas! feed! on-click-authority on-click-tag] 
   (when @feed!

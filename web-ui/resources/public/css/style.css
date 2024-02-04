@@ -248,9 +248,9 @@
     }
 
     > .item-desc {
-        width: 100%;
+        width: 95%;
         padding: .5rem;
-        margin-left: 1rem;
+        margin-right: auto;
     }
 }
 
@@ -267,7 +267,11 @@
     align-items: center;
     position: relative;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: .5rem;
+
+    @media (max-width: 40rem) {
+        gap: .3rem;
+    }
 
     > .attachment-wrapper {
         display: flex;
@@ -332,6 +336,10 @@
     width: 100%;
     gap: .8rem;
 
+    & .authority {
+        cursor: pointer;
+    }
+
     & .expand-button {
         --icon-size: 1.8rem;
         flex-direction: row-reverse;
@@ -365,6 +373,8 @@
 
 .reply-header {
     color: var(--muted-color);
+    width: fit-content;
+    cursor: pointer;
     padding-bottom: .2rem;
 }
 
@@ -582,7 +592,7 @@ input.input-text {
 .setting-row {
     display: flex;
     align-items: center;
-    width: 20%;
+    width: 10%;
     
     > .setting-title {
         width: 20rem;
