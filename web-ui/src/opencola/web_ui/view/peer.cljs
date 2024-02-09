@@ -76,10 +76,10 @@
            {:value (:imageUri @p!) :disabled (not @editing?!) :icon-class "icon-photo" :name "peer-img" :icon-tool-tip-text "Profile Image"} 
            #(swap-atom-data! % p! :imageUri)] 
           
-          (when (and @editing?! @show-advanced?!)
+          (when (or @editing?! @show-advanced?!)
             [:div.peer-info
              [text-input-component
-              {:value (:publicKey @p!) :disabled (not @editing?!) :icon-class "icon-key" :name "peer-key" :icon-tool-tip-text "Key"}
+              {:value (:publicKey @p!) :disabled true :icon-class "icon-key" :name "peer-key" :icon-tool-tip-text "Key"}
               #(swap-atom-data! % p! :publicKey)] 
              
              [text-input-component
@@ -90,8 +90,8 @@
            {:checked (:isActive @p!) :disabled (not @editing?!) :icon-class "icon-refresh" :name "peer-active" :icon-tool-tip-text "Sync"} 
            #(swap! p! assoc-in [:isActive] (-> % .-target .-checked))]]
          
-         (when @editing?!
-           [button-component {:class "show-advanced-button" :text (str (if @show-advanced?! "Hide" "Show") " Advanced Options")} #(swap! show-advanced?! not)])
+         (when (not @editing?!)
+           [button-component {:class "show-advanced-button" :text (str (if @show-advanced?! "Hide" "Show all"))} #(swap! show-advanced?! not)])
          
          (if @editing?!
            [edit-control-buttons {:on-save (fn []

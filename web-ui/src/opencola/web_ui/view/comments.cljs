@@ -81,7 +81,7 @@
         (when (not editable?)
           (reset! editing?! false))
         [:div.base-comment
-         (when reply-header [:span.reply-header reply-header])
+         (when reply-header [:span.reply-header {:on-click #(on-click-authority authority-name)} reply-header])
          (if (and editable? @editing?!)
            [comment-control context persona-id! item comment-id text editing?! on-update]
            [:div.item-comment-container 

@@ -32,7 +32,6 @@
   (let [theme-list (map #(hash-map :id % :name %) (theme-names))]
     (fn [] 
       [:div.settings-category.appearance
-       [:h3.category-title "Appearance"]
        [:div.setting-row
         [:span.setting-title "Theme:"]
         [select-menu {} theme-list theme-id! :name :id #(state/theme! %)]]])))
