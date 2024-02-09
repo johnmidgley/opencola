@@ -4,5 +4,6 @@
 /storage/var-solr/data/opencola/data/
 /storage/var-solr/logs/
 /storage/test
-
+.clj-kondo
 .calva/
+.lsp
