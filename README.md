@@ -44,15 +44,52 @@ Data is attached to entities through attributes. Attributes have the following p
 * ```protoAttribute```: 
 * ```valueWrapper```: A wrapper that knows how to serialize / de-serialize to / from a binary blob.
 * ```isIndexable```: A boolean flag indicating whehter the attribute should be indexed for searching.
-* ```computeFacts```: A function that can compute other facts (in order to understand this, you will need to first read about Facts below). This mechanism allows for back-pointers to be created between entities automatically. For example, a Comment entity has a ```parentId``` that points to its parent. In order for the parent to be able to point to the comment as a child, ```computeFacts``` will add create a fact that adds the comment id to the parents ```commentIds```.  
+* ```computeFacts```: A function that can compute other facts (in order to fully understand this, you will need to first read about Facts below). This mechanism allows for back-pointers to be created between entities automatically. For example, a Comment entity has a ```parentId``` that points to its parent. In order for the parent to be able to point to the comment as a child, ```computeFacts``` will add create a fact that adds the comment id to the parents ```commentIds```.  
 
 ## Values
 
+Values hold the actual data for an attribute. The current types support for values are:
+
+* ```Boolean```
+* ```ByteArray```
+* ```Empty```
+* ```Float```
+* ```Id```
+* ```Int```
+* ```PublicKey```
+* ```String```
+* ```Uri```
+
+Extending these types is straightforward.
+
 ## Facts
+
+Facts are objects that tie together the above concepts and allow for a flexible data model that can be used and extended without an explicit schema (if you're familiar with [RDF](https://en.wikipedia.org/wiki/Resource_Description_Framework), facts can be thought of as extended RDF tripples) Each fact has the following properties:
+
+*  ```authorityId``` 
+*  ```entityId```
+*  ```attribute```
+*  ```value```
+*  ```operation```
+*  ```epochSecond```
+*  ```transactionOrdinal```
+
+Each "piece" of information about an entity (e.g. the name, url or text of a resource) is represented as a fact. Facts are generated whenever someone takes an action (creating a post, liking a post, etc.)
 
 ## Transactions
 
+Transactions bundle facts together so they can be stored and as transmitted to peers. Each transaction has the following properties:
 
+* ```id```: The id of the transaction, which is the hash of the previous (signed)transaction.  
+* ```authorityId```: The id of the authority (person) whose activity is being. 
+* ```transactionEntities```: A more effeicient representation of facts, where redundant authorityIds and entityIds are removed. 
+* ```epochSecond```: The time at which the transaction occured. (This should probably be switched to epochMillisecond)
+
+Transactions are then compressed (if they are in fact smaller after compression) and signed by the appropriate authority public key.
+
+As transaction ids are "pointers" to the previous transaction, transaction chains are in fact (non crypto) block chains, that can be checked for integrity.
+
+# Navigating the Code
 
 
 
