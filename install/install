@@ -11,6 +11,8 @@ echo "Copying distribution"
 cd ../../install/opencola
 mkdir server
 cp -r ../../opencola-server/server/build/install/opencola-server/* server
+
+# This is probably not needed anymore, since the extension is bundled into the application as a resource
 echo "Copying Chrome extension"
 cp -r  ../../extension/chrome .
 

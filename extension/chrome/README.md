@@ -2,7 +2,7 @@
 
 # Browser Extension
 
-OpenCola provides a browser extension to make it easier to save and share web pages. The code in this directory is for a Chrome based browser (Google Chrome, Brave, Edge, etc.). Then intention is to support any browser the work needs to be prioritized. 
+OpenCola provides a browser extension to make it easier to save and share web pages. The code in this directory is for a Chrome based browser (Google Chrome, Brave, Edge, etc.). The intention is to support any browser, but the work needs to be prioritized. 
 
 The basic isnstructions followed for making the extension can be found [here](https://developer.chrome.com/docs/extensions/mv3/getstarted/).
 

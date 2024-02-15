@@ -1,7 +1,12 @@
-# Creating Icons
-https://dev.to/craftzdog/how-to-create-icns-file-from-png-files-on-cli-4c16
+<img src="../../img/pull-tab.svg" width="150" />
+
+# Mac Packaging
+
+## Creating Icons
+Creating mac icons was done by following [this](https://dev.to/craftzdog/how-to-create-icns-file-from-png-files-on-cli-4c16).
 
 Make a folder named ***.iconset (e.g., desktop-icon.iconset) and prepare files like so:
+```
 > ll
 total 49976
 drwxr-xr-x  13 user  staff       416 Jan 12 19:23 desktop-icon.iconset/
@@ -20,6 +25,4 @@ total 1376
 -rw-r--r--@ 1 user  staff  422658 Jan 12 19:21 icon_512x512@2x.png
 
 iconutil --convert icns desktop-icon.iconset
-
-
-
+```
