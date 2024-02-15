@@ -1,9 +1,0 @@
-#!/bin/bash
-
-if [ $# -ne 1 ]
-then
-  echo "Usage: $0 CLUSTER-NAME"
-  exit 1
-fi
-
-aws ecs create-cluster --cluster-name "$1"
