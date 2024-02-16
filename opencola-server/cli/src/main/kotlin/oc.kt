@@ -79,7 +79,7 @@ fun parseEntityIdString(entityIdString: String): Pair<Set<Id>, Set<Id>> {
 }
 
 @ExperimentalCli
-// TODO: Kotlin CLI is obsolete - try https://github.com/ajalt/clikt
+// TODO: Kotlin CLI is obsolete - use what is usef for the relay CLI
 fun main(args: Array<String>) {
     val parser = ArgParser("oc", strictSubcommandOptionsOrder = true)
     val path by parser.option(ArgType.String, shortName = "s", description = "Storage path").default("")

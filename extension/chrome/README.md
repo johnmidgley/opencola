@@ -1,6 +1,6 @@
 <img src="../../img/pull-tab.svg" width="150" />
 
-# Browser Extension
+# Chrome Browser Extension
 
 OpenCola provides a browser extension to make it easier to save and share web pages. The code in this directory is for a Chrome based browser (Google Chrome, Brave, Edge, etc.). The intention is to support any browser, but the work needs to be prioritized. 
 
