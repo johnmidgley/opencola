@@ -1,3 +1,4 @@
+bin
 /build
 .gradle
 /network/var-solr/data/*.opencola

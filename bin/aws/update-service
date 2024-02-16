@@ -1,9 +1,0 @@
-#!/bin/bash
-
-if [ $# -ne 2 ]
-then
-  echo "Usage: $0 CLUSTER SERVICE"
-  exit 1
-fi
-
-aws ecs update-service --cluster "$1" --service "$2" --force-new-deployment
