@@ -32,6 +32,8 @@ import kotlin.io.path.exists
 import kotlin.io.path.outputStream
 import kotlin.io.path.readBytes
 
+// Class used to server mhtl data, since it can't be served directly to a browser. 
+// Used for serving saved copies of web pages
 class MhtCache(private val cachePath: Path, private val entityStore: EntityStore, private val fileStore: ContentAddressedFileStore) {
     private val logger = KotlinLogging.logger("MhtCache")
 
