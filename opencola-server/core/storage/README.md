@@ -114,6 +114,8 @@ Currently [ExposedEntityStoreV2](./src/main/kotlin/io/opencola/storage/entitysto
 
 OpenCola orgianlly used Postgres, but switched to SQLite because its simpler to use (i.e. it runs in memory with the rest of the application) and available on mobile devices. 
 
+TODO: DB format and file storage
+
 ## filestore
 
 The ```filestore``` namespace contains code that stores files. There are two types of filestores used in OpenCola: content addressed and Id addressed. 
