@@ -2,4 +2,4 @@
 
 # system
 
-The ```system``` library 
+The ```system``` library contains code that generally system specific (running command line tools, OS, environment, etc.)
