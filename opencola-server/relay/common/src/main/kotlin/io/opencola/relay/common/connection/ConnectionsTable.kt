@@ -21,12 +21,18 @@ import io.opencola.model.Id
 import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.ResultRow
 
+/**
+ * Connections Table definition
+ */
 object Connections : LongIdTable() {
     val from = binary("from", 32).uniqueIndex()
     val address = varchar("address", 255)
     val connectTimeMilliseconds = long("connectTimeMilliseconds")
 }
 
+/**
+ * Connection row wrapper that maps to model types
+ */
 class ConnectionRow(private val resultRow: ResultRow) {
     val from: Id by lazy { Id(resultRow[Connections.from]) }
     val address: String by lazy { resultRow[Connections.address] }

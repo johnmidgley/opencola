@@ -25,9 +25,12 @@ import java.security.KeyPair
 import java.security.PrivateKey
 import java.security.PublicKey
 
+/**
+ * Message envelope used as payload when interacting with the relay server.
+ */
 data class Envelope(
     val recipients: List<Recipient>,
-    val messageStorageKey: MessageStorageKey?, // TODO: Make optional?
+    val messageStorageKey: MessageStorageKey?,
     val message: SignedBytes // Encrypted and then signed bytes here, since the server uses this class, and it doesn't have access to the message.
 ) {
     constructor(recipient: Recipient, messageStorageKey: MessageStorageKey?, message: SignedBytes)

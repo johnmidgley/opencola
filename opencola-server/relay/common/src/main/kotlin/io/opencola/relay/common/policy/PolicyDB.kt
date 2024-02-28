@@ -27,7 +27,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.statements.api.ExposedBlob
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class UserPolicyDB(private val database: Database) {
+class PolicyDB(private val database: Database) {
     init {
         transaction(database) {
             SchemaUtils.create(Policies)

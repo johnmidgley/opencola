@@ -24,6 +24,9 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.net.URI
 
+/**
+ * Wrapper around an Exposed database that maps between model level types and DB level types.
+ */
 class ConnectionsDB(private val database: Database) {
     private val logger = KotlinLogging.logger("ConnectionsDB")
 

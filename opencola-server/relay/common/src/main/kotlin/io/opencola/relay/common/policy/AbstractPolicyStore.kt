@@ -19,6 +19,10 @@ package io.opencola.relay.common.policy
 
 import io.opencola.model.Id
 
+/**
+ * Common functionality for a PolicyStore
+ */
+
 abstract class AbstractPolicyStore(final override val rootId: Id, protected var defaultPolicy: Policy?) : PolicyStore {
     private fun expectUserPolicy(userId: Id): Policy {
         return getUserPolicy(rootId, userId) ?: throw IllegalStateException("Missing policy for user $userId")

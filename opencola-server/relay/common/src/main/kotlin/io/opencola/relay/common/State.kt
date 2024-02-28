@@ -17,6 +17,9 @@
 
 package io.opencola.relay.common
 
+/**
+ * The state of a client or server
+ */
 enum class State {
     Initialized,
     Opening,

@@ -27,6 +27,12 @@ data class ConnectionEntry(
     val connectTimeMilliseconds: Long = System.currentTimeMillis()
 )
 
+/**
+ * The ConnectionDirectory allows the relay server (when running as a cluster of instances) to keep track of which
+ * instance each client is connected to. Messages that are received by a relay instance that have a recipient
+ * connected to another instance are forwarded for delivery.
+ */
+
 interface ConnectionDirectory {
     val localAddress: URI
     fun add(connection: Connection): ConnectionEntry

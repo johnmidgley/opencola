@@ -21,13 +21,16 @@ import io.opencola.model.Id
 import mu.KotlinLogging
 import org.jetbrains.exposed.sql.Database
 
+/**
+ * PolicyStore backed by an exposed database
+ */
 class ExposedPolicyStore(
     database: Database,
     rootId: Id,
     defaultPolicy: Policy = Policy("default")
 ) : AbstractPolicyStore(rootId, defaultPolicy) {
     private val logger = KotlinLogging.logger("ExposedPolicyStore")
-    private val userPolicyDB = UserPolicyDB(database)
+    private val userPolicyDB = PolicyDB(database)
 
     override fun setPolicy(authorityId: Id, policy: Policy) {
         authorizeEditPolicies(authorityId)

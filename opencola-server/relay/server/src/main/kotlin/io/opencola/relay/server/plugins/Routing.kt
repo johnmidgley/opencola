@@ -25,7 +25,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import io.opencola.model.Id
 import io.opencola.relay.common.connection.ConnectionEntry
-import io.opencola.relay.common.connection.WebSocketSessionWrapper
+import io.opencola.relay.common.connection.WebSocketSession
 import io.opencola.relay.common.message.v2.store.Usage
 import io.opencola.security.publicKeyFromBytes
 import io.opencola.util.Base58
@@ -87,12 +87,12 @@ fun Application.configureRouting(
         }
 
         webSocket("/relay") {
-            webSocketRelayServerV1.handleSession(WebSocketSessionWrapper(this))
+            webSocketRelayServerV1.handleSession(WebSocketSession(this))
         }
 
         webSocket("/v2/relay") {
             // TODO: Return proper errors (e.g. 401 when authentication fails)
-            webSocketRelayServerV2.handleSession(WebSocketSessionWrapper(this))
+            webSocketRelayServerV2.handleSession(WebSocketSession(this))
         }
 
         get("/send") {

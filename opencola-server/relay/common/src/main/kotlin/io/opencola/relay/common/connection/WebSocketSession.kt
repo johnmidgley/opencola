@@ -20,7 +20,10 @@ package io.opencola.relay.common.connection
 import io.ktor.websocket.*
 import kotlinx.coroutines.isActive
 
-class WebSocketSessionWrapper(val webSocketSession: DefaultWebSocketSession) : SocketSession {
+/**
+ * SocketSession that wraps a WebSocketSession
+ */
+class WebSocketSession(val webSocketSession: DefaultWebSocketSession) : SocketSession {
     override suspend fun isReady(): Boolean {
         return webSocketSession.isActive
     }

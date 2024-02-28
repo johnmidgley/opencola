@@ -21,6 +21,9 @@ import io.opencola.model.Id
 import org.jetbrains.exposed.sql.Database
 import java.net.URI
 
+/**
+ * ConnectionDirectory backed by an exposed database.
+ */
 class ExposedConnectionDirectory(database: Database, override val localAddress: URI) : ConnectionDirectory {
     private val localDirectory = MemoryConnectionDirectory(localAddress)
     private val connectionsDB = ConnectionsDB(database)

@@ -23,7 +23,7 @@ import io.ktor.client.plugins.websocket.*
 import io.ktor.http.*
 import io.opencola.relay.common.*
 import io.opencola.relay.common.connection.SocketSession
-import io.opencola.relay.common.connection.WebSocketSessionWrapper
+import io.opencola.relay.common.connection.WebSocketSession
 import java.net.URI
 import java.security.KeyPair
 
@@ -43,7 +43,7 @@ class WebSocketClient(
     }
 
     override suspend fun getSocketSession(): SocketSession {
-        return WebSocketSessionWrapper(
+        return WebSocketSession(
             client.webSocketSession(
                 method = HttpMethod.Get,
                 host = hostname,
