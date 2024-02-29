@@ -206,7 +206,7 @@
                            false)
              } 
             #(reset! tags! (-> % .-target .-value))]
-           [edit-control-buttons {:on-save on-save :on-cancel #(reset! tagging?! false)} false error!]])))))
+           [edit-control-buttons {:on-save on-save :on-cancel #(reset! tagging?! false)} error!]])))))
 
 
 (defn item-activities [persona-id! personas! feed! item editing?! on-click-authority on-click-tag]
@@ -409,15 +409,14 @@
             [tags-edit-control (:tags @edit-item!) #(swap! edit-item! assoc-in [:tags] (-> % .-target .-value))])
           (when @commenting?!
             [:div.item-comment-edit
-             [comment-edit-control (:entity-id @edit-item!) nil comment-state!]])]
+             [comment-edit-control (:entity-id @edit-item!) nil comment-state! nil nil error!]])]
          [edit-control-buttons {:on-save (fn []
                                                        ; nil check on comment-state! needed, since it may not be opened
                                            (when @comment-state! (swap! edit-item! assoc-in [:comment] (.value @comment-state!)))
                                            (swap! edit-item! assoc-in [:description] (.value @description-state!))
                                            (on-save @persona-id!))
                                 :on-cancel on-cancel
-                                :on-delete on-delete}
-          deletable? error!]]))))
+                                :on-delete on-delete} error!]]))))
 
 
 (defn delete-feed-item [feed! entity-id]

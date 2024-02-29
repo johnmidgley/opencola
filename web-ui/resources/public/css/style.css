@@ -620,11 +620,12 @@ input.input-text {
     border-left: var(--border-size) solid var(--border-color);
 
     a {
-        color: var(--text-color);
+        color: var(--tertiary-color);
     }
 
     a:hover {
         color: var(--text-color-contrast);
+        background: var(--button-hover-bg-color);
     }
 }
 

@@ -15,8 +15,7 @@
 (ns opencola.web-ui.view.common 
   (:require [clojure.string :as string] 
             [goog.string :as gstring]
-            [markdown-to-hiccup.core :as md2hic]
-            [reagent.core :as reagent]
+            [markdown-to-hiccup.core :as md2hic] 
             [opencola.web-ui.location :as location] 
             [reagent.core :as r]))
 
@@ -153,7 +152,7 @@
 ;; https://github.com/reagent-project/reagent/blob/master/doc/CreatingReagentComponents.md
 (defn simple-mde [id placeholder text state!] 
   (fn [] 
-    (reagent/create-class           
+    (r/create-class           
      {:display-name  "my-component"
       
       :component-did-mount         
@@ -276,7 +275,7 @@
          [:span.generated-img {:style {:background-color (create-hsl id 65 75)}} (string/upper-case (initials name))]
          [icon {:icon-class "icon-persona"}]))]))
 
-(defn edit-control-buttons [config deletable? error!]
+(defn edit-control-buttons [config error!]
   (let [{on-save :on-save
          on-cancel :on-cancel
          on-delete :on-delete
@@ -295,7 +294,7 @@
                         :name "cancel-button"
                         :text (if cancel-text cancel-text "Cancel")} 
       on-cancel]
-     (when deletable?
+     (when on-delete 
       [button-component {:class "edit-control-button delete-button caution-color"
                          :name "delete-button"
                          :text (if delete-text delete-text "Delete")} 

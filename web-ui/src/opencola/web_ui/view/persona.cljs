@@ -104,7 +104,7 @@
                                                 (reset! persona! persona)
                                                 (reset! editing?! false))
                                   :on-delete #(delete-persona personas! persona! on-error)} 
-            true error!] 
+             error!] 
            [button-component {:text "Edit" :class " edit-control-button edit-button" :name "edit-button"} #(reset! editing?! true)])]))))
 
 (def empty-persona
@@ -131,7 +131,7 @@
                                            (create-persona personas! persona! 
                                                            #(reset! adding-persona?! false) 
                                                            #(reset! error! %)))
-                                :on-cancel #(reset! adding-persona?! false)} false error!]]))))
+                                :on-cancel #(reset! adding-persona?! false)} error!]]))))
 
 (defn persona-list [personas! adding-persona?!]
   (when @personas!

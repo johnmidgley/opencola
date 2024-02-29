@@ -19,9 +19,10 @@
    [opencola.web-ui.time :refer [format-time]]
    [opencola.web-ui.view.common :refer [md->component simple-mde button-component edit-control-buttons]]))
 
-(defn comment-edit-control [id text state! text-prompt] 
+(defn comment-edit-control [id text state! text-prompt control-buttons-config error!] 
   [:div.comment-edit-control
-   [simple-mde (str id "-cmt") (or text-prompt "Enter your comment....") text state!]])
+   [simple-mde (str id "-cmt") (or text-prompt "Enter your comment....") text state!]
+   (when control-buttons-config [edit-control-buttons control-buttons-config error!])])
 
 (defn remove-comment [item comment-id]
   (update-in item
@@ -39,17 +40,20 @@
       (when @expanded?!
         [:div.item-comment
          [:div.item-comment-edit
-          [comment-edit-control (:entity-id item) text state!]
-          [edit-control-buttons {
-                                 :on-save #(model/update-comment context @persona-id! entity-id comment-id (.value @state!) on-update on-error)
-                                 :on-cancel #(reset! expanded?! false)
-                                 :on-delete #(model/delete-comment
-                                              context
-                                              @persona-id!
-                                              comment-id
-                                              (fn [result-item] (on-update result-item))
-                                              on-error)
-          } expanded?! error!]]]))))
+          [comment-edit-control 
+           (:entity-id item) 
+           text 
+           state!
+           nil
+           {:on-save #(model/update-comment context @persona-id! entity-id comment-id (.value @state!) on-update on-error)
+            :on-cancel #(reset! expanded?! false)
+            :on-delete (when comment-id #(model/delete-comment
+                               context
+                               @persona-id!
+                               comment-id
+                               (fn [result-item] (on-update result-item))
+                               on-error))} 
+           error!]]]))))
 
 
 (defn create-comment-control [id original-text on-save on-cancel on-delete error! config]
@@ -58,10 +62,15 @@
     (fn []
       [:div.item-comment
        [:div.item-comment-edit
-        [comment-edit-control id original-text state! text-prompt]
-        [edit-control-buttons {:on-save #(on-save (.value @state!))
-                               :on-cancel on-cancel
-                               :on-delete on-delete} on-delete error!]]])))
+        [comment-edit-control 
+         id 
+         original-text 
+         state! 
+         text-prompt 
+         {:on-save #(on-save (.value @state!))
+          :on-cancel on-cancel
+          :on-delete on-delete} 
+         error!]]])))
 
 (defn base-comment [context persona-id! item comment-action on-update on-click-authority]
   (let [editing?! (r/atom false)

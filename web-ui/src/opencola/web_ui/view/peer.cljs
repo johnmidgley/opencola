@@ -102,8 +102,8 @@
                                                 (reset! p! peer)
                                                 (when adding-peer?! (reset! adding-peer?! false))
                                                 (reset! editing?! false))
-                                  :on-delete (fn [] (delete-peer persona-id peers! p! #(reset! error! %)))} 
-            (not creating?) error!]
+                                  :on-delete (fn [] (delete-peer persona-id peers! p! #(reset! error! %)))}  
+            error!]
            [button-component {:text "Edit" :class " edit-control-button edit-button"} #(reset! editing?! true)])]))))
 
 (defn add-peer-item [persona-id peers! adding-peer?!]
@@ -126,7 +126,7 @@
                                              #(reset! peer! %)
                                              #(reset! error! %)))
                                  :on-cancel #(reset! adding-peer?! false)}
-           false error!]]]))))
+            error!]]]))))
 
 (defn peer-list [persona-id peers! adding-peer?!]
   (when @peers!
