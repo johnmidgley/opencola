@@ -28,25 +28,39 @@ message AuthenticationResult {
   AuthenticationStatus status = 1;
 }
 
+// Signed and encrypted and then put in an Envelope
+message Message {
+  // Unique ID of the message
+  io.opencola.util.protobuf.UUID id = 1;
+
+  // Public key of sender
+  io.opencola.security.protobuf.PublicKey from = 2;
+
+  // Body of message, in binary form, the contents of which is only understood by the application
+  bytes body = 3;
+}
+
 /* TODO: The only difference between this Recipient and the Recipient in the network namespace
- * is that 'to' here is a public key. This was because the realy was meant to be non OC
+ * is that 'to' here is a public key. This was because the really was meant to be non OC
  * specific, and so didn't use Ids. Think about whether this is necessary or if the two 
  * Recipients could be unified. 
 */
 message Recipient {
+  // Public key of the receiver
   io.opencola.security.protobuf.PublicKey to = 1;
-  io.opencola.security.protobuf.EncryptedBytes messageSecretKey = 2; // Encrypted io.opencola.security.protobuf.SecretKey
-}
 
-// Signed and encrypted and then put in an Envelope
-message Message {
-  io.opencola.util.protobuf.UUID id = 1;
-  io.opencola.security.protobuf.PublicKey from = 2;
-  bytes body = 3;
+  // Symmetric secret key (io.opencola.security.protobuf.SecretKey) for the associated message, encrypted by the 'to'
+  // PublicKey. The same message may be sent to multiple recipients with the same secret key, but encrypted with
+  // different public keys.
+  io.opencola.security.protobuf.EncryptedBytes messageSecretKey = 2;
 }
 
 message EnvelopeHeader {
+    // The list of recipients for a message
     repeated Recipient recipients = 1;
+
+    // A key for the messages that allows for redundant messages to not be stored multiple times.
+    // Messages without a storage key will not be stored, even if they can't be delivered
     bytes storageKey = 2;
 }
 
