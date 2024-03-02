@@ -196,16 +196,15 @@ classDiagram
 >
 Keep in mind that ```header``` and ```message``` in ```Envelope``` are encrypted and signed versions of ```EnvelopeHeader``` and ```Message```, not the direct objects.
 
+## Storage 
+
+(message table and store)
+
 ## Deployment
 
 * RootId
+* Scaling
 
 ## Administration
 
-* CLI
-* Policies
-
-## Scaling
-
-* Cluster
-* Persistence (message table and store)
+Administration of the relay is done via the [ocr cli](./cli/README.md).

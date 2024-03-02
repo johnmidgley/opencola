@@ -1,7 +1,0 @@
-services:
-  oc:
-    build: ..
-    container_name: oc-relay
-    ports:
-      - "2652:2652"
-    restart: unless-stopped

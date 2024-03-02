@@ -1,5 +1,78 @@
 
-# Overview
+# Relay Server Deployment
+
+## Install 
+
+To build / install the relay server simply run:
+
+```shell
+> ./install
+```
+
+## Identity
+
+In order to deploy a relay server, you will need to create a server identity and specify a root identity that can administer the server. These identities are managed by the `ocr` tool. To get the root identity:
+
+```shell
+> ocr identity
+DBfSfvGwVvx89whkFoiuGeGcg6Et9GrmGRTwk8wLXUPj
+```
+
+To generate a server identity:
+
+```shell
+> ocr identity -s
+publicKeyBase58: aSq9DsNNvGhYxYyqA9wd2eduEAZ5AXWgJTbTJe91GYitakdPFHFqnQ3sw3siU1kHY94JQeY5pT2ErCz8FDUqXeaZ1kTzvP2SksygWPPmLvM1vDigew37YMaXv5ZD
+privateKeyBase58: 2RxV4m78RGjpDZ5VV6TTtkSkRKgEC58qoYKq5rA4jkjPUbhnGZZrutfRjs15VRWc48KnwFDUYwPLgbSiGGBNgnuBih9s
+```
+
+The server private key is sensitive, so store it securely. 
+
+# Running in Docker
+
+A `docker-compose.yml` file is provider for running the relay server directly in Docker:
+
+```yml
+version: '3.8'
+
+services:
+  relay:
+    build: .
+    container_name: oc-relay
+    ports:
+      - "2652:2652"
+    restart: unless-stopped
+    environment:
+      relay.server.port: 2652
+      relay.server.callLogging: false
+      relay.security.publicKeyBase58: ${OC_SERVER_PUBLIC_KEY}
+      relay.security.privateKeyBase58: ${OC_SERVER_PRIVATE_KEY}
+      relay.security.rootIdBase58: ${OC_ROOT_ID}
+
+    # Comment this section out if you want storage to be inside the docker container 
+    # in ephemeral storage
+    volumes:
+      - type: bind
+        source: ./storage
+        target: /var/relay # This should match storagePath in opencola-relay.yaml
+```
+
+
+If you use the file as is, you'll need to create a storage directory where undelivered messagese are stored. You'll also need to set environment variables for theserver and root identities:
+
+```shell
+> mkdir storage
+> export OC_SERVER_PUBLIC_KEY=aSq9DsNNvGhYxYyqA9wd2eduEAZ5AXWgJTbTJe91GYitakdPFHFqnQ3sw3siU1kHY94JQeY5pT2ErCz8FDUqXeaZ1kTzvP2SksygWPPmLvM1vDigew37YMaXv5ZD
+> export OC_SERVER_PRIVATE_KEY=2RxV4m78RGjpDZ5VV6TTtkSkRKgEC58qoYKq5rA4jkjPUbhnGZZrutfRjs15VRWc48KnwFDUYwPLgbSiGGBNgnuBih9s
+> export OC_ROOT_ID=DBfSfvGwVvx89whkFoiuGeGcg6Et9GrmGRTwk8wLXUPj
+```
+
+Then you can start the server:
+```shell
+$ docker-compose -p oc-relay up --build
+```
+
+# AWS
 * [Setting up with Amazon ECR](https://docs.aws.amazon.com/AmazonECR/latest/userguide/get-set-up-for-amazon-ecr.html)
 * [Using Amazon ECR with the AWS CLI](https://docs.aws.amazon.com/AmazonECR/latest/userguide/getting-started-cli.html)
 

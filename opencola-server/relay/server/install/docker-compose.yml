@@ -8,14 +8,13 @@ services:
       - "2652:2652"
     restart: unless-stopped
     environment:
-      relay.server.port: 2652
-      relay.server.callLogging: false
       relay.security.publicKeyBase58: ${OC_SERVER_PUBLIC_KEY}
       relay.security.privateKeyBase58: ${OC_SERVER_PRIVATE_KEY}
       relay.security.rootIdBase58: ${OC_ROOT_ID}
 
-# TODO: This volume should be the storage path set in opencola-relay.yaml
+    # Comment this section out if you want storage to be inside the docker container 
+    # in ephemeral storage
     volumes:
       - type: bind
         source: ./storage
-        target: /var/relay
+        target: /var/relay # This should match storagePath in opencola-relay.yaml
