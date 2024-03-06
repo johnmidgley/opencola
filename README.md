@@ -20,7 +20,7 @@ The important parts of the code are:
 |------|------|
 |[```opencola-server```](opencola-server/README.md)| Backend code (oc, relay) (Kotlin) |
 |[```web-ui```](web-ui/README.md)| The frontend for the application (Clojurescript)|
-|[```extension```](extension/README.md)| The chrome browser extension (HTML, JS, CSS)|
+|[```extension```](extension/chrome/README.md)| The chrome browser extension (HTML, JS, CSS)|
 |[```install```](install/README.md)| Scripts for generating installers (Bash) |
 
 
