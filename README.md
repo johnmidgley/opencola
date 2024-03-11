@@ -8,7 +8,7 @@ This repository contains the code for the OpenCola application and toolkit. To u
 
 The application is a collaboration tool that looks a lot like a social media application, but puts you in control of your personal data as well as the flow of information around you. This means that, unless you decide otherwise, there is no 3rd party ingerference (ads, algorithms, trolls, scammers, etc.). You also control where your data lives, which is by default on your local device, shared with only peers of your choice. 
 
-The toolkit provides is a flexible data model, a set of simple interfaces (and supporting libraries, as well as a relay server that allows peer nodes to communicate in a trustworthy way. The toolkit is very general, and could be used to build many applications across arbitrary domains. 
+The toolkit provides is a flexible [data model](./opencola-server/core/model/README.md), a set of simple interfaces ([`EntityStore`](./opencola-server/core/storage/README.md#entitystore), [`ContentAddressedFileStore`](./opencola-server/core/storage/README.md#filestore), [`NetworkProvider`](./opencola-server/core/network/README.md#network-providers) and [`SearchIndex`](./opencola-server/core/search/README.md#search)), supporting libraries, as well as a [relay server](./opencola-server/relay/README.md) that allows peer nodes to communicate in a trustworthy way. The toolkit is very general, and could be used to build many applications across arbitrary domains. 
 
 # Navigating the Code
 
@@ -21,7 +21,7 @@ The important parts of the code are:
 |[```opencola-server```](opencola-server/README.md)| Backend code (oc, relay) (Kotlin) |
 |[```web-ui```](web-ui/README.md)| The frontend for the application (Clojurescript)|
 |[```extension```](extension/chrome/README.md)| The chrome browser extension (HTML, JS, CSS)|
-|[```install```](install/README.md)| Scripts for generating installers (Bash) |
+|[```install```](install/README.md)| Scripts building and generating installers for the collaboration tool (Bash) |
 
 
 

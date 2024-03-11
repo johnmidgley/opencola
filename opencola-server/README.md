@@ -10,7 +10,7 @@ This directory contains OpenCola server code, which is all written in Kotlin. Th
 |[`core`](./core/README.md)| Shared libraries for building OpenCola applications. |
 |[`relay`](./relay/README.md)| The relay server that allows peers to exchange arbitrary messages.|
 |[`server`](./server/README.md)| The server side of the collaboration tool.|
-|`test`| Library containing code for testing purposes.|
+|[`test`](./test/README.md)| Library containing code for testing purposes.|
 
 
 If you update code and want need to update the version of OpenCola, the `set-version` script updates all appropriate places:
