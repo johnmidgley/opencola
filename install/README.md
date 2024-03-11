@@ -16,7 +16,6 @@ To run the server directly:
 ```
 
 If you'd like to run inside Docker (without packaging), there are ```start``` and ```stop``` scripts in each OS specific directory. These scripts are really only needed to determine IP addresses to be used in https certrificates for the server. You can start without these scripts if you are fine using ```localhost``` or ```127.0.0.1``` when access the server.
-
 # Packaging 
 
 Once the server is installed, it can be packaged for various platforms.
