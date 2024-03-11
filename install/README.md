@@ -1,8 +1,10 @@
-<img src="../img/pull-tab.svg" width="150" />
+<img src="../img/pull-tab.svg" width="150" alt="OpenCola"/>
 
 # Install
 
-This directory contains scripts for building and packaging the OpenCola application (TODO: move to ```opencola-server/server``` directory - currently here for legacy reasons).
+This directory contains scripts for building and packaging the OpenCola application
+    
+> TODO: move to ```opencola-server/server``` directory - currently here for legacy reasons.
 
 To install OpenCola, simply run the ```./install``` script. This runs the gradle build script and copies the resulting build into the opencola directory.
 
@@ -64,6 +66,8 @@ Run the package script:
 ```sh
 ./package
 ```
+
+This creates a tar archive.
 
 # Docker
 
