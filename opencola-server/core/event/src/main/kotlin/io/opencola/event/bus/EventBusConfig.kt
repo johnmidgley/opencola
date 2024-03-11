@@ -19,4 +19,4 @@ package io.opencola.event.bus
 
 // TODO: Add config layers, that allow for override. Use push / pop
 // https://github.com/sksamuel/hoplite
-data class EventBusConfig(val name: String = "event-bus", val maxAttempts: Int = 3)
+data class EventBusConfig(val maxAttempts: Int = 3)

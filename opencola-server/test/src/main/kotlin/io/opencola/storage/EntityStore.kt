@@ -26,7 +26,6 @@ import io.opencola.security.Signator
 import io.opencola.security.hash.Hash
 import io.opencola.security.keystore.defaultPasswordHash
 import io.opencola.storage.addressbook.AddressBook
-import io.opencola.storage.addressbook.AddressBookConfig
 import io.opencola.storage.addressbook.EntityStoreAddressBook
 import io.opencola.storage.addressbook.EntityStoreAddressBook.Version
 import io.opencola.storage.addressbook.PersonaAddressBookEntry
@@ -43,7 +42,6 @@ class ExposedEntityStoreContext(
     val signator: Signator = Signator(keyStore),
     val addressBook: AddressBook = EntityStoreAddressBook(
         Version.V2,
-        AddressBookConfig(),
         storagePath.resolve("address-book"),
         keyStore
     ),

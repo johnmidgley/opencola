@@ -29,7 +29,6 @@ import java.nio.file.Path
 
 class EntityStoreAddressBook(
     val version: Version,
-    val config: AddressBookConfig,
     private val storagePath: Path,
     private val keyStore: KeyStore,
 ) : AbstractAddressBook() {
@@ -95,7 +94,7 @@ class EntityStoreAddressBook(
     }
 
     override fun toString(): String {
-        return "EntityStoreAddressBook(version=$version storagePath=$storagePath, config=$config)"
+        return "EntityStoreAddressBook(version=$version storagePath=$storagePath)"
     }
 
     private fun authorityToEntry(authority: Authority): AddressBookEntry {

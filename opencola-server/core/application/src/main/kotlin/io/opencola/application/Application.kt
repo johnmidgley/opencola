@@ -54,6 +54,7 @@ import java.nio.file.Path
 import java.security.KeyPair
 import kotlin.io.path.*
 
+// Class that manages composition of the overall application. 
 class Application(val storagePath: Path, val config: Config, val injector: DI) : Closeable {
     val logger = KotlinLogging.logger("opencola.${config.name}")
 
@@ -131,7 +132,7 @@ working properly, you can delete entity-store.db and address-book.db.
             if (!storagePath.resolve("$addressBookName.db").exists())
                 return
 
-            val addressBook = EntityStoreAddressBook(Version.V1, AddressBookConfig(), storagePath, keyStore)
+            val addressBook = EntityStoreAddressBook(Version.V1, storagePath, keyStore)
             val signator = Signator(keyStore)
             var migrationOccurred = false
 
@@ -173,7 +174,6 @@ working properly, you can delete entity-store.db and address-book.db.
                 bindSingleton {
                     EntityStoreAddressBook(
                         Version.V2,
-                        config.addressBook,
                         storagePath.resolve(addressBookName),
                         instance()
                     )

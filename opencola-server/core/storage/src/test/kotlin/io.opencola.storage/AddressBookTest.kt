@@ -56,7 +56,7 @@ fun equalsOtherThanPersonaId(source: AddressBookEntry, target: AddressBookEntry)
 
 fun getFreshKeyStore() = JavaKeyStore(TestApplication.getTmpFilePath("keystore.pks"), defaultPasswordHash)
 fun getFreshAddressBook(keyStore: KeyStore = getFreshKeyStore()) =
-    EntityStoreAddressBook(Version.V2, AddressBookConfig(), TestApplication.getTmpDirectory("addressbook"), keyStore)
+    EntityStoreAddressBook(Version.V2, TestApplication.getTmpDirectory("addressbook"), keyStore)
 
 class AddressBookTest {
     @Test
@@ -65,7 +65,7 @@ class AddressBookTest {
     fun testAddressBookInit() {
         val storagePath = TestApplication.getTmpDirectory(".storage")
         val keyStore = MockKeyStore()
-        val addressBook = EntityStoreAddressBook(Version.V2, AddressBookConfig(), storagePath, keyStore)
+        val addressBook = EntityStoreAddressBook(Version.V2, storagePath, keyStore)
 
         // Insert an inactive persona into the address book
         val persona0 = addressBook.addPersona("Persona0", false)
@@ -74,7 +74,7 @@ class AddressBookTest {
         addressBook.getEntry(persona0.personaId, persona0.entityId)!!.also { assert(!it.isActive) }
 
         // Reinitialize and check that persona is now active
-        EntityStoreAddressBook(Version.V2, AddressBookConfig(), storagePath, keyStore)
+        EntityStoreAddressBook(Version.V2, storagePath, keyStore)
             .getEntry(persona0.personaId, persona0.entityId)!!
             .also { assert(it.isActive) }
     }
@@ -83,7 +83,7 @@ class AddressBookTest {
     // TODO: This is only testing the EntityStoreAddressBook. The synchronization should be abstracted and
     //  then this test could apply to any implementation.
     fun testPersonaSynchronization() {
-        val addressBook = EntityStoreAddressBook(Version.V2, AddressBookConfig(), TestApplication.getTmpDirectory(".storage"), MockKeyStore())
+        val addressBook = EntityStoreAddressBook(Version.V2, TestApplication.getTmpDirectory(".storage"), MockKeyStore())
 
         // Add 2 personas to address book
         val persona0 = addressBook.addPersona("Persona0")
