@@ -6,7 +6,7 @@ This directory contains the web interface for the collaboration tool. It is writ
 
 ## Setup
 
-Install [Clojure](https://clojure.org/guides/getting_started), which on MacOS is:
+In order edit the UI, you will need to install [Clojure](https://clojure.org/guides/getting_started), which on MacOS is:
 
 ```
 brew install clojure/tools/clojure
@@ -47,7 +47,17 @@ cljs.user=> (js/alert "Am I connected?")
 
 This should cause a pop-up to appear in the browser.
 
-Figwheel is generally very good at updatin any code in the browser when the source is saved. Occassionally, things can get missed. If you ever don't see an expected change in the UI, try doing a forced refresh in the browser (holding SHIFT and clicking the refresh button works in most browsers).
+>Figwheel is generally very good at updatin any code in the browser when the source is saved. Occassionally, things can get missed. If you ever don't see an expected change in the UI, try doing a forced refresh in the browser (holding SHIFT and clicking the refresh button works in most browsers).
+
+The source code (in [`src/opencola`](./src/opencola/)) has the following structure:
+
+|Directory|Description|
+|---------|-----------|
+|model| Functions for interacting with the server. |
+|view| UI components|
+|.|Other code common to different views|
+
+The entry point for the code is [`web_ui.cljs`](./src/opencola/web_ui.cljs)
 
 ## Deploying
 
