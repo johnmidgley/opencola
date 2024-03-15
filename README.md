@@ -6,14 +6,29 @@
 
 This repository contains the code for the OpenCola application and toolkit. To understand the overall vision of OpenCola, which puts this code in a larger context please visit our [homepage](https://opencola.io).
 
-## Application
-The application is a collaboration tool that looks a lot like a social media application, but puts you in control of your personal data as well as the flow of information around you. This means that, unless you decide otherwise, there is no 3rd party ingerference (ads, algorithms, trolls, scammers, etc.). You also control where your data lives, which is by default on your local device, shared with only peers of your choice. The image below shows what the application looks like, which, on the surface, is similar to other social media applications:
+## The Application
+The OpenCola application is a collaboration tool that looks a lot like a social media application, but puts you in control of your personal data as well as the flow of information around you. This means that, unless you decide otherwise, there is no 3rd party ingerference (ads, algorithms, trolls, scammers, etc.). You also control where your data lives, which is by default on your local device, shared with only peers of your choice. The image below shows what the application looks like, which, on the surface, is similar to other social media applications:
 
 <img src="img/feed.png" alt="Feed">
 
-## Toolkit
-The toolkit provides is a flexible [data model](./opencola-server/core/model/README.md), a set of simple interfaces ([`EntityStore`](./opencola-server/core/storage/README.md#entitystore), [`ContentAddressedFileStore`](./opencola-server/core/storage/README.md#filestore), [`NetworkProvider`](./opencola-server/core/network/README.md#network-providers) and [`SearchIndex`](./opencola-server/core/search/README.md#search)), supporting libraries, as well as a [relay server](./opencola-server/relay/README.md) that allows peer nodes to communicate in a trustworthy way. The toolkit is very general, and could be used to build many applications across arbitrary domains. Here are some other applications we're thinking about:
+## The Toolkit
 
+### What's in the Toolkit?
+The OpenCola toolkit provides is a flexible [data model](./opencola-server/core/model/README.md), a set of simple interfaces:
+
+|Interface|Description|
+|---------|-----------|
+|[`EntityStore`](./opencola-server/core/storage/README.md#entitystore)|Storage for metadata about "things" (domain entities)|
+|[`ContentAddressedFileStore`](./opencola-server/core/storage/README.md#filestore)|Storage for arbitrary files (or data blobs)|
+|[`NetworkProvider`](./opencola-server/core/network/README.md#network-providers)|Communication with other peers for a given protocol.|
+|[`SearchIndex`](./opencola-server/core/search/README.md#search)|Searching for entities|
+
+
+The toolkit also contains supporting libraries, as well as a [relay server](./opencola-server/relay/README.md) that allows peer nodes to communicate in a trustworthy way. The toolkit is very general, and could be used to build many applications across arbitrary domains.
+
+### What Can the Toolkit be Used for?
+
+ The toolkit can be used for a wide range of application, but here are some other applications we have thought about:
 
 - **Healthcare**: Healthcare consumers have to rely on proprietary
         software to manage transport of healthcare records. This software is
@@ -54,6 +69,27 @@ The toolkit provides is a flexible [data model](./opencola-server/core/model/REA
         information. OpenCola could be used to model financial transactions and
         allow for applications that let you see your financial data the way you want
         to see it, without having to expose this data to anyone else.
+
+### How is OpenCola Different?
+There are many applications / platforms out there that attempt to
+solve important problems. Some are low level, more technical solutions
+(e.g. [Solid](https://solidproject.org/)), while others are
+high level solutions (e.g. [Mastadon](https://mastodon.social/explore)). 
+Low level solutions are often light on product vision or are too complicated 
+for everyday people to use. High level solutions often have a very specific
+product vision, and so are of limited use.
+
+OpenCola was designed to be able to model any application domain, and
+make use of any technologies that can be wrapped by the small set of
+interfaces (described above). So, OpenCola is not one specific
+application, nor is it one specific network. It allows for arbitrary
+domains to be modeled and interconnected with arbitrary networks. Things
+like Solid and Mastadon could easily be integrated into OpenCola
+applications.
+
+Because of its design, OpenCola is agnostic to network toplogy and has
+the flexibility to operate on any scale from pure peer-to-peer all the
+way to fully centralized.
 
 # Navigating the Code
 
