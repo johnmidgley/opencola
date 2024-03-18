@@ -144,7 +144,7 @@ abstract class AbstractRelayServer(
 
                 // TODO: Add garbage collection on inactive connections?
                 connection.listen { payload ->
-                    if (payload.size > policy.messagePolicy.maxPayloadSize) {
+                    if (payload.size > policy.messagePolicy.maxPayloadBytes) {
                         event.warn("PayloadTooLarge") { "Payload too large from $id: Ignoring ${payload.size} bytes" }
                     } else {
                         handleMessage(connection.publicKey, payload)

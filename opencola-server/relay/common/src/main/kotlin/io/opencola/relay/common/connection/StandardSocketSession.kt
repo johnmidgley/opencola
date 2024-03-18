@@ -22,6 +22,9 @@ import io.ktor.network.sockets.Socket
 import io.ktor.utils.io.*
 import kotlinx.coroutines.runBlocking
 
+/**
+ * Regular (non web) socket
+ */
 class StandardSocketSession(private val socket: Socket) : SocketSession {
     val maxReadSize = 1024 * 1024 * 50
     val readChannel = socket.openReadChannel()

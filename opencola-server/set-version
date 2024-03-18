@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Script that looks after setting the version of OpenCola in all the 
+# appropriate places (build.gradle.kts, Version.kt in the browser extension)
+
 if [ "$#" -eq 1 ]; then
     VERSION="$1"
 else

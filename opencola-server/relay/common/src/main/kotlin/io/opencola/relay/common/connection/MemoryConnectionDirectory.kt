@@ -22,6 +22,9 @@ import kotlinx.coroutines.runBlocking
 import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
 
+/**
+ * In memory ConnectionDirectory (no persistence)
+ */
 class MemoryConnectionDirectory(override val localAddress: URI) : ConnectionDirectory {
     private val connections = ConcurrentHashMap<Id, ConnectionEntry>()
 

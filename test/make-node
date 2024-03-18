@@ -1,5 +1,7 @@
 #!/bin/bash
-# make-node name port
+# Make a "persistent" (storage is carried across test runs) node for testing.
+# USAGE: make-node name port
+
 pushd storage/persistent
 rm -rf $1
 mkdir $1

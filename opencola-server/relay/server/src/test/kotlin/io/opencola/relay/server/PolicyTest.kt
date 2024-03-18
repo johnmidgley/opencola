@@ -49,7 +49,7 @@ class PolicyTest {
                 val policy = Policy("maxMessageSize", messagePolicy = MessagePolicy(maxPayloadSize))
                 policyStore.setPolicy(rootId, policy)
                 policyStore.setUserPolicy(rootId, clientId, policy.name)
-                assertEquals(maxPayloadSize, policyStore.getUserPolicy(rootId, clientId)!!.messagePolicy.maxPayloadSize)
+                assertEquals(maxPayloadSize, policyStore.getUserPolicy(rootId, clientId)!!.messagePolicy.maxPayloadBytes)
 
                 client = getClient(ClientType.V2, "maxMessageSizeClient", clientKeyPair).also {
                     launch { it.open { _, _ -> } }

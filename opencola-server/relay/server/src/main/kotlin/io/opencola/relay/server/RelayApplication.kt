@@ -100,6 +100,10 @@ fun main() {
     // TODO: Add dependency injection
     val eventsPath = context.absoluteStoragePath.resolve("events").also { Files.createDirectories(it) }
     val eventLogger = EventLogger("relay", eventsPath)
+
+    // NOTE: A SQLite DB is currently used to minimize costs. Although OpenCola is resilient to data loss on the relay,
+    // this is not recommend for scaled solutions, as SQLite will encounter concurrency / locking issues. When there are
+    // a material number of users on the server, a Postgres solution is recommended.
     val relayDB = getSQLiteDB(context.absoluteStoragePath.resolve("relay.db"))
     val policyStore = ExposedPolicyStore(relayDB, context.config.security.rootId)
     val fileStore = FileSystemContentAddressedFileStore(context.absoluteStoragePath.resolve("messages"))

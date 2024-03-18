@@ -31,6 +31,9 @@ import java.io.OutputStream
 import java.security.PublicKey
 import java.util.*
 
+/**
+ * Legacy MessageHeader - non longer used
+ */
 class MessageHeader(val messageId: UUID, val from: PublicKey, val signature: Signature) {
     override fun toString(): String {
         return "Header(messageId=$messageId, from=${Id.ofPublicKey(from)})"

@@ -27,6 +27,10 @@ import java.security.PublicKey
 
 typealias MessageHandler = suspend (ByteArray) -> Unit
 
+/**
+ * The Connection class is used by the client and server facilitates low level communication
+ * at the raw byte array level.
+ */
 class Connection(
     val publicKey: PublicKey,
     private val socketSession: SocketSession,

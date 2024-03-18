@@ -35,7 +35,7 @@ class JsonHttpClient {
     }
 
     inline fun <reified T> get(uri: URI): T {
-        // Yes - seems horrible to hide suspend calls, but otherwise the code is infected and much harder to debug
+        // Yes - seems horrible to hide suspend calls, but otherwise the code can't be used from Java and is harder to debug
         return runBlocking { httpClient.get(uri.toString()).body() }
     }
 

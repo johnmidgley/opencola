@@ -25,9 +25,14 @@ interface SearchIndex {
     fun create()
     fun destroy()
 
-    // TODO: change to addEntities, deleteEntities (with vararg entity Ids),
+    // Add entities to the search index. Any attribute where isIndexable == true is indexed.
     fun addEntities(vararg entities: Entity)
+
+    // Delete entites for a given authority
     fun deleteEntities(authorityId: Id, vararg entityIds: Id)
+
+    // Get search results. Subsequent pages can be accessed by specifying the pagingToken
+    // from the previous page's SearchResults
     fun getResults(
         query: Query,
         maxResults: Int,

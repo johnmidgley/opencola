@@ -1,4 +1,5 @@
 #!/bin/bash
+# Start a node in a separate process for testing
 pushd storage/persistent/$1
 ../../../../install/opencola/server/bin/opencola-server -s . -a ../../../../install/opencola/server
 popd

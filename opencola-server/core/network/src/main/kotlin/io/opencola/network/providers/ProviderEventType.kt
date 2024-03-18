@@ -19,5 +19,6 @@ package io.opencola.network.providers
 
 // TODO: Needed, or could types be used instead?
 enum class ProviderEventType {
+    // There are no pending messages waiting to be delivered
     NO_PENDING_MESSAGES,
 }

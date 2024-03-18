@@ -19,6 +19,10 @@ package io.opencola.relay.common.policy
 
 import kotlinx.serialization.Serializable
 
+/**
+ * Policies are associated with users (by Id) and define what each user is allowed to do on the relay server.
+ */
+
 @Serializable
 data class AdminPolicy(
     val isAdmin: Boolean = false,
@@ -30,7 +34,7 @@ data class AdminPolicy(
 data class ConnectionPolicy(val canConnect: Boolean = true)
 
 @Serializable
-data class MessagePolicy(val maxPayloadSize: Long = 1024 * 1024 * 50)
+data class MessagePolicy(val maxPayloadBytes: Long = 1024 * 1024 * 50)
 
 @Serializable
 data class StoragePolicy(val maxStoredBytes: Long = 1024 * 1024 * 50)

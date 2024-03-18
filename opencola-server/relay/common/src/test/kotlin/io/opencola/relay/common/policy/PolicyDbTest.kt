@@ -21,9 +21,9 @@ class PolicyDbTest {
         return db
     }
 
-    fun getUserPolicyDB(name: String): UserPolicyDB {
+    fun getUserPolicyDB(name: String): PolicyDB {
         // return UserPolicyDB(getPostgresDB())
-        return UserPolicyDB(newSQLiteDB("PolicyTest-$name"))
+        return PolicyDB(newSQLiteDB("PolicyTest-$name"))
     }
 
     @Test

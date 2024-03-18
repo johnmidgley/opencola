@@ -27,6 +27,9 @@ import java.io.OutputStream
 import java.security.KeyPair
 import java.util.*
 
+/**
+ * Legacy Message (no longer used)
+ */
 class MessageV1(val header: MessageHeader, val body: ByteArray) {
     constructor(senderKeyPair: KeyPair, body: ByteArray)
             : this (MessageHeader(UUID.randomUUID(), senderKeyPair.public, Signature.of(senderKeyPair.private, body)), body)

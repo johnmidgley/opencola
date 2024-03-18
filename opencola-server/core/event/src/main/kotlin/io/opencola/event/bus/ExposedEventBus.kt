@@ -37,8 +37,9 @@ class ExposedEventBus(private val storagePath: Path, config: EventBusConfig) : E
     private val messages = Messages()
     private val maxAttempts = config.maxAttempts
     private var executorService: ExecutorService? = null
+
     private val db by lazy {
-        val db = Database.connect("jdbc:sqlite:$storagePath/${config.name}.db", "org.sqlite.JDBC")
+        val db = Database.connect("jdbc:sqlite:$storagePath/event-bus.db", "org.sqlite.JDBC")
         TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
         db
     }

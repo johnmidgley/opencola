@@ -17,6 +17,9 @@
 
 package io.opencola.relay.common.connection
 
+/**
+ * Interface for interacting with a Socket
+ */
 interface SocketSession {
     suspend fun isReady() : Boolean
     suspend fun readSizedByteArray() : ByteArray

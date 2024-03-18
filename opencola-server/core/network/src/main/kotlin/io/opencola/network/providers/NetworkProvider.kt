@@ -29,19 +29,31 @@ typealias MessageHandler = (Id, Id, Message) -> Unit
 // TODO: remove 's' io.opencola.network.providers -> io.opencola.network.provider
 
 interface NetworkProvider {
+    // Set an event handler that should be called for any events raised by the provider (e.g. NO_PENDING_MESSAGES).
     fun setEventHandler(handler: EventHandler)
+
+    // Set a message handler that is called whenever a message is received by the provider
     fun setMessageHandler(handler: MessageHandler)
 
+    // Start the provider
     fun start(waitUntilReady: Boolean = false)
+
+    // Stop the provider
     fun stop()
 
+    // Get the scheme of URIs that the provider handlers (e.g. http or ocr)
     fun getScheme() : String
+
+    // Validate an address that the provider should handle. Can check if the remote server is valid.
     fun validateAddress(address: URI)
 
-    // If a peer URI changes with the same provider, it will result in removePeer(oldPeer) addPeer(newPeer)
+    // Inform the provider tha a peer has been added, which may add a new remote connection.
     fun addPeer(peer: AddressBookEntry)
+
+    // Inform the provider that a peer has been removed, which may remove a remote connection
     fun removePeer(peer: AddressBookEntry)
 
+    // Send a message from a persona to a set of peers.
     fun sendMessage(from: PersonaAddressBookEntry, to: Set<AddressBookEntry>, message: Message)
     fun sendMessage(from: PersonaAddressBookEntry, to: AddressBookEntry, message: Message) {
         sendMessage(from, setOf(to), message)

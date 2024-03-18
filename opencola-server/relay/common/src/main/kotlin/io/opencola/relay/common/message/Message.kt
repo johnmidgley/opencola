@@ -29,6 +29,9 @@ import java.security.PublicKey
 import java.util.*
 import javax.crypto.SecretKey
 
+/**
+ * Message content that is only visible to the intended recipient.
+ */
 class Message(val id: UUID, val from: PublicKey, val body: ByteArray) {
     constructor(from: PublicKey, body: ByteArray) : this(UUID.randomUUID(), from, body)
 

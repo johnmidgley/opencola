@@ -22,6 +22,7 @@ import java.io.InputStream
 
 
 // TODO: Only need stream based implementations - ByteArray ones can be defined in terms of those. See IdBasedFileStore
+// TODO: Make this look like IdAddressedFileStore, possibly merging interfaces
 interface ContentAddressedFileStore {
     fun exists(dataId: Id) : Boolean
 

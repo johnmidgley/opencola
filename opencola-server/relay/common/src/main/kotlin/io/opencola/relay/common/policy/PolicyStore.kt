@@ -19,6 +19,10 @@ package io.opencola.relay.common.policy
 
 import io.opencola.model.Id
 
+/**
+ * Interface for managing policies that define what users can do on the relay server. The rootId is defined in
+ * configuration and has all privileges.
+ */
 interface PolicyStore {
     val rootId: Id
 

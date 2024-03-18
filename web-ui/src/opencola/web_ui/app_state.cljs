@@ -18,6 +18,8 @@
    [opencola.web-ui.ajax :refer [PUT]]
    [opencola.web-ui.common :as common]))
 
+;; Functions to control the state of the application. 
+
 ;; TODO: Merge all state into single atom?
 (defonce app-state 
   {

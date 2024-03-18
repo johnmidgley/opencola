@@ -20,6 +20,9 @@ package io.opencola.relay.common.policy
 import io.opencola.model.Id
 import java.util.concurrent.ConcurrentHashMap
 
+/**
+ * In memory PolicyStore (no persistence)
+ */
 class MemoryPolicyStore(rootId: Id, defaultPolicy: Policy? = Policy("default")) : AbstractPolicyStore(rootId, defaultPolicy) {
     private val policies = ConcurrentHashMap<String, Policy>()
     private val userPolicies = ConcurrentHashMap<Id, Policy>()

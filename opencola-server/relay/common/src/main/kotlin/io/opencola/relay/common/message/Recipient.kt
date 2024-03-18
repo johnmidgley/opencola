@@ -26,6 +26,14 @@ import java.security.PublicKey
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
 
+/**
+ * Recipient of a message
+ *
+ * [publicKey]: the public key of the recipient
+ * [messageSecretKey]: The encrypted (with the recipient's public key) symmetric key used to encrypt the message.
+ *                     Symmetric keys are used for efficiency and allow the same message body to be delivered to many
+ *                     recipients with only the small symmetric key needing to be encrypted multiple times.
+ */
 class Recipient(val publicKey: PublicKey, val messageSecretKey: EncryptedBytes) {
     override fun toString(): String {
         return "Recipient(to=${Id.ofPublicKey(publicKey)})"

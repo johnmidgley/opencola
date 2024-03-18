@@ -23,6 +23,9 @@ import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.ResultRow
 import java.nio.charset.Charset
 
+/**
+ * Exposed Policies table definition. Policies are associated with users in the UserPolicy table.
+ */
 object Policies : LongIdTable() {
     val authorityId = binary("authorityId", 32)
     val name = varchar("name", 255).uniqueIndex()
@@ -30,6 +33,9 @@ object Policies : LongIdTable() {
     val editTimeMilliseconds = long("editTimeMilliseconds")
 }
 
+/**
+ * Exposed ResultRow wrapper that converts to model level types
+ */
 class PolicyRow(private val resultRow: ResultRow) {
     val id: Long by lazy { resultRow[Policies.id].value }
     val authorityId: Id by lazy { Id(resultRow[Policies.authorityId]) }
