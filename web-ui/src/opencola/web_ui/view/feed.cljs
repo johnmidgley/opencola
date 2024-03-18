@@ -302,7 +302,7 @@
 
 (defn display-feed-item [persona-id! personas! feed! item editing?! on-click-authority on-click-tag]
   (let [summary (:summary item) 
-        posted-time (-> item :activities :bubble first :epochSecond format-time)]
+        posted-time (-> item :activities :bubble last :epochSecond format-time)]
     (fn [] 
       [:div.list-item
        [posted-by summary on-click-authority posted-time]
