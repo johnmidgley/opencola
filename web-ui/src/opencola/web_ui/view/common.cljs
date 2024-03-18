@@ -234,11 +234,17 @@
 (defn select-menu [config item-collection current-item-id-key! id-key name-key on-select] 
   (let [{class :class
          popout-class :popout-class} config
-        menu-open?! (r/atom false)] 
+        menu-open?! (r/atom false)
+        menu-hovered?! (r/atom false)] 
     (fn []
       (let [selected-item (or (first (filter #(= (id-key %) @current-item-id-key!) item-collection)) (first item-collection))]
-       [:div.select-menu-wrapper {:class class} 
-        [:button.select-menu-toggle.button {:on-click #(swap! menu-open?! not) :on-blur (fn [] (js/setTimeout #(reset! menu-open?! false) 150)) :aria-expanded @menu-open?!}
+       [:div.select-menu-wrapper {:class class
+                                  :on-mouse-enter #(reset! menu-hovered?! true)
+                                  :on-mouse-leave #(reset! menu-hovered?! false)}
+        [:button.select-menu-toggle.button {
+                                            :on-click #(swap! menu-open?! not)
+                                            :on-blur #(when (not @menu-hovered?!) (reset! menu-open?! false)) 
+                                            :aria-expanded @menu-open?!}
          [:span.current-item (name-key selected-item)]
          [icon {:icon-class (if @menu-open?! "icon-hide" "icon-show")}]]
         [popout-menu

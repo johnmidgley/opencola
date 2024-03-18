@@ -9,7 +9,8 @@
             "--highlight-color": "rgb(255, 0, 0)",
             "--shadow-color":"rgb(232, 232, 232)",
             "--link-color": "rgb(50, 72, 195)",
-            "--muted-color": "rgb(170, 170, 170)"
+            "--muted-color": "rgb(170, 170, 170)",
+            "--contrast-color": "rgb(0, 0, 0)"
         }
     },
     {
@@ -22,7 +23,8 @@
             "--highlight-color": "rgb(255, 0, 0)",
             "--shadow-color":"rgb(29, 28, 28)",
             "--link-color": "rgb(51, 94, 204)",
-            "--muted-color": "rgb(114, 114, 114)"
+            "--muted-color": "rgb(114, 114, 114)",
+            "--contrast-color": "rgb(255, 255, 255)"
         }
     }
 ]

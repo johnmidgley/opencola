@@ -514,6 +514,9 @@
   (let [name (first (string/split (string/replace authority-name #"You \(|\)" "") #"\s+"))]
     (on-search (toggle-term query (str "@" name)))))
 
+(defn find-most-recent-post [feed]
+  (first (filter #(get-in % [:summary :postedBy :isPersona]) (:results feed))))
+
 ;; TODO: Make parameter ordering consistent. Some places have persona-id then personas, others
 ;; are the other way around.
 ;; TODO: Only pass atoms when necessary. There are some cases where the personas! is passed, when @personas! 
@@ -535,11 +538,11 @@
        [error-control (state/error!)]
        (when @creating-post?!
          (let [edit-item! (r/atom (edit-item))
-               error! (r/atom nil)]
+               error! (r/atom nil)] 
            [:div.content-list.edit-list
             [edit-item-control
              (when (not @persona-id!) personas!)
-             (r/atom (or @persona-id! (-> @personas! :items first :id)))
+             (r/atom (or @persona-id! (-> (find-most-recent-post @feed!) :summary :postedBy :id) (-> @personas! :items first :id)))
              nil
              edit-item!
              error!
