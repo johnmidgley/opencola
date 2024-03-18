@@ -116,7 +116,7 @@
       (if @peer!
         [peer-item persona-id peers! @peer! adding-peer?!]
         [:div.list-item 
-         [profile-img "../img/svg/persona.svg" "New Peer"]
+         [profile-img nil ""]
          [:div.peer-info
           [text-input-component {:value @send-token! :title "Your token: " :disabled true :class "no-wrap" :copy-button true :name "your-key"} #()]
           [text-input-component {:value @receive-token! :title "Thier token:" :class "no-wrap" :name "their-key"} #(reset! receive-token! (-> % .-target .-value))]

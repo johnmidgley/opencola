@@ -273,7 +273,7 @@
 
 (defn profile-img [image-uri name id on-click!]
   (let [name (if name (string/replace name #"\)|You \(" "") name)
-        img? (some? (seq image-uri))] 
+        img? (some? (seq image-uri))]
     [:div.profile-img-wrapper {:on-click on-click! :data-img-present img?}
      (if img?
        [:img.profile-img {:src image-uri :alt name}]
