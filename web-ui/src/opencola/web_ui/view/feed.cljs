@@ -20,7 +20,7 @@
             [opencola.web-ui.app-state :as state]
             [opencola.web-ui.util :refer [distinct-by]]
             [opencola.web-ui.common :refer [toggle-atom]]
-            [opencola.web-ui.time :refer [format-time]]
+            [opencola.web-ui.time :refer [format-time pretty-format-time]]
             [opencola.web-ui.window :as window]
             [opencola.web-ui.model.feed :as model :refer [upload-files
                                                           upload-result-to-attachments]]
@@ -261,16 +261,18 @@
            on-click-authority] 
           [error-control error!]]]))))
 
-(defn posted-by [summary on-click-authority posted-time]
+(defn posted-by [summary on-click-authority posted-epoch-second]
   (let [posted-by (:postedBy summary)
         name (:name posted-by)
         origin-distance (or (:originDistance summary) 0)
-        display-name (if (:isPersona posted-by) (str "You (" name ")") name)] 
+        display-name (if (:isPersona posted-by) (str "You (" name ")") name)
+        posted-time (format-time posted-epoch-second)
+        pretty-posted-time (pretty-format-time posted-epoch-second)] 
     [:div.posted-by
      [profile-img (:imageUri posted-by) name (:id posted-by) #(on-click-authority name)]
      [:div.posted-info
       [:span.authority {:on-click #(on-click-authority name)} display-name]
-      [:span.posted-time posted-time]]
+      [:span.posted-time pretty-posted-time [tool-tip {:text posted-time :tip-position "tip-bottom"}]]]
      (when (> origin-distance 0) 
        [:div.origin-distance 
         [tool-tip {:text (str "Originally bubbled by a user " origin-distance (if (= origin-distance 1) " degree" " degrees") " away")}]
@@ -301,11 +303,11 @@
          [:a {:href item-uri :target "_blank"} img])])))
 
 (defn display-feed-item [persona-id! personas! feed! item editing?! on-click-authority on-click-tag]
-  (let [summary (:summary item) 
-        posted-time (-> item :activities :bubble last :epochSecond format-time)]
+  (let [summary (:summary item)
+        posted-epoch-second (-> item :activities :bubble last :epochSecond)] 
     (fn [] 
       [:div.list-item
-       [posted-by summary on-click-authority posted-time]
+       [posted-by summary on-click-authority posted-epoch-second]
        [item-name summary] 
        [item-tags-summary (-> item :activities :tag) on-click-tag]
        [:div.item-body

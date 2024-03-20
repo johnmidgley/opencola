@@ -488,10 +488,6 @@ button,
     }
 }
 
-.popout-menu-content {
-    width: var(--content-width, 5rem)
-}
-
 .select-menu-wrapper {
     position: relative;
     z-index: 1;
@@ -522,6 +518,7 @@ button,
         &[aria-expanded=true] {
             border-bottom-right-radius: 0;
             border-bottom-left-radius: 0;
+            border-bottom: 0;
         }
     }
 
@@ -532,12 +529,13 @@ button,
         -webkit-box-sizing: border-box;
         -moz-box-sizing: border-box;
         overflow: hidden;
-        border-top: 0;
         position: absolute;
+        min-width: var(--content-width, 5rem);;
         top: 100%;
-        width: var(--content-width, 5rem);
+        left: 0%;
         border-bottom-left-radius: var(--br-value, 1rem);
         border-bottom-right-radius: var(--br-value, 1rem);
+        border-top: var(--border-size) solid var(--border-color);
     }
 
     & .current-item {

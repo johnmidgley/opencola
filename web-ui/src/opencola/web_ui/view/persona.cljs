@@ -121,7 +121,7 @@
     (fn []
       (let [image-uri (:imageUri @persona!)]
         [:div.list-item
-         [profile-img image-uri (:name @persona!) (:id @persona!)]
+         [profile-img image-uri (:name @persona!) nil]
          [:div.peer-info
           [text-input-component {:value (:name @persona!) :icon-class "icon-persona" :name "persona-name"} #(swap-atom-data! % persona! :name)]
           [text-input-component {:value (:address @persona!) :icon-class "icon-link" :name "persona-link"} #(swap-atom-data! % persona! :address)]

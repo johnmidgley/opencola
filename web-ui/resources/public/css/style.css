@@ -244,6 +244,7 @@
     overflow: hidden;
 
     & .item-img {
+        max-height: 35rem;
         width: 100%;
     }
 
@@ -456,6 +457,7 @@
 
 .tag-cell {
     padding: 3px;
+    margin-inline-start: auto;
 }
 
 .item-tag {
@@ -592,10 +594,9 @@ input.input-text {
 .setting-row {
     display: flex;
     align-items: center;
-    width: 10%;
     
     > .setting-title {
-        width: 20rem;
+        margin-inline-end: clamp(2rem, 15vw, 10rem);
     }
 }
 

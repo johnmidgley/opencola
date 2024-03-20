@@ -16,8 +16,8 @@
   (:require
    [reagent.core :as r] 
    [opencola.web-ui.model.feed :as model]
-   [opencola.web-ui.time :refer [format-time]]
-   [opencola.web-ui.view.common :refer [md->component simple-mde button-component edit-control-buttons]]))
+   [opencola.web-ui.time :refer [format-time pretty-format-time]]
+   [opencola.web-ui.view.common :refer [md->component simple-mde button-component edit-control-buttons tool-tip]]))
 
 (defn comment-edit-control [id text state! text-prompt control-buttons-config error!] 
   [:div.comment-edit-control
@@ -96,7 +96,12 @@
            [:div.item-comment-container 
             [md->component {:class (str "item-comment-text markdown-text " (when editable? "own-comment"))} text]])
          [:div.item-attribution
-          [:span.authority {:on-click #(on-click-authority authority-name)} authority-name] " " (format-time epoch-second) " "
+          [:span.authority-time 
+           [:span.authority {:on-click #(on-click-authority authority-name)} authority-name] 
+           " (" 
+           (pretty-format-time epoch-second) 
+           ") " 
+           [tool-tip {:text (format-time epoch-second) :tip-position "tip-bottom"}]]
           [button-component {:icon-class "icon-reply" :class "comment-button" :tool-tip-text "Reply"} #(swap! replying?! not)]
           (when editable?
             [button-component {:class "comment-button edit-comment-button" :icon-class "icon-edit"} #(swap! editing?! not)])]

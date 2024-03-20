@@ -36,9 +36,10 @@
 
 (defn tool-tip [config]
   (let [{text :text
-         tip-position :tip-position} config]
+         tip-position :tip-position
+         class :class} config]
     [:tool-tip 
-     {:class "tool-tip" 
+     {:class (str "tool-tip " (when class class))
       :role "tooltip" 
       :data-tip-position (or tip-position "tip-top")} 
      text]))
@@ -60,13 +61,13 @@
      [:span.item-name.title "Snap! "problem-text]
      (when (= page :peers)
        [:div.instructions
-        [:span.instruction "Click " [:img.example-img {:src "img/svg/new-peer.svg" :width 25 :height 25}] " to add new peers."]])
+        [:span.instruction "Click " [icon {:icon-class "icon-new-peer" :class "example-img"}] " to add new peers."]])
      (when (= page :feed)
        [:div.instructions
-        [:span.instruction "Click " [:img.example-img {:src "img/svg/new-post.svg" :width 25 :height 25}] " to add a post."]
-        [:span.instruction "Click " [:img.example-img {:src "img/svg/peers.svg" :width 25 :height 25}] " to open the peers page."]])
-     [:span.instruction "Click "[:img.example-img {:src "img/svg/menu.svg" :width 25 :height 25}] " then "
-      [:img.example-img {:src "img/svg/help.svg" :width 25 :height 25}]
+        [:span.instruction "Click " [icon {:icon-class "icon-new-post" :class "example-img"}] " to add a post."]
+        [:span.instruction "Click " [icon {:icon-class "icon-peers" :class "example-img"}] " to open the peers page."]])
+     [:span.instruction "Click "[icon {:icon-class "icon-menu" :class "example-img"}] " then "
+      [icon {:icon-class "icon-help" :class "example-img"}]
       " to browse the help page!"]]]])
 
 (defn button-component [config on-click!]
@@ -278,7 +279,7 @@
      (if img?
        [:img.profile-img {:src image-uri :alt name}]
        (if (not= name "")
-         [:span.generated-img {:style {:background-color (create-hsl id 65 75)}} (string/upper-case (initials name))]
+         [:span.generated-img {:style {:background-color (when id (create-hsl id 65 75)) :color (when (not id) "var(--text-color)")}} (string/upper-case (initials name))]
          [icon {:icon-class "icon-persona"}]))]))
 
 (defn edit-control-buttons [config error!]

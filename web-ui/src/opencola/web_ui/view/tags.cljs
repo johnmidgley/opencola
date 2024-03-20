@@ -14,7 +14,8 @@
 
 (ns opencola.web-ui.view.tags
   (:require [clojure.string :as str]
-            [opencola.web-ui.time :refer [format-time]]))
+            [opencola.web-ui.time :refer [format-time pretty-format-time]]
+            [opencola.web-ui.view.common :refer [tool-tip]]))
 
 (defn tag [name on-click]
   (let [params (if on-click {:on-click #(on-click name)} {})]
@@ -39,7 +40,8 @@
          epoch-second :epochSecond} tag-action]
     [:tr.item-attribution
      [:td [:span.authority {:on-click #(on-click-authority authority-name)} authority-name]]
-     [:td (format-time epoch-second)]
+     [:td "("(pretty-format-time epoch-second)")"
+      [tool-tip {:text (format-time epoch-second) :tip-position "tip-bottom"}]] 
      [:td.tag-cell (tag (:value tag-action) on-click-tag)]]))
 
 (defn item-tags [expanded?! actions on-click-authority on-click-tag]
