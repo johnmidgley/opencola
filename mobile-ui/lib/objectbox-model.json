@@ -1,0 +1,71 @@
+{
+  "_note1": "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
+  "_note2": "ObjectBox manages crucial IDs for your object model. See docs for details.",
+  "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
+  "entities": [
+    {
+      "id": "1:6929792767577550342",
+      "lastPropertyId": "4:2861031227636882481",
+      "name": "AppStorage",
+      "properties": [
+        {
+          "id": "1:6511485304696962630",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "4:2861031227636882481",
+          "name": "appBlob",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "2:4317378272155289943",
+      "lastPropertyId": "6:8761966336877804195",
+      "name": "CredentialStorage",
+      "properties": [
+        {
+          "id": "1:6593354769173429928",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "3:1746982385847571406",
+          "name": "password",
+          "type": 9
+        },
+        {
+          "id": "5:760354633776900076",
+          "name": "authToken",
+          "type": 9
+        },
+        {
+          "id": "6:8761966336877804195",
+          "name": "ipAddress",
+          "type": 9
+        }
+      ],
+      "relations": []
+    }
+  ],
+  "lastEntityId": "2:4317378272155289943",
+  "lastIndexId": "0:0",
+  "lastRelationId": "0:0",
+  "lastSequenceId": "0:0",
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
+  "retiredEntityUids": [],
+  "retiredIndexUids": [],
+  "retiredPropertyUids": [
+    2538400187845017684,
+    2457578134782849538,
+    4064629172800067713,
+    4387436767629335278
+  ],
+  "retiredRelationUids": [],
+  "version": 1
+}
