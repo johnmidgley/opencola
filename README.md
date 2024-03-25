@@ -88,8 +88,8 @@ like Solid and Mastadon could easily be integrated into OpenCola
 applications.
 
 Because of its design, OpenCola is agnostic to network toplogy and has
-the flexibility to operate on any scale from pure peer-to-peer all the
-way to fully centralized.
+the flexibility to operate on any scale from pure peer-to-peer (to maximize privacy) all the
+way to fully centralized (to maximize convenience).
 
 # Navigating the Code
 
