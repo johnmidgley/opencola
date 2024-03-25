@@ -17,7 +17,7 @@
    [reagent.core :as r]
    [opencola.web-ui.app-state :as state]
    [opencola.web-ui.view.common :refer [input-checkbox error-control text-input-component button-component 
-                                        edit-control-buttons empty-page-instructions swap-atom-data! profile-img]]
+                                        edit-control-buttons empty-page-instructions swap-atom-data! profile-img icon]]
    [opencola.web-ui.model.peer :as model]
    [opencola.web-ui.view.search :as search]
    [opencola.web-ui.location :as location]))
@@ -87,7 +87,7 @@
               #(swap-atom-data! % p! :id)] ])
           
           [input-checkbox 
-           {:checked (:isActive @p!) :disabled (not @editing?!) :icon-class "icon-refresh" :name "peer-active" :icon-tool-tip-text "Sync"} 
+           {:checked (:isActive @p!) :disabled (not @editing?!) :icon-class "icon-refresh" :name "peer-active" :tool-tip-text "Sync"} 
            #(swap! p! assoc-in [:isActive] (-> % .-target .-checked))]]
          
          (when (not @editing?!)
@@ -106,6 +106,9 @@
             error!]
            [button-component {:text "Edit" :class " edit-control-button edit-button"} #(reset! editing?! true)])]))))
 
+(def token-instruction-text 
+  "Give 'Your token' to your peer, and enter the token given by your peer into the 'Peer token' box. Then click save.")
+
 (defn add-peer-item [persona-id peers! adding-peer?!]
   (let [send-token! (r/atom "Loading...")
         receive-token! (r/atom "")
@@ -118,15 +121,29 @@
         [:div.list-item 
          [profile-img nil ""]
          [:div.peer-info
-          [text-input-component {:value @send-token! :title "Your token: " :disabled true :class "no-wrap" :copy-button true :name "your-key"} #()]
-          [text-input-component {:value @receive-token! :title "Thier token:" :class "no-wrap" :name "their-key"} #(reset! receive-token! (-> % .-target .-value))]
-          [edit-control-buttons {:on-save (fn []
-                                            (model/token-to-peer
-                                             @receive-token!
-                                             #(reset! peer! %)
-                                             #(reset! error! %)))
-                                 :on-cancel #(reset! adding-peer?! false)}
-            error!]]]))))
+          [text-input-component 
+           {:value @send-token! 
+            :title "Your token: " 
+            :disabled true 
+            :class "no-wrap" 
+            :copy-button true 
+            :name "your-key" 
+            :copy-button-class "copy-token-button"}
+           #()]
+          [text-input-component 
+           {:value @receive-token! 
+            :title "Peer token:" 
+            :class "no-wrap" 
+            :name "their-key"} 
+           #(reset! receive-token! (-> % .-target .-value))]
+          [:div.add-peer-footer [edit-control-buttons {:on-save (fn []
+                                                  (model/token-to-peer
+                                                   @receive-token!
+                                                   #(reset! peer! %)
+                                                   #(reset! error! %)))
+                                       :on-cancel #(reset! adding-peer?! false)}
+                 error!]
+           [icon {:icon-class "icon-help" :wrapper-class "help-indicator" :tool-tip-class "help-indicator-text" :tool-tip-text token-instruction-text}]]]]))))
 
 (defn peer-list [persona-id peers! adding-peer?!]
   (when @peers!

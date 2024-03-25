@@ -73,7 +73,7 @@
            #(swap-atom-data! % persona! :name)] 
           
           [text-input-component 
-           {:value (:address @persona!) :disabled (not @editing?!) :icon-class "icon-link" :name "persona-link" :icon-tooltip-text "Link"} 
+           {:value (:address @persona!) :disabled (not @editing?!) :icon-class "icon-link" :name "persona-link" :icon-tool-tip-text "Link"} 
            #(swap-atom-data! % persona! :address)]
           
           [text-input-component 
@@ -91,7 +91,7 @@
               #(swap-atom-data! % persona! :publicKey)]])
           
           [input-checkbox 
-           {:checked (:isActive @persona!) :disabled (not @editing?!) :icon-class "icon-refresh" :name "persona-active" :icon-tool-tip-text "Sync"} 
+           {:checked (:isActive @persona!) :disabled (not @editing?!) :icon-class "icon-refresh" :name "persona-active" :tool-tip-text "Sync"} 
            #(swap! persona! assoc-in [:isActive] (-> % .-target .-checked))]]
          
          (when (not @editing?!) 

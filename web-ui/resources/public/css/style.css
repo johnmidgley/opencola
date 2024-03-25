@@ -162,10 +162,6 @@
     border-radius: 1rem;
     padding-left: .5rem;
 
-    & .icon {
-        height: 75%;
-    }
-
     &:hover {
         cursor: pointer;
         background-color: var(--button-hover-bg-color);
@@ -498,7 +494,16 @@
     width: 100%;
 }
 
+.add-peer-footer {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    --icon-size: 1.6rem;
 
+    > .help-indicator {
+        margin-top: 10px;
+    }
+}
 
 input.input-text {
     font-size: 1rem;

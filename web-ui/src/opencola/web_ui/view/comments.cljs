@@ -104,7 +104,7 @@
            [tool-tip {:text (format-time epoch-second) :tip-position "tip-bottom"}]]
           [button-component {:icon-class "icon-reply" :class "comment-button" :tool-tip-text "Reply"} #(swap! replying?! not)]
           (when editable?
-            [button-component {:class "comment-button edit-comment-button" :icon-class "icon-edit"} #(swap! editing?! not)])]
+            [button-component {:class "comment-button edit-comment-button" :icon-class "icon-edit" :tool-tip-text "Edit"} #(swap! editing?! not)])]
          (when @replying?!
            [:reply-block
             [create-comment-control

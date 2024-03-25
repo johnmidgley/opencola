@@ -38,7 +38,7 @@
   (let [{text :text
          tip-position :tip-position
          class :class} config]
-    [:tool-tip 
+    [:tool-tip
      {:class (str "tool-tip " (when class class))
       :role "tooltip" 
       :data-tip-position (or tip-position "tip-top")} 
@@ -50,8 +50,12 @@
 (defn icon [config]
   (let [{class :class
          icon-class :icon-class
-         tool-tip-text :tool-tip-text} config]
-    [:span.icon {:class (str (when class (str class " ")) icon-class)} (when tool-tip-text [tool-tip {:text tool-tip-text}])]))
+         wrapper-class :wrapper-class
+         tool-tip-text :tool-tip-text
+         tool-tip-class :tool-tip-class} config]
+    [:div.icon-wrapper {:class (when wrapper-class wrapper-class)}
+     [:span.icon {:class (str (when class (str class " ")) icon-class)}]
+     (when tool-tip-text [tool-tip {:text tool-tip-text :class tool-tip-class}])]))
 
 (defn empty-page-instructions [page problem-text]
   [:div.content-list
@@ -83,7 +87,8 @@
                                :on-click on-click!
                                :name name
                                :disabled (when (not (nil? disabled?)) disabled?)
-                               :class (when class class)}
+                               :class (when class class)
+                               }
      (when tool-tip-text
        [tool-tip {:text tool-tip-text :tip-position tip-position}])
      (when icon-class
@@ -93,6 +98,15 @@
      (when text
        [:span.button-text text])]))
 
+(defn copy-button-component [config copy-text]
+  (let [{class :class} config
+        is-active (r/atom false)]
+    (fn []
+      [button-component {
+                         :icon-class "icon-copy" 
+                         :class (str "action-button " (when class class) (when @is-active " copy-active"))} 
+       (fn [] (js/setTimeout #(reset! is-active false) 1000) (reset! is-active true) (copy-to-clipboard copy-text))])))
+
 (defn text-input-component [config on-change]
   (let [{value :value
          placeholder :placeholder
@@ -100,23 +114,29 @@
          disabled? :disabled
          icon-class :icon-class
          icon-tool-tip-text :icon-tool-tip-text
+         help-text :help-text
          title :title
          class :class
          name :name
-         copy-button :copy-button} config]
-    [:div.text-input-wrapper {:class (when class class)}
+         copy-button :copy-button
+         copy-button-class :copy-button-class} config]
+    [:div.text-input-wrapper {:class class}
      (when title [:span.text-input-title title])
      (when icon-class [icon {:icon-class icon-class :tool-tip-text icon-tool-tip-text}])
      [:input.reset.text-input-component
       {:type "text"
-       :placeholder (when placeholder placeholder)
+       :placeholder placeholder
        :disabled disabled?
        :name name
        :value value
        :on-change on-change
        :on-keyUp on-key-up}]
      (when copy-button 
-       [button-component {:icon-class "icon-copy" :class "action-button" :tool-tip-text "Copy"} #(copy-to-clipboard value)])]))
+       [copy-button-component 
+        {:class (str "copy-button " copy-button-class)} 
+        value])
+     (when help-text
+       [icon {:icon-class "icon-help" :wrapper-class "help-indicator" :tool-tip-text help-text}])]))
 
 (defn input-checkbox [config on-change]
   (let [{checked? :checked
@@ -124,11 +144,12 @@
          title :title
          icon-class :icon-class
          name :name
-         class :class} config] 
+         class :class
+         tool-tip-text :tool-tip-text} config] 
     [:div.input-checkbox-wrapper {:class (when class class)}
      (when title 
        [:span.input-checkbox-title title])
-     (when icon-class [icon {:icon-class icon-class}])
+     (when icon-class [icon {:icon-class icon-class :tool-tip-text tool-tip-text}]) 
      [:input.input-checkbox
       {:type "checkbox"
        :disabled disabled?
