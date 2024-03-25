@@ -102,7 +102,7 @@
                                                 (reset! p! peer)
                                                 (when adding-peer?! (reset! adding-peer?! false))
                                                 (reset! editing?! false))
-                                  :on-delete (fn [] (delete-peer persona-id peers! p! #(reset! error! %)))}  
+                                  :on-delete (fn [] (delete-peer persona-id peers! p! #(reset! error! %)))}
             error!]
            [button-component {:text "Edit" :class " edit-control-button edit-button"} #(reset! editing?! true)])]))))
 

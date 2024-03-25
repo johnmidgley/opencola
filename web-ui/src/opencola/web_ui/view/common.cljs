@@ -39,7 +39,7 @@
          tip-position :tip-position
          class :class} config]
     [:tool-tip
-     {:class (str "tool-tip " (when class class))
+     {:class (str "tool-tip " class)
       :role "tooltip" 
       :data-tip-position (or tip-position "tip-top")} 
      text]))
@@ -53,7 +53,7 @@
          wrapper-class :wrapper-class
          tool-tip-text :tool-tip-text
          tool-tip-class :tool-tip-class} config]
-    [:div.icon-wrapper {:class (when wrapper-class wrapper-class)}
+    [:div.icon-wrapper {:class wrapper-class}
      [:span.icon {:class (str (when class (str class " ")) icon-class)}]
      (when tool-tip-text [tool-tip {:text tool-tip-text :class tool-tip-class}])]))
 
@@ -87,7 +87,7 @@
                                :on-click on-click!
                                :name name
                                :disabled (when (not (nil? disabled?)) disabled?)
-                               :class (when class class)
+                               :class class
                                }
      (when tool-tip-text
        [tool-tip {:text tool-tip-text :tip-position tip-position}])
@@ -104,7 +104,7 @@
     (fn []
       [button-component {
                          :icon-class "icon-copy" 
-                         :class (str "action-button " (when class class) (when @is-active " copy-active"))} 
+                         :class (str "action-button " class (when @is-active " copy-active"))} 
        (fn [] (js/setTimeout #(reset! is-active false) 1000) (reset! is-active true) (copy-to-clipboard copy-text))])))
 
 (defn text-input-component [config on-change]
@@ -146,7 +146,7 @@
          name :name
          class :class
          tool-tip-text :tool-tip-text} config] 
-    [:div.input-checkbox-wrapper {:class (when class class)}
+    [:div.input-checkbox-wrapper {:class class}
      (when title 
        [:span.input-checkbox-title title])
      (when icon-class [icon {:icon-class icon-class :tool-tip-text tool-tip-text}]) 
@@ -312,7 +312,7 @@
          delete-text :delete-text
          save-disabled? :save-disabled
          class :class} config]
-    [:div.edit-control-buttons {:class (when class class)}
+    [:div.edit-control-buttons {:class class}
      [button-component {:class "edit-control-button"
                         :name "save-button"
                         :text (if save-text save-text "Save") 

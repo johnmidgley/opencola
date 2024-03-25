@@ -540,7 +540,7 @@
        [error-control (state/error!)]
        (when @creating-post?!
          (let [edit-item! (r/atom (edit-item))
-               error! (r/atom nil)] 
+               error! (r/atom nil)]
            [:div.content-list.edit-list
             [edit-item-control
              (when (not @persona-id!) personas!)

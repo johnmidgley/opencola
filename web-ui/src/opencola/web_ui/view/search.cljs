@@ -65,7 +65,7 @@
   [:div.container.header-actions
    (when (= page :feed)
      [:div.container
-      [button-component {:class "action-button" :icon-class "icon-new-post" :tool-tip-text "Add new post" :tip-position "tip-bottom"} #(swap! adding-item?! not)] 
+      [button-component {:class "action-button" :icon-class "icon-new-post" :tool-tip-text "Add new post" :tip-position "tip-bottom"} #(swap! adding-item?! not)]
       [button-component {:class "action-button" :icon-class "icon-peers" :tool-tip-text "Peers page" :tip-position "tip-bottom"} #(location/set-page! :peers)]])
    (when (= page :peers)
      [:div.container
