@@ -41,7 +41,7 @@
     --item-attribution-color: var(--muted-color);
 
     --comment-bg-color: var(--secondary-color);
-    --comment-text-coloe: var(--text-color);
+    --comment-text-color: var(--text-color);
     --own-comment-bg-color: var(--secondary-color);
 
     --tag-bg-color: var(--secondary-color);
@@ -218,6 +218,10 @@ button,
         &:disabled {
             color: gray;
         }
+    }
+
+    > .text-input-title {
+        min-width: 5rem;
     }
 }
 
@@ -488,10 +492,6 @@ button,
     }
 }
 
-.popout-menu-content {
-    width: var(--content-width, 5rem)
-}
-
 .select-menu-wrapper {
     position: relative;
     z-index: 1;
@@ -522,6 +522,7 @@ button,
         &[aria-expanded=true] {
             border-bottom-right-radius: 0;
             border-bottom-left-radius: 0;
+            border-bottom: 0;
         }
     }
 
@@ -532,12 +533,13 @@ button,
         -webkit-box-sizing: border-box;
         -moz-box-sizing: border-box;
         overflow: hidden;
-        border-top: 0;
         position: absolute;
+        min-width: var(--content-width, 5rem);;
         top: 100%;
-        width: var(--content-width, 5rem);
+        left: 0%;
         border-bottom-left-radius: var(--br-value, 1rem);
         border-bottom-right-radius: var(--br-value, 1rem);
+        border-top: var(--border-size) solid var(--border-color);
     }
 
     & .current-item {
@@ -581,7 +583,7 @@ button,
     }
 }
 
-:has(> tool-tip) {
+:has(tool-tip) {
     position: relative;
 
     &:is(:hover, :focus-visible, :active) > tool-tip {
@@ -612,15 +614,20 @@ button,
 
     &:is([data-tip-position="tip-top"]) {
         inset-inline-start: 50%;
-        inset-block-end: 130%;
+        inset-block-end: clamp(1rem, 130%, 5rem);
         --x: -50%;
     }
 
     &:is([data-tip-position="tip-bottom"]) {
         inset-inline-start: 50%;
-        inset-block-end: -80%;
+        inset-block-end: clamp(-1.5rem, -90%, -3rem);
         --x: -50%;
     }
+}
+
+.help-indicator-text {
+    text-align: center;
+    text-wrap: balance;
 }
 
 .markdown-text {
@@ -639,7 +646,6 @@ button,
     gap: .3rem;
     align-items: center;
     font-size: .9rem;
-    /* background-color: var(--secondary-color); */
     border: var(--border-size) solid var(--border-color);
     padding: .2rem .4rem;
     border-radius: 1rem;
@@ -673,4 +679,22 @@ button,
     display: inline;
     vertical-align: baseline;
     margin-inline: .2rem;
+}
+
+.copy-button {
+    position: relative;
+}
+
+.copy-active {
+    
+    :before {
+        content: "Copied";
+        position: absolute;
+        bottom: 120%;
+        right: -50%;
+        background-color: var(--secondary-color, white);
+        color: var(--text-color);
+        padding: .4rem .6rem;
+        border-radius: 1rem;
+    }
 }

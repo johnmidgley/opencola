@@ -13,15 +13,16 @@
 ; limitations under the License.
 
 (ns opencola.web-ui.view.likes
-  (:require [opencola.web-ui.time :refer [format-time]]
-            [opencola.web-ui.view.common :refer [button-component]]))
+  (:require [opencola.web-ui.time :refer [format-time pretty-format-time]]
+            [opencola.web-ui.view.common :refer [button-component tool-tip]]))
 
 (defn item-like [like-action on-click-authority]
   (let [{authority-name :authorityName
          epoch-second :epochSecond} like-action]
     [:tr.item-attribution
-     [:td [:span.authority {:on-click #(on-click-authority authority-name)} authority-name]]
-     [:td (format-time epoch-second)]]))
+     [:td [:span.authority {:on-click #(on-click-authority authority-name)} authority-name ":"]]
+     [:td "("(pretty-format-time epoch-second)")"
+      [tool-tip {:text (format-time epoch-second) :tip-position "tip-bottom"}]]]))
 
 ;; TODO: Templatize this - same for saves and comments
 (defn item-likes [expanded?! like-actions on-click-authority]

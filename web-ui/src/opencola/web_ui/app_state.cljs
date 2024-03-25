@@ -64,20 +64,6 @@
   ([personas] 
    (reset! (personas!) personas)))
 
-(defn theme!
-  ([]
-   (:theme! app-state))
-  ([theme]
-   ;; TODO: flesh out settings implementation
-   (PUT "/storage/settings.json" {:theme-name theme} #() #())
-   (reset! (theme!) theme)))
-
-(defn themes!
-  ([]
-   (:themes! app-state))
-  ([themes]
-   (reset! (themes!) themes)))
-
 (defn query! 
   ([]
    (:query! app-state))
@@ -108,3 +94,16 @@
   ([settings]
    (PUT "/storage/settings.json" settings #() #())
    (reset! (settings!) settings)))
+
+(defn theme!
+  ([]
+   (:theme! app-state))
+  ([theme]
+   (settings! (assoc @(settings!) :theme-name theme))
+   (reset! (theme!) theme)))
+
+(defn themes!
+  ([]
+   (:themes! app-state))
+  ([themes]
+   (reset! (themes!) themes)))

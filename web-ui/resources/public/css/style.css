@@ -162,10 +162,6 @@
     border-radius: 1rem;
     padding-left: .5rem;
 
-    & .icon {
-        height: 75%;
-    }
-
     &:hover {
         cursor: pointer;
         background-color: var(--button-hover-bg-color);
@@ -244,6 +240,7 @@
     overflow: hidden;
 
     & .item-img {
+        max-height: 35rem;
         width: 100%;
     }
 
@@ -456,6 +453,7 @@
 
 .tag-cell {
     padding: 3px;
+    margin-inline-start: auto;
 }
 
 .item-tag {
@@ -496,7 +494,16 @@
     width: 100%;
 }
 
+.add-peer-footer {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    --icon-size: 1.6rem;
 
+    > .help-indicator {
+        margin-top: 10px;
+    }
+}
 
 input.input-text {
     font-size: 1rem;
@@ -592,10 +599,9 @@ input.input-text {
 .setting-row {
     display: flex;
     align-items: center;
-    width: 10%;
     
     > .setting-title {
-        width: 20rem;
+        margin-inline-end: clamp(2rem, 15vw, 10rem);
     }
 }
 
@@ -620,11 +626,12 @@ input.input-text {
     border-left: var(--border-size) solid var(--border-color);
 
     a {
-        color: var(--text-color);
+        color: var(--tertiary-color);
     }
 
     a:hover {
         color: var(--text-color-contrast);
+        background: var(--button-hover-bg-color);
     }
 }
 

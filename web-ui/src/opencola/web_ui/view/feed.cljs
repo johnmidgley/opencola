@@ -20,7 +20,7 @@
             [opencola.web-ui.app-state :as state]
             [opencola.web-ui.util :refer [distinct-by]]
             [opencola.web-ui.common :refer [toggle-atom]]
-            [opencola.web-ui.time :refer [format-time]]
+            [opencola.web-ui.time :refer [format-time pretty-format-time]]
             [opencola.web-ui.window :as window]
             [opencola.web-ui.model.feed :as model :refer [upload-files
                                                           upload-result-to-attachments]]
@@ -206,7 +206,7 @@
                            false)
              } 
             #(reset! tags! (-> % .-target .-value))]
-           [edit-control-buttons {:on-save on-save :on-cancel #(reset! tagging?! false)} false error!]])))))
+           [edit-control-buttons {:on-save on-save :on-cancel #(reset! tagging?! false)} error!]])))))
 
 
 (defn item-activities [persona-id! personas! feed! item editing?! on-click-authority on-click-tag]
@@ -261,16 +261,18 @@
            on-click-authority] 
           [error-control error!]]]))))
 
-(defn posted-by [summary on-click-authority posted-time]
+(defn posted-by [summary on-click-authority posted-epoch-second]
   (let [posted-by (:postedBy summary)
         name (:name posted-by)
         origin-distance (or (:originDistance summary) 0)
-        display-name (if (:isPersona posted-by) (str "You (" name ")") name)] 
+        display-name (if (:isPersona posted-by) (str "You (" name ")") name)
+        posted-time (format-time posted-epoch-second)
+        pretty-posted-time (pretty-format-time posted-epoch-second)] 
     [:div.posted-by
      [profile-img (:imageUri posted-by) name (:id posted-by) #(on-click-authority name)]
      [:div.posted-info
       [:span.authority {:on-click #(on-click-authority name)} display-name]
-      [:span.posted-time posted-time]]
+      [:span.posted-time pretty-posted-time [tool-tip {:text posted-time :tip-position "tip-bottom"}]]]
      (when (> origin-distance 0) 
        [:div.origin-distance 
         [tool-tip {:text (str "Originally bubbled by a user " origin-distance (if (= origin-distance 1) " degree" " degrees") " away")}]
@@ -301,11 +303,11 @@
          [:a {:href item-uri :target "_blank"} img])])))
 
 (defn display-feed-item [persona-id! personas! feed! item editing?! on-click-authority on-click-tag]
-  (let [summary (:summary item) 
-        posted-time (-> item :activities :bubble first :epochSecond format-time)]
+  (let [summary (:summary item)
+        posted-epoch-second (-> item :activities :bubble last :epochSecond)] 
     (fn [] 
       [:div.list-item
-       [posted-by summary on-click-authority posted-time]
+       [posted-by summary on-click-authority posted-epoch-second]
        [item-name summary] 
        [item-tags-summary (-> item :activities :tag) on-click-tag]
        [:div.item-body
@@ -409,15 +411,14 @@
             [tags-edit-control (:tags @edit-item!) #(swap! edit-item! assoc-in [:tags] (-> % .-target .-value))])
           (when @commenting?!
             [:div.item-comment-edit
-             [comment-edit-control (:entity-id @edit-item!) nil comment-state!]])]
+             [comment-edit-control (:entity-id @edit-item!) nil comment-state! nil nil error!]])]
          [edit-control-buttons {:on-save (fn []
                                                        ; nil check on comment-state! needed, since it may not be opened
                                            (when @comment-state! (swap! edit-item! assoc-in [:comment] (.value @comment-state!)))
                                            (swap! edit-item! assoc-in [:description] (.value @description-state!))
                                            (on-save @persona-id!))
                                 :on-cancel on-cancel
-                                :on-delete on-delete}
-          deletable? error!]]))))
+                                :on-delete on-delete} error!]]))))
 
 
 (defn delete-feed-item [feed! entity-id]
@@ -515,6 +516,9 @@
   (let [name (first (string/split (string/replace authority-name #"You \(|\)" "") #"\s+"))]
     (on-search (toggle-term query (str "@" name)))))
 
+(defn find-most-recent-post [feed]
+  (first (filter #(get-in % [:summary :postedBy :isPersona]) (:results feed))))
+
 ;; TODO: Make parameter ordering consistent. Some places have persona-id then personas, others
 ;; are the other way around.
 ;; TODO: Only pass atoms when necessary. There are some cases where the personas! is passed, when @personas! 
@@ -540,7 +544,7 @@
            [:div.content-list.edit-list
             [edit-item-control
              (when (not @persona-id!) personas!)
-             (r/atom (or @persona-id! (-> @personas! :items first :id)))
+             (r/atom (or @persona-id! (-> (find-most-recent-post @feed!) :summary :postedBy :id) (-> @personas! :items first :id)))
              nil
              edit-item!
              error!

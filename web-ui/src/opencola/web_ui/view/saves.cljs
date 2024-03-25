@@ -14,8 +14,8 @@
 
 (ns opencola.web-ui.view.saves 
   (:require [opencola.web-ui.model.feed :as model]
-            [opencola.web-ui.time :refer [format-time]]
-            [opencola.web-ui.view.common :refer [icon]]))
+            [opencola.web-ui.time :refer [format-time pretty-format-time]]
+            [opencola.web-ui.view.common :refer [icon tool-tip]]))
 
 (defn data-url [data-id]
   (when data-id
@@ -27,7 +27,8 @@
          data-id :id} save-action]
     [:tr.item-attribution
      [:td [:span.authority {:on-click #(on-click-authority authority-name)} authority-name] " "]
-     [:td (format-time epoch-second)]
+     [:td "("(pretty-format-time epoch-second)")"
+      [tool-tip {:text (format-time epoch-second) :tip-position "tip-bottom"}]] 
      [:td
       (when data-id
         [:span.flex

@@ -16,7 +16,8 @@
   (:require
    [cljs-time.coerce :as c]
    [cljs-time.format :as f]
-   [cljs-time.core :as t]))
+   [cljs-time.core :as t]
+   [cljs-time.local :refer [local-now to-local-date-time]]))
 
 (defn timezone-to-offset-seconds [[sign hours minutes seconds]]
   (* (if (= sign :-) -1 1) (+ (* hours 3600) (* minutes 60) seconds)))
@@ -27,3 +28,29 @@
   (f/unparse 
    (f/formatter "yyyy-MM-dd hh:mm A") 
    (c/from-long (* (+ epoch-second timezone-offset-seconds) 1000))))
+
+(def seconds-in 
+  {:second 1
+   :minute 60
+   :hour 3600
+   :day 86400
+   :week 604800
+   :month 2419200
+   :year 29030400})
+
+(defn prettify-time-interval [seconds unit]
+  (let [interval-value (-> seconds (/ (seconds-in unit)) int)]
+    (str interval-value " " (name unit) (when (> interval-value 1) "s"))))
+
+(defn pretty-format-time [posted-epoch-second]
+  (let [local-epoch-second (int (/ (c/to-long (t/now)) 1000)) 
+        difference (- local-epoch-second posted-epoch-second)
+        prettify (fn [d u] (str (prettify-time-interval d u) " ago"))]
+    (condp >= difference
+      (seconds-in :minute) (prettify difference :second)
+      (seconds-in :hour) (prettify difference :minute)
+      (seconds-in :day) (prettify difference :hour)
+      (seconds-in :week) (prettify difference :day)
+      (seconds-in :month) (prettify difference :week)
+      (seconds-in :year) (prettify difference :month)
+      (prettify difference :year))))

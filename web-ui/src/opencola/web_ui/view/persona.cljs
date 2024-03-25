@@ -73,7 +73,7 @@
            #(swap-atom-data! % persona! :name)] 
           
           [text-input-component 
-           {:value (:address @persona!) :disabled (not @editing?!) :icon-class "icon-link" :name "persona-link" :icon-tooltip-text "Link"} 
+           {:value (:address @persona!) :disabled (not @editing?!) :icon-class "icon-link" :name "persona-link" :icon-tool-tip-text "Link"} 
            #(swap-atom-data! % persona! :address)]
           
           [text-input-component 
@@ -91,7 +91,7 @@
               #(swap-atom-data! % persona! :publicKey)]])
           
           [input-checkbox 
-           {:checked (:isActive @persona!) :disabled (not @editing?!) :icon-class "icon-refresh" :name "persona-active" :icon-tool-tip-text "Sync"} 
+           {:checked (:isActive @persona!) :disabled (not @editing?!) :icon-class "icon-refresh" :name "persona-active" :tool-tip-text "Sync"} 
            #(swap! persona! assoc-in [:isActive] (-> % .-target .-checked))]]
          
          (when (not @editing?!) 
@@ -104,7 +104,7 @@
                                                 (reset! persona! persona)
                                                 (reset! editing?! false))
                                   :on-delete #(delete-persona personas! persona! on-error)} 
-            true error!] 
+             error!] 
            [button-component {:text "Edit" :class " edit-control-button edit-button" :name "edit-button"} #(reset! editing?! true)])]))))
 
 (def empty-persona
@@ -121,7 +121,7 @@
     (fn []
       (let [image-uri (:imageUri @persona!)]
         [:div.list-item
-         [profile-img image-uri (:name @persona!) (:id @persona!)]
+         [profile-img image-uri (:name @persona!) nil]
          [:div.peer-info
           [text-input-component {:value (:name @persona!) :icon-class "icon-persona" :name "persona-name"} #(swap-atom-data! % persona! :name)]
           [text-input-component {:value (:address @persona!) :icon-class "icon-link" :name "persona-link"} #(swap-atom-data! % persona! :address)]
@@ -131,7 +131,7 @@
                                            (create-persona personas! persona! 
                                                            #(reset! adding-persona?! false) 
                                                            #(reset! error! %)))
-                                :on-cancel #(reset! adding-persona?! false)} false error!]]))))
+                                :on-cancel #(reset! adding-persona?! false)} error!]]))))
 
 (defn persona-list [personas! adding-persona?!]
   (when @personas!

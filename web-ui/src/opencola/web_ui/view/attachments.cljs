@@ -15,8 +15,8 @@
 (ns opencola.web-ui.view.attachments
   (:require [opencola.web-ui.util :refer [distinct-by]]
             [opencola.web-ui.ajax :as ajax]
-            [opencola.web-ui.time :refer [format-time]]
-            [opencola.web-ui.view.common :refer [button-component image? keyed-divider]]))
+            [opencola.web-ui.time :refer [format-time pretty-format-time]]
+            [opencola.web-ui.view.common :refer [button-component image? keyed-divider tool-tip]]))
 
 (defn item-attachment [action on-delete on-click-authority]
   (let [{authority-name :authorityName
@@ -25,8 +25,9 @@
          id :id} action]
     [:div.item-attribution
      [:span.authority {:on-click #(on-click-authority authority-name)} authority-name]
-     [:span (format-time epoch-second)]
+     [:span "("(pretty-format-time epoch-second)")"]
      [:a {:href (ajax/resolve-service-url (str "data/" id)) :target "blank"} value]
+     [tool-tip {:text (format-time epoch-second) :tip-position "tip-bottom"}]
      (when on-delete
        [button-component {:icon-class "icon-delete" :class "action-button" } #(on-delete id)])]))
 

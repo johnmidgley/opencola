@@ -15,8 +15,7 @@
 (ns opencola.web-ui.view.common 
   (:require [clojure.string :as string] 
             [goog.string :as gstring]
-            [markdown-to-hiccup.core :as md2hic]
-            [reagent.core :as reagent]
+            [markdown-to-hiccup.core :as md2hic] 
             [opencola.web-ui.location :as location] 
             [reagent.core :as r]))
 
@@ -37,9 +36,10 @@
 
 (defn tool-tip [config]
   (let [{text :text
-         tip-position :tip-position} config]
-    [:tool-tip 
-     {:class "tool-tip" 
+         tip-position :tip-position
+         class :class} config]
+    [:tool-tip
+     {:class (str "tool-tip " class)
       :role "tooltip" 
       :data-tip-position (or tip-position "tip-top")} 
      text]))
@@ -50,8 +50,12 @@
 (defn icon [config]
   (let [{class :class
          icon-class :icon-class
-         tool-tip-text :tool-tip-text} config]
-    [:span.icon {:class (str (when class (str class " ")) icon-class)} (when tool-tip-text [tool-tip {:text tool-tip-text}])]))
+         wrapper-class :wrapper-class
+         tool-tip-text :tool-tip-text
+         tool-tip-class :tool-tip-class} config]
+    [:div.icon-wrapper {:class wrapper-class}
+     [:span.icon {:class (str (when class (str class " ")) icon-class)}]
+     (when tool-tip-text [tool-tip {:text tool-tip-text :class tool-tip-class}])]))
 
 (defn empty-page-instructions [page problem-text]
   [:div.content-list
@@ -61,13 +65,13 @@
      [:span.item-name.title "Snap! "problem-text]
      (when (= page :peers)
        [:div.instructions
-        [:span.instruction "Click " [:img.example-img {:src "img/svg/new-peer.svg" :width 25 :height 25}] " to add new peers."]])
+        [:span.instruction "Click " [icon {:icon-class "icon-new-peer" :class "example-img"}] " to add new peers."]])
      (when (= page :feed)
        [:div.instructions
-        [:span.instruction "Click " [:img.example-img {:src "img/svg/new-post.svg" :width 25 :height 25}] " to add a post."]
-        [:span.instruction "Click " [:img.example-img {:src "img/svg/peers.svg" :width 25 :height 25}] " to open the peers page."]])
-     [:span.instruction "Click "[:img.example-img {:src "img/svg/menu.svg" :width 25 :height 25}] " then "
-      [:img.example-img {:src "img/svg/help.svg" :width 25 :height 25}]
+        [:span.instruction "Click " [icon {:icon-class "icon-new-post" :class "example-img"}] " to add a post."]
+        [:span.instruction "Click " [icon {:icon-class "icon-peers" :class "example-img"}] " to open the peers page."]])
+     [:span.instruction "Click "[icon {:icon-class "icon-menu" :class "example-img"}] " then "
+      [icon {:icon-class "icon-help" :class "example-img"}]
       " to browse the help page!"]]]])
 
 (defn button-component [config on-click!]
@@ -83,7 +87,8 @@
                                :on-click on-click!
                                :name name
                                :disabled (when (not (nil? disabled?)) disabled?)
-                               :class (when class class)}
+                               :class class
+                               }
      (when tool-tip-text
        [tool-tip {:text tool-tip-text :tip-position tip-position}])
      (when icon-class
@@ -93,6 +98,15 @@
      (when text
        [:span.button-text text])]))
 
+(defn copy-button-component [config copy-text]
+  (let [{class :class} config
+        is-active (r/atom false)]
+    (fn []
+      [button-component {
+                         :icon-class "icon-copy" 
+                         :class (str "action-button " class (when @is-active " copy-active"))} 
+       (fn [] (js/setTimeout #(reset! is-active false) 1000) (reset! is-active true) (copy-to-clipboard copy-text))])))
+
 (defn text-input-component [config on-change]
   (let [{value :value
          placeholder :placeholder
@@ -100,23 +114,29 @@
          disabled? :disabled
          icon-class :icon-class
          icon-tool-tip-text :icon-tool-tip-text
+         help-text :help-text
          title :title
          class :class
          name :name
-         copy-button :copy-button} config]
-    [:div.text-input-wrapper {:class (when class class)}
+         copy-button :copy-button
+         copy-button-class :copy-button-class} config]
+    [:div.text-input-wrapper {:class class}
      (when title [:span.text-input-title title])
      (when icon-class [icon {:icon-class icon-class :tool-tip-text icon-tool-tip-text}])
      [:input.reset.text-input-component
       {:type "text"
-       :placeholder (when placeholder placeholder)
+       :placeholder placeholder
        :disabled disabled?
        :name name
        :value value
        :on-change on-change
        :on-keyUp on-key-up}]
      (when copy-button 
-       [button-component {:icon-class "icon-copy" :class "action-button" :tool-tip-text "Copy"} #(copy-to-clipboard value)])]))
+       [copy-button-component 
+        {:class (str "copy-button " copy-button-class)} 
+        value])
+     (when help-text
+       [icon {:icon-class "icon-help" :wrapper-class "help-indicator" :tool-tip-text help-text}])]))
 
 (defn input-checkbox [config on-change]
   (let [{checked? :checked
@@ -124,11 +144,12 @@
          title :title
          icon-class :icon-class
          name :name
-         class :class} config] 
-    [:div.input-checkbox-wrapper {:class (when class class)}
+         class :class
+         tool-tip-text :tool-tip-text} config] 
+    [:div.input-checkbox-wrapper {:class class}
      (when title 
        [:span.input-checkbox-title title])
-     (when icon-class [icon {:icon-class icon-class}])
+     (when icon-class [icon {:icon-class icon-class :tool-tip-text tool-tip-text}]) 
      [:input.input-checkbox
       {:type "checkbox"
        :disabled disabled?
@@ -153,7 +174,7 @@
 ;; https://github.com/reagent-project/reagent/blob/master/doc/CreatingReagentComponents.md
 (defn simple-mde [id placeholder text state!] 
   (fn [] 
-    (reagent/create-class           
+    (r/create-class           
      {:display-name  "my-component"
       
       :component-did-mount         
@@ -235,11 +256,17 @@
 (defn select-menu [config item-collection current-item-id-key! id-key name-key on-select] 
   (let [{class :class
          popout-class :popout-class} config
-        menu-open?! (r/atom false)] 
+        menu-open?! (r/atom false)
+        menu-hovered?! (r/atom false)] 
     (fn []
       (let [selected-item (or (first (filter #(= (id-key %) @current-item-id-key!) item-collection)) (first item-collection))]
-       [:div.select-menu-wrapper {:class class} 
-        [:button.select-menu-toggle.button {:on-click #(swap! menu-open?! not) :on-blur (fn [] (js/setTimeout #(reset! menu-open?! false) 100)) :aria-expanded @menu-open?!}
+       [:div.select-menu-wrapper {:class class
+                                  :on-mouse-enter #(reset! menu-hovered?! true)
+                                  :on-mouse-leave #(reset! menu-hovered?! false)}
+        [:button.select-menu-toggle.button {
+                                            :on-click #(swap! menu-open?! not)
+                                            :on-blur #(when (not @menu-hovered?!) (reset! menu-open?! false)) 
+                                            :aria-expanded @menu-open?!}
          [:span.current-item (name-key selected-item)]
          [icon {:icon-class (if @menu-open?! "icon-hide" "icon-show")}]]
         [popout-menu
@@ -268,15 +295,15 @@
 
 (defn profile-img [image-uri name id on-click!]
   (let [name (if name (string/replace name #"\)|You \(" "") name)
-        img? (some? (seq image-uri))] 
+        img? (some? (seq image-uri))]
     [:div.profile-img-wrapper {:on-click on-click! :data-img-present img?}
      (if img?
        [:img.profile-img {:src image-uri :alt name}]
        (if (not= name "")
-         [:span.generated-img {:style {:background-color (create-hsl id 65 75)}} (string/upper-case (initials name))]
+         [:span.generated-img {:style {:background-color (when id (create-hsl id 65 75)) :color (when (not id) "var(--text-color)")}} (string/upper-case (initials name))]
          [icon {:icon-class "icon-persona"}]))]))
 
-(defn edit-control-buttons [config deletable? error!]
+(defn edit-control-buttons [config error!]
   (let [{on-save :on-save
          on-cancel :on-cancel
          on-delete :on-delete
@@ -285,7 +312,7 @@
          delete-text :delete-text
          save-disabled? :save-disabled
          class :class} config]
-    [:div.edit-control-buttons {:class (when class class)}
+    [:div.edit-control-buttons {:class class}
      [button-component {:class "edit-control-button"
                         :name "save-button"
                         :text (if save-text save-text "Save") 
@@ -295,7 +322,7 @@
                         :name "cancel-button"
                         :text (if cancel-text cancel-text "Cancel")} 
       on-cancel]
-     (when deletable?
+     (when on-delete 
       [button-component {:class "edit-control-button delete-button caution-color"
                          :name "delete-button"
                          :text (if delete-text delete-text "Delete")} 

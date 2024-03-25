@@ -16,6 +16,7 @@
   (:require
    [opencola.web-ui.ajax :refer [GET]]
    [opencola.web-ui.model.error :as error]
+   [opencola.web-ui.app-state :refer [settings!]]
    [clojure.string :as string]))
 
 (def default-themes [
@@ -63,7 +64,7 @@
 
 (defn theme-names []
   (let [theme-names (map #(get % "name") @themes!)]
-    (conj theme-names "Default")))
+    (if (get @(settings!) :debug-mode) (conj theme-names "Default") theme-names)))
 
 (defn get-themes [on-success on-error]
   (when (not @themes!) (load-themes #(on-success %) on-error))
