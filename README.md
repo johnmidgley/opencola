@@ -14,7 +14,7 @@ The OpenCola application is a collaboration tool that looks a lot like a social 
 ## The Toolkit
 
 ### What's in the Toolkit?
-The OpenCola toolkit provides is a flexible [data model](./opencola-server/core/model/README.md), a set of simple interfaces:
+The OpenCola toolkit provides is a flexible [data model](./opencola-server/core/model/README.md), and a set of simple interfaces:
 
 |Interface|Description|
 |---------|-----------|
@@ -81,7 +81,7 @@ product vision, and so are of limited use.
 
 OpenCola was designed to be able to model any application domain, and
 make use of any technologies that can be wrapped by the small set of
-interfaces (described above). So, OpenCola is not one specific
+interfaces, si it is not one specific
 application, nor is it one specific network. It allows for arbitrary
 domains to be modeled and interconnected with arbitrary networks. Things
 like Solid and Mastadon could easily be integrated into OpenCola
@@ -103,6 +103,20 @@ The important parts of the code are:
 |[`web-ui`](web-ui/README.md)| The frontend for the application (Clojurescript)|
 |[`extension`](extension/chrome/README.md)| The chrome browser extension (HTML, JS, CSS)|
 |[`install`](install/README.md)| Scripts building and generating installers for the collaboration tool (Bash) |
+
+You can also navigate the code through the filesystem and explore the `README.md` files found in most relevant directories. 
+
+# Future Work
+
+While the application and toolkit provide a solid foundation, there are a number of imporovements we're thinking about:
+
+* Mobile Application: Work in progress
+* Multi-device support: Allow for the same user to run and synchronize their data across devices.
+* Private Messaging: Allow peers to send private messages to each other.
+* Invitations: Allow users to "invite" connections within the network, so that people can get connected without having to exchange tokens outside the network. 
+
+# Feedback
+We'd love to hear your thoughts. Feel free to file an issue or start a discussion.
 
 
 

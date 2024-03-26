@@ -82,4 +82,4 @@ As transaction ids are "pointers" to the previous transaction, transaction chain
 
 ## What next?
 
-After understanding the model, the next level up is to look at the other [`core`](../README.md) libraries, with the most important interfaces being [`EntityStore`](./opencola-server/core/storage/README.md#entitystore), [`ContentAddressedFileStore`](./opencola-server/core/storage/README.md#filestore), [`NetworkProvider`](./opencola-server/core/network/README.md#network-providers) and [`SearchIndex`](./opencola-server/core/search/README.md#search).
+After understanding the model, the next level up is to look at the other [`core`](../README.md) libraries, with the most important interfaces being [`EntityStore`](../storage/README.md#entitystore), [`ContentAddressedFileStore`](../storage/README.md#filestore), [`NetworkProvider`](../network/README.md#network-providers) and [`SearchIndex`](../search/README.md#search).
