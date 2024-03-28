@@ -3,3 +3,8 @@
 # mobile-ui
 
 The directory contains a Flutter UI for mobile devices. It is a work in progress and requires the OpenCola server (used by the web-ui) to be running to host the backend API. 
+
+# Setup
+
+* Install XCode from the AppStore
+* `brew install flutter`
