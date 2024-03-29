@@ -98,45 +98,48 @@
      (when text
        [:span.button-text text])]))
 
-(defn copy-button-component [config copy-text]
+(defn copy-button-component [config copy-text!]
   (let [{class :class} config
         is-active (r/atom false)]
     (fn []
       [button-component {
                          :icon-class "icon-copy" 
                          :class (str "action-button " class (when @is-active " copy-active"))} 
-       (fn [] (js/setTimeout #(reset! is-active false) 1000) (reset! is-active true) (copy-to-clipboard copy-text))])))
+       (fn [] (js/setTimeout #(reset! is-active false) 1000) (reset! is-active true) (copy-to-clipboard @copy-text!))])))
 
-(defn text-input-component [config on-change]
-  (let [{value :value
-         placeholder :placeholder
-         on-key-up :on-key-up
-         disabled? :disabled
-         icon-class :icon-class
-         icon-tool-tip-text :icon-tool-tip-text
-         help-text :help-text
-         title :title
-         class :class
-         name :name
-         copy-button :copy-button
-         copy-button-class :copy-button-class} config]
-    [:div.text-input-wrapper {:class class}
-     (when title [:span.text-input-title title])
-     (when icon-class [icon {:icon-class icon-class :tool-tip-text icon-tool-tip-text}])
-     [:input.reset.text-input-component
-      {:type "text"
-       :placeholder placeholder
-       :disabled disabled?
-       :name name
-       :value value
-       :on-change on-change
-       :on-keyUp on-key-up}]
-     (when copy-button 
-       [copy-button-component 
-        {:class (str "copy-button " copy-button-class)} 
-        value])
-     (when help-text
-       [icon {:icon-class "icon-help" :wrapper-class "help-indicator" :tool-tip-text help-text}])]))
+(defn text-input-component
+  ([value! config on-change] 
+   (let [{placeholder :placeholder
+          on-key-up :on-key-up
+          disabled? :disabled
+          icon-class :icon-class
+          icon-tool-tip-text :icon-tool-tip-text
+          help-text :help-text
+          title :title
+          class :class
+          name :name
+          copy-button-class :copy-button-class} config]
+     [:div.text-input-wrapper {:class class}
+      (when title [:span.text-input-title title])
+      (when icon-class [icon {:icon-class icon-class :tool-tip-text icon-tool-tip-text}])
+      [:input.reset.text-input-component
+       {:type "text"
+        :placeholder placeholder
+        :disabled disabled?
+        :name name
+        :value @value!
+        :on-change on-change
+        :on-keyUp on-key-up}]
+      (when copy-button-class
+        [copy-button-component
+         {:class (str "copy-button " copy-button-class)}
+         value!])
+      (when help-text
+        [icon {:icon-class "icon-help" :wrapper-class "help-indicator" :tool-tip-text help-text}])]))
+  ;; TODO: find a better way to handle static text use cases
+  ([config on-change] 
+   [text-input-component (r/atom (:value config)) config on-change]))
+
 
 (defn input-checkbox [config on-change]
   (let [{checked? :checked
