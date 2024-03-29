@@ -66,7 +66,13 @@
          [:div.peer-info
           [text-input-component 
            {:value (:name @p!) :disabled (not @editing?!) :icon-class "icon-persona" :name "peer-name" :icon-tool-tip-text "Name"} 
-           #(swap-atom-data! % p! :name)] 
+           #(swap-atom-data! % p! :name)]
+          
+          (when (or @editing?! @show-advanced?!)
+            [:div.peer-info
+             [text-input-component
+              {:value (:id @p!) :disabled true :icon-class "icon-id" :name "peer-id" :icon-tool-tip-text "Id"}
+              #(swap-atom-data! % p! :id)]])
           
           [text-input-component
            {:value (:address @p!) :disabled (not @editing?!) :icon-class "icon-link" :name "peer-link" :icon-tool-tip-text "Link"}
@@ -76,21 +82,11 @@
            {:value (:imageUri @p!) :disabled (not @editing?!) :icon-class "icon-photo" :name "peer-img" :icon-tool-tip-text "Profile Image"} 
            #(swap-atom-data! % p! :imageUri)] 
           
-          (when (or @editing?! @show-advanced?!)
-            [:div.peer-info
-             [text-input-component
-              {:value (:publicKey @p!) :disabled true :icon-class "icon-key" :name "peer-key" :icon-tool-tip-text "Key"}
-              #(swap-atom-data! % p! :publicKey)] 
-             
-             [text-input-component
-              {:value (:id @p!) :disabled true :icon-class "icon-id" :name "peer-id" :icon-tool-tip-text "Name"}
-              #(swap-atom-data! % p! :id)] ])
-          
           [input-checkbox 
            {:checked (:isActive @p!) :disabled (not @editing?!) :icon-class "icon-refresh" :name "peer-active" :tool-tip-text "Sync"} 
            #(swap! p! assoc-in [:isActive] (-> % .-target .-checked))]]
          
-         (when (not @editing?!)
+         #_(when (not @editing?!)
            [button-component {:class "show-advanced-button" :text (str (if @show-advanced?! "Hide" "Show all"))} #(swap! show-advanced?! not)])
          
          (if @editing?!
@@ -122,11 +118,10 @@
          [profile-img nil ""]
          [:div.peer-info
           [text-input-component 
-           {:value @send-token! 
-            :title "Your token: " 
+           send-token!
+           {:title "Your token: " 
             :disabled true 
-            :class "no-wrap" 
-            :copy-button true 
+            :class "no-wrap"
             :name "your-key" 
             :copy-button-class "copy-token-button"}
            #()]
