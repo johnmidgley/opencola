@@ -7,4 +7,17 @@ The directory contains a Flutter UI for mobile devices. It is a work in progress
 # Setup
 
 * Install XCode from the AppStore
-* `brew install flutter`
+* `brew install flutter` (got Flutter 3.19.4)
+* `flutte pub get`
+* In Code, install "Flutter" extension
+* `flutter doctor` may indicate missing XCode modules:
+* `sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer`
+* `sudo xcodebuild -runFirstLaunch`
+* `sudo gem install cocoapods`. May get errors, but follow directions a few times, and should work
+* Install Android Studio (full install to avoid hassles)
+
+
+Check with `flutter doctor`
+# Run
+
+Shift + CMD + D: May need to create run configuration - default should work
