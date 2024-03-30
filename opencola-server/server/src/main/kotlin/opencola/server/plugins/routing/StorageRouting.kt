@@ -23,6 +23,10 @@ import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import java.nio.file.Path
 
 fun Application.configureStorageRouting(storagePath: Path) {
@@ -36,12 +40,19 @@ fun Application.configureStorageRouting(storagePath: Path) {
                 call.respond(storagePath.toFile().listFiles()?.map { it.name } ?: emptyList())
             }
 
+            val storageMutex = Mutex()
+
             put("/storage/{filename}") {
                 val filename = call.parameters["filename"]!!
                 val file = storagePath.resolve(filename).toFile()
-                call.receiveStream().use { input ->
-                    file.outputStream().use { output ->
-                        input.copyTo(output)
+
+                withContext(Dispatchers.IO) {
+                    call.receiveStream().use { input ->
+                        storageMutex.withLock {
+                            file.outputStream().use { output ->
+                                input.copyTo(output)
+                            }
+                        }
                     }
                 }
                 call.response.status(HttpStatusCode.NoContent)

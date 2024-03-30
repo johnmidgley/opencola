@@ -45,7 +45,8 @@
 (defn set-page! [page]
   (when (not= :feed page)
     (query! "")
-    (feed! {})
-    (persona! (-> @(personas!) :items first :id))) 
+    (feed! {})) 
+  (when (and (= :peers page) (not @(persona!)))
+    (persona! (-> @(personas!) :items first :id)))
   (state/set-page! page)
   (set-location-from-state))

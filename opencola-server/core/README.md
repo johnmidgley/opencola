@@ -19,4 +19,4 @@ This directory contains libraries that are useful in building backend OpenCola t
  
 The most important interfaces to understand are [`EntityStore`](./opencola-server/core/storage/README.md#entitystore), [`ContentAddressedFileStore`](./opencola-server/core/storage/README.md#filestore), [`NetworkProvider`](./opencola-server/core/network/README.md#network-providers) and [`SearchIndex`](./opencola-server/core/search/README.md#search)
 
-With and understanding of the model and core interfaces, you the application can be best unserstood top down starting at the [server](../server/README.md) that hosts the API.
+With and understanding of the model and core interfaces, the application can be best unserstood top down starting at the [server](../server/README.md) that hosts the API.

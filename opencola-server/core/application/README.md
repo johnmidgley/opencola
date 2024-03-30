@@ -5,7 +5,7 @@
 The application library contains code for constructing the application (dependency injection, config, resources, etc.). 
 Most of this code is specific to the collaboration tool and should likely be refactored to some other place.
 
-The application is configured via a yaml file (which can be overriden by environment variables). The configuration file, `opencola-server.yaml`, is located in the root of the storage directory (OS dependent) and has the following form:
+The application is configured via a yaml file (which can be overriden by environment variables). The configuration file, `opencola-server.yaml`, is located in the root of the storage directory (OS dependent - see [server](../../server/README.md)) and has the following form:
 
 ```yaml
 name: server # Configuration name

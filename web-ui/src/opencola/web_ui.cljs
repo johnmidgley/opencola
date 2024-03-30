@@ -56,12 +56,10 @@
 (defroute "/personas" []
   (when @config/config
     (persona/get-personas (personas!) #(error! %)))
-  (state/set-page! :personas)
-  (persona! nil))
+  (state/set-page! :personas))
 
 (defroute "/settings" [] 
-  (state/set-page! :settings)
-  (persona! nil))
+  (state/set-page! :settings))
 
 (defroute "*" []
   (state/set-page! :error))
