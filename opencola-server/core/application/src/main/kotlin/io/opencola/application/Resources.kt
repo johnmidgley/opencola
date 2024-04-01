@@ -47,10 +47,12 @@ fun extractResourceDirectory(resourceUrl: URL, destinationPath: Path, overwriteE
 
     jarFile.entries().asIterator().forEach {
         if(it.name.startsWith(resourcePath)) {
+            // Remove the parent path to this entry so it's not used in destination
+            val name = it.name.substring(resourcePath.length)
             if(it.isDirectory) {
-                destinationPath.resolve(it.name).createDirectories()
+                destinationPath.resolve(name).createDirectories()
             } else {
-                val destinationFile = destinationPath.resolve(it.name)
+                val destinationFile = destinationPath.resolve(name)
                 if(!destinationFile.exists() || overwriteExistingFiles) {
                     destinationFile.writeBytes(jarFile.getInputStream(it).readBytes())
                 }
@@ -58,7 +60,7 @@ fun extractResourceDirectory(resourceUrl: URL, destinationPath: Path, overwriteE
         }
     }
 
-    return destinationPath.resolve(resourcePath)
+    return destinationPath
 }
 
 // fileSystemPath: Path to the directory where the resources should be extracted (if necessary). If the resources are
