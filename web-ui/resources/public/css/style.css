@@ -462,6 +462,10 @@
 
 .error {
     color: var(--caution-color);
+
+    > p {
+        margin: 0;
+    }
 }
 
 .delete-button {
