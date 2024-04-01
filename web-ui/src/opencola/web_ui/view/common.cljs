@@ -16,11 +16,15 @@
   (:require [clojure.string :as string] 
             [goog.string :as gstring]
             [markdown-to-hiccup.core :as md2hic] 
-            [opencola.web-ui.location :as location] 
             [reagent.core :as r]))
 
 (defn copy-to-clipboard [text]
-  (-> js/navigator .-clipboard (.writeText text)))
+  (let [e (js/document.createElement "textarea")]
+    (set! (.-value e) text)
+    (.appendChild js/document.body e)
+    (.select e)
+    (js/document.execCommand "copy")
+    (.removeChild js/document.body e)))
 
 (defn swap-atom-data! [event item! key]
   (swap! item! assoc-in [key] (-> event .-target .-value)))
