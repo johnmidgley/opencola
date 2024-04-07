@@ -11,8 +11,8 @@ To install OpenCola, simply run the ```./install``` script. This runs the gradle
 To run the server directly:
 
 ```bash
-> cd opencola/server/bin
-> ./opencola-server
+cd opencola/server/bin
+./opencola-server
 ```
 
 If you'd like to run inside Docker (without packaging), there are ```start``` and ```stop``` scripts in each OS specific directory. These scripts are really only needed to determine IP addresses to be used in https certificates for the server. You can start without these scripts if you are fine using ```localhost``` or ```127.0.0.1``` when access the server.
@@ -26,13 +26,13 @@ Once the server is installed, it can be packaged for various platforms.
 Change to the mac directory:
 
 ```sh
-> cd mac
+cd mac
 ```
 
 You will need an application signing key from Apple. Once you have one, update ```--mac-signing-key-user-name``` in the package script and then run:
 
 ```sh
-> ./package
+./package
 ```
 
 This creates an installer ```.dmg```.
@@ -42,13 +42,13 @@ This creates an installer ```.dmg```.
 Change to the Windows directory:
 
 ```sh
-> cd windows
+cd windows
 ```
 
 For some reason, it's hard to run the oc-version script and pass the value to the windows packaging script, so for now, you need to specify the version manually. You can find the version in the [build.gradle.kts](../opencola-server/build.gradle.kts) or by running [oc-version.ps1](../bin/oc-version.ps1).
 
 ```sh
-> package VERSION
+package VERSION
 ```
 
 This creates a Windows installer.
@@ -58,7 +58,7 @@ This creates a Windows installer.
 Change to the Linux directory:
 
 ```sh
-> cd linux
+cd linux
 ```
 
 Run the package script:
@@ -76,7 +76,7 @@ This creates a tar archive.
 If you'd like to create a self contained Docker distribution, just run the package script from the install directory:
 
 ```sh
-> ./package
+./package
 ```
 
 This creates a ```.zip``` file with everything needed to run OpenCola in Docker.
