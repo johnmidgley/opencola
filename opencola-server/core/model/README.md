@@ -2,7 +2,7 @@
 
 # Model
 
-The data model for OpenCola is built on a few simple conepts:
+The data model for OpenCola is built on a few simple concepts:
 
 ## Entities
 
@@ -11,7 +11,7 @@ The "things" that OpenCola operates on are Entities. These entities are extendib
 * [`Authority`](./src/main/kotlin/io/opencola/model/Authority.kt): People that do things in the application. If the authority is one of your identities, it is called a persona. If it is someone you connected to, it is a peer. 
 * [`Resource`](./src/main/kotlin/io/opencola/model/ResourceEntity.kt): Something that is referenced via a url, for example a web page. 
 * [`Post`](./src/main/kotlin/io/opencola/model/PostEntity.kt): An entity that is created and available only within OpenCola (similar to a social media post)
-* [`Comment`](./src/main/kotlin/io/opencola/model/CommentEntity.kt): An entity that holds a comment for another entity. It is a seprate entity so that it actitivy can be attached to comments, independent of the entity it refers to. 
+* [`Comment`](./src/main/kotlin/io/opencola/model/CommentEntity.kt): An entity that holds a comment for another entity. It is a seprate entity so that it activity can be attached to comments, independent of the entity it refers to. 
 * [`Data`](./src/main/kotlin/io/opencola/model/DataEntity.kt): An arbitrary data blob that could be an image, a document, an arbitrary file, etc.
 
 
@@ -22,14 +22,14 @@ The "things" that OpenCola operates on are Entities. These entities are extendib
 * ```Authority```: The hash of the authority's public key.
 * ```Resource```: The hash of the resource's url.
 * ```Post```: The hash of a random UUID.
-* ```Commnent```: The hash of a random UUID.
+* ```Comment```: The hash of a random UUID.
 * ```Data```: The hash of the underlying binary data.
 
 ## Attributes
 
 Data is attached to entities through [`Attribute`](./src/main/kotlin/io/opencola/model/Attribute.kt)s. Attributes have the following properties:
 
-* ```name```: A short name for the attribute (e.g. ```description```) that is used as a proprety accessor on objects.
+* ```name```: A short name for the attribute (e.g. ```description```) that is used as a property accessor on objects.
 * ```uri```: A uri representing the full identifier for the attribute.
 * ```type```: The type of attribute (can be one of ```SingleValue```, ```MultiValueSet``` or ```MultiValueList```)
 * ```protoAttribute```: 
@@ -73,7 +73,7 @@ Each "piece" of information about an entity (e.g. the name, url or text of a res
 
 * `id`: The id of the transaction, which is the hash of the previous (signed)transaction.  
 * `authorityId`: The id of the authority (person) whose activity is being. 
-* [`transactionEntities`](./src/main/kotlin/io/opencola/model/TransactionEntity.kt): A more effeicient representation of facts, where redundant authorityIds and entityIds are removed. 
+* [`transactionEntities`](./src/main/kotlin/io/opencola/model/TransactionEntity.kt): A more efficient representation of facts, where redundant authorityIds and entityIds are removed. 
 * `epochSecond`: The time at which the transaction occured. (This should probably be switched to epochMillisecond)
 
 Transactions are then compressed (if they are in fact smaller after compression) and [signed](./src/main/kotlin/io/opencola/model/SignedTransaction.kt) by the appropriate authority public key.
