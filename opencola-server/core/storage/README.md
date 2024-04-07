@@ -2,7 +2,7 @@
 
 # storage
 
-This library contains code that manages persisting information in a durable manner. OpenCola stores information in an OS dependent directory:
+This library contains code that manages persistant information in a durable manner. OpenCola stores information in an OS dependent directory:
 
 |OS|Location|
 |--|--------|
@@ -12,7 +12,7 @@ This library contains code that manages persisting information in a durable mann
 
 ## addressbook
 
-An [```AddressBook```](./AddressBook.kt) contains information about different personas and peers. It is intended to be isolated from the general entity store so that no infomration is unintentionally leaked. It has the following interface:
+An [```AddressBook```](./AddressBook.kt) contains information about different personas and peers. It is intended to be isolated from the general entity store so that no information is unintentionally leaked. It has the following interface:
 
 ```kotlin
 interface AddressBook : PublicKeyProvider<Id> {
@@ -71,7 +71,7 @@ class PersonaAddressBookEntry : AddressBookEntry {
 
 ## cache
 
-The ```cache``` namespace containes code for caching data.
+The ```cache``` namespace contains code for caching data.
 
 ## MhtCache
 
@@ -112,9 +112,9 @@ interface EntityStore {
 
 Currently [ExposedEntityStoreV2](./src/main/kotlin/io/opencola/storage/entitystore/ExposedEntityStoreV2.kt) (V1 is deprecated) is the only implementation of EntityStore. It is pretty general, though, as [Exposed](https://github.com/JetBrains/Exposed) is an ORM that allows for most major databases to be used as a backend (Maria, MySQL, Oracle, Postgres, SQL Server and SQLite). 
 
-OpenCola orgianlly used Postgres, but switched to SQLite because its simpler to use (i.e. it runs in memory with the rest of the application) and available on mobile devices. 
+OpenCola originally used Postgres, but switched to SQLite because its simpler to use (i.e. it runs in memory with the rest of the application) and available on mobile devices. 
 
-TODO: DB format and file storage
+> TODO: DB format and file storage
 
 ## filestore
 
@@ -144,5 +144,3 @@ interface ContentAddressedFileStore {
 The current implemenation, [```FileSystemContentAddressedFileStore```](./src/main/kotlin/io/opencola/storage/filestore/FileSystemContentAddressedFileStore.kt) is FileSystem based, but ideally you could use some sort of cloud storage if you wanted, with the possibility of sharing it with peers if you like. 
 
 An [```IdAddressedFileStore```](./src/main/kotlin/io/opencola/storage/filestore/IdAddressedFileStore.kt) allows information to be stored directly by ```Id```, without the requirement that the ```Id``` is the ```Id``` (hash) of the underlying data. It is used to store transactions. 
-
-

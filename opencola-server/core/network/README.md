@@ -52,7 +52,7 @@ OpenCola also supports communication via a [relay](./src/main/kotlin/io/opencola
 
 ### Other Possibilites
 
-There are a number of other possibiiltes that we're considering for other network providers, including Veilid, Tor, shared / network file system based, email, etc.
+There are a number of other possibilites that we're considering for other network providers, including Veilid, Tor, shared / network file system based, email, etc.
 
 
 ## Network Node
@@ -127,4 +127,3 @@ transaction is sent multiple times unnecessarily). The last transaction in the
 sequence will contain the ```lastTransactionId``` which tells the receiver that
 it is appropriate to request more transactions (unless the 
 ```lastTransactionId``` matches the last transaction id stored). 
-

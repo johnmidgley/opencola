@@ -7,7 +7,7 @@
 This repository contains the code for the OpenCola application and toolkit. To understand the overall vision of OpenCola, which puts this code in a larger context please visit our [homepage](https://opencola.io).
 
 ## The Application
-The OpenCola application is a collaboration tool that looks a lot like a social media application, but puts you in control of your personal data as well as the flow of information around you. This means that, unless you decide otherwise, there is no 3rd party ingerference (ads, algorithms, trolls, scammers, etc.). You also control where your data lives, which is by default on your local device, shared with only peers of your choice. The image below shows what the application looks like, which, on the surface, is similar to other social media applications:
+The OpenCola application is a collaboration tool that looks a lot like a social media application, but puts you in control of your personal data as well as the flow of information around you. This means that, unless you decide otherwise, there is no 3rd party interference (ads, algorithms, trolls, scammers, etc.). You also control where your data lives, which is by default on your local device, shared with only peers of your choice. The image below shows what the application looks like, which, on the surface, is similar to other social media applications:
 
 <img src="img/feed.png" alt="Feed">
 
@@ -52,7 +52,7 @@ The toolkit also contains supporting libraries, as well as a [relay server](./op
         there’s a lot more information that could be used to help you find
         things of interest. Imagine being able to choose a YouTube recommendation algorithm,
         built outside of YouTube, optimized for you that could get you out of
-        filter bubbles. Or an Amazon product recommendation system that can’t be
+        filter bubbles or an Amazon product recommendation system that can’t be
         manipulated by Amazon to maximize profit, that can make use of your
         network’s product ratings instead of those from unknown people on Amazon
         that are gamed by bots.
@@ -81,7 +81,7 @@ product vision, and so are of limited use.
 
 OpenCola was designed to be able to model any application domain, and
 make use of any technologies that can be wrapped by the small set of
-interfaces, si it is not one specific
+interfaces, so it is not one specific
 application, nor is it one specific network. It allows for arbitrary
 domains to be modeled and interconnected with arbitrary networks. Things
 like Solid and Mastadon could easily be integrated into OpenCola
@@ -108,7 +108,7 @@ You can also navigate the code through the filesystem and explore the `README.md
 
 # Future Work
 
-While the application and toolkit provide a solid foundation, there are a number of imporovements we're thinking about:
+While the application and toolkit provide a solid foundation, there are a number of improvements we're thinking about:
 
 * Mobile Application: Work in progress
 * Multi-device support: Allow for the same user to run and synchronize their data across devices.
