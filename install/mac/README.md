@@ -26,3 +26,7 @@ total 1376
 
 iconutil --convert icns desktop-icon.iconset
 ```
+
+## Moving Signing Certificates
+
+If you need to move a signing certificate from one Mac to another, open Keychain access, select the signing certificate (in login keychain), then do *File -> Export* and export a .p12 file (this should require entreing a password to protect the file, since it has a private key in it). Copy the resulting file to the new Mac and open it.
