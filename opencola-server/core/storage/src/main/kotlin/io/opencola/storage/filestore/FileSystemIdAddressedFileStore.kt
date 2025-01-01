@@ -18,6 +18,7 @@
 package io.opencola.storage.filestore
 
 import io.opencola.model.Id
+import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.file.Path
@@ -53,5 +54,12 @@ class FileSystemIdAddressedFileStore(val root: Path) : IdAddressedFileStore {
 
     override fun delete(id: Id) {
         getPath(id).deleteIfExists()
+    }
+
+    override fun enumerateIds(): Sequence<Id> {
+        return root.toFile()
+            .walkTopDown()
+            .filter { it.isFile }
+            .mapNotNull { Id.tryDecode("${it.parentFile.name}${it.name}") }
     }
 }

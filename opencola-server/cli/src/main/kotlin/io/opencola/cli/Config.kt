@@ -15,28 +15,24 @@
  *
  */
 
-package io.opencola.io
+package io.opencola.cli
 
-import java.io.File
-import java.nio.file.Path
-import kotlin.io.path.deleteIfExists
-import kotlin.io.path.isDirectory
+import com.sksamuel.hoplite.ConfigLoaderBuilder
+import com.sksamuel.hoplite.addEnvironmentSource
 
-fun Path.recursiveDelete() {
-    if (this.isDirectory()) {
-        this.toFile().listFiles()?.forEach {
-            if (it.isDirectory) {
-                it.toPath().recursiveDelete()
-            }
+data class CredentialsConfig(val password: String? = null)
 
-            it.delete()
-        }
-    } else
-        this.deleteIfExists()
-}
+data class OcConfig(
+    val credentials: CredentialsConfig,
+)
 
-fun getFilePathsSequence(directory: String): Sequence<String> {
-    return File(directory).walkTopDown()
-        .filter { it.isFile }
-        .map {  it.absolutePath }
+data class Config(
+    val oc: OcConfig
+)
+
+fun loadConfig(): Config {
+    return ConfigLoaderBuilder.default()
+        .addEnvironmentSource()
+        .build()
+        .loadConfigOrThrow()
 }

@@ -73,22 +73,6 @@ class FileSystemContentAddressedFileStore(private val root: Path) : ContentAddre
         }
     }
 
-    override fun getDataIds(): Sequence<Id> {
-        return sequence {
-            root.forEachDirectoryEntry { entry ->
-                if (entry.isDirectory()) {
-                    entry.forEachDirectoryEntry {
-                        if (it.isRegularFile()) {
-                            Id.tryDecode("${entry.name}${it.name}")?.let { id ->
-                                yield(id)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     override fun write(bytes: ByteArray): Id {
         val dataId = Id.ofData(bytes)
 
@@ -121,11 +105,11 @@ class FileSystemContentAddressedFileStore(private val root: Path) : ContentAddre
         }
     }
 
-    fun enumerateFileIds(): Sequence<Id> {
+    override fun enumerateIds(): Sequence<Id> {
         return root.toFile()
             .walk()
             .asSequence()
             .filter { it.isFile }
-            .map { Id.decode("${it.parentFile.name}${it.name}") }
+            .mapNotNull { Id.tryDecode("${it.parentFile.name}${it.name}") }
     }
 }

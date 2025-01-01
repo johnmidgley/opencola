@@ -33,7 +33,7 @@ class MockContentAddressedFileStore : ContentAddressedFileStore {
         return files[dataId]
     }
 
-    override fun getDataIds(): Sequence<Id> {
+    override fun enumerateIds(): Sequence<Id> {
         return files.keys.asSequence()
     }
 

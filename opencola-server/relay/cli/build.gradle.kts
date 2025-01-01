@@ -5,6 +5,7 @@ val logbackVersion: String by project
 val kotlinxCoroutinesVersion: String by project
 val kotlinxSerializationVersion: String by project
 val hopliteVersion: String by project
+val cliktVersion: String by project
 
 plugins {
     application
@@ -29,7 +30,7 @@ dependencies {
     implementation(project(":relay:client"))
     implementation(project(":relay:common"))
 
-    implementation("com.github.ajalt.clikt:clikt:4.2.1")
+    implementation("com.github.ajalt.clikt:clikt:$cliktVersion")
     implementation("com.sksamuel.hoplite:hoplite-core:$hopliteVersion")
     implementation("com.sksamuel.hoplite:hoplite-yaml:$hopliteVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion")

@@ -82,7 +82,6 @@ class ExposedEntityStoreV2(
     private val attributeDbIdToModelAttributeMap: Map<Long, Attribute>
 
     init {
-
         storagePath.toFile().mkdirs()
         database = getDB(storagePath.resolve("${name}.v2.db"))
         logger.info { "Initializing ExposedEntityStoreV2 {${database.url}}" }

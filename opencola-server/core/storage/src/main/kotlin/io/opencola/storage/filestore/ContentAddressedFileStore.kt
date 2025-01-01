@@ -27,7 +27,6 @@ interface ContentAddressedFileStore {
     fun exists(dataId: Id) : Boolean
 
     fun read(dataId: Id) : ByteArray?
-    fun getDataIds() : Sequence<Id>
     fun getInputStream(dataId: Id): InputStream?
 
     fun write(bytes: ByteArray) : Id
@@ -35,4 +34,6 @@ interface ContentAddressedFileStore {
 
     fun delete(dataId: Id)
     // TODO: getMerkleTree and getPart(s)
+
+    fun enumerateIds(): Sequence<Id>
 }

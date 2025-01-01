@@ -15,32 +15,24 @@
  *
  */
 
-package io.opencola.storage.filestore
+package io.opencola.cli
 
 import io.opencola.model.Id
-import java.io.InputStream
+import io.opencola.storage.filestore.ContentAddressedFileStore
 
-// TODO: Can probably used to back ContentBasedFileStore
-interface IdAddressedFileStore {
-    fun exists(id: Id) : Boolean
+fun checkContentFileStoreIds(fileStore: ContentAddressedFileStore) {
+    println("checkFileStoreIds")
+    fileStore.enumerateIds()
+        .forEach { dataId ->
+            val data = fileStore.read(dataId)
 
-    fun getInputStream(id: Id): InputStream?
-    fun getOutputStream(id: Id): java.io.OutputStream
-
-    fun read(id: Id) : ByteArray? {
-        getInputStream(id).use {
-            return it?.readAllBytes()
+            if (data == null) {
+                println("ERROR: file store $dataId not found")
+            } else {
+                val bytesDataId = Id.ofData(data)
+                if (bytesDataId != dataId) {
+                    println("ERROR: file store $dataId does not match data $bytesDataId")
+                }
+            }
         }
-    }
-
-    fun write(id: Id, bytes: ByteArray) {
-        // TODO Compression?
-        getOutputStream(id).use {
-            it.write(bytes)
-        }
-    }
-
-    fun delete(id: Id)
-
-    fun enumerateIds(): Sequence<Id>
 }
