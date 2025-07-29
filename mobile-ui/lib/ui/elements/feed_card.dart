@@ -592,7 +592,7 @@ class FeedCard extends StatelessWidget {
               softLineBreak: true,
               onTapLink: (String text, String? href, String title) =>
                 <void>{ _launchURL(context, href ?? ''), viewModel.didOpenURL = true },
-              styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(textScaleFactor: 1.2),
+              styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)),
             ),
             const Spacer(),
           ],

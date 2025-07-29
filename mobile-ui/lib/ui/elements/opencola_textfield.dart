@@ -78,7 +78,7 @@ class OpenColaTextField extends StatelessWidget {
             errorText: errorMessage,
             hintText: hint,
             hintStyle: GoogleFonts.ibmPlexSans(
-              color: AppColors.labelText.withOpacity(0.5),
+              color: AppColors.labelText.withValues(alpha: 0.5),
               fontSize: 14.0,
             ),
             suffixIcon: suffixIcon,
@@ -151,7 +151,7 @@ class _OpenColaSecureTextFieldState extends State<OpenColaSecureTextField> {
             errorText: widget.errorMessage,
             hintText: widget.hint,
             hintStyle: GoogleFonts.ibmPlexSans(
-              color: AppColors.labelText.withOpacity(0.5),
+              color: AppColors.labelText.withValues(alpha: 0.5),
               fontSize: 14.0,
             ),
             suffixIcon: GestureDetector(
