@@ -614,8 +614,8 @@ class FeedViewModel extends BaseViewModel {
     return entity?.isLiked(personaId) ?? false;
   }
 
-  void toggleLike(int x) async {
-    final feed.Entity? entity = _getEntity(x);
+  void toggleLike(int index) async {
+    final feed.Entity? entity = _getEntity(index);
     final String? context = AppState.instance.feed.context;
     final String? personaId = _personas[entity?.entityId]?.id;
     if (entity == null || context == null || personaId == null) {

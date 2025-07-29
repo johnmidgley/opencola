@@ -328,6 +328,7 @@ class FeedCard extends StatelessWidget {
             const SizedBox(height: 6),
           ],
           if (viewModel.isEditingTag(index)) ...<Widget>[   // Check for tag editing
+            const SizedBox(height: 10),
             _tagEditor(),
             const SizedBox(height: 6),
           ] else if (viewModel.shouldShowActionForCard('edit', index)) ...<Widget>[  // Check for post editing
