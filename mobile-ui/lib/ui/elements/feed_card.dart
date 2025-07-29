@@ -328,6 +328,7 @@ class FeedCard extends StatelessWidget {
             const SizedBox(height: 6),
           ],
           if (viewModel.isEditingTag(index)) ...<Widget>[   // Check for tag editing
+            const SizedBox(height: 10),
             _tagEditor(),
             const SizedBox(height: 6),
           ] else if (viewModel.shouldShowActionForCard('edit', index)) ...<Widget>[  // Check for post editing
@@ -592,7 +593,7 @@ class FeedCard extends StatelessWidget {
               softLineBreak: true,
               onTapLink: (String text, String? href, String title) =>
                 <void>{ _launchURL(context, href ?? ''), viewModel.didOpenURL = true },
-              styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(textScaleFactor: 1.2),
+              styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)),
             ),
             const Spacer(),
           ],

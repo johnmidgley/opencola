@@ -51,11 +51,11 @@ SPEC CHECKSUMS:
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   flutter_inappwebview_ios: 97215cf7d4677db55df76782dbd2930c5e1c1ea0
   flutter_sharing_intent: e35380d0e1501d7111dbb7e46d5ac6339da6da98
-  image_picker_ios: 99dfe1854b4fa34d0364e74a78448a0151025425
+  image_picker_ios: b545a5f16c0fa88e3ecbbce3ed4de45567a8ec18
   ObjectBox: 178bbc475aea8183870993c71e7341f3c95c7b8c
   objectbox_flutter_libs: 612b49aaaef0974006a854d1abe3c687be1efefd
   OrderedSet: aaeb196f7fef5a9edf55d89760da9176ad40b93c
-  path_provider_foundation: 29f094ae23ebbca9d3d0cec13889cd9060c0e943
+  path_provider_foundation: 3784922295ac71e43754bd15e0653ccfd36a147c
 
 PODFILE CHECKSUM: f7387007a0cecae568ad4731fe593f18efd3bf63
 

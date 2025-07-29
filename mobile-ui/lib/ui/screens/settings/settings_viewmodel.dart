@@ -20,12 +20,12 @@ class SettingsViewModel extends BaseViewModel {
   Future<void> onLogoutPressed() async {
     busy = true;
     notifyListeners();
-    Future<void>.delayed(Duration(milliseconds: minimumDelayMS), () {
+    Future<void>.delayed(Duration(milliseconds: minimumDelayMS), () async {
       busy = true;
       notifyListeners();
       AppState.instance.api.setToken('');
       AppState.instance.api.setPassword('');
-      navigateTo(NavigationTargets.login, true, null);
+      await navigateTo(NavigationTargets.login, true, null);
     });
   }
 }
