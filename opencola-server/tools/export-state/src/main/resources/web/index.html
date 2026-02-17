@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenCola State Export</title>
+    <style>
+        :root {
+            --bg: #1a1a2e;
+            --bg-card: #16213e;
+            --bg-hover: #0f3460;
+            --accent: #e94560;
+            --accent-light: #ff6b81;
+            --text: #eee;
+            --text-muted: #aaa;
+            --border: #2a2a4a;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --error: #e74c3c;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        h2 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Navigation breadcrumb */
+        .breadcrumb {
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb a {
+            color: var(--accent-light);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .breadcrumb a:hover { text-decoration: underline; }
+        .breadcrumb span { color: var(--text-muted); }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+        }
+
+        .card:hover {
+            border-color: var(--accent);
+            background: var(--bg-hover);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-name {
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+
+        .card-id {
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+            word-break: break-all;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .badge-active { background: var(--success); color: #000; }
+        .badge-inactive { background: var(--border); color: var(--text-muted); }
+        .badge-persona { background: var(--accent); color: #fff; }
+        .badge-peer { background: #3498db; color: #fff; }
+
+        /* Section */
+        .section {
+            margin-bottom: 2rem;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1.25rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover { opacity: 0.85; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-secondary { background: var(--border); color: var(--text); }
+        .btn-success { background: var(--success); color: #000; }
+
+        .btn-group {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        /* Verification result */
+        .verify-result {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin: 1rem 0;
+        }
+
+        .verify-result.valid { border-color: var(--success); }
+        .verify-result.invalid { border-color: var(--error); }
+
+        .verify-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .issues-list {
+            list-style: none;
+            margin-top: 0.5rem;
+        }
+
+        .issues-list li {
+            padding: 0.35rem 0;
+            font-size: 0.85rem;
+            color: var(--warning);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .issues-list li:last-child { border-bottom: none; }
+
+        /* Transaction list */
+        .tx-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .tx-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            overflow: hidden;
+        }
+
+        .tx-header {
+            display: flex;
+            align-items: center;
+            padding: 0.6rem 1rem;
+            cursor: pointer;
+            gap: 0.75rem;
+        }
+
+        .tx-header:hover { background: var(--bg-hover); }
+
+        .tx-checkbox {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent);
+        }
+
+        .tx-info {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .tx-id {
+            font-family: monospace;
+            font-size: 0.8rem;
+        }
+
+        .tx-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .tx-details {
+            display: none;
+            padding: 0.75rem 1rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.85rem;
+        }
+
+        .tx-details.open { display: block; }
+
+        .entity-block {
+            margin-bottom: 0.75rem;
+        }
+
+        .entity-id {
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: var(--accent-light);
+            margin-bottom: 0.25rem;
+        }
+
+        .fact-row {
+            display: flex;
+            gap: 1rem;
+            padding: 0.2rem 0 0.2rem 1rem;
+            font-family: monospace;
+            font-size: 0.8rem;
+        }
+
+        .fact-attr { color: #3498db; min-width: 120px; }
+        .fact-op { color: var(--success); min-width: 60px; }
+        .fact-op.retract { color: var(--error); }
+        .fact-val { color: var(--text-muted); word-break: break-all; }
+
+        /* Export controls */
+        .export-controls {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-top: 1rem;
+        }
+
+        .export-controls label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .export-controls input[type="text"] {
+            width: 100%;
+            padding: 0.5rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text);
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        /* Loading spinner */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Export result */
+        .export-result {
+            background: var(--bg-card);
+            border: 1px solid var(--success);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-top: 1rem;
+        }
+
+        .export-result h3 { color: var(--success); }
+
+        .select-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .select-controls button {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.75rem;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .pagination span {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="app">
+        <div class="header">
+            <h1>OpenCola State Export</h1>
+            <p>Select a persona or peer to verify and export transaction data</p>
+        </div>
+        <div id="content">
+            <div class="loading"><span class="spinner"></span><br>Loading address book...</div>
+        </div>
+    </div>
+
+    <script>
+        const API = '/api';
+        let state = {
+            view: 'address-book',
+            authority: null,
+            verification: null,
+            transactions: null,
+            selectedTxIds: new Set(),
+        };
+
+        // --- API calls ---
+
+        async function fetchJson(url) {
+            const resp = await fetch(url);
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${await resp.text()}`);
+            return resp.json();
+        }
+
+        async function postJson(url, body) {
+            const resp = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${await resp.text()}`);
+            return resp.json();
+        }
+
+        // --- Views ---
+
+        async function showAddressBook() {
+            state.view = 'address-book';
+            state.authority = null;
+            state.verification = null;
+            state.transactions = null;
+            state.selectedTxIds = new Set();
+
+            const content = document.getElementById('content');
+            content.innerHTML = '<div class="loading"><span class="spinner"></span><br>Loading address book...</div>';
+
+            try {
+                const [personasData, peersData] = await Promise.all([
+                    fetchJson(`${API}/personas`),
+                    fetchJson(`${API}/peers`)
+                ]);
+
+                let html = '';
+
+                html += '<div class="section"><h2>Personas</h2>';
+                if (personasData.personas.length === 0) {
+                    html += '<p style="color: var(--text-muted)">No personas found</p>';
+                }
+                for (const p of personasData.personas) {
+                    html += renderEntryCard(p);
+                }
+                html += '</div>';
+
+                html += '<div class="section"><h2>Peers</h2>';
+                if (peersData.peers.length === 0) {
+                    html += '<p style="color: var(--text-muted)">No peers found</p>';
+                }
+                for (const p of peersData.peers) {
+                    html += renderEntryCard(p);
+                }
+                html += '</div>';
+
+                content.innerHTML = html;
+            } catch (err) {
+                content.innerHTML = `<div style="color: var(--error)">Error loading address book: ${esc(err.message)}</div>`;
+            }
+        }
+
+        function renderEntryCard(entry) {
+            const badges = [];
+            if (entry.is_persona) badges.push('<span class="badge badge-persona">Persona</span>');
+            else badges.push('<span class="badge badge-peer">Peer</span>');
+            if (entry.is_active) badges.push('<span class="badge badge-active">Active</span>');
+
+            return `
+                <div class="card" onclick="showAuthority('${esc(entry.entity_id)}', '${esc(entry.name)}')">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-name">${esc(entry.name)}</div>
+                            <div class="card-id">${esc(entry.entity_id)}</div>
+                        </div>
+                        <div>${badges.join(' ')}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function showAuthority(id, name) {
+            state.view = 'authority';
+            state.authority = { id, name };
+            state.verification = null;
+            state.transactions = null;
+            state.selectedTxIds = new Set();
+
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <div class="breadcrumb">
+                    <a onclick="showAddressBook()">Address Book</a>
+                    <span> / ${esc(name)}</span>
+                </div>
+                <h2>${esc(name)}</h2>
+                <div class="card-id" style="margin-bottom: 1rem">${esc(id)}</div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="verifyChain('${esc(id)}', '${esc(name)}')">
+                        Verify Chain
+                    </button>
+                    <button class="btn btn-secondary" onclick="loadTransactions('${esc(id)}')">
+                        Browse Transactions
+                    </button>
+                    <button class="btn btn-secondary" onclick="loadEntities('${esc(id)}')">
+                        View Entities
+                    </button>
+                </div>
+
+                <div id="verify-section"></div>
+                <div id="transactions-section"></div>
+                <div id="entities-section"></div>
+                <div id="export-section"></div>
+            `;
+        }
+
+        async function verifyChain(id, name) {
+            const section = document.getElementById('verify-section');
+            section.innerHTML = '<div class="loading"><span class="spinner"></span><br>Verifying transaction chain...</div>';
+
+            try {
+                const result = await fetchJson(`${API}/authority/${id}/verify`);
+                state.verification = result;
+
+                const cls = result.is_valid ? 'valid' : 'invalid';
+                const icon = result.is_valid ? '&#10003;' : '&#10007;';
+                const statusText = result.is_valid ? 'Chain Valid' : 'Chain Issues Detected';
+
+                let html = `
+                    <div class="verify-result ${cls}">
+                        <h3>${icon} ${statusText}</h3>
+                        <div class="verify-stats">
+                            <div class="stat">
+                                <div class="stat-value">${result.total_transactions}</div>
+                                <div class="stat-label">Total Transactions</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value" style="color: var(--success)">${result.valid_signatures}</div>
+                                <div class="stat-label">Valid Signatures</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value" style="color: ${result.invalid_signatures > 0 ? 'var(--error)' : 'var(--success)'}">${result.invalid_signatures}</div>
+                                <div class="stat-label">Invalid Signatures</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value" style="color: ${result.chain_intact ? 'var(--success)' : 'var(--error)'}">${result.chain_intact ? 'Yes' : 'No'}</div>
+                                <div class="stat-label">Chain Intact</div>
+                            </div>
+                        </div>
+                `;
+
+                if (result.issues.length > 0) {
+                    html += '<h3>Issues</h3><ul class="issues-list">';
+                    for (const issue of result.issues) {
+                        html += `<li>${esc(issue)}</li>`;
+                    }
+                    html += '</ul>';
+                }
+
+                html += '</div>';
+                section.innerHTML = html;
+            } catch (err) {
+                section.innerHTML = `<div style="color: var(--error)">Verification error: ${esc(err.message)}</div>`;
+            }
+        }
+
+        async function loadTransactions(id, offset = 0, limit = 50) {
+            const section = document.getElementById('transactions-section');
+            section.innerHTML = '<div class="loading"><span class="spinner"></span><br>Loading transactions...</div>';
+
+            try {
+                const data = await fetchJson(`${API}/authority/${id}/transactions?offset=${offset}&limit=${limit}`);
+                state.transactions = data;
+
+                // Initialize all as selected
+                for (const tx of data.transactions) {
+                    state.selectedTxIds.add(tx.id);
+                }
+
+                let html = `
+                    <div class="section" style="margin-top: 1.5rem">
+                        <h3>Transactions (${data.total} total)</h3>
+                        <div class="select-controls">
+                            <button class="btn btn-secondary" onclick="selectAll()">Select All</button>
+                            <button class="btn btn-secondary" onclick="selectNone()">Select None</button>
+                        </div>
+                        <div class="tx-list" id="tx-list">
+                `;
+
+                for (const tx of data.transactions) {
+                    html += renderTransaction(tx);
+                }
+
+                html += '</div>';
+
+                // Pagination
+                if (data.total > limit) {
+                    html += '<div class="pagination">';
+                    if (offset > 0) {
+                        html += `<button class="btn btn-secondary" onclick="loadTransactions('${esc(id)}', ${Math.max(0, offset - limit)}, ${limit})">Previous</button>`;
+                    }
+                    html += `<span>${offset + 1} - ${Math.min(offset + limit, data.total)} of ${data.total}</span>`;
+                    if (offset + limit < data.total) {
+                        html += `<button class="btn btn-secondary" onclick="loadTransactions('${esc(id)}', ${offset + limit}, ${limit})">Next</button>`;
+                    }
+                    html += '</div>';
+                }
+
+                // Export controls
+                html += `
+                    <div class="export-controls">
+                        <label for="export-path">Export Output Path</label>
+                        <input type="text" id="export-path" value="export/${esc(state.authority.name.replace(/ /g, '-'))}">
+                        <div class="btn-group">
+                            <button class="btn btn-success" onclick="doExport('${esc(id)}', false)">
+                                Export All (${data.total} transactions)
+                            </button>
+                            <button class="btn btn-primary" onclick="doExport('${esc(id)}', true)" id="export-selected-btn">
+                                Export Selected (<span id="selected-count">${state.selectedTxIds.size}</span>)
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                html += '</div>';
+                section.innerHTML = html;
+            } catch (err) {
+                section.innerHTML = `<div style="color: var(--error)">Error loading transactions: ${esc(err.message)}</div>`;
+            }
+        }
+
+        function renderTransaction(tx) {
+            const checked = state.selectedTxIds.has(tx.id) ? 'checked' : '';
+            const date = new Date(tx.epoch_second * 1000).toLocaleString();
+
+            let detailsHtml = '';
+            for (const entity of tx.entities) {
+                detailsHtml += `<div class="entity-block">`;
+                detailsHtml += `<div class="entity-id">Entity: ${esc(entity.entity_id)}</div>`;
+                for (const fact of entity.facts) {
+                    const opClass = fact.operation === 'RETRACT' ? 'retract' : '';
+                    detailsHtml += `
+                        <div class="fact-row">
+                            <span class="fact-attr">${esc(fact.attribute)}</span>
+                            <span class="fact-op ${opClass}">${esc(fact.operation)}</span>
+                            <span class="fact-val">${esc(fact.value_summary)}</span>
+                        </div>
+                    `;
+                }
+                detailsHtml += '</div>';
+            }
+
+            return `
+                <div class="tx-item">
+                    <div class="tx-header" onclick="toggleTxDetails(this)">
+                        <input type="checkbox" class="tx-checkbox" ${checked}
+                               onclick="toggleTxSelection(event, '${esc(tx.id)}')"
+                               data-tx-id="${esc(tx.id)}">
+                        <div class="tx-info">
+                            <span class="tx-id">${esc(tx.id.substring(0, 16))}...</span>
+                            <span class="tx-meta">${esc(date)} | ${tx.entity_count} entities, ${tx.fact_count} facts</span>
+                        </div>
+                    </div>
+                    <div class="tx-details">${detailsHtml}</div>
+                </div>
+            `;
+        }
+
+        function toggleTxDetails(header) {
+            const details = header.nextElementSibling;
+            details.classList.toggle('open');
+        }
+
+        function toggleTxSelection(event, txId) {
+            event.stopPropagation();
+            if (state.selectedTxIds.has(txId)) {
+                state.selectedTxIds.delete(txId);
+            } else {
+                state.selectedTxIds.add(txId);
+            }
+            updateSelectedCount();
+        }
+
+        function selectAll() {
+            if (!state.transactions) return;
+            for (const tx of state.transactions.transactions) {
+                state.selectedTxIds.add(tx.id);
+            }
+            document.querySelectorAll('.tx-checkbox').forEach(cb => cb.checked = true);
+            updateSelectedCount();
+        }
+
+        function selectNone() {
+            state.selectedTxIds.clear();
+            document.querySelectorAll('.tx-checkbox').forEach(cb => cb.checked = false);
+            updateSelectedCount();
+        }
+
+        function updateSelectedCount() {
+            const el = document.getElementById('selected-count');
+            if (el) el.textContent = state.selectedTxIds.size;
+        }
+
+        async function loadEntities(id) {
+            const section = document.getElementById('entities-section');
+            section.innerHTML = '<div class="loading"><span class="spinner"></span><br>Loading entities...</div>';
+
+            try {
+                const data = await fetchJson(`${API}/authority/${id}/entities`);
+
+                let html = `<div class="section" style="margin-top: 1.5rem"><h3>Entities (${data.total})</h3>`;
+
+                for (const entity of data.entities) {
+                    html += `
+                        <div class="card" style="cursor: default">
+                            <div class="card-name">${esc(entity.name || '(unnamed)')}</div>
+                            <div class="card-id">${esc(entity.entity_id)}</div>
+                            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; overflow-wrap: break-word; word-break: break-word;">
+                                ${entity.type ? 'Type: ' + esc(entity.type) : ''}
+                                ${entity.uri ? ' | URI: ' + esc(entity.uri) : ''}
+                                ${entity.description ? '<br>' + esc(entity.description) : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                html += '</div>';
+                section.innerHTML = html;
+            } catch (err) {
+                section.innerHTML = `<div style="color: var(--error)">Error loading entities: ${esc(err.message)}</div>`;
+            }
+        }
+
+        async function doExport(id, selectedOnly) {
+            const exportSection = document.getElementById('export-section');
+            const outputPath = document.getElementById('export-path')?.value || 'export';
+
+            exportSection.innerHTML = '<div class="loading"><span class="spinner"></span><br>Exporting...</div>';
+
+            try {
+                const body = { output_path: outputPath };
+                if (selectedOnly && state.selectedTxIds.size > 0) {
+                    body.transaction_ids = Array.from(state.selectedTxIds);
+                }
+
+                const result = await postJson(`${API}/authority/${id}/export`, body);
+
+                let html = `
+                    <div class="export-result">
+                        <h3>Export Complete</h3>
+                        <div class="verify-stats">
+                            <div class="stat">
+                                <div class="stat-value">${result.transaction_count}</div>
+                                <div class="stat-label">Transactions Exported</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value">${result.data_file_count}</div>
+                                <div class="stat-label">Data Files Copied</div>
+                            </div>
+                        </div>
+                        <p style="font-family: monospace; font-size: 0.85rem; color: var(--text-muted)">
+                            Output: ${esc(result.output_path)}
+                        </p>
+                `;
+
+                if (result.errors.length > 0) {
+                    html += '<h3 style="color: var(--warning); margin-top: 1rem">Warnings</h3><ul class="issues-list">';
+                    for (const err of result.errors) {
+                        html += `<li>${esc(err)}</li>`;
+                    }
+                    html += '</ul>';
+                }
+
+                html += '</div>';
+                exportSection.innerHTML = html;
+            } catch (err) {
+                exportSection.innerHTML = `<div style="color: var(--error)">Export error: ${esc(err.message)}</div>`;
+            }
+        }
+
+        // --- Utilities ---
+
+        function esc(str) {
+            if (str == null) return '';
+            const div = document.createElement('div');
+            div.textContent = String(str);
+            return div.innerHTML;
+        }
+
+        // --- Init ---
+        showAddressBook();
+    </script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "gradle-build",
+      "type": "shell",
+      "command": "./gradlew",
+      "args": [
+        ":opencola-server:classes",
+        "--console=plain"
+      ],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "gradle-run-debug",
+      "type": "shell",
+      "command": "./gradlew",
+      "args": [
+        ":opencola-server:run",
+        "--console=plain"
+      ],
+      "options": {
+        "env": {
+          "JAVA_TOOL_OPTIONS": "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005"
+        }
+      },
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^.*$"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^.*Picked up JAVA_TOOL_OPTIONS.*$",
+          "endsPattern": "^Listening for transport dt_socket at address: 5005$"
+        }
+      }
+    },
+    {
+      "label": "gradle-clean-build",
+      "type": "shell",
+      "command": "./gradlew",
+      "args": [
+        "clean",
+        ":opencola-server:classes",
+        "--console=plain"
+      ],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

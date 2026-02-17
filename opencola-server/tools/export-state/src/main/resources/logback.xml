@@ -1,0 +1,16 @@
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT" />
+    </root>
+
+    <logger name="io.opencola.tools.export" level="DEBUG" />
+    <logger name="org.eclipse.jetty" level="WARN" />
+    <logger name="io.netty" level="WARN" />
+    <logger name="Exposed" level="WARN" />
+</configuration>

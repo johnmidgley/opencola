@@ -1,0 +1,17 @@
+{
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.compile.nullAnalysis.mode": "automatic",
+  "java.debug.settings.hotCodeReplace": "auto",
+  "java.debug.settings.console": "integratedTerminal",
+  "java.import.gradle.enabled": true,
+  "java.import.gradle.wrapper.enabled": true,
+  "java.project.sourcePaths": [],
+  "java.project.outputPath": "bin",
+  "kotlin.languageServer.enabled": true,
+  "kotlin.compiler.jvm.target": "11",
+  "kotlin.debugAdapter.enabled": true,
+  "files.exclude": {
+    "**/.gradle": true,
+    "**/build": false
+  }
+}

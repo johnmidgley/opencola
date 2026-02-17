@@ -21,6 +21,7 @@ include("relay:client")
 include("relay:cli")
 include("cli")
 include("test")
+include("tools:export-state")
 
 project(":server").name = "opencola-server"
 
