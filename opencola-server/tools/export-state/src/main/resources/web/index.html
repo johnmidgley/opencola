@@ -755,6 +755,14 @@
                     .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; overflow-wrap: break-word; word-wrap: break-word; }
                     .card-name { font-weight: 600; font-size: 1.05rem; }
                     .card-id { font-family: monospace; font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem; word-break: break-all; }
+                    .card-desc { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 6px; padding: 0.6rem 0.8rem; margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; overflow-wrap: break-word; word-break: break-word; }
+                    .image-toggle { display: inline-flex; align-items: center; gap: 0.3rem; cursor: pointer; font-size: 0.8rem; color: var(--accent-light); margin-top: 0.4rem; user-select: none; }
+                    .image-toggle:hover { text-decoration: underline; }
+                    .image-toggle .arrow { display: inline-block; transition: transform 0.2s; font-size: 0.6rem; }
+                    .image-toggle .arrow.open { transform: rotate(90deg); }
+                    .image-preview { display: none; margin-top: 0.5rem; }
+                    .image-preview.open { display: block; }
+                    .image-preview img { max-width: 100%; max-height: 400px; border-radius: 6px; border: 1px solid var(--border); }
                     .loading { text-align: center; padding: 2rem; color: var(--text-muted); }
                     .spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid var(--border); border-top-color: #e94560; border-radius: 50%; animation: spin 0.8s linear infinite; }
                     @keyframes spin { to { transform: rotate(360deg); } }
@@ -770,15 +778,24 @@
 
                 let html = `<p style="color: var(--text-muted); margin-bottom: 1rem">${data.total} entities</p>`;
                 for (const entity of data.entities) {
+                    const imgId = 'img-' + entity.entity_id.replace(/[^a-zA-Z0-9]/g, '_');
                     html += `
                         <div class="card">
                             <div class="card-name">${esc(entity.name || '(unnamed)')}</div>
                             <div class="card-id">${esc(entity.entity_id)}</div>
                             <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; overflow-wrap: break-word; word-break: break-word;">
                                 ${entity.type ? 'Type: ' + esc(entity.type) : ''}
-                                ${entity.uri ? ' | URI: ' + esc(entity.uri) : ''}
-                                ${entity.description ? '<br>' + esc(entity.description) : ''}
+                                ${entity.uri ? ' | URI: <a href="' + esc(entity.uri) + '" target="_blank" rel="noopener" style="color: var(--accent-light);">' + esc(entity.uri) + '</a>' : ''}
                             </div>
+                            ${entity.image_uri ? `
+                                <div class="image-toggle" onclick="var p=this.nextElementSibling;var a=this.querySelector('.arrow');p.classList.toggle('open');a.classList.toggle('open');">
+                                    <span class="arrow">&#9654;</span> <a href="${esc(entity.image_uri)}" onclick="event.preventDefault();event.stopPropagation();var p=this.closest('.image-toggle').nextElementSibling;var a=this.closest('.image-toggle').querySelector('.arrow');p.classList.toggle('open');a.classList.toggle('open');" style="color: inherit; text-decoration: underline;">View Image</a>
+                                </div>
+                                <div class="image-preview" id="${imgId}">
+                                    <img src="${esc(entity.image_uri)}" alt="Entity image" onerror="this.parentElement.innerHTML='<span style=\\'color:var(--error);font-size:0.85rem\\'>Unable to load image</span>';">
+                                </div>
+                            ` : ''}
+                            ${entity.description ? `<div class="card-desc">${esc(entity.description)}</div>` : ''}
                         </div>
                     `;
                 }

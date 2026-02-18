@@ -269,6 +269,8 @@ class ExportServer(
             if (type != null) put("type", type)
             val desc = entity.description
             if (desc != null) put("description", desc)
+            val imageUri = entity.imageUri
+            if (imageUri != null) put("image_uri", imageUri.toString())
             // uri is on ResourceEntity and Authority subclasses
             when (entity) {
                 is ResourceEntity -> entity.uri?.let { put("uri", it.toString()) }
