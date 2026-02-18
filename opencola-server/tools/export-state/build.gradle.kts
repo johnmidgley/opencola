@@ -20,6 +20,14 @@ tasks.named<JavaExec>("run") {
     standardInput = System.`in`
 }
 
+tasks.named<ProcessResources>("processResources") {
+    val props = mapOf("version" to project.version.toString())
+    inputs.properties(props)
+    filesMatching("version.properties") {
+        expand(props)
+    }
+}
+
 dependencies {
     implementation(project(":core:util"))
     implementation(project(":core:io"))

@@ -30,6 +30,16 @@ data class ExportResult(
  */
 class Exporter(private val storage: StorageAccess) {
 
+    private val buildVersion: String? by lazy {
+        try {
+            val props = java.util.Properties()
+            this::class.java.classLoader.getResourceAsStream("version.properties")?.use { props.load(it) }
+            props.getProperty("opencola.version")
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     fun export(
         authorityId: Id,
         authorityName: String,
@@ -104,6 +114,7 @@ class Exporter(private val storage: StorageAccess) {
         val manifest = buildJsonObject {
             put("export_version", 1)
             put("source", "opencola-kotlin")
+            if (buildVersion != null) put("opencola_version", buildVersion)
             put("exported_at", DateTimeFormatter.ISO_INSTANT.format(Instant.now().atOffset(ZoneOffset.UTC)))
             putJsonObject("authority") {
                 put("id", authorityId.toString())
@@ -127,7 +138,7 @@ class Exporter(private val storage: StorageAccess) {
         logger.info { "Export complete: ${transactions.size} transactions, $dataFileCount data files to $outputDir" }
 
         return ExportResult(
-            outputPath = outputDir.toString(),
+            outputPath = outputDir.toAbsolutePath().normalize().toString(),
             transactionCount = transactions.size,
             dataFileCount = dataFileCount,
             errors = errors

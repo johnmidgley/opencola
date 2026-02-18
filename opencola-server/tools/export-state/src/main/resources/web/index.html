@@ -332,16 +332,56 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Export result */
-        .export-result {
-            background: var(--bg-card);
-            border: 1px solid var(--success);
-            border-radius: 8px;
-            padding: 1.25rem;
-            margin-top: 1rem;
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
         }
 
-        .export-result h3 { color: var(--success); }
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--success);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 550px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal.error {
+            border-color: var(--error);
+        }
+
+        .modal h3 { color: var(--success); }
+        .modal.error h3 { color: var(--error); }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-close:hover { color: var(--text); }
 
         .select-controls {
             display: flex;
@@ -370,6 +410,10 @@
     </style>
 </head>
 <body>
+    <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+        <div class="modal" id="modal-content"></div>
+    </div>
+
     <div class="container" id="app">
         <div class="header">
             <h1>OpenCola State Export</h1>
@@ -427,6 +471,15 @@
                 ]);
 
                 let html = '';
+
+                const allEntries = [...personasData.personas, ...peersData.peers];
+                if (allEntries.length > 0) {
+                    html += `<div style="margin-bottom: 1.5rem">
+                        <button class="btn btn-success" onclick='exportAll(${esc(JSON.stringify(allEntries.map(e => ({id: e.entity_id, name: e.name}))))})'>
+                            Export All (${allEntries.length} authorities)
+                        </button>
+                    </div>`;
+                }
 
                 html += '<div class="section"><h2>Personas</h2>';
                 if (personasData.personas.length === 0) {
@@ -488,22 +541,19 @@
                 <div class="card-id" style="margin-bottom: 1rem">${esc(id)}</div>
 
                 <div class="btn-group">
-                    <button class="btn btn-primary" onclick="verifyChain('${esc(id)}', '${esc(name)}')">
-                        Verify Chain
-                    </button>
                     <button class="btn btn-secondary" onclick="loadTransactions('${esc(id)}')">
                         Browse Transactions
                     </button>
-                    <button class="btn btn-secondary" onclick="loadEntities('${esc(id)}')">
+                    <button class="btn btn-secondary" onclick="openEntities('${esc(id)}', '${esc(name)}')">
                         View Entities
                     </button>
                 </div>
 
                 <div id="verify-section"></div>
                 <div id="transactions-section"></div>
-                <div id="entities-section"></div>
-                <div id="export-section"></div>
             `;
+
+            verifyChain(id, name);
         }
 
         async function verifyChain(id, name) {
@@ -693,18 +743,35 @@
             if (el) el.textContent = state.selectedTxIds.size;
         }
 
-        async function loadEntities(id) {
-            const section = document.getElementById('entities-section');
-            section.innerHTML = '<div class="loading"><span class="spinner"></span><br>Loading entities...</div>';
+        async function openEntities(id, name) {
+            const w = window.open('', '_blank');
+            w.document.write(`<!DOCTYPE html><html><head><title>Entities - ${esc(name)}</title>
+                <style>
+                    :root { --bg: #1a1a2e; --bg-card: #16213e; --accent-light: #ff6b81; --text: #eee; --text-muted: #aaa; --border: #2a2a4a; --error: #e74c3c; }
+                    * { box-sizing: border-box; margin: 0; padding: 0; }
+                    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+                    .container { max-width: 1000px; margin: 0 auto; padding: 2rem 1rem; }
+                    h2 { font-size: 1.3rem; margin-bottom: 1rem; color: var(--text-muted); }
+                    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; overflow-wrap: break-word; word-wrap: break-word; }
+                    .card-name { font-weight: 600; font-size: 1.05rem; }
+                    .card-id { font-family: monospace; font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem; word-break: break-all; }
+                    .loading { text-align: center; padding: 2rem; color: var(--text-muted); }
+                    .spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid var(--border); border-top-color: #e94560; border-radius: 50%; animation: spin 0.8s linear infinite; }
+                    @keyframes spin { to { transform: rotate(360deg); } }
+                </style></head><body>
+                <div class="container">
+                    <h2>${esc(name)} - Entities</h2>
+                    <div id="content"><div class="loading"><span class="spinner"></span><br>Loading entities...</div></div>
+                </div></body></html>`);
+            w.document.close();
 
             try {
                 const data = await fetchJson(`${API}/authority/${id}/entities`);
 
-                let html = `<div class="section" style="margin-top: 1.5rem"><h3>Entities (${data.total})</h3>`;
-
+                let html = `<p style="color: var(--text-muted); margin-bottom: 1rem">${data.total} entities</p>`;
                 for (const entity of data.entities) {
                     html += `
-                        <div class="card" style="cursor: default">
+                        <div class="card">
                             <div class="card-name">${esc(entity.name || '(unnamed)')}</div>
                             <div class="card-id">${esc(entity.entity_id)}</div>
                             <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; overflow-wrap: break-word; word-break: break-word;">
@@ -715,19 +782,72 @@
                         </div>
                     `;
                 }
-
-                html += '</div>';
-                section.innerHTML = html;
+                w.document.getElementById('content').innerHTML = html;
             } catch (err) {
-                section.innerHTML = `<div style="color: var(--error)">Error loading entities: ${esc(err.message)}</div>`;
+                w.document.getElementById('content').innerHTML = `<div style="color: var(--error)">Error loading entities: ${esc(err.message)}</div>`;
             }
         }
 
+        function showModal(html, isError = false) {
+            const overlay = document.getElementById('modal-overlay');
+            const modal = document.getElementById('modal-content');
+            modal.className = isError ? 'modal error' : 'modal';
+            modal.innerHTML = `<button class="modal-close" onclick="closeModal()">&times;</button>${html}`;
+            overlay.classList.add('open');
+        }
+
+        function closeModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('modal-overlay').classList.remove('open');
+        }
+
+        async function exportAll(authorities) {
+            showModal(`<h3>Exporting All</h3>
+                <p style="margin: 0.5rem 0 1rem">Exporting ${authorities.length} authorities...</p>
+                <div id="export-all-progress"></div>`);
+
+            const results = [];
+            const progressEl = document.getElementById('export-all-progress');
+
+            for (let i = 0; i < authorities.length; i++) {
+                const auth = authorities[i];
+                const dirName = auth.name.replace(/ /g, '-');
+                progressEl.innerHTML = `<div class="loading"><span class="spinner"></span><br>Exporting ${esc(auth.name)} (${i + 1}/${authorities.length})...</div>`;
+
+                try {
+                    const result = await postJson(`${API}/authority/${auth.id}/export`, { output_path: `export/${dirName}` });
+                    results.push({ name: auth.name, success: true, result });
+                } catch (err) {
+                    results.push({ name: auth.name, success: false, error: err.message });
+                }
+            }
+
+            const hasErrors = results.some(r => !r.success);
+            let html = `<h3>Export ${hasErrors ? 'Completed with Errors' : 'Successful'}</h3>
+                <p style="margin: 0.5rem 0 1rem">Exported ${results.filter(r => r.success).length} of ${results.length} authorities.</p>`;
+
+            for (const r of results) {
+                if (r.success) {
+                    html += `<div style="background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem 1rem; margin-bottom: 0.5rem; font-size: 0.85rem;">
+                        <span style="color: var(--success);">${esc(r.name)}</span>
+                        <span style="color: var(--text-muted)"> — ${r.result.transaction_count} transactions, ${r.result.data_file_count} data files</span>
+                        <div style="font-family: monospace; color: var(--accent-light); margin-top: 0.25rem">${esc(r.result.output_path)}</div>
+                    </div>`;
+                } else {
+                    html += `<div style="background: var(--bg); border: 1px solid var(--error); border-radius: 6px; padding: 0.75rem 1rem; margin-bottom: 0.5rem; font-size: 0.85rem;">
+                        <span style="color: var(--error);">${esc(r.name)}</span>
+                        <span style="color: var(--text-muted)"> — ${esc(r.error)}</span>
+                    </div>`;
+                }
+            }
+
+            showModal(html, hasErrors);
+        }
+
         async function doExport(id, selectedOnly) {
-            const exportSection = document.getElementById('export-section');
             const outputPath = document.getElementById('export-path')?.value || 'export';
 
-            exportSection.innerHTML = '<div class="loading"><span class="spinner"></span><br>Exporting...</div>';
+            showModal('<div class="loading"><span class="spinner"></span><br>Exporting...</div>');
 
             try {
                 const body = { output_path: outputPath };
@@ -738,21 +858,12 @@
                 const result = await postJson(`${API}/authority/${id}/export`, body);
 
                 let html = `
-                    <div class="export-result">
-                        <h3>Export Complete</h3>
-                        <div class="verify-stats">
-                            <div class="stat">
-                                <div class="stat-value">${result.transaction_count}</div>
-                                <div class="stat-label">Transactions Exported</div>
-                            </div>
-                            <div class="stat">
-                                <div class="stat-value">${result.data_file_count}</div>
-                                <div class="stat-label">Data Files Copied</div>
-                            </div>
-                        </div>
-                        <p style="font-family: monospace; font-size: 0.85rem; color: var(--text-muted)">
-                            Output: ${esc(result.output_path)}
-                        </p>
+                    <h3>Export Successful</h3>
+                    <p style="margin: 0.5rem 0 1rem">Exported ${result.transaction_count} transactions and ${result.data_file_count} data files.</p>
+                    <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem 1rem; font-family: monospace; font-size: 0.85rem;">
+                        <span style="color: var(--text-muted)">Output directory:</span><br>
+                        <span style="color: var(--accent-light)">${esc(result.output_path)}</span>
+                    </div>
                 `;
 
                 if (result.errors.length > 0) {
@@ -763,10 +874,9 @@
                     html += '</ul>';
                 }
 
-                html += '</div>';
-                exportSection.innerHTML = html;
+                showModal(html);
             } catch (err) {
-                exportSection.innerHTML = `<div style="color: var(--error)">Export error: ${esc(err.message)}</div>`;
+                showModal(`<h3>Export Failed</h3><p style="margin-top: 0.5rem">${esc(err.message)}</p>`, true);
             }
         }
 
