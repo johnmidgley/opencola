@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 OpenCola
+ * Copyright 2024-2026 OpenCola
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
