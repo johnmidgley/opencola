@@ -282,7 +282,7 @@ class Exporter(private val storage: StorageAccess) {
         for (st in transactions) {
             for (entity in st.transaction.transactionEntities) {
                 for (fact in entity.facts) {
-                    if (fact.attribute.name == CoreAttribute.DataIds.spec.name && fact.operation == Operation.Add) {
+                    if ((fact.attribute.name == CoreAttribute.DataIds.spec.name || fact.attribute.name == CoreAttribute.AttachmentIds.spec.name) && fact.operation == Operation.Add) {
                         val id = fact.value.get()
                         if (id is Id) {
                             dataIds.add(id)
