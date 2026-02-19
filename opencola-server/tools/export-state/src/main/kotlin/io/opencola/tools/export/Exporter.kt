@@ -91,7 +91,7 @@ class Exporter(private val storage: StorageAccess) {
                     val prefix = idStr.substring(0, 2)
                     val prefixDir = dataDir.resolve(prefix)
                     prefixDir.toFile().mkdirs()
-                    val dataFile = prefixDir.resolve(idStr.substring(2))
+                    val dataFile = prefixDir.resolve(idStr)
                     dataFile.toFile().writeBytes(data)
                     dataFileCount++
                 } else {
@@ -125,6 +125,9 @@ class Exporter(private val storage: StorageAccess) {
             }
             put("transaction_count", transactions.size)
             put("data_file_count", dataFileCount)
+            putJsonArray("data_ids") {
+                dataIds.forEach { add(it.toString()) }
+            }
             if (errors.isNotEmpty()) {
                 putJsonArray("errors") {
                     errors.forEach { add(it) }
@@ -177,7 +180,7 @@ class Exporter(private val storage: StorageAccess) {
 
     private fun transactionFactToJson(fact: TransactionFact): JsonObject {
         return buildJsonObject {
-            put("attribute", fact.attribute.name)
+            put("attribute", fact.attribute.uri.toString())
             put("value", valueToJson(fact.value))
             put("operation", fact.operation.name)
         }
