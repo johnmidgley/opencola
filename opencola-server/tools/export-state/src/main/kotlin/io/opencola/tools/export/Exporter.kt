@@ -5,15 +5,18 @@ import io.opencola.model.value.*
 import io.opencola.storage.entitystore.EntityStore.TransactionOrder
 import kotlinx.serialization.json.*
 import mu.KotlinLogging
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.net.URI
-import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.StandardCopyOption
 import java.security.PublicKey
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import java.util.zip.Deflater
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 private val logger = KotlinLogging.logger("Exporter")
 
@@ -25,8 +28,18 @@ data class ExportResult(
 )
 
 /**
- * Exports transactions and data files for a given authority in a neutral JSON format
- * compatible with the Rust OpenCola Value enum serde format.
+ * Exports transactions and data files for a given authority as a zip archive
+ * compatible with the Rust OpenCola importer.
+ *
+ * Archive structure:
+ * ```
+ * opencola-export-{name}-{date}/
+ * ├── export-manifest.json
+ * ├── transactions.json
+ * └── data/
+ *     ├── Ab/cdef1234...
+ *     └── 7f/9a8b7c6d...
+ * ```
  */
 class Exporter(private val storage: StorageAccess) {
 
@@ -47,11 +60,6 @@ class Exporter(private val storage: StorageAccess) {
         transactionIds: Set<Id>? = null // null = export all
     ): ExportResult {
         val errors = mutableListOf<String>()
-
-        // Create output directories
-        outputDir.toFile().mkdirs()
-        val dataDir = outputDir.resolve("data")
-        dataDir.toFile().mkdirs()
 
         // Get transactions
         val allTransactions = storage.entityStore.getSignedTransactions(
@@ -75,30 +83,23 @@ class Exporter(private val storage: StorageAccess) {
                 add(signedTransactionToJson(st))
             }
         }
+        val transactionsBytes = Json { prettyPrint = true }
+            .encodeToString(JsonArray.serializer(), transactionsJson)
+            .toByteArray(Charsets.UTF_8)
 
-        // Write transactions.json
-        val transactionsFile = outputDir.resolve("transactions.json").toFile()
-        transactionsFile.writeText(Json { prettyPrint = true }.encodeToString(JsonArray.serializer(), transactionsJson))
-
-        // Collect and copy data files
+        // Collect data files
         val dataIds = collectDataIds(transactions)
-        var dataFileCount = 0
+        val dataFiles = mutableMapOf<String, ByteArray>()
         for (dataId in dataIds) {
             try {
                 val data = storage.contentFileStore.read(dataId)
                 if (data != null) {
-                    val idStr = dataId.toString()
-                    val prefix = idStr.substring(0, 2)
-                    val prefixDir = dataDir.resolve(prefix)
-                    prefixDir.toFile().mkdirs()
-                    val dataFile = prefixDir.resolve(idStr)
-                    dataFile.toFile().writeBytes(data)
-                    dataFileCount++
+                    dataFiles[dataId.toString()] = data
                 } else {
                     errors.add("Data file not found for ID: $dataId")
                 }
             } catch (e: Exception) {
-                errors.add("Error copying data file $dataId: ${e.message}")
+                errors.add("Error reading data file $dataId: ${e.message}")
             }
         }
 
@@ -110,7 +111,7 @@ class Exporter(private val storage: StorageAccess) {
             null
         }
 
-        // Write export-manifest.json
+        // Build manifest
         val manifest = buildJsonObject {
             put("export_version", 1)
             put("source", "opencola-kotlin")
@@ -124,7 +125,7 @@ class Exporter(private val storage: StorageAccess) {
                 }
             }
             put("transaction_count", transactions.size)
-            put("data_file_count", dataFileCount)
+            put("data_file_count", dataFiles.size)
             putJsonArray("data_ids") {
                 dataIds.forEach { add(it.toString()) }
             }
@@ -134,16 +135,53 @@ class Exporter(private val storage: StorageAccess) {
                 }
             }
         }
+        val manifestBytes = Json { prettyPrint = true }
+            .encodeToString(JsonObject.serializer(), manifest)
+            .toByteArray(Charsets.UTF_8)
 
-        val manifestFile = outputDir.resolve("export-manifest.json").toFile()
-        manifestFile.writeText(Json { prettyPrint = true }.encodeToString(JsonObject.serializer(), manifest))
+        // Build zip archive matching Rust export format
+        val safeName = authorityName.map { c ->
+            if (c.isLetterOrDigit() || c == '-' || c == '_') c else '_'
+        }.joinToString("")
+        val dateStr = LocalDate.now().toString() // yyyy-MM-dd
+        val dirPrefix = "opencola-export-$safeName-$dateStr"
 
-        logger.info { "Export complete: ${transactions.size} transactions, $dataFileCount data files to $outputDir" }
+        outputDir.toFile().mkdirs()
+        val zipFile = outputDir.resolve("$dirPrefix.zip").toFile()
+
+        ZipOutputStream(zipFile.outputStream()).use { zip ->
+            zip.setLevel(Deflater.DEFAULT_COMPRESSION)
+
+            // Write export-manifest.json
+            zip.putNextEntry(ZipEntry("$dirPrefix/export-manifest.json"))
+            zip.write(manifestBytes)
+            zip.closeEntry()
+
+            // Write transactions.json
+            zip.putNextEntry(ZipEntry("$dirPrefix/transactions.json"))
+            zip.write(transactionsBytes)
+            zip.closeEntry()
+
+            // Write data files with 2-char prefix directory structure (stored, not compressed)
+            for ((idStr, data) in dataFiles) {
+                val prefix = if (idStr.length >= 2) idStr.substring(0, 2) else idStr
+                val entry = ZipEntry("$dirPrefix/data/$prefix/$idStr")
+                entry.method = ZipEntry.STORED
+                entry.size = data.size.toLong()
+                entry.compressedSize = data.size.toLong()
+                entry.crc = java.util.zip.CRC32().also { it.update(data) }.value
+                zip.putNextEntry(entry)
+                zip.write(data)
+                zip.closeEntry()
+            }
+        }
+
+        logger.info { "Export complete: ${transactions.size} transactions, ${dataFiles.size} data files to $zipFile" }
 
         return ExportResult(
-            outputPath = outputDir.toAbsolutePath().normalize().toString(),
+            outputPath = zipFile.absolutePath,
             transactionCount = transactions.size,
-            dataFileCount = dataFileCount,
+            dataFileCount = dataFiles.size,
             errors = errors
         )
     }

@@ -651,8 +651,8 @@
                 // Export controls
                 html += `
                     <div class="export-controls">
-                        <label for="export-path">Export Output Path</label>
-                        <input type="text" id="export-path" value="export/${esc(state.authority.name.replace(/ /g, '-'))}">
+                        <label for="export-path">Export Output Directory</label>
+                        <input type="text" id="export-path" value="export">
                         <div class="btn-group">
                             <button class="btn btn-success" onclick="doExport('${esc(id)}', false)">
                                 Export All (${data.total} transactions)
@@ -828,11 +828,10 @@
 
             for (let i = 0; i < authorities.length; i++) {
                 const auth = authorities[i];
-                const dirName = auth.name.replace(/ /g, '-');
                 progressEl.innerHTML = `<div class="loading"><span class="spinner"></span><br>Exporting ${esc(auth.name)} (${i + 1}/${authorities.length})...</div>`;
 
                 try {
-                    const result = await postJson(`${API}/authority/${auth.id}/export`, { output_path: `export/${dirName}` });
+                    const result = await postJson(`${API}/authority/${auth.id}/export`, { output_path: 'export' });
                     results.push({ name: auth.name, success: true, result });
                 } catch (err) {
                     results.push({ name: auth.name, success: false, error: err.message });
@@ -878,7 +877,7 @@
                     <h3>Export Successful</h3>
                     <p style="margin: 0.5rem 0 1rem">Exported ${result.transaction_count} transactions and ${result.data_file_count} data files.</p>
                     <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem 1rem; font-family: monospace; font-size: 0.85rem;">
-                        <span style="color: var(--text-muted)">Output directory:</span><br>
+                        <span style="color: var(--text-muted)">Output file:</span><br>
                         <span style="color: var(--accent-light)">${esc(result.output_path)}</span>
                     </div>
                 `;
