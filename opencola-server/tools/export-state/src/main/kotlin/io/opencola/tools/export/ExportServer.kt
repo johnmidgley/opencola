@@ -26,6 +26,7 @@ class ExportServer(
 ) {
     private val chainVerifier = ChainVerifier(storage)
     private val exporter = Exporter(storage)
+    private val orphanAnalyzer = OrphanAnalyzer(storage)
 
     fun start(openBrowser: Boolean = false) {
         logger.info { "Starting export server on port $port" }
@@ -255,6 +256,144 @@ class ExportServer(
                         }
                     })
                 }
+
+                get("/orphaned-transactions") {
+                    val result = orphanAnalyzer.analyze()
+
+                    call.respond(buildJsonObject {
+                        put("total_filesystem_transactions", result.totalFilesystemTransactions)
+                        put("total_db_transactions", result.totalDbTransactions)
+                        put("orphan_count", result.orphanCount)
+                        putJsonArray("orphans") {
+                            for (orphan in result.orphans) {
+                                add(orphanToJson(orphan))
+                            }
+                        }
+                    })
+                }
+
+                post("/repair-orphans") {
+                    val result = orphanAnalyzer.repair()
+
+                    call.respond(buildJsonObject {
+                        put("orphans_before", result.orphansBefore)
+                        put("orphans_after", result.orphansAfter)
+                        put("repaired", result.repaired)
+                        putJsonArray("errors") {
+                            result.errors.forEach { add(it) }
+                        }
+                    })
+                }
+
+                post("/export-all-orphans") {
+                    val body = try {
+                        call.receive<JsonObject>()
+                    } catch (e: Exception) {
+                        buildJsonObject {}
+                    }
+
+                    val outputBase = body["output_path"]?.jsonPrimitive?.contentOrNull
+                        ?.let { Paths.get(it) }
+                        ?: defaultOutputDir
+
+                    val byAuthority = orphanAnalyzer.getAllOrphanTransactionsByAuthority()
+
+                    if (byAuthority.isEmpty()) {
+                        call.respond(buildJsonObject {
+                            putJsonArray("results") {}
+                            put("total_exported", 0)
+                        })
+                        return@post
+                    }
+
+                    val results = mutableListOf<JsonObject>()
+                    var totalExported = 0
+
+                    for ((authorityId, transactions) in byAuthority) {
+                        val name = findAuthorityName(authorityId)
+                        val outputPath = outputBase.resolve(name.replace(" ", "-"))
+                        try {
+                            val result = exporter.exportTransactions(
+                                authorityId, name, transactions, outputPath,
+                                sourceLabel = "opencola-kotlin-orphans",
+                                filenameTag = "orphaned",
+                            )
+                            totalExported += result.transactionCount
+                            results.add(buildJsonObject {
+                                put("authority_id", authorityId.toString())
+                                put("authority_name", name)
+                                put("output_path", result.outputPath)
+                                put("transaction_count", result.transactionCount)
+                                put("data_file_count", result.dataFileCount)
+                                put("success", true)
+                                putJsonArray("errors") { result.errors.forEach { add(it) } }
+                            })
+                        } catch (e: Exception) {
+                            results.add(buildJsonObject {
+                                put("authority_id", authorityId.toString())
+                                put("authority_name", name)
+                                put("success", false)
+                                put("error", e.message ?: "Unknown error")
+                            })
+                        }
+                    }
+
+                    call.respond(buildJsonObject {
+                        putJsonArray("results") { results.forEach { add(it) } }
+                        put("total_exported", totalExported)
+                    })
+                }
+
+                post("/authority/{id}/export-orphans") {
+                    val idStr = call.parameters["id"] ?: return@post call.respondText(
+                        "Missing authority ID", status = HttpStatusCode.BadRequest
+                    )
+                    val authorityId = try {
+                        Id.decode(idStr)
+                    } catch (e: Exception) {
+                        return@post call.respondText(
+                            "Invalid authority ID: ${e.message}", status = HttpStatusCode.BadRequest
+                        )
+                    }
+
+                    val body = try {
+                        call.receive<JsonObject>()
+                    } catch (e: Exception) {
+                        buildJsonObject {}
+                    }
+
+                    val outputPath = body["output_path"]?.jsonPrimitive?.contentOrNull
+                        ?.let { Paths.get(it) }
+                        ?: defaultOutputDir.resolve(findAuthorityName(authorityId).replace(" ", "-"))
+
+                    val name = findAuthorityName(authorityId)
+                    val transactions = orphanAnalyzer.getOrphanTransactions(authorityId)
+
+                    if (transactions.isEmpty()) {
+                        call.respond(buildJsonObject {
+                            put("output_path", "")
+                            put("transaction_count", 0)
+                            put("data_file_count", 0)
+                            putJsonArray("errors") { add("No orphaned transactions found for this authority") }
+                        })
+                        return@post
+                    }
+
+                    val result = exporter.exportTransactions(
+                        authorityId, name, transactions, outputPath,
+                        sourceLabel = "opencola-kotlin-orphans",
+                        filenameTag = "orphaned",
+                    )
+
+                    call.respond(buildJsonObject {
+                        put("output_path", result.outputPath)
+                        put("transaction_count", result.transactionCount)
+                        put("data_file_count", result.dataFileCount)
+                        putJsonArray("errors") {
+                            result.errors.forEach { add(it) }
+                        }
+                    })
+                }
             }
         }
     }
@@ -294,6 +433,35 @@ class ExportServer(
             val keyBytes = entry.publicKey.encoded
             val fingerprint = keyBytes.takeLast(8).toByteArray()
             put("public_key_fingerprint", fingerprint.toHexString())
+        }
+    }
+
+    private fun orphanToJson(orphan: OrphanInfo): JsonObject {
+        return buildJsonObject {
+            put("id", orphan.id)
+            if (orphan.authorityId != null) put("authority_id", orphan.authorityId)
+            if (orphan.authorityName != null) put("authority_name", orphan.authorityName)
+            if (orphan.timestamp != null) put("timestamp", orphan.timestamp)
+            if (orphan.epochSecond != null) put("epoch_second", orphan.epochSecond)
+            if (orphan.entityCount != null) put("entity_count", orphan.entityCount)
+            if (orphan.factCount != null) put("fact_count", orphan.factCount)
+            if (orphan.decodeError != null) put("decode_error", orphan.decodeError)
+            putJsonArray("entities") {
+                for (entity in orphan.entities) {
+                    add(buildJsonObject {
+                        put("entity_id", entity.entityId)
+                        putJsonArray("facts") {
+                            for (fact in entity.facts) {
+                                add(buildJsonObject {
+                                    put("attribute", fact.attribute)
+                                    put("operation", fact.operation)
+                                    put("value_summary", fact.valueSummary)
+                                })
+                            }
+                        }
+                    })
+                }
+            }
         }
     }
 

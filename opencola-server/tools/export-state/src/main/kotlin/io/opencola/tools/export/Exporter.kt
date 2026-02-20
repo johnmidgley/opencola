@@ -59,9 +59,7 @@ class Exporter(private val storage: StorageAccess) {
         outputDir: Path,
         transactionIds: Set<Id>? = null // null = export all
     ): ExportResult {
-        val errors = mutableListOf<String>()
-
-        // Get transactions
+        // Get transactions from the entity store (DB-indexed)
         val allTransactions = storage.entityStore.getSignedTransactions(
             setOf(authorityId),
             null,
@@ -74,6 +72,23 @@ class Exporter(private val storage: StorageAccess) {
         } else {
             allTransactions
         }
+
+        return exportTransactions(authorityId, authorityName, transactions, outputDir)
+    }
+
+    /**
+     * Exports a list of [SignedTransaction] objects to a zip archive.
+     * Works with both DB-indexed and orphaned transactions.
+     */
+    fun exportTransactions(
+        authorityId: Id,
+        authorityName: String,
+        transactions: List<SignedTransaction>,
+        outputDir: Path,
+        sourceLabel: String = "opencola-kotlin",
+        filenameTag: String? = null,
+    ): ExportResult {
+        val errors = mutableListOf<String>()
 
         logger.info { "Exporting ${transactions.size} transactions for $authorityName ($authorityId)" }
 
@@ -114,7 +129,7 @@ class Exporter(private val storage: StorageAccess) {
         // Build manifest
         val manifest = buildJsonObject {
             put("export_version", 1)
-            put("source", "opencola-kotlin")
+            put("source", sourceLabel)
             if (buildVersion != null) put("opencola_version", buildVersion)
             put("exported_at", DateTimeFormatter.ISO_INSTANT.format(Instant.now().atOffset(ZoneOffset.UTC)))
             putJsonObject("authority") {
@@ -144,7 +159,8 @@ class Exporter(private val storage: StorageAccess) {
             if (c.isLetterOrDigit() || c == '-' || c == '_') c else '_'
         }.joinToString("")
         val dateStr = LocalDate.now().toString() // yyyy-MM-dd
-        val dirPrefix = "opencola-export-$safeName-$dateStr"
+        val tagPart = if (filenameTag != null) "-$filenameTag" else ""
+        val dirPrefix = "opencola-export-$safeName$tagPart-$dateStr"
 
         outputDir.toFile().mkdirs()
         val zipFile = outputDir.resolve("$dirPrefix.zip").toFile()

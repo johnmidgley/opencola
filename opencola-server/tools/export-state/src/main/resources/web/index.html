@@ -149,6 +149,7 @@
         .btn-primary { background: var(--accent); color: #fff; }
         .btn-secondary { background: var(--border); color: var(--text); }
         .btn-success { background: var(--success); color: #000; }
+        .btn-sm { padding: 0.25rem 0.75rem; font-size: 0.8rem; }
 
         .btn-group {
             display: flex;
@@ -432,6 +433,7 @@
             verification: null,
             transactions: null,
             selectedTxIds: new Set(),
+            orphanData: null,  // cached orphan analysis result
         };
 
         // --- API calls ---
@@ -465,11 +467,13 @@
             content.innerHTML = '<div class="loading"><span class="spinner"></span><br>Loading address book...</div>';
 
             try {
-                const [personasData, peersData] = await Promise.all([
+                const [personasData, peersData, orphanData] = await Promise.all([
                     fetchJson(`${API}/personas`),
-                    fetchJson(`${API}/peers`)
+                    fetchJson(`${API}/peers`),
+                    fetchJson(`${API}/orphaned-transactions`).catch(() => null),
                 ]);
 
+                state.orphanData = orphanData;
                 let html = '';
 
                 const allEntries = [...personasData.personas, ...peersData.peers];
@@ -498,6 +502,11 @@
                     html += renderEntryCard(p);
                 }
                 html += '</div>';
+
+                // Orphans section
+                if (orphanData) {
+                    html += renderOrphansSection(orphanData);
+                }
 
                 content.innerHTML = html;
             } catch (err) {
@@ -893,6 +902,266 @@
                 showModal(html);
             } catch (err) {
                 showModal(`<h3>Export Failed</h3><p style="margin-top: 0.5rem">${esc(err.message)}</p>`, true);
+            }
+        }
+
+        // --- Orphans ---
+
+        function groupOrphansByAuthority(orphanData) {
+            const grouped = {};
+            const undecodable = [];
+            for (const orphan of orphanData.orphans) {
+                if (orphan.decode_error) {
+                    undecodable.push(orphan);
+                } else {
+                    const key = orphan.authority_id;
+                    if (!grouped[key]) {
+                        grouped[key] = {
+                            authorityId: orphan.authority_id,
+                            authorityName: orphan.authority_name,
+                            orphans: [],
+                        };
+                    }
+                    grouped[key].orphans.push(orphan);
+                }
+            }
+            return { grouped, undecodable };
+        }
+
+        function renderOrphansSection(orphanData) {
+            let html = '<div class="section"><h2>Orphaned Transactions</h2>';
+
+            html += `<p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem">
+                ${orphanData.total_filesystem_transactions} files on disk,
+                ${orphanData.total_db_transactions} in database,
+                ${orphanData.orphan_count} orphaned
+            </p>`;
+
+            if (orphanData.orphan_count === 0) {
+                html += '<p style="color: var(--text-muted)">No orphaned transactions found</p>';
+                html += '</div>';
+                return html;
+            }
+
+            const { grouped, undecodable } = groupOrphansByAuthority(orphanData);
+            const groups = Object.values(grouped);
+
+            // Top-level action buttons
+            html += '<div class="btn-group" style="margin-bottom: 1rem">';
+            html += `<button class="btn btn-success" onclick="exportAllOrphans()">
+                Export All Orphans (${orphanData.orphan_count})
+            </button>`;
+            html += `<button class="btn btn-primary" onclick="repairOrphans()">Repair Orphans</button>`;
+            html += '</div>';
+
+            for (const group of groups) {
+                const name = group.authorityName || group.authorityId;
+                html += `
+                    <div class="card" onclick='showOrphanAuthority(${esc(JSON.stringify(group))})'>
+                        <div class="card-header">
+                            <div>
+                                <div class="card-name">${esc(name)}</div>
+                                <div class="card-id">${esc(group.authorityId)}</div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem">
+                                <button class="btn btn-success btn-sm" onclick="event.stopPropagation(); exportOrphans('${esc(group.authorityId)}')">Export</button>
+                                <span class="badge" style="background: var(--warning); color: #000">${group.orphans.length} orphan${group.orphans.length === 1 ? '' : 's'}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (undecodable.length > 0) {
+                html += `
+                    <div class="card" style="cursor: default; border-color: var(--error)">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-name" style="color: var(--error)">Undecodable</div>
+                                <div class="card-id">${undecodable.length} transaction${undecodable.length === 1 ? '' : 's'} could not be decoded</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+        function showOrphanAuthority(group) {
+            state.view = 'orphan-authority';
+            const content = document.getElementById('content');
+            const name = group.authorityName || group.authorityId;
+
+            let html = `
+                <div class="breadcrumb">
+                    <a onclick="showAddressBook()">Address Book</a>
+                    <span> / Orphans / ${esc(name)}</span>
+                </div>
+                <h2>${esc(name)}</h2>
+                <div class="card-id" style="margin-bottom: 0.5rem">${esc(group.authorityId)}</div>
+                <p style="color: var(--warning); font-size: 0.9rem; margin-bottom: 1rem">
+                    ${group.orphans.length} orphaned transaction${group.orphans.length === 1 ? '' : 's'}
+                </p>
+
+                <div class="btn-group" style="margin-bottom: 1.5rem">
+                    <button class="btn btn-success" onclick="exportOrphans('${esc(group.authorityId)}')">
+                        Export Orphans (${group.orphans.length})
+                    </button>
+                    <button class="btn btn-primary" onclick="repairOrphans()">Repair Orphans</button>
+                </div>
+
+                <h3>Transactions (${group.orphans.length} total)</h3>
+                <div class="tx-list">
+            `;
+
+            for (const orphan of group.orphans) {
+                html += renderOrphanTransaction(orphan);
+            }
+
+            html += '</div>';
+            content.innerHTML = html;
+        }
+
+        function renderOrphanTransaction(orphan) {
+            const date = orphan.epoch_second
+                ? new Date(orphan.epoch_second * 1000).toLocaleString()
+                : '(unknown)';
+
+            let detailsHtml = '';
+            for (const entity of (orphan.entities || [])) {
+                detailsHtml += `<div class="entity-block">`;
+                detailsHtml += `<div class="entity-id">Entity: ${esc(entity.entity_id)}</div>`;
+                for (const fact of entity.facts) {
+                    const opClass = fact.operation === 'Retract' ? 'retract' : '';
+                    detailsHtml += `
+                        <div class="fact-row">
+                            <span class="fact-attr">${esc(fact.attribute)}</span>
+                            <span class="fact-op ${opClass}">${esc(fact.operation)}</span>
+                            <span class="fact-val">${esc(fact.value_summary)}</span>
+                        </div>
+                    `;
+                }
+                detailsHtml += '</div>';
+            }
+
+            return `
+                <div class="tx-item">
+                    <div class="tx-header" onclick="toggleTxDetails(this)">
+                        <div class="tx-info">
+                            <span class="tx-id">${esc(orphan.id.substring(0, 16))}...</span>
+                            <span class="tx-meta">${esc(date)} | ${orphan.entity_count} entities, ${orphan.fact_count} facts</span>
+                        </div>
+                    </div>
+                    <div class="tx-details">${detailsHtml}</div>
+                </div>
+            `;
+        }
+
+        async function exportOrphans(authorityId) {
+            showModal('<div class="loading"><span class="spinner"></span><br>Exporting orphaned transactions...</div>');
+
+            try {
+                const result = await postJson(`${API}/authority/${authorityId}/export-orphans`, { output_path: 'export' });
+
+                let html = `
+                    <h3>Export Successful</h3>
+                    <p style="margin: 0.5rem 0 1rem">Exported ${result.transaction_count} orphaned transactions and ${result.data_file_count} data files.</p>
+                    <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem 1rem; font-family: monospace; font-size: 0.85rem;">
+                        <span style="color: var(--text-muted)">Output file:</span><br>
+                        <span style="color: var(--accent-light)">${esc(result.output_path)}</span>
+                    </div>
+                `;
+
+                if (result.errors.length > 0) {
+                    html += '<h3 style="color: var(--warning); margin-top: 1rem">Warnings</h3><ul class="issues-list">';
+                    for (const err of result.errors) {
+                        html += `<li>${esc(err)}</li>`;
+                    }
+                    html += '</ul>';
+                }
+
+                showModal(html);
+            } catch (err) {
+                showModal(`<h3>Export Failed</h3><p style="margin-top: 0.5rem">${esc(err.message)}</p>`, true);
+            }
+        }
+
+        async function exportAllOrphans() {
+            showModal(`<h3>Exporting All Orphans</h3>
+                <div class="loading"><span class="spinner"></span><br>Exporting all orphaned transactions...</div>`);
+
+            try {
+                const data = await postJson(`${API}/export-all-orphans`, { output_path: 'export' });
+
+                const hasErrors = data.results.some(r => !r.success);
+                let html = `<h3>Export ${hasErrors ? 'Completed with Errors' : 'Successful'}</h3>
+                    <p style="margin: 0.5rem 0 1rem">Exported ${data.total_exported} orphaned transactions across ${data.results.filter(r => r.success).length} authorities.</p>`;
+
+                for (const r of data.results) {
+                    if (r.success) {
+                        html += `<div style="background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem 1rem; margin-bottom: 0.5rem; font-size: 0.85rem;">
+                            <span style="color: var(--success);">${esc(r.authority_name)}</span>
+                            <span style="color: var(--text-muted)"> — ${r.transaction_count} transactions, ${r.data_file_count} data files</span>
+                            <div style="font-family: monospace; color: var(--accent-light); margin-top: 0.25rem">${esc(r.output_path)}</div>
+                        </div>`;
+                    } else {
+                        html += `<div style="background: var(--bg); border: 1px solid var(--error); border-radius: 6px; padding: 0.75rem 1rem; margin-bottom: 0.5rem; font-size: 0.85rem;">
+                            <span style="color: var(--error);">${esc(r.authority_name)}</span>
+                            <span style="color: var(--text-muted)"> — ${esc(r.error)}</span>
+                        </div>`;
+                    }
+                }
+
+                showModal(html, hasErrors);
+            } catch (err) {
+                showModal(`<h3>Export Failed</h3><p style="margin-top: 0.5rem">${esc(err.message)}</p>`, true);
+            }
+        }
+
+        async function repairOrphans() {
+            showModal('<div class="loading"><span class="spinner"></span><br>Repairing orphaned transactions...</div>');
+
+            try {
+                const result = await postJson(`${API}/repair-orphans`, {});
+
+                const allRepaired = result.orphans_after === 0;
+                const statusColor = allRepaired ? 'var(--success)' : 'var(--warning)';
+                const statusIcon = allRepaired ? '&#10003;' : '&#9888;';
+                const statusText = allRepaired
+                    ? 'All Orphans Repaired'
+                    : `${result.repaired} of ${result.orphans_before} Repaired`;
+
+                let html = `
+                    <h3 style="color: ${statusColor}">${statusIcon} ${statusText}</h3>
+                    <div class="verify-stats" style="margin: 1rem 0">
+                        <div class="stat">
+                            <div class="stat-value">${result.orphans_before}</div>
+                            <div class="stat-label">Orphans Before</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" style="color: var(--success)">${result.repaired}</div>
+                            <div class="stat-label">Repaired</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" style="color: ${result.orphans_after > 0 ? 'var(--warning)' : 'var(--success)'}">${result.orphans_after}</div>
+                            <div class="stat-label">Remaining</div>
+                        </div>
+                    </div>
+                `;
+
+                if (result.errors.length > 0) {
+                    html += '<h3 style="color: var(--warning); margin-top: 1rem">Issues</h3><ul class="issues-list">';
+                    for (const err of result.errors) {
+                        html += `<li>${esc(err)}</li>`;
+                    }
+                    html += '</ul>';
+                }
+
+                showModal(html, !allRepaired);
+            } catch (err) {
+                showModal(`<h3>Repair Failed</h3><p style="margin-top: 0.5rem">${esc(err.message)}</p>`, true);
             }
         }
 
